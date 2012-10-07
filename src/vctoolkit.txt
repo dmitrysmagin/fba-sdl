@@ -1,0 +1,35 @@
+
+You can find a pre-compiled version of zlib here: <http://www.winimage.com/zLibDll/>
+You can use the following makefile to build libpng yourself:
+
+8<--------8<--------8<--------8<--------8<--------8<--------8<--------8<--------
+
+# Basic makefile to build static libpng with Microsoft Visual C++ 2003 Toolkit
+
+# Uncomment to use x86 assembly optimisations
+# PNG_USE_PNGVCRD = 1
+
+CC =		cl
+LD =		link
+
+CFLAGS =	/nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_LIB" /FD /c /DZLIB_WINAPI /I "zlib"
+LDFLAGS =	/LIB
+
+obj =		png.obj pngerror.obj pngget.obj pngmem.obj pngpread.obj pngread.obj \
+			pngrio.obj pngrtran.obj pngrutil.obj pngset.obj pngtrans.obj \
+			pngwio.obj pngwrite.obj pngwtran.obj pngwutil.obj
+
+ifdef PNG_USE_PNGVCRD
+CFLAGS +=	/D "PNG_USE_PNGVCRD"
+obj +=		pngvcrd.obj
+endif
+
+
+
+libpng.lib:	$(obj)
+			$(LD) $(LDFLAGS) /OUT:libpng.lib $(obj)
+
+%.obj:		%.c
+			$(CC) $(CFLAGS) $<
+
+8<--------8<--------8<--------8<--------8<--------8<--------8<--------8<--------

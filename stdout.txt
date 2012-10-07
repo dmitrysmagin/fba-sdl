@@ -1,0 +1,3 @@
+SDLSoundInit (22050Hz)............SDL callback set
+SDLSoundPlay
+SDLSoundStop
