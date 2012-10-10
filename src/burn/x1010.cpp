@@ -20,6 +20,22 @@ void x1010_sound_bank_w(unsigned int offset, unsigned short data)
 	x1_010_chip->sound_banks[ offset ] = data;
 }
 
+unsigned char x1010_sound_read(unsigned int offset)
+{
+	offset ^= x1_010_chip->address;
+	return x1_010_chip->reg[offset];
+}
+
+unsigned short x1010_sound_read_word(unsigned int offset)
+{
+	UINT16 ret;
+	
+	ret = x1_010_chip->HI_WORD_BUF[offset] << 8;
+	ret += x1010_sound_read(offset);
+	
+	return ret;
+}
+
 void x1010_sound_update()
 {
 	short* pSoundBuf = pBurnSoundOut;

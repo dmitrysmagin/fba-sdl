@@ -31,7 +31,7 @@ inline static unsigned int CalcColCPS1(unsigned short a)
 	return BurnHighCol(r, g, b, 0);
 }
 
-inline static unsigned int CalcColCPS2(unsigned short a)
+static unsigned int CalcColCPS2(unsigned short a)
 {
 	int r, g, b, f;
 	const int F_OFFSET = 0x0F;
@@ -79,7 +79,7 @@ static int CalcAll()
 
 	} else {
 		ps = (unsigned short*)CpsPalSrc;
-		for (int i = 0x0000; i < 0x0800; i++, ps++) {
+		for (int i = 0x0000; i < 0x0c00; i++, ps++) {
 			CpsPal[i ^ 15] = CalcColCPS1(*ps);
 		}
 	}
@@ -91,7 +91,7 @@ static void CalcAllStar(int nLayer)
 {
 	unsigned short* ps = (unsigned short*)CpsPalSrc;
 	int nOffset = 0x0800 + (nLayer << 9);
-
+	
 	for (int i = 0; i < 128; i++, ps++) {
 		CpsPal[(i + nOffset) ^ 15] = CalcColCPS1(*(ps + nOffset));
 	}
@@ -165,7 +165,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 			CpsObjPal = CpsPal + nBuffer;
 		} else {
-			memcpy(ps, pn, 0x0800 << 1);
+			memcpy(ps, pn, 0x0c00 << 1);
 		}
 
 		CalcAll();
@@ -228,7 +228,7 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 		ps = (unsigned short*)CpsPalSrc;
 		pn = (unsigned short*)pNewPal;
 
-		for (i = 0x0000; i < 0x0800; i++, ps++, pn++) {
+		for (i = 0x0000; i < 0x0c00; i++, ps++, pn++) {
 			unsigned short n = *pn;
 			if (*ps == n) {
                 continue;								// Colour hasn't changed - great!

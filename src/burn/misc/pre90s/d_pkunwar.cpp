@@ -38,7 +38,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 1",	  BIT_DIPSWITCH, &DrvDips ,	"dip"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
@@ -74,7 +74,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x0b, 0x01, 0x80, 0x00, "On"			},
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 
 //-------------------------------------------------------------------------------------------------
@@ -586,16 +586,16 @@ static struct BurnRomInfo pkunwarRomDesc[] = {
 	{ "pkwar.col",    0x0020, 0xaf0fc5e2, 3 | BRF_GRA },		//  7 Color Prom
 };
 
-STD_ROM_PICK(pkunwar);
-STD_ROM_FN(pkunwar);
+STD_ROM_PICK(pkunwar)
+STD_ROM_FN(pkunwar)
 
 struct BurnDriver BurnDrvpkunwar = {
-	"pkunwar", NULL, NULL, "1985",
+	"pkunwar", NULL, NULL, NULL, "1985",
 	"Penguin-Kun Wars (US)\0", NULL, "UPL", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, pkunwarRomInfo, pkunwarRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
+	NULL, pkunwarRomInfo, pkunwarRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x200,
 	256, 192, 4, 3
 };
 
@@ -615,16 +615,16 @@ static struct BurnRomInfo pkunwarjRomDesc[] = {
 	{ "pkwar.col",    0x0020, 0xaf0fc5e2, 3 | BRF_GRA },		//  7 Color Prom
 };
 
-STD_ROM_PICK(pkunwarj);
-STD_ROM_FN(pkunwarj);
+STD_ROM_PICK(pkunwarj)
+STD_ROM_FN(pkunwarj)
 
 struct BurnDriver BurnDrvpkunwarj = {
-	"pkunwarj", "pkunwar", NULL, "1985",
+	"pkunwarj", "pkunwar", NULL, NULL, "1985",
 	"Penguin-Kun Wars (Japan)\0", NULL, "UPL", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, pkunwarjRomInfo, pkunwarjRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
+	NULL, pkunwarjRomInfo, pkunwarjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x200,
 	256, 192, 4, 3
 };
 

@@ -89,7 +89,7 @@ while ( my $line = <INFILE> ) {
 	}
 
 	# highlight URLs
-	$line =~ s/(http:\/\/[\w~\/\.]*)/\\cf2 $1\\cf0/g;
+	$line =~ s/(http:\/\/[\w~\/\.\-]*)/\\cf2 $1\\cf0/g;
 
 	# if a paragraph starts with "DISCLAIMER:" make the text bold and red
 	if ($line =~ /^DISCLAIMER/) {

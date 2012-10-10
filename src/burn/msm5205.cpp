@@ -1,418 +1,359 @@
-/*
-adpcm decoding - a simplifed adpcm.cpp.
-This has one channel per 'chip' with a current maximum of 4 chips.
-
-Needs redsigning as some of the things we are doing here are not needed.
-*/
-
-#include <math.h>
 #include "burnint.h"
 #include "msm5205.h"
-#include "burn_sound.h"
+#include "math.h"
 
-unsigned char* MSM5205ROM;
-unsigned char* MSM5205SampleInfo[MAX_MSM5205];
-unsigned char* MSM5205SampleData[MAX_MSM5205];
+#define MAX_MSM5205	2
 
-unsigned int nMSM5205Status[MAX_MSM5205];
+struct _MSM5205_state
+{
+	INT32 data;               /* next adpcm data              */
+	INT32 vclk;               /* vclk signal (external mode)  */
+	INT32 reset;              /* reset pin signal             */
+	INT32 prescaler;          /* prescaler selector S1 and S2 */
+	INT32 bitwidth;           /* bit width selector -3B/4B    */
+	INT32 signal;             /* current ADPCM signal         */
+	INT32 step;               /* current ADPCM step           */
+	int volume;
 
-struct MSM5205ChannelInfo {
-	int nOutput;
-	int nVolume;
-	unsigned int nPosition;
-	unsigned int nSampleCount;
-	int nSample;
-	int nStep;
-	int nDelta;
-	int nBufPos;
+	INT32 clock;		  /* clock rate */
+
+	void (*vclk_callback)();  /* VCLK callback              */
+	int (*stream_sync)(int);
+	int select;       	  /* prescaler / bit width selector        */
+	int bAdd;
+	int streampos;
+
+	int diff_lookup[49*16];
 };
 
-static struct {
-	int nVolume;
-	int nSampleRate;
-	int nSampleSize;
-	int nFractionalPosition;
-	MSM5205ChannelInfo ChannelInfo;
-} MSM5205[MAX_MSM5205];
+static short *stream[MAX_MSM5205];
+static struct _MSM5205_state chips[MAX_MSM5205];
+static struct _MSM5205_state *voice;
 
-static unsigned int MSM5205VolumeTable[16];
-static int MSM5205DeltaTable[49 * 16];
-static int MSM5205StepShift[8] = {-1, -1, -1, -1, 2, 4, 6, 8};
+static void MSM5205_playmode(int chip, int select);
 
-static int* MSM5205ChannelData[MAX_MSM5205];
+static const int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 
-static int* pBuffer = NULL;
-static int nLastChip;
-
-static bool bAdd;
-
-void MSM5205Reset(int nChip)
+static void ComputeTables(int chip)
 {
-	memset(MSM5205ChannelData[nChip], 0, 0x0100 * sizeof(int));
+	voice = &chips[chip];
 
-	// Set initial bank information
-	MSM5205SampleInfo[nChip]= MSM5205ROM;
-	MSM5205SampleData[nChip]= MSM5205ROM;
+	/* nibble to bit map */
+	static const int nbl2bit[16][4] =
+	{
+		{ 1, 0, 0, 0}, { 1, 0, 0, 1}, { 1, 0, 1, 0}, { 1, 0, 1, 1},
+		{ 1, 1, 0, 0}, { 1, 1, 0, 1}, { 1, 1, 1, 0}, { 1, 1, 1, 1},
+		{-1, 0, 0, 0}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, 1, 1},
+		{-1, 1, 0, 0}, {-1, 1, 0, 1}, {-1, 1, 1, 0}, {-1, 1, 1, 1}
+	};
 
-	MSM5205[nChip].ChannelInfo.nBufPos = 4;
-	MSM5205[nChip].ChannelInfo.nVolume = MSM5205VolumeTable[0];
-	MSM5205[nChip].ChannelInfo.nPosition = 0;
-	MSM5205[nChip].ChannelInfo.nSampleCount = 0;
-	MSM5205[nChip].ChannelInfo.nSample = 0;
-	MSM5205[nChip].ChannelInfo.nStep = 0;
-	nMSM5205Status[nChip] = 0;
+	int step, nib;
 
-	//MSM5205Reset(nChip);
-}
+	/* loop over all possible steps */
+	for (step = 0; step <= 48; step++)
+	{
+		/* compute the step value */
+		int stepval = (int)(floor (16.0 * pow (11.0 / 10.0, (double)step)));
 
-int MSM5205Scan(int nChip, int /*nAction*/)
-{
-	SCAN_VAR(MSM5205[nChip]);
-	SCAN_VAR(nMSM5205Status[nChip]);
-	for (int i = 0; i < 4; i++) {
-		MSM5205SampleInfo[nChip][i] -= (unsigned int)MSM5205ROM;
-		SCAN_VAR(MSM5205SampleInfo[nChip][i]);
-		MSM5205SampleInfo[nChip][i] += (unsigned int)MSM5205ROM;
-
-		MSM5205SampleData[nChip][i] -= (unsigned int)MSM5205ROM;
-		SCAN_VAR(MSM5205SampleData[nChip][i]);
-		MSM5205SampleData[nChip][i] += (unsigned int)MSM5205ROM;
-	}
-
-	return 0;
-}
-
-static void MSM5205Render_Cubic(int nChip, int* pBuf, int nSegmentLength)
-{
-	int nVolume = MSM5205[nChip].nVolume;
-	int nFractionalPosition;
-
-	int nChannel, nDelta, nSample, nOutput;
-	MSM5205ChannelInfo* pChannelInfo;
-
-	while (nSegmentLength--) {
-
-		nOutput = 0;
-
-		for (nChannel = 0; nChannel < 4; nChannel++) {
-			pChannelInfo = &MSM5205[nChip].ChannelInfo;
-			nFractionalPosition = MSM5205[nChip].nFractionalPosition;
-
-			if (nMSM5205Status[nChip] & (1 << nChannel)) {
-
-				while (nFractionalPosition >= 0x1000) {
-
-					// Check for end of sample
-					if (pChannelInfo->nSampleCount-- == 0) {
-						nMSM5205Status[nChip] &= ~(1 << nChannel);
-						nFractionalPosition &= 0x0FFF;
-
-						MSM5205ChannelData[nChip][pChannelInfo->nBufPos++] = 0;
-					} else {
-						// Get new delta from ROM
-						if (pChannelInfo->nPosition & 1) {
-							nDelta = pChannelInfo->nDelta & 0x0F;
-						} else {
-							pChannelInfo->nDelta = MSM5205SampleData[nChip][(pChannelInfo->nPosition >> 1) & 0xFFFF];
-							nDelta = pChannelInfo->nDelta >> 4;
-						}
-
-						// Compute new sample
-						nSample = pChannelInfo->nSample + MSM5205DeltaTable[(pChannelInfo->nStep << 4) + nDelta];
-						if (nSample > 2047) {
-							nSample = 2047;
-						} else {
-							if (nSample < -2048) {
-								nSample = -2048;
-							}
-						}
-						pChannelInfo->nSample = nSample;
-						pChannelInfo->nOutput = (nSample * pChannelInfo->nVolume);
-
-						// Update step value
-						pChannelInfo->nStep = pChannelInfo->nStep + MSM5205StepShift[nDelta & 7];
-						if (pChannelInfo->nStep > 48) {
-							pChannelInfo->nStep = 48;
-						} else {
-							if (pChannelInfo->nStep < 0) {
-								pChannelInfo->nStep = 0;
-							}
-						}
-
-						MSM5205ChannelData[nChip][pChannelInfo->nBufPos++] = pChannelInfo->nOutput / 0x10;
-
-						// Advance sample position
-						pChannelInfo->nPosition++;
-						nFractionalPosition -= 0x1000;
-					}
-				}
-
-				if (pChannelInfo->nBufPos > 0xF0) {
-					MSM5205ChannelData[nChip][0] = MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 4];
-					MSM5205ChannelData[nChip][1] = MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 3];
-					MSM5205ChannelData[nChip][2] = MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 2];
-					MSM5205ChannelData[nChip][3] = MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 1];
-					pChannelInfo->nBufPos = 4;
-				}
-
-				nOutput += INTERPOLATE4PS_16BIT(nFractionalPosition,
-												MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 4],
-												MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 3],
-												MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 2],
-												MSM5205ChannelData[nChip][pChannelInfo->nBufPos - 1]);
-			}
+		/* loop over all nibbles and compute the difference */
+		for (nib = 0; nib < 16; nib++)
+		{
+			voice->diff_lookup[step*16 + nib] = nbl2bit[nib][0] *
+				(stepval   * nbl2bit[nib][1] +
+				 stepval/2 * nbl2bit[nib][2] +
+				 stepval/4 * nbl2bit[nib][3] +
+				 stepval/8);
 		}
-
-		nOutput = nOutput * nVolume / 0x0400;
-
-		*pBuf++ += nOutput;
-
-		MSM5205[nChip].nFractionalPosition = (MSM5205[nChip].nFractionalPosition & 0x0FFF) + MSM5205[nChip].nSampleSize;
 	}
 }
 
-static void MSM5205Render_Linear(int nChip, int* pBuf, int nSegmentLength)
+static void MSM5205_playmode(int , int select)
 {
-	static int nPreviousSample[MAX_MSM5205], nCurrentSample[MAX_MSM5205];
-	int nVolume = MSM5205[nChip].nVolume;
-	int nFractionalPosition = MSM5205[nChip].nFractionalPosition;
+	static const int prescaler_table[4] = {96,48,64,0};
+	int prescaler = prescaler_table[select & 3];
+	int bitwidth = (select & 4) ? 4 : 3;
 
-	int nDelta, nSample;
-	MSM5205ChannelInfo* pChannelInfo;
+	if( voice->prescaler != prescaler )
+	{
+		voice->prescaler = prescaler;
 
-	while (nSegmentLength--) {
-		if (nFractionalPosition >= 0x1000) {
+		if( prescaler )
+		{
+// clock * prescaler
+// 384000 / 48 -> 8000
 
-			nPreviousSample[nChip] = nCurrentSample[nChip];
+// if cpu is 4000000 (4mhz)
+// check MSM5205 every 4000000 / 8000 -> 500 cycles
 
-			do {
-				nCurrentSample[nChip] = 0;
-
-					if (nMSM5205Status[nChip]) {
-						pChannelInfo = &MSM5205[nChip].ChannelInfo;
-
-						// Check for end of sample
-						if (pChannelInfo->nSampleCount-- == 0) {
-							nMSM5205Status[nChip] = 0;
-							continue;
-						}
-
-						// Get new delta from ROM
-						if (pChannelInfo->nPosition & 1) {
-							nDelta = pChannelInfo->nDelta & 0x0F;
-						} else {
-							pChannelInfo->nDelta = MSM5205SampleData[nChip][(pChannelInfo->nPosition >> 1) & 0xFFFF];
-							nDelta = pChannelInfo->nDelta >> 4;
-						}
-
-						// Compute new sample
-						nSample = pChannelInfo->nSample + MSM5205DeltaTable[(pChannelInfo->nStep << 4) + nDelta];
-						if (nSample > 2047) {
-							nSample = 2047;
-						} else {
-							if (nSample < -2048) {
-								nSample = -2048;
-							}
-						}
-						pChannelInfo->nSample = nSample;
-						pChannelInfo->nOutput = (nSample * pChannelInfo->nVolume);
-
-						// Update step value
-						pChannelInfo->nStep = pChannelInfo->nStep + MSM5205StepShift[nDelta & 7];
-						if (pChannelInfo->nStep > 48) {
-							pChannelInfo->nStep = 48;
-						} else {
-							if (pChannelInfo->nStep < 0) {
-								pChannelInfo->nStep = 0;
-							}
-						}
-
-						nCurrentSample[nChip] += pChannelInfo->nOutput;
-
-						// Advance sample position
-						pChannelInfo->nPosition++;
-					}
-				nFractionalPosition -= 0x1000;
-
-			} while (nFractionalPosition >= 0x1000);
-
-			// Scale all 4 channels
-			nCurrentSample[nChip] *= nVolume;
-			nCurrentSample[nChip] /= 0x4000;
-
+//			attotime period = attotime_mul(ATTOTIME_IN_HZ(voice->clock), prescaler);
+//			timer_adjust_periodic(voice->timer, period, 0, period);
 		}
-
-		// Compute linearly interpolated sample
-		nSample = nPreviousSample[nChip] + (((nCurrentSample[nChip] - nPreviousSample[nChip]) * nFractionalPosition) >> 12);
-
-		*pBuf++ += nSample;
-
-		nFractionalPosition += MSM5205[nChip].nSampleSize;
 	}
 
-	MSM5205[nChip].nFractionalPosition = nFractionalPosition;
+	if( voice->bitwidth != bitwidth )
+	{
+		voice->bitwidth = bitwidth;
+	}
 }
 
-
-int MSM5205Render(int nChip, short* pSoundBuf, int nSegmentLength)
+static void MSM5205StreamUpdate(int chip)
 {
-	if (nChip == 0) {
-		memset(pBuffer, 0, nSegmentLength * sizeof(int));
+	voice = &chips[chip];
+
+	unsigned int len = voice->stream_sync((nBurnSoundLen * nBurnFPS) / 100);
+	if (len > (unsigned int)nBurnSoundLen) len = nBurnSoundLen;
+	unsigned int pos = voice->streampos;
+
+	if (pos >= len) return;
+
+	len -= pos;
+	voice->streampos = pos + len;
+
+	if (pos == 0) {
+		memset (stream[chip], 0, nBurnSoundLen * sizeof(short));
 	}
-	if (nInterpolation >= 3) {
-		MSM5205Render_Cubic(nChip, pBuffer, nSegmentLength);
-	} else {
-		MSM5205Render_Linear(nChip, pBuffer, nSegmentLength);
-	}
 
-	if (nChip == nLastChip)	{
-		int nOutput;
+	{
+		short *buffer = stream[chip];
+		buffer += pos;
 
-		int* pBuf = pBuffer;
+		if(voice->signal)
+		{
+			int i = 0;
 
-		if (bAdd) {
-			while (nSegmentLength--) {
-
-				// Left side
-				nOutput = *pBuf + *pSoundBuf;
-
-				// Clamp summed channels
-				if (nOutput > 32767) {
-					nOutput = 32767;
-				} else {
-					if (nOutput < -32768) {
-						nOutput = -32768;
-					}
-				}
-
-				*pSoundBuf++ = (short)nOutput;
-
-				// Right side
-				nOutput = *pBuf++ + *pSoundBuf;
-
-				// Clamp summed channels
-				if (nOutput > 32767) {
-					nOutput = 32767;
-				} else {
-					if (nOutput < -32768) {
-						nOutput = -32768;
-					}
-				}
-
-				*pSoundBuf++ = (short)nOutput;
+			int volval = ((voice->signal * 16) * voice->volume) / 100;
+			short val = volval;
+			while (len)
+			{
+				buffer[i] = val;
+				len--; i++;
 			}
 		} else {
-			while (nSegmentLength--) {
+			memset (buffer, 0, sizeof(short) * len);
+		}
+	}
+}
 
-				nOutput = *pBuf++;
+static void MSM5205_vclk_callback(int chip)
+{
+	voice = &chips[chip];
 
-				// Clamp summed channels
-				if (nOutput > 32767) {
-					nOutput = 32767;
-				} else {
-					if (nOutput < -32768) {
-						nOutput = -32768;
-					}
+	if(voice->vclk_callback)(*voice->vclk_callback)();
+
+	int new_signal;
+
+	if(voice->reset)
+	{
+		new_signal = 0;
+		voice->step = 0;
+	}
+	else
+	{
+		int val = voice->data;
+		new_signal = voice->signal + voice->diff_lookup[voice->step * 16 + (val & 15)];
+		if (new_signal > 2047) new_signal = 2047;
+		else if (new_signal < -2048) new_signal = -2048;
+		voice->step += index_shift[val & 7];
+		if (voice->step > 48) voice->step = 48;
+		else if (voice->step < 0) voice->step = 0;
+	}
+	/* update when signal changed */
+	if( voice->signal != new_signal)
+	{
+		MSM5205StreamUpdate(chip);
+		voice->signal = new_signal;
+	}
+}
+
+void MSM5205Render(int chip, short *buffer, int len)
+{
+	voice = &chips[chip];
+	short *source = stream[chip];
+
+	MSM5205StreamUpdate(chip);
+
+	voice->streampos = 0;
+	
+	if (voice->bAdd) {
+		for (int i = 0; i < len; i++)
+		{
+			int nSample0 = buffer[0] + source[i];
+			int nSample1 = buffer[1] + source[i];
+
+			if (nSample0 < -32768) {
+				nSample0 = -32768;
+			} else {
+				if (nSample0 > 32767) {
+					nSample0 = 32767;
 				}
-
-				*pSoundBuf++ = (short)nOutput;
-				*pSoundBuf++ = (short)nOutput;
 			}
+
+			if (nSample1 < -32768) {
+				nSample1 = -32768;
+			} else {
+				if (nSample1 > 32767) {
+					nSample1 = 32767;
+				}
+			}
+
+			buffer[0] = nSample0;
+			buffer[1] = nSample1;
+			buffer += 2;
 		}
-	}
-
-	return 0;
-}
-
-
-void MSM5205Exit(int nChip)
-{
-	free(pBuffer);
-	pBuffer = NULL;
-
-	for (int nChannel = 0; nChannel < 4; nChannel++) {
-		free(MSM5205ChannelData[nChip]);
-		MSM5205ChannelData[nChip]= NULL;
-	}
-}
-
-int MSM5205Init(int nChip, int nSamplerate, float fMaxVolume, bool bAddSignal)
-{
-	if (nBurnSoundRate <= 0) {
-		return 1;
-	}
-
-	bAdd = bAddSignal;
-
-	// Convert volume from percentage
-	MSM5205[nChip].nVolume = int(fMaxVolume * 1024.0 / 100.0 + 0.5);
-
-	MSM5205[nChip].nSampleRate = nSamplerate;
-	MSM5205[nChip].nSampleSize = (nSamplerate << 12) / nBurnSoundRate;
-
-	MSM5205[nChip].nFractionalPosition = 0;
-
-	nMSM5205Status[nChip] = 0;
-	if (nChip == 0) {
-		nLastChip = 0;
 	} else {
-		if (nLastChip < nChip) {
-			nLastChip = nChip;
+		for (int i = 0; i < len; i++)
+		{
+			buffer[0] = buffer[1] = source[i];
+			buffer+=2;
 		}
 	}
-
-	// Compute sample deltas
-	for (int i = 0; i < 49; i++) {
-		int nStep = (int)(pow(1.1, (double)i) * 16.0);
-		for (int n = 0; n < 16; n++) {
-			int nDelta = nStep >> 3;
-			if (n & 1) {
-				nDelta += nStep >> 2;
-			}
-			if (n & 2) {
-				nDelta += nStep >> 1;
-			}
-			if (n & 4) {
-				nDelta += nStep;
-			}
-			if (n & 8) {
-				nDelta = -nDelta;
-			}
-			MSM5205DeltaTable[(i << 4) + n] = nDelta;
-		}
-	}
-
-	// Compute volume levels
-	for (int i = 0; i < 16; i++) {
-		double nVolume = 256.0;
-		for (int n = i; n > 0; n--) {
-			nVolume /= 1.412537545;
-		}
-		MSM5205VolumeTable[i] = (unsigned int)(nVolume + 0.5);
-	}
-
-	if (pBuffer == NULL) {
-		pBuffer = (int*)malloc(nBurnSoundRate * sizeof(int));
-	}
-
-	MSM5205ChannelData[nChip] = (int*)malloc(0x0100 * sizeof(int));
-
-	return 0;
 }
 
-void MSM5205Play(unsigned int nStart, unsigned int nEnd, int nChip)
+void MSM5205Reset()
 {
+	for (int chip = 0; chip < MAX_MSM5205; chip++)
+	{
+		voice = &chips[chip];
 
-	if (nEnd < 0x80000) {
-		// Start playing channel
-		MSM5205SampleInfo[nChip] = MSM5205ROM+nStart;
-		MSM5205SampleData[nChip] = MSM5205ROM+nStart;
-		MSM5205[nChip].ChannelInfo.nVolume = MSM5205VolumeTable[4];
-		MSM5205[nChip].ChannelInfo.nPosition = 0;
-		MSM5205[nChip].ChannelInfo.nSampleCount = nEnd;
-		MSM5205[nChip].ChannelInfo.nSample = 0;
-		MSM5205[nChip].ChannelInfo.nStep = 0;
-		nMSM5205Status[nChip] = 1;
+		if (stream[chip] == NULL) continue;
+
+		voice->data    = 0;
+		voice->vclk    = 0;
+		voice->reset   = 0;
+		voice->signal  = 0;
+		voice->step    = 0;
+
+		MSM5205_playmode(chip,voice->select);
+		voice->streampos = 0;
 	}
 }
 
+void MSM5205Init(int chip, int (*stream_sync)(int), int clock, void (*vclk_callback)(), int select, int volume, int bAdd)
+{
+	voice = &chips[chip];
+
+	memset (voice, 0, sizeof(_MSM5205_state));
+
+	voice->stream_sync	= stream_sync;
+	voice->vclk_callback	= vclk_callback;
+	voice->select		= select;
+	voice->clock		= clock;
+	voice->bAdd		= bAdd;
+	voice->volume		= volume;
+
+	stream[chip]		= (short*)malloc(nBurnSoundLen * sizeof(short));
+
+	ComputeTables (chip);
+}
+
+void MSM5205Exit()
+{
+	for (int chip = 0; chip < MAX_MSM5205; chip++)
+	{
+		voice = &chips[chip];
+
+		if (stream[chip] == NULL) continue;
+
+		memset (voice, 0, sizeof(_MSM5205_state));
+
+		free (stream[chip]);
+		stream[chip] = NULL;
+	}
+}
+
+void MSM5205VCLKWrite(int chip, int vclk)
+{
+	voice = &chips[chip];
+
+	if (voice->prescaler == 0)
+	{
+		if( voice->vclk != vclk)
+		{
+			voice->vclk = vclk;
+			if( !vclk ) MSM5205_vclk_callback(chip);
+		}
+	}
+}
+
+void MSM5205ResetWrite(int chip, int reset)
+{
+	voice = &chips[chip];
+	voice->reset = reset;
+}
+
+void MSM5205DataWrite(int chip, int data)
+{
+	voice = &chips[chip];
+
+	if( voice->bitwidth == 4)
+		voice->data = data & 0x0f;
+	else
+		voice->data = (data & 0x07)<<1;
+}
+
+void MSM5205PlaymodeWrite(int chip, int select)
+{
+	voice = &chips[chip];
+	MSM5205_playmode(chip,select);
+}
+
+void MSM5205SetVolume(int chip, int volume)
+{
+	voice = &chips[chip];
+	voice->volume = volume;
+}
+
+void MSM5205Update()
+{
+	for (int chip = 0; chip < MAX_MSM5205; chip++)
+	{
+		voice = &chips[chip];
+
+		if (voice->prescaler) {
+			MSM5205_vclk_callback(chip);
+		} else {
+			if (stream[chip]) {
+				MSM5205StreamUpdate(chip);
+			}
+		}
+	}
+}
+
+// see MSM5205_playmode for a more in-depth explanation of this
+int MSM5205CalcInterleave(int chip, int cpu_speed)
+{
+	static const int table[4] = {96, 48, 64, 0};
+
+	voice = &chips[chip];
+
+	if ((voice->select & 3) == 3) {
+		return 133;  // (usually...)
+	}
+
+	int ret = cpu_speed / (cpu_speed / (voice->clock / table[voice->select & 3]));
+
+	return ret / (nBurnFPS / 100);
+}
+
+void MSM5205Scan(int nAction, int *pnMin)
+{
+	if (pnMin != NULL) {
+		*pnMin = 0x029708;
+	}
+
+	if (nAction & ACB_DRIVER_DATA) {
+		for (int chip = 0; chip < MAX_MSM5205; chip++) {
+			voice = &chips[chip];
+
+			SCAN_VAR(voice->data);
+
+			SCAN_VAR(voice->vclk);
+			SCAN_VAR(voice->reset);
+			SCAN_VAR(voice->prescaler);
+			SCAN_VAR(voice->bitwidth);
+			SCAN_VAR(voice->signal);
+			SCAN_VAR(voice->step);
+			SCAN_VAR(voice->volume);
+		}
+	}
+}

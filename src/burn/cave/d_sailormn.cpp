@@ -12,12 +12,11 @@ static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned short DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char drvRegion = 0;
-
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
 static unsigned char *Rom01, *Rom02, *RomZ80;
 static unsigned char *Ram01, *Ram02, *Ram03, *RamZ80;
+static unsigned char *DefEEPROM;
 
 static unsigned char DrvReset = 0;
 static unsigned char bDrawScreen;
@@ -38,7 +37,7 @@ static char nUnknownIRQ;
 
 static int nCaveCyclesDone[2];
 
-int nWhichGame;				// 0 - sailormn/sailormo
+int nWhichGame;				// 0 - sailormn/sailormno
 							// 1 - agallet
 
 static struct BurnInputInfo sailormnInputList[] = {
@@ -67,26 +66,9 @@ static struct BurnInputInfo sailormnInputList[] = {
 	{"Reset",		BIT_DIGITAL,	&DrvReset,		"reset"},
 	{"Diagnostics",	BIT_DIGITAL,	DrvJoy1 + 9,	"diag"},
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
-	{"Region",		BIT_DIPSWITCH,	&drvRegion,		"dip"},
 };
 
-STDINPUTINFO(sailormn);
-
-static struct BurnDIPInfo sailormnDIPList[] = {
-	// Region
-	{0x15,	0xFF, 0xFF,	0x02, NULL},
-	{0,		0xFD, 0,	6,	  "Region"},
-	{0x15,	0x01, 0x07, 0x00, "Japan"},
-	{0x15,	0x01, 0x07, 0x01, "U.S.A."},
-	{0x15,	0x01, 0x07, 0x02, "Europe"},
-	{0x15,	0x01, 0x07, 0x03, "Hong Kong"},
-	{0x15,	0x01, 0x07, 0x04, "Taiwan"},
-	{0x15,	0x01, 0x07, 0x05, "Korea"},
-	{0x15,	0x01, 0x07, 0x06, "Japan"},
-	{0x15,	0x01, 0x07, 0x07, "Japan"},
-};
-
-STDDIPINFO(sailormn);
+STDINPUTINFO(sailormn)
 
 static void UpdateIRQStatus()
 {
@@ -108,8 +90,11 @@ static void drvZ80Bankswitch(int nBank)
 static void drvYM2151IRQHandler(int nStatus)
 {
 	if (nStatus) {
-		ZetRaiseIrq(255);
-		nCaveCyclesDone[1] += ZetRun(0x0400);
+//		ZetRaiseIrq(255);
+//		nCaveCyclesDone[1] += ZetRun(0x0400);
+		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+	} else {
+		ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 	}
 }
 
@@ -274,7 +259,7 @@ unsigned char __fastcall sailormnReadByte(unsigned int sekAddress)
 		case 0x600001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0x600002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0x600003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -350,7 +335,7 @@ unsigned short __fastcall sailormnReadWord(unsigned int sekAddress)
 		case 0x600000:
 			return DrvInput[0] ^ 0xFFFF;
 		case 0x600002:
-			return DrvInput[1] ^ 0xF7FF | (EEPROMRead() << 11);
+			return (DrvInput[1] ^ 0xF7FF) | (EEPROMRead() << 11);
 
 		default: {
 // 			bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
@@ -511,18 +496,6 @@ static int DrvDoReset()
 	SoundLatchReplyMax = -1;
 
 	nCaveCyclesDone[0] = nCaveCyclesDone[1] = 0;
-
-	unsigned char nRegion = drvRegion & 0x07;
-	if (nRegion > 5) {
-		nRegion = 0;
-	}
-	unsigned int nIndex;
-	if (nWhichGame) {
-		nIndex = 0x01E;
-	} else {
-		nIndex = 0x010;
-	}
-	EEPROMFill(&nRegion, nIndex, 1);
 
 	MSM6295Reset(0);
 	MSM6295Reset(1);
@@ -698,6 +671,7 @@ static int MemIndex()
 		CaveTileROM[2]	= Next; Next += 0x01400000;		// Tile layer 2 (Sailor Moon)
 	}
 	MSM6295ROM		= Next; Next += 0x400000;		// MSM6295 ADPCM data
+	DefEEPROM               = Next; Next += 0x000080;
 	RamStart		= Next;
 	Ram01			= Next; Next += 0x010002;		// CPU #0 work RAM
 	Ram02			= Next; Next += 0x008000;		//
@@ -789,6 +763,8 @@ static int sailormnLoadRoms()
 	BurnLoadRom(MSM6295ROM + 0x0280000, 16, 1);
 	BurnLoadRom(MSM6295ROM + 0x0300000, 16, 1);
 	BurnLoadRom(MSM6295ROM + 0x0380000, 16, 1);
+	
+	BurnLoadRom(DefEEPROM, 17, 1);
 
 	return 0;
 }
@@ -825,6 +801,8 @@ static int agalletLoadRoms()
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 8, 1);
 	BurnLoadRom(MSM6295ROM + 0x0200000, 9, 1);
+	
+	BurnLoadRom(DefEEPROM, 10, 1);
 
 	return 0;
 }
@@ -884,6 +862,9 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
+static const UINT8 agallet_default_eeprom[48] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff, 0x00,0x00,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0xff,0xff,0xff,0xff,0xff,0xff};
+static const UINT8 sailormn_default_eeprom[18] = {0xa5,0x00,0xa5,0x00,0xa5,0x00,0xa5,0x00,0xa5,0x01,0xa5,0x01,0xa5,0x04,0xa5,0x01,0xa5,0x02};
+
 static int gameInit()
 {
 	int nLen;
@@ -900,32 +881,14 @@ static int gameInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
+	
 
 	if (nWhichGame) {
-		unsigned char* data = (unsigned char*)malloc(48);
-		for (int i = 0; i < 16; i++) {
-			data[i + 0x00] = 0xFF;
-			data[i + 0x10] = 0x00;
-			data[i + 0x20] = 0xFF;
-		}
-		data[0x14] = 3;
-		data[0x1E] = drvRegion;
-		data[0x28] = 0;
-		data[0x29] = 0;
-
-		EEPROMFill(data, 0, 0x30);
-
 		// Load the roms into memory
 		if (agalletLoadRoms()) {
 			return 1;
 		}
-
 	} else {
-		unsigned char data[] = { 0x00, 0xA5, 0x00, 0xA5, 0x00, 0xA5, 0x00, 0xA5, 0x01, 0xA5, 0x01, 0xA5, 0x04, 0xA5, 0x01, 0xA5, 0x02, 0xA5 };
-		data[16] |= drvRegion;
-		EEPROMFill(data, 0, 0x12);
-
 		// Load the roms into memory
 		if (sailormnLoadRoms()) {
 			return 1;
@@ -967,7 +930,7 @@ static int gameInit()
 	nCaveExtraXOffset = -1;
 	nCaveRowModeOffset = 2;
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	if (nWhichGame) {
 		CaveSpriteInit(1, 0x0800000);
@@ -987,6 +950,9 @@ static int gameInit()
 
 	MSM6295Init(0, 16000, 80.0, 1);
 	MSM6295Init(1, 16000, 80.0, 1);
+	
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(DefEEPROM,0, 0x80);
 
 	bDrawScreen = true;
 
@@ -1039,13 +1005,175 @@ static struct BurnRomInfo sailormnRomDesc[] = {
 
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_OPT },
 };
 
 
-STD_ROM_PICK(sailormn);
-STD_ROM_FN(sailormn);
+STD_ROM_PICK(sailormn)
+STD_ROM_FN(sailormn)
 
-static struct BurnRomInfo sailormoRomDesc[] = {
+static struct BurnRomInfo sailormnuRomDesc[] = {
+	{ "bpsm945a.u45", 0x080000, 0x898C9515, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnu)
+STD_ROM_FN(sailormnu)
+
+static struct BurnRomInfo sailormnjRomDesc[] = {
+	{ "bpsm945a.u45", 0x080000, 0x898C9515, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnj)
+STD_ROM_FN(sailormnj)
+
+static struct BurnRomInfo sailormnkRomDesc[] = {
+	{ "bpsm945a.u45", 0x080000, 0x898C9515, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnk)
+STD_ROM_FN(sailormnk)
+
+static struct BurnRomInfo sailormntRomDesc[] = {
+	{ "bpsm945a.u45", 0x080000, 0x898C9515, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnt)
+STD_ROM_FN(sailormnt)
+
+static struct BurnRomInfo sailormnhRomDesc[] = {
+	{ "bpsm945a.u45", 0x080000, 0x898C9515, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnh)
+STD_ROM_FN(sailormnh)
+
+static struct BurnRomInfo sailormnoRomDesc[] = {
 	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
 
@@ -1069,11 +1197,173 @@ static struct BurnRomInfo sailormoRomDesc[] = {
 
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_OPT },
 };
 
 
-STD_ROM_PICK(sailormo);
-STD_ROM_FN(sailormo);
+STD_ROM_PICK(sailormno)
+STD_ROM_FN(sailormno)
+
+static struct BurnRomInfo sailormnouRomDesc[] = {
+	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnou)
+STD_ROM_FN(sailormnou)
+
+static struct BurnRomInfo sailormnojRomDesc[] = {
+	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnoj)
+STD_ROM_FN(sailormnoj)
+
+static struct BurnRomInfo sailormnokRomDesc[] = {
+	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnok)
+STD_ROM_FN(sailormnok)
+
+static struct BurnRomInfo sailormnotRomDesc[] = {
+	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnot)
+STD_ROM_FN(sailormnot)
+
+static struct BurnRomInfo sailormnohRomDesc[] = {
+	{ "smprg.u45",    0x080000, 0x234F1152, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bpsm.u46",     0x200000, 0x32084E80, BRF_ESS | BRF_PRG }, //  1
+
+	{ "bpsm945a.u9",  0x080000, 0x438DE548, BRF_ESS | BRF_PRG }, //  2 Z80 code
+
+	{ "bpsm.u76",     0x200000, 0xA243A5BA, BRF_GRA },			 //  3 Sprite data
+	{ "bpsm.u77",     0x200000, 0x5179A4AC, BRF_GRA },			 //  4
+
+	{ "bpsm.u53",     0x200000, 0xB9B15F83, BRF_GRA },			 //  5 Layer 0 Tile data
+	{ "bpsm.u54",     0x200000, 0x8F00679D, BRF_GRA },			 //  6 Layer 1 Tile data
+
+	{ "bpsm.u57",     0x200000, 0x86BE7B63, BRF_GRA },			 //  7 Layer 2 Tile data
+	{ "bpsm.u58",     0x200000, 0xE0BBA83B, BRF_GRA },			 //  8
+	{ "bpsm.u62",     0x200000, 0xA1E3BFAC, BRF_GRA },			 //  9
+	{ "bpsm.u61",     0x200000, 0x6A014B52, BRF_GRA },			 // 10
+	{ "bpsm.u60",     0x200000, 0x992468C0, BRF_GRA },			 // 11
+
+	{ "bpsm.u65",     0x200000, 0xF60FB7B5, BRF_GRA },			 // 12
+	{ "bpsm.u64",     0x200000, 0x6559D31C, BRF_GRA },			 // 13
+	{ "bpsm.u63",     0x200000, 0xD57A56B4, BRF_GRA },			 // 14
+
+	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
+	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
+	
+	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_OPT },
+};
+
+
+STD_ROM_PICK(sailormnoh)
+STD_ROM_FN(sailormnoh)
 
 static struct BurnRomInfo agalletRomDesc[] = {
 	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -1089,40 +1379,318 @@ static struct BurnRomInfo agalletRomDesc[] = {
 
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_europe.nv", 0x0080, 0xec38bf65, BRF_OPT },
 };
 
 
-STD_ROM_PICK(agallet);
-STD_ROM_FN(agallet);
+STD_ROM_PICK(agallet)
+STD_ROM_FN(agallet)
 
-struct BurnDriver BurnDrvSailorMoonB = {
-	"sailormn", NULL, NULL, "1995",
-	"Pretty Soldier Sailor Moon (version 95/03/22B)\0", NULL, "BanPresto / Gazelle", "Cave",
-	L"Pretty Soldier Sailor Moon (version 95/03/22B)\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (version 95/03/22B)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
-	NULL, sailormnRomInfo, sailormnRomName, sailormnInputInfo, sailormnDIPInfo,
-	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+static struct BurnRomInfo agalletuRomDesc[] = {
+	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bp962a.u9",    0x080000, 0x06CADDBE, BRF_ESS | BRF_PRG }, //  1 Z80 code
+
+	{ "bp962a.u76",   0x200000, 0x858DA439, BRF_GRA },			 //  2 Sprite data
+	{ "bp962a.u77",   0x200000, 0xEA2BA35E, BRF_GRA },			 //  3
+
+	{ "bp962a.u53",   0x200000, 0xFCD9A107, BRF_GRA },			 //  4 Layer 0 Tile data
+	{ "bp962a.u54",   0x200000, 0x0CFA3409, BRF_GRA },			 //  5 Layer 1 Tile data
+	{ "bp962a.u57",   0x200000, 0x6D608957, BRF_GRA },			 //  6 Layer 2 Tile data
+	{ "bp962a.u65",   0x200000, 0x135FCF9A, BRF_GRA },			 //  7
+
+	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
+	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_usa.nv", 0x0080, 0x72e65056, BRF_OPT },
 };
+
+
+STD_ROM_PICK(agalletu)
+STD_ROM_FN(agalletu)
+
+static struct BurnRomInfo agalletjRomDesc[] = {
+	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bp962a.u9",    0x080000, 0x06CADDBE, BRF_ESS | BRF_PRG }, //  1 Z80 code
+
+	{ "bp962a.u76",   0x200000, 0x858DA439, BRF_GRA },			 //  2 Sprite data
+	{ "bp962a.u77",   0x200000, 0xEA2BA35E, BRF_GRA },			 //  3
+
+	{ "bp962a.u53",   0x200000, 0xFCD9A107, BRF_GRA },			 //  4 Layer 0 Tile data
+	{ "bp962a.u54",   0x200000, 0x0CFA3409, BRF_GRA },			 //  5 Layer 1 Tile data
+	{ "bp962a.u57",   0x200000, 0x6D608957, BRF_GRA },			 //  6 Layer 2 Tile data
+	{ "bp962a.u65",   0x200000, 0x135FCF9A, BRF_GRA },			 //  7
+
+	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
+	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_japan.nv", 0x0080, 0x0753f547, BRF_OPT },
+};
+
+
+STD_ROM_PICK(agalletj)
+STD_ROM_FN(agalletj)
+
+static struct BurnRomInfo agalletkRomDesc[] = {
+	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bp962a.u9",    0x080000, 0x06CADDBE, BRF_ESS | BRF_PRG }, //  1 Z80 code
+
+	{ "bp962a.u76",   0x200000, 0x858DA439, BRF_GRA },			 //  2 Sprite data
+	{ "bp962a.u77",   0x200000, 0xEA2BA35E, BRF_GRA },			 //  3
+
+	{ "bp962a.u53",   0x200000, 0xFCD9A107, BRF_GRA },			 //  4 Layer 0 Tile data
+	{ "bp962a.u54",   0x200000, 0x0CFA3409, BRF_GRA },			 //  5 Layer 1 Tile data
+	{ "bp962a.u57",   0x200000, 0x6D608957, BRF_GRA },			 //  6 Layer 2 Tile data
+	{ "bp962a.u65",   0x200000, 0x135FCF9A, BRF_GRA },			 //  7
+
+	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
+	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_korea.nv", 0x0080, 0x7f41c253, BRF_OPT },
+};
+
+
+STD_ROM_PICK(agalletk)
+STD_ROM_FN(agalletk)
+
+static struct BurnRomInfo agallettRomDesc[] = {
+	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bp962a.u9",    0x080000, 0x06CADDBE, BRF_ESS | BRF_PRG }, //  1 Z80 code
+
+	{ "bp962a.u76",   0x200000, 0x858DA439, BRF_GRA },			 //  2 Sprite data
+	{ "bp962a.u77",   0x200000, 0xEA2BA35E, BRF_GRA },			 //  3
+
+	{ "bp962a.u53",   0x200000, 0xFCD9A107, BRF_GRA },			 //  4 Layer 0 Tile data
+	{ "bp962a.u54",   0x200000, 0x0CFA3409, BRF_GRA },			 //  5 Layer 1 Tile data
+	{ "bp962a.u57",   0x200000, 0x6D608957, BRF_GRA },			 //  6 Layer 2 Tile data
+	{ "bp962a.u65",   0x200000, 0x135FCF9A, BRF_GRA },			 //  7
+
+	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
+	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_taiwan.nv", 0x0080, 0x0af46742, BRF_OPT },
+};
+
+
+STD_ROM_PICK(agallett)
+STD_ROM_FN(agallett)
+
+static struct BurnRomInfo agallethRomDesc[] = {
+	{ "bp962a.u45",   0x080000, 0x24815046, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "bp962a.u9",    0x080000, 0x06CADDBE, BRF_ESS | BRF_PRG }, //  1 Z80 code
+
+	{ "bp962a.u76",   0x200000, 0x858DA439, BRF_GRA },			 //  2 Sprite data
+	{ "bp962a.u77",   0x200000, 0xEA2BA35E, BRF_GRA },			 //  3
+
+	{ "bp962a.u53",   0x200000, 0xFCD9A107, BRF_GRA },			 //  4 Layer 0 Tile data
+	{ "bp962a.u54",   0x200000, 0x0CFA3409, BRF_GRA },			 //  5 Layer 1 Tile data
+	{ "bp962a.u57",   0x200000, 0x6D608957, BRF_GRA },			 //  6 Layer 2 Tile data
+	{ "bp962a.u65",   0x200000, 0x135FCF9A, BRF_GRA },			 //  7
+
+	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
+	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
+	
+	{ "agallet_hongkong.nv", 0x0080, 0x998d1a74, BRF_OPT },
+};
+
+
+STD_ROM_PICK(agalleth)
+STD_ROM_FN(agalleth)
 
 struct BurnDriver BurnDrvSailorMoon = {
-	"sailormo", "sailormn", NULL, "1995",
-	"Pretty Soldier Sailor Moon (version 95/03/22)\0", NULL, "BanPresto / Gazelle", "Cave",
-	L"Pretty Soldier Sailor Moon (version 95/03/22)\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (version 95/03/22)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
-	NULL, sailormoRomInfo, sailormoRomName, sailormnInputInfo, sailormnDIPInfo,
-	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	"sailormn", NULL, NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, Europe)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, Europe)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnRomInfo, sailormnRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonu = {
+	"sailormnu", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, USA)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, USA)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnuRomInfo, sailormnuRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonj = {
+	"sailormnj", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, Japan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, Japan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnjRomInfo, sailormnjRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonk = {
+	"sailormnk", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, Korea)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, Korea)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnkRomInfo, sailormnkRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoont = {
+	"sailormnt", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, Taiwan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, Taiwan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormntRomInfo, sailormntRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonh = {
+	"sailormnh", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22B, Hong Kong)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22B, Hong Kong)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnhRomInfo, sailormnhRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonO = {
+	"sailormno", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, Europe)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, Europe)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnoRomInfo, sailormnoRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonOu = {
+	"sailormnou", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, USA)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, USA)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnouRomInfo, sailormnouRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonOj = {
+	"sailormnoj", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, Japan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, Japan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnojRomInfo, sailormnojRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonOk = {
+	"sailormnok", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, Korea)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, Korea)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnokRomInfo, sailormnokRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonOt = {
+	"sailormnot", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, Taiwan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, Taiwan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnotRomInfo, sailormnotRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSailorMoonOh = {
+	"sailormnoh", "sailormn", NULL,  NULL,"1995",
+	"Pretty Soldier Sailor Moon (ver. 95/03/22, Hong Kong)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Pretty Soldier Sailor Moon\0\u7F8E\u5C11\u5973\u6226\u58EB \u30BB\u30FC\u30E9\u30FC\u30E0\u30FC\u30F3 (ver. 95/03/22, Hong Kong)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, sailormnohRomInfo, sailormnohRomName, NULL, NULL, sailormnInputInfo, NULL,
+	sailormnInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvAirGallet = {
-	"agallet", NULL, NULL, "1996",
-	"Air Gallet\0", NULL, "BanPresto / Gazelle", "Cave",
-	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80,
-	NULL, agalletRomInfo, agalletRomName, sailormnInputInfo, sailormnDIPInfo,
-	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"agallet", NULL, NULL,  NULL,"1996",
+	"Air Gallet (Europe)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (Europe)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agalletRomInfo, agalletRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
+struct BurnDriver BurnDrvAirGalletu = {
+	"agalletu", "agallet", NULL,  NULL,"1996",
+	"Air Gallet (USA)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (USA)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agalletuRomInfo, agalletuRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
+};
 
+struct BurnDriver BurnDrvAirGalletj = {
+	"agalletj", "agallet", NULL,  NULL,"1996",
+	"Air Gallet (Japan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (Japan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agalletjRomInfo, agalletjRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvAirGalletk = {
+	"agalletk", "agallet", NULL,  NULL,"1996",
+	"Air Gallet (Korea)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (Korea)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agalletkRomInfo, agalletkRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvAirGallett = {
+	"agallett", "agallet", NULL,  NULL,"1996",
+	"Air Gallet (Taiwan)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (Taiwan)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agallettRomInfo, agallettRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvAirGalleth = {
+	"agalleth", "agallet", NULL,  NULL,"1996",
+	"Air Gallet (Hong Kong)\0", NULL, "BanPresto / Gazelle", "Cave",
+	L"Air Gallet\0\u30A2\u30EF\u30A6\u30AE\u30E3\u30EC\u30C3\u30C8 (Hong Kong)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_Z80, GBF_VERSHOOT, 0,
+	NULL, agallethRomInfo, agallethRomName, NULL, NULL, sailormnInputInfo, NULL,
+	agalletInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
+};

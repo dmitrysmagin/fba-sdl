@@ -19,12 +19,12 @@ static struct BurnRomInfo drvRomDesc[] = {
 	{ "tp020-4.bin",  0x080000, 0x3EBBE41E, BRF_GRA },			 //  2 GP9001 Tile data
 	{ "tp020-3.bin",  0x080000, 0x2D5E2201, BRF_GRA },			 //  3
 
-//	{"hd647180.020", 0x008000, 0x00000000, 0x10}, //  5 Sound CPU
+	{"hd647180.020", 0x008000, 0x00000000, 0x10 | BRF_NODUMP }, //  4 Sound CPU
 };
 
 
-STD_ROM_PICK(drv);
-STD_ROM_FN(drv);
+STD_ROM_PICK(drv)
+STD_ROM_FN(drv)
 
 static struct BurnInputInfo tekipakiInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -56,7 +56,7 @@ static struct BurnInputInfo tekipakiInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(tekipaki);
+STDINPUTINFO(tekipaki)
 
 static struct BurnDIPInfo tekipakiDIPList[] = {
 	// Defaults
@@ -146,7 +146,7 @@ static struct BurnDIPInfo tekipakiDIPList[] = {
 
 };
 
-STDDIPINFO(tekipaki);
+STDDIPINFO(tekipaki)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -391,7 +391,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -483,12 +483,12 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvTekiPaki = {
-	"tekipaki", NULL, NULL, "1991",
+	"tekipaki", NULL, NULL, NULL, "1991",
 	"Teki Paki\0", "No sound (sound MCU not dumped)", "Toaplan", "Toaplan GP9001 based",
 	L"Teki Paki\0\u6D17\u8133\u30B2\u30FC\u30E0\0", NULL, NULL, NULL,
-	1, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, drvRomInfo, drvRomName, tekipakiInputInfo, tekipakiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	1, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_PUZZLE, 0,
+	NULL, drvRomInfo, drvRomName, NULL, NULL, tekipakiInputInfo, tekipakiDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	320, 240, 4, 3
 };
 

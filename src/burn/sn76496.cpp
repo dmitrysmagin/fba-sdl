@@ -378,16 +378,31 @@ void SN76496Exit()
 {
 	NumChips = 0;
 	
-	free(Chip0);
-	Chip0 = NULL;
-	free(Chip1);
-	Chip0 = NULL;
-	free(Chip2);
-	Chip0 = NULL;
-	free(Chip3);
-	Chip0 = NULL;
-	free(Chip4);
-	Chip0 = NULL;
+	if (Chip0!=NULL)
+	{
+		free(Chip0);
+		Chip0 = NULL;
+	}
+	if (Chip1!=NULL)
+	{
+		free(Chip1);
+		Chip1 = NULL;
+	}
+	if (Chip2!=NULL)
+	{
+		free(Chip2);
+		Chip2 = NULL;
+	}
+	if (Chip3!=NULL)
+	{
+		free(Chip3);
+		Chip3 = NULL;
+	}
+	if (Chip4!=NULL)
+	{
+		free(Chip4);
+		Chip4 = NULL;
+	}
 }
 
 int SN76496Scan(int nAction,int *pnMin)

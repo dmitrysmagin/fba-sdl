@@ -68,7 +68,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip Sw(2)"    , BIT_DIPSWITCH, BjDip + 1  ,	  "dip"      },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo BjDIPList[]=
 {
@@ -131,7 +131,7 @@ static struct BurnDIPInfo BjDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Hard"},
 };
 
-STDDIPINFO(Bj);
+STDDIPINFO(Bj)
 
 // Bomb Jack (set 1)
 static struct BurnRomInfo BombjackRomDesc[] = {
@@ -159,8 +159,8 @@ static struct BurnRomInfo BombjackRomDesc[] = {
 	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },		// sound CPU
 };
 
-STD_ROM_PICK(Bombjack);
-STD_ROM_FN(Bombjack);
+STD_ROM_PICK(Bombjack)
+STD_ROM_FN(Bombjack)
 
 
 // Bomb Jack (set 2)
@@ -189,8 +189,8 @@ static struct BurnRomInfo Bombjac2RomDesc[] = {
 	{ "01_h03t.bin",    0x2000, 0x8407917d, BRF_ESS | BRF_SND },		// sound CPU
 };
 
-STD_ROM_PICK(Bombjac2);
-STD_ROM_FN(Bombjac2);
+STD_ROM_PICK(Bombjac2)
+STD_ROM_FN(Bombjac2)
 
 
 static int DrvDoReset()
@@ -213,6 +213,8 @@ static int DrvDoReset()
 unsigned char __fastcall BjMemRead(unsigned short addr)
 {
 	unsigned char inputs=0;
+	
+	if (addr >= 0x9820 && addr <= 0x987f) return BjSprRam[addr - 0x9820];
 
 	if (addr==0xb000) {
 		if (DrvJoy1[5])
@@ -262,6 +264,8 @@ unsigned char __fastcall BjMemRead(unsigned short addr)
 
 void __fastcall BjMemWrite(unsigned short addr,unsigned char val)
 {
+	if (addr >= 0x9820 && addr <= 0x987f) { BjSprRam[addr - 0x9820] = val; return; }
+	
 	if (addr==0xb000)
 	{
 		bombjackIRQ = val;
@@ -344,8 +348,8 @@ int BjZInit()
 	ZetMapArea    (0x9400,0x97ff,0,BjColRam);
 	ZetMapArea    (0x9400,0x97ff,1,BjColRam);
 
-	ZetMapArea    (0x9820,0x987f,0,BjSprRam);
-	ZetMapArea    (0x9820,0x987f,1,BjSprRam);
+//	ZetMapArea    (0x9820,0x987f,0,BjSprRam);
+//	ZetMapArea    (0x9820,0x987f,1,BjSprRam);
 
 	ZetMapArea    (0x9c00,0x9cff,0,BjPalSrc);
 	ZetMapArea    (0x9c00,0x9cff,1,BjPalSrc);
@@ -949,21 +953,21 @@ static int BjScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvBombjack = {
-	"bombjack", NULL, NULL, "1984",
+	"bombjack", NULL, NULL, NULL, "1984",
 	"Bomb Jack (set 1)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S,
-	NULL,BombjackRomInfo,BombjackRomName,DrvInputInfo,BjDIPInfo,
+	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL,BombjackRomInfo,BombjackRomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
-	NULL,224,256,3,4
+	0, NULL, NULL, NULL, NULL,0x80,224,256,3,4
 };
 
 struct BurnDriver BurnDrvBombjac2 = {
-	"bombjac2", "bombjack", NULL, "1984",
+	"bombjack2", "bombjack", NULL, NULL, "1984",
 	"Bomb Jack (set 2)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
-	NULL,Bombjac2RomInfo,Bombjac2RomName,DrvInputInfo,BjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL,Bombjac2RomInfo,Bombjac2RomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
-	NULL,224,256,3,4
+	0, NULL, NULL, NULL, NULL,0x80,224,256,3,4
 };

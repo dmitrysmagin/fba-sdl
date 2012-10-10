@@ -36,7 +36,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips+1,	"dip"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
@@ -71,7 +71,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x0a, 0x01, 0x30, 0x00, "Hardest"     		  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 void __fastcall mrflea_write(unsigned short a, unsigned char d)
 {
@@ -637,16 +637,16 @@ static struct BurnRomInfo mrfleaRomDesc[] = {
 	{ "vd_l4",	0x2000, 0x423735a5, 4 | BRF_GRA },	     // 24
 };
 
-STD_ROM_PICK(mrflea);
-STD_ROM_FN(mrflea);
+STD_ROM_PICK(mrflea)
+STD_ROM_FN(mrflea)
 
 struct BurnDriver BurnDrvmrflea = {
-	"mrflea", NULL, NULL, "1982",
+	"mrflea", NULL, NULL, NULL, "1982",
 	"The Amazing Adventures of Mr. F. Lea\0", NULL, "Pacific Novelty", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 1, HARDWARE_MISC_PRE90S,
-	NULL, mrfleaRomInfo, mrfleaRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 1, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL, mrfleaRomInfo, mrfleaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x80,
 	248, 256, 3, 4
 };
 

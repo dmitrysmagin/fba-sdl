@@ -158,6 +158,10 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (!kNetGame && bAutoPause) {
 			bRunPause = 1;
 		}
+		
+		WndInMid(hDlg, hScrnWnd);
+		SetFocus(hDlg);											// Enable Esc=close
+		
 		return TRUE;
 	}
 
@@ -224,6 +228,23 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			}
 			return 0;
 		}
+		
+		if (Id == IDC_INPCHEAT_LIST && ((pnm->code == NM_DBLCLK) || (pnm->code == NM_RDBLCLK))) {
+			// Select the next item of the currently selected one.
+			int nSel_Dbl = SendMessage(GetDlgItem(hInpCheatDlg, IDC_INPCX1_VALUE), CB_GETCURSEL, 0, 0);
+			int nCount = SendMessage(GetDlgItem(hInpCheatDlg, IDC_INPCX1_VALUE), CB_GETCOUNT, 0, 0);
+			if ((nSel_Dbl != LB_ERR) && (nCount > 1)) {
+				if (pnm->code == NM_DBLCLK) {
+					if (++nSel_Dbl >= nCount) nSel_Dbl = 0;
+				} else {
+					if (--nSel_Dbl < 0) nSel_Dbl = nCount - 1;
+				}
+				SendMessage(GetDlgItem(hInpCheatDlg, IDC_INPCX1_VALUE), CB_SETCURSEL, nSel_Dbl, 0);
+				CheatEnable(nCurrentCheat, nSel_Dbl);
+				InpCheatListMake();
+			}
+			return 0;
+		}
 	}
 
 	return 0;
@@ -237,15 +258,17 @@ int InpCheatCreate()
 
 	bOK = false;
 
-	DestroyWindow(hInpCheatDlg);							// Make sure exitted
+//	DestroyWindow(hInpCheatDlg);							// Make sure exitted
 
-	hInpCheatDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPCHEAT), hScrnWnd, DialogProc);
-	if (hInpCheatDlg == NULL) {
-		return 1;
-	}
+//	hInpCheatDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPCHEAT), hScrnWnd, DialogProc);
+//	if (hInpCheatDlg == NULL) {
+//		return 1;
+//	}
 
-	WndInMid(hInpCheatDlg, hScrnWnd);
-	ShowWindow(hInpCheatDlg, SW_NORMAL);
+//	WndInMid(hInpCheatDlg, hScrnWnd);
+//	ShowWindow(hInpCheatDlg, SW_NORMAL);
+
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPCHEAT), hScrnWnd, DialogProc);
 
 	return 0;
 }

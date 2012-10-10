@@ -2,6 +2,8 @@
 #include "burner.h"
 #include "aud_dsp.h"
 #include <math.h>
+
+#include <InitGuid.h>
 #define DIRECTSOUND_VERSION  0x0300			// Only need version from DirectX 3
 #include <dsound.h>
 
@@ -28,7 +30,7 @@ static int DSoundGetNextSoundFiller(int)							// int bDraw
 	return 0;
 }
 
-static int DxSetCallback(int (*pCallback)(int))
+static inline int DxSetCallback(int (*pCallback)(int))
 {
 	if (pCallback == NULL) {
 		DSoundGetNextSound = DSoundGetNextSoundFiller;
@@ -65,6 +67,8 @@ static int nDSoundNextSeg = 0;										// We have filled the sound in the loop 
 
 #define WRAP_INC(x) { x++; if (x >= nAudSegCount) x = 0; }
 
+bool bRunFrame = false;
+
 // This function checks the DSound loop, and if necessary does a callback to update the emulation
 static int DxSoundCheck()
 {
@@ -88,8 +92,8 @@ static int DxSoundCheck()
 	}
 
 	if (nDSoundNextSeg == nPlaySeg) {
-		Sleep(2);													// Don't need to do anything for a bit
-
+		//Sleep(2);													// Don't need to do anything for a bit
+		//bRunFrame = true;
 		return 0;
 	}
 
@@ -113,11 +117,18 @@ static int DxSoundCheck()
 			pdsbLoop->Unlock(pData, cbLen, pData2, 0);
 		}
 
-		bDraw = (nFollowingSeg == nPlaySeg)	|| bAlwaysDrawFrames;	// If this is the last seg of sound, flag bDraw (to draw the graphics)
+		bDraw = (nFollowingSeg == nPlaySeg)	/*|| bAlwaysDrawFrames*/;	// If this is the last seg of sound, flag bDraw (to draw the graphics)
 
-		DSoundGetNextSound(bDraw);									// get more sound into nAudNextSound
+		if(bDraw) {
+			DSoundGetNextSound(bDraw);									// get more sound into nAudNextSound
+		}
 
-		if (nAudDSPModule)	{
+		if(!bDraw) {
+			bRunFrame = true;
+			RunIdle();
+		}
+
+		if (nAudDSPModule[0])	{
 			DspDo(nAudNextSound, nAudSegLen);
 		}
 
@@ -160,7 +171,7 @@ static int DxSoundInit()
 	nDSoundFps = nAppVirtualFps;
 
 	// Calculate the Seg Length and Loop length (round to nearest sample)
-	nAudSegLen = (nAudSampleRate * 100 + (nDSoundFps >> 1)) / nDSoundFps;
+	nAudSegLen = (nAudSampleRate[0] * 100 + (nDSoundFps >> 1)) / nDSoundFps;
 	cbLoopLen = (nAudSegLen * nAudSegCount) << 2;
 
 	// Make the format of the sound
@@ -168,7 +179,7 @@ static int DxSoundInit()
 	wfx.cbSize = sizeof(wfx);
 	wfx.wFormatTag = WAVE_FORMAT_PCM;
 	wfx.nChannels = 2;										  // stereo
-	wfx.nSamplesPerSec = nAudSampleRate;					  // sample rate
+	wfx.nSamplesPerSec = nAudSampleRate[0];					  // sample rate
 	wfx.wBitsPerSample = 16;								  // 16-bit
 	wfx.nBlockAlign = 4;									  // bytes per sample
 	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
@@ -192,12 +203,12 @@ static int DxSoundInit()
 
 	{
 		// Set the format of the primary sound buffer (not critical if it fails)
-		if (nAudSampleRate < 44100) {
+		if (nAudSampleRate[0] < 44100) {
 			wfx.nSamplesPerSec = 44100;
 		}
 		pdsbPrim->SetFormat(&wfx);
 
-		wfx.nSamplesPerSec = nAudSampleRate;
+		wfx.nSamplesPerSec = nAudSampleRate[0];
 	}
 
 	// Make the loop sound buffer

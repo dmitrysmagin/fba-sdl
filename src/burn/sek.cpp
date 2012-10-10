@@ -7,7 +7,7 @@ int nSekM68KContextSize[SEK_MAX];
 char* SekM68KContext[SEK_MAX];
 #endif
 
-static int nSekCount = -1;							// Number of allocated 68000s
+int nSekCount = -1;							// Number of allocated 68000s
 struct SekExt *SekExt[SEK_MAX] = { NULL, }, *pSekExt = NULL;
 
 int nSekActive = -1;								// The cpu which is currently being emulated
@@ -145,42 +145,42 @@ void __fastcall DefWriteByte(unsigned int, unsigned char) { }
 	unsigned int __fastcall DefReadLong##i(unsigned int a) { SEK_DEF_READ_LONG(i, a) }					\
 	void __fastcall DefWriteLong##i(unsigned int a, unsigned int d) { SEK_DEF_WRITE_LONG(i, a , d) }
 
-DEFWORDHANDLERS(0);
-DEFLONGHANDLERS(0);
+DEFWORDHANDLERS(0)
+DEFLONGHANDLERS(0)
 
 #if SEK_MAXHANDLER >= 2
- DEFWORDHANDLERS(1);
- DEFLONGHANDLERS(1);
+ DEFWORDHANDLERS(1)
+ DEFLONGHANDLERS(1)
 #endif
 
 #if SEK_MAXHANDLER >= 3
- DEFWORDHANDLERS(2);
- DEFLONGHANDLERS(2);
+ DEFWORDHANDLERS(2)
+ DEFLONGHANDLERS(2)
 #endif
 
 #if SEK_MAXHANDLER >= 4
- DEFWORDHANDLERS(3);
- DEFLONGHANDLERS(3);
+ DEFWORDHANDLERS(3)
+ DEFLONGHANDLERS(3)
 #endif
 
 #if SEK_MAXHANDLER >= 5
- DEFWORDHANDLERS(4);
- DEFLONGHANDLERS(4);
+ DEFWORDHANDLERS(4)
+ DEFLONGHANDLERS(4)
 #endif
 
 #if SEK_MAXHANDLER >= 6
- DEFWORDHANDLERS(5);
- DEFLONGHANDLERS(5);
+ DEFWORDHANDLERS(5)
+ DEFLONGHANDLERS(5)
 #endif
 
 #if SEK_MAXHANDLER >= 7
- DEFWORDHANDLERS(6);
- DEFLONGHANDLERS(6);
+ DEFWORDHANDLERS(6)
+ DEFLONGHANDLERS(6)
 #endif
 
 #if SEK_MAXHANDLER >= 8
- DEFWORDHANDLERS(7);
- DEFLONGHANDLERS(7);
+ DEFWORDHANDLERS(7)
+ DEFLONGHANDLERS(7)
 #endif
 
 // ----------------------------------------------------------------------------
@@ -599,6 +599,7 @@ void __fastcall M68KWriteLong(unsigned int a, unsigned int d) { WriteLong(a, d);
 }
 #endif
 
+#if defined EMU_A68K
 struct A68KInter a68k_inter_normal = {
 	NULL,
 	A68KRead8,
@@ -632,6 +633,8 @@ struct A68KInter a68k_inter_breakpoint = {
 	A68KRead16,	// unused
 	A68KRead32,	// unused
 };
+
+#endif
 
 #endif
 
@@ -827,6 +830,10 @@ int SekInit(int nCount, int nCPUType)
 {
 	struct SekExt* ps = NULL;
 
+#if !defined BUILD_A68K
+	bBurnUseASMCPUEmulation = false;
+#endif
+
 	if (nSekActive >= 0) {
 		SekClose();
 		nSekActive = -1;
@@ -945,6 +952,8 @@ int SekInit(int nCount, int nCPUType)
 	nSekCyclesTotal = 0;
 	nSekCyclesScanline = 0;
 
+	CpuCheatRegister(0x0000, nCount);
+
 	return 0;
 }
 
@@ -1062,6 +1071,12 @@ void SekClose()
 #endif
 
 	nSekCycles[nSekActive] = nSekCyclesTotal;
+}
+
+// Get the current CPU
+int SekGetActive()
+{
+	return nSekActive;
 }
 
 // Set the status of an IRQ line on the active CPU
@@ -1520,7 +1535,11 @@ int SekSetWriteLongHandler(int i, pSekWriteLongHandler pHandler)
 // ----------------------------------------------------------------------------
 // Query register values
 
+#ifdef EMU_A68K
 int SekGetPC(int n)
+#else
+int SekGetPC(int)
+#endif
 {
 
 #ifdef EMU_A68K
@@ -1567,6 +1586,7 @@ int SekDbgGetPendingIRQ()
 
 unsigned int SekDbgGetRegister(SekRegister nRegister)
 {
+#if defined EMU_A68K
 	if (nSekCPUType[nSekActive] == 0) {
 		switch (nRegister) {
 			case SEK_REG_D0:
@@ -1620,6 +1640,7 @@ unsigned int SekDbgGetRegister(SekRegister nRegister)
 				return 0;
 		}
 	}
+#endif
 
 	switch (nRegister) {
 		case SEK_REG_D0:
@@ -1714,8 +1735,10 @@ bool SekDbgSetRegister(SekRegister nRegister, unsigned int nValue)
 
 		case SEK_REG_PC:
 			if (nSekCPUType[nSekActive] == 0) {
+#if defined EMU_A68K
 				M68000_regs.pc = nValue;
 				A68KChangePC(M68000_regs.pc);
+#endif
 			} else {
 				m68k_set_reg(M68K_REG_PC, nValue);
 			}
@@ -1767,7 +1790,9 @@ int SekScan(int nAction)
 
 	for (int i = 0; i <= nSekCount; i++) {
 		char szName[] = "MC68000 #n";
+#if defined EMU_A68K && defined EMU_M68K
 		int nType = nSekCPUType[i];
+#endif
 
 		szName[9] = '0' + i;
 

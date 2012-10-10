@@ -9,7 +9,7 @@ static bool bSaveRAM = false;
 
 static int DoLibInit()					// Do Init of Burn library driver
 {
-	int nRet;
+	int nRet = 0;
 
 	BzipOpen(FALSE);
 
@@ -43,7 +43,11 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	ProgressCreate();
 
-	nRet = BurnDrvInit();
+	if (bJukeboxInUse) {
+		nRet = BurnJukeboxInit();
+	} else {
+		nRet = BurnDrvInit();
+	}
 
 	BzipClose();
 
@@ -84,7 +88,7 @@ static int __cdecl DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 int DrvInit(int nDrvNum, bool bRestore)
 {
 	int nStatus;
-
+	
 	DrvExit();						// Make sure exitted
 	MediaExit();
 
@@ -96,9 +100,10 @@ int DrvInit(int nDrvNum, bool bRestore)
 	nMaxPlayers = BurnDrvGetMaxPlayers();
 	GameInpInit();					// Init game input
 
-	ConfigGameLoad(true);
+	if(ConfigGameLoad(true)) {
+		ConfigGameLoadHardwareDefaults();
+	}	
 	InputMake(true);
-
 	GameInpDefault();
 
 	if (kNetGame) {
@@ -122,12 +127,26 @@ int DrvInit(int nDrvNum, bool bRestore)
 
 	BurnExtLoadRom = DrvLoadRom;
 
-	bDrvOkay = 1;					// Okay to use all BurnDrv functions
+	bDrvOkay = 1;						// Okay to use all BurnDrv functions
+
+	if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+		nScreenSize = nScreenSizeVer;
+		bVidArcaderes = bVidArcaderesVer;
+		nVidWidth	= nVidVerWidth;
+		nVidHeight	= nVidVerHeight;
+	} else {
+		nScreenSize = nScreenSizeHor;
+		bVidArcaderes = bVidArcaderesHor;
+		nVidWidth	= nVidHorWidth;
+		nVidHeight	= nVidHorHeight;
+	}
+
+	UpdatePlayCounter(nBurnDrvSelect);	// Update favorites play count
 
 	bSaveRAM = false;
 	if (kNetGame) {
-//		KailleraInitInput();
-//		KailleraGetInput();
+		KailleraInitInput();
+		KailleraGetInput();
 	} else {
 		if (bRestore) {
 			StatedAuto(0);
@@ -138,7 +157,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	}
 
 	nBurnLayer = 0xFF;				// show all layers
-
+	
 	// Reset the speed throttling code, so we don't 'jump' after the load
 	RunReset();
 
@@ -156,7 +175,6 @@ int DrvInitCallback()
 int DrvExit()
 {
 	if (bDrvOkay) {
-
 		StopReplay();
 
 		VidExit();
@@ -169,18 +187,26 @@ int DrvExit()
 		DestroyWindow(hInpCheatDlg);	// Make sure the Cheat Dialog is exited
 
 		if (nBurnDrvSelect < nBurnDrvCount) {
+			
+			if(!bJukeboxInUse) 
+			{
+				MemCardEject();				// Eject memory card if present
 
-			MemCardEject();				// Eject memory card if present
+				if (bSaveRAM) {
+					StatedAuto(1);			// Save NV (or full) RAM
+					bSaveRAM = false;
+				}
 
-			if (bSaveRAM) {
-				StatedAuto(1);			// Save NV (or full) RAM
-				bSaveRAM = false;
+				ConfigGameSave(bSaveInputs);
 			}
 
-			ConfigGameSave(bSaveInputs);
-
 			GameInpExit();				// Exit game input
-			BurnDrvExit();				// Exit the driver
+			
+			if (bJukeboxInUse) {
+				BurnJukeboxExit();
+			} else {
+				BurnDrvExit();				// Exit the driver
+			}
 		}
 	}
 

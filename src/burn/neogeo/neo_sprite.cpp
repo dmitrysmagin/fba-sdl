@@ -1,5 +1,7 @@
 #include "neogeo.h"
 
+int nNeoScreenWidth;
+
 unsigned char* NeoSpriteROM;
 unsigned char* NeoZoomROM;
 

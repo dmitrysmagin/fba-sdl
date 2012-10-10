@@ -37,8 +37,13 @@
 #define HANDLE_WM_ENTERMENULOOP(hwnd, wParam, lParam, fn)		\
     ((fn)((hwnd), (BOOL)(wParam)), 0L)
 
+#ifdef __GNUC__
+#define HANDLE_WM_EXITMENULOOP(hwnd, wParam, lParam, fn)		\
+    ((fn)((hwnd), (BOOL)(wParam)))
+#else
 #define HANDLE_WM_EXITMENULOOP(hwnd, wParam, lParam, fn)		\
     ((fn)((hwnd), (BOOL)(wParam)), 0L)
+#endif
 
 #define HANDLE_WM_ENTERSIZEMOVE(hwnd, wParam, lParam, fn)		\
     ((fn)(hwnd), 0L)
@@ -51,9 +56,9 @@
 
 // Extra macro used for handling Window Messages
 #define HANDLE_MSGB(hwnd, message, fn)							\
-    case (message):												\
-         HANDLE_##message((hwnd), (wParam), (lParam), (fn));	\
-		 break;
+    case (message): 												\
+         HANDLE_##message((hwnd), (wParam), (lParam), (fn)); \
+         break;
 
 // Macro used for re-initialiging video/sound/input
 // #define POST_INITIALISE_MESSAGE { dprintf(_T("*** (re-) initialising - %s %i\n"), _T(__FILE__), __LINE__); PostMessage(NULL, WM_APP + 0, 0, 0); }
@@ -79,6 +84,9 @@ extern TCHAR szAppBurnVer[16];
 extern bool bCmdOptUsed;
 extern bool bAlwaysProcessKeyboardInput;
 
+extern bool bNoChangeNumLock;
+extern bool bMonitorAutoCheck;
+
 // Used for the load/save dialog in commdlg.h
 extern TCHAR szChoice[MAX_PATH];					// File chosen by the user
 extern OPENFILENAME ofn;
@@ -87,7 +95,23 @@ extern OPENFILENAME ofn;
 /* const */ char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
 /* const */ TCHAR* ANSIToTCHAR(const char* pszString, TCHAR* pszOutString, int nOutSize);
 
+CHAR *astring_from_utf8(const char *s);
+char *utf8_from_astring(const CHAR *s);
+
+WCHAR *wstring_from_utf8(const char *s);
+char *utf8_from_wstring(const WCHAR *s);
+
+#ifdef _UNICODE
+#define tstring_from_utf8 wstring_from_utf8
+#define utf8_from_tstring utf8_from_wstring
+#else // !_UNICODE
+#define tstring_from_utf8 astring_from_utf8
+#define utf8_from_tstring utf8_from_astring
+#endif // _UNICODE
+
 int dprintf(TCHAR* pszFormat, ...);					// Use instead of printf() in the UI
+
+void MonitorAutoCheck();
 
 void AppCleanup();
 int AppMessage(MSG* pMsg);
@@ -143,6 +167,8 @@ int MediaInit();
 int MediaExit();
 
 // misc_win32.cpp
+extern bool bIsWindowsXPorGreater; 
+BOOL DetectWindowsVersion();
 int AppDirectory();
 void RegisterExtensions(bool bCreateKeys);
 int GetClientScreenRect(HWND hWnd, RECT* pRect);
@@ -167,6 +193,14 @@ int RunMessageLoop();
 int RunReset();
 void ToggleLayer(unsigned char thisLayer);
 
+// mdi.cpp
+#define ID_MDI_START_CHILD		2990
+extern HWND hWndChildFrame;
+extern HWND hVideoWindow;
+BOOL RegNewMDIChild();
+int InitBurnerMDI(HWND hParentWnd);
+void DestroyBurnerMDI(int nAction);
+
 // scrn.cpp
 extern HWND hScrnWnd;								// Handle to the screen window
 extern HWND hRebar;									// Handle to the Rebar control containing the menu
@@ -179,6 +213,8 @@ extern int nWindowPosX, nWindowPosY;
 
 extern int nSavestateSlot;
 
+extern TCHAR szMenuBackground[MAX_PATH];
+
 int ScrnInit();
 int ScrnExit();
 int ScrnSize();
@@ -186,6 +222,7 @@ int ScrnTitle();
 void SetPauseMode(bool bPause);
 int ActivateChat();
 void DeActivateChat();
+
 
 // menu.cpp
 #define UM_DISPLAYPOPUP (WM_USER + 0x0100)
@@ -202,7 +239,13 @@ extern HMENU hMenuPopup;							// Handle to a popup version of the menu
 extern int nMenuHeight;
 extern int bAutoPause;
 extern int nScreenSize;
+extern int nScreenSizeHor;	// For horizontal orientation
+extern int nScreenSizeVer;	// For vertical orientation
 extern int nWindowSize;
+extern int nMenuUITheme;
+
+#define SHOW_PREV_GAMES		10
+extern TCHAR szPrevGames[SHOW_PREV_GAMES][32];
 
 extern bool bModelessMenu;
 
@@ -213,16 +256,38 @@ void MenuUpdate();
 void CreateArcaderesItem();
 void MenuEnableItems();
 bool MenuHandleKeyboard(MSG*);
+void MenuRemoveTheme();
 
 // sel.cpp
 extern int nLoadMenuShowX;
-int SelDialog();									// Choose a Burn driver
+extern int nLoadMenuBoardTypeFilter;
+extern int nLoadMenuGenreFilter;
+extern int nLoadMenuFamilyFilter;
+int SelDialog(int nMVSCartsOnly, HWND hParentWND);
+extern bool bGameInfoOpen;
+extern bool bReset;
+extern UINT_PTR nTimer;
+extern HBITMAP hPrevBmp;
+extern int nDialogSelect;
+extern bool bMVSMultiSlot;
+void LoadDrvIcons();
+void UnloadDrvIcons();
+#define		ICON_16x16			0
+#define		ICON_24x24			1
+#define		ICON_32x32			2
+extern bool bEnableIcons;
+extern bool bIconsLoaded;
+extern int nIconsSize, nIconsSizeXY, nIconsYDiff;
+void CreateToolTipForRect(HWND hwndParent, PTSTR pszText);
 
 // cona.cpp
 extern int nIniVersion;
 
 struct VidPresetData { int nWidth; int nHeight; };
 extern struct VidPresetData VidPreset[4];
+
+struct VidPresetDataVer { int nWidth; int nHeight; };
+extern struct VidPresetDataVer VidPresetVer[4];
 
 int ConfigAppLoad();
 int ConfigAppSave();
@@ -287,12 +352,39 @@ int SFactdCreate();
 // roms.cpp
 extern char* gameAv;
 extern bool avOk;
-int RomsDirCreate();
-int CreateROMInfo();
+int RomsDirCreate(HWND hParentWND);
+int CreateROMInfo(HWND hParentWND);
 void FreeROMInfo();
 
+// support_paths.cpp
+extern TCHAR szAppPreviewsPath[MAX_PATH];
+extern TCHAR szAppTitlesPath[MAX_PATH];
+extern TCHAR szAppSelectPath[MAX_PATH];
+extern TCHAR szAppVersusPath[MAX_PATH];
+extern TCHAR szAppHowtoPath[MAX_PATH];
+extern TCHAR szAppScoresPath[MAX_PATH];
+extern TCHAR szAppBossesPath[MAX_PATH];
+extern TCHAR szAppGameoverPath[MAX_PATH];
+extern TCHAR szAppFlyersPath[MAX_PATH];
+extern TCHAR szAppMarqueesPath[MAX_PATH];
+extern TCHAR szAppControlsPath[MAX_PATH];
+extern TCHAR szAppCabinetsPath[MAX_PATH];
+extern TCHAR szAppPCBsPath[MAX_PATH];
+extern TCHAR szAppCheatsPath[MAX_PATH];
+extern TCHAR szAppHistoryPath[MAX_PATH];
+extern TCHAR szAppListsPath[MAX_PATH];
+extern TCHAR szAppDatListsPath[MAX_PATH];
+extern TCHAR szAppIpsPath[MAX_PATH];
+extern TCHAR szAppIconsPath[MAX_PATH];
+extern TCHAR szAppArchivesPath[MAX_PATH];
+int SupportDirCreate();
+
 // res.cpp
-int ResCreate();
+int ResCreate(int);
+
+// fba_kaillera.cpp
+int KailleraInitInput();
+int KailleraGetInput();
 
 // replay.cpp
 extern int nReplayStatus;
@@ -325,3 +417,110 @@ extern HWND hDbgDlg;
 int DebugExit();
 int DebugCreate();
 
+// Game info
+int GameInfoDialogCreate(HWND hParentWND, int nDrvSelected);
+extern HBITMAP hGiBmp;
+
+// jukebox.cpp
+extern bool bJukeboxInUse;
+extern bool bJukeboxDisplayed;
+int JukeboxDialogCreate();
+
+// placeholderd.cpp
+int SelectPlaceHolder();
+void ResetPlaceHolder();
+
+// ips_manager.cpp
+extern int nSelectedLanguage;
+int GetNumActivePatches();
+void LoadActivePatches();
+int GetNumPatches();
+int IpsManagerCreate(HWND hParentWND);
+void PatchExit();
+
+// localise_gamelist.cpp
+int SelectGameListLocalisationTemplate();
+int ExportGameListLocalisationTemplate();
+
+// ngslotd.cpp
+int NeogeoSlotSelectCreate(HWND hParentWND);
+
+// paletteviewer.cpp
+int PaletteViewerDialogCreate(HWND hParentWND);
+
+// favorites.cpp
+#define FAV_DRV_NAME		0
+#define FAV_DRV_TITLE		1
+#define FAV_DRV_HARDWARE	2
+#define FAV_DRV_YEAR		3
+#define FAV_DRV_COMPANY		4
+#define FAV_DRV_MAXPLAYERS	5
+#define FAV_DRV_NUMBER		6
+#define FAV_DRV_PLAYCOUNTER	7
+#define LV_MAX_COLS			7
+extern HWND	hSelDlgTabControl;
+extern HWND	hFavListView;		
+extern bool	bFavSelected;
+extern int	nListViewColumnIndex;
+extern bool	bListViewAscendingOrder;
+extern int nFavDrvCount;
+void InsertTabs();
+void SelDlgDisplayControls(int);
+int	CALLBACK ListView_CompareFunc(LPARAM, LPARAM, LPARAM);
+BOOL IsCommCtrlVersion6();
+void ListView_SetHeaderSortImage(HWND, int, bool);
+void RefreshFavGameList();
+void SetFavListRow(int, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*);
+void SetFavListViewContent();
+TCHAR* FavDrvGetContent(int, int);
+int ParseFavListDat();
+int SaveFavListAlt(HWND, FILE*, TCHAR*, int , int);
+void InitFavGameList();
+int FavDrvGetValue(int, int);
+void FavDrvSetContent(int, int, TCHAR*, int);
+void UpdatePlayCounter(int);
+void AddToFavorites();
+void RemoveFromFavorites();
+struct FAVORITESINFO {
+	TCHAR szDrvName[32];
+	TCHAR szDrvTitle[2048];
+	TCHAR szDrvHardware[64];
+	TCHAR szDrvYear[5];
+	TCHAR szDrvCompany[32];
+	TCHAR szDrvMaxPlayers[5];
+	int nDrvPlayCount;
+	unsigned int nDrvNumber;
+};
+void SetFavoritesIcons();
+
+// pngload.cpp
+extern char szSupportArchive[13][MAX_PATH];
+int CheckFile(TCHAR* szName, TCHAR* szPath, TCHAR* szExt);
+int CheckZipFile(TCHAR* szName, TCHAR* szPath, TCHAR* szExt);
+HBITMAP PNGtoBMP(HWND hWnd, char* szPath, char* szDrvName, int nLoadMethod, int nMaxW, int nMaxWY);
+HBITMAP PNGtoBMP_Simple(HWND hWnd, char* szPath);
+void UpdatePreview(bool bPrevReset, HWND hDlg, TCHAR* szPreviewDir); 
+
+// bmp_resize.cpp
+#define FBA_LM_FILE			0
+#define FBA_LM_ZIP_BUFF		1
+HBITMAP ScaleBitmap(HBITMAP, WORD, WORD);
+
+// Misc
+#define _TtoA(a)	TCHARToANSI(a, NULL, 0)
+#define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
+int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
+
+// import.cpp
+int ImporterDlgCreate(int);
+void ImportPackage(int nPackage);
+
+#define PROC_IMPORTSUPPORTFILES		0
+#define PROC_IMPORT_CHECKDISKSPACE	1
+
+int ImportProcessStart(int nProcID, HWND hProcWnd);
+
+// numpluscommas.cpp
+TCHAR* FormatCommasNumber(__int64);
+#define _uInt64ToCommaFormattedTCHAR(szOUT, nIN)	\
+	_stprintf(szOUT, _T("%s"), FormatCommasNumber(nIN));

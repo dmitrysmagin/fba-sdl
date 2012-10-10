@@ -18,8 +18,8 @@ static bool bEnableInterrupts;
 
 // Rom information
 static struct BurnRomInfo outzoneRomDesc[] = {
-	{ "tp018_7.bin",     0x020000, 0x0c2ac02d, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "tp018_8.bin",     0x020000, 0xca7e48aa, BRF_ESS | BRF_PRG }, //  1
+	{ "tp018_7.bin",  0x020000, 0x0c2ac02d, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp018_8.bin",  0x020000, 0xca7e48aa, BRF_ESS | BRF_PRG }, //  1
 
 	{ "rom5.bin",     0x080000, 0xC64EC7B6, BRF_GRA },			 //  2 Tile data
 	{ "rom6.bin",     0x080000, 0x64B6C5AC, BRF_GRA },			 //  3
@@ -36,8 +36,8 @@ static struct BurnRomInfo outzoneRomDesc[] = {
 };
 
 
-STD_ROM_PICK(outzone);
-STD_ROM_FN(outzone);
+STD_ROM_PICK(outzone)
+STD_ROM_FN(outzone)
 
 static struct BurnRomInfo outzonebRomDesc[] = {
 	{ "rom7.bin",     0x020000, 0x936E25D8, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -58,8 +58,8 @@ static struct BurnRomInfo outzonebRomDesc[] = {
 };
 
 
-STD_ROM_PICK(outzoneb);
-STD_ROM_FN(outzoneb);
+STD_ROM_PICK(outzoneb)
+STD_ROM_FN(outzoneb)
 
 static struct BurnRomInfo outzoneaRomDesc[] = {
 	{ "18.bin",       0x020000, 0x31A171BB, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -80,8 +80,8 @@ static struct BurnRomInfo outzoneaRomDesc[] = {
 };
 
 
-STD_ROM_PICK(outzonea);
-STD_ROM_FN(outzonea);
+STD_ROM_PICK(outzonea)
+STD_ROM_FN(outzonea)
 
 static struct BurnRomInfo outzonecRomDesc[] = {
 	{ "prg1.bin",       0x020000, 0x127a38d7, BRF_ESS | BRF_PRG }, //  1
@@ -102,8 +102,30 @@ static struct BurnRomInfo outzonecRomDesc[] = {
 };
 
 
-STD_ROM_PICK(outzonec);
-STD_ROM_FN(outzonec);
+STD_ROM_PICK(outzonec)
+STD_ROM_FN(outzonec)
+
+static struct BurnRomInfo outzonedRomDesc[] = {
+	{ "tp07.bin",     0x020000, 0xa85a1d48, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp08.bin",     0x020000, 0xd8cc44af, BRF_ESS | BRF_PRG }, //  1
+
+	{ "rom5.bin",     0x080000, 0xC64EC7B6, BRF_GRA },			 //  2 Tile data
+	{ "rom6.bin",     0x080000, 0x64B6C5AC, BRF_GRA },			 //  3
+
+	{ "rom2.bin",     0x020000, 0x6BB72D16, BRF_GRA },			 //  4
+	{ "rom1.bin",     0x020000, 0x0934782D, BRF_GRA },			 //  5
+	{ "rom3.bin",     0x020000, 0xEC903C07, BRF_GRA },			 //  6
+	{ "rom4.bin",     0x020000, 0x50CBF1A8, BRF_GRA },			 //  7
+
+	{ "tp09.bin",     0x008000, 0xdd56041f, BRF_ESS | BRF_PRG }, //  8 Z80 program
+
+	{ "tp018_10.bpr", 0x000020, 0xBC88CCED, BRF_SND },			 //  9 Sprite attribute PROM
+	{ "tp018_11.bpr", 0x000020, 0xA1E17492, BRF_SND },			 // 10 ???
+};
+
+
+STD_ROM_PICK(outzoned)
+STD_ROM_FN(outzoned)
 
 static struct BurnInputInfo outzoneInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -135,7 +157,7 @@ static struct BurnInputInfo outzoneInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(outzone);
+STDINPUTINFO(outzone)
 
 static struct BurnDIPInfo outzoneDIPList[] = {
 	// Defaults
@@ -157,7 +179,7 @@ static struct BurnDIPInfo outzoneDIPList[] = {
 	// Coinage for Europe
 	{0x14,	0x01, 0x30,	0x00, "1 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x10, "2 coin 1 play"},
-	{0x14,	0x01, 0x30,	0x20, "4 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x20, "3 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x30, "4 coin 1 play"},
 	{0,		0xFE, 0,	4,	  "Coin B"},
 	{0x14,	0x01, 0xC0,	0x00, "1 coin 1 play"},
@@ -210,7 +232,7 @@ static struct BurnDIPInfo outzoneDIPList[] = {
 
 };
 
-STDDIPINFO(outzone);
+STDDIPINFO(outzone)
 
 static struct BurnDIPInfo outzonebDIPList[] = {
 	// Defaults
@@ -232,7 +254,7 @@ static struct BurnDIPInfo outzonebDIPList[] = {
 	// Coinage for Europe
 	{0x14,	0x01, 0x30,	0x00, "1 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x10, "2 coin 1 play"},
-	{0x14,	0x01, 0x30,	0x20, "4 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x20, "3 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x30, "4 coin 1 play"},
 	{0,		0xFE, 0,	4,	  "Coin B"},
 	{0x14,	0x01, 0xC0,	0x00, "1 coin 1 play"},
@@ -285,7 +307,7 @@ static struct BurnDIPInfo outzonebDIPList[] = {
 
 };
 
-STDDIPINFO(outzoneb);
+STDDIPINFO(outzoneb)
 
 static struct BurnDIPInfo outzonecDIPList[] = {
 	// Defaults
@@ -307,7 +329,7 @@ static struct BurnDIPInfo outzonecDIPList[] = {
 	// Coinage for Europe
 	{0x14,	0x01, 0x30,	0x00, "1 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x10, "2 coin 1 play"},
-	{0x14,	0x01, 0x30,	0x20, "4 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x20, "3 coin 1 play"},
 	{0x14,	0x01, 0x30,	0x30, "4 coin 1 play"},
 	{0,		0xFE, 0,	4,	  "Coin B"},
 	{0x14,	0x01, 0xC0,	0x00, "1 coin 1 play"},
@@ -360,16 +382,82 @@ static struct BurnDIPInfo outzonecDIPList[] = {
 
 };
 
-STDDIPINFO(outzonec);
+STDDIPINFO(outzonec)
 
-static int __fastcall DrvResetCallback()
-{
-	// Reset instruction on 68000
+static struct BurnDIPInfo outzonedDIPList[] = {
+	// Defaults
+	{0x14,	0xFF, 0xFF,	0x00, NULL},
+	{0x15,	0xFF, 0xFF,	0x00, NULL},
+	{0x16,	0xFF, 0xFF,	0x02, NULL},
+	// DIP 1
+	{0,		0xFE, 0,	2,	  NULL},
+	{0x14,	0x01, 0x02,	0x00, "Normal screen"},
+	{0x14,	0x01, 0x02,	0x02, "Invert screen"},
+	{0,		0xFE, 0,	2,	  NULL},
+	{0x14,	0x01, 0x04,	0x00, "Normal mode"},
+	{0x14,	0x01, 0x04,	0x04, "Screen test mode"},
+	{0,		0xFE, 0,	2,	  "Advertise sound"},
+	{0x14,	0x01, 0x08,	0x00, "On"},
+	{0x14,	0x01, 0x08,	0x08, "Off"},
+	{0,		0xFE, 0,	4,	  "Coin A"},
+#if 1
+	// Coinage for Europe
+	{0x14,	0x01, 0x30,	0x00, "1 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x10, "2 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x20, "3 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x30, "4 coin 1 play"},
+	{0,		0xFE, 0,	4,	  "Coin B"},
+	{0x14,	0x01, 0xC0,	0x00, "1 coin 2 play"},
+	{0x14,	0x01, 0xC0,	0x40, "1 coin 3 play"},
+	{0x14,	0x01, 0xC0,	0x80, "1 coin 4 play"},
+	{0x14,	0x01, 0xC0,	0xC0, "1 coin 6 play"},
+#else
+	// Coinage for Japan
+	{0x14,	0x01, 0x30,	0x00, "1 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x10, "1 coin 2 play"},
+	{0x14,	0x01, 0x30,	0x20, "2 coin 1 play"},
+	{0x14,	0x01, 0x30,	0x30, "3 coin 2 play"},
+	{0,		0xFE, 0,	4,	  "Coin B"},
+	{0x14,	0x01, 0xC0,	0x00, "1 coin 1 play"},
+	{0x14,	0x01, 0xC0,	0x40, "1 coin 2 play"},
+	{0x14,	0x01, 0xC0,	0x80, "2 coin 1 play"},
+	{0x14,	0x01, 0xC0,	0xC0, "3 coin 2 play"},
+#endif
+	// DIP 2
+	{0,		0xFE, 0,	4,	  "Game difficulty"},
+	{0x15,	0x01, 0x03,	0x00, "B"},
+	{0x15,	0x01, 0x03,	0x01, "A"},
+	{0x15,	0x01, 0x03,	0x02, "C"},
+	{0x15,	0x01, 0x03,	0x03, "D"},
+	{0,		0xFE, 0,	4,	  "Extend bonus"},
+	{0x15,	0x01, 0x0C,	0x00, "300000 pts every"},
+	{0x15,	0x01, 0x0C,	0x04, "200000 & 500000 pts"},
+	{0x15,	0x01, 0x0C,	0x08, "300000 only"},
+	{0x15,	0x01, 0x0C,	0x0C, "No extend"},
+	{0,		0xFE, 0,	4,	  "Number of heros"},
+	{0x15,	0x01, 0x30,	0x00, "3"},
+	{0x15,	0x01, 0x30,	0x10, "5"},
+	{0x15,	0x01, 0x30,	0x20, "2"},
+	{0x15,	0x01, 0x30,	0x30, "1"},
+	{0,		0xFE, 0,	2,	  "No death & stop mode"},
+    {0x15,	0x01, 0x40,	0x00, "Off"},
+    {0x15,	0x01, 0x40,	0x40, "On"},
 
-	ZetReset();						// Reset Z80 (CPU #1)
-	BurnYM3812Reset();
-	return 0;
-}
+	// Region
+	{0,		0xFE, 0,	9,	  "Region"},
+    {0x16,	0x01, 0x0F,	0x00, "Japan"},
+    {0x16,	0x01, 0x0F,	0x01, "U.S.A."},
+    {0x16,	0x01, 0x0F,	0x02, "Europe"},
+    {0x16,	0x01, 0x0F,	0x03, "Hong Kong"},
+    {0x16,	0x01, 0x0F,	0x04, "Korea"},
+    {0x16,	0x01, 0x0F,	0x05, "Taiwan"},
+    {0x16,	0x01, 0x0F,	0x06, "Taiwan (Spacy Co License)"},
+    {0x16,	0x01, 0x0F,	0x07, "US (Romstar License)"},
+    {0x16,	0x01, 0x0F,	0x08, "Hong Kong & China (Honest Trading License)"},
+
+};
+
+STDDIPINFO(outzoned)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -744,7 +832,7 @@ static int DrvInit()
 	ToaPalInit();
 
 	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
-	BurnTimerAttachZet(28000000 / 8);
+	BurnTimerAttachZetYM3812(28000000 / 8);
 
 	bDrawScreen = true;
 
@@ -770,7 +858,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0x120);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -860,7 +948,7 @@ static int DrvFrame()
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
-	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
@@ -877,41 +965,51 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvOutZone = {
-	"outzone", NULL, NULL, "1990",
+	"outzone", NULL, NULL, NULL, "1990",
 	"Out Zone (set 1)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, outzoneRomInfo, outzoneRomName, outzoneInputInfo, outzoneDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, outzoneRomInfo, outzoneRomName, NULL, NULL, outzoneInputInfo, outzoneDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvOutZonea = {
-	"outzonea", "outzone", NULL, "1990",
+	"outzonea", "outzone", NULL, NULL, "1990",
 	"Out Zone (set 2)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, outzoneaRomInfo, outzoneaRomName, outzoneInputInfo, outzoneDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, outzoneaRomInfo, outzoneaRomName, NULL, NULL, outzoneInputInfo, outzoneDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvOutZoneb = {
-	"outzoneb", "outzone", NULL, "1990",
+	"outzoneb", "outzone", NULL, NULL, "1990",
 	"Out Zone (set 3, prototype?)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, outzonebRomInfo, outzonebRomName, outzoneInputInfo, outzonebDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, outzonebRomInfo, outzonebRomName, NULL, NULL, outzoneInputInfo, outzonebDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvOutZonec = {
-	"outzonec", "outzone", NULL, "1990",
+	"outzonec", "outzone", NULL, NULL, "1990",
 	"Out Zone (set 4)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, outzonecRomInfo, outzonecRomName, outzoneInputInfo, outzonecDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, outzonecRomInfo, outzonecRomName, NULL, NULL, outzoneInputInfo, outzonecDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
+	240, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvOutZoned = {
+	"outzoned", "outzone", NULL, NULL, "1990",
+	"Out Zone (set 5)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, outzonedRomInfo, outzonedRomName, NULL, NULL, outzoneInputInfo, outzonedDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	240, 320, 3, 4
 };

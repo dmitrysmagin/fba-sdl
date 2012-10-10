@@ -3,7 +3,7 @@
 
 #define CPS3_VOICES		16
 
-#define CPS3_SND_INT_RATE		60
+#define CPS3_SND_INT_RATE		(nBurnFPS / 100)
 #define CPS3_SND_RATE			(42954500 / 3 / 384)
 #define CPS3_SND_BUFFER_SIZE	(CPS3_SND_RATE / CPS3_SND_INT_RATE)
 #define CPS3_SND_LINEAR_SHIFT	12
@@ -175,12 +175,12 @@ void cps3SndUpdate()
 #if 1
 				int sample_l;
 
-				sample_l = ((sample * vol_l) >> 8) + buffer[0];
+				sample_l = ((sample * vol_r) >> 8) + buffer[0];
 				if (sample_l > 32767)		buffer[0] = 32767;
 				else if (sample_l < -32768)	buffer[0] = -32768;
 				else 						buffer[0] = sample_l;
 				
-				sample_l = ((sample * vol_r) >> 8) + buffer[1];
+				sample_l = ((sample * vol_l) >> 8) + buffer[1];
 				if (sample_l > 32767)		buffer[1] = 32767;
 				else if (sample_l < -32768)	buffer[1] = -32768;
 				else 						buffer[1] = sample_l;

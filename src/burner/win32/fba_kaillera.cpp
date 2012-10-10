@@ -1,5 +1,4 @@
 #include "burner.h"
-#include "kailleraclient.h"
 
 const int MAXPLAYER = 4;
 static int nPlayerInputs[MAXPLAYER], nCommonInputs, nDIPInputs;
@@ -118,7 +117,8 @@ int KailleraGetInput()
 	k = j + 1;
 
 	// Send the control block to the Kaillera DLL & retrieve all controls
-	if (kailleraModifyPlayValues(nControls, k) == -1) {
+	//if (kailleraModifyPlayValues(nControls, k) == -1) {
+	if (Kaillera_Modify_Play_Values(nControls, k) == -1) {
 		kNetGame = 0;
 		return 1;
 	}

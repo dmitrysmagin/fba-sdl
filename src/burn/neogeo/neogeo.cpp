@@ -1,48 +1,44 @@
 #include "neogeo.h"
-#include "bitswap.h"
 // Neo Geo -- misc. support functions
 
 unsigned char nNeoProtectionXor;
+unsigned int nNeoNumSpriteRom;
 
 // This function loads the 68K ROMs
 int NeoLoadCode(int nOffset, int nNum, unsigned char* pDest)
 {
-    struct BurnRomInfo ri;
+	struct BurnRomInfo ri;
 
-	ri.nType = 0;
-    ri.nLen = 0;
-
-	BurnDrvGetRomInfo(&ri,nOffset);
-
-	int nRomSize = ri.nLen;
-
-	// Load the ROMs
 	for (int i = 0; i < nNum; i++) {
-		unsigned char* pROM = pDest + i * nRomSize;
-		if (BurnLoadRom(pROM, nOffset + i, 1)) {
+		ri.nLen = 0;
+		BurnDrvGetRomInfo(&ri, nOffset + i);
+
+		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_P32) && (i == 0))
+		{
+			if (BurnLoadRom(pDest + 0, nOffset + i + 0, 2)) return 1;
+			if (BurnLoadRom(pDest + 1, nOffset + i + 1, 2)) return 1;
+ 
+			for (unsigned int j = 0; j < ri.nLen << 1; j+=4)
+				BurnByteswap(pDest + j + 1, 2);
+
+			i++;
+			pDest += ri.nLen << 1;
+			continue;
+		}
+
+		if (BurnLoadRom(pDest, nOffset + i, 1)) {
 			return 1;
 		}
 
-		BurnDrvGetRomInfo(&ri, nOffset + i);
-		// Swap the blocks in the ROM if needed.
-		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPP) && i && ri.nLen == 0x400000) {
-			for (unsigned int k = 0; k < (ri.nLen >> 1); k++) {
-				unsigned char n = pROM[k];
-				pROM[k] = pROM[k + (ri.nLen >> 1)];
-				pROM[k + (ri.nLen >> 1)] = n;
+		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPP) && (i == 0)) {
+			for (unsigned int j = 0; j < (ri.nLen / 2); j++) {
+				int k = pDest[j];
+				pDest[j] = pDest[j + (ri.nLen / 2)];
+				pDest[j + (ri.nLen / 2)] = k;
 			}
 		}
 
-		// Swap the blocks in the ROM if needed.
-		if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPP) && nRomSize == 0x200000) {
-			for (int j = 0; j < nNum; j++) {
-				for (int k = 0; k < (nRomSize >> 1); k++) {
-					unsigned char n = pDest[k];
-					pDest[k] = pDest[k + (nRomSize >> 1)];
-					pDest[k + (nRomSize >> 1)] = n;
-				}
-			}
-		}
+		pDest += ri.nLen;
 	}
 
 	return 0;
@@ -55,11 +51,12 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 	ri.nType = 0;
 	ri.nLen = 0;
 
+	int ROM32MB = 0;
 	unsigned int nRomSize = 0;
 	
-	int ROM32MB = 0;
-	
-	if (BurnDrvGetHardwareCode() & (HARDWARE_SNK_ENCRYPTED_A | HARDWARE_SNK_ENCRYPTED_B) && strcmp(BurnDrvGetTextA(DRV_NAME), "kf2k3pcb")) {
+	nNeoNumSpriteRom = nNum;
+
+	if (BurnDrvGetHardwareCode() & (HARDWARE_SNK_ENCRYPTED_A | HARDWARE_SNK_ENCRYPTED_B)) {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_ENCRYPTED_A) {
 			NeoGfxDecryptCMC42Init();
 		} else {
@@ -68,44 +65,34 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 			}
 		}
 
-		unsigned char* pBuf = (unsigned char*)malloc(0x800000 * 2);
+		nRomSize = ((nSpriteSize / nNum) & 0xf00000) ? 0x1000000 : 0x2000000;
+		unsigned char* pBuf = (unsigned char *)malloc( nRomSize );
 		if (pBuf == NULL) {
 			return 1;
 		}
 
-		for (int i = 0; i < (nNum + ROM32MB >> 1); i++) {
-			int k = 4, n = i;
+		for (int i = 0; i < ((nNum + ROM32MB) >> 1); i++) {
+			if ((nSpriteSize / nNum) == 0x2000000) {		// svcpcb
+				ROM32MB = 2;
+				BurnLoadRom(pBuf, nOffset + i, 1);
 
-			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "ms5pcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcb") || !strcmp(BurnDrvGetTextA(DRV_NAME), "svcpcba")) {
-				if ((nSpriteSize == 0x4000000) && (nNum == 4)) {
-					pBuf = (unsigned char*)malloc(0x2000000);
-					BurnLoadRom(pBuf + 0, nOffset + 0 + (i << 1), 2);
-					BurnLoadRom(pBuf + 1, nOffset + 1 + (i << 1), 2);
-					k = 8, n = i * 2;
-
-					for (int j = 0; j < 0x2000000; j+=4) {
-						BurnByteswap(pBuf + j + 1, 2);
-					}
-
-					svcpcb_gfx_decrypt(pBuf);
-				} else if ((nSpriteSize == 0x4000000) && (nNum == 2)) {
-					pBuf = (unsigned char*)malloc(0x2000000);
-					BurnLoadRom(pBuf, nOffset + i, 1);
-					k = 8, n = i * 2, ROM32MB = 2;
-
-					svcpcb_gfx_decrypt(pBuf);
-				}
-			} else {
-				BurnLoadRom(pBuf + 0, nOffset + (i << 1), 2);
+				pcb_gfx_crypt(pBuf, 0);
+			} else {						// standard
+				BurnLoadRom(pBuf + 0, nOffset + 0 + (i << 1), 2);
 				BurnLoadRom(pBuf + 1, nOffset + 1 + (i << 1), 2);
+
+				if (nRomSize == 0x2000000) {			// ms5pcb, svcpcba, kf2k3pcb
+					for (int j = 0; j < 0x2000000; j+=4)
+						BurnByteswap(pBuf + j + 1, 2);
+
+					pcb_gfx_crypt(pBuf, nNum & 2);
+				}		
 			}
 
-			for (int j = 0; j < k; j++) {
-				BurnUpdateProgress(1.0 / ((double)(nSpriteSize/0x800000) * 8.0 / 3.0), j ? NULL : _T("Decrypting graphics..."), 0);
-				NeoGfxDecryptDoBlock(nNeoProtectionXor, pBuf + j * 0x400000, n * 0x800000 * 2 + j * 0x400000, 0x400000, nSpriteSize);
-			}
+			BurnUpdateProgress(1.0 / ((double)(nSpriteSize/0x800000) * 8.0 / (nRomSize / 0x400000) / 3.0), _T("Decrypting graphics..."), 0);
+			NeoGfxDecryptDoBlock(nNeoProtectionXor, pBuf, nRomSize * i, nRomSize, nSpriteSize);
 		}
-		
+
 		free(pBuf);
 
 	} else {
@@ -131,38 +118,22 @@ int NeoLoadSprites(int nOffset, int nNum, unsigned char* pDest, unsigned int nSp
 				nSpriteSize += ri.nLen << 1;
 			}
 		}
-	}
 
-	// Swap data for viewpoin, aof, ssideki, kotm2, more
-	if (BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPC) {
-		unsigned char* pBuf = (unsigned char*)malloc(0x600000);
-
-		if (pBuf) {
-			for (int i = 0x200000; i < 0x600000; i++) {
-				pBuf[i] = pDest[i];
-			}
-			for (int i = 0; i < 0x100000; i++) {
-				((short*)(pDest + 0x200000))[i] = ((short*)(pBuf + 0x400000))[i];
-				((short*)(pDest + 0x400000))[i] = ((short*)(pBuf + 0x200000))[i];
-			}
-
-			free(pBuf);
-		} else {
-			return 1;
-		}
-	}
-	
-	if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_ENCRYPTED_B) && !strcmp(BurnDrvGetTextA(DRV_NAME), "kf2k3pcb")) {
-		BurnUpdateProgress(0, _T("Decrypting graphics..."), 0);
-		kf2k3pcb_gfx_decrypt(NeoSpriteROM);
-		BurnUpdateProgress(1.0, NULL, 0);
+	 	// Swap data for viewpoin, aof, ssideki, kotm2, more
+	 	if (BurnDrvGetHardwareCode() & HARDWARE_SNK_SWAPC) {
+			for (int i = 0; i < 0x200000; i++) {
+				unsigned char n = pDest[i + 0x400000];
+				pDest[i + 0x400000] = pDest[i + 0x200000];
+				pDest[i + 0x200000] = n;
+	 		}
+	 	}
 	}
 
 	return 0;
 }
 
 void NeoDecodeSprites(unsigned char* pDest, int nSize)
-{
+{	
 	for (int i = 0; i < 8; i++) {
 
 		unsigned char* pStart = pDest + i * (nSize >> 3);
@@ -232,13 +203,12 @@ void NeoDecodeText(unsigned char* pDest, int nSize)
 int NeoLoadADPCM(int nOffset, int nNum, unsigned char* pDest)
 {
 	struct BurnRomInfo ri;
-	ri.nType = 0;
 	ri.nLen = 0;
-
 	BurnDrvGetRomInfo(&ri, nOffset);
 
 	for (int i = 0; i < nNum; i++) {
-		BurnLoadRom(pDest + ri.nLen * i, nOffset + i, 1);
+		BurnLoadRom(pDest, nOffset + i, 1);
+		pDest += ri.nLen;
 	}
 
 	return 0;

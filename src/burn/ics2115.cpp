@@ -17,6 +17,7 @@
 #include "ics2115.h"
 
 unsigned char *ICSSNDROM;
+unsigned int nICSSNDROMLen;
 
 enum { V_ON = 1, V_DONE = 2 };
 
@@ -64,6 +65,7 @@ static void recalc_irq()
 // IRQ callback
 //		if(chip->intf->irq_cb)
 //			chip->intf->irq_cb(irq ? ASSERT_LINE : CLEAR_LINE);
+
 		if (irq) {
 			ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
 		} else
@@ -85,12 +87,18 @@ static void timer_cb_1()
 
 static void recalc_timer(int timer)
 {
-	unsigned int period = 0;
-	if (chip->timer[timer].scale && chip->timer[timer].preset) 
-		period = 628206; // 1/62.8206;
-	if(chip->timer[timer].period != period) {
-//bprintf(PRINT_NORMAL, _T("ICS2115: timer %d freq=%gHz  %4.1f%%\n"), timer,  1.0 * period / 10000, 6.0 * ZetTotalCycles() / 8468.0);
-		chip->timer[timer].period = period;
+	float period = 0;
+
+	if(chip->timer[timer].scale) {
+		int sc = chip->timer[timer].scale;
+		float counter = (float)((((sc & 31)+1) * (chip->timer[timer].preset+1)) << (4+(sc >> 5)));
+		period = 1000000000 * counter / 33868800;
+	} else {
+		period = 0;
+	}
+
+	if (chip->timer[timer].period != (unsigned int)period) {
+		chip->timer[timer].period = (unsigned int)period;
 		if(period) chip->timer[timer].active = true;
 		else  chip->timer[timer].active = false;
 	}
@@ -284,12 +292,26 @@ void ics2115_exit()
 {
 	free( chip );
 	chip = NULL;
-	
+
+	nICSSNDROMLen = 0;
+
 	free(ICSSNDROM);
 	ICSSNDROM = NULL;
 
 	free( sndbuffer );
 	sndbuffer = NULL;
+}
+
+static void recalculate_ulaw()
+{
+	for(int i=0; i<256; i++) {
+		unsigned char c = ((~i) & 0xFF);
+		int v = ((c & 15) << 1) + 33;
+		v <<= ((c & 0x70) >> 4);
+		if(c & 0x80) v = 33-v;
+		else		 v = v-33;
+		chip->ulaw[i] = v;
+	}
 }
 
 void ics2115_reset()
@@ -302,16 +324,13 @@ void ics2115_reset()
 //	chip->stream = stream_create(0, 2, 33075, chip, update);
 //	if(!chip->timer[0].timer || !chip->timer[1].timer) return NULL;
 
-	for(int i=0; i<256; i++) {
-		unsigned char c = ((~i) & 0xFF);
-		int v = ((c & 15) << 1) + 33;
-		v <<= ((c & 0x70) >> 4);
-		if(c & 0x80) v = 33-v;
-		else		 v = v-33;
-		chip->ulaw[i] = v;
-	}
+	recalculate_ulaw();
 	
-	nSoundDelta = ICS2115_FRAME_BUFFER_SIZE * 0x10000 / nBurnSoundLen;
+	if (nBurnSoundLen) {
+		nSoundDelta = ICS2115_FRAME_BUFFER_SIZE * 0x10000 / nBurnSoundLen;
+	} else {
+		nSoundDelta = ICS2115_FRAME_BUFFER_SIZE * 0x10000 / 184; // 11025Hz
+	}
 	
 	recalc_irq();
 	
@@ -338,8 +357,8 @@ void ics2115_soundlatch_w(int i, unsigned short d)
 
 void ics2115_frame()
 {
-	if (chip->timer[0].active )	timer_cb_0();
-	if (chip->timer[1].active )	timer_cb_1();	
+	if (chip->timer[0].active ) timer_cb_0();
+	if (chip->timer[1].active ) timer_cb_1();	
 }
 
 void ics2115_update(int /*length*/)
@@ -352,17 +371,23 @@ void ics2115_update(int /*length*/)
 
 	for(int osc=0; osc<32; osc++)
 		if(chip->voice[osc].state & V_ON) {
+			unsigned int badr = (chip->voice[osc].saddr << 20) & 0x0f00000;
+			if (badr >= nICSSNDROMLen) { // right?
+				chip->voice[osc].state &= ~V_ON;
+				chip->voice[osc].state |= V_DONE;
+				rec_irq = 1;
+				break; 
+			}
 			unsigned int adr = (chip->voice[osc].addrh << 16) | chip->voice[osc].addrl;
 			unsigned int end = (chip->voice[osc].endh << 16) | (chip->voice[osc].endl << 8);
 			unsigned int loop = (chip->voice[osc].strth << 16) | (chip->voice[osc].strtl << 8);
-			unsigned int badr = (chip->voice[osc].saddr << 20) & 0xffffff;
 			unsigned char conf = chip->voice[osc].conf;
 			signed int vol = chip->voice[osc].volacc;
 			vol = (((vol & 0xff0)|0x1000)<<(vol>>12))>>12;
 			unsigned int delta = chip->voice[osc].fc << 2;
 
 			for(int i=0; i<ICS2115_FRAME_BUFFER_SIZE; i++) {
-				signed int v = chip->rom[badr|(adr >> 12)];
+				signed int v = chip->rom[(badr|(adr >> 12))];
 				
 				if(conf & 1)v = chip->ulaw[v];
 				else		v = ((signed char)v) << 6;
@@ -402,12 +427,16 @@ void ics2115_scan(int nAction,int * /*pnMin*/)
 	struct BurnArea ba;
 	
 	if ( nAction & ACB_DRIVER_DATA ) {
+		unsigned char *rom = chip->rom;
+
 		ba.Data		= chip;
 		ba.nLen		= sizeof(struct ics2115);
 		ba.nAddress = 0;
 		ba.szName	= "ICS 2115";
 		BurnAcb(&ba);
-		
+
+		chip->rom = rom;
+
 		SCAN_VAR(nSoundlatch);
 		SCAN_VAR(bSoundlatchRead);
 	}

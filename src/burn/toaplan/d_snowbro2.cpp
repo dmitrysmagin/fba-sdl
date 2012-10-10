@@ -65,7 +65,7 @@ static struct BurnInputInfo snowbro2InputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(snowbro2);
+STDINPUTINFO(snowbro2)
 
 static struct BurnDIPInfo snowbro2DIPList[] = {
 	// Defaults
@@ -172,7 +172,7 @@ static struct BurnDIPInfo snowbro2DIPList[] = {
 	{0x22, 0x01, 0x20, 0x20, "Yes"                          },
 };
 
-STDDIPINFO(snowbro2);
+STDDIPINFO(snowbro2)
 
 unsigned char __fastcall snowbro2ReadByte(unsigned int sekAddress)
 {
@@ -348,7 +348,7 @@ static int DrvDoReset()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -604,17 +604,17 @@ static struct BurnRomInfo snowbro2RomDesc[] = {
 };
 
 
-STD_ROM_PICK(snowbro2);
-STD_ROM_FN(snowbro2);
+STD_ROM_PICK(snowbro2)
+STD_ROM_FN(snowbro2)
 
 
 struct BurnDriver BurnDrvSnowbro2 = {
-	"snowbro2", NULL, NULL, "1994",
+	"snowbro2", NULL, NULL, NULL, "1994",
 	"Snow Bros. 2 - with new elves\0", NULL, "[Toaplan] Hanafram", "Toaplan GP9001 based",
 	L"Snow Bros. 2 - with new elves\0\u304A\u3066\u3093\u304D\u30D1\u30E9\u30C0\u30A4\u30B9\0\u96EA\u4EBA\u5144\u5F1F\uFF12\0\uB208\uC0AC\uB78C\uD615\uC81C\uFF12\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 4, HARDWARE_TOAPLAN_68K_ONLY,
-	NULL, snowbro2RomInfo, snowbro2RomName, snowbro2InputInfo, snowbro2DIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING, 4, HARDWARE_TOAPLAN_68K_ONLY, GBF_PLATFORM, 0,
+	NULL, snowbro2RomInfo, snowbro2RomName, NULL, NULL, snowbro2InputInfo, snowbro2DIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	320, 240, 4, 3
 };
 

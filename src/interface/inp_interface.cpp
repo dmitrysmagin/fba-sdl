@@ -310,7 +310,6 @@ int InputMake(bool bCopy)
 
 	for (i = 0; i < nMacroCount; i++, pgi++) {
 		if (pgi->Macro.nMode) {						// Macro is defined
-
 			if (bCopy && CinpState(pgi->Macro.Switch.nCode)) {
 				for (int j = 0; j < 4; j++) {
 					if (pgi->Macro.pVal[j]) {

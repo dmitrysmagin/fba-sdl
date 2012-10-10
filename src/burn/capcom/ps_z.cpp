@@ -53,8 +53,8 @@ void __fastcall PsndZWrite(unsigned short a, unsigned char d)
 			break;
 
 #ifdef FBA_DEBUG
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 address %04X -> %02X.\n"), a, d);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 address %04X -> %02X.\n"), a, d);
 #endif
 
 	}
@@ -75,8 +75,8 @@ void __fastcall kodbZWrite(unsigned short a, unsigned char d)
 			break;
 
 #ifdef FBA_DEBUG
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 address %04X -> %02X.\n"), a, d);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 address %04X -> %02X.\n"), a, d);
 #endif
 
 	}
@@ -98,8 +98,8 @@ unsigned char __fastcall PsndZRead(unsigned short a)
 			return PsndFade;
 
 #ifdef FBA_DEBUG
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 address %04X read.\n"), a);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 address %04X read.\n"), a);
 #endif
 
 	}
@@ -117,8 +117,8 @@ unsigned char __fastcall kodbZRead(unsigned short a)
 			return PsndCode;
 
 #ifdef FBA_DEBUG
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 address %04X read.\n"), a);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 address %04X read.\n"), a);
 #endif
 
 	}

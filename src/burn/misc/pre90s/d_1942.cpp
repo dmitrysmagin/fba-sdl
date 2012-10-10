@@ -74,7 +74,7 @@ static struct BurnInputInfo DrvInputList[] =
 };
 
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -166,121 +166,190 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x13, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 static struct BurnRomInfo DrvRomDesc[] = {
-	{ "1-n3a.bin",     0x04000, 0x40201bab, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
-	{ "1-n4.bin",      0x04000, 0xa60ac644, BRF_ESS | BRF_PRG }, //	 1
-	{ "1-n5.bin",      0x04000, 0x835f7b24, BRF_ESS | BRF_PRG }, //	 2
-	{ "1-n6.bin",      0x02000, 0x821c6481, BRF_ESS | BRF_PRG }, //	 3
-	{ "1-n7.bin",      0x04000, 0x5df525e1, BRF_ESS | BRF_PRG }, //	 4
+	{ "srb-03.m3",     0x04000, 0xd9dafcc3, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "srb-04.m4",     0x04000, 0xda0cf924, BRF_ESS | BRF_PRG }, //	 1
+	{ "srb-05.m5",     0x04000, 0xd102911c, BRF_ESS | BRF_PRG }, //	 2
+	{ "srb-06.m6",     0x02000, 0x466f8248, BRF_ESS | BRF_PRG }, //	 3
+	{ "srb-07.m7",     0x04000, 0x0d31038c, BRF_ESS | BRF_PRG }, //	 4
 	
-	{ "1-c11.bin",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
+	{ "sr-01.c11",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
 	
-	{ "1-f2.bin",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
+	{ "sr-02.f2",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
 	
-	{ "2-a1.bin",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
-	{ "2-a2.bin",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
-	{ "2-a3.bin",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
-	{ "2-a4.bin",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
-	{ "2-a5.bin",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
-	{ "2-a6.bin",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
+	{ "sr-08.a1",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
+	{ "sr-09.a2",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
+	{ "sr-10.a3",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
+	{ "sr-11.a4",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
+	{ "sr-12.a5",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
+	{ "sr-13.a6",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
 	
-	{ "2-l1.bin",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
-	{ "2-l2.bin",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
-	{ "2-n1.bin",      0x04000, 0x024418f8, BRF_GRA },	     //  15
-	{ "2-n2.bin",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
+	{ "sr-14.l1",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
+	{ "sr-15.l2",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
+	{ "sr-16.n1",      0x04000, 0x024418f8, BRF_GRA },	     //  15
+	{ "sr-17.n2",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
 	
-	{ "08e_sb-5.bin",  0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
-	{ "09e_sb-6.bin",  0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
-	{ "10e_sb-7.bin",  0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
-	{ "f01_sb-0.bin",  0x00100, 0x6047d91b, BRF_GRA },	     //  20
-	{ "06d_sb-4.bin",  0x00100, 0x4858968d, BRF_GRA },	     //  21
-	{ "03k_sb-8.bin",  0x00100, 0xf6fad943, BRF_GRA },	     //  22
-	{ "01d_sb-2.bin",  0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
-	{ "02d_sb-3.bin",  0x00100, 0x3b0c99af, BRF_GRA },	     //  24
-	{ "k06_sb-1.bin",  0x00100, 0x712ac508, BRF_GRA },	     //  25
-	{ "01m_sb-9.bin",  0x00100, 0x4921635c, BRF_GRA },	     //  26
+	{ "sb-5.e8",       0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
+	{ "sb-6.e9",       0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
+	{ "sb-7.e10",      0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
+	{ "sb-0.f1",       0x00100, 0x6047d91b, BRF_GRA },	     //  20
+	{ "sb-4.d6",       0x00100, 0x4858968d, BRF_GRA },	     //  21
+	{ "sb-8.k3",       0x00100, 0xf6fad943, BRF_GRA },	     //  22
+	{ "sb-2.d1",       0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
+	{ "sb-3.d2",       0x00100, 0x3b0c99af, BRF_GRA },	     //  24
+	{ "sb-1.k6",       0x00100, 0x712ac508, BRF_GRA },	     //  25
+	{ "sb-9.m11",      0x00100, 0x4921635c, BRF_GRA },	     //  26
 };
 
-STD_ROM_PICK(Drv);
-STD_ROM_FN(Drv);
+STD_ROM_PICK(Drv)
+STD_ROM_FN(Drv)
 
 static struct BurnRomInfo DrvaRomDesc[] = {
-	{ "1-n3.bin",      0x04000, 0x612975f2, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
-	{ "1-n4.bin",      0x04000, 0xa60ac644, BRF_ESS | BRF_PRG }, //	 1
-	{ "1-n5.bin",      0x04000, 0x835f7b24, BRF_ESS | BRF_PRG }, //	 2
-	{ "1-n6.bin",      0x02000, 0x821c6481, BRF_ESS | BRF_PRG }, //	 3
-	{ "1-n7.bin",      0x04000, 0x5df525e1, BRF_ESS | BRF_PRG }, //	 4
+	{ "sra-03.m3",     0x04000, 0x40201bab, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "sr-04.m4",      0x04000, 0xa60ac644, BRF_ESS | BRF_PRG }, //	 1
+	{ "sr-05.m5",      0x04000, 0x835f7b24, BRF_ESS | BRF_PRG }, //	 2
+	{ "sr-06.m6",      0x02000, 0x821c6481, BRF_ESS | BRF_PRG }, //	 3
+	{ "sr-07.m7",      0x04000, 0x5df525e1, BRF_ESS | BRF_PRG }, //	 4
 	
-	{ "1-c11.bin",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
+	{ "sr-01.c11",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
 	
-	{ "1-f2.bin",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
+	{ "sr-02.f2",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
 	
-	{ "2-a1.bin",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
-	{ "2-a2.bin",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
-	{ "2-a3.bin",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
-	{ "2-a4.bin",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
-	{ "2-a5.bin",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
-	{ "2-a6.bin",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
+	{ "sr-08.a1",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
+	{ "sr-09.a2",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
+	{ "sr-10.a3",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
+	{ "sr-11.a4",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
+	{ "sr-12.a5",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
+	{ "sr-13.a6",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
 	
-	{ "2-l1.bin",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
-	{ "2-l2.bin",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
-	{ "2-n1.bin",      0x04000, 0x024418f8, BRF_GRA },	     //  15
-	{ "2-n2.bin",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
+	{ "sr-14.l1",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
+	{ "sr-15.l2",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
+	{ "sr-16.n1",      0x04000, 0x024418f8, BRF_GRA },	     //  15
+	{ "sr-17.n2",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
 	
-	{ "08e_sb-5.bin",  0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
-	{ "09e_sb-6.bin",  0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
-	{ "10e_sb-7.bin",  0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
-	{ "f01_sb-0.bin",  0x00100, 0x6047d91b, BRF_GRA },	     //  20
-	{ "06d_sb-4.bin",  0x00100, 0x4858968d, BRF_GRA },	     //  21
-	{ "03k_sb-8.bin",  0x00100, 0xf6fad943, BRF_GRA },	     //  22
-	{ "01d_sb-2.bin",  0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
-	{ "02d_sb-3.bin",  0x00100, 0x3b0c99af, BRF_GRA },	     //  24
-	{ "k06_sb-1.bin",  0x00100, 0x712ac508, BRF_GRA },	     //  25
-	{ "01m_sb-9.bin",  0x00100, 0x4921635c, BRF_GRA },	     //  26
+	{ "sb-5.e8",       0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
+	{ "sb-6.e9",       0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
+	{ "sb-7.e10",      0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
+	{ "sb-0.f1",       0x00100, 0x6047d91b, BRF_GRA },	     //  20
+	{ "sb-4.d6",       0x00100, 0x4858968d, BRF_GRA },	     //  21
+	{ "sb-8.k3",       0x00100, 0xf6fad943, BRF_GRA },	     //  22
+	{ "sb-2.d1",       0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
+	{ "sb-3.d2",       0x00100, 0x3b0c99af, BRF_GRA },	     //  24
+	{ "sb-1.k6",       0x00100, 0x712ac508, BRF_GRA },	     //  25
+	{ "sb-9.m11",      0x00100, 0x4921635c, BRF_GRA },	     //  26
 };
 
-STD_ROM_PICK(Drva);
-STD_ROM_FN(Drva);
+STD_ROM_PICK(Drva)
+STD_ROM_FN(Drva)
+
+static struct BurnRomInfo DrvablRomDesc[] = {
+	{ "3.bin",         0x08000, 0xf3184f5a, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "5.bin",         0x04000, 0x835f7b24, BRF_ESS | BRF_PRG }, //	 1
+	{ "7.bin",         0x08000, 0x2f456c6e, BRF_ESS | BRF_PRG }, //	 2
+	
+	{ "1.bin",         0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program 
+	
+	{ "2.bin",         0x02000, 0x6ebca191, BRF_GRA },	     //  4	Characters
+	
+	{ "9.bin",         0x04000, 0x60329fa4, BRF_GRA },	     //  5	Tiles
+	{ "11.bin",        0x04000, 0x66bac116, BRF_GRA },	     //  6
+	{ "13.bin",        0x04000, 0x623fcec1, BRF_GRA },	     //  7
+	
+	{ "14.bin",        0x08000, 0xdf2345ef, BRF_GRA },	     //  8	Sprites
+	{ "16.bin",        0x08000, 0xc106b1ed, BRF_GRA },	     //  9
+	
+	{ "sb-5.e8",       0x00100, 0x93ab8153, BRF_GRA },	     //  10	PROMs
+	{ "sb-6.e9",       0x00100, 0x8ab44f7d, BRF_GRA },	     //  11
+	{ "sb-7.e10",      0x00100, 0xf4ade9a4, BRF_GRA },	     //  12
+	{ "sb-0.f1",       0x00100, 0x6047d91b, BRF_GRA },	     //  13
+	{ "sb-4.d6",       0x00100, 0x4858968d, BRF_GRA },	     //  14
+	{ "sb-8.k3",       0x00100, 0xf6fad943, BRF_GRA },	     //  15
+	{ "sb-2.d1",       0x00100, 0x8bb8b3df, BRF_GRA },	     //  16
+	{ "sb-3.d2",       0x00100, 0x3b0c99af, BRF_GRA },	     //  17
+	{ "sb-1.k6",       0x00100, 0x712ac508, BRF_GRA },	     //  18
+	{ "sb-9.m11",      0x00100, 0x4921635c, BRF_GRA },	     //  19
+};
+
+STD_ROM_PICK(Drvabl)
+STD_ROM_FN(Drvabl)
 
 static struct BurnRomInfo DrvbRomDesc[] = {
-	{ "srb-03.n3",     0x04000, 0xd9dafcc3, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
-	{ "srb-04.n4",     0x04000, 0xda0cf924, BRF_ESS | BRF_PRG }, //	 1
-	{ "srb-05.n5",     0x04000, 0xd102911c, BRF_ESS | BRF_PRG }, //	 2
-	{ "srb-06.n6",     0x02000, 0x466f8248, BRF_ESS | BRF_PRG }, //	 3
-	{ "srb-07.n7",     0x04000, 0x0d31038c, BRF_ESS | BRF_PRG }, //	 4
+	{ "sr-03.m3",      0x04000, 0x612975f2, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "sr-04.m4",      0x04000, 0xa60ac644, BRF_ESS | BRF_PRG }, //	 1
+	{ "sr-05.m5",      0x04000, 0x835f7b24, BRF_ESS | BRF_PRG }, //	 2
+	{ "sr-06.m6",      0x02000, 0x821c6481, BRF_ESS | BRF_PRG }, //	 3
+	{ "sr-07.m7",      0x04000, 0x5df525e1, BRF_ESS | BRF_PRG }, //	 4
 	
-	{ "1-c11.bin",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
+	{ "sr-01.c11",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
 	
-	{ "1-f2.bin",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
+	{ "sr-02.f2",      0x02000, 0x6ebca191, BRF_GRA },	     //  6	Characters
 	
-	{ "2-a1.bin",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
-	{ "2-a2.bin",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
-	{ "2-a3.bin",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
-	{ "2-a4.bin",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
-	{ "2-a5.bin",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
-	{ "2-a6.bin",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
+	{ "sr-08.a1",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
+	{ "sr-09.a2",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
+	{ "sr-10.a3",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
+	{ "sr-11.a4",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
+	{ "sr-12.a5",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
+	{ "sr-13.a6",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
 	
-	{ "2-l1.bin",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
-	{ "2-l2.bin",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
-	{ "2-n1.bin",      0x04000, 0x024418f8, BRF_GRA },	     //  15
-	{ "2-n2.bin",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
+	{ "sr-14.l1",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
+	{ "sr-15.l2",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
+	{ "sr-16.n1",      0x04000, 0x024418f8, BRF_GRA },	     //  15
+	{ "sr-17.n2",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
 	
-	{ "08e_sb-5.bin",  0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
-	{ "09e_sb-6.bin",  0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
-	{ "10e_sb-7.bin",  0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
-	{ "f01_sb-0.bin",  0x00100, 0x6047d91b, BRF_GRA },	     //  20
-	{ "06d_sb-4.bin",  0x00100, 0x4858968d, BRF_GRA },	     //  21
-	{ "03k_sb-8.bin",  0x00100, 0xf6fad943, BRF_GRA },	     //  22
-	{ "01d_sb-2.bin",  0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
-	{ "02d_sb-3.bin",  0x00100, 0x3b0c99af, BRF_GRA },	     //  24
-	{ "k06_sb-1.bin",  0x00100, 0x712ac508, BRF_GRA },	     //  25
-	{ "01m_sb-9.bin",  0x00100, 0x4921635c, BRF_GRA },	     //  26
+	{ "sb-5.e8",       0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
+	{ "sb-6.e9",       0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
+	{ "sb-7.e10",      0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
+	{ "sb-0.f1",       0x00100, 0x6047d91b, BRF_GRA },	     //  20
+	{ "sb-4.d6",       0x00100, 0x4858968d, BRF_GRA },	     //  21
+	{ "sb-8.k3",       0x00100, 0xf6fad943, BRF_GRA },	     //  22
+	{ "sb-2.d1",       0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
+	{ "sb-3.d2",       0x00100, 0x3b0c99af, BRF_GRA },	     //  24
+	{ "sb-1.k6",       0x00100, 0x712ac508, BRF_GRA },	     //  25
+	{ "sb-9.m11",      0x00100, 0x4921635c, BRF_GRA },	     //  26
 };
 
-STD_ROM_PICK(Drvb);
-STD_ROM_FN(Drvb);
+STD_ROM_PICK(Drvb)
+STD_ROM_FN(Drvb)
+
+static struct BurnRomInfo DrvwRomDesc[] = {
+	{ "sw-03.m3",      0x04000, 0xafd79770, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "sw-04.m4",      0x04000, 0x933d9910, BRF_ESS | BRF_PRG }, //	 1
+	{ "sw-05.m5",      0x04000, 0xe9a71bb6, BRF_ESS | BRF_PRG }, //	 2
+	{ "sw-06.m6",      0x02000, 0x466f8248, BRF_ESS | BRF_PRG }, //	 3
+	{ "sw-07.m7",      0x04000, 0xec41655e, BRF_ESS | BRF_PRG }, //	 4
+	
+	{ "sr-01.c11",     0x04000, 0xbd87f06b, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program 
+	
+	{ "sw-02.f2",      0x02000, 0xf8e9ada2, BRF_GRA },	     //  6	Characters
+	
+	{ "sr-08.a1",      0x02000, 0x3884d9eb, BRF_GRA },	     //  7	Tiles
+	{ "sr-09.a2",      0x02000, 0x999cf6e0, BRF_GRA },	     //  8
+	{ "sr-10.a3",      0x02000, 0x8edb273a, BRF_GRA },	     //  9
+	{ "sr-11.a4",      0x02000, 0x3a2726c3, BRF_GRA },	     //  10
+	{ "sr-12.a5",      0x02000, 0x1bd3d8bb, BRF_GRA },	     //  11
+	{ "sr-13.a6",      0x02000, 0x658f02c4, BRF_GRA },	     //  12
+	
+	{ "sr-14.l1",      0x04000, 0x2528bec6, BRF_GRA },	     //  13	Sprites
+	{ "sr-15.l2",      0x04000, 0xf89287aa, BRF_GRA },	     //  14
+	{ "sr-16.n1",      0x04000, 0x024418f8, BRF_GRA },	     //  15
+	{ "sr-17.n2",      0x04000, 0xe2c7e489, BRF_GRA },	     //  16
+	
+	{ "sb-5.e8",       0x00100, 0x93ab8153, BRF_GRA },	     //  17	PROMs
+	{ "sb-6.e9",       0x00100, 0x8ab44f7d, BRF_GRA },	     //  18
+	{ "sb-7.e10",      0x00100, 0xf4ade9a4, BRF_GRA },	     //  19
+	{ "sb-0.f1",       0x00100, 0x6047d91b, BRF_GRA },	     //  20
+	{ "sb-4.d6",       0x00100, 0x4858968d, BRF_GRA },	     //  21
+	{ "sb-8.k3",       0x00100, 0xf6fad943, BRF_GRA },	     //  22
+	{ "sb-2.d1",       0x00100, 0x8bb8b3df, BRF_GRA },	     //  23
+	{ "sb-3.d2",       0x00100, 0x3b0c99af, BRF_GRA },	     //  24
+	{ "sb-1.k6",       0x00100, 0x712ac508, BRF_GRA },	     //  25
+	{ "sb-9.m11",      0x00100, 0x4921635c, BRF_GRA },	     //  26
+};
+
+STD_ROM_PICK(Drvw)
+STD_ROM_FN(Drvw)
 
 static int MemIndex()
 {
@@ -473,10 +542,63 @@ static int SpritePlaneOffsets[4] = { 0x40004, 0x40000, 4, 0 };
 static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 8, 9, 10, 11, 256, 257, 258, 259, 264, 265, 266, 267 };
 static int SpriteYOffsets[16]    = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
 
+static void MachineInit()
+{
+	// Setup the Z80 emulation
+	ZetInit(2);
+	ZetOpen(0);
+	ZetSetReadHandler(Drv1942Read1);
+	ZetSetWriteHandler(Drv1942Write1);
+	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80Rom1             );
+	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80Rom1             );
+	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80Rom1 + 0x10000   );
+	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80Rom1 + 0x10000   );
+	ZetMapArea(0xcc00, 0xcc7f, 0, DrvSpriteRam           );
+	ZetMapArea(0xcc00, 0xcc7f, 1, DrvSpriteRam           );
+	ZetMapArea(0xcc00, 0xcc7f, 2, DrvSpriteRam           );
+	ZetMapArea(0xd000, 0xd7ff, 0, DrvFgVideoRam          );
+	ZetMapArea(0xd000, 0xd7ff, 1, DrvFgVideoRam          );
+	ZetMapArea(0xd000, 0xd7ff, 2, DrvFgVideoRam          );
+	ZetMapArea(0xd800, 0xdbff, 0, DrvBgVideoRam          );
+	ZetMapArea(0xd800, 0xdbff, 1, DrvBgVideoRam          );
+	ZetMapArea(0xd800, 0xdbff, 2, DrvBgVideoRam          );
+	ZetMapArea(0xe000, 0xefff, 0, DrvZ80Ram1             );
+	ZetMapArea(0xe000, 0xefff, 1, DrvZ80Ram1             );
+	ZetMapArea(0xe000, 0xefff, 2, DrvZ80Ram1             );
+	ZetMemEnd();
+	ZetClose();
+	
+	ZetOpen(1);
+	ZetSetReadHandler(Drv1942Read2);
+	ZetSetWriteHandler(Drv1942Write2);
+	ZetMapArea(0x0000, 0x3fff, 0, DrvZ80Rom2             );
+	ZetMapArea(0x0000, 0x3fff, 2, DrvZ80Rom2             );
+	ZetMapArea(0x4000, 0x47ff, 0, DrvZ80Ram2             );
+	ZetMapArea(0x4000, 0x47ff, 1, DrvZ80Ram2             );
+	ZetMapArea(0x4000, 0x47ff, 2, DrvZ80Ram2             );
+	ZetMemEnd();
+	ZetClose();
+	
+	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
+	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
+	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
+	pAY8910Buffer[3] = pFMBuffer + nBurnSoundLen * 3;
+	pAY8910Buffer[4] = pFMBuffer + nBurnSoundLen * 4;
+	pAY8910Buffer[5] = pFMBuffer + nBurnSoundLen * 5;
+
+	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	AY8910Init(1, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+
+	GenericTilesInit();
+	
+	// Reset the driver
+	DrvDoReset();
+}
+
 static int DrvInit()
 {
 	int nRet = 0, nLen;
-
+	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
@@ -529,56 +651,66 @@ static int DrvInit()
 	
 	free(DrvTempRom);
 	
-	// Setup the Z80 emulation
-	ZetInit(2);
-	ZetOpen(0);
-	ZetSetReadHandler(Drv1942Read1);
-	ZetSetWriteHandler(Drv1942Write1);
-	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80Rom1             );
-	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80Rom1             );
-	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80Rom1 + 0x10000   );
-	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80Rom1 + 0x10000   );
-	ZetMapArea(0xcc00, 0xcc7f, 0, DrvSpriteRam           );
-	ZetMapArea(0xcc00, 0xcc7f, 1, DrvSpriteRam           );
-	ZetMapArea(0xcc00, 0xcc7f, 2, DrvSpriteRam           );
-	ZetMapArea(0xd000, 0xd7ff, 0, DrvFgVideoRam          );
-	ZetMapArea(0xd000, 0xd7ff, 1, DrvFgVideoRam          );
-	ZetMapArea(0xd000, 0xd7ff, 2, DrvFgVideoRam          );
-	ZetMapArea(0xd800, 0xdbff, 0, DrvBgVideoRam          );
-	ZetMapArea(0xd800, 0xdbff, 1, DrvBgVideoRam          );
-	ZetMapArea(0xd800, 0xdbff, 2, DrvBgVideoRam          );
-	ZetMapArea(0xe000, 0xefff, 0, DrvZ80Ram1             );
-	ZetMapArea(0xe000, 0xefff, 1, DrvZ80Ram1             );
-	ZetMapArea(0xe000, 0xefff, 2, DrvZ80Ram1             );
-	ZetMemEnd();
-	ZetClose();
+	MachineInit();
 	
-	ZetOpen(1);
-	ZetSetReadHandler(Drv1942Read2);
-	ZetSetWriteHandler(Drv1942Write2);
-	ZetMapArea(0x0000, 0x3fff, 0, DrvZ80Rom2             );
-	ZetMapArea(0x0000, 0x3fff, 2, DrvZ80Rom2             );
-	ZetMapArea(0x4000, 0x47ff, 0, DrvZ80Ram2             );
-	ZetMapArea(0x4000, 0x47ff, 1, DrvZ80Ram2             );
-	ZetMapArea(0x4000, 0x47ff, 2, DrvZ80Ram2             );
-	ZetMemEnd();
-	ZetClose();
+	return 0;
+}
+
+static int DrvablInit()
+{
+	int nRet = 0, nLen;
 	
-	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
-	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
-	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
-	pAY8910Buffer[3] = pFMBuffer + nBurnSoundLen * 3;
-	pAY8910Buffer[4] = pFMBuffer + nBurnSoundLen * 4;
-	pAY8910Buffer[5] = pFMBuffer + nBurnSoundLen * 5;
+	// Allocate and Blank all required memory
+	Mem = NULL;
+	MemIndex();
+	nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(Mem, 0, nLen);
+	MemIndex();
 
-	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
-	AY8910Init(1, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	DrvTempRom = (unsigned char *)malloc(0x18000);
 
-	GenericTilesInit();
-
-	// Reset the driver
-	DrvDoReset();
-
+	// Load Z80 #1 Program Roms
+	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvZ80Rom1 + 0x10000, 1, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvZ80Rom1 + 0x14000, 2, 1); if (nRet != 0) return 1;
+	
+	// Load Z80 #2 Program Roms
+	nRet = BurnLoadRom(DrvZ80Rom2 + 0x00000, 3, 1); if (nRet != 0) return 1;
+	
+	// Load and decode the chars
+	nRet = BurnLoadRom(DrvTempRom, 4, 1); if (nRet != 0) return 1;
+	GfxDecode(0x200, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x80, DrvTempRom, DrvChars);
+	
+	// Load and decode the tiles
+	memset(DrvTempRom, 0, 0x10000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000,  5, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x04000,  6, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x08000,  7, 1); if (nRet != 0) return 1;
+	GfxDecode(0x200, 3, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTempRom, DrvTiles);
+	
+	// Load and decode the sprites
+	memset(DrvTempRom, 0, 0x10000);
+	nRet = BurnLoadRom(DrvTempRom + 0x10000,  8, 1); if (nRet != 0) return 1;
+	memcpy(DrvTempRom + 0x04000, DrvTempRom + 0x10000, 0x4000);
+	memcpy(DrvTempRom + 0x00000, DrvTempRom + 0x14000, 0x4000);
+	nRet = BurnLoadRom(DrvTempRom + 0x10000,  9, 1); if (nRet != 0) return 1;
+	memcpy(DrvTempRom + 0x0c000, DrvTempRom + 0x10000, 0x4000);
+	memcpy(DrvTempRom + 0x08000, DrvTempRom + 0x14000, 0x4000);
+	GfxDecode(0x200, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
+	
+	// Load the PROMs
+	nRet = BurnLoadRom(DrvPromRed,          10, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvPromGreen,        11, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvPromBlue,         12, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvPromCharLookup,   13, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvPromTileLookup,   14, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvPromSpriteLookup, 15, 1); if (nRet != 0) return 1;
+	
+	free(DrvTempRom);
+	
+	MachineInit();
+	
 	return 0;
 }
 
@@ -782,6 +914,8 @@ static int DrvFrame()
 	nCyclesTotal[0] = 4000000 / 60;
 	nCyclesTotal[1] = 3000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
+	
+//	ZetNewFrame();
 
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
@@ -792,8 +926,14 @@ static int DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i == 1) ZetRaiseIrq(0xcf);
-		if (i == 3) ZetRaiseIrq(0xd7);
+		if (i == 1) {
+			ZetSetVector(0xcf);
+			ZetRaiseIrq(0);
+		}
+		if (i == 3) {
+			ZetSetVector(0xd7);
+			ZetRaiseIrq(0);
+		}
 		ZetClose();
 
 		// Run Z80 #2
@@ -914,31 +1054,51 @@ static int DrvScan(int nAction, int *pnMin)
 }
 
 struct BurnDriver BurnDrvNineteen42 = {
-	"1942", NULL, NULL, "1984",
-	"1942 (set 1)\0", NULL, "Capcom", "Miscellaneous",
+	"1942", NULL, NULL, NULL, "1984",
+	"1942 (Revision B)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, DrvRomInfo, DrvRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, DrvRomInfo, DrvRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvNineteen42a = {
-	"1942a", "1942", NULL, "1984",
-	"1942 (set 2)\0", NULL, "Capcom", "Miscellaneous",
+	"1942a", "1942", NULL, NULL, "1984",
+	"1942 (Revision A)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, DrvaRomInfo, DrvaRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, DrvaRomInfo, DrvaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvNineteen42abl = {
+	"1942abl", "1942", NULL, NULL, "1984",
+	"1942 (Revision A, bootleg)\0", NULL, "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, DrvablRomInfo, DrvablRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvablInit, DrvExit, DrvFrame, NULL, DrvScan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvNineteen42b = {
-	"1942b", "1942", NULL, "1984",
-	"1942 (set 3)\0", NULL, "Capcom", "Miscellaneous",
+	"1942b", "1942", NULL, NULL, "1984",
+	"1942 (First Version)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, DrvbRomInfo, DrvbRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, DrvbRomInfo, DrvbRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvNineteen42w = {
+	"1942w", "1942", NULL, NULL, "1985",
+	"1942 (Williams Electronics license)\0", NULL, "Capcom (Williams Electronics license)", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, DrvwRomInfo, DrvwRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };

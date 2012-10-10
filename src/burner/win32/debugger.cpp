@@ -1360,7 +1360,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			}
 		}
 
-		if ((bBreakpointHit || bRunPause) && ((NMHDR*)lParam)->code == EN_MSGFILTER && ((MSGFILTER*)lParam)->msg == WM_KEYDOWN || ((MSGFILTER*)lParam)->msg == WM_SYSKEYDOWN) {
+		if ((bBreakpointHit || bRunPause) && ((NMHDR*)lParam)->code == EN_MSGFILTER && (((MSGFILTER*)lParam)->msg == WM_KEYDOWN || ((MSGFILTER*)lParam)->msg == WM_SYSKEYDOWN)) {
 
 			if (((NMHDR*)lParam)->idFrom != IDC_DBG_COMMAND && ((NMHDR*)lParam)->idFrom != nDisassWindow && ((NMHDR*)lParam)->idFrom != nMemdumpWindow) {
 				nWindow = 0;

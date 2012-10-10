@@ -54,9 +54,7 @@ static int nCyclesSegment;
 
 static int nTileType;
 
-// Input definitions and functions
-static struct BurnInputInfo Wc90InputList[] =
-{
+static struct BurnInputInfo Wc90InputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Wc90InputPort2 + 0, "p1 coin"   },
 	{"Start 1"           , BIT_DIGITAL  , Wc90InputPort2 + 2, "p1 start"  },
 	{"Coin 2"            , BIT_DIGITAL  , Wc90InputPort2 + 1, "p2 coin"   },
@@ -81,9 +79,9 @@ static struct BurnInputInfo Wc90InputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, Wc90Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Wc90);
+STDINPUTINFO(Wc90)
 
-inline void Wc90ClearOpposites(unsigned char* nJoystickInputs)
+inline static void Wc90ClearOpposites(unsigned char* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -93,13 +91,11 @@ inline void Wc90ClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void Wc90MakeInputs()
+inline static void Wc90MakeInputs()
 {
-	// Reset Inputs
 	Wc90Input[0] = Wc90Input[1] = 0x00;
 	Wc90Input[2] = 0x03;
 
-	// Compile Digital Inputs
 	for (int i = 0; i < 6; i++) {
 		Wc90Input[0] |= (Wc90InputPort0[i] & 1) << i;
 		Wc90Input[1] |= (Wc90InputPort1[i] & 1) << i;
@@ -110,12 +106,10 @@ inline void Wc90MakeInputs()
 	if (Wc90InputPort2[2]) Wc90Input[2] |= 0x04;
 	if (Wc90InputPort2[3]) Wc90Input[2] |= 0x08;
 
-	// Clear Opposites
 	Wc90ClearOpposites(&Wc90Input[0]);
 	Wc90ClearOpposites(&Wc90Input[1]);
 }
 
-// Dip Switch definitions
 static struct BurnDIPInfo Wc90DIPList[]=
 {
 	// Default Values
@@ -172,22 +166,13 @@ static struct BurnDIPInfo Wc90DIPList[]=
 	{0x12, 0x01, 0x1c, 0x10, "4:00"                   },
 	{0x12, 0x01, 0x1c, 0x00, "5:00"                   },
 
-//	{0   , 0xfe, 0   , 2   , "Unknown"                },
-//	{0x12, 0x01, 0x20, 0x20, "Off"                    },
-//	{0x12, 0x01, 0x20, 0x00, "On"                     },
-
-//	{0   , 0xfe, 0   , 2   , "Unknown"                },
-//	{0x12, 0x01, 0x40, 0x40, "Off"                    },
-//	{0x12, 0x01, 0x40, 0x00, "On"                     },
-
 	{0   , 0xfe, 0   , 2   , "Language"               },
 	{0x12, 0x01, 0x80, 0x00, "English"                },
 	{0x12, 0x01, 0x80, 0x80, "Japanese"               },
 };
 
-STDDIPINFO(Wc90);
+STDDIPINFO(Wc90)
 
-// Rom definitions
 static struct BurnRomInfo Wc90RomDesc[] = {
 	{ "ic87_01.bin",   0x08000, 0x4a1affbc, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "ic95_02.bin",   0x10000, 0x847d439c, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
@@ -210,9 +195,8 @@ static struct BurnRomInfo Wc90RomDesc[] = {
 	{ "ic82_06.bin",   0x20000, 0x2fd692ed, BRF_SND },			 //  14	ADPCM Samples
 };
 
-
-STD_ROM_PICK(Wc90);
-STD_ROM_FN(Wc90);
+STD_ROM_PICK(Wc90)
+STD_ROM_FN(Wc90)
 
 static struct BurnRomInfo Wc90aRomDesc[] = {
 	{ "wc90-1.bin",    0x08000, 0xd1804e1a, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -236,9 +220,33 @@ static struct BurnRomInfo Wc90aRomDesc[] = {
 	{ "ic82_06.bin",   0x20000, 0x2fd692ed, BRF_SND },			 //  14	ADPCM Samples
 };
 
+STD_ROM_PICK(Wc90a)
+STD_ROM_FN(Wc90a)
 
-STD_ROM_PICK(Wc90a);
-STD_ROM_FN(Wc90a);
+static struct BurnRomInfo Wc90bRomDesc[] = {
+	{ "ic87-1b.bin",   0x08000, 0xd024a971, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "ic95_02.bin",   0x10000, 0x847d439c, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+
+	{ "ic67_04.bin",   0x10000, 0xdc6eaf00, BRF_ESS | BRF_PRG }, //  2	Z80 #2 Program Code
+	{ "ic56_03.bin",   0x10000, 0x1ac02b3b, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+
+	{ "ic54_05.bin",   0x10000, 0x27c348b3, BRF_ESS | BRF_PRG }, //  4	Z80 #3 Program Code
+
+	{ "ic85_07v.bin",  0x10000, 0xc5219426, BRF_GRA },			 //  5	Characters
+	{ "ic86_08v.bin",  0x20000, 0x8fa1a1ff, BRF_GRA },			 //  6	Fg Tiles
+	{ "ic90_09v.bin",  0x20000, 0x99f8841c, BRF_GRA },			 //  7	Fg Tiles
+	{ "ic87_10v.bin",  0x20000, 0x8232093d, BRF_GRA },			 //  8	Bg Tiles
+	{ "ic91_11v.bin",  0x20000, 0x188d3789, BRF_GRA },			 //  9	Bg Tiles
+	{ "ic50_12v.bin",  0x20000, 0xda1fe922, BRF_GRA },			 //  10	Sprites
+	{ "ic54_13v.bin",  0x20000, 0x9ad03c2c, BRF_GRA },			 //  11	Sprites
+	{ "ic60_14v.bin",  0x20000, 0x499dfb1b, BRF_GRA },			 //  12	Sprites
+	{ "ic65_15v.bin",  0x20000, 0xd8ea5c81, BRF_GRA },			 //  13	Sprites
+
+	{ "ic82_06.bin",   0x20000, 0x2fd692ed, BRF_SND },			 //  14	ADPCM Samples
+};
+
+STD_ROM_PICK(Wc90b)
+STD_ROM_FN(Wc90b)
 
 static struct BurnRomInfo Wc90tRomDesc[] = {
 	{ "wc90a-1.bin",   0x08000, 0xb6f51a68, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -262,12 +270,10 @@ static struct BurnRomInfo Wc90tRomDesc[] = {
 	{ "ic82_06.bin",   0x20000, 0x2fd692ed, BRF_SND },			 //  14	ADPCM Samples
 };
 
+STD_ROM_PICK(Wc90t)
+STD_ROM_FN(Wc90t)
 
-STD_ROM_PICK(Wc90t);
-STD_ROM_FN(Wc90t);
-
-// Driver reset
-int Wc90DoReset()
+static int Wc90DoReset()
 {
 	Wc90Scroll0XLo = Wc90Scroll0XHi = Wc90Scroll0YLo = Wc90Scroll0YHi = 0;
 	Wc90Scroll1XLo = Wc90Scroll1XHi = Wc90Scroll1YLo = Wc90Scroll1YHi = 0;
@@ -282,15 +288,14 @@ int Wc90DoReset()
 	}
 
 	BurnYM2608Reset();
+	
+	HiscoreReset();
 
 	return 0;
 }
 
-// YM2608 IRQ Handler
 static void wc90FMIRQHandler(int, int nStatus)
 {
-//	bprintf(PRINT_NORMAL, _T("    YM2608 IRQ status: 0x%02X (%6i cycles)\n"), nStatus, ZetTotalCycles());
-
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
 	} else {
@@ -298,12 +303,9 @@ static void wc90FMIRQHandler(int, int nStatus)
 	}
 }
 
-// CPU synchronisation
 static inline void wc90SendSoundCommand(int nCommand)
 {
 	int nCycles = ZetTotalCycles() * 2 / 3;
-
-//	bprintf(PRINT_NORMAL, _T("    Sync Sound CPU %i -> %i\n"), ZetTotalCycles(), nCycles);
 
 	Wc90SoundLatch = nCommand;
 
@@ -330,7 +332,6 @@ static double wc90GetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-// Unmapped Memory reads and writes
 unsigned char __fastcall Wc90Read1(unsigned short a)
 {
 	switch (a) {
@@ -495,7 +496,6 @@ void __fastcall Wc90Write3(unsigned short a, unsigned char d)
 	}
 }
 
-// Function to allocate memory and set up pointers
 static int MemIndex()
 {
 	unsigned char *Next; Next = Mem;
@@ -523,15 +523,14 @@ static int MemIndex()
 	Wc90BgTiles            = Next; Next += (2048 * 16 * 16);
 	Wc90FgTiles            = Next; Next += (2048 * 16 * 16);
 	Wc90Sprites            = Next; Next += (4096 * 16 * 16);
-	Wc90Palette            = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	Wc90Palette            = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-// Background Layer emulation
-void Wc90RenderBgLayer()
+static void Wc90RenderBgLayer()
 {
 	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
@@ -564,7 +563,7 @@ void Wc90RenderBgLayer()
 	}
 }
 
-void Wc90tRenderBgLayer()
+static void Wc90tRenderBgLayer()
 {
 	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
@@ -597,8 +596,7 @@ void Wc90tRenderBgLayer()
 	}
 }
 
-// Foreground Layer emulation
-void Wc90RenderFgLayer()
+static void Wc90RenderFgLayer()
 {
 	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
@@ -631,7 +629,7 @@ void Wc90RenderFgLayer()
 	}
 }
 
-void Wc90tRenderFgLayer()
+static void Wc90tRenderFgLayer()
 {
 	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
@@ -664,8 +662,7 @@ void Wc90tRenderFgLayer()
 	}
 }
 
-// Character Layer emulation
-void Wc90RenderCharLayer()
+static void Wc90RenderCharLayer()
 {
 	int mx, my, Code, Colour, x, y, TileIndex = 0;
 
@@ -696,8 +693,7 @@ void Wc90RenderCharLayer()
 	}
 }
 
-// Sprite Layers emulation
-void Wc90RenderSprite(int Code, int Colour, int FlipX, int FlipY, int x, int y)
+static void Wc90RenderSprite(int Code, int Colour, int FlipX, int FlipY, int x, int y)
 {
 	if (x > 15 && x < 240 && y > 15 && y < 208) {
 		if (!FlipY) {
@@ -730,103 +726,89 @@ void Wc90RenderSprite(int Code, int Colour, int FlipX, int FlipY, int x, int y)
 	}
 }
 
-static char pos32x32[] = { 0, 1, 2, 3 };
-static char pos32x32x[] = { 1, 0, 3, 2 };
-static char pos32x32y[] = { 2, 3, 0, 1 };
-static char pos32x32xy[] = { 3, 2, 1, 0 };
-
-static char pos32x64[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static char pos32x64x[] = { 5, 4, 7, 6, 1, 0, 3, 2 };
-static char pos32x64y[] = { 2, 3, 0, 1,	6, 7, 4, 5 };
-static char pos32x64xy[] = { 7, 6, 5, 4, 3, 2, 1, 0 };
-
-static char pos64x32[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static char pos64x32x[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
-static char pos64x32y[] = { 6, 7, 4, 5, 2, 3, 0, 1 };
-static char pos64x32xy[] = { 7, 6, 5, 4, 3, 2, 1, 0 };
-
-static char pos64x64[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-static char pos64x64x[] = { 5, 4, 7, 6, 1, 0, 3, 2, 13, 12, 15, 14, 9, 8, 11, 10 };
-static char pos64x64y[] = { 10, 11, 8, 9, 14, 15, 12, 13, 2, 3, 0, 1, 6, 7, 4, 5 };
-static char pos64x64xy[] = { 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-
-static char* p32x32[4] = {
-	pos32x32,
-	pos32x32x,
-	pos32x32y,
-	pos32x32xy
+static const char p32x32[4][4] = {
+	{ 0, 1, 2, 3 },
+	{ 1, 0, 3, 2 },
+	{ 2, 3, 0, 1 },
+	{ 3, 2, 1, 0 }
 };
 
-static char* p32x64[4] = {
-	pos32x64,
-	pos32x64x,
-	pos32x64y,
-	pos32x64xy
+static const char p32x64[4][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 5, 4, 7, 6, 1, 0, 3, 2 },
+	{ 2, 3, 0, 1, 6, 7, 4, 5 },
+	{ 7, 6, 5, 4, 3, 2, 1, 0 }
 };
 
-static char* p64x32[4] = {
-	pos64x32,
-	pos64x32x,
-	pos64x32y,
-	pos64x32xy
+static const char p64x32[4][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 1, 0, 3, 2, 5, 4, 7, 6 },
+	{ 6, 7, 4, 5, 2, 3, 0, 1 },
+	{ 7, 6, 5, 4, 3, 2, 1, 0 }
 };
 
-static char* p64x64[4] = {
-	pos64x64,
-	pos64x64x,
-	pos64x64y,
-	pos64x64xy
+static const char p64x64[4][16] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 },
+	{ 5, 4, 7, 6, 1, 0, 3, 2, 13, 12, 15, 14, 9, 8, 11, 10 },
+	{ 10, 11, 8, 9, 14, 15, 12, 13, 2, 3, 0, 1, 6, 7, 4, 5 },
+	{ 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 }
 };
 
-static void drawsprite_16x16(int Code, int x, int y, int Bank, int Attr) {
+static void drawsprite_16x16(int Code, int x, int y, int Bank, int Attr)
+{
 	Wc90RenderSprite(Code, Attr >> 4, Bank & 1, Bank & 2, x, y);
 }
 
-static void drawsprite_16x32(int Code, int x, int y, int Bank, int Attr) {
+static void drawsprite_16x32(int Code, int x, int y, int Bank, int Attr)
+{
 	if (Bank & 2) {
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x, y + 16);
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	} else {
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x, y +  0);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x, y + 16);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
 	}
 }
 
-static void drawsprite_16x64(int Code, int x, int y, int Bank, int Attr) {
+static void drawsprite_16x64(int Code, int x, int y, int Bank, int Attr)
+{
 	if (Bank & 2) {
-		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x, y + 48);
-		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x, y + 32);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x, y + 16);
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x, y +  0);
+		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 48);
+		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 32);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	} else {
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x, y +  0);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x, y + 16);
-		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x, y + 32);
-		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x, y + 48);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
+		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 32);
+		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 48);
 	}
 }
 
-static void drawsprite_32x16(int Code, int x, int y, int Bank, int Attr) {
+static void drawsprite_32x16(int Code, int x, int y, int Bank, int Attr)
+{
 	if (Bank & 1) {
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y);
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	} else {
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
 	}
 }
 
-static void drawsprite_32x32(int Code, int x, int y, int Bank, int Attr) {
-	char *p = p32x32[Bank & 3];
-
+static void drawsprite_32x32(int Code, int x, int y, int Bank, int Attr)
+{
+	const char *p = p32x32[Bank & 3];
+	
 	Wc90RenderSprite(Code + p[0], Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	Wc90RenderSprite(Code + p[1], Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
 	Wc90RenderSprite(Code + p[2], Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
 	Wc90RenderSprite(Code + p[3], Attr >> 4, Bank & 1, Bank & 2, x + 16, y + 16);
 }
 
-static void drawsprite_32x64(int Code, int x, int y, int Bank, int Attr) {
-	char *p = p32x64[Bank & 3];
+static void drawsprite_32x64(int Code, int x, int y, int Bank, int Attr)
+{
+	const char *p = p32x64[Bank & 3];
 
 	Wc90RenderSprite(Code + p[0], Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	Wc90RenderSprite(Code + p[1], Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
@@ -838,41 +820,44 @@ static void drawsprite_32x64(int Code, int x, int y, int Bank, int Attr) {
 	Wc90RenderSprite(Code + p[7], Attr >> 4, Bank & 1, Bank & 2, x + 16, y + 48);
 }
 
-static void drawsprite_64x16(int Code, int x, int y, int Bank, int Attr) {
+static void drawsprite_64x16(int Code, int x, int y, int Bank, int Attr)
+{
 	if (Bank & 1) {
-		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x + 48, y);
-		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x + 32, y);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y);
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y);
+		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x + 48, y +  0);
+		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x + 32, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	} else {
-		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y);
-		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y);
-		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x + 32, y);
-		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x + 48, y);
+		Wc90RenderSprite(Code + 0, Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
+		Wc90RenderSprite(Code + 1, Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
+		Wc90RenderSprite(Code + 2, Attr >> 4, Bank & 1, Bank & 2, x + 32, y +  0);
+		Wc90RenderSprite(Code + 3, Attr >> 4, Bank & 1, Bank & 2, x + 48, y +  0);
 	}
 }
 
-static void drawsprite_64x32(int Code, int x, int y, int Bank, int Attr) {
-	char *p = p64x32[Bank & 3];
+static void drawsprite_64x32(int Code, int x, int y, int Bank, int Attr)
+{
+	const char *p = p64x32[Bank & 3];
 
 	Wc90RenderSprite(Code + p[0], Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	Wc90RenderSprite(Code + p[1], Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
 	Wc90RenderSprite(Code + p[2], Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
 	Wc90RenderSprite(Code + p[3], Attr >> 4, Bank & 1, Bank & 2, x + 16, y + 16);
-	Wc90RenderSprite(Code + p[4], Attr >> 4, Bank & 1, Bank & 2, x + 32 ,y +  0);
+	Wc90RenderSprite(Code + p[4], Attr >> 4, Bank & 1, Bank & 2, x + 32, y +  0);
 	Wc90RenderSprite(Code + p[5], Attr >> 4, Bank & 1, Bank & 2, x + 48, y +  0);
 	Wc90RenderSprite(Code + p[6], Attr >> 4, Bank & 1, Bank & 2, x + 32, y + 16);
 	Wc90RenderSprite(Code + p[7], Attr >> 4, Bank & 1, Bank & 2, x + 48, y + 16);
 }
 
-static void drawsprite_64x64(int Code, int x, int y, int Bank, int Attr) {
-	char *p = p64x64[Bank & 3];
+static void drawsprite_64x64(int Code, int x, int y, int Bank, int Attr)
+{
+	const char *p = p64x64[Bank & 3];
 
 	Wc90RenderSprite(Code + p[ 0], Attr >> 4, Bank & 1, Bank & 2, x +  0, y +  0);
 	Wc90RenderSprite(Code + p[ 1], Attr >> 4, Bank & 1, Bank & 2, x + 16, y +  0);
 	Wc90RenderSprite(Code + p[ 2], Attr >> 4, Bank & 1, Bank & 2, x +  0, y + 16);
 	Wc90RenderSprite(Code + p[ 3], Attr >> 4, Bank & 1, Bank & 2, x + 16, y + 16);
-	Wc90RenderSprite(Code + p[ 4], Attr >> 4, Bank & 1, Bank & 2, x + 32 ,y +  0);
+	Wc90RenderSprite(Code + p[ 4], Attr >> 4, Bank & 1, Bank & 2, x + 32, y +  0);
 	Wc90RenderSprite(Code + p[ 5], Attr >> 4, Bank & 1, Bank & 2, x + 48, y +  0);
 	Wc90RenderSprite(Code + p[ 6], Attr >> 4, Bank & 1, Bank & 2, x + 32, y + 16);
 	Wc90RenderSprite(Code + p[ 7], Attr >> 4, Bank & 1, Bank & 2, x + 48, y + 16);
@@ -915,7 +900,7 @@ static drawsprites_procdef drawsprites_proc[16] = {
 	drawsprite_64x64		/* 1111 = 64x64 */
 };
 
-void Wc90RenderSprites(int Priority)
+static void Wc90RenderSprites(int Priority)
 {
 	int Code, Attr, x, y;
 
@@ -926,8 +911,10 @@ void Wc90RenderSprites(int Priority)
 			if (Bank & 4) {
 				Code = (Wc90SpriteRam[Offs + 2] >> 2) + (Wc90SpriteRam[Offs + 3] << 6);
 
-				x = Wc90SpriteRam[Offs + 8] + ((Wc90SpriteRam[Offs + 9] & 1) << 8);
+				x = Wc90SpriteRam[Offs + 8] + ((Wc90SpriteRam[Offs + 9] & 3) << 8);
 				y = Wc90SpriteRam[Offs + 6] + ((Wc90SpriteRam[Offs + 7] & 1) << 8);
+				
+				if (x >= 0x300) x -= 0x400;
 
 				y -= 16;
 
@@ -938,7 +925,6 @@ void Wc90RenderSprites(int Priority)
 	}
 }
 
-// Palette handling functions
 inline static unsigned int CalcCol(unsigned short nColour)
 {
 	int r, g, b;
@@ -954,7 +940,7 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int Wc90CalcPalette()
+static int Wc90CalcPalette()
 {
 	int i;
 
@@ -965,8 +951,7 @@ int Wc90CalcPalette()
 	return 0;
 }
 
-// Draw Screen functions
-void Wc90Draw()
+static void Wc90Draw()
 {
 	Wc90CalcPalette();
 	Wc90RenderBgLayer();
@@ -978,7 +963,7 @@ void Wc90Draw()
 	BurnTransferCopy(Wc90Palette);
 }
 
-void Wc90tDraw()
+static void Wc90tDraw()
 {
 	Wc90CalcPalette();
 	Wc90tRenderBgLayer();
@@ -997,8 +982,7 @@ static drawscreen_procdef drawscreen_proc[2] = {
 	Wc90tDraw,
 };
 
-// Frame function
-int Wc90Frame()
+static int Wc90Frame()
 {
 	int nInterleave = 16;
 	int nCurrentCPU;
@@ -1006,6 +990,10 @@ int Wc90Frame()
 	if (Wc90Reset) Wc90DoReset();
 
 	Wc90MakeInputs();
+	
+	nCyclesTotal[0] = (int)((long long)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 59.17));
+	nCyclesTotal[1] = (int)((long long)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 59.17));
+	nCyclesTotal[2] = (int)(double)(4000000 / 59.17);
 
 	ZetNewFrame();
 
@@ -1015,11 +1003,7 @@ int Wc90Frame()
 		ZetIdle(nCyclesDone[i]);
 		ZetClose();
 	}
-
-	nCyclesTotal[0] = 6000000 / 60;
-	nCyclesTotal[1] = 6000000 / 60;
-	nCyclesTotal[2] = 4000000 / 60;
-
+	
 	for (int i = 0; i < nInterleave; i++) {
 		int nNext;
 
@@ -1053,8 +1037,6 @@ int Wc90Frame()
 	nCyclesDone[2] = ZetTotalCycles() - nCyclesTotal[2];
 	ZetClose();
 
-//	bprintf(PRINT_NORMAL, _T("    %i %i %i\n"), nCyclesDone[0], nCyclesDone[1], nCyclesDone[2]);
-
 	if (pBurnDraw) (*(drawscreen_proc[nTileType]))();
 
 	return 0;
@@ -1070,8 +1052,7 @@ static int SpritePlaneOffsets[4] = { 0, 1, 2, 3 };
 static int SpriteXOffsets[16]    = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c, 128, 132, 0x200080, 0x200084, 136, 140, 0x200088, 0x20008c };
 static int SpriteYOffsets[16]    = { 0, 16, 32, 48, 64, 80, 96, 112, 256, 272, 288, 304, 320, 336, 352, 368 };
 
-// Driver Init function
-int Wc90Init()
+static int Wc90Init()
 {
 	int nRet = 0, nLen;
 
@@ -1202,19 +1183,20 @@ int Wc90Init()
 	} else {
 		nTileType = 0;
 	}
+	
+	BurnSetRefreshRate(59.17);
 
 	int Wc90YM2608RomSize = 0x20000;
 	BurnYM2608Init(8000000, Wc90YM2608Rom, &Wc90YM2608RomSize, &wc90FMIRQHandler, wc90SynchroniseStream, wc90GetTime, 0);
 	BurnTimerAttachZet(4000000);
-
+	
 	// Reset the driver
 	Wc90DoReset();
 
 	return 0;
 }
 
-// Driver Exit function
-int Wc90Exit()
+static int Wc90Exit()
 {
 	ZetExit();
 	GenericTilesExit();
@@ -1222,11 +1204,26 @@ int Wc90Exit()
 
 	free(Mem);
 	Mem = NULL;
+	
+	Wc90Scroll0YLo = 0;
+	Wc90Scroll0YHi = 0;
+	Wc90Scroll0XLo = 0;
+	Wc90Scroll0XHi = 0;
+	Wc90Scroll1YLo = 0;
+	Wc90Scroll1YHi = 0;
+	Wc90Scroll1XLo = 0;
+	Wc90Scroll1XHi = 0;
+	Wc90Scroll2YLo = 0;
+	Wc90Scroll2YHi = 0;
+	Wc90Scroll2XLo = 0;
+	Wc90Scroll2XHi = 0;
+	Wc90SoundLatch = 0;
+	
+	nTileType = 0;
 
 	return 0;
 }
 
-// Scan Ram function
 static int Wc90Scan(int nAction,int *pnMin)
 {
 	struct BurnArea ba;
@@ -1269,33 +1266,42 @@ static int Wc90Scan(int nAction,int *pnMin)
 	return 0;
 }
 
-// Driver definitions
 struct BurnDriver BurnDrvWc90 = {
-	"wc90", NULL, NULL, "1989",
-	"World Cup '90 (set 1)\0", NULL, "Tecmo", "Miscellaneous",
+	"wc90", NULL, NULL, NULL, "1989",
+	"World Cup '90 (World)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, Wc90RomInfo, Wc90RomName, Wc90InputInfo, Wc90DIPInfo,
+	BDF_GAME_WORKING | BDF_HISCORE_SUPPORTED, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSFOOTBALL, 0,
+	NULL, Wc90RomInfo, Wc90RomName, NULL, NULL, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x400, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWc90a = {
-	"wc90a", "wc90", NULL, "1989",
-	"World Cup '90 (set 2)\0", NULL, "Tecmo", "Miscellaneous",
+	"wc90a", "wc90", NULL, NULL, "1989",
+	"World Cup '90 (Euro set 1)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, Wc90aRomInfo, Wc90aRomName, Wc90InputInfo, Wc90DIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSFOOTBALL, 0,
+	NULL, Wc90aRomInfo, Wc90aRomName, NULL, NULL, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x400, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvWc90b = {
+	"wc90b", "wc90", NULL, NULL, "1989",
+	"World Cup '90 (Euro set 2)\0", NULL, "Tecmo", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_HISCORE_SUPPORTED, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSFOOTBALL, 0,
+	NULL, Wc90bRomInfo, Wc90bRomName, NULL, NULL, Wc90InputInfo, Wc90DIPInfo,
+	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
+	0, NULL, NULL, NULL, NULL, 0x400, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWc90t = {
-	"wc90t", "wc90", NULL, "1989",
+	"wc90t", "wc90", NULL, NULL, "1989",
 	"World Cup '90 (trackball)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, Wc90tRomInfo, Wc90tRomName, Wc90InputInfo, Wc90DIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSFOOTBALL, 0,
+	NULL, Wc90tRomInfo, Wc90tRomName, NULL, NULL, Wc90InputInfo, Wc90DIPInfo,
 	Wc90Init, Wc90Exit, Wc90Frame, NULL, Wc90Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x400, 256, 224, 4, 3
 };

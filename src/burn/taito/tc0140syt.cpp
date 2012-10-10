@@ -1,6 +1,7 @@
 // TC0140SYT
 
 #include "burnint.h"
+#include "taito_ic.h"
 
 #define TC0140SYT_PORT01_FULL         (0x01)
 #define TC0140SYT_PORT23_FULL         (0x02)
@@ -190,10 +191,8 @@ void TC0140SYTSlaveCommWrite(UINT8 Data)
 }
 
 void TC0140SYTReset()
-{
-	int i;
-	
-	for (i = 0; i < 4; i++) {
+{	
+	for (int i = 0; i < 4; i++) {
 		tc0140syt.SlaveData[i] = 0;
 		tc0140syt.MasterData[i] = 0;
 	}
@@ -203,6 +202,11 @@ void TC0140SYTReset()
 	tc0140syt.Status = 0;
 	tc0140syt.NmiEnabled = 0;
 	tc0140syt.NmiReq = 0;
+}
+
+void TC0140SYTInit()
+{
+	TaitoIC_TC0140SYTInUse = 1;
 }
 
 void TC0140SYTExit()
@@ -227,3 +231,8 @@ void TC0140SYTScan(int nAction)
 		SCAN_VAR(tc0140syt);
 	}
 }
+
+#undef TC0140SYT_PORT01_FULL
+#undef TC0140SYT_PORT23_FULL
+#undef TC0140SYT_PORT01_FULL_MASTER
+#undef TC0140SYT_PORT23_FULL_MASTER

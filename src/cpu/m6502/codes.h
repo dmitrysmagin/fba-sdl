@@ -32,8 +32,8 @@ case 0x60:
 
 /* JSR $ssss ABS */
 case 0x20:
-  K.B.l=Op6502(R->PC.W++);
-  K.B.h=Op6502(R->PC.W);
+  K.B.l=OpArg6502(R->PC.W++);
+  K.B.h=OpArg6502(R->PC.W);
   M_PUSH(R->PC.B.h);
   M_PUSH(R->PC.B.l);
   R->PC=K;break;
@@ -229,7 +229,7 @@ case 0x6A: M_ROR(R->A);break;             /* ROR a ACC */
 default:
   /* Try to execute a patch function. If it fails, treat */
   /* the opcode as undefined.                            */
-  if(!Patch6502(Op6502(R->PC.W-1),R))
+  if(!Patch6502(OpArg6502(R->PC.W-1),R))
     if(R->TrapBadOps)
       printf
       (

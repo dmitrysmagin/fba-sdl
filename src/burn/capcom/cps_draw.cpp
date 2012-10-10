@@ -11,6 +11,13 @@ int nCpsLcReg = 0;						// Address of layer controller register
 int CpsLayEn[6] = {0, 0, 0, 0, 0, 0};	// bits for layer enable
 int MaskAddr[4] = {0, 0, 0, 0};
 
+int CpsLayer1XOffs = 0;
+int CpsLayer2XOffs = 0;
+int CpsLayer3XOffs = 0;
+int CpsLayer1YOffs = 0;
+int CpsLayer2YOffs = 0;
+int CpsLayer3YOffs = 0;
+
 static void Cps1Layers();
 static void Cps2Layers();
 
@@ -59,9 +66,12 @@ static int DrawScroll1(int i)
 	nScrY = *((unsigned short *)(CpsSaveReg[i] + 0x0e)); // Scroll 1 Y
 
 	nScrX += 0x40;
-	if (Sf2Hack) nScrX -= 0x0c;
-	if (Cawingb || Wofh) nScrX += 0xFFC0;
+
+//	bprintf(PRINT_NORMAL, _T("1 %x, %x, %x\n"), nOff, nScrX, nScrY);
+
+	nScrX += CpsLayer1XOffs;
 	nScrY += 0x10;
+	nScrY += CpsLayer1YOffs;
 	nOff <<= 8;
 	nOff &= 0xffc000;
 	Find = CpsFindGfxRam(nOff, 0x4000);
@@ -89,11 +99,14 @@ static int DrawScroll2Init(int i)
 	nScr2Off <<= 8;
 
 	nCpsrScrX += 0x40;
-	if (Sf2Hack) nCpsrScrX -=0x0e;
-	if (Wofh) nCpsrScrX += 0xFFC0;
+
+//	bprintf(PRINT_NORMAL, _T("2 %x, %x, %x\n"), nScr2Off, nCpsrScrX, nCpsrScrY);
+
+	nCpsrScrX += CpsLayer2XOffs;
 	nCpsrScrX &= 0x03FF;
 
 	nCpsrScrY += 0x10;
+	nCpsrScrY += CpsLayer2YOffs;
 	nCpsrScrY &= 0x03FF;
 
 	nScr2Off &= 0xFFC000;
@@ -155,9 +168,12 @@ static int DrawScroll3(int i)
 	nScrY = *((unsigned short *)(CpsSaveReg[i] + 0x16)); // Scroll 3 Y
 
 	nScrX += 0x40;
-	if (Sf2Hack) nScrX -= 0x10;
-	if (Wofh) nScrX += 0xFFC0;
+
+//	bprintf(PRINT_NORMAL, _T("3 %x, %x, %x\n"), nOff, nScrX, nScrY);
+
+	nScrX += CpsLayer3XOffs;
 	nScrY += 0x10;
+	nScrY += CpsLayer3YOffs;
 
 	nOff <<= 8;
 	nOff &= 0xffc000;
@@ -204,13 +220,13 @@ static void Cps1Layers()
   if (LayerCont & CpsLayEn[2]) nDrawMask|=4;
   if (LayerCont & CpsLayEn[3]) nDrawMask|=8;
   nDrawMask&=nBurnLayer;   // User choice of layers to display
-
+  
   // Layer control:
   Draw[0]=(LayerCont>>12)&3; // top layer
   Draw[1]=(LayerCont>>10)&3;
   Draw[2]=(LayerCont>> 8)&3;
   Draw[3]=(LayerCont>> 6)&3; // bottom layer (most covered up)
-
+  
   // Check for repeated layers and if there are any, the lower layer is omitted
 #define CRP(a,b) if (Draw[a]==Draw[b]) Draw[b]=-1;
   CRP(0,1) CRP(0,2) CRP(0,3) CRP(1,2) CRP(1,3) CRP(2,3)
@@ -389,13 +405,69 @@ static void Cps2Layers()
 	}
 }
 
+void CpsClearScreen()
+{
+	if (Cps == 1) {
+		switch (nBurnBpp) {
+			case 4: {
+				unsigned int* pClear = (unsigned int*)pBurnDraw;
+				unsigned int nColour = CpsPal[0xbff ^ 15];
+				for (int i = 0; i < 384 * 224 / 8; i++) {
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+				}
+				break;
+			}
+
+			case 3: {
+				unsigned char* pClear = pBurnDraw;
+				unsigned char r = CpsPal[0xbff ^ 15];
+				unsigned char g = (r >> 8) & 0xFF;
+				unsigned char b = (r >> 16) & 0xFF;
+				r &= 0xFF;
+				for (int i = 0; i < 384 * 224; i++) {
+					*pClear++ = r;
+					*pClear++ = g;
+					*pClear++ = b;
+				}
+				break;
+			}
+
+			case 2: {
+				unsigned int* pClear = (unsigned int*)pBurnDraw;
+				unsigned int nColour = CpsPal[0xbff ^ 15] | CpsPal[0xbff ^ 15] << 16;
+				for (int i = 0; i < 384 * 224 / 16; i++) {
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+					*pClear++ = nColour;
+				}
+				break;
+			}
+		}
+	} else {
+		memset(pBurnDraw, 0, 384 * 224 * nBurnBpp);
+	}
+}
+
 static void DoDraw(int Recalc)
 {
 	CtvReady();								// Point to correct tile drawing functions
-	BurnClearScreen();
 
 	// Update Palette
 	CpsPalUpdate(CpsSavePal, Recalc);		// recalc whole palette if needed
+	
+	CpsClearScreen();
 
 	CpsLayersDoX();
 }

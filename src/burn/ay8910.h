@@ -39,4 +39,7 @@ int AY8910InitYM(int chip, int clock, int sample_rate,
 
 int AY8910Scan(int nAction, int* pnMin);
 
+int AY8910SetPorts(int chip, read8_handler portAread, read8_handler portBread,
+		write8_handler portAwrite, write8_handler portBwrite);
+
 #endif

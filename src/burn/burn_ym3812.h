@@ -4,6 +4,18 @@ extern "C" {
 }
 #include "timer.h"
 
+int BurnTimerUpdateYM3812(int nCycles);
+void BurnTimerEndFrameYM3812(int nCycles);
+void BurnTimerUpdateEndYM3812();
+int BurnTimerAttachSekYM3812(int nClockspeed);
+int BurnTimerAttachZetYM3812(int nClockspeed);
+int BurnTimerAttachM6809YM3812(int nClockspeed);
+int BurnTimerAttachHD6309YM3812(int nClockspeed);
+int BurnTimerAttachM6800YM3812(int nClockspeed);
+int BurnTimerAttachHD63701YM3812(int nClockspeed);
+int BurnTimerAttachM6803YM3812(int nClockspeed);
+int BurnTimerAttachM6502YM3812(int nClockspeed);
+
 extern "C" void BurnYM3812UpdateRequest();
 
 int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int), int bAddSignal);

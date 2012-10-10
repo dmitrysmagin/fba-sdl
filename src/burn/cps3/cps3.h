@@ -11,6 +11,8 @@
 extern unsigned char cps3_reset;
 extern unsigned char cps3_palette_change;
 
+extern unsigned short *Cps3CurPal;
+
 extern unsigned int cps3_key1, cps3_key2, cps3_isSpecial;
 extern unsigned int cps3_bios_test_hack, cps3_game_test_hack;
 extern unsigned int cps3_speedup_ram_address, cps3_speedup_code_address;

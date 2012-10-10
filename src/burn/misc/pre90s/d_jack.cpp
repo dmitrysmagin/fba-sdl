@@ -16,11 +16,13 @@ static int tri_fix, joinem, loverb, suprtriv;
 static int timer_rate, flip_screen;
 static unsigned int *Palette, *DrvPal;
 static unsigned char DrvCalcPal;
-static int snd_cpu_irq;
 
 static unsigned char soundlatch;
 static int question_address, question_rom, remap_address[16];
 static int joinem_snd_bit;
+
+static int nCyclesSegment;
+static int nCyclesDone[2], nCyclesTotal[2];
 
 static struct BurnInputInfo JackInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -46,7 +48,7 @@ static struct BurnInputInfo JackInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
 };
 
-STDINPUTINFO(Jack);
+STDINPUTINFO(Jack)
 
 static struct BurnInputInfo ZzyzzyxxInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
@@ -65,7 +67,7 @@ static struct BurnInputInfo ZzyzzyxxInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,   "dip"      },
 };
 
-STDINPUTINFO(Zzyzzyxx);
+STDINPUTINFO(Zzyzzyxx)
 
 static struct BurnInputInfo FreezeInputList[] = {
 	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
@@ -80,7 +82,7 @@ static struct BurnInputInfo FreezeInputList[] = {
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
 };
 
-STDINPUTINFO(Freeze);
+STDINPUTINFO(Freeze)
 
 static struct BurnInputInfo SucasinoInputList[] = {
 	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -99,7 +101,7 @@ static struct BurnInputInfo SucasinoInputList[] = {
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
 };
 
-STDINPUTINFO(Sucasino);
+STDINPUTINFO(Sucasino)
 
 static struct BurnInputInfo TripoolInputList[] = {
 	{"Select Game 1", BIT_DIGITAL  , DrvJoy1 + 2,   "Select Game 1"},
@@ -127,7 +129,7 @@ static struct BurnInputInfo TripoolInputList[] = {
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 };
 
-STDINPUTINFO(Tripool);
+STDINPUTINFO(Tripool)
 
 static struct BurnInputInfo JoinemInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"  },
@@ -149,7 +151,7 @@ static struct BurnInputInfo JoinemInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
 };
 
-STDINPUTINFO(Joinem);
+STDINPUTINFO(Joinem)
 
 static struct BurnInputInfo LoverboyInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"  },
@@ -172,7 +174,7 @@ static struct BurnInputInfo LoverboyInputList[] = {
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
 };
 
-STDINPUTINFO(Loverboy);
+STDINPUTINFO(Loverboy)
 
 static struct BurnInputInfo StrivInputList[] = {
 	{"Coin"      ,    BIT_DIGITAL  , DrvJoy3 + 1,	"p1 coin"  },
@@ -191,7 +193,7 @@ static struct BurnInputInfo StrivInputList[] = {
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
 };
 
-STDINPUTINFO(Striv);
+STDINPUTINFO(Striv)
 
 static struct BurnDIPInfo JackDIPList[]=
 {
@@ -242,7 +244,7 @@ static struct BurnDIPInfo JackDIPList[]=
 	{0x12, 0x01, 0x80, 0x80, "On"},
 };
 
-STDDIPINFO(Jack);
+STDDIPINFO(Jack)
 
 
 static struct BurnDIPInfo Jack2DIPList[]=
@@ -294,7 +296,7 @@ static struct BurnDIPInfo Jack2DIPList[]=
 	{0x12, 0x01, 0x80, 0x80, "On"},
 };
 
-STDDIPINFO(Jack2);
+STDDIPINFO(Jack2)
 
 static struct BurnDIPInfo Jack3DIPList[]=
 {
@@ -345,7 +347,7 @@ static struct BurnDIPInfo Jack3DIPList[]=
 	{0x12, 0x01, 0x80, 0x80, "On"},
 };
 
-STDDIPINFO(Jack3);
+STDDIPINFO(Jack3)
 
 static struct BurnDIPInfo TreahuntDIPList[]=
 {
@@ -396,7 +398,7 @@ static struct BurnDIPInfo TreahuntDIPList[]=
 	{0x12, 0x01, 0x80, 0x80, "On"},
 };
 
-STDDIPINFO(Treahunt);
+STDDIPINFO(Treahunt)
 
 
 static struct BurnDIPInfo ZzyzzyxxDIPList[]=
@@ -461,7 +463,7 @@ static struct BurnDIPInfo ZzyzzyxxDIPList[]=
 	{0x0B, 0x01, 0xc0, 0x40, "None"},
 };
 
-STDDIPINFO(Zzyzzyxx);
+STDDIPINFO(Zzyzzyxx)
 
 static struct BurnDIPInfo FreezeDIPList[]=
 {
@@ -494,7 +496,7 @@ static struct BurnDIPInfo FreezeDIPList[]=
 	{0x08, 0x01, 0xc0, 0xc0, "Free Play"},
 };
 
-STDDIPINFO(Freeze);
+STDDIPINFO(Freeze)
 
 static struct BurnDIPInfo SucasinoDIPList[]=
 {
@@ -517,7 +519,7 @@ static struct BurnDIPInfo SucasinoDIPList[]=
 	{0x0A, 0x01, 0x08, 0x08, "On"},
 };
 
-STDDIPINFO(Sucasino);
+STDDIPINFO(Sucasino)
 
 static struct BurnDIPInfo JoinemDIPList[]=
 {
@@ -556,7 +558,7 @@ static struct BurnDIPInfo JoinemDIPList[]=
 	{0x0e, 0x01, 0x80, 0x80, "3"},
 };
 
-STDDIPINFO(Joinem);
+STDDIPINFO(Joinem)
 
 static struct BurnDIPInfo LoverboyDIPList[]=
 {
@@ -595,7 +597,7 @@ static struct BurnDIPInfo LoverboyDIPList[]=
 	{0x0f, 0x01, 0x80, 0x00, "Cocktail"},
 };
 
-STDDIPINFO(Loverboy);
+STDDIPINFO(Loverboy)
 
 static struct BurnDIPInfo StrivDIPList[]=
 {
@@ -634,7 +636,7 @@ static struct BurnDIPInfo StrivDIPList[]=
 	{0x0A, 0x01, 0x40, 0x40, "Yes"},
 };
 
-STDDIPINFO(Striv);
+STDDIPINFO(Striv)
 
 static unsigned char timer_r(unsigned int)
 {
@@ -643,6 +645,7 @@ static unsigned char timer_r(unsigned int)
 
 static unsigned char soundlatch_r(unsigned int)
 {
+	ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 	return soundlatch;
 }
 
@@ -767,7 +770,11 @@ void __fastcall jack_cpu0_write(unsigned short address, unsigned char data)
 	{
 		case 0xb400:
 			soundlatch = data;
-			snd_cpu_irq = 1;
+			ZetClose();
+			ZetOpen(1);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetClose();
+			ZetOpen(0);
 		break;
 
 		case 0xb506:
@@ -798,11 +805,11 @@ void __fastcall jack_out_port(unsigned short address, unsigned char data)
 	{
 		case 0x40:
 			AY8910Write(0, 1, data);
-		break;
+		return;
 
 		case 0x80:
 			AY8910Write(0, 0, data);
-		break;
+		return;
 	}
 }
 
@@ -1149,16 +1156,15 @@ static int DrvFrame()
 			Rom0[0xb500 + i] = jack_cpu0_read(0xb500 + i);
 	}
 
-	int nInterleave = 10;
+	int nInterleave = 1000;
 	int nSoundBufferPos = 0;
-
-	int nCyclesSegment;
-	int nCyclesDone[2], nCyclesTotal[2];
 
 	nCyclesTotal[0] = 3000000 / 60;
 	nCyclesTotal[1] = 1500000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
-
+	
+	ZetNewFrame();
+	
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
 
@@ -1193,14 +1199,10 @@ static int DrvFrame()
 		ZetOpen(nCurrentCPU);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		if (snd_cpu_irq) {
-			ZetRaiseIrq(0xff);
-			snd_cpu_irq = 0;
-		}
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		ZetClose();
-
+		
 		// Render Sound Segment
 		if (pBurnSoundOut && !suprtriv) {	// disable sound for suprtriv
 			int nSample;
@@ -1340,8 +1342,8 @@ static struct BurnRomInfo jackRomDesc[] = {
 	{ "jgk.j10",      0x1000, 0xeab890b2, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(jack);
-STD_ROM_FN(jack);
+STD_ROM_PICK(jack)
+STD_ROM_FN(jack)
 
 static int jackInit()
 {
@@ -1351,12 +1353,12 @@ static int jackInit()
 }
 
 struct BurnDriver BurnDrvjack = {
-	"jack", NULL, NULL, "1982",
+	"jack", NULL, NULL, NULL, "1982",
 	"Jack the Giantkiller (set 1)\0", NULL, "Cinematronics", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, jackRomInfo, jackRomName, JackInputInfo, JackDIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, jackRomInfo, jackRomName, NULL, NULL, JackInputInfo, JackDIPInfo,
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1381,16 +1383,16 @@ static struct BurnRomInfo jack2RomDesc[] = {
 	{ "jgk.j10",      0x1000, 0xeab890b2, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(jack2);
-STD_ROM_FN(jack2);
+STD_ROM_PICK(jack2)
+STD_ROM_FN(jack2)
 
 struct BurnDriver BurnDrvjack2 = {
-	"jack2", "jack", NULL, "1982",
+	"jack2", "jack", NULL, NULL, "1982",
 	"Jack the Giantkiller (set 2)\0", NULL, "Cinematronics", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, jack2RomInfo, jack2RomName, JackInputInfo, Jack2DIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, jack2RomInfo, jack2RomName, NULL, NULL, JackInputInfo, Jack2DIPInfo,
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1415,16 +1417,16 @@ static struct BurnRomInfo jack3RomDesc[] = {
 	{ "jgk.j10",      0x1000, 0xeab890b2, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(jack3);
-STD_ROM_FN(jack3);
+STD_ROM_PICK(jack3)
+STD_ROM_FN(jack3)
 
 struct BurnDriver BurnDrvjack3 = {
-	"jack3", "jack", NULL, "1982",
+	"jack3", "jack", NULL, NULL, "1982",
 	"Jack the Giantkiller (set 3)\0", NULL, "Cinematronics", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, jack3RomInfo, jack3RomName, JackInputInfo, Jack3DIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, jack3RomInfo, jack3RomName, NULL, NULL, JackInputInfo, Jack3DIPInfo,
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1449,8 +1451,8 @@ static struct BurnRomInfo treahuntRomDesc[] = {
 	{ "thunt-11.a2",  0x1000, 0xf9781143, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(treahunt);
-STD_ROM_FN(treahunt);
+STD_ROM_PICK(treahunt)
+STD_ROM_FN(treahunt)
 
 static void treahunt_decode()
 {
@@ -1485,12 +1487,12 @@ static int treahuntInit()
 }
 
 struct BurnDriver BurnDrvtreahunt = {
-	"treahunt", "jack", NULL, "1982",
+	"treahunt", "jack", NULL, NULL, "1982",
 	"Treasure Hunt (bootleg?)\0", NULL, "Hara Industries", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, treahuntRomInfo, treahuntRomName, JackInputInfo, TreahuntDIPInfo,
-	treahuntInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, treahuntRomInfo, treahuntRomName, NULL, NULL, JackInputInfo, TreahuntDIPInfo,
+	treahuntInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1516,23 +1518,23 @@ static struct BurnRomInfo zzyzzyxxRomDesc[] = {
 	{ "l.1a",         0x1000, 0xab421a83, 3 | BRF_GRA },	       // 13
 };
 
-STD_ROM_PICK(zzyzzyxx);
-STD_ROM_FN(zzyzzyxx);
+STD_ROM_PICK(zzyzzyxx)
+STD_ROM_FN(zzyzzyxx)
 
 static int zzyzzyxxInit()
 {
-	timer_rate = 1;
+	timer_rate = 16;
 
 	return DrvInit();
 }
 
 struct BurnDriver BurnDrvzzyzzyxx = {
-	"zzyzzyxx", NULL, NULL, "1982",
+	"zzyzzyxx", NULL, NULL, NULL, "1982",
 	"Zzyzzyxx (set 1)\0", NULL, "Cinematronics + Advanced Microcomputer Systems", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, zzyzzyxxRomInfo, zzyzzyxxRomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, zzyzzyxxRomInfo, zzyzzyxxRomName, NULL, NULL, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1558,16 +1560,16 @@ static struct BurnRomInfo zzyzzyx2RomDesc[] = {
 	{ "l.1a",         0x1000, 0xab421a83, 3 | BRF_GRA },	       // 13
 };
 
-STD_ROM_PICK(zzyzzyx2);
-STD_ROM_FN(zzyzzyx2);
+STD_ROM_PICK(zzyzzyx2)
+STD_ROM_FN(zzyzzyx2)
 
 struct BurnDriver BurnDrvzzyzzyx2 = {
-	"zzyzzyx2", "zzyzzyxx", NULL, "1982",
+	"zzyzzyxx2", "zzyzzyxx", NULL, NULL, "1982",
 	"Zzyzzyxx (set 2)\0", NULL, "Cinematronics + Advanced Microcomputer Systems", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, zzyzzyx2RomInfo, zzyzzyx2RomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, zzyzzyx2RomInfo, zzyzzyx2RomName, NULL, NULL, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1593,16 +1595,16 @@ static struct BurnRomInfo brixRomDesc[] = {
 	{ "l.1a",         0x1000, 0xab421a83, 3 | BRF_GRA },	       // 13
 };
 
-STD_ROM_PICK(brix);
-STD_ROM_FN(brix);
+STD_ROM_PICK(brix)
+STD_ROM_FN(brix)
 
 struct BurnDriver BurnDrvbrix = {
-	"brix", "zzyzzyxx", NULL, "1982",
+	"brix", "zzyzzyxx", NULL, NULL, "1982",
 	"Brix\0", NULL, "Cinematronics + Advanced Microcomputer Systems", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, brixRomInfo, brixRomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, brixRomInfo, brixRomName, NULL, NULL, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1627,16 +1629,16 @@ static struct BurnRomInfo freezeRomDesc[] = {
 	{ "freeze.2a",    0x1000, 0xdd70ddd6, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(freeze);
-STD_ROM_FN(freeze);
+STD_ROM_PICK(freeze)
+STD_ROM_FN(freeze)
 
 struct BurnDriver BurnDrvfreeze = {
-	"freeze", NULL, NULL, "1984",
+	"freeze", NULL, NULL, NULL, "1984",
 	"Freeze\0", NULL, "Cinematronics", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, freezeRomInfo, freezeRomName, FreezeInputInfo, FreezeDIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, freezeRomInfo, freezeRomName, NULL, NULL, FreezeInputInfo, FreezeDIPInfo,
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1659,16 +1661,16 @@ static struct BurnRomInfo sucasinoRomDesc[] = {
 	{ "10",      	  0x1000, 0x3b0783ce, 3 | BRF_GRA },	       // 10
 };
 
-STD_ROM_PICK(sucasino);
-STD_ROM_FN(sucasino);
+STD_ROM_PICK(sucasino)
+STD_ROM_FN(sucasino)
 
 struct BurnDriver BurnDrvsucasino = {
-	"sucasino", NULL, NULL, "1984",
+	"sucasino", NULL, NULL, NULL, "1984",
 	"Super Casino\0", NULL, "Data Amusement", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, sucasinoRomInfo, sucasinoRomName, SucasinoInputInfo, SucasinoDIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_CASINO, 0,
+	NULL, sucasinoRomInfo, sucasinoRomName, NULL, NULL, SucasinoInputInfo, SucasinoDIPInfo,
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1690,8 +1692,8 @@ static struct BurnRomInfo tripoolRomDesc[] = {
 	{ "tri93a.bin",   0x1000, 0x35213782, 3 | BRF_GRA },	       //  9
 };
 
-STD_ROM_PICK(tripool);
-STD_ROM_FN(tripool);
+STD_ROM_PICK(tripool)
+STD_ROM_FN(tripool)
 
 static int tripoolInit()
 {
@@ -1702,12 +1704,12 @@ static int tripoolInit()
 }
 
 struct BurnDriver BurnDrvtripool = {
-	"tripool", NULL, NULL, "1981",
+	"tripool", NULL, NULL, NULL, "1981",
 	"Tri-Pool (Casino Tech)\0", NULL, "Noma (Casino Tech license)", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, tripoolRomInfo, tripoolRomName, TripoolInputInfo, NULL,
-	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
+	NULL, tripoolRomInfo, tripoolRomName, NULL, NULL, TripoolInputInfo, NULL,
+	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1729,16 +1731,16 @@ static struct BurnRomInfo tripoolaRomDesc[] = {
 	{ "tri93a.bin",   0x1000, 0x35213782, 3 | BRF_GRA },	       //  9
 };
 
-STD_ROM_PICK(tripoola);
-STD_ROM_FN(tripoola);
+STD_ROM_PICK(tripoola)
+STD_ROM_FN(tripoola)
 
 struct BurnDriver BurnDrvtripoola = {
-	"tripoola", "tripool", NULL, "1981",
+	"tripoola", "tripool", NULL, NULL, "1981",
 	"Tri-Pool (Costal Games)\0", NULL, "Noma (Costal Games license)", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, tripoolaRomInfo, tripoolaRomName, TripoolInputInfo, NULL,
-	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
+	NULL, tripoolaRomInfo, tripoolaRomName, NULL, NULL, TripoolInputInfo, NULL,
+	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1760,8 +1762,8 @@ static struct BurnRomInfo joinemRomDesc[] = {
 	{ "h82s129.12n", 0x0100, 0x2e81c5ff, 4 | BRF_GRA },	      //  8
 };
 
-STD_ROM_PICK(joinem);
-STD_ROM_FN(joinem);
+STD_ROM_PICK(joinem)
+STD_ROM_FN(joinem)
 
 static void joinem_palette_init()
 {
@@ -1791,7 +1793,7 @@ static void joinem_palette_init()
 static int joinemInit()
 {
 	joinem = 1;
-	timer_rate = 1;
+	timer_rate = 16;
 
 	int nRet = DrvInit();
 
@@ -1801,12 +1803,12 @@ static int joinemInit()
 }
 
 struct BurnDriver BurnDrvjoinem = {
-	"joinem", NULL, NULL, "1986",
+	"joinem", NULL, NULL, NULL, "1986",
 	"Joinem\0", NULL, "Global Corporation", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, joinemRomInfo, joinemRomName, JoinemInputInfo, JoinemDIPInfo,
-	joinemInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, joinemRomInfo, joinemRomName, NULL, NULL, JoinemInputInfo, JoinemDIPInfo,
+	joinemInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 240, 3, 4
 };
 
@@ -1829,8 +1831,8 @@ static struct BurnRomInfo loverboyRomDesc[] = {
 	{ "color.n12", 0x0200, 0x4b11ac21, 4 | BRF_GRA },	    //  9
 };
 
-STD_ROM_PICK(loverboy);
-STD_ROM_FN(loverboy);
+STD_ROM_PICK(loverboy)
+STD_ROM_FN(loverboy)
 
 static int loverboyInit()
 {
@@ -1849,12 +1851,12 @@ static int loverboyInit()
 }
 
 struct BurnDriver BurnDrvloverboy = {
-	"loverboy", NULL, NULL, "1983",
+	"loverboy", NULL, NULL, NULL, "1983",
 	"Lover Boy\0", NULL, "G.T Enterprise Inc", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, loverboyRomInfo, loverboyRomName, LoverboyInputInfo, LoverboyDIPInfo,
-	loverboyInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, loverboyRomInfo, loverboyRomName, NULL, NULL, LoverboyInputInfo, LoverboyDIPInfo,
+	loverboyInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 240, 3, 4
 };
 
@@ -1891,8 +1893,8 @@ static struct BurnRomInfo strivRomDesc[] = {
 	{ "tbfd0.u21",    0x2000, 0x15b83099, 0 | BRF_OPT },	       // 22 Junk
 };
 
-STD_ROM_PICK(striv);
-STD_ROM_FN(striv);
+STD_ROM_PICK(striv)
+STD_ROM_FN(striv)
 
 static int strivInit()
 {
@@ -1923,12 +1925,12 @@ static int strivInit()
 }
 
 struct BurnDriver BurnDrvstriv = {
-	"striv", NULL, NULL, "1985",
+	"striv", NULL, NULL, NULL, "1985",
 	"Super Triv\0", "No sound", "Hara Industries", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, strivRomInfo, strivRomName, StrivInputInfo, StrivDIPInfo,
-	strivInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_QUIZ, 0,
+	NULL, strivRomInfo, strivRomName, NULL, NULL, StrivInputInfo, StrivDIPInfo,
+	strivInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x100,
 	224, 256, 3, 4
 };
 

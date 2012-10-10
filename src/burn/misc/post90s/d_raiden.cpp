@@ -97,7 +97,7 @@ static struct BurnInputInfo raidenInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 4,	"dip"},
 };
 
-STDINPUTINFO(raiden);
+STDINPUTINFO(raiden)
 
 
 static struct BurnDIPInfo raidenDIPList[] = {
@@ -158,7 +158,7 @@ static struct BurnDIPInfo raidenDIPList[] = {
 	{0x12,	0x01, 0x80, 0x80, "Off"},
 };
 
-STDDIPINFO(raiden);
+STDDIPINFO(raiden)
 
 static struct BurnRomInfo raidenRomDesc[] = {
 	{ "rai1.bin",		0x010000, 0xa4b12785, BRF_ESS | BRF_PRG },	// CPU 0, V30
@@ -183,8 +183,8 @@ static struct BurnRomInfo raidenRomDesc[] = {
 	{ "ep910pc-2.bin",	0x000884, 0x00000000, BRF_NODUMP }, 
 };
 
-STD_ROM_PICK(raiden);
-STD_ROM_FN(raiden);
+STD_ROM_PICK(raiden)
+STD_ROM_FN(raiden)
 
 static struct BurnRomInfo raidenaRomDesc[] = {
 	{ "rai1.bin",		0x010000, 0xa4b12785, BRF_ESS | BRF_PRG },	// CPU 0, V30
@@ -195,7 +195,7 @@ static struct BurnRomInfo raidenaRomDesc[] = {
 	{ "raiden05.rom",	0x020000, 0xed03562e, BRF_ESS | BRF_PRG },	// CPU 1, V30
 	{ "raiden06.rom",	0x020000, 0xa19d5b5d, BRF_ESS | BRF_PRG }, 
 
-	{ "raiden08.rom",	0x010000, 0x731adb43, BRF_ESS | BRF_PRG },	// CPU 2, Z80
+	{ "raiden08.rom",	0x010000, 0xcbe055c7, BRF_ESS | BRF_PRG },	// CPU 2, Z80
 	
 	{ "rai9.bin",		0x008000, 0x1922b25e, BRF_GRA }, 			// Tiles
 	{ "rai10.bin",		0x008000, 0x5f90786a, BRF_GRA },
@@ -206,8 +206,8 @@ static struct BurnRomInfo raidenaRomDesc[] = {
 	{ "rai7.bin",		0x010000, 0x8f927822, BRF_SND }, 			// Sound
 };
 
-STD_ROM_PICK(raidena);
-STD_ROM_FN(raidena);
+STD_ROM_PICK(raidena)
+STD_ROM_FN(raidena)
 
 static struct BurnRomInfo raidenkRomDesc[] = {
 	{ "rai1.bin",		0x010000, 0xa4b12785, BRF_ESS | BRF_PRG },	// CPU 0, V30
@@ -229,8 +229,8 @@ static struct BurnRomInfo raidenkRomDesc[] = {
 	{ "rai7.bin",		0x010000, 0x8f927822, BRF_SND }, 			// Sound
 };
 
-STD_ROM_PICK(raidenk);
-STD_ROM_FN(raidenk);
+STD_ROM_PICK(raidenk)
+STD_ROM_FN(raidenk)
 
 static struct BurnRomInfo raidentRomDesc[] = {
 	{ "rai1.bin",		0x010000, 0xa4b12785, BRF_ESS | BRF_PRG },	// CPU 0, V30
@@ -252,15 +252,18 @@ static struct BurnRomInfo raidentRomDesc[] = {
 	{ "rai7.bin",		0x010000, 0x8f927822, BRF_SND }, 			// Sound
 };
 
-STD_ROM_PICK(raident);
-STD_ROM_FN(raident);
+STD_ROM_PICK(raident)
+STD_ROM_FN(raident)
 
 static void update_irq_lines()
 {
 	if ((z80_irq1 & z80_irq2) == 0xff)
 		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
 	else
-		ZetSetIRQLine(z80_irq1 & z80_irq2, ZET_IRQSTATUS_ACK);
+		if (z80_irq2 == 0xdf) { // this shouldn't be required
+			ZetSetVector(z80_irq1 & z80_irq2);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+		}
 }
 
 static unsigned char seibu_main_v30_r(unsigned int offset)
@@ -285,7 +288,9 @@ static void seibu_main_v30_w(unsigned int offset, unsigned char data)
 		case 0x2: main2sub[1] = data; break;
 		case 0x8:  
 			z80_irq2 = 0xdf;
+			ZetOpen(0);
 			update_irq_lines();
+			ZetClose();
 			break;
 		case 0xc:
 			sub2main_pending = 0;
@@ -586,12 +591,14 @@ static int DrvDoReset()
 	VezClose();
 	
 	seibu_bank = -1;
+		
+	ZetOpen(0);
 	set_seibu_bank(0);
-	
 	ZetReset();
 	z80_irq1 = 0xff;
 	z80_irq2 = 0xff;
 	ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+	ZetClose();
 	
 	MSM6295Reset(0);
 	BurnYM3812Reset();
@@ -934,11 +941,12 @@ static int DrvInit()
 		
 		ZetSetReadHandler(raidenZ80Read);
 		ZetSetWriteHandler(raidenZ80Write);
+		ZetClose();
 		
 	}
 	
 	BurnYM3812Init(3579545, &raidenFMIRQHandler, &raidenSynchroniseStream, 0);
-	BurnTimerAttachZet(3579545);
+	BurnTimerAttachZetYM3812(3579545);
 	
 	MSM6295Init(0, 8000, 80.0, 1); //	1320000
 	DrvDoReset();
@@ -1495,6 +1503,9 @@ static int DrvFrame()
 		VezRun(10000000 / 60 / 200);
 		VezOpen(1);
 		VezRun(10000000 / 60 / 200);
+		ZetOpen(0);
+		BurnTimerUpdateYM3812(i * ((3579545 / 60) / 200));
+		ZetClose();
 	}
 
 	VezOpen(0);
@@ -1503,12 +1514,16 @@ static int DrvFrame()
 	VezOpen(1);
 	VezSetIRQLine(0xc8, VEZ_IRQSTATUS_ACK);
 
-	ZetRun( 3579545 / 60 );
+//	ZetOpen(0);
+//	ZetRun( 3579545 / 60 );
+//	ZetClose();
 
 	if (pBurnDraw) DrvDraw();
 	
-	BurnTimerEndFrame(3579545 / 60);
+	ZetOpen(0);
+	BurnTimerEndFrameYM3812(3579545 / 60);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	ZetClose();
 	if (pBurnSoundOut)
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	
@@ -1559,12 +1574,16 @@ static int DrvFrameAlt()
 	VezOpen(1);
 	VezSetIRQLine(0xc8, VEZ_IRQSTATUS_ACK);
 
-	ZetRun( 3579545 / 60 );
+//	ZetOpen(0);
+//	ZetRun( 3579545 / 60 );
+//	ZetClose();
 
 	if (pBurnDraw) DrvDrawAlt();
 	
-	BurnTimerEndFrame(3579545 / 60);
+	ZetOpen(0);
+	BurnTimerEndFrameYM3812(3579545 / 60);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	ZetClose();
 	if (pBurnSoundOut)
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	
@@ -1619,41 +1638,41 @@ static int DrvScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvRaiden = {
-	"raiden", NULL, NULL, "1990",
+	"raiden", NULL, NULL, NULL, "1990",
 	"Raiden\0", NULL, "Seibu Kaihatsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_POST90S,
-	NULL, raidenRomInfo, raidenRomName, raidenInputInfo, raidenDIPInfo,
-	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, raidenRomInfo, raidenRomName, NULL, NULL, raidenInputInfo, raidenDIPInfo,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x1000,
 	224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvRaidena = {
-	"raidena", "raiden", NULL, "1990",
+	"raidena", "raiden", NULL, NULL, "1990",
 	"Raiden (Alternate Hardware)\0", NULL, "Seibu Kaihatsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, raidenaRomInfo, raidenaRomName, raidenInputInfo, raidenDIPInfo,
-	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, raidenaRomInfo, raidenaRomName, NULL, NULL, raidenInputInfo, raidenDIPInfo,
+	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x1000,
 	224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvRaidenk = {
-	"raidenk", "raiden", NULL, "1990",
+	"raidenk", "raiden", NULL, NULL, "1990",
 	"Raiden (Korea)\0", NULL, "Seibu Kaihatsu (IBL Corporation license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, raidenkRomInfo, raidenkRomName, raidenInputInfo, raidenDIPInfo,
-	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, raidenkRomInfo, raidenkRomName, NULL, NULL, raidenInputInfo, raidenDIPInfo,
+	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x1000,
 	224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvRaident = {
-	"raident", "raiden", NULL, "1990",
+	"raident", "raiden", NULL, NULL, "1990",
 	"Raiden (Taiwan)\0", NULL, "Seibu Kaihatsu (Liang HWA Electronics license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, raidentRomInfo, raidentRomName, raidenInputInfo, raidenDIPInfo,
-	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, raidentRomInfo, raidentRomName, NULL, NULL, raidenInputInfo, raidenDIPInfo,
+	DrvInit, DrvExit, DrvFrameAlt, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x1000,
 	224, 256, 3, 4
 };

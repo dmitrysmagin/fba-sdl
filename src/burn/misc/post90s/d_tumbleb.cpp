@@ -57,6 +57,7 @@ static int Tumbleb2;
 static int Jumpkids;
 static int Chokchok;
 static int Wlstar;
+static int Wondl96;
 static int Bcstry;
 static int Semibase;
 static int SemicomSoundCommand;
@@ -112,7 +113,7 @@ static struct BurnInputInfo TumblebInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Tumbleb);
+STDINPUTINFO(Tumbleb)
 
 static struct BurnInputInfo MetlsavrInputList[] =
 {
@@ -142,7 +143,7 @@ static struct BurnInputInfo MetlsavrInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Metlsavr);
+STDINPUTINFO(Metlsavr)
 
 static struct BurnInputInfo SuprtrioInputList[] =
 {
@@ -170,7 +171,7 @@ static struct BurnInputInfo SuprtrioInputList[] =
 	{"Dip 1"             , BIT_DIPSWITCH, DrvDip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Suprtrio);
+STDINPUTINFO(Suprtrio)
 
 static struct BurnInputInfo HtchctchInputList[] =
 {
@@ -198,7 +199,7 @@ static struct BurnInputInfo HtchctchInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Htchctch);
+STDINPUTINFO(Htchctch)
 
 static struct BurnInputInfo FncywldInputList[] =
 {
@@ -229,7 +230,7 @@ static struct BurnInputInfo FncywldInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Fncywld);
+STDINPUTINFO(Fncywld)
 
 static struct BurnInputInfo SemibaseInputList[] =
 {
@@ -261,7 +262,7 @@ static struct BurnInputInfo SemibaseInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Semibase);
+STDINPUTINFO(Semibase)
 
 static struct BurnInputInfo JumppopInputList[] =
 {
@@ -289,7 +290,7 @@ static struct BurnInputInfo JumppopInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Jumppop);
+STDINPUTINFO(Jumppop)
 
 static struct BurnDIPInfo TumblebDIPList[]=
 {
@@ -348,7 +349,7 @@ static struct BurnDIPInfo TumblebDIPList[]=
 	{0x13, 0x01, 0x01, 0x00, "On"                     },
 };
 
-STDDIPINFO(Tumbleb);
+STDDIPINFO(Tumbleb)
 
 static struct BurnDIPInfo MetlsavrDIPList[]=
 {
@@ -395,7 +396,7 @@ static struct BurnDIPInfo MetlsavrDIPList[]=
 	{0x14, 0x01, 0xc0, 0x00, "80 Seconds"             },
 };
 
-STDDIPINFO(Metlsavr);
+STDDIPINFO(Metlsavr)
 
 static struct BurnDIPInfo SuprtrioDIPList[]=
 {
@@ -432,7 +433,7 @@ static struct BurnDIPInfo SuprtrioDIPList[]=
 	{0x12, 0x01, 0x80, 0x80, "On"                     },
 };
 
-STDDIPINFO(Suprtrio);
+STDDIPINFO(Suprtrio)
 
 static struct BurnDIPInfo HtchctchDIPList[]=
 {
@@ -472,7 +473,7 @@ static struct BurnDIPInfo HtchctchDIPList[]=
 	{0x12, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Htchctch);
+STDDIPINFO(Htchctch)
 
 static struct BurnDIPInfo CookbibDIPList[]=
 {
@@ -512,7 +513,7 @@ static struct BurnDIPInfo CookbibDIPList[]=
 	{0x12, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Cookbib);
+STDDIPINFO(Cookbib)
 
 static struct BurnDIPInfo ChokchokDIPList[]=
 {
@@ -561,17 +562,38 @@ static struct BurnDIPInfo ChokchokDIPList[]=
 	{0x12, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Chokchok);
+STDDIPINFO(Chokchok)
 
 static struct BurnDIPInfo WlstarDIPList[]=
 {
 	// Default Values
 	{0x13, 0xff, 0xff, 0xff, NULL                     },
 	{0x14, 0xff, 0xff, 0x7f, NULL                     },
-
+	
 	// Dip 1
+	{0   , 0xfe, 0   , 2   , "2 Players Game"         },
+	{0x13, 0x01, 0x10, 0x00, "1 Credit"               },
+	{0x13, 0x01, 0x10, 0x10, "2 Credits"              },
+	
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x13, 0x01, 0xc0, 0x00, "Easy"                   },
+	{0x13, 0x01, 0xc0, 0xc0, "Normal"                 },
+	{0x13, 0x01, 0xc0, 0x40, "Hard"                   },
+	{0x13, 0x01, 0xc0, 0x80, "Hardest"                },
 	
 	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Last Inning"            },
+	{0x14, 0x01, 0x01, 0x00, "9"                      },
+	{0x14, 0x01, 0x01, 0x01, "12"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Versus CPU Game Ends"   },
+	{0x14, 0x01, 0x02, 0x02, "+10"                    },
+	{0x14, 0x01, 0x02, 0x00, "+7"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Versus Game"            },
+	{0x14, 0x01, 0x04, 0x00, "1 Credit / 2 Innings"   },
+	{0x14, 0x01, 0x04, 0x04, "1 Credit / 3 Innings"   },	
+	
 	{0   , 0xfe, 0   , 2   , "Full 2 Players Game"    },
 	{0x14, 0x01, 0x08, 0x00, "4 Credits"              },
 	{0x14, 0x01, 0x08, 0x08, "6 Credits"              },
@@ -591,7 +613,58 @@ static struct BurnDIPInfo WlstarDIPList[]=
 	{0x14, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Wlstar);
+STDDIPINFO(Wlstar)
+
+static struct BurnDIPInfo Wondl96DIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0x7f, NULL                     },
+	{0x14, 0xff, 0xff, 0xff, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Free Play"              },
+	{0x13, 0x01, 0x01, 0x01, "Off"                    },
+	{0x13, 0x01, 0x01, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Field Colour"           },
+	{0x13, 0x01, 0x10, 0x10, "Blue"                   },
+	{0x13, 0x01, 0x10, 0x00, "Green"                  },
+	
+	{0   , 0xfe, 0   , 2   , "Versus CPU Game Ends"   },
+	{0x13, 0x01, 0x20, 0x20, "+10"                    },
+	{0x13, 0x01, 0x20, 0x00, "+7"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Versus Game"            },
+	{0x13, 0x01, 0x40, 0x00, "1 Credit / 2 Innings"   },
+	{0x13, 0x01, 0x40, 0x40, "1 Credit / 3 Innings"   },
+	
+	{0   , 0xfe, 0   , 2   , "Full 2 Players Game"    },
+	{0x13, 0x01, 0x80, 0x80, "4 Credits"              },
+	{0x13, 0x01, 0x80, 0x00, "6 Credits"              },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 8   , "Difficulty"             },
+	{0x14, 0x01, 0x0e, 0x04, "Level 1"                },
+	{0x14, 0x01, 0x0e, 0x08, "Level 2"                },
+	{0x14, 0x01, 0x0e, 0x00, "Level 3"                },
+	{0x14, 0x01, 0x0e, 0x0e, "Level 4"                },
+	{0x14, 0x01, 0x0e, 0x06, "Level 5"                },
+	{0x14, 0x01, 0x0e, 0x0a, "Level 6"                },
+	{0x14, 0x01, 0x0e, 0x02, "Level 7"                },
+	{0x14, 0x01, 0x0e, 0x0c, "Level 8"                },
+
+	{0   , 0xfe, 0   , 8   , "Coinage"                },
+	{0x14, 0x01, 0x70, 0x00, "5 Coins 1 Credit"       },
+	{0x14, 0x01, 0x70, 0x40, "4 Coins 1 Credit"       },
+	{0x14, 0x01, 0x70, 0x20, "3 Coins 1 Credit"       },
+	{0x14, 0x01, 0x70, 0x60, "2 Coins 1 Credit"       },
+	{0x14, 0x01, 0x70, 0x70, "1 Coin  1 Credit"       },
+	{0x14, 0x01, 0x70, 0x50, "2 Coins 3 Credits"      },
+	{0x14, 0x01, 0x70, 0x30, "1 Coin  2 Credits"      },
+	{0x14, 0x01, 0x70, 0x10, "1 Coin  3 Credits"      },
+};
+
+STDDIPINFO(Wondl96)
 
 static struct BurnDIPInfo FncywldDIPList[]=
 {
@@ -648,7 +721,7 @@ static struct BurnDIPInfo FncywldDIPList[]=
 	{0x15, 0x01, 0x01, 0x00, "On"                     },	
 };
 
-STDDIPINFO(Fncywld);
+STDDIPINFO(Fncywld)
 
 static struct BurnDIPInfo SdfightDIPList[]=
 {
@@ -701,7 +774,7 @@ static struct BurnDIPInfo SdfightDIPList[]=
 	{0x14, 0x01, 0xc0, 0x00, "90"                     },
 };
 
-STDDIPINFO(Sdfight);
+STDDIPINFO(Sdfight)
 
 static struct BurnDIPInfo BcstryDIPList[]=
 {
@@ -756,7 +829,7 @@ static struct BurnDIPInfo BcstryDIPList[]=
 	{0x14, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Bcstry);
+STDDIPINFO(Bcstry)
 
 static struct BurnDIPInfo SemibaseDIPList[]=
 {
@@ -811,7 +884,7 @@ static struct BurnDIPInfo SemibaseDIPList[]=
 	{0x16, 0x01, 0x80, 0x80, "6 Credits"              },
 };
 
-STDDIPINFO(Semibase);
+STDDIPINFO(Semibase)
 
 static struct BurnDIPInfo DquizgoDIPList[]=
 {
@@ -860,7 +933,7 @@ static struct BurnDIPInfo DquizgoDIPList[]=
 	{0x14, 0x01, 0xc0, 0x80, "5"                    },
 };
 
-STDDIPINFO(Dquizgo);
+STDDIPINFO(Dquizgo)
 
 static struct BurnDIPInfo JumppopDIPList[]=
 {
@@ -872,6 +945,10 @@ static struct BurnDIPInfo JumppopDIPList[]=
 	{0   , 0xfe, 0   , 2   , "Service Mode"           },
 	{0x11, 0x01, 0x01, 0x01, "Off"                    },
 	{0x11, 0x01, 0x01, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Free Play"              },
+	{0x11, 0x01, 0x02, 0x02, "Off"                    },
+	{0x11, 0x01, 0x02, 0x00, "On"                     },
 	
 	{0   , 0xfe, 0   , 8   , "Coin A"                 },
 	{0x11, 0x01, 0xe0, 0x00, "3 Coins 1 Credit"       },
@@ -923,7 +1000,7 @@ static struct BurnDIPInfo JumppopDIPList[]=
 	{0x12, 0x01, 0xc0, 0x40, "4"                      },	
 };
 
-STDDIPINFO(Jumppop);
+STDDIPINFO(Jumppop)
 
 static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -965,8 +1042,8 @@ static struct BurnRomInfo TumblebRomDesc[] = {
 	{ "thumbpop.snd",  0x80000, 0xfabbf15d, BRF_SND },	     //  6	Samples
 };
 
-STD_ROM_PICK(Tumbleb);
-STD_ROM_FN(Tumbleb);
+STD_ROM_PICK(Tumbleb)
+STD_ROM_FN(Tumbleb)
 
 static struct BurnRomInfo Tumbleb2RomDesc[] = {
 	{ "thumbpop.2",    0x40000, 0x34b016e1, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -983,8 +1060,8 @@ static struct BurnRomInfo Tumbleb2RomDesc[] = {
 	{ "pic_16c57",     0x02d4c, 0x00000000, BRF_NODUMP },
 };
 
-STD_ROM_PICK(Tumbleb2);
-STD_ROM_FN(Tumbleb2);
+STD_ROM_PICK(Tumbleb2)
+STD_ROM_FN(Tumbleb2)
 
 static struct BurnRomInfo JumpkidsRomDesc[] = {
 	{ "23-ic29.15c",   0x40000, 0x6ba11e91, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1004,8 +1081,8 @@ static struct BurnRomInfo JumpkidsRomDesc[] = {
 	{ "ic18.2c",       0x20000, 0xa63736c3, BRF_SND },	     //  10
 };
 
-STD_ROM_PICK(Jumpkids);
-STD_ROM_FN(Jumpkids);
+STD_ROM_PICK(Jumpkids)
+STD_ROM_FN(Jumpkids)
 
 static struct BurnRomInfo MetlsavrRomDesc[] = {
 	{ "first-4.ub17",  0x40000, 0x667a494d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1028,8 +1105,8 @@ static struct BurnRomInfo MetlsavrRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Metlsavr);
-STD_ROM_FN(Metlsavr);
+STD_ROM_PICK(Metlsavr)
+STD_ROM_FN(Metlsavr)
 
 static struct BurnRomInfo PangpangRomDesc[] = {
 	{ "2.bin",         0x40000, 0x45436666, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1050,8 +1127,8 @@ static struct BurnRomInfo PangpangRomDesc[] = {
 	{ "pic_16c57",     0x02d4c, 0x1ca515b4, BRF_OPT },
 };
 
-STD_ROM_PICK(Pangpang);
-STD_ROM_FN(Pangpang);
+STD_ROM_PICK(Pangpang)
+STD_ROM_FN(Pangpang)
 
 static struct BurnRomInfo SuprtrioRomDesc[] = {
 	{ "rom2",          0x40000, 0x4102e59d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1071,8 +1148,8 @@ static struct BurnRomInfo SuprtrioRomDesc[] = {
 	{ "rom3l",         0x20000, 0x1b73233b, BRF_SND },	     //  10
 };
 
-STD_ROM_PICK(Suprtrio);
-STD_ROM_FN(Suprtrio);
+STD_ROM_PICK(Suprtrio)
+STD_ROM_FN(Suprtrio)
 
 static struct BurnRomInfo HtchctchRomDesc[] = {
 	{ "p04.b17",       0x20000, 0x6991483a, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1095,8 +1172,8 @@ static struct BurnRomInfo HtchctchRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Htchctch);
-STD_ROM_FN(Htchctch);
+STD_ROM_PICK(Htchctch)
+STD_ROM_FN(Htchctch)
 
 static struct BurnRomInfo CookbibRomDesc[] = {
 	{ "prg2.ub17",     0x20000, 0x2664a335, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1119,8 +1196,8 @@ static struct BurnRomInfo CookbibRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Cookbib);
-STD_ROM_FN(Cookbib);
+STD_ROM_PICK(Cookbib)
+STD_ROM_FN(Cookbib)
 
 static struct BurnRomInfo ChokchokRomDesc[] = {
 	{ "ub17.bin",      0x40000, 0xecdb45ca, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1143,8 +1220,8 @@ static struct BurnRomInfo ChokchokRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Chokchok);
-STD_ROM_FN(Chokchok);
+STD_ROM_PICK(Chokchok)
+STD_ROM_FN(Chokchok)
 
 static struct BurnRomInfo WlstarRomDesc[] = {
 	{ "n-4.u817",      0x40000, 0xfc3e829b, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1152,7 +1229,11 @@ static struct BurnRomInfo WlstarRomDesc[] = {
 	
 	{ "ua7",           0x10000, 0x90cafa5f, BRF_ESS | BRF_PRG }, //  2	Z80 Program Code
 	
+#if !defined (ROM_VERIFY)
 	{ "protdata.bin",  0x00200, 0xb7ffde5b, BRF_ESS | BRF_PRG }, //  3	Shared RAM Data
+#else
+	{ "87c52.mcu",     0x02000, 0xab5e2a7e, BRF_ESS | BRF_PRG }, //  3	MCU Program Code
+#endif
 	
 	{ "5.srom5",       0x80000, 0xf7f8c859, BRF_GRA },	     //  4	Tiles
 	{ "6.srom6",       0x80000, 0x34ace2a8, BRF_GRA },	     //  5
@@ -1163,12 +1244,36 @@ static struct BurnRomInfo WlstarRomDesc[] = {
 	{ "10.udr4",       0x80000, 0xb4693cdd, BRF_GRA },	     //  9
 	
 	{ "ua1",           0x40000, 0xde217d30, BRF_SND },	     //  10	Samples
-	
-	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Wlstar);
-STD_ROM_FN(Wlstar);
+STD_ROM_PICK(Wlstar)
+STD_ROM_FN(Wlstar)
+
+static struct BurnRomInfo Wondl96RomDesc[] = {
+	{ "ub17.bin",      0x40000, 0x41d8e03c, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "ub18.bin",      0x40000, 0x0e4963af, BRF_ESS | BRF_PRG }, //	 1	
+	
+	{ "ub5.bin",       0x10000, 0xd99d19c4, BRF_ESS | BRF_PRG }, //  2	Z80 Program Code
+	
+#if !defined (ROM_VERIFY)
+	{ "protdata.bin",  0x00200, 0xd7578b1e, BRF_ESS | BRF_PRG }, //  3	Shared RAM Data
+#else
+	{ "87c52.mcu",     0x02000, 0x6f4c659a, BRF_ESS | BRF_PRG }, //  3	MCU Program Code
+#endif
+	
+	{ "srom5.bin",     0x80000, 0xdb8010c3, BRF_GRA },	     //  4	Tiles
+	{ "srom6.bin",     0x80000, 0x2f364e54, BRF_GRA },	     //  5
+	
+	{ "uor1.bin",      0x80000, 0xe1e9eebb, BRF_GRA },	     //  6	Sprites
+	{ "uor2.bin",      0x80000, 0xddebfe83, BRF_GRA },	     //  7
+	{ "uor3.bin",      0x80000, 0x7efe4d67, BRF_GRA },	     //  8
+	{ "uor4.bin",      0x80000, 0x7b1596d1, BRF_GRA },	     //  9
+	
+	{ "uc1.bin",       0x40000, 0x0e7913e6, BRF_SND },	     //  10	Samples
+};
+
+STD_ROM_PICK(Wondl96)
+STD_ROM_FN(Wondl96)
 
 static struct BurnRomInfo FncywldRomDesc[] = {
 	{ "01_fw02.bin",   0x80000, 0xecb978c1, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1187,8 +1292,8 @@ static struct BurnRomInfo FncywldRomDesc[] = {
 	{ "00_fw01.bin",   0x40000, 0xb395fe01, BRF_SND },	     //  10	Samples
 };
 
-STD_ROM_PICK(Fncywld);
-STD_ROM_FN(Fncywld);
+STD_ROM_PICK(Fncywld)
+STD_ROM_FN(Fncywld)
 
 static struct BurnRomInfo SdfightRomDesc[] = {
 	{ "u817",          0x80000, 0x9f284f4d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1217,8 +1322,8 @@ static struct BurnRomInfo SdfightRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  17
 };
 
-STD_ROM_PICK(Sdfight);
-STD_ROM_FN(Sdfight);
+STD_ROM_PICK(Sdfight)
+STD_ROM_FN(Sdfight)
 
 static struct BurnRomInfo BcstryRomDesc[] = {
 	{ "bcstry_u.62",   0x40000, 0x7f7aa244, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1247,8 +1352,8 @@ static struct BurnRomInfo BcstryRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  17
 };
 
-STD_ROM_PICK(Bcstry);
-STD_ROM_FN(Bcstry);
+STD_ROM_PICK(Bcstry)
+STD_ROM_FN(Bcstry)
 
 static struct BurnRomInfo BcstryaRomDesc[] = {
 	{ "prg2.ic62",     0x40000, 0xf54c0a96, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1277,8 +1382,8 @@ static struct BurnRomInfo BcstryaRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  17
 };
 
-STD_ROM_PICK(Bcstrya);
-STD_ROM_FN(Bcstrya);
+STD_ROM_PICK(Bcstrya)
+STD_ROM_FN(Bcstrya)
 
 static struct BurnRomInfo SemibaseRomDesc[] = {
 	{ "ic62.68k",      0x40000, 0x85ea81c3, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1307,8 +1412,8 @@ static struct BurnRomInfo SemibaseRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  17
 };
 
-STD_ROM_PICK(Semibase);
-STD_ROM_FN(Semibase);
+STD_ROM_PICK(Semibase)
+STD_ROM_FN(Semibase)
 
 static struct BurnRomInfo DquizgoRomDesc[] = {
 	{ "ub17",          0x80000, 0x0b96ab14, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1331,8 +1436,8 @@ static struct BurnRomInfo DquizgoRomDesc[] = {
 	{ "87c52.mcu",     0x10000, 0x00000000, BRF_NODUMP },	     //  11
 };
 
-STD_ROM_PICK(Dquizgo);
-STD_ROM_FN(Dquizgo);
+STD_ROM_PICK(Dquizgo)
+STD_ROM_FN(Dquizgo)
 
 static struct BurnRomInfo JumppopRomDesc[] = {
 	{ "68k_prg.bin",   0x080000, 0x123536b9, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1348,8 +1453,8 @@ static struct BurnRomInfo JumppopRomDesc[] = {
 	{ "samples.bin",   0x040000, 0x066f30a7, BRF_SND },	      //  6	Samples
 };
 
-STD_ROM_PICK(Jumppop);
-STD_ROM_FN(Jumppop);
+STD_ROM_PICK(Jumppop)
+STD_ROM_FN(Jumppop)
 
 static int MemIndex()
 {
@@ -1628,9 +1733,15 @@ unsigned char __fastcall Tumbleb68KReadByte(unsigned int a)
 		
 		case 0x180009: {
 			if (Semibase) return 0xff - DrvInput[2];
-			if (DrvVBlank) return 0xf7 - DrvInput[2];
+			if (DrvVBlank) {
+				if (Wondl96) {
+					return 0xf3 - DrvInput[2];
+				} else {
+					return 0xf7 - DrvInput[2];
+				}
+			}
+			if (Wondl96) return 0xfb - DrvInput[2];
 			return 0xff - DrvInput[2];
-			
 		}
 		
 		case 0x18000a: {
@@ -1707,8 +1818,15 @@ unsigned short __fastcall Tumbleb68KReadWord(unsigned int a)
 				return 0x1a0;
 			} else {
 				if (Semibase) return 0xffff - DrvInput[2];
-				if (DrvVBlank) return 0xfff7 - DrvInput[2];
+				if (DrvVBlank) {
+					if (Wondl96) {
+						return 0xfff3 - DrvInput[2];
+					} else {
+						return 0xfff7 - DrvInput[2];
+					}
+				}
 			}
+			if (Wondl96) return 0xfff3 - DrvInput[2];
 			return 0xffff - DrvInput[2];
 		}
 		
@@ -3085,6 +3203,34 @@ static int WlstarInit()
 	return nRet;
 }
 
+static int Wondl96Init()
+{
+	int nRet;
+	
+	Wlstar = 1;
+	Wondl96 = 1;
+	DrvHasZ80 = 1;
+	DrvHasYM2151 = 1;
+	DrvHasProt = 2;
+	SemicomSoundCommand = 1;
+	DrvLoadRoms = ChokchokLoadRoms;
+	DrvMap68k = HtchctchMap68k;
+	DrvMapZ80 = SemicomMapZ80;
+	DrvRender = HtchctchDraw;
+	
+	nRet = DrvInit(1, 0x1000, 0x7fff, -1, 0, 0x4000, 0x10000, 0x4000, 60.0, 1024000);
+	
+	nCyclesTotal[0] = 15000000 / 60;
+	nCyclesTotal[1] = (15000000 / 4) / 60;
+	
+	Pf1XOffset = -5;
+	Pf1YOffset = 0;
+	Pf2XOffset = -1;
+	Pf2YOffset = 2;
+	
+	return nRet;
+}
+
 static int FncywldInit()
 {
 	int nRet;
@@ -3298,7 +3444,7 @@ static int JumppopInit()
 	ZetClose();
 	
 	BurnYM3812Init(3500000, NULL, JumppopSynchroniseStream, 0);
-	BurnTimerAttachZet(3500000);
+	BurnTimerAttachZetYM3812(3500000);
 	
 	// Setup the OKIM6295 emulation
 	MSM6295Init(0, 875000 / 132, 100.0, 1);
@@ -3361,6 +3507,7 @@ static int DrvExit()
 	Jumpkids = 0;
 	Chokchok = 0;
 	Wlstar = 0;
+	Wondl96 = 0;
 	Bcstry = 0;
 	Semibase = 0;
 	SemicomSoundCommand = 0;
@@ -4270,7 +4417,7 @@ static int JumppopFrame()
 	}
 	
 	ZetOpen(0);
-	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
+	BurnTimerEndFrameYM3812(nCyclesTotal[1] - nCyclesDone[1]);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
 	MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
@@ -4342,171 +4489,181 @@ static int DrvScan(int nAction, int *pnMin)
 }
 
 struct BurnDriver BurnDrvTumbleb = {
-	"tumbleb", "tumblep", NULL, "1991",
-	"Tumble Pop (bootleg set 1)\0", NULL, "bootleg", "Miscellaneous",
+	"tumbleb", "tumblep", NULL, NULL, "1991",
+	"Tumble Pop (bootleg set 1)\0", NULL, "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
-	NULL, TumblebRomInfo, TumblebRomName, TumblebInputInfo, TumblebDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, TumblebRomInfo, TumblebRomName, NULL, NULL, TumblebInputInfo, TumblebDIPInfo,
 	TumblebInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvTumbleb2 = {
-	"tumbleb2", "tumblep", NULL, "1991",
-	"Tumble Pop (bootleg set 2)\0", NULL, "bootleg", "Miscellaneous",
+	"tumbleb2", "tumblep", NULL, NULL, "1991",
+	"Tumble Pop (bootleg set 2)\0", NULL, "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
-	NULL, Tumbleb2RomInfo, Tumbleb2RomName, TumblebInputInfo, TumblebDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, Tumbleb2RomInfo, Tumbleb2RomName, NULL, NULL, TumblebInputInfo, TumblebDIPInfo,
 	Tumbleb2Init, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvJumpkids = {
-	"jumpkids", NULL, NULL, "1993",
+	"jumpkids", NULL, NULL, NULL, "1993",
 	"Jump Kids\0", NULL, "Comad", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, JumpkidsRomInfo, JumpkidsRomName, TumblebInputInfo, TumblebDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, JumpkidsRomInfo, JumpkidsRomName, NULL, NULL, TumblebInputInfo, TumblebDIPInfo,
 	JumpkidsInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvMetlsavr = {
-	"metlsavr", NULL, NULL, "1994",
+	"metlsavr", NULL, NULL, NULL, "1994",
 	"Metal Saver\0", NULL, "First Amusement", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, MetlsavrRomInfo, MetlsavrRomName, MetlsavrInputInfo, MetlsavrDIPInfo,
+	L"Metal Saver\0\uBA54\uD0C8\uC138\uC774\uBC84\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, MetlsavrRomInfo, MetlsavrRomName, NULL, NULL, MetlsavrInputInfo, MetlsavrDIPInfo,
 	MetlsavrInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvPangpang = {
-	"pangpang", NULL, NULL, "1994",
+	"pangpang", NULL, NULL, NULL, "1994",
 	"Pang Pang\0", NULL, "Dong Gue La Mi Ltd.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, PangpangRomInfo, PangpangRomName, TumblebInputInfo, TumblebDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, PangpangRomInfo, PangpangRomName, NULL, NULL, TumblebInputInfo, TumblebDIPInfo,
 	PangpangInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSuprtrio = {
-	"suprtrio", NULL, NULL, "1994",
+	"suprtrio", NULL, NULL, NULL, "1994",
 	"Super Trio\0", NULL, "Gameace", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, SuprtrioRomInfo, SuprtrioRomName, SuprtrioInputInfo, SuprtrioDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, SuprtrioRomInfo, SuprtrioRomName, NULL, NULL, SuprtrioInputInfo, SuprtrioDIPInfo,
 	SuprtrioInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvHtchctch = {
-	"htchctch", NULL, NULL, "1995",
+	"htchctch", NULL, NULL, NULL, "1995",
 	"Hatch Catch\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, HtchctchRomInfo, HtchctchRomName, HtchctchInputInfo, HtchctchDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, HtchctchRomInfo, HtchctchRomName, NULL, NULL, HtchctchInputInfo, HtchctchDIPInfo,
 	HtchctchInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvCookbib = {
-	"cookbib", NULL, NULL, "1995",
+	"cookbib", NULL, NULL, NULL, "1995",
 	"Cookie & Bibi\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, CookbibRomInfo, CookbibRomName, HtchctchInputInfo, CookbibDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, CookbibRomInfo, CookbibRomName, NULL, NULL, HtchctchInputInfo, CookbibDIPInfo,
 	CookbibInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvChokChok = {
-	"chokchok", NULL, NULL, "1995",
+	"chokchok", NULL, NULL, NULL, "1995",
 	"Choky! Choky!\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, ChokchokRomInfo, ChokchokRomName, HtchctchInputInfo, ChokchokDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, ChokchokRomInfo, ChokchokRomName, NULL, NULL, HtchctchInputInfo, ChokchokDIPInfo,
 	ChokchokInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvWlstar = {
-	"wlstar", NULL, NULL, "1995",
+	"wlstar", NULL, NULL, NULL, "1995",
 	"Wonder League Star - Sok-Magicball Fighting (Korea)\0", NULL, "Mijin", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, WlstarRomInfo, WlstarRomName, MetlsavrInputInfo, WlstarDIPInfo,
+	L"\uC6D0\uB354\uB9AC\uADF8\uC2A4\uD0C0 - \uC18D \uB9E4\uC9C1\uBCFC \uD30C\uC774\uD305 (Korea)\0Wonder League Star - Sok-Magicball Fighting\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, WlstarRomInfo, WlstarRomName, NULL, NULL, MetlsavrInputInfo, WlstarDIPInfo,
 	WlstarInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvWondl96 = {
+	"wondl96", NULL, NULL, NULL, "1995",
+	"Wonder League '96 (Korea)\0", NULL, "SemiCom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, Wondl96RomInfo, Wondl96RomName, NULL, NULL, MetlsavrInputInfo, Wondl96DIPInfo,
+	Wondl96Init, DrvExit, DrvFrame, NULL, DrvScan,
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvFancywld = {
-	"fncywld", NULL, NULL, "1996",
+	"fncywld", NULL, NULL, NULL, "1996",
 	"Fancy World - Earth of Crisis\0", NULL, "Unico", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, FncywldRomInfo, FncywldRomName, FncywldInputInfo, FncywldDIPInfo,
+	L"Fancy World - Earth of Crisis\0\uD39C\uC2DC\uC6D4\uB4DC \uD658\uC0C1\uC758 \uC138\uACC4 - Earth of Crisis\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, FncywldRomInfo, FncywldRomName, NULL, NULL, FncywldInputInfo, FncywldDIPInfo,
 	FncywldInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSdfight = {
-	"sdfight", NULL, NULL, "1996",
+	"sdfight", NULL, NULL, NULL, "1996",
 	"SD Fighters (Korea)\0", NULL, "SemiCom", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, SdfightRomInfo, SdfightRomName, MetlsavrInputInfo, SdfightDIPInfo,
+	L"\uFF33\uFF24 \uD30C\uC774\uD130\uC988 (Korea)\0SD Fighters\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	NULL, SdfightRomInfo, SdfightRomName, NULL, NULL, MetlsavrInputInfo, SdfightDIPInfo,
 	SdfightInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvBcstry = {
-	"bcstry", NULL, NULL, "1997",
+	"bcstry", NULL, NULL, NULL, "1997",
 	"B.C. Story (set 1)\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, BcstryRomInfo, BcstryRomName, MetlsavrInputInfo, BcstryDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, BcstryRomInfo, BcstryRomName, NULL, NULL, MetlsavrInputInfo, BcstryDIPInfo,
 	BcstryInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvBcstrya = {
-	"bcstrya", "bcstry", NULL, "1997",
+	"bcstrya", "bcstry", NULL, NULL, "1997",
 	"B.C. Story (set 2)\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, BcstryaRomInfo, BcstryaRomName, MetlsavrInputInfo, BcstryDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, BcstryaRomInfo, BcstryaRomName, NULL, NULL, MetlsavrInputInfo, BcstryDIPInfo,
 	BcstryInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSemibase = {
-	"semibase", NULL, NULL, "1997",
+	"semibase", NULL, NULL, NULL, "1997",
 	"MuHanSeungBu (SemiCom Baseball) (Korea)\0", NULL, "SemiCom", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, SemibaseRomInfo, SemibaseRomName, SemibaseInputInfo, SemibaseDIPInfo,
+	L"\u7121\u9650\u52DD\u8CA0\0\uC804\uC6D0 \uAD6D\uC81C\uB9AC\uADF8 \uC804 (SemiCom Baseball) (Korea)\0MuHanSeungBu\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, SemibaseRomInfo, SemibaseRomName, NULL, NULL, SemibaseInputInfo, SemibaseDIPInfo,
 	SemibaseInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvDquizgo = {
-	"dquizgo", NULL, NULL, "1998",
+	"dquizgo", NULL, NULL, NULL, "1998",
 	"Date Quiz Go Go (Korea)\0", NULL, "SemiCom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, DquizgoRomInfo, DquizgoRomName, MetlsavrInputInfo, DquizgoDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_QUIZ, 0,
+	NULL, DquizgoRomInfo, DquizgoRomName, NULL, NULL, MetlsavrInputInfo, DquizgoDIPInfo,
 	DquizgoInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvJumppop = {
-	"jumppop", NULL, NULL, "2001",
+	"jumppop", NULL, NULL, NULL, "2001",
 	"Jumping Pop\0", "Missing Sounds", "ESD", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, JumppopRomInfo, JumppopRomName, JumppopInputInfo, JumppopDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, JumppopRomInfo, JumppopRomName, NULL, NULL, JumppopInputInfo, JumppopDIPInfo,
 	JumppopInit, DrvExit, JumppopFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x400, 320, 240, 4, 3
 };

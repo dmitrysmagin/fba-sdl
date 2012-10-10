@@ -1,4 +1,5 @@
 extern unsigned char *ICSSNDROM;
+extern unsigned int nICSSNDROMLen;
 
 extern unsigned char ics2115read(unsigned char offset);
 extern void ics2115write(unsigned char offset, unsigned char data);

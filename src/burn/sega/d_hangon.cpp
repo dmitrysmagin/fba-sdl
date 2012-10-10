@@ -23,7 +23,7 @@ static struct BurnInputInfo EndurorInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH , System16Dip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Enduror);
+STDINPUTINFO(Enduror)
 
 static struct BurnInputInfo HangonInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"    },
@@ -41,9 +41,9 @@ static struct BurnInputInfo HangonInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH , System16Dip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Hangon);
+STDINPUTINFO(Hangon)
 
-static struct BurnInputInfo ShangupbInputList[] = {
+static struct BurnInputInfo ShangonrbInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"    },
 	{"Start 1"           , BIT_DIGITAL   , System16InputPort0 + 4, "p1 start"   },
 	{"Coin 2"            , BIT_DIGITAL   , System16InputPort0 + 1, "p2 coin"    },
@@ -60,7 +60,7 @@ static struct BurnInputInfo ShangupbInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH , System16Dip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Shangupb);
+STDINPUTINFO(Shangonrb)
 
 static struct BurnInputInfo SharrierInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"    },
@@ -80,7 +80,7 @@ static struct BurnInputInfo SharrierInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH , System16Dip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Sharrier);
+STDINPUTINFO(Sharrier)
 
 #undef A
 
@@ -162,7 +162,7 @@ static struct BurnDIPInfo EndurorDIPList[]=
 	{0x0b, 0x01, 0x80, 0x00, "On"                                 },
 };
 
-STDDIPINFO(Enduror);
+STDDIPINFO(Enduror)
 
 static struct BurnDIPInfo HangonDIPList[]=
 {
@@ -195,9 +195,9 @@ static struct BurnDIPInfo HangonDIPList[]=
 	{0x0a, 0x01, 0x20, 0x20, "On"                                 },
 };
 
-STDDIPINFO(Hangon);
+STDDIPINFO(Hangon)
 
-static struct BurnDIPInfo ShangupbDIPList[]=
+static struct BurnDIPInfo ShangonrbDIPList[]=
 {
 	// Default Values
 	{0x0a, 0xff, 0xff, 0xff, NULL                                 },
@@ -224,7 +224,7 @@ static struct BurnDIPInfo ShangupbDIPList[]=
 	{0x0b, 0x01, 0x18, 0x00, "Hardest"                            },
 };
 
-STDDIPINFO(Shangupb);
+STDDIPINFO(Shangonrb)
 
 static struct BurnDIPInfo SharrierDIPList[]=
 {
@@ -265,7 +265,7 @@ static struct BurnDIPInfo SharrierDIPList[]=
 	{0x0c, 0x01, 0xc0, 0x00, "Hardest"                            },
 };
 
-STDDIPINFO(Sharrier);
+STDDIPINFO(Sharrier)
 
 #undef HANGON_COINAGE
 
@@ -329,11 +329,13 @@ static struct BurnRomInfo EndurorRomDesc[] = {
 	{ "epr-7680.rom",     0x08000, 0x627b3c8c, SYS16_ROM_PCMDATA | BRF_SND },
 	
 	{ "epr-6844.ic123",   0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
+	
+	{ "317-0013a.key",    0x02000, 0x295e6737, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
 };
 
 
-STD_ROM_PICK(Enduror);
-STD_ROM_FN(Enduror);
+STD_ROM_PICK(Enduror)
+STD_ROM_FN(Enduror)
 
 static struct BurnRomInfo Enduror1RomDesc[] = {
 	{ "epr-7630.ic97",    0x08000, 0xa1bdadab, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -392,11 +394,13 @@ static struct BurnRomInfo Enduror1RomDesc[] = {
 	{ "epr-7763.ic6",     0x08000, 0x627b3c8c, SYS16_ROM_PCMDATA | BRF_SND },
 	
 	{ "epr-6844.ic123",   0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
+	
+	{ "317-0013a.key",    0x02000, 0x295e6737, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
 };
 
 
-STD_ROM_PICK(Enduror1);
-STD_ROM_FN(Enduror1);
+STD_ROM_PICK(Enduror1)
+STD_ROM_FN(Enduror1)
 
 static struct BurnRomInfo EnduroblRomDesc[] = {
 	{ "7.13j",            0x10000, 0xf1d6b4b7, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -458,8 +462,8 @@ static struct BurnRomInfo EnduroblRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Endurobl);
-STD_ROM_FN(Endurobl);
+STD_ROM_PICK(Endurobl)
+STD_ROM_FN(Endurobl)
 
 static struct BurnRomInfo HangonRomDesc[] = {
 	{ "epr-6918a.ic22",   0x08000, 0x20b1c2b0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -500,8 +504,8 @@ static struct BurnRomInfo HangonRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Hangon);
-STD_ROM_FN(Hangon);
+STD_ROM_PICK(Hangon)
+STD_ROM_FN(Hangon)
 
 static struct BurnRomInfo Hangon1RomDesc[] = {
 	{ "epr-6918.ic22",    0x08000, 0x0bf4f2ac, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -542,10 +546,58 @@ static struct BurnRomInfo Hangon1RomDesc[] = {
 };
 
 
-STD_ROM_PICK(Hangon1);
-STD_ROM_FN(Hangon1);
+STD_ROM_PICK(Hangon1)
+STD_ROM_FN(Hangon1)
 
-static struct BurnRomInfo ShangupbRomDesc[] = {
+static struct BurnRomInfo ShangonroRomDesc[] = {
+	{ "epr-10842.22",     0x08000, 0x24289138, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10839.8",      0x08000, 0x70f92d5e, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10841.20",     0x08000, 0x3bb2186c, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10838.6",      0x08000, 0x6aded05a, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10840.18",     0x08000, 0x12ee8716, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10837.4",      0x08000, 0x155e0cfd, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr-10831.25",     0x10000, 0x3a2de9eb, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr-10833.31",     0x10000, 0x13ba98bc, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr-10830.24",     0x10000, 0x2ae4e53a, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },	
+	{ "epr-10832.30",     0x10000, 0x543cd7bb, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },	
+
+	{ "epr-10652.38",     0x08000, 0x260286f9, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-10651.23",     0x08000, 0xc609ee7b, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-10650.7",      0x08000, 0xb236a403, SYS16_ROM_TILES | BRF_GRA },
+
+	{ "epr-10675.22",     0x10000, 0xd6ac012b, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10682.11",     0x10000, 0xd9d83250, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10676.21",     0x10000, 0x25ebf2c5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10683.12",     0x10000, 0x6365d2e9, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10677.20",     0x10000, 0x8a57b8d6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10684.11",     0x10000, 0x3aff8910, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10678.19",     0x10000, 0xaf473098, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10685.10",     0x10000, 0x80bafeef, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10679.18",     0x10000, 0x03bc4878, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10686.9",      0x10000, 0x274b734e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10680.17",     0x10000, 0x9f0677ed, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10687.8",      0x10000, 0x508a4701, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10681.16",     0x10000, 0xb176ea72, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10688.7",      0x10000, 0x42fcd51d, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr-10866.108",    0x08000, 0x1bbe4fc8, SYS16_ROM_ROAD | BRF_GRA },
+
+	{ "epr-10834a.52",    0x08000, 0x83347dc0, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr-10835.55",     0x10000, 0xda08ca2b, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "epr-10836.56",     0x10000, 0x8b10e601, SYS16_ROM_PCMDATA | BRF_SND },
+	
+	{ "epr-6844.119",     0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
+	
+	{ "317-0038.key",     0x02000, 0x85943925, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Shangonro)
+STD_ROM_FN(Shangonro)
+
+static struct BurnRomInfo ShangonrbRomDesc[] = {
 	{ "s-hangon.30",      0x10000, 0xd95e82fc, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "s-hangon.32",      0x10000, 0x2ee4b4fb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "s-hangon.29",      0x08000, 0x12ee8716, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -556,38 +608,38 @@ static struct BurnRomInfo ShangupbRomDesc[] = {
 	{ "s-hangon.08",      0x10000, 0x000ad595, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	{ "s-hangon.04",      0x10000, 0x8f8f4af0, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 
-	{ "epr-10652.54",     0x08000, 0x260286f9, SYS16_ROM_TILES | BRF_GRA },
-	{ "epr-10651.55",     0x08000, 0xc609ee7b, SYS16_ROM_TILES | BRF_GRA },
-	{ "epr-10650.56",     0x08000, 0xb236a403, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-10652.38",     0x08000, 0x260286f9, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-10651.23",     0x08000, 0xc609ee7b, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-10650.7",      0x08000, 0xb236a403, SYS16_ROM_TILES | BRF_GRA },
 
-	{ "epr-10675.8",      0x10000, 0xd6ac012b, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10682.16",     0x10000, 0xd9d83250, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10675.22",     0x10000, 0xd6ac012b, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10682.11",     0x10000, 0xd9d83250, SYS16_ROM_SPRITES | BRF_GRA },
 	{ "s-hangon.20",      0x10000, 0xeef23b3d, SYS16_ROM_SPRITES | BRF_GRA },
 	{ "s-hangon.14",      0x10000, 0x0f26d131, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10677.6",      0x10000, 0x8a57b8d6, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10684.14",     0x10000, 0x3aff8910, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10678.5",      0x10000, 0xaf473098, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10685.13",     0x10000, 0x80bafeef, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10679.4",      0x10000, 0x03bc4878, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10686.12",     0x10000, 0x274b734e, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10680.3",      0x10000, 0x9f0677ed, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10687.11",     0x10000, 0x508a4701, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10681.2",      0x10000, 0xb176ea72, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr-10688.10",     0x10000, 0x42fcd51d, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10677.20",     0x10000, 0x8a57b8d6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10684.11",     0x10000, 0x3aff8910, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10678.19",     0x10000, 0xaf473098, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10685.10",     0x10000, 0x80bafeef, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10679.18",     0x10000, 0x03bc4878, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10686.9",      0x10000, 0x274b734e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10680.17",     0x10000, 0x9f0677ed, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10687.8",      0x10000, 0x508a4701, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10681.16",     0x10000, 0xb176ea72, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-10688.7",      0x10000, 0x42fcd51d, SYS16_ROM_SPRITES | BRF_GRA },
 	
-	{ "s-hangon.26",      0x08000, 0x1bbe4fc8, SYS16_ROM_ROAD | BRF_GRA },
+	{ "epr-10866.108",    0x08000, 0x1bbe4fc8, SYS16_ROM_ROAD | BRF_GRA },
 
-	{ "s-hangon.03",      0x08000, 0x83347dc0, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "epr-10834a.52",    0x08000, 0x83347dc0, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
 	
-	{ "s-hangon.02",      0x10000, 0xda08ca2b, SYS16_ROM_PCMDATA | BRF_SND },
-	{ "s-hangon.01",      0x10000, 0x8b10e601, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "epr-10835.55",     0x10000, 0xda08ca2b, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "epr-10836.56",     0x10000, 0x8b10e601, SYS16_ROM_PCMDATA | BRF_SND },
 	
-	{ "6844.rom",         0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
+	{ "epr-6844.119",     0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
 };
 
 
-STD_ROM_PICK(Shangupb);
-STD_ROM_FN(Shangupb);
+STD_ROM_PICK(Shangonrb)
+STD_ROM_FN(Shangonrb)
 
 static struct BurnRomInfo SharrierRomDesc[] = {
 	{ "epr-7188a.ic97",   0x08000, 0x45e173c3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -641,8 +693,8 @@ static struct BurnRomInfo SharrierRomDesc[] = {
 	
 	{ "epr-7181.ic2",     0x08000, 0xb4740419, SYS16_ROM_ROAD | BRF_GRA },
 
-	{ "epr-72xx.ic73",    0x04000, 0xd6397933, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
-	{ "epr-72xx.ic72",    0x04000, 0x504e76d9, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "epr-7234.ic73",    0x04000, 0xd6397933, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "epr-7233.ic72",    0x04000, 0x504e76d9, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
 	
 	{ "epr-7231.ic5",     0x08000, 0x871c6b14, SYS16_ROM_PCMDATA | BRF_SND },
 	{ "epr-7232.ic6",     0x08000, 0x4b59340c, SYS16_ROM_PCMDATA | BRF_SND },
@@ -653,10 +705,10 @@ static struct BurnRomInfo SharrierRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Sharrier);
-STD_ROM_FN(Sharrier);
+STD_ROM_PICK(Sharrier)
+STD_ROM_FN(Sharrier)
 
-static struct BurnRomInfo Sharrir1RomDesc[] = {
+static struct BurnRomInfo Sharrier1RomDesc[] = {
 	{ "epr-7188.ic97",    0x08000, 0x7c30a036, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-7184.ic84",    0x08000, 0x16deaeb1, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-7189.ic98",    0x08000, 0x40b1309f, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -708,8 +760,8 @@ static struct BurnRomInfo Sharrir1RomDesc[] = {
 	
 	{ "epr-7181.ic2",     0x08000, 0xb4740419, SYS16_ROM_ROAD | BRF_GRA },
 
-	{ "epr-72xx.ic73",    0x04000, 0xd6397933, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
-	{ "epr-72xx.ic72",    0x04000, 0x504e76d9, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "epr-7234.ic73",    0x04000, 0xd6397933, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "epr-7233.ic72",    0x04000, 0x504e76d9, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
 	
 	{ "epr-7231.ic5",     0x08000, 0x871c6b14, SYS16_ROM_PCMDATA | BRF_SND },
 	{ "epr-7232.ic6",     0x08000, 0x4b59340c, SYS16_ROM_PCMDATA | BRF_SND },
@@ -720,8 +772,8 @@ static struct BurnRomInfo Sharrir1RomDesc[] = {
 };
 
 
-STD_ROM_PICK(Sharrir1);
-STD_ROM_FN(Sharrir1);
+STD_ROM_PICK(Sharrier1)
+STD_ROM_FN(Sharrier1)
 
 /*====================================================
 Memory Handlers
@@ -779,6 +831,36 @@ void HangonPPI1WritePortA(UINT8 data)
 	}
 }
 
+unsigned short __fastcall HangonReadWord(unsigned int a)
+{
+	switch (a) {	
+		case 0xe00000:
+		case 0xe00002:
+		case 0xe00004:
+		case 0xe00006: {
+			return ppi8255_r(0, (a - 0xe00000) >> 1);
+		}
+	
+		case 0xe01000: {
+			return 0xff - System16Input[0];
+		}
+		
+		case 0xe0100a: {
+			return System16Dip[0];
+		}
+		
+		case 0xe0100c: {
+			return System16Dip[1];
+		}
+	}
+	
+#if 0 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
+#endif
+
+	return 0;
+}
+
 unsigned char __fastcall HangonReadByte(unsigned int a)
 {
 	switch (a) {
@@ -786,7 +868,7 @@ unsigned char __fastcall HangonReadByte(unsigned int a)
 		case 0xe00003:
 		case 0xe00005:
 		case 0xe00007: {
-			return ppi8255_r(0, a - (0xe00000) >> 1);
+			return ppi8255_r(0, (a - 0xe00000) >> 1);
 		}
 		
 		case 0xe01001: {
@@ -805,7 +887,7 @@ unsigned char __fastcall HangonReadByte(unsigned int a)
 		case 0xe03003:
 		case 0xe03005:
 		case 0xe03007: {
-			return ppi8255_r(1, a - (0xe03000) >> 1);
+			return ppi8255_r(1, (a - 0xe03000) >> 1);
 		}
 		
 		case 0xe03021: {
@@ -823,12 +905,17 @@ unsigned char __fastcall HangonReadByte(unsigned int a)
 
 void __fastcall HangonWriteByte(unsigned int a, unsigned char d)
 {
+	if (a >= 0x400000 && a <= 0x403fff) {
+		System16ATileByteWrite((a - 0x400000) ^ 1, d);
+		return;
+	}
+
 	switch (a) {
 		case 0xe00001:
 		case 0xe00003: 
 		case 0xe00005: 
 		case 0xe00007: {
-			ppi8255_w(0, a - (0xe00000) >> 1, d & 0xff);
+			ppi8255_w(0, (a - 0xe00000) >> 1, d & 0xff);
 			return;
 		}
 		
@@ -836,7 +923,7 @@ void __fastcall HangonWriteByte(unsigned int a, unsigned char d)
 		case 0xe03003:
 		case 0xe03005:
 		case 0xe03007: {
-			ppi8255_w(1, a - (0xe03000) >> 1, d & 0xff);
+			ppi8255_w(1, (a - 0xe03000) >> 1, d & 0xff);
 			return;
 		}
 		
@@ -853,6 +940,28 @@ void __fastcall HangonWriteByte(unsigned int a, unsigned char d)
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
+#endif
+}
+
+void __fastcall HangonWriteWord(unsigned int a, unsigned short d)
+{
+	if (a >= 0x400000 && a <= 0x403fff) {
+		System16ATileWordWrite(a - 0x400000, d);
+		return;
+	}
+	
+	switch (a) {
+		case 0xe00000:
+		case 0xe00002: 
+		case 0xe00004: 
+		case 0xe00006: {
+			ppi8255_w(0, (a - 0xe00000) >> 1, d & 0xff);
+			return;
+		}
+	}
+
+#if 0 && defined FBA_DEBUG	
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
 #endif
 }
 
@@ -876,10 +985,6 @@ unsigned short __fastcall SharrierReadWord(unsigned int a)
 		}
 	}
 
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
-#endif
-
 	return 0;
 }
 
@@ -890,7 +995,7 @@ unsigned char __fastcall SharrierReadByte(unsigned int a)
 		case 0x140003:
 		case 0x140005:
 		case 0x140007: {
-			return ppi8255_r(0, a - (0x140000) >> 1);
+			return ppi8255_r(0, (a - 0x140000) >> 1);
 		}
 		
 		case 0x140011: {
@@ -905,7 +1010,7 @@ unsigned char __fastcall SharrierReadByte(unsigned int a)
 		case 0x140023:
 		case 0x140025:
 		case 0x140027: {
-			return ppi8255_r(1, a - (0x140020) >> 1);
+			return ppi8255_r(1, (a - 0x140020) >> 1);
 		}
 		
 		case 0x140031: {
@@ -914,21 +1019,22 @@ unsigned char __fastcall SharrierReadByte(unsigned int a)
 		}
 	}
 
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
-#endif
-
 	return 0;
 }
 
 void __fastcall SharrierWriteByte(unsigned int a, unsigned char d)
 {
+	if (a >= 0x100000 && a <= 0x107fff) {
+		System16ATileByteWrite((a - 0x100000) ^ 1, d);
+		return;
+	}
+	
 	switch (a) {
 		case 0x140001:
 		case 0x140003: 
 		case 0x140005: 
 		case 0x140007: {
-			ppi8255_w(0, a - (0x140000) >> 1, d & 0xff);
+			ppi8255_w(0, (a - 0x140000) >> 1, d & 0xff);
 			return;
 		}
 		
@@ -936,7 +1042,7 @@ void __fastcall SharrierWriteByte(unsigned int a, unsigned char d)
 		case 0x140023:
 		case 0x140025:
 		case 0x140027: {
-			ppi8255_w(1, a - (0x140020) >> 1, d & 0xff);
+			ppi8255_w(1, (a - 0x140020) >> 1, d & 0xff);
 			return;
 		}
 		
@@ -944,10 +1050,14 @@ void __fastcall SharrierWriteByte(unsigned int a, unsigned char d)
 			return;
 		}
 	}
+}
 
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
-#endif
+void __fastcall SharrierWriteWord(unsigned int a, unsigned short d)
+{
+	if (a >= 0x100000 && a <= 0x107fff) {
+		System16ATileWordWrite(a - 0x100000, d);
+		return;
+	}
 }
 
 /*====================================================
@@ -959,25 +1069,44 @@ unsigned char EndurorProcessAnalogControls(UINT16 value)
 	unsigned char temp = 0;
 	
 	switch (value) {
+
+		// Accelerate
 		case 0: {
 			if (System16AnalogPort2 > 1) return 0xff;
 			return 0;
 		}
-		
+
+		// Brake
 		case 1: {
 			if (System16AnalogPort3 > 1) return 0xff;
 			return 0;
 		}
 
+		// Bank Up / Down
 		case 2: {
-			temp = 0x80 + (System16AnalogPort1 >> 4);
+
+			// Prevent CHAR data overflow
+			if((System16AnalogPort1 >> 4) > 0x7f && (System16AnalogPort1 >> 4) <= 0x80) {
+				temp = 0x80 + 0x7f;
+			} else {
+				temp = 0x80 + (System16AnalogPort1 >> 4);
+			}
+
 			if (temp == 0x80) return 0x20;
 			if (temp > 0x80) return 0xff;
 			return 0;
 		}
 
+		// Steering
 		case 3: {
-			temp = 0x80 - (System16AnalogPort0 >> 4);
+
+			// Prevent CHAR data overflow
+			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
+				temp = (unsigned char)(0x80 - 0xf82);
+			} else {
+				temp = 0x80 - (System16AnalogPort0 >> 4);
+			}
+
 			return temp;
 		}
 	}
@@ -990,18 +1119,29 @@ unsigned char HangonProcessAnalogControls(UINT16 value)
 	unsigned char temp = 0;
 	
 	switch (value) {
+
+		// Steering
 		case 0: {
-			temp = 0x80 - (System16AnalogPort0 >> 4);
+
+			// Prevent CHAR data overflow
+			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
+				temp = (unsigned char)(0x80 - 0xf82);
+			} else {
+				temp = 0x80 - (System16AnalogPort0 >> 4);
+			}
+
 			if (temp < 0x20) temp = 0x20;
 			if (temp > 0xe0) temp = 0xe0;
 			return temp;
 		}
 		
+		// Accelerate
 		case 1: {
 			if (System16AnalogPort1 > 1) return 0xff;
 			return 0;
 		}
 		
+		// Brake
 		case 2: {
 			if (System16AnalogPort2 > 1) return 0xff;
 			return 0;
@@ -1016,15 +1156,32 @@ unsigned char SharrierProcessAnalogControls(UINT16 value)
 	unsigned char temp = 0;
 	
 	switch (value) {
+
+		// Left / Right
 		case 0: {
-			temp = 0x80 - (System16AnalogPort0 >> 4);
+
+			// Prevent CHAR data overflow
+			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
+				temp = (unsigned char)(0x80 - 0xf82);
+			} else {
+				temp = 0x80 - (System16AnalogPort0 >> 4);
+			}
+
 			if (temp < 0x20) temp = 0x20;
 			if (temp > 0xe0) temp = 0xe0;
 			return temp;
 		}
-		
+
+		// Up / Down
 		case 1: {
-			temp = 0x80 - (System16AnalogPort1 >> 4);
+
+			// Prevent CHAR data overflow
+			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
+				temp = (unsigned char)(0x80 - 0xf82);
+			} else {
+				temp = 0x80 - (System16AnalogPort1 >> 4);
+			}
+
 			if (temp < 0x60) temp = 0x60;
 			if (temp > 0xa0) temp = 0xa0;
 			return temp;
@@ -1041,7 +1198,7 @@ void SharrierMap68K()
 	SekMapMemory(System16Rom             , 0x000000, 0x03ffff, SM_READ);
 	SekMapMemory(System16Code            , 0x000000, 0x03ffff, SM_FETCH);
 	SekMapMemory(System16Ram             , 0x040000, 0x043fff, SM_RAM);
-	SekMapMemory(System16TileRam         , 0x100000, 0x107fff, SM_RAM);
+	SekMapMemory(System16TileRam         , 0x100000, 0x107fff, SM_READ);
 	SekMapMemory(System16TextRam         , 0x108000, 0x108fff, SM_RAM);
 	SekMapMemory(System16PaletteRam      , 0x110000, 0x110fff, SM_RAM);
 	SekMapMemory(System16ExtraRam        , 0x124000, 0x127fff, SM_RAM);
@@ -1051,13 +1208,12 @@ void SharrierMap68K()
 	SekSetReadWordHandler(0, SharrierReadWord);
 	SekSetReadByteHandler(0, SharrierReadByte);
 	SekSetWriteByteHandler(0, SharrierWriteByte);
+	SekSetWriteWordHandler(0, SharrierWriteWord);
 	SekClose();
 }
 
 static int EndurorInit()
 {
-	FD1089_Decrypt = fd1089_decrypt_0013A;
-	
 	System16Map68KDo = SharrierMap68K;
 	
 	System16ProcessAnalogControlsDo = EndurorProcessAnalogControls;
@@ -1080,8 +1236,6 @@ static int EndurorInit()
 
 static int Enduror1Init()
 {
-	FD1089_Decrypt = fd1089_decrypt_0013A;
-	
 	System16Map68KDo = SharrierMap68K;
 	
 	System16ProcessAnalogControlsDo = EndurorProcessAnalogControls;
@@ -1151,7 +1305,7 @@ static int HangonInit()
 	return nRet;
 }
 
-static int ShangupbInit()
+static int ShangonrbInit()
 {
 	System16ProcessAnalogControlsDo = HangonProcessAnalogControls;
 	
@@ -1188,81 +1342,91 @@ Driver defs
 ====================================================*/
 
 struct BurnDriver BurnDrvEnduror = {
-	"enduror", NULL, NULL, "1986",
+	"enduror", NULL, NULL, NULL, "1986",
 	"Enduro Racer (YM2151, FD1089B 317-0013A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
-	NULL, EndurorRomInfo, EndurorRomName, EndurorInputInfo, EndurorDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32, GBF_RACING, 0,
+	NULL, EndurorRomInfo, EndurorRomName, NULL, NULL, EndurorInputInfo, EndurorDIPInfo,
 	EndurorInit, System16Exit, HangonFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvEnduror1 = {
-	"enduror1", "enduror", NULL, "1986",
+	"enduror1", "enduror", NULL, NULL, "1986",
 	"Enduro Racer (YM2203, FD1089B 317-0013A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203,
-	NULL, Enduror1RomInfo, Enduror1RomName, EndurorInputInfo, EndurorDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203, GBF_RACING, 0,
+	NULL, Enduror1RomInfo, Enduror1RomName, NULL, NULL, EndurorInputInfo, EndurorDIPInfo,
 	Enduror1Init, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvEndurobl = {
-	"endurobl", "enduror", NULL, "1986",
+	"endurobl", "enduror", NULL, NULL, "1986",
 	"Enduro Racer (bootleg set 1)\0", NULL, "bootleg", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203,
-	NULL, EnduroblRomInfo, EnduroblRomName, EndurorInputInfo, EndurorDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203, GBF_RACING, 0,
+	NULL, EnduroblRomInfo, EnduroblRomName, NULL, NULL, EndurorInputInfo, EndurorDIPInfo,
 	EnduroblInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvHangon = {
-	"hangon", NULL, NULL, "1985",
+	"hangon", NULL, NULL, NULL, "1985",
 	"Hang-On (rev A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203,
-	NULL, HangonRomInfo, HangonRomName, HangonInputInfo, HangonDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203, GBF_RACING, 0,
+	NULL, HangonRomInfo, HangonRomName, NULL, NULL, HangonInputInfo, HangonDIPInfo,
 	HangonInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvHangon1 = {
-	"hangon1", "hangon", NULL, "1985",
+	"hangon1", "hangon", NULL, NULL, "1985",
 	"Hang-On\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203,
-	NULL, Hangon1RomInfo, Hangon1RomName, HangonInputInfo, HangonDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203, GBF_RACING, 0,
+	NULL, Hangon1RomInfo, Hangon1RomName, NULL, NULL, HangonInputInfo, HangonDIPInfo,
 	HangonInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvShangupb = {
-	"shangupb", "shangon", NULL, "1985",
-	"Super Hang-On (Hang-On upgrade, bootleg)\0", NULL, "bootleg", "Hang-On",
+struct BurnDriverD BurnDrvShangonro = {
+	"shangonro", "shangon", NULL, NULL, "1992",
+	"Super Hang-On (Japan, FD1094 317-0038)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_HANGON,
-	NULL, ShangupbRomInfo, ShangupbRomName, ShangupbInputInfo, ShangupbDIPInfo,
-	ShangupbInit, System16Exit, HangonFrame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1094_ENC_CPU2, GBF_RACING, 0,
+	NULL, ShangonroRomInfo, ShangonroRomName, NULL, NULL, ShangonrbInputInfo, ShangonrbDIPInfo,
+	ShangonrbInit, System16Exit, HangonFrame, NULL, System16Scan,
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
+};
+
+struct BurnDriverD BurnDrvShangonrb = {
+	"shangonrb", "shangon", NULL, NULL, "1992",
+	"Super Hang-On (bootleg)\0", NULL, "bootleg", "Hang-On",
+	NULL, NULL, NULL, NULL,
+	BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_HANGON, GBF_RACING, 0,
+	NULL, ShangonrbRomInfo, ShangonrbRomName, NULL, NULL, ShangonrbInputInfo, ShangonrbDIPInfo,
+	ShangonrbInit, System16Exit, HangonFrame, NULL, System16Scan,
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSharrier = {
-	"sharrier", NULL, NULL, "1985",
+	"sharrier", NULL, NULL, NULL, "1985",
 	"Space Harrier (Rev A, 8751 315-5163A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203,
-	NULL, SharrierRomInfo, SharrierRomName, SharrierInputInfo, SharrierDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203, GBF_SHOOT, 0,
+	NULL, SharrierRomInfo, SharrierRomName, NULL, NULL, SharrierInputInfo, SharrierDIPInfo,
 	SharrierInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvSharrir1 = {
-	"sharrir1", "sharrier", NULL, "1985",
+struct BurnDriver BurnDrvSharrier1 = {
+	"sharrier1", "sharrier", NULL, NULL, "1985",
 	"Space Harrier (8751 315-5163)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203,
-	NULL, Sharrir1RomInfo, Sharrir1RomName, SharrierInputInfo, SharrierDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203, GBF_SHOOT, 0,
+	NULL, Sharrier1RomInfo, Sharrier1RomName, NULL, NULL, SharrierInputInfo, SharrierDIPInfo,
 	SharrierInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1800, 320, 224, 4, 3
 };

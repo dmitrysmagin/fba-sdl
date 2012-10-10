@@ -7,6 +7,8 @@
 static int nYMZ280BSampleRate;
 
 unsigned char* YMZ280BROM;
+void (*pYMZ280BRAMWrite)(int offset, int nValue) = NULL;
+int (*pYMZ280BRAMRead)(int offset) = NULL;
 
 unsigned int nYMZ280BStatus;
 unsigned int nYMZ280BRegister;
@@ -55,7 +57,7 @@ struct sYMZ280BChannelInfo {
 	int nBufPos;
 };
 
-static int nActiveChannel, nDelta, nSample, nCount;
+static int nActiveChannel, nDelta, nSample, nCount, nRamReadAddress;
 static int* buf;
 
 sYMZ280BChannelInfo YMZ280BChannelInfo[8];
@@ -71,6 +73,7 @@ void YMZ280BReset()
 	nYMZ280BIRQStatus = 0;
 	nYMZ280BStatus = 0;
 	bYMZ280BEnable = false;
+	nRamReadAddress = 0;
 
 	for (int j = 0; j < 8; j++) {
 		memset(YMZ280BChannelData[j], 0, 0x1000 * sizeof(int));
@@ -98,6 +101,7 @@ int YMZ280BScan()
 	SCAN_VAR(bYMZ280BIRQEnable);
 	SCAN_VAR(nYMZ280BIRQMask);
 	SCAN_VAR(nYMZ280BIRQStatus);
+	SCAN_VAR(nRamReadAddress);
 
 	for (int j = 0; j < 8; j++) {
 		SCAN_VAR(YMZ280BChannelInfo[j]);
@@ -148,6 +152,8 @@ void YMZ280BExit()
 	pBuffer = NULL;
 
 	YMZ280BIRQCallback = NULL;
+	pYMZ280BRAMWrite = NULL;
+	pYMZ280BRAMRead = NULL;
 }
 
 inline static void UpdateIRQStatus()
@@ -207,7 +213,7 @@ inline static void RampChannel()
 #endif
 }
 
-inline static void DecodeOneSample()
+inline static void decode_adpcm()
 {
 	// Get next value & compute delta
 	nDelta = YMZ280BROM[channelInfo->nPosition >> 1];
@@ -235,7 +241,32 @@ inline static void DecodeOneSample()
 			channelInfo->nStep = 127;
 		}
 	}
+
+	channelInfo->nPosition++;
 }
+
+inline static void decode_pcm8()
+{
+	nDelta = YMZ280BROM[channelInfo->nPosition >> 1];
+
+	channelInfo->nSample = (char)nDelta * 256;
+	channelInfo->nPosition+=2;
+}
+
+inline static void decode_pcm16()
+{
+	nDelta = (short)((YMZ280BROM[channelInfo->nPosition / 2 + 1] << 8) + YMZ280BROM[channelInfo->nPosition / 2]);
+
+	channelInfo->nSample = nDelta;
+	channelInfo->nPosition+=4;
+}
+
+inline static void decode_none()
+{
+	channelInfo->nSample=0;
+}
+
+static void (*decode_table[4])() = { decode_none, decode_adpcm, decode_pcm8, decode_pcm16 };
 
 inline static void ComputeOutput_Linear()
 {
@@ -285,10 +316,9 @@ inline static void RenderADPCM_Linear()
 					return;
 				} else {
 
-					DecodeOneSample();
+					decode_table[YMZ280BChannelInfo[nActiveChannel].nMode](); // decode one sample
 
 					// Advance sample position
-					channelInfo->nPosition++;
 					channelInfo->nFractionalPosition -= 0x01000000;
 				}
 
@@ -324,10 +354,9 @@ inline static void RenderADPCMLoop_Linear()
 					}
 				}
 
-				DecodeOneSample();
+				decode_table[YMZ280BChannelInfo[nActiveChannel].nMode](); // decode one sample
 
 				// Advance sample position
-				channelInfo->nPosition++;
 				channelInfo->nFractionalPosition -= 0x01000000;
 
 			} while (channelInfo->nFractionalPosition >= 0x01000000);
@@ -357,10 +386,9 @@ inline static void RenderADPCM_Cubic()
 				return;
 			} else {
 
-				DecodeOneSample();
+				decode_table[YMZ280BChannelInfo[nActiveChannel].nMode](); // decode one sample
 
 				// Advance sample position
-				channelInfo->nPosition++;
 				channelInfo->nFractionalPosition -= 0x01000000;
 
 				YMZ280BChannelData[nActiveChannel][channelInfo->nBufPos++] = channelInfo->nSample;
@@ -392,10 +420,9 @@ inline static void RenderADPCMLoop_Cubic()
 				}
 			}
 
-			DecodeOneSample();
+			decode_table[YMZ280BChannelInfo[nActiveChannel].nMode](); // decode one sample
 
 			// Advance sample position
-			channelInfo->nPosition++;
 			channelInfo->nFractionalPosition -= 0x01000000;
 
 			YMZ280BChannelData[nActiveChannel][channelInfo->nBufPos++] = channelInfo->nSample;
@@ -504,8 +531,7 @@ void YMZ280BWriteRegister(unsigned char nValue)
 
 						if (YMZ280BChannelInfo[nWriteChannel].nMode > 1) {
 #ifdef DEBUG
-							printf("Yikes!!! -- PCM ");
-							printf("Sample Start: %08X - Stop: %08X.\n",YMZ280BChannelInfo[nWriteChannel].nSampleStart, YMZ280BChannelInfo[nWriteChannel].nSampleStop);
+		//					bprintf(0,_T("Sample Start: %08X - Stop: %08X.\n"),YMZ280BChannelInfo[nWriteChannel].nSampleStart, YMZ280BChannelInfo[nWriteChannel].nSampleStop);
 #endif
 						}
 
@@ -602,36 +628,60 @@ void YMZ280BWriteRegister(unsigned char nValue)
 
 		}
    	} else {
-		if (nYMZ280BRegister == 0xFE) {
-			// Set IRQ mask
-			nYMZ280BIRQMask = nValue;
-			UpdateIRQStatus();
-		} else {
-			if (nYMZ280BRegister == 0xFF) {
-				// Start/stop playing, enable/disable IRQ
-				if (nValue & 0x10) {
-					bYMZ280BIRQEnable = true;
-				} else {
-					bYMZ280BIRQEnable = false;
-				}
-				UpdateIRQStatus();
+		switch (nYMZ280BRegister)
+		{
+			case 0x84:	// ROM readback / RAM write (high)
+				nRamReadAddress &= 0x00ffff;
+				nRamReadAddress |= (nValue << 16);
+				break;
 
-				if (bYMZ280BEnable && !(nValue & 0x80)) {
-					bYMZ280BEnable = false;
-					for (int n = 0; n < 8; n++) {
-						YMZ280BChannelInfo[n].bPlaying = false;
+			case 0x85:	// ROM readback / RAM write (med)
+				nRamReadAddress &= 0xff00ff;
+				nRamReadAddress |= (nValue <<  8);
+				break;
+
+			case 0x86:	// ROM readback / RAM write (low)
+				nRamReadAddress &= 0xffff00;
+				nRamReadAddress |= (nValue <<  0);
+				break;
+
+			case 0x87:	// RAM write
+				if (pYMZ280BRAMWrite) {
+					pYMZ280BRAMWrite(nRamReadAddress, nValue);
+				}
+				break;
+
+			case 0xfe:	// Set IRQ mask
+				nYMZ280BIRQMask = nValue;
+				UpdateIRQStatus();
+				break;
+
+			case 0xff:	// Start/stop playing, enable/disable IRQ
+				{
+					if (nValue & 0x10) {
+						bYMZ280BIRQEnable = true;
+					} else {
+						bYMZ280BIRQEnable = false;
 					}
-				} else {
-					if (!bYMZ280BEnable && (nValue & 0x80)) {
-						bYMZ280BEnable = true;
+					UpdateIRQStatus();
+	
+					if (bYMZ280BEnable && !(nValue & 0x80)) {
+						bYMZ280BEnable = false;
 						for (int n = 0; n < 8; n++) {
-							if (YMZ280BChannelInfo[n].bEnabled && YMZ280BChannelInfo[n].bLoop) {
-								YMZ280BChannelInfo[n].bPlaying = true;
+							YMZ280BChannelInfo[n].bPlaying = false;
+						}
+					} else {
+						if (!bYMZ280BEnable && (nValue & 0x80)) {
+							bYMZ280BEnable = true;
+							for (int n = 0; n < 8; n++) {
+								if (YMZ280BChannelInfo[n].bEnabled && YMZ280BChannelInfo[n].bLoop) {
+									YMZ280BChannelInfo[n].bPlaying = true;
+								}
 							}
 						}
 					}
 				}
-			}
+				break;
 		}
 	}
 }
@@ -645,3 +695,13 @@ unsigned int YMZ280BReadStatus()
 
 	return nStatus;
 }
+
+unsigned int YMZ280BReadRAM()
+{
+	if (pYMZ280BRAMRead) {
+		return pYMZ280BRAMRead(nRamReadAddress++ - 1);
+	}
+
+	return 0;
+}
+

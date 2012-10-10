@@ -58,7 +58,7 @@ static struct BurnInputInfo ddonpachInputList[] = {
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
 };
 
-STDINPUTINFO(ddonpach);
+STDINPUTINFO(ddonpach)
 
 static void UpdateIRQStatus()
 {
@@ -96,7 +96,7 @@ unsigned char __fastcall ddonpachReadByte(unsigned int sekAddress)
 		case 0xD00001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0xD00002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0xD00003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -131,7 +131,7 @@ unsigned short __fastcall ddonpachReadWord(unsigned int sekAddress)
 		case 0xD00000:
 			return DrvInput[0] ^ 0xFFFF;
 		case 0xD00002:
-			return DrvInput[1] ^ 0xF7FF | (EEPROMRead() << 11);
+			return (DrvInput[1] ^ 0xF7FF) | (EEPROMRead() << 11);
 
 		default: {
 // 			bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
@@ -508,8 +508,15 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
+		if (nAction & ACB_WRITE) {
+
+		CaveRecalcPalette = 1;
+		}
+
 	return 0;
 }
+
+static const UINT8 default_eeprom[16] =	{0x00,0x0C,0xFF,0xFB,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 static int DrvInit()
 {
@@ -527,7 +534,8 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
 
 	// Load the roms into memory
 	if (LoadRoms()) {
@@ -565,7 +573,7 @@ static int DrvInit()
 
 	nCaveRowModeOffset = 1;
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(0, 0x1000000);
 	CaveTileInitLayer(0, 0x400000, 8, 0x4000);
@@ -606,15 +614,17 @@ static struct BurnRomInfo ddonpachRomDesc[] = {
 
 	{ "u6.bin",       0x200000, 0x9DFDAFAF, BRF_SND },			 //  9 YMZ280B (AD)PCM data
 	{ "u7.bin",       0x200000, 0x795B17D5, BRF_SND },			 // 10
+	
+	{ "eeprom-ddonpach.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(ddonpach);
-STD_ROM_FN(ddonpach);
+STD_ROM_PICK(ddonpach)
+STD_ROM_FN(ddonpach)
 
 
 // Rom information
-static struct BurnRomInfo ddonpchjRomDesc[] = {
+static struct BurnRomInfo ddonpachjRomDesc[] = {
 	{ "u27.bin",      0x080000, 0x2432FF9B, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 	{ "u26.bin",      0x080000, 0x4F3A914A, BRF_ESS | BRF_PRG }, //  1
 
@@ -629,31 +639,35 @@ static struct BurnRomInfo ddonpchjRomDesc[] = {
 
 	{ "u6.bin",       0x200000, 0x9DFDAFAF, BRF_SND },			 //  9 YMZ280B (AD)PCM data
 	{ "u7.bin",       0x200000, 0x795B17D5, BRF_SND },			 // 10
+	
+	{ "eeprom-ddonpach.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(ddonpchj);
-STD_ROM_FN(ddonpchj);
+STD_ROM_PICK(ddonpachj)
+STD_ROM_FN(ddonpachj)
 
 
 struct BurnDriver BurnDrvDoDonpachi = {
-	"ddonpach", NULL, NULL, "1997",
-	"DoDonPachi (1997 2/5 master ver, international)\0", NULL, "Atlus / Cave", "Cave",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, ddonpachRomInfo, ddonpachRomName, ddonpachInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"ddonpach", NULL, NULL, NULL, "1997",
+	"DoDonPachi (International, master ver. 97/02/05)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u6012\u9996\u9818\u8702 DoDonPachi (International, master ver. 97/02/05)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, ddonpachRomInfo, ddonpachRomName, NULL, NULL, ddonpachInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvDoDonpachiJ = {
-	"ddonpchj", "ddonpach", NULL, "1997",
-	"DoDonPachi (1997 2/5 master ver, Japan)\0", NULL, "Atlus / Cave", "Cave",
-	L"DoDonPachi (1997 2/5 master ver, Japan)\0\u6012\u9996\u9818\u8702 (1997 2/5 master ver, Japan)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, ddonpchjRomInfo, ddonpchjRomName, ddonpachInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"ddonpachj", "ddonpach", NULL, NULL, "1997",
+	"DoDonPachi (Japan, master ver. 97/02/05)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u6012\u9996\u9818\u8702 DoDonPachi (Japan, master ver. 97/02/05)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, ddonpachjRomInfo, ddonpachjRomName, NULL, NULL, ddonpachInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
 

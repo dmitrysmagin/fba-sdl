@@ -6,13 +6,15 @@ unsigned char CaveRecalcPalette;	// Set to 1 to force recalculation of the entir
 unsigned int* CavePalette = NULL;
 static unsigned short* CavePalCopy = NULL;
 
-int CavePalInit()
+int CavePalInit(int nPalSize)
 {
-	CavePalette = (unsigned int*)malloc(0x8000 * sizeof(int));
-	memset(CavePalette, 0, 0x8000 * sizeof(int));
+	CavePalette = (unsigned int*)malloc(nPalSize * sizeof(int));
+	memset(CavePalette, 0, nPalSize * sizeof(int));
 
-	CavePalCopy = (unsigned short*)malloc(0x8000 * sizeof(short));
-	memset(CavePalCopy, 0, 0x8000 * sizeof(short));
+	CavePalCopy = (unsigned short*)malloc(nPalSize * sizeof(short));
+	memset(CavePalCopy, 0, nPalSize * sizeof(short));
+	
+	pBurnDrvPalette = CavePalette;
 
 	return 0;
 }

@@ -90,6 +90,7 @@ struct AudOut {
 	const TCHAR* szModuleName;
 };
 
+int AudSelect(unsigned int nPlugIn);
 int AudSoundInit();
 int AudSoundExit();
 int AudSetCallback(int (*pCallback)(int));
@@ -99,15 +100,18 @@ int AudBlankSound();
 int AudSoundCheck();
 int AudSoundSetVolume();
 InterfaceInfo* AudGetInfo();
+void AudWriteSilence();
 
-extern int nAudSampleRate;          // sample rate
+extern int nAudSampleRate[8];          // sample rate
 extern int nAudVolume;				// Sound volume (% * 100)
 extern int nAudSegCount;          	// Segs in the pdsbLoop buffer
 extern int nAudSegLen;            	// Seg length in samples (calculated from Rate/Fps)
+extern int nAudAllocSegLen;
 extern short *nAudNextSound;       	// The next sound seg we will add to the sample loop
 extern unsigned char bAudOkay;    	// True if DSound was initted okay
 extern unsigned char bAudPlaying;	// True if the Loop buffer is playing
-extern int nAudDSPModule;			// DSP module to use: 0 = none, 1 = low-pass filter
+extern int nAudDSPModule[8];			// DSP module to use: 0 = none, 1 = low-pass filter
+extern unsigned int nAudSelect;
 
 // Video Output plugin:
 struct VidOut {
@@ -124,6 +128,7 @@ struct VidOut {
 int VidSelect(unsigned int nPlugin);
 int VidInit();
 int VidExit();
+int VidReInitialise();
 int VidFrame();
 int VidRedraw();
 int VidRecalcPal();
@@ -139,6 +144,10 @@ InterfaceInfo* VidGetInfo();
 extern bool bVidOkay;
 extern unsigned int nVidSelect;
 extern int nVidWidth, nVidHeight, nVidDepth, nVidRefresh;
+
+extern int nVidHorWidth, nVidHorHeight;
+extern int nVidVerWidth, nVidVerHeight;
+
 extern int nVidFullscreen;
 extern int bVidBilinear;
 extern int bVidScanlines;
@@ -151,13 +160,18 @@ extern int nVidFeedbackIntensity;
 extern int nVidFeedbackOverSaturation;
 extern int bVidCorrectAspect;
 extern int bVidArcaderes;
+
+extern int bVidArcaderesHor;
+extern int bVidArcaderesVer;
+
 extern int nVidRotationAdjust;
 extern int bVidUseHardwareGamma;
+extern int bVidAutoSwitchFull;
 extern int bVidForce16bit;
 extern int nVidTransferMethod;
 extern float fVidScreenAngle;
 extern float fVidScreenCurvature;
-extern int nVidBlitterOpt[];
+extern long long nVidBlitterOpt[];
 extern int bVidFullStretch;
 extern int bVidTripleBuffer;
 extern int bVidVSync;
@@ -180,6 +194,9 @@ extern bool bVidUsePlaceholder;
 extern TCHAR szPlaceHolder[MAX_PATH];
 
 // vid_directx_support.cpp
+
+int VidSNewTinyMsg(const TCHAR* pText, int nRGB = 0, int nDuration = 0, int nPiority = 5);
+
 int VidSNewShortMsg(const TCHAR* pText, int nRGB = 0, int nDuration = 0, int nPiority = 5);
 void VidSKillShortMsg();
 
@@ -193,3 +210,8 @@ extern int nMinChatFontSize;
 extern bool bEditActive;
 extern bool bEditTextChanged;
 extern TCHAR EditText[MAX_CHAT_SIZE + 1];
+
+// osd text display for dx9
+extern TCHAR OSDMsg[MAX_PATH];
+extern unsigned int nOSDTimer;
+void VidSKillOSDMsg();

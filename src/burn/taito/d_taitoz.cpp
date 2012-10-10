@@ -1,86 +1,23 @@
 #include "tiles_generic.h"
+#include "taito.h"
+#include "taito_ic.h"
 #include "burn_ym2610.h"
-#include "tc0110pcr.h"
-#include "tc0220ioc.h"
-#include "tc0150rod.h"
-#include "tc0140syt.h"
-#include "tc0100scn.h"
-#include "eeprom_93cxx.h"
+#include "eeprom.h"
 #include "burn_gun.h"
 
-static unsigned char TaitoZReset = 0;
-static int TaitoZAnalogPort0 = 0;
-static int TaitoZAnalogPort1 = 0;
-static int TaitoZAnalogPort2 = 0;
-static int TaitoZAnalogPort3 = 0;
-
-static unsigned char *Mem                = NULL;
-static unsigned char *MemEnd             = NULL;
-static unsigned char *RamStart           = NULL;
-static unsigned char *RamEnd             = NULL;
-static unsigned char *TaitoZ68KRom1      = NULL;
-static unsigned char *TaitoZ68KRom2      = NULL;
-static unsigned char *TaitoZZ80Rom       = NULL;
-static unsigned char *YM2610ADPCMAROM    = NULL;
-static unsigned char *YM2610ADPCMBROM    = NULL;
-static unsigned char *TaitoZ68KRam1      = NULL;
-static unsigned char *TaitoZ68KRam2      = NULL;
-static unsigned char *TaitoZSharedRam    = NULL;
-static unsigned char *TaitoZZ80Ram       = NULL;
-static unsigned char *TaitoZSpriteRam    = NULL;
-static unsigned char *TaitoZPaletteRam   = NULL;
-static unsigned char *TaitoZSpriteMapRom = NULL;
-static unsigned char *TaitoZChars        = NULL;
-static unsigned char *TaitoZSpritesA     = NULL;
-static unsigned char *TaitoZSpritesB     = NULL;
-static unsigned char *TaitoZTempRom      = NULL;
-static unsigned int  *TaitoZPalette      = NULL;
-
-static int TaitoZNumChars;
-static int TaitoZNumSpritesA;
-static int TaitoZNumSpritesB;
-static int TaitoZCharXSize;
-static int TaitoZCharYSize;
-static int TaitoZSpriteAXSize;
-static int TaitoZSpriteAYSize;
-static int TaitoZSpriteBXSize;
-static int TaitoZSpriteBYSize;
-static int YM2610ADPCMASize;
-static int YM2610ADPCMBSize;
-static int TaitoZVBlankIRQ;
-static int TaitoZFrameInterleave;
-static int TaitoZHasZ80;
-static int TaitoZHasEEPROM;
-static int TaitoZHasTC0110PCR;
-static int TaitoZHasTC0220IOC;
-static int TaitoZHasTC0140SYT;
-static int TaitoZHasTC0100SCN;
-static int TaitoZHasTC0150ROD;
-static int TaitoZFlipScreenX;
-
 static int Sci;
-int OldSteer; // Hack to centre the steering in SCI
-
-static unsigned char TaitoZCpuACtrl;
-static unsigned char TaitoZZ80Bank;
+static int Dblaxle;
+static int OldSteer; // Hack to centre the steering in SCI
 static int SciSpriteFrame;
-static int TaitoZRoadPalBank;
 
-static int nCyclesDone[3], nCyclesTotal[3];
-static int nCyclesSegment;
-
-typedef void (*Render)();
-static Render DrawFunction;
 static void AquajackDraw();
 static void BsharkDraw();
 static void ChasehqDraw();
 static void ContcircDraw();
+static void EnforceDraw();
 static void DblaxleDraw();
 static void SciDraw();
 static void SpacegunDraw();
-
-typedef void (*MakeInputs)();
-static MakeInputs MakeInputsFunction;
 
 static bool bUseAsm68KCoreOldValue = false;
 
@@ -101,14 +38,14 @@ static struct BurnInputInfo AquajackInputList[] =
 	{"Vulcan"            , BIT_DIGITAL   , TC0220IOCInputPort1 + 6, "p1 fire 3" },
 	{"Missile"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p1 fire 4" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Aquajack);
+STDINPUTINFO(Aquajack)
 
 static struct BurnInputInfo BsharkInputList[] =
 {
@@ -117,19 +54,19 @@ static struct BurnInputInfo BsharkInputList[] =
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 0, "p2 coin"   },
 	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 1, "p2 start"  },
 
-	A("Crosshair X"      , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "p1 x-axis" ),
-	A("Crosshair Y"      , BIT_ANALOG_REL, &TaitoZAnalogPort1     , "p1 y-axis" ),
+	A("Crosshair X"      , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
+	A("Crosshair Y"      , BIT_ANALOG_REL, &TaitoAnalogPort1     , "p1 y-axis" ),
 	{"Fire 1"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 6, "p1 fire 1" },
 	{"Fire 2"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 7, "p1 fire 2" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Bshark);
+STDINPUTINFO(Bshark)
 
 static struct BurnInputInfo ChasehqInputList[] =
 {
@@ -137,20 +74,20 @@ static struct BurnInputInfo ChasehqInputList[] =
 	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 3, "p1 start"  },
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
 
-	A("Steering"         , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "p1 x-axis" ),
+	A("Steering"         , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
 	{"Brake"             , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "p1 fire 1" },
 	{"Accelerate"        , BIT_DIGITAL   , TC0220IOCInputPort1 + 5, "p1 fire 2" },
 	{"Turbo"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 0, "p1 fire 3" },
 	{"Gear"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p1 fire 4" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 1, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Chasehq);
+STDINPUTINFO(Chasehq)
 
 static struct BurnInputInfo ContcircInputList[] =
 {
@@ -158,7 +95,7 @@ static struct BurnInputInfo ContcircInputList[] =
 	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 3, "p1 start"  },
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p2 coin"   },
 
-	A("Steering"         , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "p1 x-axis" ),
+	A("Steering"         , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
 	{"Brake"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 7, "p1 fire 1" },
 	{"Accelerate"        , BIT_DIGITAL   , TC0220IOCInputPort0 + 7, "p1 fire 2" },
 	{"Gear"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p1 fire 3" },
@@ -167,14 +104,37 @@ static struct BurnInputInfo ContcircInputList[] =
 	{"Accelerate 2"      , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "p1 fire 6" },
 	{"Accelerate 3"      , BIT_DIGITAL   , TC0220IOCInputPort0 + 6, "p1 fire 7" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 2, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Contcirc);
+STDINPUTINFO(Contcirc)
+
+static struct BurnInputInfo DblaxleInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , TC0510NIOInputPort0 + 2, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL   , TC0510NIOInputPort1 + 3, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL   , TC0510NIOInputPort0 + 3, "p2 coin"   },
+
+	A("Steering"         , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
+	{"Brake"             , BIT_DIGITAL   , TC0510NIOInputPort0 + 5, "p1 fire 1" },
+	{"Accelerate"        , BIT_DIGITAL   , TC0510NIOInputPort1 + 5, "p1 fire 2" },
+	{"Nitro"             , BIT_DIGITAL   , TC0510NIOInputPort1 + 0, "p1 fire 3" },
+	{"Gear"              , BIT_DIGITAL   , TC0510NIOInputPort0 + 1, "p1 fire 4" },
+	{"Reverse"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 7, "p1 fire 5" },
+	{"Centre"            , BIT_DIGITAL   , TC0510NIOInputPort1 + 2, "p1 fire 6" },
+	
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
+	{"Service"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 4, "service"   },
+	{"Tilt"              , BIT_DIGITAL   , TC0510NIOInputPort1 + 1, "tilt"      },
+	{"Dip 1"             , BIT_DIPSWITCH , TC0510NIODip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , TC0510NIODip + 1       , "dip"       },
+};
+
+STDINPUTINFO(Dblaxle)
 
 static struct BurnInputInfo EnforceInputList[] =
 {
@@ -189,14 +149,14 @@ static struct BurnInputInfo EnforceInputList[] =
 	{"Laser"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 0, "p1 fire 1" },
 	{"Bomb"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 1, "p1 fire 2" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 2, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Enforce);
+STDINPUTINFO(Enforce)
 
 static struct BurnInputInfo NightstrInputList[] =
 {
@@ -205,19 +165,19 @@ static struct BurnInputInfo NightstrInputList[] =
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "p2 coin"   },
 	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 1, "p2 start"  },
 
-	A("Stick X"          , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "p1 x-axis" ),
-	A("Stick Y"          , BIT_ANALOG_REL, &TaitoZAnalogPort1     , "p1 y-axis" ),
+	A("Stick X"          , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
+	A("Stick Y"          , BIT_ANALOG_REL, &TaitoAnalogPort1     , "p1 y-axis" ),
 	{"Fire 1"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 6, "p1 fire 1" },
 	{"Fire 2"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 7, "p1 fire 2" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 6, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort0 + 7, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Nightstr);
+STDINPUTINFO(Nightstr)
 
 static struct BurnInputInfo SciInputList[] =
 {
@@ -225,7 +185,7 @@ static struct BurnInputInfo SciInputList[] =
 	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 3, "p1 start"  },
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
 
-	A("Steering"         , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "p1 x-axis" ),
+	A("Steering"         , BIT_ANALOG_REL, &TaitoAnalogPort0     , "p1 x-axis" ),
 	{"Brake"             , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "p1 fire 1" },
 	{"Accelerate"        , BIT_DIGITAL   , TC0220IOCInputPort1 + 5, "p1 fire 2" },
 	{"Fire"              , BIT_DIGITAL   , TC0220IOCInputPort0 + 1, "p1 fire 3" },
@@ -233,14 +193,14 @@ static struct BurnInputInfo SciInputList[] =
 	{"Gear"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p1 fire 5" },
 	{"Centre"            , BIT_DIGITAL   , TC0220IOCInputPort1 + 2, "p1 fire 6" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort1 + 1, "tilt"      },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Sci);
+STDINPUTINFO(Sci)
 
 static struct BurnInputInfo SpacegunInputList[] =
 {
@@ -249,25 +209,25 @@ static struct BurnInputInfo SpacegunInputList[] =
 	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p2 coin"   },
 	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 7, "p2 start"  },
 
-	A("P1 Gun X"         , BIT_ANALOG_REL, &TaitoZAnalogPort0     , "mouse x-axis" ),
-	A("P1 Gun Y"         , BIT_ANALOG_REL, &TaitoZAnalogPort1     , "mouse y-axis" ),
+	A("P1 Gun X"         , BIT_ANALOG_REL, &TaitoAnalogPort0     , "mouse x-axis" ),
+	A("P1 Gun Y"         , BIT_ANALOG_REL, &TaitoAnalogPort1     , "mouse y-axis" ),
 	{"P1 Fire 1"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 0, "mouse button 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 2, "mouse button 2" },
 	{"P1 Fire 3"         , BIT_DIGITAL   , TC0220IOCInputPort0 + 0, "p1 fire 1" },
 	
-	A("P2 Gun X"         , BIT_ANALOG_REL, &TaitoZAnalogPort2     , "p2 x-axis" ),
-	A("P2 Gun Y"         , BIT_ANALOG_REL, &TaitoZAnalogPort3     , "p2 y-axis" ),
+	A("P2 Gun X"         , BIT_ANALOG_REL, &TaitoAnalogPort2     , "p2 x-axis" ),
+	A("P2 Gun Y"         , BIT_ANALOG_REL, &TaitoAnalogPort3     , "p2 y-axis" ),
 	{"P2 Fire 1"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 1, "p2 fire 1" },
 	{"P2 Fire 2"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 3, "p2 fire 2" },
 	{"P2 Fire 3"         , BIT_DIGITAL   , TC0220IOCInputPort0 + 1, "p2 fire 3" },
 	
-	{"Reset"             , BIT_DIGITAL   , &TaitoZReset           , "reset"     },
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
 	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "service"   },
 	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
 	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Spacegun);
+STDINPUTINFO(Spacegun)
 
 #undef A
 
@@ -375,6 +335,32 @@ static void ContcircMakeInputs()
 	if (TC0220IOCInputPort1[7]) TC0220IOCInput[1] |= 0x80;
 }
 
+static void DblaxleMakeInputs()
+{
+	// Reset Inputs
+	TC0510NIOInput[0] = 0xff;
+	TC0510NIOInput[1] = 0xff;
+	TC0510NIOInput[2] = 0xff;
+
+	if (TC0510NIOInputPort0[0]) TC0510NIOInput[0] -= 0x01;
+	if (TC0510NIOInputPort0[1]) TC0510NIOInput[0] -= 0x02;
+	if (TC0510NIOInputPort0[2]) TC0510NIOInput[0] -= 0x04;
+	if (TC0510NIOInputPort0[3]) TC0510NIOInput[0] -= 0x08;
+	if (TC0510NIOInputPort0[4]) TC0510NIOInput[0] -= 0x10;
+	if (TC0510NIOInputPort0[5]) TC0510NIOInput[0] -= 0x20;
+	if (TC0510NIOInputPort0[6]) TC0510NIOInput[0] -= 0x40;
+	if (TC0510NIOInputPort0[7]) TC0510NIOInput[0] -= 0x80;
+	
+	if (TC0510NIOInputPort1[0]) TC0510NIOInput[1] -= 0x01;
+	if (TC0510NIOInputPort1[1]) TC0510NIOInput[1] -= 0x02;
+	if (TC0510NIOInputPort1[2]) TC0510NIOInput[1] -= 0x04;
+	if (TC0510NIOInputPort1[3]) TC0510NIOInput[1] -= 0x08;
+	if (TC0510NIOInputPort1[4]) TC0510NIOInput[1] -= 0x10;
+	if (TC0510NIOInputPort1[5]) TC0510NIOInput[1] -= 0x20;
+	if (TC0510NIOInputPort1[6]) TC0510NIOInput[1] -= 0x40;
+	if (TC0510NIOInputPort1[7]) TC0510NIOInput[1] -= 0x80;
+}
+
 static void EnforceMakeInputs()
 {
 	// Reset Inputs
@@ -478,8 +464,8 @@ static void SpacegunMakeInputs()
 	if (TC0220IOCInputPort2[6]) TC0220IOCInput[2] -= 0x40;
 	if (TC0220IOCInputPort2[7]) TC0220IOCInput[2] -= 0x80;
 	
-	BurnGunMakeInputs(0, (short)TaitoZAnalogPort0, (short)TaitoZAnalogPort1);
-	BurnGunMakeInputs(1, (short)TaitoZAnalogPort2, (short)TaitoZAnalogPort3);
+	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
+	BurnGunMakeInputs(1, (short)TaitoAnalogPort2, (short)TaitoAnalogPort3);
 }
 
 static struct BurnDIPInfo AquajackDIPList[]=
@@ -533,9 +519,9 @@ static struct BurnDIPInfo AquajackDIPList[]=
 	{0x0f, 0x01, 0x0c, 0x00, "5"                              },
 };
 
-STDDIPINFO(Aquajack);
+STDDIPINFO(Aquajack)
 
-static struct BurnDIPInfo AquajckjDIPList[]=
+static struct BurnDIPInfo AquajackjDIPList[]=
 {
 	// Default Values
 	{0x0e, 0xff, 0xff, 0x7f, NULL                             },
@@ -586,7 +572,7 @@ static struct BurnDIPInfo AquajckjDIPList[]=
 	{0x0f, 0x01, 0x0c, 0x00, "5"                              },
 };
 
-STDDIPINFO(Aquajckj);
+STDDIPINFO(Aquajackj)
 
 static struct BurnDIPInfo BsharkDIPList[]=
 {
@@ -633,7 +619,7 @@ static struct BurnDIPInfo BsharkDIPList[]=
 	{0x0c, 0x01, 0x0c, 0x00, "Fastest"                        },
 };
 
-STDDIPINFO(Bshark);
+STDDIPINFO(Bshark)
 
 static struct BurnDIPInfo BsharkjDIPList[]=
 {
@@ -680,7 +666,7 @@ static struct BurnDIPInfo BsharkjDIPList[]=
 	{0x0c, 0x01, 0x0c, 0x00, "Fastest"                        },
 };
 
-STDDIPINFO(Bsharkj);
+STDDIPINFO(Bsharkj)
 
 static struct BurnDIPInfo ChasehqDIPList[]=
 {
@@ -745,7 +731,7 @@ static struct BurnDIPInfo ChasehqDIPList[]=
 	{0x0c, 0x01, 0x80, 0x80, "On"                             },
 };
 
-STDDIPINFO(Chasehq);
+STDDIPINFO(Chasehq)
 
 static struct BurnDIPInfo ChasehqjDIPList[]=
 {
@@ -810,7 +796,7 @@ static struct BurnDIPInfo ChasehqjDIPList[]=
 	{0x0c, 0x01, 0x80, 0x80, "On"                             },
 };
 
-STDDIPINFO(Chasehqj);
+STDDIPINFO(Chasehqj)
 
 static struct BurnDIPInfo ContcircDIPList[]=
 {
@@ -865,9 +851,9 @@ static struct BurnDIPInfo ContcircDIPList[]=
 	{0x0f, 0x01, 0x20, 0x20, "On"                             },
 };
 
-STDDIPINFO(Contcirc);
+STDDIPINFO(Contcirc)
 
-static struct BurnDIPInfo ContcrcuDIPList[]=
+static struct BurnDIPInfo ContcircuDIPList[]=
 {
 	// Default Values
 	{0x0e, 0xff, 0xff, 0xff, NULL                             },
@@ -920,7 +906,113 @@ static struct BurnDIPInfo ContcrcuDIPList[]=
 	{0x0f, 0x01, 0x20, 0x20, "On"                             },
 };
 
-STDDIPINFO(Contcrcu);
+STDDIPINFO(Contcircu)
+
+static struct BurnDIPInfo DblaxleDIPList[]=
+{
+	// Default Values
+	{0x0d, 0xff, 0xff, 0xff, NULL                             },
+	{0x0e, 0xff, 0xff, 0xfb, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Gear Shift"                     },
+	{0x0d, 0x01, 0x02, 0x02, "Normal"                         },
+	{0x0d, 0x01, 0x02, 0x00, "Inverted"                       },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0d, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0d, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0d, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0d, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
+	{0x0d, 0x01, 0x30, 0x10, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0x30, 0x20, "1 Coin  2 Credits"              },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0d, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0xc0, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0xc0, 0x80, "1 Coin  2 Credits"              },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0e, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0e, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0e, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0e, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 2   , "Multi-machine hookup"           },
+	{0x0e, 0x01, 0x04, 0x00, "Off"                            },
+	{0x0e, 0x01, 0x04, 0x04, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Player Truck"                   },
+	{0x0e, 0x01, 0x08, 0x08, "Red"                            },
+	{0x0e, 0x01, 0x08, 0x00, "Blue"                           },
+	
+	{0   , 0xfe, 0   , 2   , "Reverse"                        },
+	{0x0e, 0x01, 0x10, 0x10, "Normal"                         },
+	{0x0e, 0x01, 0x10, 0x00, "Inverted"                       },
+};
+
+STDDIPINFO(Dblaxle)
+
+static struct BurnDIPInfo PwheelsjDIPList[]=
+{
+	// Default Values
+	{0x0d, 0xff, 0xff, 0xff, NULL                             },
+	{0x0e, 0xff, 0xff, 0xfb, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Gear Shift"                     },
+	{0x0d, 0x01, 0x02, 0x02, "Normal"                         },
+	{0x0d, 0x01, 0x02, 0x00, "Inverted"                       },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0d, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0d, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0d, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0d, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
+	{0x0d, 0x01, 0x30, 0x10, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0x30, 0x20, "1 Coin  2 Credits"              },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0d, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0xc0, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0xc0, 0x80, "1 Coin  2 Credits"              },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0e, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0e, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0e, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0e, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 2   , "Multi-machine hookup"           },
+	{0x0e, 0x01, 0x04, 0x00, "Off"                            },
+	{0x0e, 0x01, 0x04, 0x04, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Player Truck"                   },
+	{0x0e, 0x01, 0x08, 0x08, "Red"                            },
+	{0x0e, 0x01, 0x08, 0x00, "Blue"                           },
+	
+	{0   , 0xfe, 0   , 2   , "Reverse"                        },
+	{0x0e, 0x01, 0x10, 0x10, "Normal"                         },
+	{0x0e, 0x01, 0x10, 0x00, "Inverted"                       },
+};
+
+STDDIPINFO(Pwheelsj)
 
 static struct BurnDIPInfo EnforceDIPList[]=
 {
@@ -955,9 +1047,132 @@ static struct BurnDIPInfo EnforceDIPList[]=
 	{0x0d, 0x01, 0x10, 0x00, "Normal"                         },
 };
 
-STDDIPINFO(Enforce);
+STDDIPINFO(Enforce)
 
 static struct BurnDIPInfo NightstrDIPList[]=
+{
+	// Default Values
+	{0x0b, 0xff, 0xff, 0xfe, NULL                             },
+	{0x0c, 0xff, 0xff, 0xff, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                        },
+	{0x0b, 0x01, 0x01, 0x01, "Cockpit"                        },
+	{0x0b, 0x01, 0x01, 0x00, "Upright"                        },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0b, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0b, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0b, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0b, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
+	{0x0b, 0x01, 0x30, 0x00, "4 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x10, "3 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x20, "2 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0b, 0x01, 0xc0, 0xc0, "1 Coin 2 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x80, "1 Coin 3 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x40, "1 Coin 4 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x00, "1 Coin 6 Credits"               },	
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0c, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0c, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0c, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0c, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Shields"                  },
+	{0x0c, 0x01, 0x0c, 0x08, "3"                              },
+	{0x0c, 0x01, 0x0c, 0x04, "2"                              },
+	{0x0c, 0x01, 0x0c, 0x0c, "1"                              },
+	{0x0c, 0x01, 0x0c, 0x00, "None"                           },
+	
+	{0   , 0xfe, 0   , 4   , "Shields"                        },
+	{0x0c, 0x01, 0x30, 0x00, "3"                              },
+	{0x0c, 0x01, 0x30, 0x10, "4"                              },
+	{0x0c, 0x01, 0x30, 0x30, "5"                              },
+	{0x0c, 0x01, 0x30, 0x20, "6"                              },
+	
+	{0   , 0xfe, 0   , 2   , "Allow Continue"                 },
+	{0x0c, 0x01, 0x40, 0x00, "Off"                            },
+	{0x0c, 0x01, 0x40, 0x40, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Trigger Turbo"                  },
+	{0x0c, 0x01, 0x80, 0x80, "7 shots / seconds"              },
+	{0x0c, 0x01, 0x80, 0x00, "10 shots / seconds"             },
+};
+
+STDDIPINFO(Nightstr)
+	
+static struct BurnDIPInfo NightstrjDIPList[]=
+{
+	// Default Values
+	{0x0b, 0xff, 0xff, 0xfe, NULL                             },
+	{0x0c, 0xff, 0xff, 0xff, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                        },
+	{0x0b, 0x01, 0x01, 0x01, "Cockpit"                        },
+	{0x0b, 0x01, 0x01, 0x00, "Upright"                        },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0b, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0b, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0b, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0b, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
+	{0x0b, 0x01, 0x30, 0x10, "2 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x00, "2 Coins 3 Credits"              },
+	{0x0b, 0x01, 0x30, 0x20, "1 Coin  2 Credits"              },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0b, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
+	{0x0b, 0x01, 0xc0, 0xc0, "1 Coin  1 Credit"               },
+	{0x0b, 0x01, 0xc0, 0x00, "2 Coins 3 Credits"              },
+	{0x0b, 0x01, 0xc0, 0x80, "1 Coin  2 Credits"              },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0c, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0c, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0c, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0c, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Shields"                  },
+	{0x0c, 0x01, 0x0c, 0x08, "3"                              },
+	{0x0c, 0x01, 0x0c, 0x04, "2"                              },
+	{0x0c, 0x01, 0x0c, 0x0c, "1"                              },
+	{0x0c, 0x01, 0x0c, 0x00, "None"                           },
+	
+	{0   , 0xfe, 0   , 4   , "Shields"                        },
+	{0x0c, 0x01, 0x30, 0x00, "3"                              },
+	{0x0c, 0x01, 0x30, 0x10, "4"                              },
+	{0x0c, 0x01, 0x30, 0x30, "5"                              },
+	{0x0c, 0x01, 0x30, 0x20, "6"                              },
+	
+	{0   , 0xfe, 0   , 2   , "Allow Continue"                 },
+	{0x0c, 0x01, 0x40, 0x00, "Off"                            },
+	{0x0c, 0x01, 0x40, 0x40, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Trigger Turbo"                  },
+	{0x0c, 0x01, 0x80, 0x80, "7 shots / seconds"              },
+	{0x0c, 0x01, 0x80, 0x00, "10 shots / seconds"             },
+};
+
+STDDIPINFO(Nightstrj)
+
+
+static struct BurnDIPInfo NightstruDIPList[]=
 {
 	// Default Values
 	{0x0b, 0xff, 0xff, 0xfe, NULL                             },
@@ -1016,7 +1231,7 @@ static struct BurnDIPInfo NightstrDIPList[]=
 	{0x0c, 0x01, 0x80, 0x00, "10 shots / seconds"             },
 };
 
-STDDIPINFO(Nightstr);
+STDDIPINFO(Nightstru)
 
 static struct BurnDIPInfo SciDIPList[]=
 {
@@ -1079,7 +1294,7 @@ static struct BurnDIPInfo SciDIPList[]=
 	{0x0e, 0x01, 0x80, 0x00, "Low"                            },
 };
 
-STDDIPINFO(Sci);
+STDDIPINFO(Sci)
 
 static struct BurnDIPInfo ScijDIPList[]=
 {
@@ -1142,7 +1357,7 @@ static struct BurnDIPInfo ScijDIPList[]=
 	{0x0e, 0x01, 0x80, 0x00, "Low"                            },
 };
 
-STDDIPINFO(Scij);
+STDDIPINFO(Scij)
 
 static struct BurnDIPInfo SciuDIPList[]=
 {
@@ -1205,7 +1420,7 @@ static struct BurnDIPInfo SciuDIPList[]=
 	{0x0e, 0x01, 0x80, 0x00, "Low"                            },
 };
 
-STDDIPINFO(Sciu);
+STDDIPINFO(Sciu)
 
 static struct BurnDIPInfo SpacegunDIPList[]=
 {
@@ -1254,703 +1469,951 @@ static struct BurnDIPInfo SpacegunDIPList[]=
 	{0x11, 0x01, 0x80, 0x00, "On"                             },	
 };
 
-STDDIPINFO(Spacegun);
+STDDIPINFO(Spacegun)
 
 static struct BurnRomInfo AquajackRomDesc[] = {
-	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "34.17",         0x20000, 0xcd4d0969, BRF_ESS | BRF_PRG },			//  1
+	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "34.17",         0x20000, 0xcd4d0969, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG },			//  3
+	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA },				//  5	Chars
+	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
 	
-	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA },				//  6	Sprites A
-	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA },				//  7
-	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA },				//  8
-	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA },				//  9
+	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA },				//  10	Road Lines
+	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
 	
-	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA },				//  11	Spritemap
+	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND },				//  12	ADPCM Samples
+	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
 	
-	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND },				//  13	Delta-T Samples
+	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
 	
-	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },				//  14	Unused ROMs
-	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },				//  15
+	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },
 };
 
-STD_ROM_PICK(Aquajack);
-STD_ROM_FN(Aquajack);
+STD_ROM_PICK(Aquajack)
+STD_ROM_FN(Aquajack)
 
-static struct BurnRomInfo AquajckjRomDesc[] = {
-	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b77-21.rom",    0x20000, 0x23436845, BRF_ESS | BRF_PRG },			//  1
+static struct BurnRomInfo AquajackjRomDesc[] = {
+	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-21.rom",    0x20000, 0x23436845, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG },			//  3
+	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA },				//  5	Chars
+	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
 	
-	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA },				//  6	Sprites A
-	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA },				//  7
-	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA },				//  8
-	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA },				//  9
+	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA },				//  10	Road Lines
+	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
 	
-	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA },				//  11	Spritemap
+	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND },				//  12	ADPCM Samples
+	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
 	
-	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND },				//  13	Delta-T Samples
+	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
 	
-	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },				//  14	Unused ROMs
-	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },				//  15
+	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },
 };
 
-STD_ROM_PICK(Aquajckj);
-STD_ROM_FN(Aquajckj);
+STD_ROM_PICK(Aquajackj)
+STD_ROM_FN(Aquajackj)
 
 static struct BurnRomInfo BsharkRomDesc[] = {
-	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG },			//  1
-	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG },			//  2
-	{ "bshark67.bin",  0x20000, 0x39307c74, BRF_ESS | BRF_PRG },			//  3
+	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_67.64",     0x20000, 0x39307c74, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG },			//  5
-	{ "c34_75.129",    0x20000, 0x6ba65542, BRF_ESS | BRF_PRG },			//  6
-	{ "c34_73.113",    0x20000, 0xf2fe62b5, BRF_ESS | BRF_PRG },			//  7
+	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_75.129",    0x20000, 0x6ba65542, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_73.113",    0x20000, 0xf2fe62b5, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA },				//  8	Chars
+	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA | TAITO_CHARS },
 	
-	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA },				//  9	Sprites A
-	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA },				//  10
-	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA },				//  11
-	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA },				//  12
+	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA },				//  13	Road Lines
+	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA | TAITO_ROAD },
 	
-	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA },				//  14	Spritemap
+	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND },				//  15	ADPCM Samples
+	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND | TAITO_YM2610A },
 	
-	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND },				//  16	Delta_T Samples
+	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND | TAITO_YM2610B },
 	
-	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },				//  17	Unused ROMs
-	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },				//  18
-	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },				//  19
-	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },				//  20
-	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },				//  21
+	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },
+	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },
+	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },
 };
 
-STD_ROM_PICK(Bshark);
-STD_ROM_FN(Bshark);
+STD_ROM_PICK(Bshark)
+STD_ROM_FN(Bshark)
 
 static struct BurnRomInfo BsharkjRomDesc[] = {
-	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG },			//  1
-	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG },			//  2
-	{ "c34_66.74",     0x20000, 0xa0392dce, BRF_ESS | BRF_PRG },			//  3
+	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_66.74",     0x20000, 0xa0392dce, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG },			//  5
-	{ "c34_75.129",    0x20000, 0x6ba65542, BRF_ESS | BRF_PRG },			//  6
-	{ "c34_73.113",    0x20000, 0xf2fe62b5, BRF_ESS | BRF_PRG },			//  7
+	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_75.129",    0x20000, 0x6ba65542, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_73.113",    0x20000, 0xf2fe62b5, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA },				//  8	Chars
+	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA | TAITO_CHARS },
 	
-	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA },				//  9	Sprites A
-	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA },				//  10
-	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA },				//  11
-	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA },				//  12
+	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA },				//  13	Road Lines
+	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA | TAITO_ROAD },
 	
-	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA },				//  14	Spritemap
+	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND },				//  15	ADPCM Samples
+	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND | TAITO_YM2610A },
 	
-	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND },				//  16	Delta_T Samples
+	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND | TAITO_YM2610B },
 	
-	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },				//  17	Unused ROMs
-	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },				//  18
-	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },				//  19
-	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },				//  20
-	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },				//  21
+	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },
+	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },
+	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },
 };
 
-STD_ROM_PICK(Bsharkj);
-STD_ROM_FN(Bsharkj);
+STD_ROM_PICK(Bsharkj)
+STD_ROM_FN(Bsharkj)
 
 static struct BurnRomInfo ChasehqRomDesc[] = {
-	{ "b52-130.36",    0x20000, 0x4e7beb46, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b52-136.29",    0x20000, 0x2f414df0, BRF_ESS | BRF_PRG },			//  1
-	{ "b52-131.37",    0x20000, 0xaa945d83, BRF_ESS | BRF_PRG },			//  2
-	{ "b52-129.30",    0x20000, 0x0eaebc08, BRF_ESS | BRF_PRG },			//  3
+	{ "b52-130.36",    0x20000, 0x4e7beb46, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-136.29",    0x20000, 0x2f414df0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-131.37",    0x20000, 0xaa945d83, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-129.30",    0x20000, 0x0eaebc08, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b52-132.39",    0x10000, 0xa2f54789, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "b52-133.55",    0x10000, 0x12232f95, BRF_ESS | BRF_PRG },			//  5
+	{ "b52-132.39",    0x10000, 0xa2f54789, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b52-133.55",    0x10000, 0x12232f95, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b52-137.51",    0x10000, 0x37abb74a, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "b52-137.51",    0x10000, 0x37abb74a, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b52-29.27",     0x80000, 0x8366d27c, BRF_GRA },				//  7	Chars
+	{ "b52-29.27",     0x80000, 0x8366d27c, BRF_GRA | TAITO_CHARS},
 	
-	{ "b52-34.5",      0x80000, 0x7d8dce36, BRF_GRA },				//  8	Sprites A
-	{ "b52-35.7",      0x80000, 0x78eeec0d, BRF_GRA },				//  9
-	{ "b52-36.9",      0x80000, 0x61e89e91, BRF_GRA },				//  10
-	{ "b52-37.11",     0x80000, 0xf02e47b9, BRF_GRA },				//  11
+	{ "b52-34.5",      0x80000, 0x7d8dce36, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-35.7",      0x80000, 0x78eeec0d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-36.9",      0x80000, 0x61e89e91, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-37.11",     0x80000, 0xf02e47b9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b52-30.4",      0x80000, 0x1b8cc647, BRF_GRA },				//  12	Sprites B
-	{ "b52-31.6",      0x80000, 0xf1998e20, BRF_GRA },				//  13
-	{ "b52-32.8",      0x80000, 0x8620780c, BRF_GRA },				//  14
-	{ "b52-33.10",     0x80000, 0xe6f4b8c4, BRF_GRA },				//  15
+	{ "b52-30.4",      0x80000, 0x1b8cc647, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-31.6",      0x80000, 0xf1998e20, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-32.8",      0x80000, 0x8620780c, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-33.10",     0x80000, 0xe6f4b8c4, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
 	
-	{ "b52-28.4",      0x80000, 0x963bc82b, BRF_GRA },				//  16	Road Lines
+	{ "b52-28.4",      0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "b52-38.34",     0x80000, 0x5b5bf7f6, BRF_GRA },				//  17	Spritemap
+	{ "b52-38.34",     0x80000, 0x5b5bf7f6, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b52-115.71",    0x80000, 0x4e117e93, BRF_SND },				//  18	ADPCM Samples
-	{ "b52-114.72",    0x80000, 0x3a73d6b1, BRF_SND },				//  19
-	{ "b52-113.73",    0x80000, 0x2c6a3a05, BRF_SND },				//  20
+	{ "b52-115.71",    0x80000, 0x4e117e93, BRF_SND | TAITO_YM2610A },
+	{ "b52-114.72",    0x80000, 0x3a73d6b1, BRF_SND | TAITO_YM2610A },
+	{ "b52-113.73",    0x80000, 0x2c6a3a05, BRF_SND | TAITO_YM2610A },
 	
-	{ "b52-116.70",    0x80000, 0xad46983c, BRF_SND },				//  21	Delta-T Samples
+	{ "b52-116.70",    0x80000, 0xad46983c, BRF_SND | TAITO_YM2610B },
 	
-	{ "b52-01.7",      0x00100, 0x89719d17, BRF_OPT },				//  22	Unused ROMs
-	{ "b52-03.135",    0x00400, 0xa3f8490d, BRF_OPT },				//  23
-	{ "b52-06.24",     0x00100, 0xfbf81f30, BRF_OPT },				//  24
-	{ "b52-18.93",     0x00100, 0x60bdaf1a, BRF_OPT },				//  25
-	{ "b52-18a",       0x00100, 0x6271be0d, BRF_OPT },				//  26
-	{ "b52-49.68",     0x02000, 0x60dd2ed1, BRF_OPT },				//  27
-	{ "b52-50.66",     0x10000, 0xc189781c, BRF_OPT },				//  28
-	{ "b52-51.65",     0x10000, 0x30cc1f79, BRF_OPT },				//  29
-	{ "b52-126.136",   0x00400, 0xfa2f840e, BRF_OPT },				//  30
-	{ "b52-127.156",   0x00400, 0x77682a4f, BRF_OPT },				//  31
+	{ "b52-01.7",      0x00100, 0x89719d17, BRF_OPT },
+	{ "b52-03.135",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b52-06.24",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b52-18.93",     0x00100, 0x60bdaf1a, BRF_OPT },
+	{ "b52-18a",       0x00100, 0x6271be0d, BRF_OPT },
+	{ "b52-49.68",     0x02000, 0x60dd2ed1, BRF_OPT },
+	{ "b52-50.66",     0x10000, 0xc189781c, BRF_OPT },
+	{ "b52-51.65",     0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b52-126.136",   0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b52-127.156",   0x00400, 0x77682a4f, BRF_OPT },
 	
-	{ "pal20l8b-b52-17.ic18",   0x00144, 0x4851316d, BRF_OPT },			//  32 	PLDs
-	{ "pal20l8b-b52-17.ic16",   0x00144, 0x4851316d, BRF_OPT },			//  33
-	{ "pal20l8b-b52-17.ic53",   0x00144, 0x4851316d, BRF_OPT },			//  34
-	{ "pal20l8b-b52-17.ic55",   0x00144, 0x4851316d, BRF_OPT },			//  35
-	{ "pal16l8b-b52-19.ic33",   0x00104, 0x3ba292dc, BRF_OPT },			//  36
-	{ "pal16l8b-b52-20.ic35",   0x00104, 0xbd39ad73, BRF_OPT },			//  37
-	{ "pal16l8b-b52-21.ic51",   0x00104, 0x2fe76aa4, BRF_OPT },			//  38
-	{ "pal20l8b-b52-25.ic123",  0x00144, 0x372b632d, BRF_OPT },			//  39
-	{ "pal20l8b-b52-26.ic15",   0x00144, 0xd94f2bc2, BRF_OPT },			//  40
-	{ "pal20l8b-b52-26.ic18",   0x00144, 0xd94f2bc2, BRF_OPT },			//  41
-	{ "pal20l8b-b52-26.ic52",   0x00144, 0xd94f2bc2, BRF_OPT },			//  42
-	{ "pal20l8b-b52-26.ic54",   0x00144, 0xd94f2bc2, BRF_OPT },			//  43
-	{ "pal20l8b-b52-27.ic64",   0x00144, 0x61c2ab26, BRF_OPT },			//  44
-	{ "pal20l8b-b52-118.ic20",  0x00144, 0x9c5fe4af, BRF_OPT },			//  45
-	{ "pal20l8b-b52-119.ic21",  0x00144, 0x8b8e2106, BRF_OPT },			//  46
-	{ "pal16l8b-b52-120.ic56",  0x00104, 0x3e7effa0, BRF_OPT },			//  47
-	{ "pal20l8b-b52-121.ic57",  0x00144, 0x7056fd1d, BRF_OPT },			//  48
-	{ "pal16l8b-b52-122.ic124", 0x00104, 0x04c0fb04, BRF_OPT },			//  49
-	{ "pal16l8b-b52-123.ic125", 0x00104, 0x3865d1c8, BRF_OPT },			//  50
-	{ "pal16l8b-b52-124.ic180", 0x00104, 0x00000000, BRF_OPT | BRF_NODUMP },	//  51
-	{ "pal16l8b-b52-125.ic112", 0x00104, 0x7628c557, BRF_OPT },			//  52
+	{ "pal20l8b-b52-17.ic18",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic16",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic53",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic55",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal16l8b-b52-19.ic33",   0x00104, 0x3ba292dc, BRF_OPT },
+	{ "pal16l8b-b52-20.ic35",   0x00104, 0xbd39ad73, BRF_OPT },
+	{ "pal16l8b-b52-21.ic51",   0x00104, 0x2fe76aa4, BRF_OPT },
+	{ "pal20l8b-b52-25.ic123",  0x00144, 0x372b632d, BRF_OPT },
+	{ "pal20l8b-b52-26.ic15",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic18",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic52",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic54",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-27.ic64",   0x00144, 0x61c2ab26, BRF_OPT },
+	{ "pal20l8b-b52-118.ic20",  0x00144, 0x9c5fe4af, BRF_OPT },
+	{ "pal20l8b-b52-119.ic21",  0x00144, 0x8b8e2106, BRF_OPT },
+	{ "pal16l8b-b52-120.ic56",  0x00104, 0x3e7effa0, BRF_OPT },
+	{ "pal20l8b-b52-121.ic57",  0x00144, 0x7056fd1d, BRF_OPT },
+	{ "pal16l8b-b52-122.ic124", 0x00104, 0x04c0fb04, BRF_OPT },
+	{ "pal16l8b-b52-123.ic125", 0x00104, 0x3865d1c8, BRF_OPT },
+	{ "pal16l8b-b52-124.ic180", 0x00104, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "pal16l8b-b52-125.ic112", 0x00104, 0x7628c557, BRF_OPT },
 };
 
-STD_ROM_PICK(Chasehq);
-STD_ROM_FN(Chasehq);
+STD_ROM_PICK(Chasehq)
+STD_ROM_FN(Chasehq)
 
 static struct BurnRomInfo ChasehqjRomDesc[] = {
-	{ "b52-140.36",    0x20000, 0xc1298a4b, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b52-139.29",    0x20000, 0x997f732e, BRF_ESS | BRF_PRG },			//  1
-	{ "b52-131.37",    0x20000, 0xaa945d83, BRF_ESS | BRF_PRG },			//  2
-	{ "b52-129.30",    0x20000, 0x0eaebc08, BRF_ESS | BRF_PRG },			//  3
+	{ "b52-140.36",    0x20000, 0xc1298a4b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-139.29",    0x20000, 0x997f732e, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-131.37",    0x20000, 0xaa945d83, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-129.30",    0x20000, 0x0eaebc08, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b52-132.39",    0x10000, 0xa2f54789, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "b52-133.55",    0x10000, 0x12232f95, BRF_ESS | BRF_PRG },			//  5
+	{ "b52-132.39",    0x10000, 0xa2f54789, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b52-133.55",    0x10000, 0x12232f95, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b52-134.51",    0x10000, 0x91faac7f, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "b52-134.51",    0x10000, 0x91faac7f, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b52-29.27",     0x80000, 0x8366d27c, BRF_GRA },				//  7	Chars
+	{ "b52-29.27",     0x80000, 0x8366d27c, BRF_GRA | TAITO_CHARS },
 	
-	{ "b52-34.5",      0x80000, 0x7d8dce36, BRF_GRA },				//  8	Sprites A
-	{ "b52-35.7",      0x80000, 0x78eeec0d, BRF_GRA },				//  9
-	{ "b52-36.9",      0x80000, 0x61e89e91, BRF_GRA },				//  10
-	{ "b52-37.11",     0x80000, 0xf02e47b9, BRF_GRA },				//  11
+	{ "b52-34.5",      0x80000, 0x7d8dce36, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-35.7",      0x80000, 0x78eeec0d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-36.9",      0x80000, 0x61e89e91, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-37.11",     0x80000, 0xf02e47b9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b52-30.4",      0x80000, 0x1b8cc647, BRF_GRA },				//  12	Sprites B
-	{ "b52-31.6",      0x80000, 0xf1998e20, BRF_GRA },				//  13
-	{ "b52-32.8",      0x80000, 0x8620780c, BRF_GRA },				//  14
-	{ "b52-33.10",     0x80000, 0xe6f4b8c4, BRF_GRA },				//  15
+	{ "b52-30.4",      0x80000, 0x1b8cc647, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-31.6",      0x80000, 0xf1998e20, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-32.8",      0x80000, 0x8620780c, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-33.10",     0x80000, 0xe6f4b8c4, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
 	
-	{ "b52-28.4",      0x80000, 0x963bc82b, BRF_GRA },				//  16	Road Lines
+	{ "b52-28.4",      0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "b52-38.34",     0x80000, 0x5b5bf7f6, BRF_GRA },				//  17	Spritemap
+	{ "b52-38.34",     0x80000, 0x5b5bf7f6, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b52-41.71",     0x80000, 0x8204880c, BRF_SND },				//  18	ADPCM Samples
-	{ "b52-40.72",     0x80000, 0xf0551055, BRF_SND },				//  19
-	{ "b52-39.73",     0x80000, 0xac9cbbd3, BRF_SND },				//  20
+	{ "b52-41.71",     0x80000, 0x8204880c, BRF_SND | TAITO_YM2610A },
+	{ "b52-40.72",     0x80000, 0xf0551055, BRF_SND | TAITO_YM2610A },
+	{ "b52-39.73",     0x80000, 0xac9cbbd3, BRF_SND | TAITO_YM2610A },
 	
-	{ "b52-42.70",     0x80000, 0x6e617df1, BRF_SND },				//  21	Delta-T Samples
+	{ "b52-42.70",     0x80000, 0x6e617df1, BRF_SND | TAITO_YM2610B },
 	
-	{ "b52-01.7",      0x00100, 0x89719d17, BRF_OPT },				//  22	Unused ROMs
-	{ "b52-03.135",    0x00400, 0xa3f8490d, BRF_OPT },				//  23
-	{ "b52-06.24",     0x00100, 0xfbf81f30, BRF_OPT },				//  24
-	{ "b52-18.93",     0x00100, 0x60bdaf1a, BRF_OPT },				//  25
-	{ "b52-18a",       0x00100, 0x6271be0d, BRF_OPT },				//  26
-	{ "b52-49.68",     0x02000, 0x60dd2ed1, BRF_OPT },				//  27
-	{ "b52-50.66",     0x10000, 0xc189781c, BRF_OPT },				//  28
-	{ "b52-51.65",     0x10000, 0x30cc1f79, BRF_OPT },				//  29
-	{ "b52-126.136",   0x00400, 0xfa2f840e, BRF_OPT },				//  30
-	{ "b52-127.156",   0x00400, 0x77682a4f, BRF_OPT },				//  31
+	{ "b52-01.7",      0x00100, 0x89719d17, BRF_OPT },
+	{ "b52-03.135",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b52-06.24",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b52-18.93",     0x00100, 0x60bdaf1a, BRF_OPT },
+	{ "b52-18a",       0x00100, 0x6271be0d, BRF_OPT },
+	{ "b52-49.68",     0x02000, 0x60dd2ed1, BRF_OPT },
+	{ "b52-50.66",     0x10000, 0xc189781c, BRF_OPT },
+	{ "b52-51.65",     0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b52-126.136",   0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b52-127.156",   0x00400, 0x77682a4f, BRF_OPT },
 	
-	{ "pal20l8b-b52-17.ic18",   0x00144, 0x4851316d, BRF_OPT },			//  32 	PLDs
-	{ "pal20l8b-b52-17.ic16",   0x00144, 0x4851316d, BRF_OPT },			//  33
-	{ "pal20l8b-b52-17.ic53",   0x00144, 0x4851316d, BRF_OPT },			//  34
-	{ "pal20l8b-b52-17.ic55",   0x00144, 0x4851316d, BRF_OPT },			//  35
-	{ "pal16l8b-b52-19.ic33",   0x00104, 0x3ba292dc, BRF_OPT },			//  36
-	{ "pal16l8b-b52-20.ic35",   0x00104, 0xbd39ad73, BRF_OPT },			//  37
-	{ "pal16l8b-b52-21.ic51",   0x00104, 0x2fe76aa4, BRF_OPT },			//  38
-	{ "pal20l8b-b52-25.ic123",  0x00144, 0x372b632d, BRF_OPT },			//  39
-	{ "pal20l8b-b52-26.ic15",   0x00144, 0xd94f2bc2, BRF_OPT },			//  40
-	{ "pal20l8b-b52-26.ic18",   0x00144, 0xd94f2bc2, BRF_OPT },			//  41
-	{ "pal20l8b-b52-26.ic52",   0x00144, 0xd94f2bc2, BRF_OPT },			//  42
-	{ "pal20l8b-b52-26.ic54",   0x00144, 0xd94f2bc2, BRF_OPT },			//  43
-	{ "pal20l8b-b52-27.ic64",   0x00144, 0x61c2ab26, BRF_OPT },			//  44
-	{ "pal20l8b-b52-118.ic20",  0x00144, 0x9c5fe4af, BRF_OPT },			//  45
-	{ "pal20l8b-b52-119.ic21",  0x00144, 0x8b8e2106, BRF_OPT },			//  46
-	{ "pal16l8b-b52-120.ic56",  0x00104, 0x3e7effa0, BRF_OPT },			//  47
-	{ "pal20l8b-b52-121.ic57",  0x00144, 0x7056fd1d, BRF_OPT },			//  48
-	{ "pal16l8b-b52-122.ic124", 0x00104, 0x04c0fb04, BRF_OPT },			//  49
-	{ "pal16l8b-b52-123.ic125", 0x00104, 0x3865d1c8, BRF_OPT },			//  50
-	{ "pal16l8b-b52-124.ic180", 0x00104, 0x00000000, BRF_OPT | BRF_NODUMP },	//  51
-	{ "pal16l8b-b52-125.ic112", 0x00104, 0x7628c557, BRF_OPT },			//  52
+	{ "pal20l8b-b52-17.ic18",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic16",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic53",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic55",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal16l8b-b52-19.ic33",   0x00104, 0x3ba292dc, BRF_OPT },
+	{ "pal16l8b-b52-20.ic35",   0x00104, 0xbd39ad73, BRF_OPT },
+	{ "pal16l8b-b52-21.ic51",   0x00104, 0x2fe76aa4, BRF_OPT },
+	{ "pal20l8b-b52-25.ic123",  0x00144, 0x372b632d, BRF_OPT },
+	{ "pal20l8b-b52-26.ic15",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic18",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic52",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic54",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-27.ic64",   0x00144, 0x61c2ab26, BRF_OPT },
+	{ "pal20l8b-b52-118.ic20",  0x00144, 0x9c5fe4af, BRF_OPT },
+	{ "pal20l8b-b52-119.ic21",  0x00144, 0x8b8e2106, BRF_OPT },
+	{ "pal16l8b-b52-120.ic56",  0x00104, 0x3e7effa0, BRF_OPT },
+	{ "pal20l8b-b52-121.ic57",  0x00144, 0x7056fd1d, BRF_OPT },
+	{ "pal16l8b-b52-122.ic124", 0x00104, 0x04c0fb04, BRF_OPT },
+	{ "pal16l8b-b52-123.ic125", 0x00104, 0x3865d1c8, BRF_OPT },
+	{ "pal16l8b-b52-124.ic180", 0x00104, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "pal16l8b-b52-125.ic112", 0x00104, 0x7628c557, BRF_OPT },
 };
 
-STD_ROM_PICK(Chasehqj);
-STD_ROM_FN(Chasehqj);
+STD_ROM_PICK(Chasehqj)
+STD_ROM_FN(Chasehqj)
+
+static struct BurnRomInfo ChasehquRomDesc[] = {
+	{ "b52-138.36",    0x20000, 0x8b71fe51, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-135.29",    0x20000, 0x5ba56a7c, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-131.37",    0x20000, 0xaa945d83, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b52-129.30",    0x20000, 0x0eaebc08, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "b52-132.39",    0x10000, 0xa2f54789, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b52-133.55",    0x10000, 0x12232f95, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "b52-137.51",    0x10000, 0x37abb74a, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "b52-29.27",     0x80000, 0x8366d27c, BRF_GRA | TAITO_CHARS},
+	
+	{ "b52-34.5",      0x80000, 0x7d8dce36, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-35.7",      0x80000, 0x78eeec0d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-36.9",      0x80000, 0x61e89e91, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b52-37.11",     0x80000, 0xf02e47b9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "b52-30.4",      0x80000, 0x1b8cc647, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-31.6",      0x80000, 0xf1998e20, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-32.8",      0x80000, 0x8620780c, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b52-33.10",     0x80000, 0xe6f4b8c4, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	
+	{ "b52-28.4",      0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
+	
+	{ "b52-38.34",     0x80000, 0x5b5bf7f6, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "b52-115.71",    0x80000, 0x4e117e93, BRF_SND | TAITO_YM2610A },
+	{ "b52-114.72",    0x80000, 0x3a73d6b1, BRF_SND | TAITO_YM2610A },
+	{ "b52-113.73",    0x80000, 0x2c6a3a05, BRF_SND | TAITO_YM2610A },
+	
+	{ "b52-116.70",    0x80000, 0xad46983c, BRF_SND | TAITO_YM2610B },
+	
+	{ "b52-01.7",      0x00100, 0x89719d17, BRF_OPT },
+	{ "b52-03.135",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b52-06.24",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b52-18.93",     0x00100, 0x60bdaf1a, BRF_OPT },
+	{ "b52-18a",       0x00100, 0x6271be0d, BRF_OPT },
+	{ "b52-49.68",     0x02000, 0x60dd2ed1, BRF_OPT },
+	{ "b52-50.66",     0x10000, 0xc189781c, BRF_OPT },
+	{ "b52-51.65",     0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b52-126.136",   0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b52-127.156",   0x00400, 0x77682a4f, BRF_OPT },
+	
+	{ "pal20l8b-b52-17.ic18",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic16",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic53",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal20l8b-b52-17.ic55",   0x00144, 0x4851316d, BRF_OPT },
+	{ "pal16l8b-b52-19.ic33",   0x00104, 0x3ba292dc, BRF_OPT },
+	{ "pal16l8b-b52-20.ic35",   0x00104, 0xbd39ad73, BRF_OPT },
+	{ "pal16l8b-b52-21.ic51",   0x00104, 0x2fe76aa4, BRF_OPT },
+	{ "pal20l8b-b52-25.ic123",  0x00144, 0x372b632d, BRF_OPT },
+	{ "pal20l8b-b52-26.ic15",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic18",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic52",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-26.ic54",   0x00144, 0xd94f2bc2, BRF_OPT },
+	{ "pal20l8b-b52-27.ic64",   0x00144, 0x61c2ab26, BRF_OPT },
+	{ "pal20l8b-b52-118.ic20",  0x00144, 0x9c5fe4af, BRF_OPT },
+	{ "pal20l8b-b52-119.ic21",  0x00144, 0x8b8e2106, BRF_OPT },
+	{ "pal16l8b-b52-120.ic56",  0x00104, 0x3e7effa0, BRF_OPT },
+	{ "pal20l8b-b52-121.ic57",  0x00144, 0x7056fd1d, BRF_OPT },
+	{ "pal16l8b-b52-122.ic124", 0x00104, 0x04c0fb04, BRF_OPT },
+	{ "pal16l8b-b52-123.ic125", 0x00104, 0x3865d1c8, BRF_OPT },
+	{ "pal16l8b-b52-124.ic180", 0x00104, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "pal16l8b-b52-125.ic112", 0x00104, 0x7628c557, BRF_OPT },
+};
+
+STD_ROM_PICK(Chasehqu)
+STD_ROM_FN(Chasehqu)
 
 static struct BurnRomInfo ContcircRomDesc[] = {
-	{ "ic25",          0x20000, 0xf5c92e42, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "ic26",          0x20000, 0xe7c1d1fa, BRF_ESS | BRF_PRG },			//  1
+	{ "ic25",          0x20000, 0xf5c92e42, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "ic26",          0x20000, 0xe7c1d1fa, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "ic35",          0x20000, 0x16522f2d, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "cc_36.bin",     0x20000, 0xa1732ea5, BRF_ESS | BRF_PRG },			//  3
+	{ "ic35",          0x20000, 0x16522f2d, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "cc_36.bin",     0x20000, 0xa1732ea5, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA },				//  5	Chars
+	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA | TAITO_CHARS },
 	
-	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA },				//  6	Sprites A
-	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA },				//  7
-	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA },				//  8
-	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA },				//  9
+	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA },				//  10	Road Lines
+	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA | TAITO_ROAD },
 	
-	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA },				//  11	Spritemap
+	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND },				//  12	ADPCM Samples
-	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND },				//  13
+	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND | TAITO_YM2610A },
+	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND | TAITO_YM2610A },
 	
-	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND },				//  14	Delta-T Samples
+	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND | TAITO_YM2610B },
 	
-	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },				//  15	Unused ROMs
-	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },				//  16
-	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },				//  17
-	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },				//  18
+	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },
+	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },
+	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Contcirc);
-STD_ROM_FN(Contcirc);
+STD_ROM_PICK(Contcirc)
+STD_ROM_FN(Contcirc)
 
-static struct BurnRomInfo ContcrcuRomDesc[] = {
-	{ "ic25",          0x20000, 0xf5c92e42, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "ic26",          0x20000, 0xe7c1d1fa, BRF_ESS | BRF_PRG },			//  1
+static struct BurnRomInfo ContcircuRomDesc[] = {
+	{ "ic25",          0x20000, 0xf5c92e42, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "ic26",          0x20000, 0xe7c1d1fa, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "ic35",          0x20000, 0x16522f2d, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "ic36",          0x20000, 0xd6741e33, BRF_ESS | BRF_PRG },			//  3
+	{ "ic35",          0x20000, 0x16522f2d, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "ic36",          0x20000, 0xd6741e33, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA },				//  5	Chars
+	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA | TAITO_CHARS },
 	
-	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA },				//  6	Sprites A
-	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA },				//  7
-	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA },				//  8
-	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA },				//  9
+	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA },				//  10	Road Lines
+	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA | TAITO_ROAD },
 	
-	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA },				//  11	Spritemap
+	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND },				//  12	ADPCM Samples
-	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND },				//  13
+	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND | TAITO_YM2610A },
+	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND | TAITO_YM2610A },
 	
-	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND },				//  14	Delta-T Samples
+	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND | TAITO_YM2610B },
 	
-	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },				//  15	Unused ROMs
-	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },				//  16
-	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },				//  17
-	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },				//  18
+	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },
+	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },
+	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Contcrcu);
-STD_ROM_FN(Contcrcu);
+STD_ROM_PICK(Contcircu)
+STD_ROM_FN(Contcircu)
 
-static struct BurnRomInfo ContcruaRomDesc[] = {
-	{ "b33-34.ic25",   0x20000, 0xe1e016c1, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b33-33.ic26",   0x20000, 0xf539d44b, BRF_ESS | BRF_PRG },			//  1
+static struct BurnRomInfo ContcircuaRomDesc[] = {
+	{ "b33-34.ic25",   0x20000, 0xe1e016c1, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b33-33.ic26",   0x20000, 0xf539d44b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "21-2.ic35",     0x20000, 0x2723f9e3, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "31-1.ic36",     0x20000, 0x438431f7, BRF_ESS | BRF_PRG },			//  3
+	{ "21-2.ic35",     0x20000, 0x2723f9e3, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "31-1.ic36",     0x20000, 0x438431f7, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b33-30.11",     0x10000, 0xd8746234, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA },				//  5	Chars
+	{ "b33-02.57",     0x80000, 0xf6fb3ba2, BRF_GRA | TAITO_CHARS },
 	
-	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA },				//  6	Sprites A
-	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA },				//  7
-	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA },				//  8
-	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA },				//  9
+	{ "b33-06",        0x80000, 0x2cb40599, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-05",        0x80000, 0xbddf9eea, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-04",        0x80000, 0x8df866a2, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b33-03",        0x80000, 0x4f6c36d9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA },				//  10	Road Lines
+	{ "b33-01.3",      0x80000, 0xf11f2be8, BRF_GRA | TAITO_ROAD },
 	
-	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA },				//  11	Spritemap
+	{ "b33-07.64",     0x80000, 0x151e1f52, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND },				//  12	ADPCM Samples
-	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND },				//  13
+	{ "b33-09.18",     0x80000, 0x1e6724b5, BRF_SND | TAITO_YM2610A },
+	{ "b33-10.17",     0x80000, 0xe9ce03ab, BRF_SND | TAITO_YM2610A },
 	
-	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND },				//  14	Delta-T Samples
+	{ "b33-08.19",     0x80000, 0xcaa1c4c8, BRF_SND | TAITO_YM2610B },
 	
-	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },				//  15	Unused ROMs
-	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },				//  16
-	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },				//  17
-	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },				//  18
+	{ "b14-30.97",     0x10000, 0xdccb0c7f, BRF_OPT },
+	{ "b14-31.50",     0x02000, 0x5c6b013d, BRF_OPT },
+	{ "b33-17.16",     0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b33-18.17",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Contcrua);
-STD_ROM_FN(Contcrua);
+STD_ROM_PICK(Contcircua)
+STD_ROM_FN(Contcircua)
+
+static struct BurnRomInfo DblaxleRomDesc[] = {
+	{ "c78-41-1.2",    0x020000, 0xcf297fe4, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-43-1.4",    0x020000, 0x38a8bad6, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-42-1.3",    0x020000, 0x4124ab2b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-44-1.5",    0x020000, 0x50a55b6e, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "c78-30-1.35",   0x020000, 0x026aac18, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c78-31-1.36",   0x020000, 0x67ce23e8, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "c78-34.c42",    0x020000, 0xf2186943, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "c78-10.12",     0x080000, 0x44b1897c, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	{ "c78-11.11",     0x080000, 0x7db3d4a3, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	
+	{ "c78-08.25",     0x100000, 0x6c725211, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-07.33",     0x100000, 0x9da00d5b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-06.23",     0x100000, 0x8309e91b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-05.31",     0x100000, 0x90001f68, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "c78-09.12",     0x080000, 0x0dbde6f5, BRF_GRA | TAITO_ROAD },
+	
+	{ "c78-04.3",      0x080000, 0xcc1aa37c, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "c78-12.33",     0x100000, 0xb0267404, BRF_SND | TAITO_YM2610A },
+	{ "c78-13.46",     0x080000, 0x1b363aa2, BRF_SND | TAITO_YM2610A },
+	
+	{ "c78-14.31",     0x080000, 0x9cad4dfb, BRF_SND | TAITO_YM2610B },
+	
+	{ "c78-25.15",     0x010000, 0x7245a6f6, BRF_OPT },
+	{ "c78-15.22",     0x000100, 0xfbf81f30, BRF_OPT },
+	{ "c78-21.74",     0x000100, 0x2926bf27, BRF_OPT },
+	{ "c84-10.16",     0x000400, 0x643e8bfc, BRF_OPT },
+	{ "c84-11.17",     0x000400, 0x10728853, BRF_OPT },
+};
+
+STD_ROM_PICK(Dblaxle)
+STD_ROM_FN(Dblaxle)
+
+static struct BurnRomInfo PwheelsjRomDesc[] = {
+	{ "c78-26-2.2",    0x020000, 0x25c8eb2e, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-28-2.4",    0x020000, 0xa9500eb1, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-27-2.3",    0x020000, 0x08d2cffb, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c78-29-2.5",    0x020000, 0xe1608004, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "c78-30-1.35",   0x020000, 0x026aac18, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c78-31-1.36",   0x020000, 0x67ce23e8, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "c78-32.42",     0x020000, 0x1494199c, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "c78-10.12",     0x080000, 0x44b1897c, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	{ "c78-11.11",     0x080000, 0x7db3d4a3, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	
+	{ "c78-08.25",     0x100000, 0x6c725211, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-07.33",     0x100000, 0x9da00d5b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-06.23",     0x100000, 0x8309e91b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c78-05.31",     0x100000, 0x90001f68, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "c78-09.12",     0x080000, 0x0dbde6f5, BRF_GRA | TAITO_ROAD },
+	
+	{ "c78-04.3",      0x080000, 0xcc1aa37c, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "c78-01.33",     0x100000, 0x90ff1e72, BRF_SND | TAITO_YM2610A },
+	{ "c78-02.46",     0x080000, 0x8882d2b7, BRF_SND | TAITO_YM2610A },
+	
+	{ "c78-03.31",     0x080000, 0x9b926a2f, BRF_SND | TAITO_YM2610B },
+	
+	{ "c78-25.15",     0x010000, 0x7245a6f6, BRF_OPT },
+	{ "c78-15.22",     0x000100, 0xfbf81f30, BRF_OPT },
+	{ "c78-21.74",     0x000100, 0x2926bf27, BRF_OPT },
+	{ "c84-10.16",     0x000400, 0x643e8bfc, BRF_OPT },
+	{ "c84-11.17",     0x000400, 0x10728853, BRF_OPT },
+};
+
+STD_ROM_PICK(Pwheelsj)
+STD_ROM_FN(Pwheelsj)
 
 static struct BurnRomInfo EnforceRomDesc[] = {
-	{ "b58-27.27",     0x20000, 0xa1aa0191, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b58-19.19",     0x20000, 0x40f43da3, BRF_ESS | BRF_PRG },			//  1
+	{ "b58-27.27",     0x20000, 0xa1aa0191, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b58-19.19",     0x20000, 0x40f43da3, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b58-26.26",     0x20000, 0xe823c85c, BRF_ESS | BRF_PRG },			//  2	68000 #2 Program Code
-	{ "b58-18.18",     0x20000, 0x65328a3e, BRF_ESS | BRF_PRG },			//  3
+	{ "b58-26.26",     0x20000, 0xe823c85c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b58-18.18",     0x20000, 0x65328a3e, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b58-32.41",     0x10000, 0xf3fd8eca, BRF_ESS | BRF_PRG },			//  4	Z80 Program
+	{ "b58-32.41",     0x10000, 0xf3fd8eca, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b58-09.13",     0x80000, 0x9ffd5b31, BRF_GRA },				//  5	Chars
+	{ "b58-09.13",     0x80000, 0x9ffd5b31, BRF_GRA | TAITO_CHARS },
 	
-	{ "b58-04.7",      0x80000, 0x9482f08d, BRF_GRA },				//  6	Sprites A
-	{ "b58-03.6",      0x80000, 0x158bc440, BRF_GRA },				//  7
-	{ "b58-02.2",      0x80000, 0x6a6e307c, BRF_GRA },				//  8
-	{ "b58-01.1",      0x80000, 0x01e9f0a8, BRF_GRA },				//  9
+	{ "b58-04.7",      0x80000, 0x9482f08d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b58-03.6",      0x80000, 0x158bc440, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b58-02.2",      0x80000, 0x6a6e307c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b58-01.1",      0x80000, 0x01e9f0a8, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b58-06.116",    0x80000, 0xb3495d70, BRF_GRA },				//  10	Road Lines
+	{ "b58-06.116",    0x80000, 0xb3495d70, BRF_GRA | TAITO_ROAD },
 	
-	{ "b58-05.71",     0x80000, 0xd1f4991b, BRF_GRA },				//  11	Spritemap
+	{ "b58-05.71",     0x80000, 0xd1f4991b, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b58-07.11",     0x80000, 0xeeb5ba08, BRF_SND },				//  12	ADPCM Samples
-	{ "b58-08.12",     0x80000, 0x049243cf, BRF_SND },				//  13
+	{ "b58-07.11",     0x80000, 0xeeb5ba08, BRF_SND | TAITO_YM2610A },
+	{ "b58-08.12",     0x80000, 0x049243cf, BRF_SND | TAITO_YM2610A },
 	
-	{ "b58-10.14",     0x80000, 0xedce0cc1, BRF_SND },				//  14	Delta-T Samples
+	{ "b58-10.14",     0x80000, 0xedce0cc1, BRF_SND | TAITO_YM2610B },
 	
-	{ "b58-26a.104",   0x10000, 0xdccb0c7f, BRF_OPT },				//  15	Unused ROMs
-	{ "b58-27.56",     0x02000, 0x5c6b013d, BRF_OPT },				//  16
-	{ "b58-23.52",     0x00100, 0x7b7d8ff4, BRF_OPT },				//  17
-	{ "b58-24.51",     0x00100, 0xfbf81f30, BRF_OPT },				//  18
-	{ "b58-25.75",     0x00100, 0xde547342, BRF_OPT },				//  19
+	{ "b58-26a.104",   0x10000, 0xdccb0c7f, BRF_OPT },
+	{ "b58-27.56",     0x02000, 0x5c6b013d, BRF_OPT },
+	{ "b58-23.52",     0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b58-24.51",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b58-25.75",     0x00100, 0xde547342, BRF_OPT },
 };
 
-STD_ROM_PICK(Enforce);
-STD_ROM_FN(Enforce);
+STD_ROM_PICK(Enforce)
+STD_ROM_FN(Enforce)
 
 static struct BurnRomInfo NightstrRomDesc[] = {
-	{ "b91-45.bin",    0x20000, 0x7ad63421, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "b91-44.bin",    0x20000, 0x4bc30adf, BRF_ESS | BRF_PRG },			//  1
-	{ "b91-43.bin",    0x20000, 0x3e6f727a, BRF_ESS | BRF_PRG },			//  2
-	{ "b91-46.bin",    0x20000, 0xe870be95, BRF_ESS | BRF_PRG },			//  3
+	{ "b91-45.bin",    0x20000, 0x7ad63421, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-44.bin",    0x20000, 0x4bc30adf, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-43.bin",    0x20000, 0x3e6f727a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-47.bin",    0x20000, 0x9f778e03, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b91-39.bin",    0x20000, 0x725b23ae, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "b91-40.bin",    0x20000, 0x81fb364d, BRF_ESS | BRF_PRG },			//  5
+	{ "b91-39.bin",    0x20000, 0x725b23ae, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b91-40.bin",    0x20000, 0x81fb364d, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b91-41.bin",    0x20000, 0x2694bb42, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "b91-41.bin",    0x20000, 0x2694bb42, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b91-11.bin",    0x80000, 0xfff8ce31, BRF_GRA },				//  7	Chars
+	{ "b91-11.bin",    0x80000, 0xfff8ce31, BRF_GRA | TAITO_CHARS },
 	
-	{ "b91-04.bin",    0x80000, 0x8ca1970d, BRF_GRA },				//  8	Sprites A
-	{ "b91-03.bin",    0x80000, 0xcd5fed39, BRF_GRA },				//  9
-	{ "b91-02.bin",    0x80000, 0x457c64b8, BRF_GRA },				//  10
-	{ "b91-01.bin",    0x80000, 0x3731d94f, BRF_GRA },				//  11
+	{ "b91-04.bin",    0x80000, 0x8ca1970d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-03.bin",    0x80000, 0xcd5fed39, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-02.bin",    0x80000, 0x457c64b8, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-01.bin",    0x80000, 0x3731d94f, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b91-08.bin",    0x80000, 0x66f35c34, BRF_GRA },				//  12	Sprites B
-	{ "b91-07.bin",    0x80000, 0x4d8ec6cf, BRF_GRA },				//  13
-	{ "b91-06.bin",    0x80000, 0xa34dc839, BRF_GRA },				//  14
-	{ "b91-05.bin",    0x80000, 0x5e72ac90, BRF_GRA },				//  15
+	{ "b91-08.bin",    0x80000, 0x66f35c34, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-07.bin",    0x80000, 0x4d8ec6cf, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-06.bin",    0x80000, 0xa34dc839, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-05.bin",    0x80000, 0x5e72ac90, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
 	
-	{ "b91-10.bin",    0x80000, 0x1d8f05b4, BRF_GRA },				//  16	Road Lines
+	{ "b91-10.bin",    0x80000, 0x1d8f05b4, BRF_GRA | TAITO_ROAD },
 	
-	{ "b91-09.bin",    0x80000, 0x5f247ca2, BRF_GRA },				//  17	Spritemap
+	{ "b91-09.bin",    0x80000, 0x5f247ca2, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b91-13.bin",    0x80000, 0x8c7bf0f5, BRF_SND },				//  18	ADPCM Samples
-	{ "b91-12.bin",    0x80000, 0xda77c7af, BRF_SND },				//  19
+	{ "b91-13.bin",    0x80000, 0x8c7bf0f5, BRF_SND | TAITO_YM2610A },
+	{ "b91-12.bin",    0x80000, 0xda77c7af, BRF_SND | TAITO_YM2610A },
 	
-	{ "b91-14.bin",    0x80000, 0x6bc314d3, BRF_SND },				//  20	Delta-T Samples
+	{ "b91-14.bin",    0x80000, 0x6bc314d3, BRF_SND | TAITO_YM2610B },
 	
-	{ "b91-26.bin",    0x00400, 0x77682a4f, BRF_OPT },				//  21	Unused ROMs
-	{ "b91-27.bin",    0x00400, 0xa3f8490d, BRF_OPT },				//  22
-	{ "b91-28.bin",    0x00400, 0xfa2f840e, BRF_OPT },				//  23
-	{ "b91-29.bin",    0x02000, 0xad685be8, BRF_OPT },				//  24
-	{ "b91-30.bin",    0x10000, 0x30cc1f79, BRF_OPT },				//  25
-	{ "b91-31.bin",    0x10000, 0xc189781c, BRF_OPT },				//  26
-	{ "b91-32.bin",    0x00100, 0xfbf81f30, BRF_OPT },				//  27
-	{ "b91-33.bin",    0x00100, 0x89719d17, BRF_OPT },				//  28
+	{ "b91-26.bin",    0x00400, 0x77682a4f, BRF_OPT },
+	{ "b91-27.bin",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b91-28.bin",    0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b91-29.bin",    0x02000, 0xad685be8, BRF_OPT },
+	{ "b91-30.bin",    0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b91-31.bin",    0x10000, 0xc189781c, BRF_OPT },
+	{ "b91-32.bin",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b91-33.bin",    0x00100, 0x89719d17, BRF_OPT },
 };
 
-STD_ROM_PICK(Nightstr);
-STD_ROM_FN(Nightstr);
+STD_ROM_PICK(Nightstr)
+STD_ROM_FN(Nightstr)
+
+static struct BurnRomInfo NightstrjRomDesc[] = {
+	{ "b91-45.bin",    0x20000, 0x7ad63421, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-44.bin",    0x20000, 0x4bc30adf, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-43.bin",    0x20000, 0x3e6f727a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-42.bin",    0x20000, 0x7179ef2f, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "b91-39.bin",    0x20000, 0x725b23ae, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b91-40.bin",    0x20000, 0x81fb364d, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "b91-41.bin",    0x20000, 0x2694bb42, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "b91-11.bin",    0x80000, 0xfff8ce31, BRF_GRA | TAITO_CHARS },
+	
+	{ "b91-04.bin",    0x80000, 0x8ca1970d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-03.bin",    0x80000, 0xcd5fed39, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-02.bin",    0x80000, 0x457c64b8, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-01.bin",    0x80000, 0x3731d94f, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "b91-08.bin",    0x80000, 0x66f35c34, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-07.bin",    0x80000, 0x4d8ec6cf, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-06.bin",    0x80000, 0xa34dc839, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-05.bin",    0x80000, 0x5e72ac90, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	
+	{ "b91-10.bin",    0x80000, 0x1d8f05b4, BRF_GRA | TAITO_ROAD },
+	
+	{ "b91-09.bin",    0x80000, 0x5f247ca2, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "b91-13.bin",    0x80000, 0x8c7bf0f5, BRF_SND | TAITO_YM2610A },
+	{ "b91-12.bin",    0x80000, 0xda77c7af, BRF_SND | TAITO_YM2610A },
+	
+	{ "b91-14.bin",    0x80000, 0x6bc314d3, BRF_SND | TAITO_YM2610B },
+	
+	{ "b91-26.bin",    0x00400, 0x77682a4f, BRF_OPT },
+	{ "b91-27.bin",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b91-28.bin",    0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b91-29.bin",    0x02000, 0xad685be8, BRF_OPT },
+	{ "b91-30.bin",    0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b91-31.bin",    0x10000, 0xc189781c, BRF_OPT },
+	{ "b91-32.bin",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b91-33.bin",    0x00100, 0x89719d17, BRF_OPT },
+};
+
+STD_ROM_PICK(Nightstrj)
+STD_ROM_FN(Nightstrj)
+
+static struct BurnRomInfo NightstruRomDesc[] = {
+	{ "b91-45.bin",    0x20000, 0x7ad63421, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-44.bin",    0x20000, 0x4bc30adf, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-43.bin",    0x20000, 0x3e6f727a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b91-46.bin",    0x20000, 0xe870be95, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "b91-39.bin",    0x20000, 0x725b23ae, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b91-40.bin",    0x20000, 0x81fb364d, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "b91-41.bin",    0x20000, 0x2694bb42, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "b91-11.bin",    0x80000, 0xfff8ce31, BRF_GRA | TAITO_CHARS },
+	
+	{ "b91-04.bin",    0x80000, 0x8ca1970d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-03.bin",    0x80000, 0xcd5fed39, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-02.bin",    0x80000, 0x457c64b8, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b91-01.bin",    0x80000, 0x3731d94f, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "b91-08.bin",    0x80000, 0x66f35c34, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-07.bin",    0x80000, 0x4d8ec6cf, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-06.bin",    0x80000, 0xa34dc839, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	{ "b91-05.bin",    0x80000, 0x5e72ac90, BRF_GRA | TAITO_SPRITESB_BYTESWAP32 },
+	
+	{ "b91-10.bin",    0x80000, 0x1d8f05b4, BRF_GRA | TAITO_ROAD },
+	
+	{ "b91-09.bin",    0x80000, 0x5f247ca2, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "b91-13.bin",    0x80000, 0x8c7bf0f5, BRF_SND | TAITO_YM2610A },
+	{ "b91-12.bin",    0x80000, 0xda77c7af, BRF_SND | TAITO_YM2610A },
+	
+	{ "b91-14.bin",    0x80000, 0x6bc314d3, BRF_SND | TAITO_YM2610B },
+	
+	{ "b91-26.bin",    0x00400, 0x77682a4f, BRF_OPT },
+	{ "b91-27.bin",    0x00400, 0xa3f8490d, BRF_OPT },
+	{ "b91-28.bin",    0x00400, 0xfa2f840e, BRF_OPT },
+	{ "b91-29.bin",    0x02000, 0xad685be8, BRF_OPT },
+	{ "b91-30.bin",    0x10000, 0x30cc1f79, BRF_OPT },
+	{ "b91-31.bin",    0x10000, 0xc189781c, BRF_OPT },
+	{ "b91-32.bin",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b91-33.bin",    0x00100, 0x89719d17, BRF_OPT },
+};
+
+STD_ROM_PICK(Nightstru)
+STD_ROM_FN(Nightstru)
 
 static struct BurnRomInfo SciRomDesc[] = {
-	{ "c09-37.43",     0x20000, 0x0fecea17, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c09-38.40",     0x20000, 0xe46ebd9b, BRF_ESS | BRF_PRG },			//  1
-	{ "c09-42.38",     0x20000, 0xf4404f87, BRF_ESS | BRF_PRG },			//  2
-	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG },			//  3
+	{ "c09-37.43",     0x20000, 0x0fecea17, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-38.40",     0x20000, 0xe46ebd9b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-42.38",     0x20000, 0xf4404f87, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG },			//  5
+	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA },				//  7	Chars
+	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA | TAITO_CHARS },
 	
-	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA },				//  8	Sprites A
-	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA },				//  9
-	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA },				//  10
-	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA },				//  11
+	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA },				//  12	Road Lines
+	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA },				//  13	Spritemap
+	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND },				//  14	ADPCM Samples
-	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND },				//  15
-	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND },				//  16
+	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND | TAITO_YM2610A },
+	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND | TAITO_YM2610A },
+	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND | TAITO_YM2610A },
 	
-	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND },				//  17	Delta-T Samples
+	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND | TAITO_YM2610B },
 	
-	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },				//  18	Unused ROMs
-	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },				//  19
-	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },				//  20
+	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },
+	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Sci);
-STD_ROM_FN(Sci);
+STD_ROM_PICK(Sci)
+STD_ROM_FN(Sci)
 
 static struct BurnRomInfo SciaRomDesc[] = {
-	{ "c09-28.43",     0x20000, 0x630dbaad, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c09-30.40",     0x20000, 0x68b1a97d, BRF_ESS | BRF_PRG },			//  1
-	{ "c09-36.38",     0x20000, 0x59e47cba, BRF_ESS | BRF_PRG },			//  2
-	{ "c09-31.41",     0x20000, 0x962b1fbf, BRF_ESS | BRF_PRG },			//  3
+	{ "c09-28.43",     0x20000, 0x630dbaad, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-30.40",     0x20000, 0x68b1a97d, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-36.38",     0x20000, 0x59e47cba, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-31.41",     0x20000, 0x962b1fbf, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG },			//  5
+	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA },				//  7	Chars
+	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA | TAITO_CHARS },
 	
-	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA },				//  8	Sprites A
-	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA },				//  9
-	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA },				//  10
-	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA },				//  11
+	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA },				//  12	Road Lines
+	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA },				//  13	Spritemap
+	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND },				//  14	ADPCM Samples
-	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND },				//  15
-	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND },				//  16
+	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND | TAITO_YM2610A },
+	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND | TAITO_YM2610A },
+	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND | TAITO_YM2610A },
 	
-	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND },				//  17	Delta-T Samples
+	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND | TAITO_YM2610B },
 	
-	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },				//  18	Unused ROMs
-	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },				//  19
-	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },				//  20
+	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },
+	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Scia);
-STD_ROM_FN(Scia);
+STD_ROM_PICK(Scia)
+STD_ROM_FN(Scia)
 
 static struct BurnRomInfo ScijRomDesc[] = {
-	{ "c09-37.43",     0x20000, 0x0fecea17, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c09-38.40",     0x20000, 0xe46ebd9b, BRF_ESS | BRF_PRG },			//  1
-	{ "c09-40.38",     0x20000, 0x1a4e2eab, BRF_ESS | BRF_PRG },			//  2
-	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG },			//  3
+	{ "c09-37.43",     0x20000, 0x0fecea17, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-38.40",     0x20000, 0xe46ebd9b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-40.38",     0x20000, 0x1a4e2eab, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG },			//  5
+	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c09-27.31",     0x20000, 0xcd161dca, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "c09-27.31",     0x20000, 0xcd161dca, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA },				//  7	Chars
+	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA | TAITO_CHARS },
 	
-	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA },				//  8	Sprites A
-	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA },				//  9
-	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA },				//  10
-	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA },				//  11
+	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA },				//  12	Road Lines
+	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA },				//  13	Spritemap
+	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c09-10.42",     0x80000, 0xad78bf46, BRF_SND },				//  14	ADPCM Samples
-	{ "c09-09.43",     0x80000, 0x6a655c00, BRF_SND },				//  15
-	{ "c09-08.44",     0x80000, 0x7ddfc316, BRF_SND },				//  16
+	{ "c09-10.42",     0x80000, 0xad78bf46, BRF_SND | TAITO_YM2610A },
+	{ "c09-09.43",     0x80000, 0x6a655c00, BRF_SND | TAITO_YM2610A },
+	{ "c09-08.44",     0x80000, 0x7ddfc316, BRF_SND | TAITO_YM2610A },
 	
-	{ "c09-11.29",     0x80000, 0x6b1a11e1, BRF_SND },				//  17	Delta-T Samples
+	{ "c09-11.29",     0x80000, 0x6b1a11e1, BRF_SND | TAITO_YM2610B },
 	
-	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },				//  18	Unused ROMs
-	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },				//  19
-	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },				//  20
+	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },
+	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Scij);
-STD_ROM_FN(Scij);
+STD_ROM_PICK(Scij)
+STD_ROM_FN(Scij)
 
 static struct BurnRomInfo SciuRomDesc[] = {
-	{ "c09-43.43",     0x20000, 0x20a9343e, BRF_ESS | BRF_PRG },			//  0	68000 #1 Program Code
-	{ "c09-44.40",     0x20000, 0x7524338a, BRF_ESS | BRF_PRG },			//  1
-	{ "c09-41.38",     0x20000, 0x83477f11, BRF_ESS | BRF_PRG },			//  2
-	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG },			//  3
+	{ "c09-43.43",     0x20000, 0x20a9343e, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-44.40",     0x20000, 0x7524338a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-41.38",     0x20000, 0x83477f11, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c09-39.41",     0x20000, 0xde87bcb9, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG },			//  4	68000 #2 Program Code
-	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG },			//  5
+	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG },			//  6	Z80 Program
+	{ "c09-34.31",     0x20000, 0xa21b3151, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA },				//  7	Chars
+	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA | TAITO_CHARS },
 	
-	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA },				//  8	Sprites A
-	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA },				//  9
-	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA },				//  10
-	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA },				//  11
+	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA },				//  12	Road Lines
+	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
 	
-	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA },				//  13	Spritemap
+	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND },				//  14	ADPCM Samples
-	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND },				//  15
-	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND },				//  16
+	{ "c09-14.42",     0x80000, 0xad78bf46, BRF_SND | TAITO_YM2610A },
+	{ "c09-13.43",     0x80000, 0xd57c41d3, BRF_SND | TAITO_YM2610A },
+	{ "c09-12.44",     0x80000, 0x56c99fa5, BRF_SND | TAITO_YM2610A },
 	
-	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND },				//  17	Delta-T Samples
+	{ "c09-15.29",     0x80000, 0xe63b9095, BRF_SND | TAITO_YM2610B },
 	
-	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },				//  18	Unused ROMs
-	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },				//  19
-	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },				//  20
+	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },
+	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },
 };
 
-STD_ROM_PICK(Sciu);
-STD_ROM_FN(Sciu);
+STD_ROM_PICK(Sciu)
+STD_ROM_FN(Sciu)
+
+static struct BurnRomInfo ScinegroRomDesc[] = {
+	{ "ic37.37",       0x20000, 0x33fb159c, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "ic40.38",       0x20000, 0x657df3f2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "ic38.42",       0x20000, 0x0a09b90b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },	
+	{ "ic41.39",       0x20000, 0x43167b2a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },	
+	
+	{ "c09-33.6",      0x10000, 0xcf4e6c5b, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c09-32.5",      0x10000, 0xa4713719, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "c09-27.31",     0x20000, 0xcd161dca, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "c09-05.16",     0x80000, 0x890b38f0, BRF_GRA | TAITO_CHARS },
+	
+	{ "c09-04.52",     0x80000, 0x2cbb3c9b, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-02.53",     0x80000, 0xa83a0389, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-03.54",     0x80000, 0xa31d0e80, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c09-01.55",     0x80000, 0x64bfea10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "c09-07.15",     0x80000, 0x963bc82b, BRF_GRA | TAITO_ROAD },
+	
+	{ "c09-06.37",     0x80000, 0x12df6d7b, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "c09-10.42",     0x80000, 0xad78bf46, BRF_SND | TAITO_YM2610A },
+	{ "c09-09.43",     0x80000, 0x6a655c00, BRF_SND | TAITO_YM2610A },
+	{ "c09-08.44",     0x80000, 0x7ddfc316, BRF_SND | TAITO_YM2610A },
+	
+	{ "c09-11.29",     0x80000, 0x6b1a11e1, BRF_SND | TAITO_YM2610B },
+	
+	{ "c09-16.17",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c09-20.71",     0x00100, 0xcd8ffd80, BRF_OPT },
+	{ "c09-23.14",     0x00100, 0xfbf81f30, BRF_OPT },
+};
+
+STD_ROM_PICK(Scinegro)
+STD_ROM_FN(Scinegro)
 
 static struct BurnRomInfo SpacegunRomDesc[] = {
-	{ "c57-18.62",         0x020000, 0x19d7d52e, BRF_ESS | BRF_PRG },		//  0	68000 #1 Program Code
-	{ "c57-20.74",         0x020000, 0x2e58253f, BRF_ESS | BRF_PRG },		//  1
-	{ "c57-17.59",         0x020000, 0xe197edb8, BRF_ESS | BRF_PRG },		//  2
-	{ "c57-22.73",         0x020000, 0x5855fde3, BRF_ESS | BRF_PRG },		//  3
+	{ "c57-18.62",         0x020000, 0x19d7d52e, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c57-20.74",         0x020000, 0x2e58253f, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c57-17.59",         0x020000, 0xe197edb8, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c57-22.73",         0x020000, 0x5855fde3, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c57-15.27",         0x020000, 0xb36eb8f1, BRF_ESS | BRF_PRG },		//  4	68000 #2 Program Code
-	{ "c57-16.29",         0x020000, 0xbfb5d1e7, BRF_ESS | BRF_PRG },		//  5
+	{ "c57-15.27",         0x020000, 0xb36eb8f1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c57-16.29",         0x020000, 0xbfb5d1e7, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "c57-06.52",         0x080000, 0x4ebadd5b, BRF_GRA },				//  6	Chars
+	{ "c57-06.52",         0x080000, 0x4ebadd5b, BRF_GRA | TAITO_CHARS },
 	
-	{ "c57-01.25",         0x100000, 0xf901b04e, BRF_GRA },				//  7	Sprites A
-	{ "c57-02.24",         0x100000, 0x21ee4633, BRF_GRA },				//  8
-	{ "c57-03.12",         0x100000, 0xfafca86f, BRF_GRA },				//  9
-	{ "c57-04.11",         0x100000, 0xa9787090, BRF_GRA },				//  10
+	{ "c57-01.25",         0x100000, 0xf901b04e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c57-02.24",         0x100000, 0x21ee4633, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c57-03.12",         0x100000, 0xfafca86f, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c57-04.11",         0x100000, 0xa9787090, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "c57-05.36",         0x080000, 0x6a70eb2e, BRF_GRA },				//  11	Spritemap
+	{ "c57-05.36",         0x080000, 0x6a70eb2e, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "c57-07.76",         0x080000, 0xad653dc1, BRF_SND },				//  12	ADPCM Samples
+	{ "c57-07.76",         0x080000, 0xad653dc1, BRF_SND | TAITO_YM2610A },
 	
-	{ "c57-08.75",         0x080000, 0x22593550, BRF_SND },				//  13	Delta-T Samples
+	{ "c57-08.75",         0x080000, 0x22593550, BRF_SND | TAITO_YM2610B },
 	
-	{ "pal16l8-c57-09.9",  0x000104, 0xea93161e, BRF_OPT },				//  14	Unused ROMs
-	{ "pal20l8-c57-10.47", 0x000144, 0x3ee56888, BRF_OPT },				//  15
-	{ "pal16l8-c57-11.48", 0x000104, 0x6bb4372e, BRF_OPT },				//  16
-	{ "pal20l8-c57-12.61", 0x000144, 0xdebddb13, BRF_OPT },				//  17
-	{ "pal16l8-c57-13.72", 0x000104, 0x1369f23e, BRF_OPT },				//  18
-	{ "pal16r4-c57-14.96", 0x000104, 0x75e1bf61, BRF_OPT },				//  19
+	{ "pal16l8-c57-09.9",  0x000104, 0xea93161e, BRF_OPT },
+	{ "pal20l8-c57-10.47", 0x000144, 0x3ee56888, BRF_OPT },
+	{ "pal16l8-c57-11.48", 0x000104, 0x6bb4372e, BRF_OPT },
+	{ "pal20l8-c57-12.61", 0x000144, 0xdebddb13, BRF_OPT },
+	{ "pal16l8-c57-13.72", 0x000104, 0x1369f23e, BRF_OPT },
+	{ "pal16r4-c57-14.96", 0x000104, 0x75e1bf61, BRF_OPT },
 	
 };
 
-STD_ROM_PICK(Spacegun);
-STD_ROM_FN(Spacegun);
+STD_ROM_PICK(Spacegun)
+STD_ROM_FN(Spacegun)
 
 static int MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	unsigned char *Next; Next = TaitoMem;
 
-	TaitoZ68KRom1                  = Next; Next += 0x80000;
-	TaitoZ68KRom2                  = Next; Next += 0x80000;
-	TaitoZZ80Rom                   = Next; Next += 0x20000;
-	TaitoZSpriteMapRom             = Next; Next += 0x80000;
-	YM2610ADPCMAROM                = Next; Next += YM2610ADPCMASize;
-	YM2610ADPCMBROM                = Next; Next += YM2610ADPCMBSize;
+	Taito68KRom1                   = Next; Next += Taito68KRom1Size;
+	Taito68KRom2                   = Next; Next += Taito68KRom2Size;
+	TaitoZ80Rom1                   = Next; Next += TaitoZ80Rom1Size;
+	TaitoSpriteMapRom              = Next; Next += TaitoSpriteMapRomSize;
+	TaitoYM2610ARom                = Next; Next += TaitoYM2610ARomSize;
+	TaitoYM2610BRom                = Next; Next += TaitoYM2610BRomSize;
 	
-	RamStart                       = Next;
+	TaitoRamStart                  = Next;
 
-	TaitoZ68KRam1                  = Next; Next += 0x10000;
-	TaitoZ68KRam2                  = Next; Next += 0x08000;
-	TaitoZSharedRam                = Next; Next += 0x10000;
-	TaitoZZ80Ram                   = Next; Next += 0x02000;
-	TaitoZSpriteRam                = Next; Next += 0x04000;
-	TaitoZPaletteRam               = Next; Next += 0x02000;
+	Taito68KRam1                   = Next; Next += 0x10000;
+	Taito68KRam2                   = Next; Next += 0x08000;
+	TaitoSharedRam                 = Next; Next += 0x10000;
+	TaitoZ80Ram1                   = Next; Next += 0x02000;
+	TaitoSpriteRam                 = Next; Next += 0x04000;
+	TaitoPaletteRam                = Next; Next += 0x02000;
 	
-	RamEnd                         = Next;
+	TaitoRamEnd                    = Next;
 
-	TaitoZChars                    = Next; Next += TaitoZNumChars * TaitoZCharXSize * TaitoZCharYSize;
-	TaitoZSpritesA                 = Next; Next += TaitoZNumSpritesA * TaitoZSpriteAXSize * TaitoZSpriteAYSize;
-	TaitoZSpritesB                 = Next; Next += TaitoZNumSpritesB * TaitoZSpriteBXSize * TaitoZSpriteBYSize;
-	TaitoZPalette                  = (unsigned int*)Next; Next += 0x01000 * sizeof(unsigned int);
+	TaitoChars                     = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
+	TaitoSpritesA                  = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
+	TaitoSpritesB                  = Next; Next += TaitoNumSpriteB * TaitoSpriteBWidth * TaitoSpriteBHeight;
+	TaitoPalette                   = (unsigned int*)Next; Next += 0x01000 * sizeof(unsigned int);
 
-	MemEnd                         = Next;
+	TaitoMemEnd                    = Next;
 
 	return 0;
 }
 
 static int TaitoZDoReset()
 {
-	SekOpen(0);
-	SekReset();
-	SekClose();
-	
-	SekOpen(1);
-	SekReset();
-	SekClose();
+	TaitoDoReset();
 
-	if (TaitoZHasZ80) {
-		ZetOpen(0);
-		ZetReset();
-		ZetClose();
-	}
-	
-	if (TaitoZHasEEPROM) EEPROMReset();
-	
-	BurnYM2610Reset();
-	
-	if (TaitoZHasTC0110PCR) TC0110PCRReset();
-	if (TaitoZHasTC0220IOC) TC0220IOCReset();
-	if (TaitoZHasTC0140SYT) TC0140SYTReset();
-	if (TaitoZHasTC0100SCN) TC0100SCNReset();
-	
-	TaitoZZ80Bank = 0;
-	TaitoZCpuACtrl = 0xff;
 	SciSpriteFrame = 0;
-	TaitoZRoadPalBank = 0;
 	OldSteer = 0;
 	
 	return 0;
@@ -1958,8 +2421,8 @@ static int TaitoZDoReset()
 
 static void TaitoZCpuAReset(UINT16 d)
 {
-	TaitoZCpuACtrl = d;
-	if (!(TaitoZCpuACtrl & 1)) {
+	TaitoCpuACtrl = d;
+	if (!(TaitoCpuACtrl & 1)) {
 		SekClose();
 		SekOpen(1);
 		SekReset();
@@ -1968,8 +2431,22 @@ static void TaitoZCpuAReset(UINT16 d)
 	}
 }
 
+void __fastcall Aquajack68K1WriteByte(unsigned int a, unsigned char d)
+{
+	TC0100SCN0ByteWrite_Map(0xa00000, 0xa0ffff)
+
+	switch (a) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write byte => %06X, %02X\n"), a, d);
+		}
+	}
+}
+
 void __fastcall Aquajack68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0100SCN0WordWrite_Map(0xa00000, 0xa0ffff)
+	TC0100SCN0CtrlWordWrite_Map(0xa20000)
+	
 	switch (a) {
 		case 0x200000: {
 			TaitoZCpuAReset(d);
@@ -1978,19 +2455,7 @@ void __fastcall Aquajack68K1WriteWord(unsigned int a, unsigned short d)
 		
 		case 0x300000:
 		case 0x300002: {
-			TC0110PCRStep1WordWrite((a - 0x300000) >> 1, d);
-			return;
-		}
-		
-		case 0xa20000:
-		case 0xa20002:
-		case 0xa20004:
-		case 0xa20006:
-		case 0xa20008:
-		case 0xa2000a:
-		case 0xa2000c:
-		case 0xa2000e: {
-			TC0100SCNCtrlWordWrite((a - 0xa20000) >> 1, d);
+			TC0110PCRStep1WordWrite(0, (a - 0x300000) >> 1, d);
 			return;
 		}
 		
@@ -2002,9 +2467,7 @@ void __fastcall Aquajack68K1WriteWord(unsigned int a, unsigned short d)
 
 unsigned char __fastcall Aquajack68K2ReadByte(unsigned int a)
 {
-	if (a >= 0x200000 && a <= 0x20000f) {
-		return TC0220IOCHalfWordRead((a - 0x200000) >> 1);
-	}
+	TC0220IOCHalfWordRead_Map(0x200000)
 	
 	switch (a) {
 		case 0x300003: {
@@ -2021,18 +2484,9 @@ unsigned char __fastcall Aquajack68K2ReadByte(unsigned int a)
 
 unsigned short __fastcall Aquajack68K2ReadWord(unsigned int a)
 {
+	TC0220IOCHalfWordRead_Map(0x200000)
+	
 	switch (a) {
-		case 0x200000:
-		case 0x200002:
-		case 0x200004:
-		case 0x200006:
-		case 0x200008:
-		case 0x20000a:
-		case 0x20000c:
-		case 0x20000e: {
-			return TC0220IOCHalfWordRead((a - 0x200000) >> 1);
-		}
-		
 		case 0x900000:
 		case 0x900002:
 		case 0x900004:
@@ -2051,19 +2505,9 @@ unsigned short __fastcall Aquajack68K2ReadWord(unsigned int a)
 
 void __fastcall Aquajack68K2WriteWord(unsigned int a, unsigned short d)
 {
+	TC0220IOCHalfWordWrite_Map(0x200000)
+	
 	switch (a) {
-		case 0x200000:
-		case 0x200002:
-		case 0x200004:
-		case 0x200006:
-		case 0x200008:
-		case 0x20000a:
-		case 0x20000c:
-		case 0x20000e: {
-			TC0220IOCHalfWordWrite((a - 0x200000) >> 1, d);
-			return;
-		}
-		
 		case 0x300000: {
 			TC0140SYTPortWrite(d & 0xff);
 			return;
@@ -2092,7 +2536,7 @@ static UINT8 BsharkStickRead(int Offset)
 {
 	switch (Offset) {
 		case 0x00: {
-			int Temp = (TaitoZAnalogPort0 >> 4) & 0xfff;
+			int Temp = (TaitoAnalogPort0 >> 4) & 0xfff;
 			Temp = 0xfff - Temp;
 			Temp += 1;
 			if (Temp == 0x1000) Temp = 0;
@@ -2104,20 +2548,20 @@ static UINT8 BsharkStickRead(int Offset)
 		}
 		
 		case 0x02: {
-			return TaitoZAnalogPort1 >> 4;
+			return TaitoAnalogPort1 >> 4;
 		}
 		
 		case 0x03: {
 			return 0xff;
 		}
 	}
+	
+	return 0;
 }
 
 unsigned char __fastcall Bshark68K1ReadByte(unsigned int a)
 {
-	if (a >= 0x400000 && a <= 0x40000f) {
-		return TC0220IOCHalfWordRead((a - 0x400000) >> 1);
-	}
+	TC0220IOCHalfWordRead_Map(0x400000)
 	
 	switch (a) {
 		case 0x800001:
@@ -2138,10 +2582,8 @@ unsigned char __fastcall Bshark68K1ReadByte(unsigned int a)
 
 void __fastcall Bshark68K1WriteByte(unsigned int a, unsigned char d)
 {
-	if (a >= 0x400000 && a <= 0x40000f) {
-		TC0220IOCHalfWordWrite((a - 0x400000) >> 1, d);
-		return;
-	}
+	TC0220IOCHalfWordWrite_Map(0x400000)
+	TC0100SCN0ByteWrite_Map(0xd00000, 0xd0ffff)
 	
 	switch (a) {
 		default: {
@@ -2152,19 +2594,11 @@ void __fastcall Bshark68K1WriteByte(unsigned int a, unsigned char d)
 
 void __fastcall Bshark68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0220IOCHalfWordWrite_Map(0x400000)
+	TC0100SCN0WordWrite_Map(0xd00000, 0xd0ffff)
+	TC0100SCN0CtrlWordWrite_Map(0xd20000)
+	
 	switch (a) {
-		case 0x400000:
-		case 0x400002:
-		case 0x400004:
-		case 0x400006:
-		case 0x400008:
-		case 0x40000a:
-		case 0x40000c:
-		case 0x40000e: {
-			TC0220IOCHalfWordWrite((a - 0x400000) >> 1, d);
-			return;
-		}
-		
 		case 0x600000: {
 			TaitoZCpuAReset(d);
 			return;
@@ -2174,20 +2608,8 @@ void __fastcall Bshark68K1WriteWord(unsigned int a, unsigned short d)
 		case 0x800002:
 		case 0x800004:
 		case 0x800006: {
-			nCyclesDone[0] += SekRun(10000);
+			nTaitoCyclesDone[0] += SekRun(10000);
 			SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
-			return;
-		}
-		
-		case 0xd20000:
-		case 0xd20002:
-		case 0xd20004:
-		case 0xd20006:
-		case 0xd20008:
-		case 0xd2000a:
-		case 0xd2000c:
-		case 0xd2000e: {
-			TC0100SCNCtrlWordWrite((a - 0xd20000) >> 1, d);
 			return;
 		}
 		
@@ -2269,7 +2691,7 @@ static UINT8 ChasehqInputBypassRead()
 {
 	UINT8 Port = TC0220IOCPortRead();
 	
-	int Steer = (TaitoZAnalogPort0 >> 4);
+	int Steer = (TaitoAnalogPort0 >> 4);
 	
 	switch (Port) {
 		case 0x08:
@@ -2314,6 +2736,8 @@ unsigned char __fastcall Chasehq68K1ReadByte(unsigned int a)
 
 void __fastcall Chasehq68K1WriteByte(unsigned int a, unsigned char d)
 {
+	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
+	
 	switch (a) {
 		case 0x400001: {
 			TC0220IOCHalfWordPortRegWrite(d);
@@ -2354,7 +2778,7 @@ unsigned short __fastcall Chasehq68K1ReadWord(unsigned int a)
 		}
 		
 		case 0xa00002: {
-			return TC0110PCRWordRead();
+			return TC0110PCRWordRead(0);
 		}
 		
 		default: {
@@ -2367,6 +2791,9 @@ unsigned short __fastcall Chasehq68K1ReadWord(unsigned int a)
 
 void __fastcall Chasehq68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
+	TC0100SCN0CtrlWordWrite_Map(0xc20000)
+
 	switch (a) {
 		case 0x400000: {
 			TC0220IOCHalfWordPortRegWrite(d);
@@ -2380,19 +2807,7 @@ void __fastcall Chasehq68K1WriteWord(unsigned int a, unsigned short d)
 		
 		case 0xa00000:
 		case 0xa00002: {
-			TC0110PCRStep1WordWrite((a - 0xa00000) >> 1, d);
-			return;
-		}
-		
-		case 0xc20000:
-		case 0xc20002:
-		case 0xc20004:
-		case 0xc20006:
-		case 0xc20008:
-		case 0xc2000a:
-		case 0xc2000c:
-		case 0xc2000e: {
-			TC0100SCNCtrlWordWrite((a - 0xc20000) >> 1, d);
+			TC0110PCRStep1WordWrite(0, (a - 0xa00000) >> 1, d);
 			return;
 		}
 		
@@ -2406,7 +2821,7 @@ static UINT8 ContcircInputBypassRead()
 {
 	UINT8 Port = TC0220IOCPortRead();
 	
-	int Steer = (TaitoZAnalogPort0 >> 4) & 0xfff;
+	int Steer = (TaitoAnalogPort0 >> 4) & 0xfff;
 	Steer = 0xfff - Steer;
 	if (Steer == 0xfff) Steer = 0;
 	if (Steer > 0x5f && Steer < 0x80) Steer = 0x5f;
@@ -2428,30 +2843,32 @@ static UINT8 ContcircInputBypassRead()
 	}
 }
 
+void __fastcall Contcirc68K1WriteByte(unsigned int a, unsigned char d)
+{
+	TC0100SCN0ByteWrite_Map(0x200000, 0x20ffff)
+	
+	switch (a) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write byte => %06X, %02X\n"), a, d);
+		}
+	}
+}
+
 void __fastcall Contcirc68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0100SCN0WordWrite_Map(0x200000, 0x20ffff)
+	TC0100SCN0CtrlWordWrite_Map(0x220000)
+	
 	switch (a) {
 		case 0x090000: {
-			TaitoZRoadPalBank = (d & 0xc0) >> 6;
+			TaitoRoadPalBank = (d & 0xc0) >> 6;
 			TaitoZCpuAReset(d);
 			return;
 		}
 		
 		case 0x100000:
 		case 0x100002: {
-			TC0110PCRStep1RBSwapWordWrite((a - 0x100000) >> 1, d);
-			return;
-		}
-		
-		case 0x220000:
-		case 0x220002:
-		case 0x220004:
-		case 0x220006:
-		case 0x220008:
-		case 0x22000a:
-		case 0x22000c:
-		case 0x22000e: {
-			TC0100SCNCtrlWordWrite((a - 0x220000) >> 1, d);
+			TC0110PCRStep1RBSwapWordWrite(0, (a - 0x100000) >> 1, d);
 			return;
 		}
 		
@@ -2542,11 +2959,117 @@ void __fastcall Contcirc68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
+static UINT16 DblaxleSteerRead(int Offset)
+{
+	int Steer = TaitoAnalogPort0 >> 5;
+	if (Steer > 0x3f) Steer |= 0xf800;
+
+	switch (Offset) {
+		case 0x04: {
+			return Steer >> 8;
+		}
+		
+		case 0x05: {
+			return Steer & 0xff;
+		}
+	}
+	
+	return 0x00;
+}
+
+unsigned char __fastcall Dblaxle68K1ReadByte(unsigned int a)
+{
+	TC0510NIOHalfWordSwapRead_Map(0x400000)
+	
+	switch (a) {
+		case 0x620003: {
+			return TC0140SYTCommRead();
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Read byte => %06X\n"), a);
+		}
+	}
+	
+	return 0;
+}
+
+void __fastcall Dblaxle68K1WriteByte(unsigned int a, unsigned char d)
+{
+	TC0510NIOHalfWordSwapWrite_Map(0x400000)
+	
+	switch (a) {
+		case 0x600001: {
+			TaitoZCpuAReset(d);
+			return;
+		}
+		
+		case 0x620001: {
+			TC0140SYTPortWrite(d);
+			return;
+		}
+		
+		case 0x620003: {
+			TC0140SYTCommWrite(d);
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write byte => %06X, %02X\n"), a, d);
+		}
+	}
+}
+
+unsigned short __fastcall Dblaxle68K1ReadWord(unsigned int a)
+{
+	TC0510NIOHalfWordSwapRead_Map(0x400000)
+	
+	switch (a) {
+		case 0x400018:
+		case 0x40001a: {
+			return DblaxleSteerRead((a - 0x400010) >> 1);
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Read word => %06X\n"), a);
+		}
+	}
+	
+	return 0;
+}
+
+void __fastcall Dblaxle68K1WriteWord(unsigned int a, unsigned short d)
+{
+	TC0510NIOHalfWordSwapWrite_Map(0x400000)
+	TC0480SCPCtrlWordWrite_Map(0xa30000)
+	
+	switch (a) {
+		case 0xc08000: {
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write word => %06X, %04X\n"), a, d);
+		}
+	}
+}
+
+void __fastcall Enforce68K1WriteByte(unsigned int a, unsigned char d)
+{
+	TC0100SCN0ByteWrite_Map(0x600000, 0x60ffff)
+	
+	switch (a) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write byte => %06X, %02X\n"), a, d);
+		}
+	}
+}
+
 unsigned short __fastcall Enforce68K1ReadWord(unsigned int a)
 {
 	switch (a) {
 		case 0x500002: {
-			return TC0110PCRWordRead();
+			return TC0110PCRWordRead(0);
 		}
 		
 		default: {
@@ -2559,6 +3082,9 @@ unsigned short __fastcall Enforce68K1ReadWord(unsigned int a)
 
 void __fastcall Enforce68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0100SCN0WordWrite_Map(0x600000, 0x60ffff)
+	TC0100SCN0CtrlWordWrite_Map(0x620000)
+	
 	switch (a) {
 		case 0x200000: {
 			TaitoZCpuAReset(d);
@@ -2567,19 +3093,7 @@ void __fastcall Enforce68K1WriteWord(unsigned int a, unsigned short d)
 		
 		case 0x500000:
 		case 0x500002: {
-			TC0110PCRStep1RBSwapWordWrite((a - 0x500000) >> 1, d);
-			return;
-		}
-		
-		case 0x620000:
-		case 0x620002:
-		case 0x620004:
-		case 0x620006:
-		case 0x620008:
-		case 0x62000a:
-		case 0x62000c:
-		case 0x62000e: {
-			TC0100SCNCtrlWordWrite((a - 0x620000) >> 1, d);
+			TC0110PCRStep1RBSwapWordWrite(0, (a - 0x500000) >> 1, d);
 			return;
 		}
 		
@@ -2685,14 +3199,14 @@ static UINT8 NightstrStickRead(int Offset)
 {
 	switch (Offset) {
 		case 0x00: {
-			unsigned char Temp = 0x7f + (TaitoZAnalogPort0 >> 4);
+			unsigned char Temp = 0x7f + (TaitoAnalogPort0 >> 4);
 			if (Temp < 0x01) Temp = 0x01;
 			if (Temp > 0xfe) Temp = 0xfe;
 			return nightstr_stick[(Temp * 0x64) / 0x100];
 		}
 		
 		case 0x01: {
-			unsigned char Temp = 0x7f - (TaitoZAnalogPort1 >> 4);
+			unsigned char Temp = 0x7f - (TaitoAnalogPort1 >> 4);
 			if (Temp < 0x01) Temp = 0x01;
 			if (Temp > 0xfe) Temp = 0xfe;
 			return nightstr_stick[(Temp * 0x64) / 0x100];
@@ -2712,9 +3226,7 @@ static UINT8 NightstrStickRead(int Offset)
 
 unsigned char __fastcall Nightstr68K1ReadByte(unsigned int a)
 {
-	if (a >= 0x400000 && a <= 0x40000f) {
-		return TC0220IOCHalfWordRead((a - 0x400000) >> 1);
-	}
+	TC0220IOCHalfWordRead_Map(0x400000)
 	
 	switch (a) {
 		case 0xe40001:
@@ -2734,10 +3246,8 @@ unsigned char __fastcall Nightstr68K1ReadByte(unsigned int a)
 
 void __fastcall Nightstr68K1WriteByte(unsigned int a, unsigned char d)
 {
-	if (a >= 0x400000 && a <= 0x40000f) {
-		TC0220IOCHalfWordWrite((a - 0x400000) >> 1, d);
-		return;
-	}
+	TC0220IOCHalfWordWrite_Map(0x400000)
+	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
 	
 	switch (a) {
 		case 0xe00000:
@@ -2761,7 +3271,7 @@ unsigned short __fastcall Nightstr68K1ReadWord(unsigned int a)
 		}
 		
 		case 0xa00002: {
-			return TC0110PCRWordRead();
+			return TC0110PCRWordRead(0);
 		}
 		
 		default: {
@@ -2774,19 +3284,11 @@ unsigned short __fastcall Nightstr68K1ReadWord(unsigned int a)
 
 void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0220IOCHalfWordWrite_Map(0x400000)
+	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
+	TC0100SCN0CtrlWordWrite_Map(0xc20000)
+	
 	switch (a) {
-		case 0x400000:
-		case 0x400002:
-		case 0x400004:
-		case 0x400006:
-		case 0x400008:
-		case 0x40000a:
-		case 0x40000c:
-		case 0x40000e: {
-			TC0220IOCHalfWordWrite((a - 0x400000) >> 1, d);
-			return;
-		}
-		
 		case 0x800000: {
 			TaitoZCpuAReset(d);
 			return;
@@ -2804,19 +3306,7 @@ void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
 		
 		case 0xa00000:
 		case 0xa00002: {
-			TC0110PCRStep1WordWrite((a - 0xa00000) >> 1, d);
-			return;
-		}
-		
-		case 0xc20000:
-		case 0xc20002:
-		case 0xc20004:
-		case 0xc20006:
-		case 0xc20008:
-		case 0xc2000a:
-		case 0xc2000c:
-		case 0xc2000e: {
-			TC0100SCNCtrlWordWrite((a - 0xc20000) >> 1, d);
+			TC0110PCRStep1WordWrite(0, (a - 0xa00000) >> 1, d);
 			return;
 		}
 		
@@ -2835,7 +3325,7 @@ void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
 		case 0xe4000a:
 		case 0xe4000c:
 		case 0xe4000e: {
-			nCyclesDone[0] += SekRun(10000);
+			nTaitoCyclesDone[0] += SekRun(10000);
 			SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
 			return;
 		}
@@ -2848,7 +3338,7 @@ void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
 
 static UINT8 SciSteerRead(int Offset)
 {
-	int Steer = TaitoZAnalogPort0 >> 4;
+	int Steer = TaitoAnalogPort0 >> 4;
 	if (Steer > 0x5f && Steer < 0x80) Steer = 0x5f;
 	if (Steer > 0xf80 && Steer < 0xfa0) Steer = 0xfa0;
 	if ((OldSteer < Steer) && (Steer > 0xfc0)) Steer = 0;
@@ -2869,9 +3359,7 @@ static UINT8 SciSteerRead(int Offset)
 
 unsigned char __fastcall Sci68K1ReadByte(unsigned int a)
 {
-	if (a >= 0x200000 && a <= 0x20000f) {
-		return TC0220IOCHalfWordRead((a - 0x200000) >> 1);
-	}
+	TC0220IOCHalfWordRead_Map(0x200000)
 	
 	switch (a) {
 		case 0x200019:
@@ -2889,10 +3377,8 @@ unsigned char __fastcall Sci68K1ReadByte(unsigned int a)
 
 void __fastcall Sci68K1WriteByte(unsigned int a, unsigned char d)
 {
-	if (a >= 0x200000 && a <= 0x20000f) {
-		TC0220IOCHalfWordWrite((a - 0x200000) >> 1, d);
-		return;
-	}
+	TC0220IOCHalfWordWrite_Map(0x200000)
+	TC0100SCN0ByteWrite_Map(0xa00000, 0xa0ffff)
 	
 	switch (a) {
 		case 0x400001: {
@@ -2923,35 +3409,39 @@ void __fastcall Sci68K1WriteByte(unsigned int a, unsigned char d)
 
 void __fastcall Sci68K1WriteWord(unsigned int a, unsigned short d)
 {
-	switch (a) {
-		case 0xa20000:
-		case 0xa20002:
-		case 0xa20004:
-		case 0xa20006:
-		case 0xa20008:
-		case 0xa2000a:
-		case 0xa2000c:
-		case 0xa2000e: {
-			TC0100SCNCtrlWordWrite((a - 0xa20000) >> 1, d);
-			return;
-		}
-		
+	TC0100SCN0WordWrite_Map(0xa00000, 0xa0ffff)
+	TC0100SCN0CtrlWordWrite_Map(0xa20000)
+	
+	switch (a) {		
 		default: {
 			bprintf(PRINT_NORMAL, _T("68K #1 Write word => %06X, %04X\n"), a, d);
 		}
 	}
 }
 
-static UINT8 SpacegunDefaultEEPROM[128]=
+static const UINT8 spacegun_default_eeprom[128]=
 {
-	0x00,0x00,0xff,0x00,0x01,0x00,0x41,0x41,0x00,0x00,0xff,0x00,0x00,0x00,0xf0,0xf0,
-	0x00,0x00,0xff,0x00,0x01,0x00,0x41,0x41,0x00,0x00,0xff,0x00,0x00,0x00,0xf0,0xf0,
-	0x80,0x00,0x80,0x00,0x80,0x00,0x80,0x00,0x01,0x00,0x00,0x40,0x00,0x00,0x00,0xf0,
-	0x01,0x00,0x85,0x42,0x00,0x00,0xe3,0xf1,0x01,0x00,0x00,0x40,0x00,0x00,0x00,0xf0,
-	0x01,0x00,0x85,0x42,0x00,0x00,0xe3,0xf1,0xcb,0xcc,0xff,0xff,0xff,0xff,0xff,0xff,
+	0x00,0x00,0x00,0xff,0x00,0x01,0x41,0x41,0x00,0x00,0x00,0xff,0x00,0x00,0xf0,0xf0,
+	0x00,0x00,0x00,0xff,0x00,0x01,0x41,0x41,0x00,0x00,0x00,0xff,0x00,0x00,0xf0,0xf0,
+	0x00,0x80,0x00,0x80,0x00,0x80,0x00,0x80,0x00,0x01,0x40,0x00,0x00,0x00,0xf0,0x00,
+	0x00,0x01,0x42,0x85,0x00,0x00,0xf1,0xe3,0x00,0x01,0x40,0x00,0x00,0x00,0xf0,0x00,
+	0x00,0x01,0x42,0x85,0x00,0x00,0xf1,0xe3,0xcc,0xcb,0xff,0xff,0xff,0xff,0xff,0xff,
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff
+};
+
+static const eeprom_interface spacegun_eeprom_intf =
+{
+	6,				/* address bits */
+	16,				/* data bits */
+	"0110",			/* read command */
+	"0101",			/* write command */
+	"0111",			/* erase command */
+	"0100000000",	/* lock command */
+	"0100111111",	/* unlock command */
+	0,				/* multi-read disabled */
+	1				/* reset delay */
 };
 
 static UINT8 SpacegunInputBypassRead(int Offset)
@@ -2983,11 +3473,22 @@ static void SpacegunInputBypassWrite(int Offset, UINT16 Data)
 	}
 }
 
+void __fastcall Spacegun68K1WriteByte(unsigned int a, unsigned char d)
+{
+	TC0100SCN0ByteWrite_Map(0x900000, 0x90ffff)
+	
+	switch (a) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("68K #1 Write byte => %06X, %02X\n"), a, d);
+		}
+	}
+}
+
 unsigned short __fastcall Spacegun68K1ReadWord(unsigned int a)
 {
 	switch (a) {
 		case 0xb00002: {
-			return TC0110PCRWordRead();
+			return TC0110PCRWordRead(0);
 		}
 		
 		default: {
@@ -3000,22 +3501,13 @@ unsigned short __fastcall Spacegun68K1ReadWord(unsigned int a)
 
 void __fastcall Spacegun68K1WriteWord(unsigned int a, unsigned short d)
 {
+	TC0100SCN0WordWrite_Map(0x900000, 0x90ffff)
+	TC0100SCN0CtrlWordWrite_Map(0x920000)
+	
 	switch (a) {
-		case 0x920000:
-		case 0x920002:
-		case 0x920004:
-		case 0x920006:
-		case 0x920008:
-		case 0x92000a:
-		case 0x92000c:
-		case 0x92000e: {
-			TC0100SCNCtrlWordWrite((a - 0x920000) >> 1, d);
-			return;
-		}
-		
 		case 0xb00000:
 		case 0xb00002: {
-			TC0110PCRStep1RBSwapWordWrite((a - 0xb00000) >> 1, d);
+			TC0110PCRStep1RBSwapWordWrite(0, (a - 0xb00000) >> 1, d);
 			return;
 		}
 		
@@ -3154,7 +3646,7 @@ void __fastcall Spacegun68K2WriteWord(unsigned int a, unsigned short d)
 		case 0xf00002:
 		case 0xf00004:
 		case 0xf00006: {
-			nCyclesDone[1] += SekRun(10000);
+			nTaitoCyclesDone[1] += SekRun(10000);
 			SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 			return;
 		}
@@ -3255,9 +3747,9 @@ void __fastcall TaitoZZ80Write(unsigned short a, unsigned char d)
 		}
 		
 		case 0xf200: {
-			TaitoZZ80Bank = (d - 1) & 7;
-			ZetMapArea(0x4000, 0x7fff, 0, TaitoZZ80Rom + 0x4000 + (TaitoZZ80Bank * 0x4000));
-			ZetMapArea(0x4000, 0x7fff, 2, TaitoZZ80Rom + 0x4000 + (TaitoZZ80Bank * 0x4000));
+			TaitoZ80Bank = (d - 1) & 7;
+			ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
+			ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
 			return;
 		}
 		
@@ -3267,13 +3759,16 @@ void __fastcall TaitoZZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int CharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4] = { 0, 8, 16, 24 };
-static int SpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int Sprite16x8YOffsets[8] = { 0, 64, 128, 192, 256, 320, 384, 448 };
+static int CharPlaneOffsets[4]        = { 0, 1, 2, 3 };
+static int CharXOffsets[8]            = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static int CharYOffsets[8]            = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static int DblaxleCharPlaneOffsets[4] = { 0, 1, 2, 3 };
+static int DblaxleCharXOffsets[16]    = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
+static int DblaxleCharYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static int SpritePlaneOffsets[4]      = { 0, 8, 16, 24 };
+static int SpriteXOffsets[16]         = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
+static int SpriteYOffsets[16]         = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static int Sprite16x8YOffsets[8]      = { 0, 64, 128, 192, 256, 320, 384, 448 };
 
 static void TaitoZFMIRQHandler(int, int nStatus)
 {
@@ -3296,12 +3791,12 @@ static double TaitoZGetTime()
 
 static int TaitoZ68KSynchroniseStream(int nSoundRate)
 {
-	return (long long)SekTotalCycles() * nSoundRate / (nCyclesTotal[1] * 60);
+	return (long long)SekTotalCycles() * nSoundRate / (nTaitoCyclesTotal[1] * 60);
 }
 
 static double TaitoZ68KGetTime()
 {
-	return (double)SekTotalCycles() / (nCyclesTotal[1] * 60);
+	return (double)SekTotalCycles() / (nTaitoCyclesTotal[1] * 60);
 }
 
 static void TaitoZZ80Init()
@@ -3311,92 +3806,21 @@ static void TaitoZZ80Init()
 	ZetOpen(0);
 	ZetSetReadHandler(TaitoZZ80Read);
 	ZetSetWriteHandler(TaitoZZ80Write);
-	ZetMapArea(0x0000, 0x3fff, 0, TaitoZZ80Rom                );
-	ZetMapArea(0x0000, 0x3fff, 2, TaitoZZ80Rom                );
-	ZetMapArea(0x4000, 0x7fff, 0, TaitoZZ80Rom + 0x4000       );
-	ZetMapArea(0x4000, 0x7fff, 2, TaitoZZ80Rom + 0x4000       );
-	ZetMapArea(0xc000, 0xdfff, 0, TaitoZZ80Ram                );
-	ZetMapArea(0xc000, 0xdfff, 1, TaitoZZ80Ram                );
-	ZetMapArea(0xc000, 0xdfff, 2, TaitoZZ80Ram                );
+	ZetMapArea(0x0000, 0x3fff, 0, TaitoZ80Rom1               );
+	ZetMapArea(0x0000, 0x3fff, 2, TaitoZ80Rom1               );
+	ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000      );
+	ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000      );
+	ZetMapArea(0xc000, 0xdfff, 0, TaitoZ80Ram1               );
+	ZetMapArea(0xc000, 0xdfff, 1, TaitoZ80Ram1               );
+	ZetMapArea(0xc000, 0xdfff, 2, TaitoZ80Ram1               );
 	ZetMemEnd();
 	ZetClose();
 	
-	TaitoZHasZ80 = 1;
+	TaitoNumZ80s = 1;
 }
 
-static int AquajackInit()
+static void SwitchToMusashi()
 {
-	int nRet = 0, nLen;
-	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x8000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x080000;
-	YM2610ADPCMBSize = 0x080000;
-
-	// Allocate and Blank all required memory
-	Mem = NULL;
-	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
-	MemIndex();
-	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
-	
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 8, 0);
-
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  4, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  5, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  6, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  7, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  ,  9, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-	
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 10, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 11, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 12, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 13, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
-	// Make sure we use Musashi
 	if (bBurnUseASMCPUEmulation) {
 #if 1 && defined FBA_DEBUG
 		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
@@ -3404,24 +3828,74 @@ static int AquajackInit()
 		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
 		bBurnUseASMCPUEmulation = false;
 	}
+}
+
+static int AquajackInit()
+{
+	int nLen;
+	
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x8000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
+
+	// Allocate and Blank all required memory
+	TaitoMem = NULL;
+	MemIndex();
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
+	MemIndex();
+	
+	GenericTilesInit();
+	
+	TC0100SCNInit(0, TaitoNumChar, 0, 8, 0, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
+
+	SwitchToMusashi();
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x104000, 0x107fff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x104000, 0x107fff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0x800000, 0x801fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0xa00000, 0xa0ffff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0xc40000, 0xc403ff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0xa00000, 0xa0ffff, SM_READ);
+	SekMapMemory(TaitoSpriteRam          , 0xc40000, 0xc403ff, SM_RAM);
+	SekSetWriteByteHandler(0, Aquajack68K1WriteByte);
 	SekSetWriteWordHandler(0, Aquajack68K1WriteWord);
 	SekClose();
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x104000, 0x107fff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x104000, 0x107fff, SM_RAM);
 	SekSetReadWordHandler(0, Aquajack68K2ReadWord);
 	SekSetWriteWordHandler(0, Aquajack68K2WriteWord);
 	SekSetReadByteHandler(0, Aquajack68K2ReadByte);
@@ -3429,21 +3903,18 @@ static int AquajackInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = AquajackMakeInputs;
-	DrawFunction = AquajackDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 500;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = AquajackMakeInputs;
+	TaitoDrawFunction = AquajackDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 500;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -3452,96 +3923,60 @@ static int AquajackInit()
 
 static int BsharkInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
 	Sci = 1;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x8000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x080000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x8000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 0;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 0;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
 	
-	TC0150RODInit(0x80000, 0x2000, 1);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 8, 1);
-
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
+	TC0100SCNInit(0, TaitoNumChar, 0, 8, 1, NULL);
+	TC0150RODInit(TaitoRoadRomSize, 1);
+	TC0220IOCInit();
 	
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40000   ,  3, 2); if (nRet != 0) return 1;
+	if (TaitoLoadRoms(1)) return 1;
 	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  4, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  5, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x40001   ,  6, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x40000   ,  7, 2); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  8, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  9, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  , 10, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 11, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 12, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 13, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 14, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 15, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 16, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x10ffff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x110000, 0x113fff, SM_RAM);
-	SekMapMemory(TaitoZPaletteRam        , 0xa00000, 0xa01fff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0xc00000, 0xc00fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0xd00000, 0xd0ffff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x10ffff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x110000, 0x113fff, SM_RAM);
+	SekMapMemory(TaitoPaletteRam         , 0xa00000, 0xa01fff, SM_RAM);
+	SekMapMemory(TaitoSpriteRam          , 0xc00000, 0xc00fff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0xd00000, 0xd0ffff, SM_READ);
 	SekSetWriteWordHandler(0, Bshark68K1WriteWord);
 	SekSetReadByteHandler(0, Bshark68K1ReadByte);
 	SekSetWriteByteHandler(0, Bshark68K1WriteByte);
@@ -3549,28 +3984,26 @@ static int BsharkInit()
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x108000, 0x10bfff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x110000, 0x113fff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x108000, 0x10bfff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x110000, 0x113fff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0x800000, 0x801fff, SM_RAM);
 	SekSetReadWordHandler(0, Bshark68K2ReadWord);
 	SekSetWriteWordHandler(0, Bshark68K2WriteWord);
 	SekClose();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
 	BurnTimerAttachSek(12000000);
 	
-	MakeInputsFunction = BsharkMakeInputs;
-	DrawFunction = BsharkDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 1;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = BsharkMakeInputs;
+	TaitoDrawFunction = BsharkDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
+	TaitoFlipScreenX = 1;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -3579,105 +4012,69 @@ static int BsharkInit()
 
 static int ChasehqInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x4000;
-	TaitoZNumSpritesB = 0x4000;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 16;
-	TaitoZSpriteBXSize = 16;
-	TaitoZSpriteBYSize = 16;
-	YM2610ADPCMASize = 0x180000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x400;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 16;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = SpriteYOffsets;
+	TaitoNumSpriteA = 0x4000;
+	
+	TaitoSpriteBModulo = 0x400;
+	TaitoSpriteBNumPlanes = 4;
+	TaitoSpriteBWidth = 16;
+	TaitoSpriteBHeight = 16;
+	TaitoSpriteBPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteBXOffsets = SpriteXOffsets;
+	TaitoSpriteBYOffsets = SpriteYOffsets;
+	TaitoNumSpriteB = 0x4000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
 	
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 8, 0);
+	TC0100SCNInit(0, TaitoNumChar, 0, 8, 0, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  4, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  5, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  6, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  7, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  9, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 10, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 11, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TaitoZTempRom, TaitoZSpritesA);
-
-	// Load and decode Sprites B
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  , 12, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  , 13, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 14, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 15, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesB, 4, TaitoZSpriteBXSize, TaitoZSpriteBYSize, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TaitoZTempRom, TaitoZSpritesB);
-	
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 16, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 17, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 18, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x080000, 19, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x100000, 20, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 21, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x107fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x108000, 0x10bfff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0xc00000, 0xc0ffff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0xd00000, 0xd007ff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x107fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x108000, 0x10bfff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0xc00000, 0xc0ffff, SM_READ);
+	SekMapMemory(TaitoSpriteRam          , 0xd00000, 0xd007ff, SM_RAM);
 	SekSetReadWordHandler(0, Chasehq68K1ReadWord);
 	SekSetWriteWordHandler(0, Chasehq68K1WriteWord);
 	SekSetReadByteHandler(0, Chasehq68K1ReadByte);
@@ -3686,29 +4083,26 @@ static int ChasehqInit()
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x01ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x108000, 0x10bfff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x01ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x108000, 0x10bfff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0x800000, 0x801fff, SM_RAM);
 	SekClose();
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = ChasehqMakeInputs;
-	DrawFunction = ChasehqDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = ChasehqMakeInputs;
+	TaitoDrawFunction = ChasehqDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -3717,103 +4111,70 @@ static int ChasehqInit()
 
 static int ContcircInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x8000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x100000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x8000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
 	
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 16, 0);
+	TC0100SCNInit(0, TaitoNumChar, 0, 16, 0, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  4, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  5, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  6, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  7, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  ,  9, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-	
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 10, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 11, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 12, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x080000, 13, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 14, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x080000, 0x083fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x084000, 0x087fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0x200000, 0x20ffff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x080000, 0x083fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x084000, 0x087fff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0x200000, 0x20ffff, SM_READ);
 	SekMapMemory(TC0150RODRam            , 0x300000, 0x301fff, SM_RAM);	
-	SekMapMemory(TaitoZSpriteRam         , 0x400000, 0x4006ff, SM_RAM);
+	SekMapMemory(TaitoSpriteRam          , 0x400000, 0x4006ff, SM_RAM);
+	SekSetWriteByteHandler(0, Contcirc68K1WriteByte);
 	SekSetWriteWordHandler(0, Contcirc68K1WriteWord);
 	SekClose();
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x080000, 0x083fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x084000, 0x087fff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x080000, 0x083fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x084000, 0x087fff, SM_RAM);
 	SekSetReadWordHandler(0, Contcirc68K2ReadWord);
 	SekSetWriteWordHandler(0, Contcirc68K2WriteWord);
 	SekSetReadByteHandler(0, Contcirc68K2ReadByte);
@@ -3822,18 +4183,108 @@ static int ContcircInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = ContcircMakeInputs;
-	DrawFunction = ContcircDraw;
-	TaitoZVBlankIRQ = 6;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
+	TaitoMakeInputsFunction = ContcircMakeInputs;
+	TaitoDrawFunction = ContcircDraw;
+	TaitoIrqLine = 6;
+	TaitoFrameInterleave = 100;
+
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
+	// Reset the driver
+	TaitoZDoReset();
+
+	return 0;
+}
+
+static int DblaxleInit()
+{
+	int nLen;
+	
+	Dblaxle = 1;
+	
+	TaitoCharModulo = 0x400;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 16;
+	TaitoCharHeight = 16;
+	TaitoCharPlaneOffsets = DblaxleCharPlaneOffsets;
+	TaitoCharXOffsets = DblaxleCharXOffsets;
+	TaitoCharYOffsets = DblaxleCharYOffsets;
+	TaitoNumChar = 0x2000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x10000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
+	
+	// Allocate and Blank all required memory
+	TaitoMem = NULL;
+	MemIndex();
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
+	MemIndex();
+	
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0480SCPInit(TaitoNumChar, 0, 0x21, 8, 4, 0, 0);
+	TC0140SYTInit();
+	TC0510NIOInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
+	
+	SwitchToMusashi();
+	
+	// Setup the 68000 emulation
+	SekInit(0, 0x68000);
+	SekOpen(0);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x200000, 0x203fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x210000, 0x21ffff, SM_RAM);
+	SekMapMemory(TaitoPaletteRam         , 0x800000, 0x801fff, SM_RAM);
+	SekMapMemory(TC0480SCPRam            , 0x900000, 0x90ffff, SM_RAM);
+	SekMapMemory(TC0480SCPRam            , 0xa00000, 0xa0ffff, SM_RAM);
+	SekMapMemory(TaitoSpriteRam          , 0xc00000, 0xc03fff, SM_RAM);
+	SekSetReadWordHandler(0, Dblaxle68K1ReadWord);
+	SekSetWriteWordHandler(0, Dblaxle68K1WriteWord);
+	SekSetReadByteHandler(0, Dblaxle68K1ReadByte);
+	SekSetWriteByteHandler(0, Dblaxle68K1WriteByte);
+	SekClose();
+	
+	SekInit(1, 0x68000);
+	SekOpen(1);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x110000, 0x11ffff, SM_RAM);
+	SekMapMemory(TC0150RODRam            , 0x300000, 0x301fff, SM_RAM);
+	SekClose();
+	
+	TaitoZZ80Init();
+	
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnTimerAttachZet(16000000 / 4);
+	
+	TaitoMakeInputsFunction = DblaxleMakeInputs;
+	TaitoDrawFunction = DblaxleDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
+
+	nTaitoCyclesTotal[0] = 16000000 / 60;
+	nTaitoCyclesTotal[1] = 16000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
 	
 	GenericTilesInit();
 
@@ -3845,104 +4296,71 @@ static int ContcircInit()
 
 static int EnforceInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x8000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x100000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x8000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
+	
+	TC0100SCNInit(0, TaitoNumChar, 0, 16, 0, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 16, 0);
-
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
-
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  4, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  5, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  6, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  7, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  ,  9, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-	
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 10, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 11, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 12, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x080000, 13, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 14, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
+	SwitchToMusashi();
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x104000, 0x107fff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0x300000, 0x3006ff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x104000, 0x107fff, SM_RAM);
+	SekMapMemory(TaitoSpriteRam          , 0x300000, 0x3006ff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0x400000, 0x401fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0x600000, 0x60ffff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0x600000, 0x60ffff, SM_READ);
+	SekSetWriteByteHandler(0, Enforce68K1WriteByte);
 	SekSetReadWordHandler(0, Enforce68K1ReadWord);
 	SekSetWriteWordHandler(0, Enforce68K1WriteWord);
 	SekClose();
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x104000, 0x107fff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x104000, 0x107fff, SM_RAM);
 	SekSetReadWordHandler(0, Enforce68K2ReadWord);
 	SekSetWriteWordHandler(0, Enforce68K2WriteWord);
 	SekSetReadByteHandler(0, Enforce68K2ReadByte);
@@ -3951,21 +4369,18 @@ static int EnforceInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = EnforceMakeInputs;
-	DrawFunction = ContcircDraw;
-	TaitoZVBlankIRQ = 6;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = EnforceMakeInputs;
+	TaitoDrawFunction = EnforceDraw;
+	TaitoIrqLine = 6;
+	TaitoFrameInterleave = 100;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -3974,104 +4389,69 @@ static int EnforceInit()
 
 static int NightstrInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x4000;
-	TaitoZNumSpritesB = 0x4000;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 16;
-	TaitoZSpriteBXSize = 16;
-	TaitoZSpriteBYSize = 16;
-	YM2610ADPCMASize = 0x100000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x400;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 16;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = SpriteYOffsets;
+	TaitoNumSpriteA = 0x4000;
+	
+	TaitoSpriteBModulo = 0x400;
+	TaitoSpriteBNumPlanes = 4;
+	TaitoSpriteBWidth = 16;
+	TaitoSpriteBHeight = 16;
+	TaitoSpriteBPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteBXOffsets = SpriteXOffsets;
+	TaitoSpriteBYOffsets = SpriteYOffsets;
+	TaitoNumSpriteB = 0x4000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
 	
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 8, 0);
+	TC0100SCNInit(0, TaitoNumChar, 0, 8, 0, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  4, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  5, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  6, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  7, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  9, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 10, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 11, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TaitoZTempRom, TaitoZSpritesA);
-
-	// Load and decode Sprites B
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  , 12, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  , 13, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 14, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 15, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesB, 4, TaitoZSpriteBXSize, TaitoZSpriteBYSize, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TaitoZTempRom, TaitoZSpritesB);
-	
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 16, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 17, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 18, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x080000, 19, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 20, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x10ffff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x110000, 0x113fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0xc00000, 0xc0ffff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0xd00000, 0xd007ff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x10ffff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x110000, 0x113fff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0xc00000, 0xc0ffff, SM_READ);
+	SekMapMemory(TaitoSpriteRam          , 0xd00000, 0xd007ff, SM_RAM);
 	SekSetReadWordHandler(0, Nightstr68K1ReadWord);
 	SekSetWriteWordHandler(0, Nightstr68K1WriteWord);
 	SekSetReadByteHandler(0, Nightstr68K1ReadByte);
@@ -4080,29 +4460,26 @@ static int NightstrInit()
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x104000, 0x107fff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x104000, 0x107fff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0x800000, 0x801fff, SM_RAM);
 	SekClose();
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = NightstrMakeInputs;
-	DrawFunction = ChasehqDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = NightstrMakeInputs;
+	TaitoDrawFunction = ChasehqDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -4111,99 +4488,62 @@ static int NightstrInit()
 
 static int SciInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
 	Sci = 1;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x8000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x180000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x8000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumZ80s = 1;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 0;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 1;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 1;
+	GenericTilesInit();
 	
-	TC0150RODInit(0x80000, 0x2000, 0);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 0, 8, 0);
+	TC0100SCNInit(0, TaitoNumChar, 0, 8, 0, NULL);
+	TC0150RODInit(TaitoRoadRomSize, 0);
+	TC0140SYTInit();
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TaitoZTempRom = (unsigned char *)malloc(0x200000);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  4, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  5, 2); if (nRet != 0) return 1;
-	
-	// Load Z80 Program Roms
-	nRet = BurnLoadRom(TaitoZZ80Rom              ,  6, 1); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  7, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x200000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  9, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  , 10, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 11, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-
-	// Load Road Rom
-	nRet = BurnLoadRom(TC0150RODRom              , 12, 1); if (nRet != 0) return 1;
-	
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 13, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 14, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x080000, 15, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x100000, 16, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 17, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x100000, 0x107fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x108000, 0x10bfff, SM_RAM);
-	SekMapMemory(TaitoZPaletteRam        , 0x800000, 0x801fff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0xa00000, 0xa0ffff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0xc00000, 0xc03fff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x100000, 0x107fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x108000, 0x10bfff, SM_RAM);
+	SekMapMemory(TaitoPaletteRam         , 0x800000, 0x801fff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0xa00000, 0xa0ffff, SM_READ);
+	SekMapMemory(TaitoSpriteRam          , 0xc00000, 0xc03fff, SM_RAM);
 	SekSetWriteWordHandler(0, Sci68K1WriteWord);
 	SekSetReadByteHandler(0, Sci68K1ReadByte);
 	SekSetWriteByteHandler(0, Sci68K1WriteByte);
@@ -4211,29 +4551,26 @@ static int SciInit()
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x01ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x200000, 0x203fff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x208000, 0x20bfff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x01ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x200000, 0x203fff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x208000, 0x20bfff, SM_RAM);
 	SekMapMemory(TC0150RODRam            , 0xa00000, 0xa01fff, SM_RAM);
 	SekClose();
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	
-	MakeInputsFunction = SciMakeInputs;
-	DrawFunction = SciDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 0;
-	TaitoZHasEEPROM = 0;
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 12000000 / 60;
-	nCyclesTotal[2] = (16000000 / 4) / 60;
-	
-	GenericTilesInit();
+	TaitoMakeInputsFunction = SciMakeInputs;
+	TaitoDrawFunction = SciDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
 
+	nTaitoCyclesTotal[0] = 12000000 / 60;
+	nTaitoCyclesTotal[1] = 12000000 / 60;
+	nTaitoCyclesTotal[2] = (16000000 / 4) / 60;
+	
 	// Reset the driver
 	TaitoZDoReset();
 
@@ -4242,120 +4579,90 @@ static int SciInit()
 
 static int SpacegunInit()
 {
-	int nRet = 0, nLen;
+	int nLen;
 	
-	TaitoZNumChars = 0x4000;
-	TaitoZNumSpritesA = 0x10000;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 8;
-	TaitoZCharYSize = 8;
-	TaitoZSpriteAXSize = 16;
-	TaitoZSpriteAYSize = 8;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0x080000;
-	YM2610ADPCMBSize = 0x080000;
+	TaitoCharModulo = 0x100;
+	TaitoCharNumPlanes = 4;
+	TaitoCharWidth = 8;
+	TaitoCharHeight = 8;
+	TaitoCharPlaneOffsets = CharPlaneOffsets;
+	TaitoCharXOffsets = CharXOffsets;
+	TaitoCharYOffsets = CharYOffsets;
+	TaitoNumChar = 0x4000;
+	
+	TaitoSpriteAModulo = 0x200;
+	TaitoSpriteANumPlanes = 4;
+	TaitoSpriteAWidth = 16;
+	TaitoSpriteAHeight = 8;
+	TaitoSpriteAPlaneOffsets = SpritePlaneOffsets;
+	TaitoSpriteAXOffsets = SpriteXOffsets;
+	TaitoSpriteAYOffsets = Sprite16x8YOffsets;
+	TaitoNumSpriteA = 0x10000;
+	
+	TaitoNum68Ks = 2;
+	TaitoNumYM2610 = 1;
+	
+	TaitoLoadRoms(0);
 
 	// Allocate and Blank all required memory
-	Mem = NULL;
+	TaitoMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
-	memset(Mem, 0, nLen);
+	nLen = TaitoMemEnd - (unsigned char *)0;
+	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
-	TaitoZHasTC0110PCR = 1;
-	TaitoZHasTC0220IOC = 1;
-	TaitoZHasTC0140SYT = 0;
-	TaitoZHasTC0100SCN = 1;
-	TaitoZHasTC0150ROD = 0;
+	GenericTilesInit();
 	
-	TC0110PCRInit(0x4000, 0x1000);
-	TC0100SCNInit(0x10000, TaitoZNumChars, 4, 8, 1);
+	TC0100SCNInit(0, TaitoNumChar, 4, 8, 1, NULL);
+	TC0110PCRInit(1, 0x1000);
+	TC0220IOCInit();
+	
+	if (TaitoLoadRoms(1)) return 1;
 
-	TaitoZTempRom = (unsigned char *)malloc(0x400000);
-	
-	// Make sure we use Musashi
-	if (bBurnUseASMCPUEmulation) {
-#if 1 && defined FBA_DEBUG
-		bprintf(PRINT_NORMAL, _T("Switching to Musashi 68000 core\n"));
-#endif
-		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
-		bBurnUseASMCPUEmulation = false;
-	}
+	SwitchToMusashi();
 
-	// Load 68000 #1 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00001   ,  0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x00000   ,  1, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40001   ,  2, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom1 + 0x40000   ,  3, 2); if (nRet != 0) return 1;
-	
-	// Load 68000 #2 Program Roms
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00001   ,  4, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZ68KRom2 + 0x00000   ,  5, 2); if (nRet != 0) return 1;
-	
-	// Load and decode Chars
-	memset(TaitoZTempRom, 0, 0x400000);
-	nRet = BurnLoadRom(TaitoZTempRom             ,  6, 1); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumChars, 4, TaitoZCharXSize, TaitoZCharYSize, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, TaitoZTempRom, TaitoZChars);
-	
-	// Load and decode Sprites A
-	memset(TaitoZTempRom, 0, 0x400000);
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000000  ,  7, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000001  ,  8, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000002  ,  9, 4); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(TaitoZTempRom + 0x000003  , 10, 4); if (nRet != 0) return 1;
-	GfxDecode(TaitoZNumSpritesA, 4, TaitoZSpriteAXSize, TaitoZSpriteAYSize, SpritePlaneOffsets, SpriteXOffsets, Sprite16x8YOffsets, 0x200, TaitoZTempRom, TaitoZSpritesA);
-
-	// Load SpriteMap Rom
-	nRet = BurnLoadRom(TaitoZSpriteMapRom        , 11, 1); if (nRet != 0) return 1;
-	
-	// Load YM2610 Samples
-	nRet = BurnLoadRom(YM2610ADPCMAROM + 0x000000, 12, 1); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(YM2610ADPCMBROM + 0x000000, 13, 1); if (nRet != 0) return 1;
-
-	free(TaitoZTempRom);
-	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(TaitoZ68KRom1           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam1           , 0x30c000, 0x30ffff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x310000, 0x31ffff, SM_RAM);
-	SekMapMemory(TaitoZSpriteRam         , 0x500000, 0x5005ff, SM_RAM);
-	SekMapMemory(TC0100SCNRam            , 0x900000, 0x90ffff, SM_RAM);
+	SekMapMemory(Taito68KRom1            , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(Taito68KRam1            , 0x30c000, 0x30ffff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x310000, 0x31ffff, SM_RAM);
+	SekMapMemory(TaitoSpriteRam          , 0x500000, 0x5005ff, SM_RAM);
+	SekMapMemory(TC0100SCNRam[0]         , 0x900000, 0x90ffff, SM_READ);
 	SekSetReadWordHandler(0, Spacegun68K1ReadWord);
 	SekSetWriteWordHandler(0, Spacegun68K1WriteWord);
+	SekSetWriteByteHandler(0, Spacegun68K1WriteByte);
 	SekClose();
 	
 	SekInit(1, 0x68000);
 	SekOpen(1);
-	SekMapMemory(TaitoZ68KRom2           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(TaitoZ68KRam2           , 0x20c000, 0x20ffff, SM_RAM);
-	SekMapMemory(TaitoZSharedRam         , 0x210000, 0x21ffff, SM_RAM);
+	SekMapMemory(Taito68KRom2            , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(Taito68KRam2            , 0x20c000, 0x20ffff, SM_RAM);
+	SekMapMemory(TaitoSharedRam          , 0x210000, 0x21ffff, SM_RAM);
 	SekSetReadWordHandler(0, Spacegun68K2ReadWord);
 	SekSetWriteWordHandler(0, Spacegun68K2WriteWord);
 	SekSetReadByteHandler(0, Spacegun68K2ReadByte);
 	SekSetWriteByteHandler(0, Spacegun68K2WriteByte);
 	SekClose();
 	
-	BurnYM2610Init(16000000 / 2, YM2610ADPCMAROM, &YM2610ADPCMASize, YM2610ADPCMBROM, &YM2610ADPCMBSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
 	BurnTimerAttachSek(16000000);
 	
-	EEPROMInit(1024, 16);
-	EEPROMFill((unsigned char*)SpacegunDefaultEEPROM, 0, 128);
+	EEPROMInit(&spacegun_eeprom_intf);
+	if (!EEPROMAvailable()) EEPROMFill(spacegun_default_eeprom, 0, 128);
 	
-	MakeInputsFunction = SpacegunMakeInputs;
-	DrawFunction = SpacegunDraw;
-	TaitoZVBlankIRQ = 4;
-	TaitoZFrameInterleave = 100;
-	TaitoZFlipScreenX = 1;
-	TaitoZHasEEPROM = 1;
-	nCyclesTotal[0] = 16000000 / 60;
-	nCyclesTotal[1] = 16000000 / 60;
+	TaitoMakeInputsFunction = SpacegunMakeInputs;
+	TaitoDrawFunction = SpacegunDraw;
+	TaitoIrqLine = 4;
+	TaitoFrameInterleave = 100;
+	TaitoFlipScreenX = 1;
+	TaitoNumEEPROM = 1;
+
+	nTaitoCyclesTotal[0] = 16000000 / 60;
+	nTaitoCyclesTotal[1] = 16000000 / 60;
 	
-	GenericTilesInit();
-	BurnGunInit(2, true);
+	BurnGunInit(2, true);	
 
 	// Reset the driver
 	TaitoZDoReset();
@@ -4365,58 +4672,12 @@ static int SpacegunInit()
 
 static int TaitoZExit()
 {
-	SekExit();
-	ZetExit();
-	
-	BurnYM2610Exit();
-	
-	if (TaitoZHasEEPROM) EEPROMExit();
-	
-	TC0110PCRExit();
-	TC0220IOCExit();
-	TC0150RODExit();
-	TC0140SYTExit();
-	TC0100SCNExit();
+	TaitoExit();
 
-	GenericTilesExit();
-	BurnGunExit();
-	
-	TaitoZCpuACtrl = 0;
-	TaitoZZ80Bank = 0;
 	SciSpriteFrame = 0;
-	TaitoZRoadPalBank = 0;
 	OldSteer = 0;
-	
-	MakeInputsFunction = NULL;
-	DrawFunction = NULL;
-	
-	TaitoZNumChars = 0;
-	TaitoZNumSpritesA = 0;
-	TaitoZNumSpritesB = 0;
-	TaitoZCharXSize = 0;
-	TaitoZCharYSize = 0;
-	TaitoZSpriteAXSize = 0;
-	TaitoZSpriteAYSize = 0;
-	TaitoZSpriteBXSize = 0;
-	TaitoZSpriteBYSize = 0;
-	YM2610ADPCMASize = 0;
-	YM2610ADPCMBSize = 0;
-	TaitoZVBlankIRQ = 0;
-	TaitoZFrameInterleave = 0;
-	TaitoZHasZ80 = 0;
-	TaitoZHasEEPROM = 0;
-	TaitoZHasTC0110PCR = 0;
-	TaitoZHasTC0220IOC = 0;
-	TaitoZHasTC0140SYT = 0;
-	TaitoZHasTC0100SCN = 0;
-	TaitoZHasTC0150ROD = 0;
-
-	TaitoZFlipScreenX = 0;
-	
+	Dblaxle = 0;
 	Sci = 0;
-	
-	free(Mem);
-	Mem = NULL;
 	
 	// Switch back CPU core if needed
 	if (bUseAsm68KCoreOldValue) {
@@ -4453,7 +4714,7 @@ static void TaitoZCalcPalette()
 	unsigned short* ps;
 	unsigned int* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoZPaletteRam, pd = TaitoZPalette; i < 0x1000; i++, ps++, pd++) {
+	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
@@ -4462,21 +4723,21 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 {
 	// We can use sprite A for sizes, etc. as only Chase HQ uses sprite B and it has the same sizes and count
 	
-	UINT8 *SourceBase = pSource + ((Code % TaitoZNumSpritesA) * TaitoZSpriteAXSize * TaitoZSpriteAYSize);
+	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoZSpriteAYSize + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoZSpriteAXSize + 0x8000) >> 16;
+	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x100);
 	
-	if (TaitoZFlipScreenX) {
+	if (TaitoFlipScreenX) {
 		xFlip = !xFlip;
 		sx = 320 - sx - (xScale >> 12);
 	}	
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoZSpriteAXSize << 16) / SpriteScreenWidth;
-		int dy = (TaitoZSpriteAYSize << 16) / SpriteScreenHeight;
+		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
 		int ex = sx + SpriteScreenWidth;
 		int ey = sy + SpriteScreenHeight;
@@ -4524,7 +4785,7 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 			int y;
 			
 			for (y = sy; y < ey; y++) {
-				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoZSpriteAXSize);
+				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
 				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
 				
 				int x, xIndex = xIndexBase;
@@ -4544,8 +4805,8 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 
 static void AquajackRenderSprites(int PriorityDraw)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
@@ -4592,7 +4853,7 @@ static void AquajackRenderSprites(int PriorityDraw)
 			py = yFlip ? (7 - j) : j;
 
 			Code = SpriteMap[MapOffset + px + (py << 2)];
-			Code &= (TaitoZNumSpritesA - 1);
+			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 4);
 			yCur = y + ((j * yZoom) / 8);
@@ -4602,23 +4863,23 @@ static void AquajackRenderSprites(int PriorityDraw)
 
 			yCur -= 16;
 
-			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoZSpritesA);
+			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoSpritesA);
 		}
 
 
 	}
 }
 
-static void BsharkRenderSprites(int PriorityDraw, int yOffset)
+static void BsharkRenderSprites(int PriorityDraw, int yOffset, int SpriteRamSize)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
 	int SpriteChunk, MapOffset, Code, j, k, px, py;
 	
-	for (Offset = 0; Offset < 0x800 - 4; Offset += 4) {
+	for (Offset = 0; Offset < SpriteRamSize - 4; Offset += 4) {
 		Data = SpriteRam[Offset + 1];
 		Priority = (Data & 0x8000) >> 15;
 		
@@ -4660,7 +4921,7 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset)
 			py = yFlip ? (7 - j) : j;
 
 			Code = SpriteMap[MapOffset + px + (py << 2)];
-			Code &= (TaitoZNumSpritesA - 1);
+			Code &= (TaitoNumSpriteA - 1);
 			
 			xCur = x + ((k * xZoom) / 4);
 			yCur = y + ((j * yZoom) / 8);
@@ -4670,7 +4931,7 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset)
 
 			yCur -= 16;
 
-			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoZSpritesA);
+			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoSpritesA);
 		}
 
 	}
@@ -4678,8 +4939,8 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset)
 
 static void ChasehqRenderSprites(int PriorityDraw)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
@@ -4728,7 +4989,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				py = yFlip ? (7 - j) : j;
 				
 				Code = SpriteMap[MapOffset + px + (py << 3)];
-				Code &= (TaitoZNumSpritesA - 1);
+				Code &= (TaitoNumSpriteA - 1);
 				
 				xCur = x + ((k * xZoom) / 8);
 				yCur = y + ((j * yZoom) / 8);
@@ -4738,7 +4999,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				
 				yCur -= 16;
 				
-				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoZSpritesA);
+				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoSpritesA);
 			}
 		} else if ((xZoom - 1) & 0x20) {
 			MapOffset = (Tile << 5) + 0x20000;
@@ -4751,7 +5012,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				py = yFlip ? (7 - j) : j;
 				
 				Code = SpriteMap[MapOffset + px + (py << 2)];
-				Code &= (TaitoZNumSpritesB - 1);
+				Code &= (TaitoNumSpriteB - 1);
 				
 				xCur = x + ((k * xZoom) / 4);
 				yCur = y + ((j * yZoom) / 8);
@@ -4761,7 +5022,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				
 				yCur -= 16;
 				
-				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoZSpritesB);
+				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoSpritesB);
 			}
 		} else if (!((xZoom - 1) & 0x60)) {
 			MapOffset = (Tile << 4) + 0x30000;
@@ -4774,7 +5035,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				py = yFlip ? (7 - j) : j;
 				
 				Code = SpriteMap[MapOffset + px + (py << 1)];
-				Code &= (TaitoZNumSpritesB - 1);
+				Code &= (TaitoNumSpriteB - 1);
 				
 				xCur = x + ((k * xZoom) / 2);
 				yCur = y + ((j * yZoom) / 8);
@@ -4784,7 +5045,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				
 				yCur -= 16;
 				
-				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoZSpritesB);
+				RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 12, TaitoSpritesB);
 			}
 		}
 	}
@@ -4792,8 +5053,8 @@ static void ChasehqRenderSprites(int PriorityDraw)
 
 static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
@@ -4841,7 +5102,7 @@ static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 			py = yFlip ? (15 - j) : j;
 
 			Code = SpriteMap[MapOffset + px + (py << 3)];
-			Code &= (TaitoZNumSpritesA - 1);
+			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 8);
 			yCur = y + ((j * yZoom) / 16);
@@ -4851,15 +5112,15 @@ static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 
 			yCur -= VisibleYOffset;
 
-			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoZSpritesA);
+			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoSpritesA);
 		}
 	}
 }
 
 static void SciRenderSprites(int PriorityDraw, int yOffs)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, StartOffs, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
@@ -4909,7 +5170,7 @@ static void SciRenderSprites(int PriorityDraw, int yOffs)
 			py = yFlip ? (7-j) : j;
 
 			Code = SpriteMap[MapOffset + px + (py << 2)];
-			Code &= (TaitoZNumSpritesA - 1);
+			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 4);
 			yCur = y + ((j * yZoom) / 8);
@@ -4919,15 +5180,15 @@ static void SciRenderSprites(int PriorityDraw, int yOffs)
 			
 			yCur -= 16;
 
-			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoZSpritesA);
+			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoSpritesA);
 		}
 	}
 }
 
 static void SpacegunRenderSprites(int PriorityDraw)
 {
-	UINT16 *SpriteMap = (UINT16*)TaitoZSpriteMapRom;
-	UINT16 *SpriteRam = (UINT16*)TaitoZSpriteRam;
+	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
+	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	int Offset, Data, Tile, Colour, xFlip, yFlip;
 	int x, y, Priority, xCur, yCur;
 	int xZoom, yZoom, zx, zy;
@@ -4974,7 +5235,7 @@ static void SpacegunRenderSprites(int PriorityDraw)
 			py = yFlip ? (7 - j) : j;
 
 			Code = SpriteMap[MapOffset + px + (py << 2)];
-			Code &= (TaitoZNumSpritesA - 1);			
+			Code &= (TaitoNumSpriteA - 1);			
 
 			xCur = x + ((k * xZoom) / 4);
 			yCur = y + ((j * yZoom) / 8);
@@ -4984,7 +5245,7 @@ static void SpacegunRenderSprites(int PriorityDraw)
 			
 			yCur -= 16;
 
-			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoZSpritesA);
+			RenderSpriteZoom(Code, xCur, yCur, Colour, xFlip, yFlip, zx << 12, zy << 13, TaitoSpritesA);
 		}
 
 	}
@@ -4992,16 +5253,16 @@ static void SpacegunRenderSprites(int PriorityDraw)
 
 static void AquajackDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(1, TaitoZChars);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(1, TaitoZChars);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
 	AquajackRenderSprites(1);
@@ -5010,47 +5271,47 @@ static void AquajackDraw()
 	
 	AquajackRenderSprites(0);
 	
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 }
 
 static void BsharkDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoZCalcPalette();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(1, TaitoZChars);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(1, TaitoZChars);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
-	BsharkRenderSprites(1, 8);
+	BsharkRenderSprites(1, 8, 0x800);
 	
 	TC0150RODDraw(-1, 0xc0, 0, 1, 1, 2);
 	
-	BsharkRenderSprites(0, 8);
+	BsharkRenderSprites(0, 8, 0x800);
 	
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
-	BurnTransferCopy(TaitoZPalette);
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
+	BurnTransferCopy(TaitoPalette);
 }
 
 static void ChasehqDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(1, TaitoZChars);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(1, TaitoZChars);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
 	ChasehqRenderSprites(1);
@@ -5059,61 +5320,100 @@ static void ChasehqDraw()
 	
 	ChasehqRenderSprites(0);
 	
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 }
 
 static void ContcircDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
 	ContcircRenderSprites(1, 24);
 	
-	TC0150RODDraw(-3 + 8, TaitoZRoadPalBank << 6, 1, 0, 1, 2);
+	TC0150RODDraw(-3 + 8, TaitoRoadPalBank << 6, 1, 0, 1, 2);
 	
 	ContcircRenderSprites(0, 24);
 	
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
+	BurnTransferCopy(TC0110PCRPalette);
+}
+
+static void EnforceDraw()
+{
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	
+	BurnTransferClear();
+	
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
+	} else {
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
+	}
+	
+	ContcircRenderSprites(1, 24);
+	
+	TC0150RODDraw(-3 + 8, 0xc0, 1, 0, 1, 2);
+	
+	ContcircRenderSprites(0, 24);
+	
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 }
 
 static void DblaxleDraw()
 {
+	UINT8 Layer[4];
+	UINT16 Priority = TC0480SCPGetBgPriority();
+	
+	Layer[0] = (Priority & 0xf000) >> 12;
+	Layer[1] = (Priority & 0x0f00) >>  8;
+	Layer[2] = (Priority & 0x00f0) >>  4;
+	Layer[3] = (Priority & 0x000f) >>  0;
+	
 	BurnTransferClear();
 	TaitoZCalcPalette();
 	
-	BsharkRenderSprites(1, 7);
+	TC0480SCPTilemapRender(Layer[0], 1, TaitoChars);
+	TC0480SCPTilemapRender(Layer[1], 0, TaitoChars);
+	TC0480SCPTilemapRender(Layer[2], 0, TaitoChars);
+	
+	BsharkRenderSprites(1, 7, 0x2000);
 	
 	TC0150RODDraw(-1, 0xc0, 0, 0, 1, 2);
 	
-	BsharkRenderSprites(0, 7);
+	BsharkRenderSprites(0, 7, 0x2000);
 	
-	BurnTransferCopy(TaitoZPalette);
+	TC0480SCPTilemapRender(Layer[3], 0, TaitoChars);
+	
+	TC0480SCPRenderCharLayer();
+	BurnTransferCopy(TaitoPalette);
 }
 
 static void SciDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoZCalcPalette();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(1, TaitoZChars);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(1, TaitoZChars);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 1, TaitoChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
 	SciRenderSprites(1, 6);
@@ -5122,30 +5422,30 @@ static void SciDraw()
 	
 	SciRenderSprites(0, 6);
 
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	
-	BurnTransferCopy(TaitoZPalette);
+	BurnTransferCopy(TaitoPalette);
 }
 
 static void SpacegunDraw()
 {
-	int Disable = TC0100SCNCtrl[6] & 0xf7;
+	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
-	if (TC0100SCNBottomLayer()) {
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(1, TaitoZChars);
+	if (TC0100SCNBottomLayer(0)) {
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 1, TaitoChars);
 		SpacegunRenderSprites(1);
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 0, TaitoChars);
 	} else {
-		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(1, TaitoZChars);
+		if (!(Disable & 0x01)) TC0100SCNRenderBgLayer(0, 1, TaitoChars);
 		SpacegunRenderSprites(1);
-		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, TaitoZChars);
+		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 	}
 	
 	SpacegunRenderSprites(0);
 	
-	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer();
+	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 	
 	for (int i = 0; i < nBurnGunNumPlayers; i++) {
@@ -5155,16 +5455,16 @@ static void SpacegunDraw()
 
 static int TaitoZFrame()
 {
-	int nInterleave = TaitoZFrameInterleave;
+	int nInterleave = TaitoFrameInterleave;
 
-	if (TaitoZReset) TaitoZDoReset();
+	if (TaitoReset) TaitoZDoReset();
 
-	MakeInputsFunction();
+	TaitoMakeInputsFunction();
 	
-	nCyclesDone[0] = nCyclesDone[1] = nCyclesDone[2] = 0;
+	nTaitoCyclesDone[0] = nTaitoCyclesDone[1] = nTaitoCyclesDone[2] = 0;
 
 	SekNewFrame();
-	if (TaitoZHasZ80) ZetNewFrame();
+	if (TaitoNumZ80s) ZetNewFrame();
 		
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
@@ -5172,39 +5472,41 @@ static int TaitoZFrame()
 		// Run 68000 #1
 		nCurrentCPU = 0;
 		SekOpen(0);
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == 10 && Sci && (GetCurrentFrame() & 1)) { SekSetIRQLine(6, SEK_IRQSTATUS_AUTO); nCyclesDone[0] += SekRun(200000 - 500); }
-		if (i == (TaitoZFrameInterleave - 1)) SekSetIRQLine(TaitoZVBlankIRQ, SEK_IRQSTATUS_AUTO);
+		nNext = (i + 1) * nTaitoCyclesTotal[nCurrentCPU] / nInterleave;
+		nTaitoCyclesSegment = nNext - nTaitoCyclesDone[nCurrentCPU];
+		nTaitoCyclesDone[nCurrentCPU] += SekRun(nTaitoCyclesSegment);
+		if (i == 10 && Sci && (GetCurrentFrame() & 1)) { SekSetIRQLine(6, SEK_IRQSTATUS_AUTO); nTaitoCyclesDone[0] += SekRun(200000 - 500); }
+		if (i == 10 && Dblaxle && (GetCurrentFrame() & 1)) { SekSetIRQLine(6, SEK_IRQSTATUS_AUTO); nTaitoCyclesDone[0] += SekRun(200000 - 500); }
+		if (i == 50 && Dblaxle) { SekSetIRQLine(6, SEK_IRQSTATUS_AUTO); nTaitoCyclesDone[0] += SekRun(200000 - 500); }
+		if (i == (TaitoFrameInterleave - 1)) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 		SekClose();
 		
 		// Run 68000 #2
-		if ((TaitoZCpuACtrl & 0x01) && TaitoZHasZ80) {
+		if ((TaitoCpuACtrl & 0x01) && TaitoNumZ80s) {
 			nCurrentCPU = 1;
 			SekOpen(1);
-			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-			nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-			if (i == (TaitoZFrameInterleave - 1)) SekSetIRQLine(TaitoZVBlankIRQ, SEK_IRQSTATUS_AUTO);
+			nNext = (i + 1) * nTaitoCyclesTotal[nCurrentCPU] / nInterleave;
+			nTaitoCyclesSegment = nNext - nTaitoCyclesDone[nCurrentCPU];
+			nTaitoCyclesDone[nCurrentCPU] += SekRun(nTaitoCyclesSegment);
+			if (i == (TaitoFrameInterleave - 1)) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 			SekClose();
 		}
 	}
 	
-	if (TaitoZHasZ80) {
+	if (TaitoNumZ80s) {
 		ZetOpen(0);
-		BurnTimerEndFrame(nCyclesTotal[2]);
+		BurnTimerEndFrame(nTaitoCyclesTotal[2]);
 		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 		ZetClose();
 	} else {
 		SekOpen(1);
-		if (TaitoZCpuACtrl & 0x01) BurnTimerEndFrame(nCyclesTotal[1]);
+		if (TaitoCpuACtrl & 0x01) BurnTimerEndFrame(nTaitoCyclesTotal[1]);
 		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
-		if (TaitoZCpuACtrl & 0x01) SekSetIRQLine(TaitoZVBlankIRQ, SEK_IRQSTATUS_AUTO);
+		if (TaitoCpuACtrl & 0x01) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 		SekClose();
 	}
 	
-	if (pBurnDraw) DrawFunction();
+	if (pBurnDraw) TaitoDrawFunction();
 
 	return 0;
 }
@@ -5217,202 +5519,264 @@ static int TaitoZScan(int nAction, int *pnMin)
 		*pnMin = 0x029674;
 	}
 	
-	if (TaitoZHasEEPROM) EEPROMScan(nAction, pnMin);
-	
-	if (TaitoZHasTC0150ROD) TC0150RODScan(nAction);
-	if (TaitoZHasTC0110PCR) TC0110PCRScan(nAction);
-	if (TaitoZHasTC0220IOC) TC0220IOCScan(nAction);
-	if (TaitoZHasTC0140SYT) TC0140SYTScan(nAction);
-	if (TaitoZHasTC0100SCN) TC0100SCNScan(nAction);
-
 	if (nAction & ACB_MEMORY_RAM) {
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = RamStart;
-		ba.nLen	  = RamEnd-RamStart;
+		ba.Data	  = TaitoRamStart;
+		ba.nLen	  = TaitoRamEnd-TaitoRamStart;
 		ba.szName = "All Ram";
 		BurnAcb(&ba);
 	}
 	
+	TaitoICScan(nAction);
+	
 	if (nAction & ACB_DRIVER_DATA) {
 		SekScan(nAction);
-		if (TaitoZHasZ80) ZetScan(nAction);
+		if (TaitoNumZ80s) ZetScan(nAction);
 
 		BurnYM2610Scan(nAction, pnMin);
 		
 		BurnGunScan();
 				
-		SCAN_VAR(TaitoZAnalogPort0);
-		SCAN_VAR(TaitoZAnalogPort1);
-		SCAN_VAR(TaitoZAnalogPort2);
-		SCAN_VAR(TaitoZAnalogPort3);
+		SCAN_VAR(TaitoAnalogPort0);
+		SCAN_VAR(TaitoAnalogPort1);
+		SCAN_VAR(TaitoAnalogPort2);
+		SCAN_VAR(TaitoAnalogPort3);
+		SCAN_VAR(TaitoInput);
 		SCAN_VAR(OldSteer);
-		SCAN_VAR(TaitoZCpuACtrl);
-		SCAN_VAR(TaitoZZ80Bank);
+		SCAN_VAR(TaitoCpuACtrl);
+		SCAN_VAR(TaitoZ80Bank);
 		SCAN_VAR(SciSpriteFrame);
-		SCAN_VAR(TaitoZRoadPalBank);
-		SCAN_VAR(nCyclesDone);
-		SCAN_VAR(nCyclesSegment);
+		SCAN_VAR(TaitoRoadPalBank);
+		SCAN_VAR(nTaitoCyclesDone);
+		SCAN_VAR(nTaitoCyclesSegment);
+	}
+	
+	if (nAction & ACB_WRITE) {
+		ZetOpen(0);
+		ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
+		ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
+		ZetClose();
 	}
 
 	return 0;
 }
 
 struct BurnDriver BurnDrvAquajack = {
-	"aquajack", NULL, NULL, "1990",
+	"aquajack", NULL, NULL, NULL, "1990",
 	"Aquajack (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, AquajackRomInfo, AquajackRomName, AquajackInputInfo, AquajackDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_MISC, 0,
+	NULL, AquajackRomInfo, AquajackRomName, NULL, NULL, AquajackInputInfo, AquajackDIPInfo,
 	AquajackInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvAquajckj = {
-	"aquajckj", "aquajack", NULL, "1990",
+struct BurnDriver BurnDrvAquajackj = {
+	"aquajackj", "aquajack", NULL, NULL, "1990",
 	"Aquajack (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, AquajckjRomInfo, AquajckjRomName, AquajackInputInfo, AquajckjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_MISC, 0,
+	NULL, AquajackjRomInfo, AquajackjRomName, NULL, NULL, AquajackInputInfo, AquajackjDIPInfo,
 	AquajackInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvBshark = {
-	"bshark", NULL, NULL, "1989",
+	"bshark", NULL, NULL, NULL, "1989",
 	"Battle Shark (US)\0", NULL, "Taito America Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, BsharkRomInfo, BsharkRomName, BsharkInputInfo, BsharkDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, BsharkRomInfo, BsharkRomName, NULL, NULL, BsharkInputInfo, BsharkDIPInfo,
 	BsharkInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvBsharkj = {
-	"bsharkj", "bshark", NULL, "1989",
+	"bsharkj", "bshark", NULL, NULL, "1989",
 	"Battle Shark (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, BsharkjRomInfo, BsharkjRomName, BsharkInputInfo, BsharkjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, BsharkjRomInfo, BsharkjRomName, NULL, NULL, BsharkInputInfo, BsharkjDIPInfo,
 	BsharkInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvChasehq = {
-	"chasehq", NULL, NULL, "1988",
+	"chasehq", NULL, NULL, NULL, "1988",
 	"Chase H.Q. (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ChasehqRomInfo, ChasehqRomName, ChasehqInputInfo, ChasehqDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ChasehqRomInfo, ChasehqRomName, NULL, NULL, ChasehqInputInfo, ChasehqDIPInfo,
 	ChasehqInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvChasehqj = {
-	"chasehqj", "chasehq", NULL, "1988",
+	"chasehqj", "chasehq", NULL, NULL, "1988",
 	"Chase H.Q. (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ChasehqjRomInfo, ChasehqjRomName, ChasehqInputInfo, ChasehqjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ChasehqjRomInfo, ChasehqjRomName, NULL, NULL, ChasehqInputInfo, ChasehqjDIPInfo,
 	ChasehqInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvChasehqu = {
+	"chasehqu", "chasehq", NULL, NULL, "1988",
+	"Chase H.Q. (US)\0", NULL, "Taito America Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ChasehquRomInfo, ChasehquRomName, NULL, NULL, ChasehqInputInfo, ChasehqDIPInfo,
+	ChasehqInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvContcirc = {
-	"contcirc", NULL, NULL, "1987",
+	"contcirc", NULL, NULL, NULL, "1987",
 	"Continental Circus (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ContcircRomInfo, ContcircRomName, ContcircInputInfo, ContcircDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ContcircRomInfo, ContcircRomName, NULL, NULL, ContcircInputInfo, ContcircDIPInfo,
 	ContcircInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvContcrcu = {
-	"contcrcu", "contcirc", NULL, "1987",
+struct BurnDriver BurnDrvContcircu = {
+	"contcircu", "contcirc", NULL, NULL, "1987",
 	"Continental Circus (US set 1)\0", NULL, "Taito America Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ContcrcuRomInfo, ContcrcuRomName, ContcircInputInfo, ContcrcuDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ContcircuRomInfo, ContcircuRomName, NULL, NULL, ContcircInputInfo, ContcircuDIPInfo,
 	ContcircInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvContcrua = {
-	"contcrua", "contcirc", NULL, "1987",
+struct BurnDriver BurnDrvContcircua = {
+	"contcircua", "contcirc", NULL, NULL, "1987",
 	"Continental Circus (US set 2)\0", NULL, "Taito America Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ContcruaRomInfo, ContcruaRomName, ContcircInputInfo, ContcrcuDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ContcircuaRomInfo, ContcircuaRomName, NULL, NULL, ContcircInputInfo, ContcircuDIPInfo,
 	ContcircInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvDblaxle = {
+	"dblaxle", NULL, NULL, NULL, "1991",
+	"Double Axle (US)\0", "Imperfect sound, bad dump in sample rom?", "Taito America Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, DblaxleRomInfo, DblaxleRomName, NULL, NULL, DblaxleInputInfo, DblaxleDIPInfo,
+	DblaxleInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvPwheelsj = {
+	"pwheelsj", "dblaxle", NULL, NULL, "1991",
+	"Power Wheels (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, PwheelsjRomInfo, PwheelsjRomName, NULL, NULL, DblaxleInputInfo, PwheelsjDIPInfo,
+	DblaxleInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvEnforce = {
-	"enforce", NULL, NULL, "1988",
+	"enforce", NULL, NULL, NULL, "1988",
 	"Enforce (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, EnforceRomInfo, EnforceRomName, EnforceInputInfo, EnforceDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, EnforceRomInfo, EnforceRomName, NULL, NULL, EnforceInputInfo, EnforceDIPInfo,
 	EnforceInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvNightstr = {
-	"nightstr", NULL, NULL, "1989",
+	"nightstr", NULL, NULL, NULL, "1989",
+	"Night Striker (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_MISC, 0,
+	NULL, NightstrRomInfo, NightstrRomName, NULL, NULL, NightstrInputInfo, NightstrDIPInfo,
+	NightstrInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvNightstrj = {
+	"nightstrj", "nightstr", NULL, NULL, "1989",
+	"Night Striker (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_MISC, 0,
+	NULL, NightstrjRomInfo, NightstrjRomName, NULL, NULL, NightstrInputInfo, NightstrjDIPInfo,
+	NightstrInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvNightstru = {
+	"nightstru", "nightstr", NULL, NULL, "1989",
 	"Night Striker (US)\0", NULL, "Taito America Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, NightstrRomInfo, NightstrRomName, NightstrInputInfo, NightstrDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, NightstruRomInfo, NightstruRomName, NULL, NULL, NightstrInputInfo, NightstruDIPInfo,
 	NightstrInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSci = {
-	"sci", NULL, NULL, "1989",
+	"sci", NULL, NULL, NULL, "1989",
 	"Special Criminal Investigation (World set 1)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, SciRomInfo, SciRomName, SciInputInfo, SciDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, SciRomInfo, SciRomName, NULL, NULL, SciInputInfo, SciDIPInfo,
 	SciInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvScia = {
-	"scia", "sci", NULL, "1989",
+	"scia", "sci", NULL, NULL, "1989",
 	"Special Criminal Investigation (World set 2)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, SciaRomInfo, SciaRomName, SciInputInfo, SciDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, SciaRomInfo, SciaRomName, NULL, NULL, SciInputInfo, SciDIPInfo,
 	SciInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvScij = {
-	"scij", "sci", NULL, "1989",
+	"scij", "sci", NULL, NULL, "1989",
 	"Special Criminal Investigation (Japan)\0", NULL, "Taito Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, ScijRomInfo, ScijRomName, SciInputInfo, ScijDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ScijRomInfo, ScijRomName, NULL, NULL, SciInputInfo, ScijDIPInfo,
 	SciInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSciu = {
-	"sciu", "sci", NULL, "1989",
+	"sciu", "sci", NULL, NULL, "1989",
 	"Special Criminal Investigation (US)\0", NULL, "Taito America Corporation", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, SciuRomInfo, SciuRomName, SciInputInfo, SciuDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, SciuRomInfo, SciuRomName, NULL, NULL, SciInputInfo, SciuDIPInfo,
 	SciInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvScinegro = {
+	"scinegro", "sci", NULL, NULL, "1989",
+	"Special Criminal Investigation (Negro bootleg)\0", NULL, "Negro", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_TAITOZ, GBF_RACING, 0,
+	NULL, ScinegroRomInfo, ScinegroRomName, NULL, NULL, SciInputInfo, SciDIPInfo,
+	SciInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvSpacegun = {
-	"spacegun", NULL, NULL, "1990",
+	"spacegun", NULL, NULL, NULL, "1990",
 	"Space Gun (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ,
-	NULL, SpacegunRomInfo, SpacegunRomName, SpacegunInputInfo, SpacegunDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, SpacegunRomInfo, SpacegunRomName, NULL, NULL, SpacegunInputInfo, SpacegunDIPInfo,
 	SpacegunInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 240, 4, 3
 };

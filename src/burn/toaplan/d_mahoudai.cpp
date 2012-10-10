@@ -12,55 +12,55 @@ static bool bVBlank;
 
 // Rom information
 static struct BurnRomInfo mahoudaiRomDesc[] = {
-	{ "ra_ma_01.01",  0x080000, 0x970CCC5C, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "ra_ma_01_01.u65",  0x080000, 0x970CCC5C, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
-	{ "ra_ma_01.03",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
-	{ "ra_ma_01.04",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
+	{ "ra-ma01-rom2.u2",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
+	{ "ra-ma01-rom3.u1",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
 
-	{ "ra_ma_01.05",  0x008000, 0xC00D1E80, BRF_GRA },			 //  3 Extra text layer tile data
+	{ "ra_ma_01_05.u81",  0x008000, 0xC00D1E80, BRF_GRA },			 //  3 Extra text layer tile data
 
-	{ "ra_ma_01.02",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
+	{ "ra-ma-01_02.u66",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
 
-	{ "ra_ma_01.06",  0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
+	{ "ra-ma01-rom1.u57", 0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
 };
 
 
-STD_ROM_PICK(mahoudai);
-STD_ROM_FN(mahoudai);
+STD_ROM_PICK(mahoudai)
+STD_ROM_FN(mahoudai)
 
 static struct BurnRomInfo sstrikerRomDesc[] = {
-	{ "ra-ma-01.01",  0x080000, 0x92259F84, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "ra-ma_01_01.u65",  0x080000, 0x708FD51D, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
-	{ "ra_ma_01.03",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
-	{ "ra_ma_01.04",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
+	{ "ra-ma01-rom2.u2",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
+	{ "ra-ma01-rom3.u1",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
 
-	{ "ra-ma-01.05",  0x008000, 0x88B58841, BRF_GRA },			 //  3 Extra text layer tile data
+	{ "ra-ma-01_05.u81",  0x008000, 0x88B58841, BRF_GRA },			 //  3 Extra text layer tile data
 
-	{ "ra_ma_01.02",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
+	{ "ra-ma-01_02.u66",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
 
-	{ "ra_ma_01.06",  0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
+	{ "ra-ma01-rom1.u57", 0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
 };
 
 
-STD_ROM_PICK(sstriker);
-STD_ROM_FN(sstriker);
+STD_ROM_PICK(sstriker)
+STD_ROM_FN(sstriker)
 
 static struct BurnRomInfo sstrikraRomDesc[] = {
-	{ "rama1_01.bin", 0x080000, 0x708FD51D, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "ra-ma-01_01.u65",  0x080000, 0x92259F84, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
-	{ "ra_ma_01.03",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
-	{ "ra_ma_01.04",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
+	{ "ra-ma01-rom2.u2",  0x100000, 0x54E2BD95, BRF_GRA },			 //  1 GP9001 Tile data
+	{ "ra-ma01-rom3.u1",  0x100000, 0x21CD378F, BRF_GRA },			 //  2
 
-	{ "ra-ma-01.05",  0x008000, 0x88B58841, BRF_GRA },			 //  3 Extra text layer tile data
+	{ "ra-ma-01_05.u81",  0x008000, 0x88B58841, BRF_GRA },			 //  3 Extra text layer tile data
 
-	{ "ra_ma_01.02",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
+	{ "ra-ma-01_02.u66",  0x010000, 0xEABFA46D, BRF_ESS | BRF_PRG }, //  4 Z80 program
 
-	{ "ra_ma_01.06",  0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
+	{ "ra-ma01-rom1.u57", 0x040000, 0x6EDB2AB8, BRF_SND },			 //  5 MSM6295 ADPCM data
 };
 
 
-STD_ROM_PICK(sstrikra);
-STD_ROM_FN(sstrikra);
+STD_ROM_PICK(sstrikra)
+STD_ROM_FN(sstrikra)
 
 static struct BurnInputInfo mahoudaiInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -92,7 +92,7 @@ static struct BurnInputInfo mahoudaiInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(mahoudai);
+STDINPUTINFO(mahoudai)
 
 static struct BurnDIPInfo mahoudaiDIPList[] = {
 	// Defaults
@@ -178,8 +178,8 @@ static struct BurnDIPInfo sstrikerRegionDIPList[] = {
     {0x16,	0x01, 0x0E,	0x00, "Japan"},
 };
 
-STDDIPINFOEXT(mahoudai, mahoudai, mahoudaiRegion);
-STDDIPINFOEXT(sstriker, mahoudai, sstrikerRegion);
+STDDIPINFOEXT(mahoudai, mahoudai, mahoudaiRegion)
+STDDIPINFOEXT(sstriker, mahoudai, sstrikerRegion)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -536,7 +536,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -657,32 +657,32 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvMahouDai = {
-	"mahoudai", NULL, NULL, "1993",
+	"mahoudai", "sstriker", NULL, NULL, "1993",
 	"Mahou Daisakusen (Japan)\0", NULL, "Raizing", "Toaplan GP9001 based",
 	L"\u9B54\u6CD5\u5927\u4F5C\u6226 (Japan)\0Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, mahoudaiRomInfo, mahoudaiRomName, mahoudaiInputInfo, mahoudaiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, mahoudaiRomInfo, mahoudaiRomName, NULL, NULL, mahoudaiInputInfo, mahoudaiDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvSStriker = {
-	"sstriker", "mahoudai", NULL, "1993",
+	"sstriker", NULL, NULL, NULL, "1993",
 	"Sorcer Striker (World)\0", NULL, "Raizing", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, sstrikerRomInfo, sstrikerRomName, mahoudaiInputInfo, sstrikerDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, sstrikerRomInfo, sstrikerRomName, NULL, NULL, mahoudaiInputInfo, sstrikerDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvSStrikrA = {
-	"sstrikra", "mahoudai", NULL, "1993",
+	"sstrikera", "sstriker", NULL, NULL, "1993",
 	"Sorcer Striker (World, alt)\0", NULL, "Raizing", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, sstrikraRomInfo, sstrikraRomName, mahoudaiInputInfo, sstrikerDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, sstrikraRomInfo, sstrikraRomName, NULL, NULL, mahoudaiInputInfo, sstrikerDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 

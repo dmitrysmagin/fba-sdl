@@ -65,6 +65,7 @@ struct upd7759_chip
 	UINT32		romoffset;					/* ROM offset to make save/restore easier */
 };
 
+static struct upd7759_chip *Chips[2]; // more?
 static struct upd7759_chip *Chip = NULL;
 
 static const int upd7759_step[16][16] =
@@ -306,8 +307,10 @@ static void UPD7759SlaveModeUpdate()
 	}
 }
 
-void UPD7759Update(short *pSoundBuf, int nLength)
+void UPD7759Update(int chip, short *pSoundBuf, int nLength)
 {
+	Chip = Chips[chip];
+
 	INT32 ClocksLeft = Chip->clocks_left;
 	INT16 Sample = Chip->sample;
 	UINT32 Step = Chip->step;
@@ -360,30 +363,39 @@ void UPD7759Update(short *pSoundBuf, int nLength)
 
 void UPD7759Reset()
 {
-	Chip->pos                = 0;
-	Chip->fifo_in            = 0;
-	Chip->drq                = 0;
-	Chip->state              = STATE_IDLE;
-	Chip->clocks_left        = 0;
-	Chip->nibbles_left       = 0;
-	Chip->repeat_count       = 0;
-	Chip->post_drq_state     = STATE_IDLE;
-	Chip->post_drq_clocks    = 0;
-	Chip->req_sample         = 0;
-	Chip->last_sample        = 0;
-	Chip->block_header       = 0;
-	Chip->sample_rate        = 0;
-	Chip->first_valid_header = 0;
-	Chip->offset             = 0;
-	Chip->repeat_offset      = 0;
-	Chip->adpcm_state        = 0;
-	Chip->adpcm_data         = 0;
-	Chip->sample             = 0;
+	for (int i = 0; i < 2; i++) {
+		Chip = Chips[i];
+		if (Chip == NULL) {
+			continue;
+		}
+	
+		Chip->pos                = 0;
+		Chip->fifo_in            = 0;
+		Chip->drq                = 0;
+		Chip->state              = STATE_IDLE;
+		Chip->clocks_left        = 0;
+		Chip->nibbles_left       = 0;
+		Chip->repeat_count       = 0;
+		Chip->post_drq_state     = STATE_IDLE;
+		Chip->post_drq_clocks    = 0;
+		Chip->req_sample         = 0;
+		Chip->last_sample        = 0;
+		Chip->block_header       = 0;
+		Chip->sample_rate        = 0;
+		Chip->first_valid_header = 0;
+		Chip->offset             = 0;
+		Chip->repeat_offset      = 0;
+		Chip->adpcm_state        = 0;
+		Chip->adpcm_data         = 0;
+		Chip->sample             = 0;
+	}
 }
 
-void UPD7759Init(int clock, unsigned char* pSoundData)
+void UPD7759Init(int chip, int clock, unsigned char* pSoundData)
 {
-	Chip = (struct upd7759_chip*)malloc(sizeof(*Chip));
+	Chips[chip] = (struct upd7759_chip*)malloc(sizeof(*Chip));
+	Chip = Chips[chip];
+
 	memset(Chip, 0, sizeof(*Chip));
 	
 	SlaveMode = 0;
@@ -404,18 +416,21 @@ void UPD7759Init(int clock, unsigned char* pSoundData)
 	UPD7759Reset();
 }
 
-void UPD7759SetDrqCallback(drqcallback Callback)
+void UPD7759SetDrqCallback(int chip, drqcallback Callback)
 {
+	Chip = Chips[chip];
 	Chip->drqcallback = Callback;
 }
 
-int UPD7759BusyRead()
+int UPD7759BusyRead(int chip)
 {
+	Chip = Chips[chip];
 	return (Chip->state == STATE_IDLE);
 }
 
-void UPD7759ResetWrite(UINT8 Data)
+void UPD7759ResetWrite(int chip, UINT8 Data)
 {
+	Chip = Chips[chip];
 	UINT8 Oldreset = Chip->reset;
 	Chip->reset = (Data != 0);
 
@@ -424,8 +439,9 @@ void UPD7759ResetWrite(UINT8 Data)
 	}
 }
 
-void UPD7759StartWrite(UINT8 Data)
+void UPD7759StartWrite(int chip, UINT8 Data)
 {
+	Chip = Chips[chip];
 	UINT8 Oldstart = Chip->start;
 	Chip->start = (Data != 0);
 
@@ -436,12 +452,13 @@ void UPD7759StartWrite(UINT8 Data)
 	}
 }
 
-void UPD7759PortWrite(UINT8 Data)
+void UPD7759PortWrite(int chip, UINT8 Data)
 {
+	Chip = Chips[chip];
 	Chip->fifo_in = Data;
 }
 
-int UPD7759Scan(int nAction,int *pnMin)
+int UPD7759Scan(int chip, int nAction,int *pnMin)
 {
 	struct BurnArea ba;
 	char szName[16];
@@ -454,7 +471,9 @@ int UPD7759Scan(int nAction,int *pnMin)
 		*pnMin = 0x029680;
 	}
 	
-	sprintf(szName, "UPD7759");
+	Chip = Chips[chip];
+
+	sprintf(szName, "UPD7759 %d", chip);
 	ba.Data		= &Chip;
 	ba.nLen		= sizeof(struct upd7759_chip);
 	ba.nAddress = 0;
@@ -466,7 +485,13 @@ int UPD7759Scan(int nAction,int *pnMin)
 
 void UPD7759Exit()
 {
-	free(Chip);
-	Chip = NULL;
+	if (Chips[0]) {
+		free(Chips[0]);
+		Chips[0] = NULL;
+	}
+	if (Chips[1]) {
+		free(Chips[1]);
+		Chips[1] = NULL;
+	}
 	SlaveMode = 0;	
 }

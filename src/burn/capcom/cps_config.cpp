@@ -20,6 +20,16 @@ static const struct GfxRange mapper_LWCHR_table[] = {
 	{ 0              ,       0,       0, 0 }
 };
 
+static const struct GfxRange mapper_LW621_table[] = {
+	{ GFXTYPE_SPRITES, 0x00000, 0x07fff, 0 },
+	{ GFXTYPE_SCROLL1, 0x00000, 0x1ffff, 0 },
+
+	{ GFXTYPE_STARS,   0x00000, 0x1ffff, 1 },
+	{ GFXTYPE_SCROLL2, 0x00000, 0x1ffff, 1 },
+	{ GFXTYPE_SCROLL3, 0x00000, 0x1ffff, 1 },
+	{ 0              ,       0,       0, 0 }
+};
+
 static const struct GfxRange mapper_DM620_table[] = {
 	{ GFXTYPE_SCROLL3, 0x8000, 0xbfff, 1 },
 
@@ -27,6 +37,39 @@ static const struct GfxRange mapper_DM620_table[] = {
 
 	{ GFXTYPE_STARS | GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x1ffff, 0 },
 	{ 0                                                                                    ,       0,       0, 0 }
+};
+
+static const struct GfxRange mapper_DM22A_table[] = {
+	{ GFXTYPE_SPRITES, 0x00000, 0x01fff, 0 },
+	{ GFXTYPE_SCROLL1, 0x02000, 0x03fff, 0 },
+
+	{ GFXTYPE_SCROLL2, 0x04000, 0x07fff, 1 },
+
+	{ GFXTYPE_SCROLL3, 0x00000, 0x1ffff, 2 },
+
+	{ GFXTYPE_SPRITES, 0x02000, 0x03fff, 3 },
+	{ 0              ,       0,       0, 0 }
+};
+
+static const struct GfxRange mapper_DAM63B_table[] = {
+	{ GFXTYPE_SPRITES, 0x00000, 0x01fff, 0 },
+	{ GFXTYPE_SCROLL1, 0x02000, 0x02fff, 0 },
+	{ GFXTYPE_SCROLL2, 0x04000, 0x07fff, 0 },
+
+	{ GFXTYPE_SCROLL3, 0x00000, 0x1ffff, 1 },
+	{ GFXTYPE_SPRITES, 0x02000, 0x03fff, 1 },
+	{ 0              ,       0,       0, 0 }
+};
+
+static const struct GfxRange mapper_ST24M1_table[] =
+{
+	{ GFXTYPE_STARS,   0x00000, 0x003ff, 0 },
+	{ GFXTYPE_SPRITES, 0x00000, 0x04fff, 0 },
+	{ GFXTYPE_SCROLL2, 0x04000, 0x07fff, 0 },
+
+	{ GFXTYPE_SCROLL3, 0x00000, 0x07fff, 1 },
+	{ GFXTYPE_SCROLL1, 0x07000, 0x07fff, 1 },
+	{ 0              ,       0,       0, 0  }
 };
 
 static const struct GfxRange mapper_ST22B_table[] = {
@@ -44,11 +87,14 @@ static const struct GfxRange mapper_ST22B_table[] = {
 };
 
 static const struct GfxRange mapper_TK22B_table[] = {
-	{ GFXTYPE_SPRITES, 0x0000, 0x5fff, 0 },
-	{ GFXTYPE_SCROLL1, 0x6000, 0x7fff, 0 },
+	{ GFXTYPE_SPRITES, 0x0000, 0x3fff, 0 },
 
-	{ GFXTYPE_SCROLL3, 0x0000, 0x3fff, 1 },
-	{ GFXTYPE_SCROLL2, 0x4000, 0x7fff, 1 },
+	{ GFXTYPE_SPRITES, 0x4000, 0x5fff, 1 },
+	{ GFXTYPE_SCROLL1, 0x6000, 0x7fff, 1 },
+
+	{ GFXTYPE_SCROLL3, 0x0000, 0x3fff, 2 },
+
+	{ GFXTYPE_SCROLL2, 0x4000, 0x7fff, 3 },
 	{ 0              ,      0,      0, 0 }
 };
 
@@ -85,7 +131,16 @@ static const struct GfxRange mapper_AR24B_table[] = {
 	{ 0              ,      0,      0, 0 }
 };
 
-static const struct GfxRange mapper_0224B_table[] = {
+static const struct GfxRange mapper_AR22B_table[] = {
+	{ GFXTYPE_SPRITES, 0x0000, 0x2fff, 0 },
+	{ GFXTYPE_SCROLL1, 0x3000, 0x3fff, 0 },
+
+	{ GFXTYPE_SCROLL2, 0x4000, 0x5fff, 1 },
+	{ GFXTYPE_SCROLL3, 0x6000, 0x7fff, 1 },
+	{ 0              ,      0,      0, 0 }
+};
+
+static const struct GfxRange mapper_O224B_table[] = {
 	{ GFXTYPE_SCROLL1, 0x0000, 0x0bff, 0 },
 	{ GFXTYPE_SCROLL2, 0x0c00, 0x3bff, 0 },
 	{ GFXTYPE_SCROLL3, 0x3c00, 0x4bff, 0 },
@@ -133,14 +188,39 @@ static const struct GfxRange mapper_CA24B_table[] = {
 	{ 0              ,      0,      0, 0 }
 };
 
-static const struct GfxRange mapper_STF29_table[] = {
-	{ GFXTYPE_SPRITES, 0x00000, 0x0ffff, 0 },
+static const struct GfxRange mapper_CA22B_table[] = {
+	{ GFXTYPE_SPRITES, 0x0000, 0x2fff, 0 },
+	{ GFXTYPE_SCROLL2, 0x0000, 0x2fff, 0 },
+	{ GFXTYPE_SCROLL3, 0x3000, 0x3fff, 0 },
 
-	{ GFXTYPE_SPRITES, 0x10000, 0x11fff, 1 },
-	{ GFXTYPE_SCROLL3, 0x02000, 0x03fff, 1 },
-	{ GFXTYPE_SCROLL1, 0x04000, 0x04fff, 1 },
-	{ GFXTYPE_SCROLL2, 0x05000, 0x07fff, 1 },
+	{ GFXTYPE_SCROLL3, 0x4000, 0x4fff, 1 },
+	{ GFXTYPE_SCROLL1, 0x5000, 0x57ff, 1 },
+	{ GFXTYPE_SPRITES, 0x5800, 0x7fff, 1 },
+	{ GFXTYPE_SCROLL2, 0x5800, 0x7fff, 1 },
+	{ 0              ,      0,      0, 0 }
+};
+
+static const struct GfxRange mapper_STF29_table[] = {
+	{ GFXTYPE_SPRITES, 0x00000, 0x07fff, 0 },
+
+	{ GFXTYPE_SPRITES, 0x08000, 0x0ffff, 1 },
+
+	{ GFXTYPE_SPRITES, 0x10000, 0x11fff, 2 },
+	{ GFXTYPE_SCROLL3, 0x02000, 0x03fff, 2 },
+	{ GFXTYPE_SCROLL1, 0x04000, 0x04fff, 2 },
+	{ GFXTYPE_SCROLL2, 0x05000, 0x07fff, 2 },
 	{ 0              ,       0,       0, 0 }
+};
+
+static const struct GfxRange mapper_RT24B_table[] = {
+	{ GFXTYPE_SPRITES, 0x0000, 0x53ff, 0 },
+	{ GFXTYPE_SCROLL1, 0x5400, 0x6fff, 0 },
+	{ GFXTYPE_SCROLL3, 0x7000, 0x7fff, 0 },
+
+	{ GFXTYPE_SCROLL3, 0x0000, 0x3fff, 1 },
+	{ GFXTYPE_SCROLL2, 0x2800, 0x7fff, 1 },
+	{ GFXTYPE_SPRITES, 0x5400, 0x7fff, 1 },
+	{ 0              ,      0,      0, 0 }
 };
 
 static const struct GfxRange mapper_RT22B_table[] = {
@@ -170,39 +250,47 @@ static const struct GfxRange mapper_KD29B_table[] = {
 
 static const struct GfxRange mapper_CC63B_table[] = {
 	{ GFXTYPE_SPRITES, 0x0000, 0x7fff, 0 },
+	{ GFXTYPE_SCROLL2, 0x0000, 0x7fff, 0 },
 
-	{ GFXTYPE_SPRITES, 0x8000, 0x9fff, 1 },
-	{ GFXTYPE_SCROLL3, 0xa000, 0xbfff, 1 },
-	{ GFXTYPE_SCROLL1, 0xc000, 0xcfff, 1 },
-	{ GFXTYPE_SCROLL2, 0xd000, 0xffff, 1 },
+	{ GFXTYPE_SPRITES, 0x8000, 0xffff, 1 },
+	{ GFXTYPE_SCROLL1, 0x8000, 0xffff, 1 },
+	{ GFXTYPE_SCROLL2, 0x8000, 0xffff, 1 },
+	{ GFXTYPE_SCROLL3, 0x8000, 0xffff, 1 },
 	{ 0              ,      0,      0, 0 }
 };
 
 static const struct GfxRange mapper_KR63B_table[] = {
 	{ GFXTYPE_SPRITES, 0x0000, 0x7fff, 0 },
+	{ GFXTYPE_SCROLL2, 0x0000, 0x7fff, 0 },
 
-	{ GFXTYPE_SPRITES, 0x8000, 0x87ff, 1 },
-	{ GFXTYPE_SCROLL1, 0x8800, 0x97ff, 1 },
-	{ GFXTYPE_SCROLL2, 0x9800, 0xcfff, 1 },
+	{ GFXTYPE_SCROLL1, 0x8000, 0x9fff, 1 },
+	{ GFXTYPE_SPRITES, 0x8000, 0xcfff, 1 },
+	{ GFXTYPE_SCROLL2, 0x8000, 0xcfff, 1 },
 	{ GFXTYPE_SCROLL3, 0xd000, 0xffff, 1 },
 	{ 0              ,      0,      0, 0 }
 };
 
 static const struct GfxRange mapper_S9263B_table[] = {
-	{ GFXTYPE_SPRITES, 0x00000, 0x0ffff, 0 },
+	{ GFXTYPE_SPRITES, 0x00000, 0x07fff, 0 },
 
-	{ GFXTYPE_SPRITES, 0x10000, 0x11fff, 1 },
-	{ GFXTYPE_SCROLL3, 0x02000, 0x03fff, 1 },
-	{ GFXTYPE_SCROLL1, 0x04000, 0x04fff, 1 },
-	{ GFXTYPE_SCROLL2, 0x05000, 0x07fff, 1 },
+	{ GFXTYPE_SPRITES, 0x08000, 0x0ffff, 1 },
+
+	{ GFXTYPE_SPRITES, 0x10000, 0x11fff, 2 },
+	{ GFXTYPE_SCROLL3, 0x02000, 0x03fff, 2 },
+	{ GFXTYPE_SCROLL1, 0x04000, 0x04fff, 2 },
+	{ GFXTYPE_SCROLL2, 0x05000, 0x07fff, 2 },
 	{ 0              ,       0,       0, 0 }
 };
 
-static const struct GfxRange mapper_VA24B_table[] = {
-	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x0000, 0x57ff, 0 },
-	{ GFXTYPE_SCROLL1,                   0x5800, 0x5fff, 0 },
-	{ GFXTYPE_SCROLL3,                   0x6000, 0x7fff, 0 },
-	{ 0              ,                        0,      0, 0 }
+static const struct GfxRange mapper_VA63B_table[] = {
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
+	{ 0              , 0,      0     , 0 }
+};
+
+static const struct GfxRange mapper_VA22B_table[] = {
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x03fff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x04000, 0x07fff, 1 },
+	{ 0              , 0,      0     , 0 }
 };
 
 static const struct GfxRange mapper_Q522B_table[] = {
@@ -213,11 +301,8 @@ static const struct GfxRange mapper_Q522B_table[] = {
 };
 
 static const struct GfxRange mapper_TK263B_table[] = {
-	{ GFXTYPE_SPRITES,                   0x0000, 0x7fff, 0 },
-
-	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x8000, 0xcfff, 1 },
-	{ GFXTYPE_SCROLL1,                   0xd000, 0xdfff, 1 },
-	{ GFXTYPE_SCROLL3,                   0xe000, 0xffff, 1 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x08000, 0x0ffff, 1 },
 	{ 0                                ,      0,      0, 0 }
 };
 
@@ -241,11 +326,13 @@ static const struct GfxRange mapper_PS63B_table[] = {
 
 static const struct GfxRange mapper_MB63B_table[] = {
 	{ GFXTYPE_SCROLL1,                   0x00000, 0x00fff, 0 },
-	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x01000, 0x0ffff, 0 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x01000, 0x07fff, 0 },
 
-	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x10000, 0x167ff, 1 },
-	{ GFXTYPE_SCROLL3,                   0x16800, 0x17fff, 1 },
-	{ 0                                 ,      0,      0, 0 }
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x08000, 0x0ffff, 1 },
+
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x10000, 0x167ff, 2 },
+	{ GFXTYPE_SCROLL3,                   0x16800, 0x17fff, 2 },
+	{ 0                                 ,      0,       0, 0 }
 };
 
 static const struct GfxRange mapper_QD22B_table[] = {
@@ -256,7 +343,7 @@ static const struct GfxRange mapper_QD22B_table[] = {
 	{ 0              ,      0,      0, 0 }
 };
 
-static const struct GfxRange mapper_qadj_table[] = {
+static const struct GfxRange mapper_QD63B_table[] = {
 	{ GFXTYPE_SCROLL1,                   0x0000, 0x07ff, 0 },
 	{ GFXTYPE_SCROLL3,                   0x0800, 0x1fff, 0 },
 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x2000, 0x7fff, 0 },
@@ -273,19 +360,14 @@ static const struct GfxRange mapper_qtono2_table[] = {
 };
 
 static const struct GfxRange mapper_RCM63B_table[] = {
-	{ GFXTYPE_SCROLL1,                   0x00000, 0x017ff, 0 },
-	{ GFXTYPE_SPRITES,                   0x01800, 0x07fff, 0 },
-
-	{ GFXTYPE_SPRITES,                   0x08000, 0x0ffff, 1 },
-
-	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x10000, 0x17fff, 2 },
-
-	{ GFXTYPE_SCROLL2,                   0x18000, 0x19fff, 3 },
-	{ GFXTYPE_SCROLL3,                   0x1a000, 0x1ffff, 3 },
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x07fff, 0 },
+ 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x08000, 0x0ffff, 1 },
+ 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x10000, 0x17fff, 2 },
+ 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x18000, 0x1ffff, 3 },
 	{ 0                                  ,      0,      0, 0 }
 };
 
-static const struct GfxRange mapper_pnickj_table[] = {
+static const struct GfxRange mapper_PKB10B_table[] = {
 	{ GFXTYPE_SCROLL1,                   0x0000, 0x0fff, 0 },
 	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL2, 0x1000, 0x5fff, 0 },
 	{ GFXTYPE_SCROLL3,                   0x6000, 0x7fff, 0 },
@@ -301,9 +383,19 @@ static const struct GfxRange mapper_pang3_table[] = {
 	{ 0              ,                        0,      0, 0 }
 };
 
+static const struct GfxRange mapper_sfzch_table[] = {
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00000, 0x1ffff, 0 },
+	{ 0                                                                    ,       0,       0, 0 }
+};
+
 static const struct GfxRange mapper_cps2_table[] =
 {
 	{ GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3 | GFXTYPE_SPRITES, 0x00000, 0x1ffff, 1 },
+	{ 0                                                                    ,       0,       0, 0 }
+};
+
+static const struct GfxRange mapper_frog_table[] = {
+	{ GFXTYPE_SPRITES | GFXTYPE_SCROLL1 | GFXTYPE_SCROLL2 | GFXTYPE_SCROLL3, 0x00001, 0x1ffff, 0 },
 	{ 0                                                                    ,       0,       0, 0 }
 };
 
@@ -319,12 +411,48 @@ void SetGfxMapper(int MapperId)
 			return;
 		}
 		
+		case mapper_LW621: {
+			GfxBankSizes[0] = 0x8000;
+			GfxBankSizes[1] = 0x8000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_LW621_table;
+			return;
+		}
+		
 		case mapper_DM620: {
 			GfxBankSizes[0] = 0x8000;
 			GfxBankSizes[1] = 0x2000;
 			GfxBankSizes[2] = 0x2000;
 			GfxBankSizes[3] = 0x0000;
 			GfxBankMapper = mapper_DM620_table;
+			return;
+		}
+		
+		case mapper_DM22A: {
+			GfxBankSizes[0] = 0x4000;
+			GfxBankSizes[1] = 0x4000;
+			GfxBankSizes[2] = 0x2000;
+			GfxBankSizes[3] = 0x2000;
+			GfxBankMapper = mapper_DM22A_table;
+			return;
+		}
+		
+		case mapper_DAM63B: {
+			GfxBankSizes[0] = 0x8000;
+			GfxBankSizes[1] = 0x8000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_DAM63B_table;
+			return;
+		}
+		
+		case mapper_ST24M1: {
+			GfxBankSizes[0] = 0x8000;
+			GfxBankSizes[1] = 0x8000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_ST24M1_table;
 			return;
 		}
 		
@@ -338,10 +466,10 @@ void SetGfxMapper(int MapperId)
 		}
 		
 		case mapper_TK22B: {
-			GfxBankSizes[0] = 0x8000;
-			GfxBankSizes[1] = 0x8000;
-			GfxBankSizes[2] = 0x0000;
-			GfxBankSizes[3] = 0x0000;
+			GfxBankSizes[0] = 0x4000;
+			GfxBankSizes[1] = 0x4000;
+			GfxBankSizes[2] = 0x4000;
+			GfxBankSizes[3] = 0x4000;
 			GfxBankMapper = mapper_TK22B_table;
 			return;
 		}
@@ -381,13 +509,22 @@ void SetGfxMapper(int MapperId)
 			GfxBankMapper = mapper_AR24B_table;
 			return;
 		}
-				
-		case mapper_0224B: {
-			GfxBankSizes[0] = 0x8000;
-			GfxBankSizes[1] = 0x8000;
+		
+		case mapper_AR22B: {
+			GfxBankSizes[0] = 0x4000;
+			GfxBankSizes[1] = 0x4000;
 			GfxBankSizes[2] = 0x0000;
 			GfxBankSizes[3] = 0x0000;
-			GfxBankMapper = mapper_0224B_table;
+			GfxBankMapper = mapper_AR22B_table;
+			return;
+		}
+				
+		case mapper_O224B: {
+			GfxBankSizes[0] = 0x8000;
+			GfxBankSizes[1] = 0x4000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_O224B_table;
 			return;
 		}
 		
@@ -427,12 +564,30 @@ void SetGfxMapper(int MapperId)
 			return;
 		}
 		
+		case mapper_CA22B: {
+			GfxBankSizes[0] = 0x4000;
+			GfxBankSizes[1] = 0x4000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_CA22B_table;
+			return;
+		}
+		
 		case mapper_STF29: {
-			GfxBankSizes[0] = 0x10000;
+			GfxBankSizes[0] = 0x08000;
 			GfxBankSizes[1] = 0x08000;
-			GfxBankSizes[2] = 0x00000;
+			GfxBankSizes[2] = 0x08000;
 			GfxBankSizes[3] = 0x00000;
 			GfxBankMapper = mapper_STF29_table;
+			return;
+		}
+		
+		case mapper_RT24B: {
+			GfxBankSizes[0] = 0x8000;
+			GfxBankSizes[1] = 0x8000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_RT24B_table;
 			return;
 		}
 				
@@ -473,20 +628,29 @@ void SetGfxMapper(int MapperId)
 		}
 		
 		case mapper_S9263B: {
-			GfxBankSizes[0] = 0x10000;
+			GfxBankSizes[0] = 0x08000;
 			GfxBankSizes[1] = 0x08000;
-			GfxBankSizes[2] = 0x00000;
+			GfxBankSizes[2] = 0x08000;
 			GfxBankSizes[3] = 0x00000;
 			GfxBankMapper = mapper_S9263B_table;
 			return;
 		}
 		
-		case mapper_VA24B: {
+		case mapper_VA63B: {
 			GfxBankSizes[0] = 0x8000;
 			GfxBankSizes[1] = 0x0000;
 			GfxBankSizes[2] = 0x0000;
 			GfxBankSizes[3] = 0x0000;
-			GfxBankMapper = mapper_VA24B_table;
+			GfxBankMapper = mapper_VA63B_table;
+			return;
+		}
+		
+		case mapper_VA22B: {
+			GfxBankSizes[0] = 0x4000;
+			GfxBankSizes[1] = 0x4000;
+			GfxBankSizes[2] = 0x0000;
+			GfxBankSizes[3] = 0x0000;
+			GfxBankMapper = mapper_VA22B_table;
 			return;
 		}
 		
@@ -527,9 +691,9 @@ void SetGfxMapper(int MapperId)
 		}
 		
 		case mapper_MB63B: {
-			GfxBankSizes[0] = 0x10000;
+			GfxBankSizes[0] = 0x08000;
 			GfxBankSizes[1] = 0x08000;
-			GfxBankSizes[2] = 0x00000;
+			GfxBankSizes[2] = 0x08000;
 			GfxBankSizes[3] = 0x00000;
 			GfxBankMapper = mapper_MB63B_table;
 			return;
@@ -544,12 +708,12 @@ void SetGfxMapper(int MapperId)
 			return;
 		}
 		
-		case mapper_qadj: {
+		case mapper_QD63B: {
 			GfxBankSizes[0] = 0x8000;
 			GfxBankSizes[1] = 0x0000;
 			GfxBankSizes[2] = 0x0000;
 			GfxBankSizes[3] = 0x0000;
-			GfxBankMapper = mapper_qadj_table;
+			GfxBankMapper = mapper_QD63B_table;
 			return;
 		}
 		
@@ -571,12 +735,12 @@ void SetGfxMapper(int MapperId)
 			return;
 		}
 		
-		case mapper_pnickj: {
+		case mapper_PKB10B: {
 			GfxBankSizes[0] = 0x8000;
 			GfxBankSizes[1] = 0x0000;
 			GfxBankSizes[2] = 0x0000;
 			GfxBankSizes[3] = 0x0000;
-			GfxBankMapper = mapper_pnickj_table;
+			GfxBankMapper = mapper_PKB10B_table;
 			return;
 		}
 		
@@ -589,12 +753,30 @@ void SetGfxMapper(int MapperId)
 			return;
 		}
 		
+		case mapper_sfzch: {
+			GfxBankSizes[0] = 0x20000;
+			GfxBankSizes[1] = 0x00000;
+			GfxBankSizes[2] = 0x00000;
+			GfxBankSizes[3] = 0x00000;
+			GfxBankMapper = mapper_sfzch_table;
+			return;
+		}
+		
 		case mapper_cps2: {
 			GfxBankSizes[0] = 0x20000;
 			GfxBankSizes[1] = 0x20000;
 			GfxBankSizes[2] = 0x00000;
 			GfxBankSizes[3] = 0x00000;
 			GfxBankMapper = mapper_cps2_table;
+			return;
+		}
+		
+		case mapper_frog: {
+			GfxBankSizes[0] = 0x20000;
+			GfxBankSizes[1] = 0x00000;
+			GfxBankSizes[2] = 0x00000;
+			GfxBankSizes[3] = 0x00000;
+			GfxBankMapper = mapper_frog_table;
 			return;
 		}
 	}
@@ -733,8 +915,10 @@ void SetCpsBId(int CpsBId, int bStars)
 			MaskAddr[3] = 0x72;
   			
 			CpsLayEn[1] = 0x02;
-			CpsLayEn[2] = 0x0c;
-			CpsLayEn[3] = 0x0c;
+			//CpsLayEn[2] = 0x0c;
+			CpsLayEn[2] = 0x04;
+			//CpsLayEn[3] = 0x0c;
+			CpsLayEn[3] = 0x08;
 			if (bStars) {
 				CpsLayEn[4] = 0x00;
 				CpsLayEn[5] = 0x00;
@@ -976,7 +1160,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_1: {
+		case CPS_B_21_BT1: {
 			CpsBID[0]   = 0x72;
 			CpsBID[1]   = 0x08;
 			CpsBID[2]   = 0x00;
@@ -1002,7 +1186,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_2: {
+		case CPS_B_21_BT2: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1028,7 +1212,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_3: {
+		case CPS_B_21_BT3: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1054,7 +1238,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_4: {
+		case CPS_B_21_BT4: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1080,8 +1264,8 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_5: {
-			CpsBID[0]   = 0x00;
+		case CPS_B_21_BT5: {
+			CpsBID[0]   = 0x32;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
   			
@@ -1097,8 +1281,8 @@ void SetCpsBId(int CpsBId, int bStars)
 			MaskAddr[3] = 0x68;
   			
 			CpsLayEn[1] = 0x20;
-			CpsLayEn[2] = 0x06;
-			CpsLayEn[3] = 0x06;
+			CpsLayEn[2] = 0x04;
+			CpsLayEn[3] = 0x02;
 			if (bStars) {
 				CpsLayEn[4] = 0x00;
 				CpsLayEn[5] = 0x00;
@@ -1106,7 +1290,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_6: {
+		case CPS_B_21_BT6: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1132,7 +1316,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case BATTRY_7: {
+		case CPS_B_21_BT7: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1158,8 +1342,8 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case NOBATTRY: {
-			CpsBID[0]   = 0x00;
+		case CPS_B_21_DEF: {
+			CpsBID[0]   = 0x32;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
   			
@@ -1184,7 +1368,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case QSOUND_1: {
+		case CPS_B_21_QS1: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1210,7 +1394,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case QSOUND_2: {
+		case CPS_B_21_QS2: {
 			CpsBID[0]   = 0x00;
 			CpsBID[1]   = 0x00;
 			CpsBID[2]   = 0x00;
@@ -1236,7 +1420,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case QSOUND_3: {
+		case CPS_B_21_QS3: {
 			CpsBID[0]   = 0x4e;
 			CpsBID[1]   = 0x0c;
 			CpsBID[2]   = 0x00;
@@ -1262,7 +1446,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case QSOUND_4: {
+		case CPS_B_21_QS4: {
 			CpsBID[0]   = 0x6e;
 			CpsBID[1]   = 0x0c;
 			CpsBID[2]   = 0x01;
@@ -1288,7 +1472,7 @@ void SetCpsBId(int CpsBId, int bStars)
 			return;
 		}
 		
-		case QSOUND_5: {
+		case CPS_B_21_QS5: {
 			CpsBID[0]   = 0x5e;
 			CpsBID[1]   = 0x0c;
 			CpsBID[2]   = 0x02;
@@ -1333,6 +1517,84 @@ void SetCpsBId(int CpsBId, int bStars)
 			CpsLayEn[1] = 0xff;
 			CpsLayEn[2] = 0xff;
 			CpsLayEn[3] = 0xff;
+			if (bStars) {
+				CpsLayEn[4] = 0x00;
+				CpsLayEn[5] = 0x00;
+			}
+			return;
+		}
+		
+		case HACK_B_2: {
+			CpsBID[0]   = 0x00;
+			CpsBID[1]   = 0x00;
+			CpsBID[2]   = 0x00;
+  			
+			CpsMProt[0] = 0x00;
+			CpsMProt[1] = 0x00;
+			CpsMProt[2] = 0x00;
+			CpsMProt[3] = 0x00;
+  			
+			nCpsLcReg   = 0xc4;
+			MaskAddr[0] = 0x52;
+			MaskAddr[1] = 0x50;
+			MaskAddr[2] = 0x4e;
+			MaskAddr[3] = 0x4c;
+  			
+			CpsLayEn[1] = 0x02;
+			CpsLayEn[2] = 0x02;
+			CpsLayEn[3] = 0x08;
+			if (bStars) {
+				CpsLayEn[4] = 0x00;
+				CpsLayEn[5] = 0x00;
+			}
+			return;
+		}
+		
+		case HACK_B_3: {
+			CpsBID[0]   = 0x00;
+			CpsBID[1]   = 0x00;
+			CpsBID[2]   = 0x00;
+  			
+			CpsMProt[0] = 0x00;
+			CpsMProt[1] = 0x00;
+			CpsMProt[2] = 0x00;
+			CpsMProt[3] = 0x00;
+  			
+			nCpsLcReg   = 0x60;
+			MaskAddr[0] = 0x68;
+			MaskAddr[1] = 0x6a;
+			MaskAddr[2] = 0x6c;
+			MaskAddr[3] = 0x6e;
+  			
+			CpsLayEn[1] = 0x02;
+			CpsLayEn[2] = 0x04;
+			CpsLayEn[3] = 0x08;
+			if (bStars) {
+				CpsLayEn[4] = 0x30;
+				CpsLayEn[5] = 0x30;
+			}
+			return;
+		}
+		
+		case HACK_B_4: {
+			CpsBID[0]   = 0x00;
+			CpsBID[1]   = 0x00;
+			CpsBID[2]   = 0x00;
+  			
+			CpsMProt[0] = 0x00;
+			CpsMProt[1] = 0x00;
+			CpsMProt[2] = 0x00;
+			CpsMProt[3] = 0x00;
+  			
+			nCpsLcReg   = 0x70;
+			MaskAddr[0] = 0x6e;
+			MaskAddr[1] = 0x6c;
+			MaskAddr[2] = 0x6a;
+			MaskAddr[3] = 0x68;
+  			
+			CpsLayEn[1] = 0x02;
+			CpsLayEn[2] = 0x04;
+			CpsLayEn[3] = 0x08;
 			if (bStars) {
 				CpsLayEn[4] = 0x00;
 				CpsLayEn[5] = 0x00;

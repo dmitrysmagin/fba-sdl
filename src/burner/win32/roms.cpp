@@ -1,7 +1,10 @@
 #include "burner.h"
 #include <shlobj.h>
 
+static HWND hTabControl = NULL;
+
 HWND hRomsDlg = NULL;
+static HWND hParent = NULL;
 
 char* gameAv = NULL;
 bool avOk = false;
@@ -21,7 +24,7 @@ static void CreateRomDatName(TCHAR* szRomDat)
 
 //Select Directory Dialog//////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
+static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	int var;
 	static bool chOk;
@@ -30,17 +33,67 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 		case WM_INITDIALOG: {
 			chOk = false;
 
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT1, szAppRomPaths[0]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT2, szAppRomPaths[1]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT3, szAppRomPaths[2]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT4, szAppRomPaths[3]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT5, szAppRomPaths[4]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT6, szAppRomPaths[5]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT7, szAppRomPaths[6]);
-			SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT8, szAppRomPaths[7]);
+			// Setup edit controls values (ROMs Paths)
+			for(int x = 0; x < 8; x++) {
+				SetDlgItemText(hDlg, IDC_ROMSDIR_EDIT1 + x, szAppRomPaths[x]);
+			}
 
-			WndInMid(hDlg, hScrnWnd);
+			// Setup the tabs
+			hTabControl = GetDlgItem(hDlg, IDC_ROMPATH_TAB);
+
+			TC_ITEM tcItem; 
+			tcItem.mask = TCIF_TEXT;
+
+			UINT idsString[8] = { IDS_ROMPATH_1,IDS_ROMPATH_2,IDS_ROMPATH_3,IDS_ROMPATH_4,IDS_ROMPATH_5,IDS_ROMPATH_6,IDS_ROMPATH_7,IDS_ROMPATH_8 };
+
+			for(int nIndex = 0; nIndex < 8; nIndex++) {
+				tcItem.pszText = FBALoadStringEx(hAppInst, idsString[nIndex], true);
+				TabCtrl_InsertItem(hTabControl, nIndex, &tcItem);
+			}
+
+			int TabPage = TabCtrl_GetCurSel(hTabControl);
+			
+			// hide all controls excluding the selected controls
+			for(int x = 0; x < 8; x++) {
+				if(x != TabPage) {
+					ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_BR1 + x), SW_HIDE);		// browse buttons
+					ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_EDIT1 + x), SW_HIDE);	// edit controls
+				}
+			}
+
+			// Show the proper controls
+			ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_BR1 + TabPage), SW_SHOW);		// browse buttons
+			ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_EDIT1 + TabPage), SW_SHOW);		// edit controls
+
+			UpdateWindow(hDlg);
+
+			WndInMid(hDlg, hParent);
 			SetFocus(hDlg);											// Enable Esc=close
+			break;
+		}
+		case WM_NOTIFY: {
+			NMHDR* pNmHdr = (NMHDR*)lParam;
+
+			if (pNmHdr->code == TCN_SELCHANGE) {
+
+				int TabPage = TabCtrl_GetCurSel(hTabControl);
+				
+				// hide all controls excluding the selected controls
+				for(int x = 0; x < 8; x++) {
+					if(x != TabPage) {
+						ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_BR1 + x), SW_HIDE);		// browse buttons
+						ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_EDIT1 + x), SW_HIDE);	// edit controls
+					}
+				}
+
+				// Show the proper controls
+				ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_BR1 + TabPage), SW_SHOW);		// browse buttons
+				ShowWindow(GetDlgItem(hDlg, IDC_ROMSDIR_EDIT1 + TabPage), SW_SHOW);		// edit controls
+				
+				UpdateWindow(hDlg);
+
+				return FALSE;
+			}
 			break;
 		}
 		case WM_COMMAND: {
@@ -51,11 +104,12 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 
 			if (LOWORD(wParam) == IDOK) {
 
-				for (int i = 0; i < 4; i++) {
-					if (GetDlgItemText(hDlg, IDC_ROMSDIR_EDIT1 + i, buffer, sizeof(buffer)) && lstrcmp(szAppRomPaths[i], buffer)) {
-						chOk = true;
-						lstrcpy(szAppRomPaths[i], buffer);
-					}
+				for (int i = 0; i < 8; i++) {
+//					if (GetDlgItemText(hDlg, IDC_ROMSDIR_EDIT1 + i, buffer, sizeof(buffer)) && lstrcmp(szAppRomPaths[i], buffer)) {
+					GetDlgItemText(hDlg, IDC_ROMSDIR_EDIT1 + i, buffer, sizeof(buffer));
+					if (lstrcmp(szAppRomPaths[i], buffer)) chOk = true;
+					lstrcpy(szAppRomPaths[i], buffer);
+//					}
 				}
 
 				SendMessage(hDlg, WM_CLOSE, 0, 0);
@@ -99,10 +153,11 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 			break;
 		}
 		case WM_CLOSE: {
+			hParent = NULL;
 			EndDialog(hDlg, 0);
 			if (chOk) {
 				bRescanRoms = true;
-				CreateROMInfo();
+				CreateROMInfo(hDlg);
 			}
 		}
 	}
@@ -111,9 +166,11 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 }
 
 
-int RomsDirCreate()
+int RomsDirCreate(HWND hParentWND)
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hScrnWnd, DefInpProc);
+	hParent = hParentWND;
+	
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hParent, DefInpProc);
 	return 1;
 }
 
@@ -318,6 +375,24 @@ static BOOL CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LP
 			hScanThread = CreateThread(NULL, 0, AnalyzingRoms, NULL, THREAD_TERMINATE, &dwScanThreadId);
 
 			hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+			
+			if (hParent == NULL) {
+				RECT rect;
+				int x, y;
+
+				SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+
+				x = 315 + GetSystemMetrics(SM_CXDLGFRAME) * 2 + 6;
+				y = 74 + GetSystemMetrics(SM_CYDLGFRAME) * 2 + 6;
+
+				SetForegroundWindow(hDlg);
+				SetWindowPos(hDlg, HWND_TOPMOST, (rect.right - rect.left) / 2 - x / 2, (rect.bottom - rect.top) / 2 - y / 2, x, y, 0);
+				RedrawWindow(hDlg, NULL, NULL, 0);
+				ShowWindow(hDlg, SW_SHOWNORMAL);
+			} else {
+				WndInMid(hDlg, hParent);
+				SetFocus(hDlg);		// Enable Esc=close
+			}
 
 			break;
 
@@ -331,14 +406,17 @@ static BOOL CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LP
 			QuitRomsScan();
 			EndDialog(hDlg, 0);
 			hRomsDlg = NULL;
+			hParent = NULL;
 
 	}
 
 	return 0;
 }
 
-int CreateROMInfo()
+int CreateROMInfo(HWND hParentWND)
 {
+	hParent = hParentWND;
+	
 	if (gameAv == NULL) {
 		gameAv = (char*)malloc(nBurnDrvCount);
 		memset(gameAv, 0, nBurnDrvCount);
@@ -346,7 +424,7 @@ int CreateROMInfo()
 
 	if (gameAv) {
 		if (CheckGameAvb() || bRescanRoms) {
-			FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hScrnWnd, WaitProc);
+			FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hParent, WaitProc);
 		}
 	}
 

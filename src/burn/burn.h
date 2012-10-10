@@ -14,6 +14,14 @@
 #include <time.h>
 #include "cheat.h"
 #include "state.h"
+#include "hiscore.h"
+
+#ifndef MAX_PATH
+ #define MAX_PATH (260)
+#endif
+
+extern TCHAR szAppHiscorePath[MAX_PATH];
+extern TCHAR szAppSamplesPath[MAX_PATH];
 
 // Enable the MAME logerror() function in debug builds
 // #define MAME_USE_LOGERROR
@@ -48,6 +56,8 @@
 #else
  #define WRITE_UNICODE_BOM(file)
 #endif
+
+#define		INCLUDE_NEOGEO_MULTISLOT	1
 
 typedef signed char INT8;
 typedef unsigned char UINT8;
@@ -99,10 +109,15 @@ inline static void SetCurrentFrame(const unsigned int n) {
 #define BRF_NODUMP			(1 << 28)
 
 struct BurnRomInfo {
-	char szName[32];
+	char szName[100];
 	unsigned int nLen;
 	unsigned int nCrc;
 	unsigned int nType;
+};
+
+struct BurnSampleInfo {
+	char szName[100];
+	unsigned char nFlags;
 };
 
 // Inputs
@@ -170,6 +185,8 @@ extern short* pBurnSoundOut;				// Pointer to output buffer
 extern int nInterpolation;					// Desired interpolation level for ADPCM/PCM sound
 extern int nFMInterpolation;				// Desired interpolation level for FM sound
 
+extern unsigned int *pBurnDrvPalette;
+
 #define PRINT_NORMAL	(0)
 #define PRINT_UI		(1)
 #define PRINT_IMPORTANT (2)
@@ -185,6 +202,7 @@ int BurnDrvExit();
 int BurnDrvFrame();
 int BurnDrvRedraw();
 int BurnRecalcPal();
+int BurnDrvGetPaletteEntries();
 
 int BurnSetProgressRange(double dProgressRange);
 int BurnUpdateProgress(double dProgressStep, const TCHAR* pszText, bool bAbs);
@@ -201,6 +219,7 @@ int BurnUpdateProgress(double dProgressStep, const TCHAR* pszText, bool bAbs);
 #define DRV_SYSTEM		 (6)
 #define DRV_PARENT		 (7)
 #define DRV_BOARDROM	 (8)
+#define DRV_SAMPLENAME	 (9)
 
 #define DRV_NEXTNAME	 (1 << 8)
 #define DRV_ASCIIONLY	 (1 << 12)
@@ -222,6 +241,35 @@ int BurnDrvGetHardwareCode();
 int BurnDrvGetFlags();
 bool BurnDrvIsWorking();
 int BurnDrvGetMaxPlayers();
+int BurnDrvSetVisibleSize(int pnWidth, int pnHeight);
+int BurnDrvSetAspect(int pnXAspect, int pnYAspect);
+int BurnDrvGetGenreFlags();
+int BurnDrvGetFamilyFlags();
+int BurnDrvGetSampleInfo(struct BurnSampleInfo *pri, unsigned int i);
+int BurnDrvGetSampleName(char** pszName, unsigned int i, int nAka);
+
+extern TCHAR szGamelistLocalisationTemplate[260];
+int BurnDoGameListLocalisation();
+
+void Reinitialise();
+
+#define JUKEBOX_SOUND_NULL	0
+#define JUKEBOX_SOUND_STOP	1
+#define JUKEBOX_SOUND_PLAY	2
+extern unsigned int JukeboxSoundLatch;
+extern unsigned int JukeboxSoundCommand;
+int BurnJukeboxGetFlags();
+int BurnJukeboxInit();
+int BurnJukeboxExit();
+int BurnJukeboxFrame();
+
+extern bool bSaveCRoms;
+
+extern bool bDoPatch;
+void ApplyPatches(UINT8* base, char* rom_name);
+
+#define MAX_NEO_SLOTS	6
+extern unsigned int nNeoSlotDrvNum[MAX_NEO_SLOTS];
 
 // ---------------------------------------------------------------------------
 // Flags used with the Burndriver structure
@@ -235,6 +283,10 @@ int BurnDrvGetMaxPlayers();
 #define BDF_BOOTLEG					(1 << 5)
 #define BDF_PROTOTYPE				(1 << 6)
 #define BDF_16BIT_ONLY				(1 << 7)
+#define BDF_HACK				(1 << 8)
+#define BDF_HOMEBREW				(1 << 9)
+#define BDF_DEMO				(1 << 10)
+#define BDF_HISCORE_SUPPORTED			(1 << 11)
 
 // Flags for the hardware member
 // Format: 0xDDEEFFFF, where EE: Manufacturer, DD: Hardware platform, FFFF: Flags (used by driver)
@@ -253,6 +305,11 @@ int BurnDrvGetMaxPlayers();
 #define HARDWARE_PREFIX_MISC_POST90S	(0x0a000000)
 #define HARDWARE_PREFIX_TAITO		(0x0b000000)
 #define HARDWARE_PREFIX_SEGA_MEGADRIVE	(0x0c000000)
+#define HARDWARE_PREFIX_PSIKYO		(0x0d000000)
+#define HARDWARE_PREFIX_KANEKO16	(0x0e000000)
+#define HARDWARE_PREFIX_PACMAN		(0x0f000000)
+#define HARDWARE_PREFIX_GALAXIAN	(0x10000000)
+#define HARDWARE_PREFIX_ATARI		(0x20000000)
 
 #define HARDWARE_MISC_PRE90S		(HARDWARE_PREFIX_MISC_PRE90S)
 #define HARDWARE_MISC_POST90S		(HARDWARE_PREFIX_MISC_POST90S)
@@ -274,44 +331,53 @@ int BurnDrvGetMaxPlayers();
 #define HARDWARE_SEGA_OUTRUN		(HARDWARE_PREFIX_SEGA | 0x00080000)
 #define HARDWARE_SEGA_SYSTEM1		(HARDWARE_PREFIX_SEGA | 0x00090000)
 
-#define HARDWARE_SEGA_FD1089A_ENC	(0x0002)
-#define HARDWARE_SEGA_FD1089B_ENC	(0x0004)
-#define HARDWARE_SEGA_5358		(0x0008)
-#define HARDWARE_SEGA_MC8123_ENC	(0x0010)
-#define HARDWARE_SEGA_BAYROUTE_MEMMAP	(0x0020)
-#define HARDWARE_SEGA_ALT_MEMMAP	(0x0040)
-#define HARDWARE_SEGA_FD1094_ENC	(0x0080)
-#define HARDWARE_SEGA_SPRITE_LOAD32	(0x0100)
-#define HARDWARE_SEGA_YM2203		(0x0200)
-#define HARDWARE_SEGA_INVERT_TILES	(0x0400)
-#define HARDWARE_SEGA_5521		(0x0800)
-#define HARDWARE_SEGA_5797		(0x1000)
+#define HARDWARE_SEGA_FD1089A_ENC	(0x0001)
+#define HARDWARE_SEGA_FD1089B_ENC	(0x0002)
+#define HARDWARE_SEGA_5358		(0x0004)
+#define HARDWARE_SEGA_MC8123_ENC	(0x0008)
+#define HARDWARE_SEGA_BAYROUTE_MEMMAP	(0x0010)
+#define HARDWARE_SEGA_ALT_MEMMAP	(0x0020)
+#define HARDWARE_SEGA_FD1094_ENC	(0x0040)
+#define HARDWARE_SEGA_SPRITE_LOAD32	(0x0080)
+#define HARDWARE_SEGA_YM2203		(0x0100)
+#define HARDWARE_SEGA_INVERT_TILES	(0x0200)
+#define HARDWARE_SEGA_5521		(0x0400)
+#define HARDWARE_SEGA_5797		(0x0800)
+#define HARDWARE_SEGA_YM2413		(0x1000)
+#define HARDWARE_SEGA_FD1094_ENC_CPU2	(0x2000)
+#define HARDWARE_SEGA_ISGSM		(0x4000)
+#define HARDWARE_SEGA_5704_PS2		(0x8000)
+
+#define HARDWARE_KONAMI_68K_Z80		(HARDWARE_PREFIX_KONAMI | 0x00010000)
+#define HARDWARE_KONAMI_68K_ONLY	(HARDWARE_PREFIX_KONAMI | 0x00020000)
 
 #define HARDWARE_TOAPLAN_RAIZING	(HARDWARE_PREFIX_TOAPLAN | 0x00010000)
 #define HARDWARE_TOAPLAN_68K_Zx80	(HARDWARE_PREFIX_TOAPLAN | 0x00020000)
 #define HARDWARE_TOAPLAN_68K_ONLY	(HARDWARE_PREFIX_TOAPLAN | 0x00030000)
 
 #define HARDWARE_SNK_NEOGEO			(HARDWARE_PREFIX_SNK | 0x00010000)
-#define HARDWARE_SNK_SRAM			(0x0002)	// SRAM protection
-#define HARDWARE_SNK_SWAPP			(0x0004)	// Swap code roms
-#define HARDWARE_SNK_SWAPV			(0x0008)	// Swap sound roms
-#define HARDWARE_SNK_SWAPC			(0x0010)	// Swap sprite roms
-#define HARDWARE_SNK_ENCRYPTED_A	(0x0020)	// KOF99 encryption scheme
-#define HARDWARE_SNK_ENCRYPTED_B	(0x0040)	// KOF2000 encryption scheme
-#define HARDWARE_SNK_ALTERNATE_TEXT	(0x0080)	// KOF2000 text layer banks
-#define HARDWARE_SNK_SMA_PROTECTION	(0x0100)	// SMA protection
-#define HARDWARE_SNK_CUSTOM_BANKING (0x0200)	// Uses custom banking
-#define HARDWARE_SNK_P32		(0x0400)	// Uses 32Bit 68000 roms
-#define HARDWARE_SNK_PVC_PROT		(0x0800)
+#define HARDWARE_SNK_SRAM			(0x0001)	// SRAM protection
+#define HARDWARE_SNK_SWAPP			(0x0002)	// Swap code roms
+#define HARDWARE_SNK_SWAPV			(0x0004)	// Swap sound roms
+#define HARDWARE_SNK_SWAPC			(0x0008)	// Swap sprite roms
+#define HARDWARE_SNK_ENCRYPTED_A	(0x0010)	// KOF99 encryption scheme
+#define HARDWARE_SNK_ENCRYPTED_B	(0x0020)	// KOF2000 encryption scheme
+#define HARDWARE_SNK_ALTERNATE_TEXT	(0x0040)	// KOF2000 text layer banks
+#define HARDWARE_SNK_SMA_PROTECTION	(0x0080)	// SMA protection
+#define HARDWARE_SNK_CUSTOM_BANKING 	(0x0100)	// Uses custom banking
+#define HARDWARE_SNK_P32		(0x0200)	// Uses 32Bit 68000 roms
+#define HARDWARE_SNK_PVC_PROT		(0x0400)
+#define HARDWARE_SNK_ENCRYPTED_M1	(0x0800)
 
 #define HARDWARE_SNK_CONTROLMASK	(0xF000)
 #define HARDWARE_SNK_JOYSTICK		(0x0000)	// Uses joysticks
-#define HARDWARE_SNK_PADDLE			(0x1000)	// Uses joysticks or paddles
+#define HARDWARE_SNK_PADDLE		(0x1000)	// Uses joysticks or paddles
 #define HARDWARE_SNK_TRACKBALL		(0x2000)	// Uses a trackball
 #define HARDWARE_SNK_4_JOYSTICKS	(0x3000)	// Uses 4 joysticks
 #define HARDWARE_SNK_MAHJONG		(0x4000)	// Uses a special mahjong controller
 #define HARDWARE_SNK_GAMBLING		(0x5000)	// Uses gambling controls
 #define HARDWARE_SNK_PCB		(0x6000)
+#define HARDWARE_SNK_MVSCARTRIDGE	(0x7000)
 
 #define HARDWARE_SNK_NEOCD			(HARDWARE_PREFIX_SNK | 0x00020000)
 
@@ -328,8 +394,57 @@ int BurnDrvGetMaxPlayers();
 
 #define HARDWARE_TAITO_TAITOZ		(HARDWARE_PREFIX_TAITO | 0x00010000)
 #define HARDWARE_TAITO_TAITOF2		(HARDWARE_PREFIX_TAITO | 0x00020000)
+#define HARDWARE_TAITO_MISC		(HARDWARE_PREFIX_TAITO | 0x00030000)
+#define HARDWARE_TAITO_TAITOX		(HARDWARE_PREFIX_TAITO | 0x00040000)
+#define HARDWARE_TAITO_TAITOB		(HARDWARE_PREFIX_TAITO | 0x00050000)
 
 #define HARDWARE_SEGA_MEGADRIVE		(HARDWARE_PREFIX_SEGA_MEGADRIVE)
+
+#define HARDWARE_PSIKYO			(HARDWARE_PREFIX_PSIKYO)
+
+#define HARDWARE_KANEKO16		(HARDWARE_PREFIX_KANEKO16)
+
+#define HARDWARE_PACMAN			(HARDWARE_PREFIX_PACMAN)
+
+#define HARDWARE_GALAXIAN		(HARDWARE_PREFIX_GALAXIAN)
+
+#define HARDWARE_ATARI_GAUNTLET		(HARDWARE_PREFIX_ATARI | 0x00010000)
+
+// flags for the jukebox member
+#define JBF_GAME_WORKING		(1 << 0)
+
+// flags for the genre member
+#define GBF_HORSHOOT			(1 << 0)
+#define GBF_VERSHOOT			(1 << 1)
+#define GBF_SCRFIGHT			(1 << 2)
+#define GBF_VSFIGHT			(1 << 3)
+#define GBF_BIOS			(1 << 4)
+#define GBF_BREAKOUT			(1 << 5)
+#define GBF_CASINO			(1 << 6)
+#define GBF_BALLPADDLE			(1 << 7)
+#define GBF_MAZE			(1 << 8)
+#define GBF_MINIGAMES			(1 << 9)
+#define GBF_PINBALL			(1 << 10)
+#define GBF_PLATFORM			(1 << 11)
+#define GBF_PUZZLE			(1 << 12)
+#define GBF_QUIZ			(1 << 13)
+#define GBF_SPORTSMISC			(1 << 14)
+#define GBF_SPORTSFOOTBALL		(1 << 15)
+#define GBF_MISC			(1 << 16)
+#define GBF_MAHJONG			(1 << 17)
+#define GBF_RACING			(1 << 18)
+#define GBF_SHOOT			(1 << 19)
+
+// flags for the family member
+#define FBF_MSLUG			(1 << 0)
+#define FBF_SF				(1 << 1)
+#define FBF_KOF				(1 << 2)
+#define FBF_DSTLK			(1 << 3)
+#define FBF_FATFURY			(1 << 4)
+#define FBF_SAMSHO			(1 << 5)
+#define FBF_19XX			(1 << 6)
+#define FBF_SONICWI			(1 << 7)
+#define FBF_PWRINST			(1 << 8)
 
 #ifdef __cplusplus
  } // End of extern "C"

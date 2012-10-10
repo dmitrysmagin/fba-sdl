@@ -24,42 +24,36 @@ void SegaPCMUpdate(short* pSoundBuf, int nLength)
 	memset(Right, 0, nLength * sizeof(int));
 
 	for (Channel = 0; Channel < 16; Channel++) {
-		if (!(Chip->ram[0x86 + (8 * Channel)] & 1)) {
-			UINT8 *Base = Chip->ram + (8 * Channel);
-			UINT8 Flags = Base[0x86];
-			const UINT8 *Rom = Chip->rom + ((Flags & Chip->bankmask) << Chip->bankshift);
-			UINT32 Addr = (Base[5] << 16) | (Base[4] << 8) | Chip->low[Channel];
-			UINT16 Loop = (Base[0x85] << 8) | Base[0x84];
-			UINT8 End = Base[6] + 1;
-			UINT8 Delta = Base[7];
-			UINT8 VolL = Base[2];
-			UINT8 VolR = Base[3];
+		UINT8 *Regs = Chip->ram + 8 * Channel;
+		if (!(Regs[0x86] & 1)) {
+			const UINT8 *Rom = Chip->rom + ((Regs[0x86] & Chip->bankmask) << Chip->bankshift);
+			UINT32 Addr = (Regs[0x85] << 16) | (Regs[0x84] << 8) | Chip->low[Channel];
+			UINT32 Loop = (Regs[0x05] << 16) | (Regs[0x04] << 8);
+			UINT8 End = Regs[6] + 1;
 			int i;
 			
 			for (i = 0; i < nLength; i++) {
 				INT8 v = 0;
 
 				if ((Addr >> 16) == End) {
-					if (!(Flags & 2))
-						Addr = Loop << 8;
-					else
-					{
-						Flags |= 1;
+					if (Regs[0x86] & 2) {
+						Regs[0x86] |= 1;
 						break;
+					} else {
+						Addr = Loop;
 					}
 				}
 
 				v = Rom[Addr >> 8] - 0x80;
-				
-				Left[i] += v * VolL;
-				Right[i] += v * VolR;
-				Addr += (Delta * Chip->UpdateStep) >> 16;
+
+				Left[i] += v * Regs[2];
+				Right[i] += v * Regs[3];
+				Addr = (Addr + ((Regs[7] * Chip->UpdateStep) >> 16)) & 0xffffff;
 			}
 
-			Base[0x86] = Flags;
-			Base[4] = Addr >> 8;
-			Base[5] = Addr >> 16;
-			Chip->low[Channel] = Flags & 1 ? 0 : Addr;
+			Regs[0x84] = Addr >> 8;
+			Regs[0x85] = Addr >> 16;
+			Chip->low[Channel] = Regs[0x86] & 1 ? 0 : Addr;
 		}
 	}
 	
@@ -96,7 +90,7 @@ void SegaPCMInit(int clock, int bank, UINT8 *pPCMData, int PCMDataSize)
 	if(!Mask)
 		Mask = BANK_MASK7 >> 16;
 
-	for (RomMask = 1; RomMask < PCMDataSize; RomMask *= 2);
+	for (RomMask = 1; RomMask < PCMDataSize; RomMask *= 2) {}
 	RomMask--;
 
 	Chip->bankmask = Mask & (RomMask >> Chip->bankshift);

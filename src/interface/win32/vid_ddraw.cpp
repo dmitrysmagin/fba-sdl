@@ -3,6 +3,9 @@
 #include "burner.h"
 #include "vid_directx_support.h"
 
+#include <InitGuid.h>
+#define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
+
 static IDirectDraw7* DtoDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* DtoPrim = NULL;		// Primary surface
 static IDirectDrawSurface7* DtoBack = NULL;		// Back buffer surface
@@ -210,7 +213,7 @@ static int DtosInit()
 
 	RECT rect = { 0, 0, 0, 0 };
 	GetClientScreenRect(hVidWnd, &rect);
-	rect.top += nMenuHeight;
+	rect.top += 0 /*nMenuHeight*/;
 
 	VidSScaleImage(&rect, nGameWidth, nGameHeight, bVidScanRotate);
 
@@ -241,8 +244,10 @@ static int vidExit()
 }
 
 static GUID MyGuid;
-static int nWantDriver, nCurrentDriver;
+static int nWantDriver;
 
+#ifdef PRINT_DEBUG_INFO
+static int nCurrentDriver;
 #ifdef UNICODE
 static BOOL PASCAL MyEnumDisplayDrivers(GUID FAR* pGuid, LPWSTR pszDesc, LPWSTR /*pszName*/, LPVOID /*pContext*/, HMONITOR /*hMonitor*/)
 #else
@@ -263,10 +268,11 @@ static BOOL PASCAL MyEnumDisplayDrivers(GUID FAR* pGuid, LPSTR pszDesc, LPSTR /*
 
 	return DDENUMRET_OK;
 }
+#endif
 
 static int vidInit()
 {
-	hVidWnd = hScrnWnd;						// Use Screen window for video
+	hVidWnd = nVidFullscreen ? hScrnWnd : hVideoWindow;						// Use Screen window for video
 
 #ifdef PRINT_DEBUG_INFO
 	dprintf(_T("  * Enumerating available drivers:\n"));
@@ -871,7 +877,7 @@ static int vidBurnToSurf()
 	GetClientScreenRect(hVidWnd, &Dest);
 
 	if (!nVidFullscreen) {
-		Dest.top += nMenuHeight;
+		Dest.top += 0 /*nMenuHeight*/;
 	}
 
 	if (bVidArcaderes && nVidFullscreen) {
@@ -987,7 +993,7 @@ static int vidPaint(int bValidate)
 		RECT rect = { 0, 0, 0, 0 };
 
 		GetClientScreenRect(hVidWnd, &rect);
-		rect.top += nMenuHeight;
+		rect.top += 0 /*nMenuHeight*/;
 
 		VidSScaleImage(&rect, nGameWidth, nGameHeight, bVidScanRotate);
 
@@ -1004,6 +1010,8 @@ static int vidPaint(int bValidate)
 	if (DtoBltFx) {
 		dwBltFlags |= DDBLT_DDFX;
 	}
+
+	if (bVidVSync && !nVidFullscreen) { DtoDD->WaitForVerticalBlank(DDWAITVB_BLOCKEND, NULL); }
 
 	if (DtoBack != NULL) {																		// Triple bufferring
 		if (FAILED(DtoBack->Blt(&Dest, pddsDtos, &Src, DDBLT_ASYNC | dwBltFlags, DtoBltFx))) {
@@ -1034,6 +1042,20 @@ static int vidPaint(int bValidate)
 				return 1;
 			}
 		}
+/*
+		DWORD lpdwScanLine;
+		RECT window;
+		GetWindowRect(hVidWnd, &window);
+
+		while (1) 
+		{
+			DtoDD->GetScanLine(&lpdwScanLine);
+			if (lpdwScanLine >= (unsigned int)window.bottom) {
+				break;
+			}
+			//Sleep(1);
+		}
+*/
 	}
 
 	if (bValidate & 1) {

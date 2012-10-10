@@ -115,7 +115,9 @@ static void ReloadBufferC();
 static void ResetBufferD();
 static void ReloadBufferD();
 static void SaveResult();
+#ifdef _DEBUG
 static void CheckList();
+#endif
 
 //#
 //#             Functions for Dynamic Huffman Encoding/Decoding
@@ -952,6 +954,7 @@ void PrintTree()
 }
 
 // check the reverse traverse list and print any frequencies that are out of order
+#ifdef _DEBUG
 static void CheckList()
 {
 	int curr_idx = list_idx;
@@ -967,7 +970,7 @@ static void CheckList()
 	if(!count_errors)
 		printf("\nNo errors in reverse traverse list.\n");
 }
-
+#endif
 
 // dump the buffer to the screen
 void PrintBuffer()

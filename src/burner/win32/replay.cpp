@@ -109,7 +109,7 @@ int StartRecord()
 
 	fp = NULL;
 
-	_stprintf(szChoice, _T("%.8s"), BurnDrvGetText(DRV_NAME));
+	_stprintf(szChoice, _T("%s"), BurnDrvGetText(DRV_NAME));
 	MakeOfn(szFilter);
 	ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_REPLAY_RECORD, true);
 	ofn.Flags |= OFN_OVERWRITEPROMPT;
@@ -210,7 +210,7 @@ int StartReplay(const TCHAR* szFileName)					// const char* szFileName = NULL
 		_tcscpy(szChoice, szFileName);
 	} else {
 		if (bDrvOkay) {
-			_stprintf(szChoice, _T("%.8s*.fr"), BurnDrvGetText(DRV_NAME));
+			_stprintf(szChoice, _T("%s*.fr"), BurnDrvGetText(DRV_NAME));
 		} else {
 			_stprintf(szChoice, _T("recording"));
 		}

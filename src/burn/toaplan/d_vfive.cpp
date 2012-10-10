@@ -21,8 +21,8 @@ static struct BurnRomInfo vfiveRomDesc[] = {
 };
 
 
-STD_ROM_PICK(vfive);
-STD_ROM_FN(vfive);
+STD_ROM_PICK(vfive)
+STD_ROM_FN(vfive)
 
 static struct BurnRomInfo grindstmRomDesc[] = {
 	{ "01.bin",       0x080000, 0x4923F790, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -34,8 +34,8 @@ static struct BurnRomInfo grindstmRomDesc[] = {
 };
 
 
-STD_ROM_PICK(grindstm);
-STD_ROM_FN(grindstm);
+STD_ROM_PICK(grindstm)
+STD_ROM_FN(grindstm)
 
 static struct BurnRomInfo grindstaRomDesc[] = {
 	{ "tp027-01.rom", 0x080000, 0x8D8C0392, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -47,8 +47,8 @@ static struct BurnRomInfo grindstaRomDesc[] = {
 };
 
 
-STD_ROM_PICK(grindsta);
-STD_ROM_FN(grindsta);
+STD_ROM_PICK(grindsta)
+STD_ROM_FN(grindsta)
 
 static struct BurnInputInfo vfiveInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -80,7 +80,7 @@ static struct BurnInputInfo vfiveInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(vfive);
+STDINPUTINFO(vfive)
 
 static struct BurnDIPInfo vfiveDIPList[] = {
 	// Defaults
@@ -188,8 +188,8 @@ static struct BurnDIPInfo grindstmRegionDIPList[] = {
 
 };
 
-STDDIPINFO(vfive);
-STDDIPINFOEXT(grindstm, vfive, grindstmRegion);
+STDDIPINFO(vfive)
+STDDIPINFOEXT(grindstm, vfive, grindstmRegion)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -469,7 +469,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -561,32 +561,32 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvVFive = {
-	"vfive", NULL, NULL, "1993",
+	"vfive", "grindstm", NULL, NULL, "1993",
 	"V-Five (Japan)\0", "No sound (sound MCU not dumped)", "Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, vfiveRomInfo, vfiveRomName, vfiveInputInfo, vfiveDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, vfiveRomInfo, vfiveRomName, NULL, NULL, vfiveInputInfo, vfiveDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvGrindStormer = {
-	"grindstm", "vfive", NULL, "1992",
+	"grindstm", NULL, NULL, NULL, "1992",
 	"Grind Stormer\0", "No sound (sound MCU not dumped)", "Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, grindstmRomInfo, grindstmRomName, vfiveInputInfo, grindstmDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, grindstmRomInfo, grindstmRomName, NULL, NULL, vfiveInputInfo, grindstmDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvGrindStormerA = {
-	"grindsta", "vfive", NULL, "1992",
+	"grindstma", "grindstm", NULL, NULL, "1992",
 	"Grind Stormer (older set)\0", "No sound (sound MCU not dumped)", "Toaplan GP9001 based", "Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, grindstaRomInfo, grindstaRomName, vfiveInputInfo, grindstmDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, grindstaRomInfo, grindstaRomName, NULL, NULL, vfiveInputInfo, grindstmDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 

@@ -69,7 +69,7 @@ static struct BurnInputInfo SolomonInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, SolomonDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Solomon);
+STDINPUTINFO(Solomon)
 
 inline void SolomonClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -159,7 +159,7 @@ static struct BurnDIPInfo SolomonDIPList[]=
 	{0x12, 0x01, 0xe0, 0xe0, "None"                   },
 };
 
-STDDIPINFO(Solomon);
+STDDIPINFO(Solomon)
 
 static struct BurnRomInfo SolomonRomDesc[] = {
 	{ "6.3f",          0x04000, 0x645eb0f3, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -179,8 +179,8 @@ static struct BurnRomInfo SolomonRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Solomon);
-STD_ROM_FN(Solomon);
+STD_ROM_PICK(Solomon)
+STD_ROM_FN(Solomon)
 
 static struct BurnRomInfo SolomonjRomDesc[] = {
 	{ "slmn_06.bin",   0x04000, 0xe4d421ff, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -200,8 +200,8 @@ static struct BurnRomInfo SolomonjRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Solomonj);
-STD_ROM_FN(Solomonj);
+STD_ROM_PICK(Solomonj)
+STD_ROM_FN(Solomonj)
 
 int SolomonDoReset()
 {
@@ -809,21 +809,21 @@ static int SolomonScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvSolomon = {
-	"solomon", NULL, NULL, "1986",
+	"solomon", NULL, NULL, NULL, "1986",
 	"Solomon's Key (US)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, SolomonRomInfo, SolomonRomName, SolomonInputInfo, SolomonDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_PUZZLE, 0,
+	NULL, SolomonRomInfo, SolomonRomName, NULL, NULL, SolomonInputInfo, SolomonDIPInfo,
 	SolomonInit, SolomonExit, SolomonFrame, NULL, SolomonScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x200, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvSolomonj = {
-	"solomonj", "solomon", NULL, "1986",
+	"solomonj", "solomon", NULL, NULL, "1986",
 	"Solomon's Key (Japan)\0", NULL, "Tecmo", "Miscellaneous",
 	L"Solomon's Key (Japan)\0Solomon's Key \u30BD\u30ED\u30E2\u30F3\u306E\u9375\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, SolomonjRomInfo, SolomonjRomName, SolomonInputInfo, SolomonDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PUZZLE, 0,
+	NULL, SolomonjRomInfo, SolomonjRomName, NULL, NULL, SolomonInputInfo, SolomonDIPInfo,
 	SolomonInit, SolomonExit, SolomonFrame, NULL, SolomonScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x200, 256, 224, 4, 3
 };

@@ -14,6 +14,32 @@
  #include <SDL.h>
 #endif
 
+#define FILTER_PLAIN				0
+#define FILTER_ADVMAME_SCALE_2X			1
+#define FILTER_ADVMAME_SCALE_3X			2
+#define FILTER_2XPM_LQ				3
+#define FILTER_2XPM_HQ				4
+#define FILTER_EAGLE				5
+#define FILTER_SUPEREAGLE			6
+#define FILTER_2XSAI				7
+#define FILTER_SUPER_2XSAI			8
+#define FILTER_SUPEREAGLE_VBA			9
+#define FILTER_2XSAI_VBA			10
+#define FILTER_SUPER_2XSAI_VBA			11
+#define FILTER_SUPERSCALE			12
+#define FILTER_SUPERSCALE_75SCAN		13
+#define FILTER_HQ2X				14
+#define FILTER_HQ3X				15
+#define FILTER_HQ4X				16
+#define FILTER_HQ2XS_VBA			17
+#define FILTER_HQ3XS_VBA			18
+#define FILTER_HQ2XS_SNES9X			19
+#define FILTER_HQ3XS_SNES9X			20
+#define FILTER_HQ2XBOLD				21
+#define FILTER_HQ3XBOLD				22
+#define FILTER_EPXB				23
+#define FILTER_EPXC				24
+
 TCHAR* VidSoftFXGetEffect(int nEffect);
 int VidSoftFXGetZoom(int nEffect);
 int VidSoftFXCheckDepth(int nEffect, int nDepth);

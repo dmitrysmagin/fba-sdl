@@ -31,56 +31,55 @@ static int tile_bank, flipscreen;
 
 
 static struct BurnInputInfo DrvInputList[] = {
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 9,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 10,	"p1 start" },
-	{"P1 button 1",	  BIT_DIGITAL,   DrvJoy1 + 0,   "p1 button 1", },
-	{"P1 button 2",	  BIT_DIGITAL,   DrvJoy1 + 1,   "p1 button 2", },
-	{"P1 button 3",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 button 3", },
-	{"P1 button 4",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 button 4", },
-	{"P1 button 5",	  BIT_DIGITAL,   DrvJoy1 + 4,   "p1 button 5", },
-	{"P1 button 6",	  BIT_DIGITAL,   DrvJoy1 + 5,   "p1 button 6", },
-	{"P1 button 7",	  BIT_DIGITAL,   DrvJoy1 + 6,   "p1 button 7", },
-	{"P1 button 8",	  BIT_DIGITAL,   DrvJoy1 + 7,   "p1 button 8", },
-	{"P1 button 9",	  BIT_DIGITAL,   DrvJoy1 + 8,   "p1 button 9", },
+	{"Coin 1"     ,   BIT_DIGITAL,   DrvJoy1 + 9,	  "p1 coin"  },
+	{"Start 1"    ,   BIT_DIGITAL,   DrvJoy1 + 10,	"p1 start" },
+	{"Start 2"    ,   BIT_DIGITAL,   DrvJoy2 + 10,	"p2 start" },
+	{"P1 button 1",	  BIT_DIGITAL,   DrvJoy1 + 0,   "p1 fire 1", },
+	{"P1 button 2",	  BIT_DIGITAL,   DrvJoy1 + 1,   "p1 fire 2", },
+	{"P1 button 3",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 fire 3", },
+	{"P1 button 4",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 fire 4", },
+	{"P1 button 5",	  BIT_DIGITAL,   DrvJoy1 + 4,   "p1 fire 5", },
+	{"P1 button 6",	  BIT_DIGITAL,   DrvJoy1 + 5,   "p1 fire 6", },
+	{"P1 button 7",	  BIT_DIGITAL,   DrvJoy1 + 6,   "p1 fire 7", },
+	{"P1 button 8",	  BIT_DIGITAL,   DrvJoy1 + 7,   "p1 fire 8", },
+	{"P1 button 9",	  BIT_DIGITAL,   DrvJoy1 + 8,   "p1 fire 9", },
 
-	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy2 + 9,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 10,	"p2 start" },
-	{"P1 button 1",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 button 1", },
-	{"P2 button 2",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p2 button 2", },
-	{"P2 button 3",	  BIT_DIGITAL,   DrvJoy2 + 2,   "p2 button 3", },
-	{"P2 button 4",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 button 4", },
-	{"P2 button 5",	  BIT_DIGITAL,   DrvJoy2 + 4,   "p2 button 5", },
-	{"P2 button 6",	  BIT_DIGITAL,   DrvJoy2 + 5,   "p2 button 6", },
-	{"P2 button 7",	  BIT_DIGITAL,   DrvJoy2 + 6,   "p2 button 7", },
-	{"P2 button 8",	  BIT_DIGITAL,   DrvJoy2 + 7,   "p2 button 8", },
-	{"P2 button 9",	  BIT_DIGITAL,   DrvJoy2 + 8,   "p2 button 9", },
+	{"P2 button 1",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 fire 1", },
+	{"P2 button 2",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p2 fire 2", },
+	{"P2 button 3",	  BIT_DIGITAL,   DrvJoy2 + 2,   "p2 fire 3", },
+	{"P2 button 4",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 fire 4", },
+	{"P2 button 5",	  BIT_DIGITAL,   DrvJoy2 + 4,   "p2 fire 5", },
+	{"P2 button 6",	  BIT_DIGITAL,   DrvJoy2 + 5,   "p2 fire 6", },
+	{"P2 button 7",	  BIT_DIGITAL,   DrvJoy2 + 6,   "p2 fire 7", },
+	{"P2 button 8",	  BIT_DIGITAL,   DrvJoy2 + 7,   "p2 fire 8", },
+	{"P2 button 9",	  BIT_DIGITAL,   DrvJoy2 + 8,   "p2 fire 9", },
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, &DrvDips,	"dip"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
 	// Default Values
-	{0x18, 0xff, 0xff, 0x00, NULL 			},
+	{0x16, 0xff, 0xff, 0x00, NULL },
 
-	{0   , 0xfe, 0   , 2   , "Round Points"		},
-	{0x18, 0x01, 0x01, 0x00, "Off"			},
-	{0x18, 0x01, 0x01, 0x01, "On"			},
+	{0   , 0xfe, 0   , 2   , "Passing Points" },
+	{0x16, 0x01, 0x01, 0x00, "300" },
+	{0x16, 0x01, 0x01, 0x01, "400" },
 
-	{0   , 0xfe, 0   , 2   , "Coinage"		},
-	{0x18, 0x01, 0x02, 0x00, "1 coin 1 Credit"	},
-	{0x18, 0x01, 0x02, 0x02, "1 coin 2 Credits"	},
+	{0   , 0xfe, 0   , 2   , "Coinage" },
+	{0x16, 0x01, 0x02, 0x00, "1 Coin 1 Play"  },
+	{0x16, 0x01, 0x02, 0x02, "1 Coin 2 Plays" },
 
-	{0   , 0xfe, 0   , 2   , "Cabinet"		},
-	{0x18, 0x01, 0x10, 0x00, "Upright"		},
-	{0x18, 0x01, 0x10, 0x10, "Cocktail"		},
+	{0   , 0xfe, 0   , 2   , "Cabinet" },
+	{0x16, 0x01, 0x10, 0x00, "Upright"  },
+	{0x16, 0x01, 0x10, 0x10, "Cocktail" },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 
 //--------------------------------------------------------------------------------------
@@ -265,6 +264,8 @@ static int mole_gfx_convert()
 	}
 
 	free (tmp);
+	
+	return 0;
 }
 
 static int DrvInit()
@@ -480,15 +481,15 @@ static struct BurnRomInfo moleRomDesc[] = {
 	{ "mba.8a",	0x1000, 0x50c43fc9, 2 | BRF_GRA },	     //  8
 };
 
-STD_ROM_PICK(mole);
-STD_ROM_FN(mole);
+STD_ROM_PICK(mole)
+STD_ROM_FN(mole)
 
-struct BurnDriver BurnDrvmole = {
-	"mole", NULL, NULL, "1982",
-	"Mole Attack\0", NULL, "Yachiyo Electronics, Ltd.", "misc",
+struct BurnDriver BurnDrvMole = {
+	"mole", NULL, NULL, NULL, "1982",
+	"Mole Attack\0", NULL, "Yachiyo Electronics, Ltd.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, moleRomInfo, moleRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, moleRomInfo, moleRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x08,
 	320, 200, 4, 3
 };

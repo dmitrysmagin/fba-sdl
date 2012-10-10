@@ -27,9 +27,17 @@
 
 #if defined (BUILD_WIN32)
  #include "burner_win32.h"
+#include <shellapi.h>
+#include <shlwapi.h>
+#include "net.h"
+#include "menugui.h"
+#include "imagebutton.h"
+#include "dwmapi_core.h"
 #elif defined (BUILD_SDL)
  #include "burner_sdl.h"
 #endif
+
+#include "png.h"
 
 // ---------------------------------------------------------------------------
 // OS independent functionality
@@ -63,6 +71,7 @@ void GameInpCheckLeftAlt();
 void GameInpCheckMouse();
 int GameInpBlank(int bDipSwitch);
 int GameInputAutoIni(int nPlayer, TCHAR* lpszFile, bool bOverWrite);
+int ConfigGameLoadHardwareDefaults();
 int GameInpDefault();
 int GameInpWrite(FILE* h);
 int GameInpRead(TCHAR* szVal, bool bOverWrite);
@@ -100,6 +109,7 @@ extern double nGamma;
 
 int SetBurnHighCol(int nDepth);
 char* DecorateGameName(unsigned int nBurnDrv);
+TCHAR* DecorateGenreInfo();
 void ComputeGammaLUT();
 
 // dat.cpp
@@ -122,7 +132,7 @@ int BurnStateDecompress(unsigned char* Def, int nDefLen, int bAll);
 // zipfn.cpp
 struct ZipEntry { char* szName;	unsigned int nLen; unsigned int nCrc; };
 
-int ZipOpen(char* szZip);
+int ZipOpen(const char* szZip);
 int ZipClose();
 int ZipGetList(struct ZipEntry** pList, int* pnListCount);
 int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry);

@@ -111,3 +111,38 @@ static int Name##DIPInfo(struct BurnDIPInfo* pdi, unsigned int i)		\
 	return 0;															\
 }
 
+// sample support
+#define STD_SAMPLE_PICK(Name)												\
+static struct BurnSampleInfo* Name##PickSample(unsigned int i)				\
+{																		\
+	if (i >= sizeof(Name##SampleDesc) / sizeof(Name##SampleDesc[0])) {		\
+		return NULL;													\
+	}																	\
+	return Name##SampleDesc + i;											\
+}
+
+#define STD_SAMPLE_FN(Name)												\
+static int Name##SampleInfo(struct BurnSampleInfo* pri, unsigned int i)		\
+{																		\
+	struct BurnSampleInfo* por = Name##PickSample(i);							\
+	if (por == NULL) {													\
+		return 1;														\
+	}																	\
+	if (pri) {															\
+		pri->nFlags = por->nFlags;											\
+	}																	\
+	return 0;															\
+}																		\
+															\
+static int Name##SampleName(char** pszName, unsigned int i, int nAka)		\
+{											   		 					\
+	struct BurnSampleInfo *por = Name##PickSample(i);							\
+	if (por == NULL) {													\
+		return 1;														\
+	}																	\
+	if (nAka) {															\
+		return 1;														\
+	}																	\
+	*pszName = por->szName;												\
+	return 0;															\
+}

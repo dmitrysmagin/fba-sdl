@@ -1,15 +1,18 @@
 // TC0220IOC
 
 #include "burnint.h"
+#include "taito_ic.h"
 
 unsigned char TC0220IOCInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 unsigned char TC0220IOCInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 unsigned char TC0220IOCInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0220IOCDip[3]        = { 0, 0, 0 };
-unsigned char TC0220IOCInput[2]      = { 0, 0 };
+unsigned char TC0220IOCDip[2]        = { 0, 0 };
+unsigned char TC0220IOCInput[3]      = { 0, 0, 0 };
 
 static UINT8 TC0220IOCRegs[8];
 static UINT8 TC0220IOCPort;
+
+extern unsigned char TaitoCoinLockout[4];
 
 UINT8 TC0220IOCPortRead()
 {
@@ -67,6 +70,16 @@ UINT8 TC0220IOCHalfWordRead(int Offset)
 void TC0220IOCWrite(UINT8 Port, UINT8 Data)
 {
 	TC0220IOCRegs[Port] = Data;
+
+	if (Port == 0) {
+		TaitoWatchdog = 0;
+	}
+
+	if (Port == 4) {
+		TaitoCoinLockout[0] = ~Data & 0x01;
+		TaitoCoinLockout[1] = ~Data & 0x02;
+		// coin counters 0x04 & 0x08
+	}
 }
 
 void TC0220IOCHalfWordPortRegWrite(UINT16 Data)
@@ -93,6 +106,11 @@ void TC0220IOCReset()
 {
 	memset(TC0220IOCRegs, 0, 8);
 	TC0220IOCPort = 0;
+}
+
+void TC0220IOCInit()
+{
+	TaitoIC_TC0220IOCInUse = 1;
 }
 
 void TC0220IOCExit()

@@ -1,21 +1,11 @@
 #include "burnint.h"
 
-// Uncomment the following line to mnake the display the full 320 pixels wide
-// #define NEO_DISPLAY_OVERSCAN
-
-#ifdef NEO_DISPLAY_OVERSCAN
- const int nNeoScreenWidth = 320;
-#else
- const int nNeoScreenWidth = 304;
-#endif
-
 struct NeoGameInfo {
 	int nCodeOffset; int nCodeNum;
 	int nTextOffset;
 	int nSpriteOffset; int nSpriteNum;
 	int nSoundOffset;
 	int nADPCMOffset; int nADPCMANum; int nADPCMBNum;
-	int nNeoSRAMProtection;
 };
 
 // neogeo.cpp
@@ -46,9 +36,7 @@ extern unsigned char NeoDiag[];
 extern unsigned char NeoDebugDip[];
 extern unsigned char NeoReset, NeoSystem;
 
-extern int nNeoSRAMProtection;
-
-extern unsigned char *Neo68KROM;
+extern unsigned char *Neo68KROM, *NeoZ80ROM, *YM2610ADPCMAROM;
 extern unsigned int nNeo68KROMBank;
 
 extern void (*pNeoInitCallback)();
@@ -67,6 +55,7 @@ void NeoMapBank();
 
 // neo_palette.cpp
 extern unsigned char* NeoPalSrc[2];
+extern unsigned int* NeoPaletteData[2];
 extern int nNeoPaletteBank;
 extern unsigned int* NeoPalette;
 
@@ -91,6 +80,8 @@ int NeoRenderText();
 void NeoUpdateTextOne(int nOffset, const unsigned char byteValue);
 
 // neo_sprite.cpp
+extern int nNeoScreenWidth;
+
 extern unsigned char* NeoSpriteROM;
 extern unsigned char* NeoZoomROM;
 
@@ -111,8 +102,8 @@ void NeoGfxDecryptCMC42Init();
 void NeoGfxDecryptCMC50Init();
 void NeoGfxDecryptDoBlock(int extra_xor, unsigned char* buf, int offset, int block_size, int rom_size);
 void NeoExtractSData(unsigned char* rom, unsigned char* sdata, int rom_size, int sdata_size);
-void svcpcb_gfx_decrypt(unsigned char* rom);
-void kf2k3pcb_gfx_decrypt(unsigned char *rom);
+void pcb_gfx_crypt(unsigned char *src, int nType);
+void neogeo_cmc50_m1_decrypt();
 
 // neo_upd4990a.cpp
 void uPD4990AExit();
@@ -122,3 +113,9 @@ void uPD4990AScan(int nAction, int* pnMin);
 void uPD4990AUpdate(unsigned int nTicks);
 void uPD4990AWrite(unsigned char CLK, unsigned char STB, unsigned char DATA);
 unsigned char uPD4990ARead(unsigned int nTicks);
+
+// d_neogeo.cpp
+void kf2k3pcb_bios_decode();
+
+// rom_save.cpp
+void NeoSaveDecryptedCRoms();

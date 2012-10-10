@@ -35,3 +35,15 @@ int CheatApply();
 int CheatInit();
 void CheatExit();
 
+#define CHEATSEARCH_SHOWRESULTS		3
+extern unsigned int CheatSearchShowResultAddresses[CHEATSEARCH_SHOWRESULTS];
+extern unsigned int CheatSearchShowResultValues[CHEATSEARCH_SHOWRESULTS];
+
+int CheatSearchInit();
+void CheatSearchExit();
+void CheatSearchStart();
+unsigned int CheatSearchValueNoChange();
+unsigned int CheatSearchValueChange();
+unsigned int CheatSearchValueDecreased();
+unsigned int CheatSearchValueIncreased();
+void CheatSearchDumptoFile();

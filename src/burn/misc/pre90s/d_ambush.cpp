@@ -1,52 +1,67 @@
-// Ambush FB Alpha driver module
+// FB Alpha Ambush driver module
 // Based on MAME driver by Zsolt Vasvari
 
-#include "burnint.h"
+#include "tiles_generic.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *Rom, *Gfx, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips;
-static int *Palette;
-static short* pFMBuffer;
-static short* pAY8910Buffer[6];
+static unsigned char *AllMem;
+static unsigned char *MemEnd;
+static unsigned char *AllRam;
+static unsigned char *RamEnd;
+static unsigned char *DrvZ80ROM;
+static unsigned char *DrvGfxROM0;
+static unsigned char *DrvGfxROM1;
+static unsigned char *DrvColPROM;
+static unsigned char *DrvVidRAM;
+static unsigned char *DrvSprRAM;
+static unsigned char *DrvZ80RAM;
+static unsigned char *DrvColRAM;
+static unsigned char *DrvScrRAM;
+static short         *pAY8910Buffer[6];
+static unsigned int *DrvPalette;
+static unsigned int *Palette;
 
-static unsigned char ambush_colorbank, flipscreen;
+static unsigned char DrvRecalc;
 
-//----------------------------------------------------------------------------------
-// Inputs
+static unsigned char DrvJoy1[8];
+static unsigned char DrvJoy2[8];
+static unsigned char DrvDips[1];
+static unsigned char DrvInputs[2];
+static unsigned char DrvReset;
 
-static struct BurnInputInfo DrvInputList[] = {
-	{"Coin 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"},
-	{"Coin 2",		BIT_DIGITAL,	DrvJoy2 + 0,	"p2 coin"},
-	{"Start 1",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 start"},
-	{"Start 2",		BIT_DIGITAL,	DrvJoy2 + 1,    "p2 start"},
+static unsigned char *color_bank;
+static unsigned char *flipscreen;
 
-	{"P1 Up",		BIT_DIGITAL,	DrvJoy1 + 2,	"p1 up"},
-	{"P1 Down",		BIT_DIGITAL,	DrvJoy1 + 3,	"p1 down"},
-	{"P1 Left",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 left"},
-	{"P1 Right",	  	BIT_DIGITAL,	DrvJoy1 + 5,	"p1 right"},
-	{"P1 Button 1", 	BIT_DIGITAL,	DrvJoy1 + 6,	"p1 fire 1"},
-	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 fire 2"},
+static struct BurnInputInfo AmbushInputList[] = {
+	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 coin"	},
+	{"P1 Start",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 start"	},
+	{"P1 Up",		BIT_DIGITAL,	DrvJoy2 + 0,	"p1 up"		},
+	{"P1 Down",		BIT_DIGITAL,	DrvJoy2 + 1,	"p1 down"	},
+	{"P1 Left",		BIT_DIGITAL,	DrvJoy2 + 2,	"p1 left"	},
+	{"P1 Right",		BIT_DIGITAL,	DrvJoy2 + 3,	"p1 right"	},
+	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 fire 1"	},
+	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 fire 2"	},
 
-	{"P2 Up",		BIT_DIGITAL,	DrvJoy2 + 2,	"p2 up"},
-	{"P2 Down",		BIT_DIGITAL,	DrvJoy2 + 3,	"p2 down"},
-	{"P2 Left",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 left"},
-	{"P2 Right",	  	BIT_DIGITAL,	DrvJoy2 + 5,	"p2 right"},
-	{"P2 Button 1", 	BIT_DIGITAL,	DrvJoy2 + 6,	"p2 fire 1"},
-	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy2 + 7,	"p2 fire 2"},
+	{"P2 Coin",		BIT_DIGITAL,	DrvJoy1 + 6,	"p2 coin"	},
+	{"P2 Start",		BIT_DIGITAL,	DrvJoy1 + 4,	"p2 start"	},
+	{"P2 Up",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 up"		},
+	{"P2 Down",		BIT_DIGITAL,	DrvJoy2 + 5,	"p2 down"	},
+	{"P2 Left",		BIT_DIGITAL,	DrvJoy2 + 6,	"p2 left"	},
+	{"P2 Right",		BIT_DIGITAL,	DrvJoy2 + 7,	"p2 right"	},
+	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy1 + 3,	"p2 fire 1"	},
+	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy1 + 2,	"p2 fire 2"	},
 
-	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"},
-	{"Dip Switches",	BIT_DIPSWITCH,	&DrvDips,	"dip"},
+	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"		},
+	{"Dip A",		BIT_DIPSWITCH,	DrvDips + 0,	"dip"		},
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Ambush)
 
-static struct BurnDIPInfo DrvDIPList[]=
+static struct BurnDIPInfo AmbushDIPList[]=
 {
-	// Default Values
 	{0x11, 0xff, 0xff, 0xc0, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Lives"           	  },
@@ -78,114 +93,82 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x11, 0x01, 0x80, 0x00, "Cocktail"    		  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Ambush)
 
-//----------------------------------------------------------------------------------
-// Memory / Port handlers
-
-unsigned char __fastcall ambush_read_byte(unsigned short a)
+unsigned char __fastcall ambush_read_byte(unsigned short address)
 {
-	switch (a)
+	switch (address)
 	{
-		case 0xa000: // watchdog reset
-		break;
-
 		case 0xc800:
-			return DrvDips; // dips
+			return DrvDips[0];
 	}
 
 	return 0;
 }
 
-void __fastcall ambush_write_byte(unsigned short a, unsigned char d)
+void __fastcall ambush_write_byte(unsigned short address, unsigned char data)
 {
-	switch (a)
+	switch (address)
 	{
-		case 0xcc00:	// nop
-		case 0xcc01:
-		case 0xcc02:
-		case 0xcc03:
-		case 0xcc07:	// coin counter
-
+		case 0xcc04:
+			*flipscreen = data;	
 		break;
 
-		case 0xcc04:	// flip screen
-			flipscreen = d;	
-		break;
-
-		case 0xcc05:	// color bank select
-			ambush_colorbank = d & 3;
+		case 0xcc05:
+			*color_bank = (data & 3) << 4;
 		break;
 	}
 }
-		
 
-unsigned char __fastcall ambush_in_port(unsigned short a)
+unsigned char __fastcall ambush_in_port(unsigned short port)
 {
-	switch (a & 0xff)
+	switch (port & 0xff)
 	{
-		case 0x00: // read_0
-		case 0x80: // read 1
-			return AY8910Read((a >> 7) & 1); 
+		case 0x00:
+			return AY8910Read(0);
+
+		case 0x80:
+			return AY8910Read(1); 
 	}
 
 	return 0;
 }
 
-void __fastcall ambush_out_port(unsigned short a, unsigned char d)
+void __fastcall ambush_out_port(unsigned short port, unsigned char data)
 {
-	switch (a & 0xff)
+	switch (port & 0xff)
 	{
-		case 0x00: // control 0
-		case 0x01: // write 0
-		case 0x80: // control 1
-		case 0x81: // write 1
-			AY8910Write((a >> 7) & 1, a & 1, d);
+		case 0x00:
+			AY8910Write(0, 0, data);
+		break;
+
+		case 0x01:
+			AY8910Write(0, 1, data);
+		break;
+
+		case 0x80:
+			AY8910Write(1, 0, data);
+		break;
+
+		case 0x81:
+			AY8910Write(1, 1, data);
 		break;
 	}
 }
 
 unsigned char AY8910_0_port0(unsigned int)
 {
-	unsigned char ret = 0xff;
-
-	ret ^= DrvJoy1[7] << 0;
-	ret ^= DrvJoy1[6] << 1;
-	ret ^= DrvJoy2[7] << 2;
-	ret ^= DrvJoy2[6] << 3;
-	ret ^= DrvJoy2[1] << 4;
-	ret ^= DrvJoy1[1] << 5;
-	ret ^= DrvJoy2[0] << 6;
-	ret ^= DrvJoy1[0] << 7;
-
-	return ret;
+	return DrvInputs[0];
 }
 
 unsigned char AY8910_1_port0(unsigned int)
 {
-	unsigned char ret = 0xff;
-
-	ret ^= DrvJoy1[2] << 0;
-	ret ^= DrvJoy1[3] << 1;
-	ret ^= DrvJoy1[4] << 2;
-	ret ^= DrvJoy1[5] << 3;
-	ret ^= DrvJoy2[2] << 4;
-	ret ^= DrvJoy2[3] << 5;
-	ret ^= DrvJoy2[4] << 6;
-	ret ^= DrvJoy2[5] << 7;
-
-	return ret;
+	return DrvInputs[1];
 }
-
-//----------------------------------------------------------------------------------
-// Initilizing functions
 
 static int DrvDoReset()
 {
-	ambush_colorbank = 0;
-
-	memset(Rom + 0x8000, 0, 0x0400);
-	memset(Rom + 0xc000, 0, 0x1000);
+	memset(AllRam, 0, RamEnd - AllRam);
 
 	ZetOpen(0);
 	ZetReset();
@@ -197,110 +180,143 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void ambush_palette_init()
+static void DrvPaletteInit()
 {
-	int i;
-	unsigned char *color_prom = Prom;
-
-	for (i = 0;i < 0x100; i++)
+	for (int i = 0;i < 0x100; i++)
 	{
 		int bit0,bit1,bit2,r,g,b;
 
-		/* red component */
-		bit0 = (color_prom[i] >> 0) & 0x01;
-		bit1 = (color_prom[i] >> 1) & 0x01;
-		bit2 = (color_prom[i] >> 2) & 0x01;
+		bit0 = (DrvColPROM[i] >> 0) & 0x01;
+		bit1 = (DrvColPROM[i] >> 1) & 0x01;
+		bit2 = (DrvColPROM[i] >> 2) & 0x01;
 		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
-		/* green component */
-		bit0 = (color_prom[i] >> 3) & 0x01;
-		bit1 = (color_prom[i] >> 4) & 0x01;
-		bit2 = (color_prom[i] >> 5) & 0x01;
+
+		bit0 = (DrvColPROM[i] >> 3) & 0x01;
+		bit1 = (DrvColPROM[i] >> 4) & 0x01;
+		bit2 = (DrvColPROM[i] >> 5) & 0x01;
 		g = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
-		/* blue component */
-		bit0 = 0;
-		bit1 = (color_prom[i] >> 6) & 0x01;
-		bit2 = (color_prom[i] >> 7) & 0x01;
-		b = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+
+		bit1 = (DrvColPROM[i] >> 6) & 0x01;
+		bit2 = (DrvColPROM[i] >> 7) & 0x01;
+		b = 0x47 * bit1 + 0x97 * bit2;
 
 		Palette[i] = (r << 16) | (g << 8) | b;
 	}
 }
 
-static void ambush_gfx_convert()
+static void DrvGfxDecode()
 {
+	static int Plane[2]  = { 0, 0x10000 };
+	static int XOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+	static int YOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+
 	unsigned char *tmp = (unsigned char *)malloc(0x4000);
-
-	memcpy (tmp, Gfx, 0x4000);
-
-	for (int i = 0; i < 0x10000; i++)
-	{
-		Gfx[i]  = ((tmp[0x0000 + (i >> 3)] >> (i & 7)) & 1) << 1;
-		Gfx[i] |= ((tmp[0x2000 + (i >> 3)] >> (i & 7)) & 1);
+	if (tmp == NULL) {
+		return;
 	}
+
+	memcpy (tmp, DrvGfxROM0, 0x4000);
+
+	GfxDecode(0x0400, 2,  8,  8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM0);
+
+	GfxDecode(0x0100, 2, 16, 16, Plane, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
 	free (tmp);
 }
 
+static int MemIndex()
+{
+	unsigned char *Next; Next = AllMem;
+
+	DrvZ80ROM	= Next; Next += 0x008000;
+
+	DrvGfxROM0	= Next; Next += 0x010000;
+	DrvGfxROM1	= Next; Next += 0x010000;
+
+	DrvColPROM	= Next; Next += 0x000100;
+
+	DrvPalette	= (unsigned int*)Next; Next += 0x0100 * sizeof(int);
+	Palette		= (unsigned int*)Next; Next += 0x0100 * sizeof(int);
+
+	AllRam		= Next;
+
+	DrvZ80RAM	= Next; Next += 0x000800;
+	DrvVidRAM	= Next; Next += 0x000400;
+	DrvSprRAM	= Next; Next += 0x000200;
+	DrvColRAM	= Next; Next += 0x000100;
+	DrvScrRAM	= Next; Next += 0x000100;
+
+	flipscreen 	= Next; Next += 0x000001;
+	color_bank	= Next; Next += 0x000001;
+
+	pAY8910Buffer[0] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[1] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[2] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[3] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[4] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[5] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+
+	RamEnd		= Next;
+
+	MemEnd		= Next;
+
+	return 0;
+}
+
 static int DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x100 + 0x400);
-	if (Mem == NULL) {
-		return 1;
-	}
-
-	pFMBuffer = (short*)malloc(nBurnSoundLen * 6 * sizeof(short));
-	if (pFMBuffer == NULL) {
-		return 1;
-	}
-
-	Rom  = Mem + 0x00000;
-	Gfx  = Mem + 0x10000;
-	Prom = Mem + 0x20000;
-	Palette = (int*)(Mem + 0x20100);
+	AllMem = NULL;
+	MemIndex();
+	int nLen = MemEnd - (unsigned char *)0;
+	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(AllMem, 0, nLen);
+	MemIndex();
 
 	{
-		if (BurnLoadRom(Rom  + 0x0000, 0, 1)) return 1;
-		if (BurnLoadRom(Rom  + 0x2000, 1, 1)) return 1;
-		if (BurnLoadRom(Rom  + 0x4000, 2, 1)) return 1;
-		if (BurnLoadRom(Rom  + 0x6000, 3, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x0000, 0, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x2000, 1, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x4000, 2, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x6000, 3, 1)) return 1;
 
-		if (BurnLoadRom(Gfx  + 0x0000, 4, 1)) return 1;
-		if (BurnLoadRom(Gfx  + 0x2000, 5, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM0 + 0x0000, 4, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM0 + 0x2000, 5, 1)) return 1;
 
-		if (BurnLoadRom(Prom + 0x0000, 6, 1)) return 1;
+		if (BurnLoadRom(DrvColPROM + 0x0000, 6, 1)) return 1;
 
-		ambush_palette_init();
-		ambush_gfx_convert();
+		DrvPaletteInit();
+		DrvGfxDecode();
 	}
 
 	ZetInit(1);
 	ZetOpen(0);
-	ZetSetInHandler(ambush_in_port);
-	ZetSetOutHandler(ambush_out_port);
-	ZetSetReadHandler(ambush_read_byte);
+	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
+	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
+	ZetMapArea(0x8000, 0x87ff, 0, DrvZ80RAM);
+	ZetMapArea(0x8000, 0x87ff, 1, DrvZ80RAM);
+	ZetMapArea(0x8000, 0x87ff, 2, DrvZ80RAM);
+	ZetMapArea(0xc000, 0xc0ff, 0, DrvScrRAM);
+	ZetMapArea(0xc000, 0xc0ff, 1, DrvScrRAM);
+	ZetMapArea(0xc000, 0xc0ff, 2, DrvScrRAM);
+	ZetMapArea(0xc100, 0xc1ff, 0, DrvColRAM);
+	ZetMapArea(0xc100, 0xc1ff, 1, DrvColRAM);
+	ZetMapArea(0xc100, 0xc1ff, 2, DrvColRAM);
+	ZetMapArea(0xc200, 0xc3ff, 0, DrvSprRAM);
+	ZetMapArea(0xc200, 0xc3ff, 1, DrvSprRAM);
+	ZetMapArea(0xc200, 0xc3ff, 2, DrvSprRAM);
+	ZetMapArea(0xc400, 0xc7ff, 0, DrvVidRAM);
+	ZetMapArea(0xc400, 0xc7ff, 1, DrvVidRAM);
+	ZetMapArea(0xc400, 0xc7ff, 2, DrvVidRAM);
 	ZetSetWriteHandler(ambush_write_byte);
-
-	ZetMapArea(0x0000, 0x7fff, 0, Rom + 0x0000);
-	ZetMapArea(0x0000, 0x7fff, 2, Rom + 0x0000);
-
-	ZetMapArea(0x8000, 0x87ff, 0, Rom + 0x8000); // main ram
-	ZetMapArea(0x8000, 0x87ff, 1, Rom + 0x8000);
-	ZetMapArea(0x8000, 0x87ff, 2, Rom + 0x8000);
-
-	ZetMapArea(0xc000, 0xc7ff, 0, Rom + 0xc000); // video ram
-	ZetMapArea(0xc000, 0xc7ff, 1, Rom + 0xc000);
+	ZetSetReadHandler(ambush_read_byte);
+	ZetSetOutHandler(ambush_out_port);
+	ZetSetInHandler(ambush_in_port);
 	ZetMemEnd();
 	ZetClose();
 
-	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
-	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
-	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
-	pAY8910Buffer[3] = pFMBuffer + nBurnSoundLen * 3;
-	pAY8910Buffer[4] = pFMBuffer + nBurnSoundLen * 4;
-	pAY8910Buffer[5] = pFMBuffer + nBurnSoundLen * 5;
-
 	AY8910Init(0, 1500000, nBurnSoundRate, &AY8910_0_port0, NULL, NULL, NULL);
 	AY8910Init(1, 1500000, nBurnSoundRate, &AY8910_1_port0, NULL, NULL, NULL);
+
+	GenericTilesInit();
 
 	DrvDoReset();
 
@@ -309,139 +325,143 @@ static int DrvInit()
 
 static int DrvExit()
 {
+	GenericTilesExit();
+
 	ZetExit();
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	free (pFMBuffer);
-	free (Mem);
+	free (AllMem);
+	AllMem = NULL;
 
 	return 0;
 }
 
-//----------------------------------------------------------------------------------
-// Drawing functions
-
-static void draw_tile(int code, int sx, int sy, int color, int flipx, int flipy, int transp, int spr)
+static void draw_layer(int priority)
 {
-	unsigned char *src = Gfx + code;
-
-	for (int y = 7; y >= 0; y--)
+	for (int offs = 0; offs < 32 * 32; offs++)
 	{
-		for (int x = 7; x >= 0; x--, src++)
-		{
-			if (*src == 0 && transp) continue;
-			int pxl = Palette[color | *src];
+		int sx = (offs & 0x1f) << 3;
+		int sy = (offs >> 5) << 3;
 
-			int pos;
-			if (flipy)
-				pos = ((sy + 7 - y) & 0xff) * 256;
-			else
-				pos = ((sy + y) & 0xff) * 256;
+		int attr = DrvColRAM[(sy & 0xe0) | (sx >> 3)];
+		if ((attr & 0x10) != priority) continue;
 
-			if (flipx)
-				pos += ((sx + 7 - x) & 0xff);
-			else
-				pos += ((sx + x) & 0xff);
+		int code  = DrvVidRAM[offs] | ((attr & 0x60) << 3);
+		int color = (attr & 0x0f) | *color_bank;
 
-			if (spr) pos ^= 0xff00; // vertical flip for sprites
+		sy = (sy + (DrvScrRAM[sx >> 3] ^ 0xff)) & 0xff;
 
-			if (pos < 0x1000 || pos > 0xefff) continue; // trim garbage
-			pos -= 0x1000;
+		int flip = 0;
 
-			PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+		if (*flipscreen) {
+			flip = 1;
+			sx = 248 - sx;
+			sy = (248 - sy) - 16;
 		}
-	}
-}
 
-static void draw_chars(int priority)
-{
-	for (int offs = 0; offs < 0x400; offs++)
-	{
-		int code,sx,sy,color;
-		unsigned char scroll;
-
-		sy = (offs >> 5);
-		sx = (offs & 0x1f);
-
-		color = Rom[0xc100 + ((sy & 0x1c) << 3) + sx];
-
-		if ((color & 0x10) != priority)  continue;
-
-		scroll = ~Rom[0xc080 + sx];
-
-		sy = (sy << 3) + scroll;
-		sx = (sx << 3);
-
-		code = (Rom[0xc400 + offs] | ((color & 0x60) << 3)) << 6;
-
-		color = ((ambush_colorbank << 4) | (color & 0x0f)) << 2;
-
-		draw_tile(code, sx, sy, color, 0, 1, priority >> 4, 0);
+		if (priority) {
+			if (flip) {
+				Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+			} else {
+				Render8x8Tile_Mask_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+			}
+		} else {
+			if (flip) {
+				Render8x8Tile_FlipXY_Clip(pTransDraw, code, sx, sy, color, 2, 0, DrvGfxROM0);
+			} else {
+				Render8x8Tile_Clip(pTransDraw, code, sx, sy, color, 2, 0, DrvGfxROM0);
+			}
+		}
 	}
 }
 
 static void draw_sprites()
 {
-	for (int offs = 0x200 - 4;offs >= 0;offs -= 4)
+	for (int offs = 0x200 - 4; offs >= 0; offs -= 4)
 	{
-		int code,color,sx,sy,flipx,flipy;
+		int sy = DrvSprRAM[offs + 0];
+		int sx = DrvSprRAM[offs + 3];
 
-		sy = Rom[0xc200 + offs + 0];
-		sx = Rom[0xc200 + offs + 3];
+		if (sy == 0 || sy == 0xff || (sx < 0x40 && DrvSprRAM[offs + 2] & 0x10) || (sx >= 0xc0 && ~DrvSprRAM[offs + 2] & 0x10))
+			continue;
 
-		if ((sy == 0) || (sy == 0xff) || ((sx <  0x40) && (  Rom[0xc200 + offs + 2] & 0x10)) ||
-		    ((sx >= 0xc0) && (!(Rom[0xc200 + offs + 2] & 0x10))))  continue;  // prevent wraparound
+		int code  = (DrvSprRAM[offs + 1] & 0x3f) | ((DrvSprRAM[offs + 2] & 0x60) << 1);
 
-		code = ((Rom[0xc200 + offs + 1] & 0x3f) | ((Rom[0xc200 + offs + 2] & 0x60) << 1)) << 8;
+		int color =(DrvSprRAM[offs + 2] & 0x0f) | *color_bank;
+		int flipx = DrvSprRAM[offs + 1] & 0x40;
+		int flipy = DrvSprRAM[offs + 1] & 0x80;
 
-		color = Rom[0xc200 + offs + 2] & 0x0f;
-		flipx = Rom[0xc200 + offs + 1] & 0x40;
-		flipy = Rom[0xc200 + offs + 1] & 0x80;
-
-		color = (color | (ambush_colorbank << 4)) << 2;
-
-		if (Rom[0xc200 + offs + 2] & 0x80)
+		if (*flipscreen)
 		{
-			// 16x16 sprites (four 8x8 tiles)
-			draw_tile(code, sx + (flipx ? 8 : 0), sy + (flipy ? 0 : 8), color, flipx, flipy, 1, 1);
-			code += 0x40;
-
-			draw_tile(code, sx + (flipx ? 0 : 8), sy + (flipy ? 0 : 8), color, flipx, flipy, 1, 1);
-			code += 0x40;
-
-			draw_tile(code, sx + (flipx ? 8 : 0), sy + (flipy ? 8 : 0), color, flipx, flipy, 1, 1);
-			code += 0x40;
-
-			draw_tile(code, sx + (flipx ? 0 : 8), sy + (flipy ? 8 : 0), color, flipx, flipy, 1, 1);
-			code += 0x40;
+			flipx = !flipx;
+			flipy = !flipy;
+			sy -= 16;
 		}
-		else
+
+		if (DrvSprRAM[offs + 2] & 0x80)
 		{
-			// 8x8 sprites
-			draw_tile(code, sx + (flipx ? 8 : 0), sy + (flipy ? 8 : 0), color, flipx, flipy, 1, 1);
+			if (*flipscreen) {
+				sx = 240 - sx;
+			} else {
+				sy = 240 - sy;
+			}
+
+			if (flipy) {
+				if (flipx) {
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM1);
+				} else {
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM1);
+				}
+			} else {
+				if (flipx) {
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM1);
+				} else {
+					Render16x16Tile_Mask_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM1);
+				}
+			}
+		} else {
+			code <<= 2;
+
+			if (*flipscreen) {
+				sx = 248 - sx;
+			} else {
+				sy = 248 - sy;
+			}
+
+			if (flipy) {
+				if (flipx) {
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+				} else {
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+				}
+			} else {
+				if (flipx) {
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+				} else {
+					Render8x8Tile_Mask_Clip(pTransDraw, code, sx, sy, color, 2, 0, 0, DrvGfxROM0);
+				}
+			}
 		}
 	}
 }
 
 static int DrvDraw()
 {
-	// set background color
-	{
-		int px = BurnHighCol(Palette[0] >> 16, Palette[0] >> 8, Palette[0], 0);
-
-		for (int i = 0; i < 0xE000; i++)
-			PutPix(pBurnDraw + i * nBurnBpp, px);
+	if (DrvRecalc) {
+		for (int i = 0; i < 0x100; i++) {
+			int p = Palette[i];
+			DrvPalette[i] =  BurnHighCol(p >> 16, (p >> 8) & 0xff, p & 0xff, 0);
+		}
 	}
 
-	// draw background
-	draw_chars(0);
+	BurnTransferClear();
 
-	// sprites
+	draw_layer(0x00);
 	draw_sprites();
+	draw_layer(0x10);
 
-	// draw foreground
-	draw_chars(0x10);
+	BurnTransferCopy(DrvPalette);
 
 	return 0;
 }
@@ -452,6 +472,14 @@ static int DrvFrame()
 		DrvDoReset();
 	}
 
+	{
+		memset (DrvInputs, 0xff, 2);
+		for (int i = 0; i < 8; i++) {
+			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
+			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
+		}
+	}
+
 	ZetOpen(0);
 	ZetRun(4000000 / 60);
 	ZetRaiseIrq(0);
@@ -459,30 +487,26 @@ static int DrvFrame()
 
 	if (pBurnSoundOut) {
 		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
-		if (nSegmentLength) {
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
+		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
+		AY8910Update(1, &pAY8910Buffer[3], nBurnSoundLen);
+		for (int n = 0; n < nBurnSoundLen; n++) {
+			nSample  = pAY8910Buffer[0][n] >> 2;
+			nSample += pAY8910Buffer[1][n] >> 2;
+			nSample += pAY8910Buffer[2][n] >> 2;
+			nSample += pAY8910Buffer[3][n] >> 2;
+			nSample += pAY8910Buffer[4][n] >> 2;
+			nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
+			if (nSample < -32768) {
+				nSample = -32768;
+			} else {
+				if (nSample > 32767) {
+					nSample = 32767;
 				}
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
 			}
+
+			pBurnSoundOut[(n << 1) + 0] = nSample;
+			pBurnSoundOut[(n << 1) + 1] = nSample;
 		}
 	}
 
@@ -493,49 +517,35 @@ static int DrvFrame()
 	return 0;
 }
 
-//----------------------------------------------------------------------------------
-// Savestates
-
 static int DrvScan(int nAction,int *pnMin)
 {
 	struct BurnArea ba;
 
-	if (pnMin) {						// Return minimum compatible version
-		*pnMin = 0x029521;
+	if (pnMin) {
+		*pnMin = 0x029702;
 	}
 
-	if (nAction & ACB_VOLATILE) {		// Scan volatile ram		
+	if (nAction & ACB_VOLATILE) {		
 		memset(&ba, 0, sizeof(ba));
 
-		ba.Data	  = Rom + 0x8000;
-		ba.nLen	  = 0x0800;
-		ba.szName = "Work Ram";
-		BurnAcb(&ba);
-
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = Rom + 0xc000;
-		ba.nLen	  = 0x1000;
-		ba.szName = "Video Ram";
+		ba.Data	  = AllRam;
+		ba.nLen	  = RamEnd - AllRam;
+		ba.szName = "All Ram";
 		BurnAcb(&ba);
 
-		ZetScan(nAction);			// Scan Z80
+		ZetScan(nAction);
 
-		AY8910Scan(nAction, pnMin);		// Scan AY8910
-
-		// Scan critical driver variables
-		SCAN_VAR(ambush_colorbank);
-		SCAN_VAR(flipscreen);
+		AY8910Scan(nAction, pnMin);
 	}
 
 	return 0;
 }
 
-//----------------------------------------------------------------------------------
-// Game drivers
 
 // Ambush
 
-static struct BurnRomInfo ambushRomDesc[] = {
+static struct BurnRomInfo ambushjRomDesc[] = {
 	{ "ambush.h7",    0x2000, 0xce306563, BRF_ESS | BRF_PRG }, //  0 Z80 Code
 	{ "ambush.g7",    0x2000, 0x90291409, BRF_ESS | BRF_PRG }, //  1
 	{ "ambush.f7",    0x2000, 0xd023ca29, BRF_ESS | BRF_PRG }, //  2
@@ -546,28 +556,28 @@ static struct BurnRomInfo ambushRomDesc[] = {
 
 	{ "a.bpr",        0x0100, 0x5f27f511, BRF_GRA },	   //  6 color PROMs
 
-	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_GRA },	   //  7 Proms - Not used
-	{ "13.bpr",	  0x0100, 0x547e970f, BRF_GRA },	   //  8
-	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_GRA },	   //  9
+	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_OPT },	   //  7 Proms - Not used
+	{ "13.bpr",	  0x0100, 0x547e970f, BRF_OPT },	   //  8
+	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_OPT },	   //  9
 };
 
-STD_ROM_PICK(ambush);
-STD_ROM_FN(ambush);
+STD_ROM_PICK(ambushj)
+STD_ROM_FN(ambushj)
 
-struct BurnDriver BurnDrvambush = {
-	"ambush", NULL, NULL, "1983",
-	"Ambush\0", NULL, "Nippon Amuse Co-Ltd", "Ambush",
+struct BurnDriver BurnDrvAmbushj = {
+	"ambushj", "ambush", NULL, NULL, "1983",
+	"Ambush (Japan)\0", NULL, "Nippon Amuse Co-Ltd", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, ambushRomInfo, ambushRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, ambushjRomInfo, ambushjRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalc, 0x100,
 	256, 224, 4, 3
 };
 
 
 // Ambush (Tecfri)
 
-static struct BurnRomInfo ambushtRomDesc[] = {
+static struct BurnRomInfo ambushRomDesc[] = {
 	{ "a1.i7",        0x2000, 0xa7cd149d, BRF_ESS | BRF_PRG }, //  0 Z80 Code
 	{ "a2.g7",        0x2000, 0x8328d88a, BRF_ESS | BRF_PRG }, //  1
 	{ "a3.f7",        0x2000, 0x8db57ab5, BRF_ESS | BRF_PRG }, //  2
@@ -578,21 +588,21 @@ static struct BurnRomInfo ambushtRomDesc[] = {
 
 	{ "a.bpr",        0x0100, 0x5f27f511, BRF_GRA },	   //  6 color PROMs
 
-	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_GRA },	   //  7 Proms - Not used
-	{ "13.bpr",	  0x0100, 0x547e970f, BRF_GRA },	   //  8
-	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_GRA },	   //  9
+	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_OPT },	   //  7 Proms - Not used
+	{ "13.bpr",	  0x0100, 0x547e970f, BRF_OPT },	   //  8
+	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_OPT },	   //  9
 };
 
-STD_ROM_PICK(ambusht);
-STD_ROM_FN(ambusht);
+STD_ROM_PICK(ambush)
+STD_ROM_FN(ambush)
 
-struct BurnDriver BurnDrvambusht = {
-	"ambusht", "ambush", NULL, "1983",
-	"Ambush (Tecfri)\0", NULL, "Tecfri", "Ambush",
+struct BurnDriver BurnDrvAmbush = {
+	"ambush", NULL, NULL, NULL, "1983",
+	"Ambush\0", NULL, "Tecfri", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, ambushtRomInfo, ambushtRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, ambushRomInfo, ambushRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalc, 0x100,
 	256, 224, 4, 3
 };
 
@@ -610,21 +620,21 @@ static struct BurnRomInfo ambushvRomDesc[] = {
 
 	{ "a.bpr",        0x0100, 0x5f27f511, BRF_GRA },	   //  6 color PROMs
 
-	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_GRA },	   //  7 Proms - Not used
-	{ "13.bpr",	  0x0100, 0x547e970f, BRF_GRA },	   //  8
-	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_GRA },	   //  9
+	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_OPT },	   //  7 Proms - Not used
+	{ "13.bpr",	  0x0100, 0x547e970f, BRF_OPT },	   //  8
+	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_OPT },	   //  9
 };
 
-STD_ROM_PICK(ambushv);
-STD_ROM_FN(ambushv);
+STD_ROM_PICK(ambushv)
+STD_ROM_FN(ambushv)
 
-struct BurnDriver BurnDrvambushv = {
-	"ambushv", "ambush", NULL, "1983",
-	"Ambush (Volt Elec co-ltd)\0", NULL, "Volt Elec co-ltd", "Ambush",
+struct BurnDriver BurnDrvAmbushv = {
+	"ambushv", "ambush", NULL, NULL, "1983",
+	"Ambush (Volt Elec co-ltd)\0", NULL, "Volt Elec co-ltd", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, ambushvRomInfo, ambushvRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, ambushvRomInfo, ambushvRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalc, 0x100,
 	256, 224, 4, 3
 };
 

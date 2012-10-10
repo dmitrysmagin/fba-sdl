@@ -38,7 +38,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip Switches",	BIT_DIPSWITCH,	&DrvDips,	"dip"  },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[] =
 {
@@ -68,7 +68,7 @@ static struct BurnDIPInfo DrvDIPList[] =
 	{0x12, 0x01, 0x20, 0x00, "02:00"},
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 
 unsigned short inputs(int inp)
@@ -243,13 +243,13 @@ static int DrvDoReset()
 	deposits2 = 0;
 	credits   = 0;
 
-	ZetOpen(0);
-	ZetReset();
-	ZetClose();
-
 	SekOpen(0);
 	SekReset();
 	SekClose();
+
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
 
 	AY8910Reset(0);
 
@@ -328,19 +328,21 @@ static int DrvInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekSetReadByteHandler(0, meijinsn_read_byte);
-	SekSetWriteByteHandler(0, meijinsn_write_byte);
 	SekMapMemory(M68KRom,		 0x000000, 0x03ffff, SM_ROM);
 	SekMapMemory(M68KRom + 0x100000, 0x100000, 0x181fff, SM_RAM);
+	SekSetReadByteHandler(0, meijinsn_read_byte);
+	SekSetWriteByteHandler(0, meijinsn_write_byte);
 	SekClose();
 
 	ZetInit(1);
 	ZetOpen(0);
-	ZetSetInHandler(meijinsn_in_port);
-	ZetSetOutHandler(meijinsn_out_port);
 	ZetMapArea(0x0000, 0xffff, 0, Z80Rom);
 	ZetMapArea(0x0000, 0x7fff, 2, Z80Rom);
+	ZetMapArea(0x8000, 0x87ff, 0, Z80Rom + 0x8000);
 	ZetMapArea(0x8000, 0x87ff, 1, Z80Rom + 0x8000);
+	ZetMapArea(0x8000, 0x87ff, 2, Z80Rom + 0x8000);
+	ZetSetInHandler(meijinsn_in_port);
+	ZetSetOutHandler(meijinsn_out_port);
 	ZetMemEnd();
 	ZetClose();
 
@@ -407,7 +409,7 @@ static int DrvFrame()
 	}
 
 	int nSoundBufferPos = 0;
-	int nInterleave = 100;
+	int nInterleave = 160;
 
 	int nCyclesSegment;
 	int nCyclesDone[2], nCyclesTotal[2];
@@ -422,17 +424,17 @@ static int DrvFrame()
 	for (int i = 0; i < nInterleave; i++) {
 		int nNext;
 
-		// Run 68k
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
 		nCyclesDone[0] += SekRun(nCyclesSegment);
-		if (i == 4) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+		if (i ==  79) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+		if (i == 159) SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
-		// Run Z80 #1
 		nNext = (i + 1) * nCyclesTotal[1] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[1];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[1] += nCyclesSegment;
+		ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
@@ -462,8 +464,6 @@ static int DrvFrame()
 		}
 	}
 
-	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
-	ZetSetIRQLine(0, 0xa0);
 	ZetClose();
 	SekClose();
 
@@ -557,15 +557,15 @@ static struct BurnRomInfo meijinsnRomDesc[] = {
 	{ "clr", 0x00020, 0x7b95b5a7, BRF_GRA },	   // 10 Color Prom
 };
 
-STD_ROM_PICK(meijinsn);
-STD_ROM_FN(meijinsn);
+STD_ROM_PICK(meijinsn)
+STD_ROM_FN(meijinsn)
 
 struct BurnDriver BurnDrvMeijinsn = {
-	"meijinsn", NULL, NULL, "1986",
+	"meijinsn", NULL, NULL, NULL, "1986",
 	"Meijinsen\0", NULL, "SNK Electronics corp.", "Miscellaneous",
 	L"\u540D\u4EBA\u6226\0Meijinsen\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, meijinsnRomInfo, meijinsnRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_PUZZLE, 0,
+	NULL, meijinsnRomInfo, meijinsnRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x10,
 	232, 224, 4, 3
 };

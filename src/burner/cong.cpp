@@ -9,7 +9,7 @@ static TCHAR* GameConfigName()
 {
 	// Return the path of the config file for this game
 	static TCHAR szName[32];
-	_stprintf(szName, _T("config\\games\\%.8s.ini"), BurnDrvGetText(DRV_NAME));
+	_stprintf(szName, _T("config\\games\\%s.ini"), BurnDrvGetText(DRV_NAME));
 	return szName;
 }
 
@@ -97,7 +97,7 @@ int ConfigGameSave(bool bSave)
 	}
 
 	// Write title
-	_ftprintf(h, _T("// ") _T(APP_TITLE) _T(" v%s --- Config File for %s (%s)\n\n"), szAppBurnVer, BurnDrvGetText(DRV_NAME), BurnDrvGetText(DRV_FULLNAME));
+	_ftprintf(h, _T("// ") _T(APP_TITLE) _T(" v%s --- Config File for %s (%s)\n\n"), szAppBurnVer, BurnDrvGetText(DRV_NAME), ANSIToTCHAR(BurnDrvGetTextA(DRV_FULLNAME), NULL, 0));
 
 	_ftprintf(h, _T("// --- Miscellaneous ----------------------------------------------------------\n\n"));
 	// Write version number

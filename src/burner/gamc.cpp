@@ -446,15 +446,15 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 				KEY(FBK_V);
 			}
 
-			if (_stricmp(szi, "Button ABC") == 0) {
-				MACRO(FBK_A);
-			}
-			if (_stricmp(szi, "Button BCD") == 0) {
-				MACRO(FBK_S);
-			}
-			if (_stricmp(szi, "Button ABCD") == 0) {
-				MACRO(FBK_D);
-			}
+//			if (_stricmp(szi, "Button ABC") == 0) {
+//				MACRO(FBK_A);
+//			}
+//			if (_stricmp(szi, "Button BCD") == 0) {
+//				MACRO(FBK_S);
+//			}
+//			if (_stricmp(szi, "Button ABCD") == 0) {
+//				MACRO(FBK_D);
+//			}
 
 		} else {
 			if (bStreetFighterLayout) {
@@ -500,6 +500,15 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 				}
 				if (strcmp(szi, "fire 6") == 0) {
 					KEY(FBK_D);
+				}
+				if (strcmp(szi, "fire 7") == 0) {
+					KEY(FBK_Q);
+				}
+				if (strcmp(szi, "fire 8") == 0) {
+					KEY(FBK_W);
+				}
+				if (strcmp(szi, "fire 9") == 0) {
+					KEY(FBK_E);
 				}
 			}
 		}

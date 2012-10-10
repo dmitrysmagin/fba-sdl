@@ -5,7 +5,7 @@ unsigned char* NeoPalSrc[2];		// Pointer to input palettes
 unsigned int* NeoPalette;
 int nNeoPaletteBank;				// Selected palette bank
 
-static unsigned int* NeoPaletteData[2] = {NULL, NULL};
+unsigned int* NeoPaletteData[2] = {NULL, NULL};
 static unsigned short* NeoPaletteCopy[2] = {NULL, NULL};
 
 unsigned char NeoRecalcPalette;
@@ -76,6 +76,7 @@ int NeoUpdatePalette()
 void NeoSetPalette()
 {
 	NeoPalette = NeoPaletteData[nNeoPaletteBank];
+	pBurnDrvPalette = NeoPaletteData[nNeoPaletteBank];
 }
 
 // Update the PC copy of the palette on writes to the palette memory

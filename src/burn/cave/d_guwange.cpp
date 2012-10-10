@@ -56,7 +56,7 @@ static struct BurnInputInfo guwangeInputList[] = {
 	{"Service",		BIT_DIGITAL, DrvJoy2 + 3,	"service"},
 };
 
-STDINPUTINFO(guwange);
+STDINPUTINFO(guwange)
 
 static void UpdateIRQStatus()
 {
@@ -101,7 +101,7 @@ unsigned char __fastcall guwangeReadByte(unsigned int sekAddress)
 		case 0xD00012:
 			return (DrvInput[1] >> 8) ^ 0xFF;
 		case 0xD00013:
-			return (DrvInput[1] & 0x7F) ^ 0x7F | (EEPROMRead() << 7);
+			return ((DrvInput[1] & 0x7F) ^ 0x7F) | (EEPROMRead() << 7);
 
 		default: {
 //			bprintf(PRINT_NORMAL, "Attempt to read byte value of location %x\n", sekAddress);
@@ -551,8 +551,15 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
+		if (nAction & ACB_WRITE) {
+
+		CaveRecalcPalette = 1;
+		}
+
 	return 0;
 }
+
+static const UINT8 default_eeprom[16] =	{0x00,0x0C,0x11,0x0D,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x11,0x11,0xFF,0xFF,0xFF,0xFF};
 
 static int DrvInit()
 {
@@ -570,12 +577,8 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
-
-	{
-		unsigned char data[] = { 0x0C, 0x00, 0x11, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x11 };
-		EEPROMFill(data, 0, 0x0C);
-	}
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
 
 	// Load the roms into memory
 	if (LoadRoms()) {
@@ -610,7 +613,7 @@ static int DrvInit()
 
 	nCaveRowModeOffset = 2;
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(1, 0x2000000);
 	CaveTileInitLayer(0, 0x800000, 8, 0x4000);
@@ -645,21 +648,29 @@ static struct BurnRomInfo guwangeRomDesc[] = {
 	{ "u10103.bin",   0x400000, 0x0FE91B8E, BRF_GRA },			 //  8 Layer 2 Tile data
 
 	{ "u0462.bin",    0x400000, 0xB3D75691, BRF_SND },			 //  9 YMZ280B (AD)PCM data
+	
+	{ "atc05-1.bin",  0x000001, 0x00000000, BRF_NODUMP },
+	{ "u0259.bin",    0x000001, 0x00000000, BRF_NODUMP },
+	{ "u084.bin",     0x000001, 0x00000000, BRF_NODUMP },
+	{ "u108.bin",     0x000001, 0x00000000, BRF_NODUMP },
+	
+	{ "eeprom-guwange.bin", 0x0080, 0xc3174959, BRF_OPT },
 };
 
 
-STD_ROM_PICK(guwange);
-STD_ROM_FN(guwange);
+STD_ROM_PICK(guwange)
+STD_ROM_FN(guwange)
 
 
 struct BurnDriver BurnDrvGuwange = {
-	"guwange", NULL, NULL, "1999",
-	"Guwange (Japan, 1999 6/24 master ver.)\0", NULL, "Atlus / Cave", "Cave",
-	L"\u3050\u308F\u3093\u3052 (1999 6/24 master ver.)\0Guwange\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, guwangeRomInfo, guwangeRomName, guwangeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"guwange", NULL, NULL, NULL, "1999",
+	"Guwange (Japan, master ver. 99/06/24)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u3050\u308F\u3093\u3052 (Japan, master ver. 99/06/24)\0Guwange\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, guwangeRomInfo, guwangeRomName, NULL, NULL, guwangeInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
 

@@ -130,7 +130,7 @@ static struct BurnInputInfo aerofgtInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(aerofgt);
+STDINPUTINFO(aerofgt)
 
 static struct BurnDIPInfo aerofgtDIPList[] = {
 	// Defaults
@@ -201,7 +201,7 @@ static struct BurnDIPInfo aerofgt_DIPList[] = {
 	{0x14,	0x01, 0x0F, 0x0F, "Any"},	
 };
 
-STDDIPINFOEXT(aerofgt, aerofgt, aerofgt_);
+STDDIPINFOEXT(aerofgt, aerofgt, aerofgt_)
 
 // Rom information
 static struct BurnRomInfo aerofgtRomDesc[] = {
@@ -219,8 +219,8 @@ static struct BurnRomInfo aerofgtRomDesc[] = {
 	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
 };
 
-STD_ROM_PICK(aerofgt);
-STD_ROM_FN(aerofgt);
+STD_ROM_PICK(aerofgt)
+STD_ROM_FN(aerofgt)
 
 static int MemIndex()
 {
@@ -553,15 +553,17 @@ void __fastcall aerofgtZ80PortWrite(unsigned short p, unsigned char v)
 static int DrvDoReset()
 {
 	nAerofgtZ80Bank = -1;
-	aerofgtSndBankSwitch(0);
-	
+		
 	SekOpen(0);
 	//nIRQPending = 0;
     SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
 	SekReset();
 	SekClose();
 
+	ZetOpen(0);
 	ZetReset();
+	aerofgtSndBankSwitch(0);
+	ZetClose();
 	BurnYM2610Reset();
 
 	memset(RamGfxBank, 0 , sizeof(RamGfxBank));
@@ -1220,13 +1222,13 @@ static int DrvScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvAerofgt = {
-	"aerofgt", NULL, NULL, "1992",
+	"aerofgt", NULL, NULL, NULL, "1992",
 	"Aero Fighters\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, aerofgtRomInfo, aerofgtRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, FBF_SONICWI,
+	NULL, aerofgtRomInfo, aerofgtRomName, NULL, NULL, aerofgtInputInfo, aerofgtDIPInfo,
 	aerofgtInit,DrvExit,DrvFrame,DrvDraw,DrvScan,
-	NULL,224,320,3,4
+	0, NULL, NULL, NULL, NULL, 0x800, 224,320,3,4
 };
 
 // ------------------------------------------------------
@@ -1261,7 +1263,7 @@ static struct BurnInputInfo turbofrcInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(turbofrc);
+STDINPUTINFO(turbofrc)
 
 static struct BurnDIPInfo turbofrcDIPList[] = {
 
@@ -1317,7 +1319,7 @@ static struct BurnDIPInfo turbofrcDIPList[] = {
 
 };
 
-STDDIPINFO(turbofrc);
+STDDIPINFO(turbofrc)
 
 static struct BurnRomInfo turbofrcRomDesc[] = {
 	{ "tfrc2.bin",	  0x040000, 0x721300ee, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -1344,8 +1346,8 @@ static struct BurnRomInfo turbofrcRomDesc[] = {
 	{ "tfrcu179.bin", 0x100000, 0x60ca0333, BRF_SND },	
 };
 
-STD_ROM_PICK(turbofrc);
-STD_ROM_FN(turbofrc);
+STD_ROM_PICK(turbofrc)
+STD_ROM_FN(turbofrc)
 
 unsigned char __fastcall turbofrcReadByte(unsigned int sekAddress)
 {
@@ -2197,13 +2199,13 @@ static int turbofrcFrame()
 }
 
 struct BurnDriver BurnDrvTurbofrc = {
-	"turbofrc", NULL, NULL, "1991",
+	"turbofrc", NULL, NULL, NULL, "1991",
 	"Turbo Force\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 3, HARDWARE_MISC_POST90S,
-	NULL, turbofrcRomInfo, turbofrcRomName, turbofrcInputInfo, turbofrcDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 3, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, turbofrcRomInfo, turbofrcRomName, NULL, NULL, turbofrcInputInfo, turbofrcDIPInfo,
 	turbofrcInit,DrvExit,turbofrcFrame,turbofrcDraw,DrvScan,
-	NULL,240,352,3,4
+	0, NULL, NULL, NULL, NULL, 0x800,240,352,3,4
 };
 
 
@@ -2263,7 +2265,7 @@ static struct BurnInputInfo karatblzInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 7,	"dip"},
 };
 
-STDINPUTINFO(karatblz);
+STDINPUTINFO(karatblz)
 
 static struct BurnDIPInfo karatblzDIPList[] = {
 
@@ -2321,7 +2323,7 @@ static struct BurnDIPInfo karatblzDIPList[] = {
 	{0x2A,	0x01, 0x80, 0x80, "On"},
 };
 
-STDDIPINFO(karatblz);
+STDDIPINFO(karatblz)
 
 static struct BurnRomInfo karatblzRomDesc[] = {
 	{ "rom2v3",    	  0x040000, 0x01f772e1, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -2344,8 +2346,8 @@ static struct BurnRomInfo karatblzRomDesc[] = {
 	{ "u104",         0x100000, 0x5795e884, BRF_SND },	
 };
 
-STD_ROM_PICK(karatblz);
-STD_ROM_FN(karatblz);
+STD_ROM_PICK(karatblz)
+STD_ROM_FN(karatblz)
 
 static struct BurnRomInfo karatbluRomDesc[] = {
 	{ "2.u14",    	  0x040000, 0x202e6220, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -2368,8 +2370,8 @@ static struct BurnRomInfo karatbluRomDesc[] = {
 	{ "u104",         0x100000, 0x5795e884, BRF_SND },	
 };
 
-STD_ROM_PICK(karatblu);
-STD_ROM_FN(karatblu);
+STD_ROM_PICK(karatblu)
+STD_ROM_FN(karatblu)
 
 static struct BurnRomInfo karatbljRomDesc[] = {
 	{ "2tecmo.u14",   0x040000, 0x57e52654, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -2392,8 +2394,8 @@ static struct BurnRomInfo karatbljRomDesc[] = {
 	{ "u104",         0x100000, 0x5795e884, BRF_SND },	
 };
 
-STD_ROM_PICK(karatblj);
-STD_ROM_FN(karatblj);
+STD_ROM_PICK(karatblj)
+STD_ROM_FN(karatblj)
 
 unsigned char __fastcall karatblzReadByte(unsigned int sekAddress)
 {
@@ -2837,33 +2839,33 @@ static int karatblzFrame()
 }
 
 struct BurnDriver BurnDrvKaratblz = {
-	"karatblz", NULL, NULL, "1991",
+	"karatblz", NULL, NULL, NULL, "1991",
 	"Karate Blazers (World?)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
-	NULL, karatblzRomInfo, karatblzRomName, karatblzInputInfo, karatblzDIPInfo,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, karatblzRomInfo, karatblzRomName, NULL, NULL, karatblzInputInfo, karatblzDIPInfo,
 	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 struct BurnDriver BurnDrvKaratblu = {
-	"karatblu", "karatblz", NULL, "1991",
+	"karatblzu", "karatblz", NULL, NULL, "1991",
 	"Karate Blazers (US)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
-	NULL, karatbluRomInfo, karatbluRomName, karatblzInputInfo, karatblzDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, karatbluRomInfo, karatbluRomName, NULL, NULL, karatblzInputInfo, karatblzDIPInfo,
 	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 struct BurnDriver BurnDrvKaratblj = {
-	"karatblj", "karatblz", NULL, "1991",
+	"karatblzj", "karatblz", NULL, NULL, "1991",
 	"Karate Blazers (Japan)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S,
-	NULL, karatbljRomInfo, karatbljRomName, karatblzInputInfo, karatblzDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, karatbljRomInfo, karatbljRomName, NULL, NULL, karatblzInputInfo, karatblzDIPInfo,
 	karatblzInit,DrvExit,karatblzFrame,karatblzDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 // -----------------------------------------------------------
@@ -2896,7 +2898,7 @@ static struct BurnInputInfo spinlbrkInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 4,	"dip"},
 };
 
-STDINPUTINFO(spinlbrk);
+STDINPUTINFO(spinlbrk)
 
 static struct BurnDIPInfo spinlbrkDIPList[] = {
 
@@ -2972,7 +2974,7 @@ static struct BurnDIPInfo spinlbrk_DIPList[] = {
 
 };
 
-STDDIPINFOEXT(spinlbrk, spinlbrk, spinlbrk_);
+STDDIPINFOEXT(spinlbrk, spinlbrk, spinlbrk_)
 
 static struct BurnDIPInfo spinlbru_DIPList[] = {
 
@@ -2998,7 +3000,7 @@ static struct BurnDIPInfo spinlbru_DIPList[] = {
 
 };
 
-STDDIPINFOEXT(spinlbru, spinlbrk, spinlbru_);
+STDDIPINFOEXT(spinlbru, spinlbrk, spinlbru_)
 
 static struct BurnDIPInfo spinlbrj_DIPList[] = {
 
@@ -3024,7 +3026,7 @@ static struct BurnDIPInfo spinlbrj_DIPList[] = {
 
 };
 
-STDDIPINFOEXT(spinlbrj, spinlbrk, spinlbrj_);
+STDDIPINFOEXT(spinlbrj, spinlbrk, spinlbrj_)
 
 static struct BurnRomInfo spinlbrkRomDesc[] = {
 	{ "ic98",    	  0x010000, 0x36c2bf70, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3064,8 +3066,8 @@ static struct BurnRomInfo spinlbrkRomDesc[] = {
 	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },
 };
 
-STD_ROM_PICK(spinlbrk);
-STD_ROM_FN(spinlbrk);
+STD_ROM_PICK(spinlbrk)
+STD_ROM_FN(spinlbrk)
 
 static struct BurnRomInfo spinlbruRomDesc[] = {
 	{ "ic98.u5",      0x010000, 0x3a0f7667, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3105,8 +3107,8 @@ static struct BurnRomInfo spinlbruRomDesc[] = {
 	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },		
 };
 
-STD_ROM_PICK(spinlbru);
-STD_ROM_FN(spinlbru);
+STD_ROM_PICK(spinlbru)
+STD_ROM_FN(spinlbru)
 
 static struct BurnRomInfo spinlbrjRomDesc[] = {
 	{ "j5",			  0x010000, 0x6a3d690e, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3146,8 +3148,8 @@ static struct BurnRomInfo spinlbrjRomDesc[] = {
 	{ "gal16v8a.ic95",     279, 0x00000000, BRF_OPT | BRF_NODUMP },	
 };
 
-STD_ROM_PICK(spinlbrj);
-STD_ROM_FN(spinlbrj);
+STD_ROM_PICK(spinlbrj)
+STD_ROM_FN(spinlbrj)
 
 /*
 unsigned char __fastcall spinlbrkReadByte(unsigned int sekAddress)
@@ -3499,33 +3501,33 @@ static int spinlbrkFrame()
 }
 
 struct BurnDriver BurnDrvSpinlbrk = {
-	"spinlbrk", NULL, NULL, "1990",
+	"spinlbrk", NULL, NULL, NULL, "1990",
 	"Spinal Breakers (World)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, spinlbrkRomInfo, spinlbrkRomName, spinlbrkInputInfo, spinlbrkDIPInfo,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	NULL, spinlbrkRomInfo, spinlbrkRomName, NULL, NULL, spinlbrkInputInfo, spinlbrkDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 struct BurnDriver BurnDrvSpinlbru = {
-	"spinlbru", "spinlbrk", NULL, "1990",
+	"spinlbrku", "spinlbrk", NULL, NULL, "1990",
 	"Spinal Breakers (US)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, spinlbruRomInfo, spinlbruRomName, spinlbrkInputInfo, spinlbruDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	NULL, spinlbruRomInfo, spinlbruRomName, NULL, NULL, spinlbrkInputInfo, spinlbruDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 struct BurnDriver BurnDrvSpinlbrj = {
-	"spinlbrj", "spinlbrk", NULL, "1990",
+	"spinlbrkj", "spinlbrk", NULL, NULL, "1990",
 	"Spinal Breakers (Japan)\0", NULL, "V-System Co.", "V-System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, spinlbrjRomInfo, spinlbrjRomName, spinlbrkInputInfo, spinlbrjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	NULL, spinlbrjRomInfo, spinlbrjRomName, NULL, NULL, spinlbrkInputInfo, spinlbrjDIPInfo,
 	spinlbrkInit,DrvExit,spinlbrkFrame,spinlbrkDraw,DrvScan,
-	NULL,352,240,4,3
+	0, NULL, NULL, NULL, NULL, 0x800,352,240,4,3
 };
 
 // -------------------------------------------------------
@@ -3540,7 +3542,7 @@ static struct BurnDIPInfo aerofgtb_DIPList[] = {
 	{0x14,	0x01, 0x01, 0x01, "Japan"},
 };
 
-STDDIPINFOEXT(aerofgtb, aerofgt, aerofgtb_);
+STDDIPINFOEXT(aerofgtb, aerofgt, aerofgtb_)
 
 static struct BurnRomInfo aerofgtbRomDesc[] = {
 	{ "v2",    	      0x040000, 0x5c9de9f0, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3561,8 +3563,8 @@ static struct BurnRomInfo aerofgtbRomDesc[] = {
 	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
 };
 
-STD_ROM_PICK(aerofgtb);
-STD_ROM_FN(aerofgtb);
+STD_ROM_PICK(aerofgtb)
+STD_ROM_FN(aerofgtb)
 
 static struct BurnRomInfo aerofgtcRomDesc[] = {
 	{ "v2.149",       0x040000, 0xf187aec6, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3583,8 +3585,8 @@ static struct BurnRomInfo aerofgtcRomDesc[] = {
 	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
 };
 
-STD_ROM_PICK(aerofgtc);
-STD_ROM_FN(aerofgtc);
+STD_ROM_PICK(aerofgtc)
+STD_ROM_FN(aerofgtc)
 
 static struct BurnRomInfo sonicwiRomDesc[] = {
 	{ "2.149",    	  0x040000, 0x3d1b96ba, BRF_ESS | BRF_PRG }, // 68000 code swapped
@@ -3605,8 +3607,8 @@ static struct BurnRomInfo sonicwiRomDesc[] = {
 	{ "it-19-06",     0x100000, 0xcdbbdb1d, BRF_SND },	
 };
 
-STD_ROM_PICK(sonicwi);
-STD_ROM_FN(sonicwi);
+STD_ROM_PICK(sonicwi)
+STD_ROM_FN(sonicwi)
 
 unsigned char __fastcall aerofgtbReadByte(unsigned int sekAddress)
 {
@@ -4383,32 +4385,32 @@ static int aerofgtbFrame()
 }
 
 struct BurnDriver BurnDrvAerofgtb = {
-	"aerofgtb", "aerofgt", NULL, "1992",
+	"aerofgtb", "aerofgt", NULL, NULL, "1992",
 	"Aero Fighters (Turbo Force hardware set 1)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, aerofgtbRomInfo, aerofgtbRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, FBF_SONICWI,
+	NULL, aerofgtbRomInfo, aerofgtbRomName, NULL, NULL, aerofgtInputInfo, aerofgtbDIPInfo,
 	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
-	NULL,224,320,3,4
+	0, NULL, NULL, NULL, NULL, 0x800, 224,320,3,4
 };
 
 struct BurnDriver BurnDrvAerofgtc = {
-	"aerofgtc", "aerofgt", NULL, "1992",
+	"aerofgtc", "aerofgt", NULL, NULL, "1992",
 	"Aero Fighters (Turbo Force hardware set 2)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, aerofgtcRomInfo, aerofgtcRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, FBF_SONICWI,
+	NULL, aerofgtcRomInfo, aerofgtcRomName, NULL, NULL, aerofgtInputInfo, aerofgtDIPInfo,
 	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
-	NULL,224,320,3,4
+	0, NULL, NULL, NULL, NULL, 0x800, 224,320,3,4
 };
 
 struct BurnDriver BurnDrvSonicwi = {
-	"sonicwi", "aerofgt", NULL, "1992",
+	"sonicwi", "aerofgt", NULL, NULL, "1992",
 	"Sonic Wings (Japan)\0", NULL, "Video System Co.", "Video System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, sonicwiRomInfo, sonicwiRomName, aerofgtInputInfo, aerofgtDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, FBF_SONICWI,
+	NULL, sonicwiRomInfo, sonicwiRomName, NULL, NULL, aerofgtInputInfo, aerofgtDIPInfo,
 	aerofgtbInit,DrvExit,aerofgtbFrame,aerofgtbDraw,DrvScan,
-	NULL,224,320,3,4
+	0, NULL, NULL, NULL, NULL, 0x800, 224,320,3,4
 };
 

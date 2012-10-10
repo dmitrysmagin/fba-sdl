@@ -3,6 +3,7 @@
 
 #include "burnint.h"
 #include "driver.h"
+#include "dac.h"
 extern "C" {
 #include "ay8910.h"
 }
@@ -44,7 +45,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 1"     ,    BIT_DIPSWITCH, &Dips  ,	"dip"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnInputInfo mahjongInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 +  0,	"p1 coin"},
@@ -73,7 +74,7 @@ static struct BurnInputInfo mahjongInputList[] = {
 	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"},
 };
 
-STDINPUTINFO(mahjong);
+STDINPUTINFO(mahjong)
 
 
 
@@ -104,7 +105,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x0f, 0x01, 0x80, 0x80, "On"    		  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 static struct BurnDIPInfo stratvoxDIPList[]=
 {
@@ -142,7 +143,7 @@ static struct BurnDIPInfo stratvoxDIPList[]=
 	{0x0f, 0x01, 0x80, 0x80, "On"    		  },
 };
 
-STDDIPINFO(stratvox);
+STDDIPINFO(stratvox)
 
 static struct BurnDIPInfo speakresDIPList[]=
 {
@@ -178,7 +179,7 @@ static struct BurnDIPInfo speakresDIPList[]=
 	{0x0f, 0x01, 0x80, 0x80, "On"    		  },
 };
 
-STDDIPINFO(speakres);
+STDDIPINFO(speakres)
 
 
 //------------------------------------------------------------------------------------------------
@@ -305,6 +306,7 @@ void __fastcall route16_cpu0_write(unsigned short offset, unsigned char data)
 	{
 		case 0x2800:			// stratvox
 			// DAC_0_data_w
+			DACWrite(data >> 1);
 		break;
 
 		case 0x4800:
@@ -403,6 +405,10 @@ static int DrvDoReset()
 	return 0;
 }
 
+void stratvox_sn76477_write(unsigned int, unsigned int)
+{
+
+}
 
 static int DrvInit()
 {
@@ -450,7 +456,9 @@ static int DrvInit()
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
 	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
 
-	AY8910Init(0, 1250000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	DACInit(0, 1);
+
+	AY8910Init(0, 1250000, nBurnSoundRate, NULL, NULL, &stratvox_sn76477_write, NULL);
 
 	DrvDoReset();
 
@@ -460,6 +468,7 @@ static int DrvInit()
 
 static int DrvExit()
 {
+	DACExit();
 	ZetExit();
 	AY8910Exit(0);
 
@@ -471,7 +480,7 @@ static int DrvExit()
 	pFMBuffer = NULL;
 	Mem = NULL;
 	Rom0 = Rom1 = Prom = NULL;
-	pAY8910Buffer[0] = pAY8910Buffer[0] = pAY8910Buffer[0] = NULL;
+	pAY8910Buffer[0] = pAY8910Buffer[1] = pAY8910Buffer[2] = NULL;
 
 	return 0;
 }
@@ -557,7 +566,7 @@ static int DrvFrame()
 	}
 
 	int nSoundBufferPos = 0;
-	int nInterleave = 10;
+	int nInterleave = nBurnSoundLen;
 
 	int nCyclesSegment;
 	int nCyclesDone[2], nCyclesTotal[2];
@@ -612,6 +621,9 @@ static int DrvFrame()
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
 			}
+
+			DACUpdate(pSoundBuf, nSegmentLength);
+
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
@@ -642,6 +654,8 @@ static int DrvFrame()
 				pSoundBuf[(n << 1) + 1] = nSample;
 			}
 		}
+
+		DACUpdate(pSoundBuf, nSegmentLength);
 	}
 
 	if (pBurnDraw) {
@@ -720,8 +734,8 @@ static struct BurnRomInfo route16RomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       // 11
 };
 
-STD_ROM_PICK(route16);
-STD_ROM_FN(route16);
+STD_ROM_PICK(route16)
+STD_ROM_FN(route16)
 
 static int route16Init()
 {
@@ -744,12 +758,12 @@ static int route16Init()
 }
 
 struct BurnDriver BurnDrvroute16 = {
-	"route16", NULL, NULL, "1981",
+	"route16", NULL, NULL, NULL, "1981",
 	"Route 16\0", NULL, "Tehkan/Sun (Centuri license)", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, route16RomInfo, route16RomName, DrvInputInfo, DrvDIPInfo,
-	route16Init, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, route16RomInfo, route16RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	route16Init, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -773,8 +787,8 @@ static struct BurnRomInfo route16aRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       // 11
 };
 
-STD_ROM_PICK(route16a);
-STD_ROM_FN(route16a);
+STD_ROM_PICK(route16a)
+STD_ROM_FN(route16a)
 
 static int route16aInit()
 {
@@ -806,12 +820,12 @@ static int route16aInit()
 }
 
 struct BurnDriver BurnDrvroute16a = {
-	"route16a", "route16", NULL, "1981",
+	"route16a", "route16", NULL, NULL, "1981",
 	"Route 16 (set 2)\0", NULL, "Tehkan/Sun (Centuri license)", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, route16aRomInfo, route16aRomName, DrvInputInfo, DrvDIPInfo,
-	route16aInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, route16aRomInfo, route16aRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	route16aInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -835,8 +849,8 @@ static struct BurnRomInfo route16bRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       // 11
 };
 
-STD_ROM_PICK(route16b);
-STD_ROM_FN(route16b);
+STD_ROM_PICK(route16b)
+STD_ROM_FN(route16b)
 
 static int route16bInit()
 {
@@ -846,12 +860,12 @@ static int route16bInit()
 }
 
 struct BurnDriver BurnDrvroute16b = {
-	"route16b", "route16", NULL, "1981",
+	"route16b", "route16", NULL, NULL, "1981",
 	"Route 16 (bootleg)\0", NULL, "bootleg", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, route16bRomInfo, route16bRomName, DrvInputInfo, DrvDIPInfo,
-	route16Init, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, route16bRomInfo, route16bRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	route16Init, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -876,16 +890,16 @@ static struct BurnRomInfo routexRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(routex);
-STD_ROM_FN(routex);
+STD_ROM_PICK(routex)
+STD_ROM_FN(routex)
 
 struct BurnDriver BurnDrvroutex = {
-	"routex", "route16", NULL, "1981",
+	"routex", "route16", NULL, NULL, "1981",
 	"Route X (bootleg)\0", NULL, "bootleg", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, routexRomInfo, routexRomName, DrvInputInfo, DrvDIPInfo,
-	route16bInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, routexRomInfo, routexRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	route16bInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -907,8 +921,8 @@ static struct BurnRomInfo speakresRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       //  9
 };
 
-STD_ROM_PICK(speakres);
-STD_ROM_FN(speakres);
+STD_ROM_PICK(speakres)
+STD_ROM_FN(speakres)
 
 static int speakresInit()
 {
@@ -918,12 +932,12 @@ static int speakresInit()
 }
 
 struct BurnDriver BurnDrvspeakres = {
-	"speakres", NULL, NULL, "1980",
+	"speakres", NULL, NULL, NULL, "1980",
 	"Speak & Rescue\0", NULL, "Sun Electronics", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, speakresRomInfo, speakresRomName, DrvInputInfo, speakresDIPInfo,
-	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, speakresRomInfo, speakresRomName, NULL, NULL, DrvInputInfo, speakresDIPInfo,
+	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -945,16 +959,16 @@ static struct BurnRomInfo stratvoxRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       //  9
 };
 
-STD_ROM_PICK(stratvox);
-STD_ROM_FN(stratvox);
+STD_ROM_PICK(stratvox)
+STD_ROM_FN(stratvox)
 
 struct BurnDriver BurnDrvstratvox = {
-	"stratvox", "speakres", NULL, "1980",
+	"stratvox", "speakres", NULL, NULL, "1980",
 	"Stratovox\0", NULL, "[Sun Electronics] (Taito license)", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, stratvoxRomInfo, stratvoxRomName, DrvInputInfo, stratvoxDIPInfo,
-	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, stratvoxRomInfo, stratvoxRomName, NULL, NULL, DrvInputInfo, stratvoxDIPInfo,
+	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -976,16 +990,16 @@ static struct BurnRomInfo stratvobRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       //  9
 };
 
-STD_ROM_PICK(stratvob);
-STD_ROM_FN(stratvob);
+STD_ROM_PICK(stratvob)
+STD_ROM_FN(stratvob)
 
 struct BurnDriver BurnDrvstratvob = {
-	"stratvob", "speakres", NULL, "1980",
+	"stratvoxb", "speakres", NULL, NULL, "1980",
 	"Stratovox (bootleg)\0", NULL, "bootleg", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, stratvobRomInfo, stratvobRomName, DrvInputInfo, stratvoxDIPInfo,
-	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, stratvobRomInfo, stratvobRomName, NULL, NULL, DrvInputInfo, stratvoxDIPInfo,
+	speakresInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -1008,8 +1022,8 @@ static struct BurnRomInfo spacechoRomDesc[] = {
 	{ "im5623.f12",   0x0100, 0x08793ef7, 3 | BRF_GRA },	       // 10
 };
 
-STD_ROM_PICK(spacecho);
-STD_ROM_FN(spacecho);
+STD_ROM_PICK(spacecho)
+STD_ROM_FN(spacecho)
 
 static int spacechoInit()
 {
@@ -1025,12 +1039,12 @@ static int spacechoInit()
 }
 
 struct BurnDriver BurnDrvspacecho = {
-	"spacecho", "speakres", NULL, "1980",
+	"spacecho", "speakres", NULL, NULL, "1980",
 	"Space Echo (bootleg)\0", NULL, "bootleg", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, spacechoRomInfo, spacechoRomName, DrvInputInfo, stratvoxDIPInfo,
-	spacechoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, spacechoRomInfo, spacechoRomName, NULL, NULL, DrvInputInfo, stratvoxDIPInfo,
+	spacechoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 3, 4
 };
 
@@ -1051,8 +1065,8 @@ static struct BurnRomInfo ttmahjngRomDesc[] = {
 	{ "ju09",         0x0100, 0x27d47624, 3 | BRF_GRA },	       //  8
 };
 
-STD_ROM_PICK(ttmahjng);
-STD_ROM_FN(ttmahjng);
+STD_ROM_PICK(ttmahjng)
+STD_ROM_FN(ttmahjng)
 
 static int ttmahjngInit()
 {
@@ -1062,12 +1076,12 @@ static int ttmahjngInit()
 }
 
 struct BurnDriver BurnDrvttmahjng = {
-	"ttmahjng", NULL, NULL, "1980",
+	"ttmahjng", NULL, NULL, NULL, "1980",
 	"Mahjong\0", NULL, "Taito", "Route 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, ttmahjngRomInfo, ttmahjngRomName, mahjongInputInfo, NULL,
-	ttmahjngInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAHJONG, 0,
+	NULL, ttmahjngRomInfo, ttmahjngRomName, NULL, NULL, mahjongInputInfo, NULL,
+	ttmahjngInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 256, 4, 3
 };
 

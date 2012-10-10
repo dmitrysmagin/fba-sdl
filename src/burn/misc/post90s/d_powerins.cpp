@@ -6,7 +6,7 @@
  port to Finalburn Alpha by OopsWare. 2007
  ***************************************************************/
 
-#include "burnint.h"
+#include "tiles_generic.h"
 #include "msm6295.h"
 #include "burn_ym2203.h"
 
@@ -28,10 +28,10 @@ static unsigned short *RamVReg;
 
 static unsigned int *RamCurPal;
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static unsigned char DrvButton[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static unsigned char DrvJoy1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static unsigned char DrvJoy2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static unsigned char DrvInput[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static unsigned char bRecalcPalette = 0;
 static unsigned char DrvReset = 0;
@@ -47,7 +47,8 @@ static int oki_bank = -1;
 
 static int game_drv = 0;
 
-static int nCyclesTotal[2];
+static int nCyclesDone[2], nCyclesTotal[2];
+static int nCyclesSegment;
 
 inline static void CalcCol(int idx)
 {
@@ -91,7 +92,7 @@ static struct BurnInputInfo powerinsInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 6,	"dip"},
 };
 
-STDINPUTINFO(powerins);
+STDINPUTINFO(powerins)
 
 static struct BurnDIPInfo powerinsDIPList[] = {
 
@@ -190,12 +191,48 @@ static struct BurnDIPInfo powerinjDIPList[] = {
 
 };
 
-STDDIPINFOEXT(powerins, powerins, powerina);
-STDDIPINFOEXT(powerinj, powerins, powerinj);
+STDDIPINFOEXT(powerins, powerins, powerina)
+STDDIPINFOEXT(powerinj, powerins, powerinj)
 
 // Rom information
 
 static struct BurnRomInfo powerinsRomDesc[] = {
+	{ "93095-3a.u108",	0x080000, 0x9825ea3d, BRF_ESS | BRF_PRG },	// 68000 code
+	{ "93095-4.u109", 	0x080000, 0xd3d7a782, BRF_ESS | BRF_PRG },
+
+	{ "93095-2.u90",	  0x020000, 0x4b123cc6, BRF_ESS | BRF_PRG },	// Z80 code
+
+	{ "93095-5.u16",	  0x100000, 0xb1371808, BRF_GRA }, 			// layer 0
+	{ "93095-6.u17",	  0x100000, 0x29c85d80, BRF_GRA },
+	{ "93095-7.u18",	  0x080000, 0x2dd76149, BRF_GRA },
+
+	{ "93095-1.u15",	  0x020000, 0x6a579ee0, BRF_GRA }, 			// layer 1
+
+	{ "93095-12.u116",	0x100000, 0x35f3c2a3, BRF_GRA },
+	{ "93095-13.u117",	0x100000, 0x1ebd45da, BRF_GRA },
+	{ "93095-14.u118",	0x100000, 0x760d871b, BRF_GRA },
+	{ "93095-15.u119",	0x100000, 0xd011be88, BRF_GRA },
+	{ "93095-16.u120",	0x100000, 0xa9c16c9c, BRF_GRA },
+	{ "93095-17.u121",	0x100000, 0x51b57288, BRF_GRA },
+	{ "93095-18.u122",	0x100000, 0xb135e3f2, BRF_GRA },
+	{ "93095-19.u123",	0x100000, 0x67695537, BRF_GRA },
+
+	{ "93095-10.u48",	  0x100000, 0x329ac6c5, BRF_SND }, 			// sound 1
+	{ "93095-11.u49",	  0x100000, 0x75d6097c, BRF_SND },
+
+	{ "93095-8.u46",	  0x100000, 0xf019bedb, BRF_SND }, 			// sound 2
+	{ "93095-9.u47",	  0x100000, 0xadc83765, BRF_SND },
+
+	{ "22.u81",			    0x000020, 0x67d5ec4b, BRF_OPT },			// unknown
+	{ "21.u71",			    0x000100, 0x182cd81f, BRF_OPT },
+	{ "20.u54",			    0x000100, 0x38bd0e2f, BRF_OPT },
+
+};
+
+STD_ROM_PICK(powerins)
+STD_ROM_FN(powerins)
+
+static struct BurnRomInfo powerinjRomDesc[] = {
 	{ "93095-3j.u108",	0x080000, 0x3050a3fb, BRF_ESS | BRF_PRG },	// 68000 code
 	{ "93095-4.u109", 	0x080000, 0xd3d7a782, BRF_ESS | BRF_PRG },
 
@@ -228,8 +265,8 @@ static struct BurnRomInfo powerinsRomDesc[] = {
 
 };
 
-STD_ROM_PICK(powerins);
-STD_ROM_FN(powerins);
+STD_ROM_PICK(powerinj)
+STD_ROM_FN(powerinj)
 
 static struct BurnRomInfo powerinaRomDesc[] = {
 	{ "rom1",		0x080000, 0xb86c84d6, BRF_ESS | BRF_PRG },	// 68000 code
@@ -248,8 +285,8 @@ static struct BurnRomInfo powerinaRomDesc[] = {
 	{ "rom5",		0x080000, 0x88579c8f, BRF_SND }, 				// sound 1
 };
 
-STD_ROM_PICK(powerina);
-STD_ROM_FN(powerina);
+STD_ROM_PICK(powerina)
+STD_ROM_FN(powerina)
 
 static struct BurnRomInfo powerinbRomDesc[] = {
 	{ "2q.bin",		  0x080000, 0x11bf3f2a, BRF_ESS | BRF_PRG },	// 68000 code
@@ -297,31 +334,17 @@ static struct BurnRomInfo powerinbRomDesc[] = {
 
 };
 
-STD_ROM_PICK(powerinb);
-STD_ROM_FN(powerinb);
-
+STD_ROM_PICK(powerinb)
+STD_ROM_FN(powerinb)
 
 static void sndSetBank(unsigned char offset, unsigned char data)
 {
-
 	int chip = (offset & 4) >> 2;
 	int bank = offset & 3;
 
-//	bprintf(PRINT_NORMAL, _T("MSM6259[%d][%d] set to %2x\n"), chip, bank, data);
-
-/*
-	if (bank == 0) {
-		MSM6295SampleInfo[chip][0] = MSM6295ROM + 0x200000 * chip + 0x0000;
-		MSM6295SampleInfo[chip][1] = MSM6295ROM + 0x200000 * chip + 0x0100;
-		MSM6295SampleInfo[chip][2] = MSM6295ROM + 0x200000 * chip + 0x0200;
-		MSM6295SampleInfo[chip][3] = MSM6295ROM + 0x200000 * chip + 0x0300;
-	}
-*/
 	MSM6295SampleInfo[chip][bank] = MSM6295ROM + 0x200000 * chip + 0x010000 * data + (bank << 8);
 	MSM6295SampleData[chip][bank] = MSM6295ROM + 0x200000 * chip + 0x010000 * data;
-
 }
-
 
 static int MemIndex()
 {
@@ -366,13 +389,17 @@ unsigned char __fastcall powerinsReadByte(unsigned int sekAddress)
 
 unsigned short __fastcall powerinsReadWord(unsigned int sekAddress)
 {
-	switch (sekAddress) {
+	switch (sekAddress)
+	{
 		case 0x100000:
 			return ~DrvInput[0];
+
 		case 0x100002:
 			return ~(DrvInput[2] + (DrvInput[3]<<8));
+
 		case 0x100008:
 			return ~DrvInput[4];
+
 		case 0x10000A:
 			return ~DrvInput[6];
 
@@ -384,10 +411,10 @@ unsigned short __fastcall powerinsReadWord(unsigned int sekAddress)
 
 void __fastcall powerinsWriteByte(unsigned int sekAddress, unsigned char byteValue)
 {
-	switch (sekAddress) {
+	switch (sekAddress)
+	{
 		case 0x100031:
 			// powerins_okibank
-//			bprintf(PRINT_NORMAL, _T("oki_bank %2x\n"), byteValue);
 			if (oki_bank != (byteValue & 7)) {
 				oki_bank = byteValue & 7;
 				memcpy(&MSM6295ROM[0x30000],&MSM6295ROM[0x40000 + 0x10000*oki_bank],0x10000);
@@ -397,6 +424,7 @@ void __fastcall powerinsWriteByte(unsigned int sekAddress, unsigned char byteVal
 		case 0x10003e:
 			// powerina only!
 			break;
+
 		case 0x10003f:
 			// powerina only!
 			MSM6295Command(0, byteValue);
@@ -409,14 +437,17 @@ void __fastcall powerinsWriteByte(unsigned int sekAddress, unsigned char byteVal
 
 void __fastcall powerinsWriteWord(unsigned int sekAddress, unsigned short wordValue)
 {
-	switch (sekAddress) {
+	switch (sekAddress)
+	{
 		case 0x100014:
 			// powerins_flipscreen_w
 			break;
+
 		case 0x100018:
 			// powerins_tilebank_w
 			tile_bank = wordValue * 0x800;
 			break;
+
 		case 0x10001e:
 			//powerins_soundlatch_w
 			soundlatch = wordValue & 0xff;
@@ -434,17 +465,11 @@ void __fastcall powerinsWriteWord(unsigned int sekAddress, unsigned short wordVa
 		
 		case 0x100016:	// NOP
 			break;
+
 //		default:
 //			bprintf(PRINT_NORMAL, _T("Attempt to write word value %x to location %x\n"), wordValue, sekAddress);
 	}
 }
-
-/*
-void __fastcall powerinsWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
-{
-	bprintf(PRINT_NORMAL, _T("Palette to write byte value %x to location %x\n"), byteValue, sekAddress);
-}
-*/
 
 void __fastcall powerinsWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
 {
@@ -456,12 +481,15 @@ void __fastcall powerinsWriteWordPalette(unsigned int sekAddress, unsigned short
 
 unsigned char __fastcall powerinsZ80Read(unsigned short a)
 {
-	switch (a) {
+	switch (a)
+	{
 		case 0xE000:
 			return soundlatch;
+
 //		default:
 //			bprintf(PRINT_NORMAL, _T("Z80 Attempt to read value of location %04x\n"), a);
 	}
+
 	return 0;
 }
 
@@ -481,27 +509,30 @@ void __fastcall powerinsZ80Write(unsigned short a,unsigned char v)
 
 unsigned char __fastcall powerinsZ80In(unsigned short p)
 {
-	switch (p & 0xFF) {
+	switch (p & 0xFF)
+	{
 		case 0x00:
 			if ( game_drv == GAME_POWERINS )
-				return 0x01;	//BurnYM2203Read(0);
+				return BurnYM2203Read(0, 0);
 			else
 				return 0x01;
 
 		case 0x01:
 			if ( game_drv == GAME_POWERINS )
-				return BurnYM2203Read(0, 0);
+				return BurnYM2203Read(0, 1);
 			else
 				return 0;
 
 		case 0x80:
 			return MSM6295ReadStatus(0);
+
 		case 0x88:
 			return MSM6295ReadStatus(1);
 
 //		default:
 //			bprintf(PRINT_NORMAL, _T("Z80 Attempt to read port %04x\n"), p);
 	}
+
 	return 0;
 }
 
@@ -510,19 +541,22 @@ void __fastcall powerinsZ80Out(unsigned short p, unsigned char v)
 	switch (p & 0x0FF) {
 		case 0x00:
 			if ( game_drv == GAME_POWERINS )
-				BurnYM2203Read(0, v);
+				BurnYM2203Write(0, 0, v);
 			break;
+
 		case 0x01:
 			if ( game_drv == GAME_POWERINS )
-				BurnYM2203Write(0, 0, v);
+				BurnYM2203Write(0, 1, v);
 			break;
 
 		case 0x80:
 			MSM6295Command(0, v);
 			break;
+
 		case 0x88:
 			MSM6295Command(1, v);
 			break;
+
 		case 0x90: sndSetBank(0, v); break;
 		case 0x91: sndSetBank(1, v); break;
 		case 0x92: sndSetBank(2, v); break;
@@ -539,10 +573,10 @@ void __fastcall powerinsZ80Out(unsigned short p, unsigned char v)
 
 static void powerinsIRQHandler(int, int nStatus)
 {
-//	bprintf(PRINT_NORMAL, _T("powerinsIRQHandler %x\n"), nStatus);
+//	bprintf(PRINT_NORMAL, _T("powerinsIRQHandler %i\n"), nStatus);
 	
 	if (nStatus & 1) {
-		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
 	} else {
 		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
 	}
@@ -561,29 +595,21 @@ static double powerinsGetTime()
 static int DrvDoReset()
 {
 	SekOpen(0);
-    SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
+	SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
 	SekReset();
 	SekClose();
 	
 	MSM6295Reset(0);
 	
 	if (game_drv != GAME_POWERINA) {
-
-		if (game_drv == GAME_POWERINS )
-			BurnYM2203Reset();
+		ZetOpen(0);
+		ZetReset();
+		ZetClose();
+		
+		if (game_drv == GAME_POWERINS) BurnYM2203Reset();
 
 		MSM6295Reset(1);
-		ZetReset();
-/*		
-		for (int nChannel = 0; nChannel < 4; nChannel++) {
-			MSM6295SampleInfo[0][nChannel] = MSM6295ROM + 0x000000 + 0x010000 * nChannel + (nChannel << 8);
-			MSM6295SampleData[0][nChannel] = MSM6295ROM + 0x000000 + 0x010000 * nChannel + (nChannel << 16);
-		}
-		for (int nChannel = 0; nChannel < 4; nChannel++) {
-			MSM6295SampleInfo[1][nChannel] = MSM6295ROM + 0x200000 + 0x010000 * nChannel + (nChannel << 8);
-			MSM6295SampleData[1][nChannel] = MSM6295ROM + 0x200000 + 0x010000 * nChannel + (nChannel << 16);
-		}
-*/
+		
 	}
 
 	return 0;
@@ -666,14 +692,14 @@ static int powerinsInit()
 
 	m6295size = 0x80000 * 4 * 2;
 
-	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerins") == 0 ) {
+	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerins") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "powerinsj") == 0) {
 		game_drv = GAME_POWERINS;
 	} else
-	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerina") == 0 ) {
+	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerinsa") == 0 ) {
 		game_drv = GAME_POWERINA;
 		m6295size = 0x90000;
 	} else
-	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerinb") == 0 ) {
+	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "powerinsb") == 0 ) {
 		game_drv = GAME_POWERINB;
 	} else
 		return 1;
@@ -816,38 +842,45 @@ static int powerinsInit()
 		ZetMapArea(0xC000, 0xDFFF, 2, RamZ80);
 
 		ZetMemEnd();
+		ZetClose();
 	}
 
 	if ( game_drv == GAME_POWERINA ) {
-		// M68000 + MSM6295 
-		MSM6295Init(0, 6000, 80, 0);
-	} else {
-		// M68000 + Z80 + YM2203 + MSM6295 x 2
-
-		if (game_drv == GAME_POWERINS ) {
-
-			BurnYM2203Init(1, 2400000, &powerinsIRQHandler, powerinsSynchroniseStream, powerinsGetTime, 0);
-			BurnTimerAttachZet(6000000);
-
-		}
-
-		MSM6295Init(0, 24000, 80, 1);
-		MSM6295Init(1, 24000, 80, 1);
+		MSM6295Init(0, 990000 / 165, 80, 0);
+	}
+	
+	if (game_drv == GAME_POWERINS ) {
+		BurnYM2203Init(1, 12000000 / 8, &powerinsIRQHandler, powerinsSynchroniseStream, powerinsGetTime, 0);
+		BurnTimerAttachZet(6000000);
+		BurnSetRefreshRate(56.0);
+		
+		MSM6295Init(0, 4000000 / 165, 80, 1);
+		MSM6295Init(1, 4000000 / 165, 80, 1);
 	}
 
+	if (game_drv == GAME_POWERINB ) {
+		MSM6295Init(0, 4000000 / 165, 80, 1);
+		MSM6295Init(1, 4000000 / 165, 80, 0);
+	}
+
+	GenericTilesInit();
+
 	DrvDoReset();
+
 	return 0;
 }
 
 static int powerinsExit()
 {
+	GenericTilesExit();
+
 	SekExit();
 	MSM6295Exit(0);
 
-	if ( game_drv != GAME_POWERINA ) {
+	if (game_drv != GAME_POWERINA) {
 		MSM6295Exit(1);
 
-		if ( game_drv == GAME_POWERINS )
+		if (game_drv == GAME_POWERINS)
 			BurnYM2203Exit();
 
 		ZetExit();
@@ -860,79 +893,25 @@ static int powerinsExit()
 
 static void TileBackground()
 {
-	// 256x256 pixel per page (32 pages)
-	// 16x16 tiles per page , and tile from top to bottom when from left to right
-	// page  0~ 7 : rom 0, layer 0
-	// page  8~15 : rom 0, layer 1
-	// page 16~23 : rom 1, layer 0
-	// page 24~32 : rom 1, layer 1
-
-	int offs, x, y;
-	unsigned int *pal = RamCurPal + 0x000;
-
-	for (offs = 256*32-1; offs >=0; offs--) {
+	for (int offs = 256*32-1; offs >=0; offs--) {
 
 		int page = offs >> 8;
-		x = (offs >> 4) & 0xF;
-		y = (offs >> 0) & 0xF;
+		int x = (offs >> 4) & 0xF;
+		int y = (offs >> 0) & 0xF;
 
 		x = x * 16 + (page &  7) * 256 + 32 - ((RamVReg[1]&0xff) + (RamVReg[0]&0xff)*256);
 		y = y * 16 + (page >> 4) * 256 - 16 - ((RamVReg[3]&0xff) + (RamVReg[2]&0xff)*256);
 
 		if ( x<=-16 || x>=320 || y <=-16 || y>=224 ) continue;
 		else {
-
-			unsigned char *d = RomBg + ((RamBg[offs] & 0x07FF) + tile_bank) * 256;
- 			unsigned short c = ((RamBg[offs] & 0xF000) >> 8) | ((RamBg[offs] & 0x0800) >> 3);
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			int attr = RamBg[offs];
+			int code = ((attr & 0x7ff) + tile_bank);
+			int color = (attr >> 12) | ((attr >> 7) & 0x10);
 
 			if ( x >=0 && x <= (320-16) && y>=0 && y <=(224-16) ) {
-				for (int k=0;k<16;k++) {
-	 				p[ 0] = pal[ d[ 0] | c ];
-					p[ 1] = pal[ d[ 1] | c ];
-					p[ 2] = pal[ d[ 2] | c ];
-					p[ 3] = pal[ d[ 3] | c ];
-					p[ 4] = pal[ d[ 4] | c ];
-					p[ 5] = pal[ d[ 5] | c ];
-					p[ 6] = pal[ d[ 6] | c ];
-					p[ 7] = pal[ d[ 7] | c ];
-
-					p[ 8] = pal[ d[ 8] | c ];
-					p[ 9] = pal[ d[ 9] | c ];
-					p[10] = pal[ d[10] | c ];
-					p[11] = pal[ d[11] | c ];
-					p[12] = pal[ d[12] | c ];
-					p[13] = pal[ d[13] | c ];
-					p[14] = pal[ d[14] | c ];
-					p[15] = pal[ d[15] | c ];
-
-	 				d += 16;
-	 				p += 320;
-	 			}
+				Render16x16Tile(pTransDraw, code, x, y, color, 4, 0, RomBg);
 			} else {
-				for (int k=0;k<16;k++) {
-					if ( (y+k)>=0 && (y+k)<224 ) {
-		 				if ((x +  0) >= 0 && (x +  0) < 320) p[ 0] = pal[ d[ 0] | c ];
-						if ((x +  1) >= 0 && (x +  1) < 320) p[ 1] = pal[ d[ 1] | c ];
-						if ((x +  2) >= 0 && (x +  2) < 320) p[ 2] = pal[ d[ 2] | c ];
-						if ((x +  3) >= 0 && (x +  3) < 320) p[ 3] = pal[ d[ 3] | c ];
-						if ((x +  4) >= 0 && (x +  4) < 320) p[ 4] = pal[ d[ 4] | c ];
-						if ((x +  5) >= 0 && (x +  5) < 320) p[ 5] = pal[ d[ 5] | c ];
-						if ((x +  6) >= 0 && (x +  6) < 320) p[ 6] = pal[ d[ 6] | c ];
-						if ((x +  7) >= 0 && (x +  7) < 320) p[ 7] = pal[ d[ 7] | c ];
-
-						if ((x +  8) >= 0 && (x +  8) < 320) p[ 8] = pal[ d[ 8] | c ];
-						if ((x +  9) >= 0 && (x +  9) < 320) p[ 9] = pal[ d[ 9] | c ];
-						if ((x + 10) >= 0 && (x + 10) < 320) p[10] = pal[ d[10] | c ];
-						if ((x + 11) >= 0 && (x + 11) < 320) p[11] = pal[ d[11] | c ];
-						if ((x + 12) >= 0 && (x + 12) < 320) p[12] = pal[ d[12] | c ];
-						if ((x + 13) >= 0 && (x + 13) < 320) p[13] = pal[ d[13] | c ];
-						if ((x + 14) >= 0 && (x + 14) < 320) p[14] = pal[ d[14] | c ];
-						if ((x + 15) >= 0 && (x + 15) < 320) p[15] = pal[ d[15] | c ];
-		 			}
-	 				d += 16;
-	 				p += 320;
-	 			}
+				Render16x16Tile_Clip(pTransDraw, code, x, y, color, 4, 0, RomBg);
 			}
 		}
 	}
@@ -940,7 +919,6 @@ static void TileBackground()
 
 static void TileForeground()
 {
-	unsigned int *pal = RamCurPal + 0x200;
 	for (int offs = 0; offs < 64*32; offs++) {
 		int x = ((offs & 0xFFE0) >> 2 ) + 32;
 		int y = ((offs & 0x001F) << 3 ) - 16;
@@ -949,17 +927,17 @@ static void TileForeground()
 		else {
 			if ((RamFg[offs] & 0x0FFF) == 0) continue;
 			unsigned char *d = RomFg + (RamFg[offs] & 0x0FFF) * 32;
- 			unsigned short c = (RamFg[offs] & 0xF000) >> 8;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+ 			unsigned short c = ((RamFg[offs] & 0xF000) >> 8) | 0x200;
+ 			unsigned short *p = pTransDraw + y * 320 + x;
 			for (int k=0;k<8;k++) {
- 				if ((d[0] >>  4) != 15) p[0] = pal[ (d[0] >>  4) | c ];
- 				if ((d[0] & 0xF) != 15) p[1] = pal[ (d[0] & 0xF) | c ];
- 				if ((d[1] >>  4) != 15) p[2] = pal[ (d[1] >>  4) | c ];
- 				if ((d[1] & 0xF) != 15) p[3] = pal[ (d[1] & 0xF) | c ];
- 				if ((d[2] >>  4) != 15) p[4] = pal[ (d[2] >>  4) | c ];
- 				if ((d[2] & 0xF) != 15) p[5] = pal[ (d[2] & 0xF) | c ];
- 				if ((d[3] >>  4) != 15) p[6] = pal[ (d[3] >>  4) | c ];
- 				if ((d[3] & 0xF) != 15) p[7] = pal[ (d[3] & 0xF) | c ];
+ 				if ((d[0] >>  4) != 15) p[0] = (d[0] >>  4) | c;
+ 				if ((d[0] & 0xF) != 15) p[1] = (d[0] & 0xF) | c;
+ 				if ((d[1] >>  4) != 15) p[2] = (d[1] >>  4) | c;
+ 				if ((d[1] & 0xF) != 15) p[3] = (d[1] & 0xF) | c;
+ 				if ((d[2] >>  4) != 15) p[4] = (d[2] >>  4) | c;
+ 				if ((d[2] & 0xF) != 15) p[5] = (d[2] & 0xF) | c;
+ 				if ((d[3] >>  4) != 15) p[6] = (d[3] >>  4) | c;
+ 				if ((d[3] & 0xF) != 15) p[7] = (d[3] & 0xF) | c;
  				d += 4;
  				p += 320;
  			}
@@ -967,109 +945,18 @@ static void TileForeground()
 	}
 }
 
-static void drawgfx(unsigned int code,unsigned int color,int flipx,/*int flipy,*/int sx,int sy)
+static inline void drawgfx(unsigned int code,unsigned int color,int flipx,/*int flipy,*/int sx,int sy)
 {
-	unsigned short * p = (unsigned short *) pBurnDraw + sy * 320 + sx;
-	unsigned char * q = RomSpr + code * 256;
-	unsigned int * pal = RamCurPal + 0x400;
-
 	if (sx >= 0 && sx <= (320-16) && sy >= 0 && sy <= (224-16) ) {
 		if ( flipx )
-			for (int i=0;i<16;i++) {
-				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
-				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
-				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
-				if (q[ 3] != 15) p[12] = pal[ q[ 3] | color];
-				if (q[ 4] != 15) p[11] = pal[ q[ 4] | color];
-				if (q[ 5] != 15) p[10] = pal[ q[ 5] | color];
-				if (q[ 6] != 15) p[ 9] = pal[ q[ 6] | color];
-				if (q[ 7] != 15) p[ 8] = pal[ q[ 7] | color];
-
-				if (q[ 8] != 15) p[ 7] = pal[ q[ 8] | color];
-				if (q[ 9] != 15) p[ 6] = pal[ q[ 9] | color];
-				if (q[10] != 15) p[ 5] = pal[ q[10] | color];
-				if (q[11] != 15) p[ 4] = pal[ q[11] | color];
-				if (q[12] != 15) p[ 3] = pal[ q[12] | color];
-				if (q[13] != 15) p[ 2] = pal[ q[13] | color];
-				if (q[14] != 15) p[ 1] = pal[ q[14] | color];
-				if (q[15] != 15) p[ 0] = pal[ q[15] | color];
-
-				p += 320;
-				q += 16;
-			}
+			Render16x16Tile_Mask_FlipX(pTransDraw, code, sx, sy, color, 4, 15, 0x400, RomSpr);
 		else
-			for (int i=0;i<16;i++) {
-				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
-				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
-				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
-				if (q[ 3] != 15) p[ 3] = pal[ q[ 3] | color];
-				if (q[ 4] != 15) p[ 4] = pal[ q[ 4] | color];
-				if (q[ 5] != 15) p[ 5] = pal[ q[ 5] | color];
-				if (q[ 6] != 15) p[ 6] = pal[ q[ 6] | color];
-				if (q[ 7] != 15) p[ 7] = pal[ q[ 7] | color];
-
-				if (q[ 8] != 15) p[ 8] = pal[ q[ 8] | color];
-				if (q[ 9] != 15) p[ 9] = pal[ q[ 9] | color];
-				if (q[10] != 15) p[10] = pal[ q[10] | color];
-				if (q[11] != 15) p[11] = pal[ q[11] | color];
-				if (q[12] != 15) p[12] = pal[ q[12] | color];
-				if (q[13] != 15) p[13] = pal[ q[13] | color];
-				if (q[14] != 15) p[14] = pal[ q[14] | color];
-				if (q[15] != 15) p[15] = pal[ q[15] | color];
-
-				p += 320;
-				q += 16;
-			}	
+			Render16x16Tile_Mask(pTransDraw, code, sx, sy, color, 4, 15, 0x400, RomSpr);
 	} else {
 		if ( flipx )
-			for (int i=0;i<16;i++) {
-				if (((sy+i)>=0) && ((sy+i)<224)) {
-					if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
-					if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
-					if (q[ 2] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[ 2] | color];
-					if (q[ 3] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[ 3] | color];
-					if (q[ 4] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[ 4] | color];
-					if (q[ 5] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[ 5] | color];
-					if (q[ 6] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 6] | color];
-					if (q[ 7] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 7] | color];
-
-					if (q[ 8] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 8] | color];
-					if (q[ 9] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 9] | color];
-					if (q[10] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[10] | color];
-					if (q[11] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[11] | color];
-					if (q[12] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[12] | color];
-					if (q[13] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[13] | color];
-					if (q[14] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[14] | color];
-					if (q[15] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[15] | color];
-				}
-				p += 320;
-				q += 16;
-			}
+			Render16x16Tile_Mask_FlipX_Clip(pTransDraw, code, sx, sy, color, 4, 15, 0x400, RomSpr);
 		else
-			for (int i=0;i<16;i++) {
-				if (((sy+i)>=0) && ((sy+i)<224)) {
-					if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
-					if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
-					if (q[ 2] != 15 && ((sx +  2) >= 0) && ((sx +  2)<320)) p[ 2] = pal[ q[ 2] | color];
-					if (q[ 3] != 15 && ((sx +  3) >= 0) && ((sx +  3)<320)) p[ 3] = pal[ q[ 3] | color];
-					if (q[ 4] != 15 && ((sx +  4) >= 0) && ((sx +  4)<320)) p[ 4] = pal[ q[ 4] | color];
-					if (q[ 5] != 15 && ((sx +  5) >= 0) && ((sx +  5)<320)) p[ 5] = pal[ q[ 5] | color];
-					if (q[ 6] != 15 && ((sx +  6) >= 0) && ((sx +  6)<320)) p[ 6] = pal[ q[ 6] | color];
-					if (q[ 7] != 15 && ((sx +  7) >= 0) && ((sx +  7)<320)) p[ 7] = pal[ q[ 7] | color];
-
-					if (q[ 8] != 15 && ((sx +  8) >= 0) && ((sx +  8)<320)) p[ 8] = pal[ q[ 8] | color];
-					if (q[ 9] != 15 && ((sx +  9) >= 0) && ((sx +  9)<320)) p[ 9] = pal[ q[ 9] | color];
-					if (q[10] != 15 && ((sx + 10) >= 0) && ((sx + 10)<320)) p[10] = pal[ q[10] | color];
-					if (q[11] != 15 && ((sx + 11) >= 0) && ((sx + 11)<320)) p[11] = pal[ q[11] | color];
-					if (q[12] != 15 && ((sx + 12) >= 0) && ((sx + 12)<320)) p[12] = pal[ q[12] | color];
-					if (q[13] != 15 && ((sx + 13) >= 0) && ((sx + 13)<320)) p[13] = pal[ q[13] | color];
-					if (q[14] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[14] | color];
-					if (q[15] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[15] | color];
-				}
-				p += 320;
-				q += 16;
-			}		
-
+			Render16x16Tile_Mask_Clip(pTransDraw, code, sx, sy, color, 4, 15, 0x400, RomSpr);		
 	}
 }
 
@@ -1086,7 +973,7 @@ static void DrawSprites()
 		int	code	=	(source[3] & 0x7fff) + ( (size & 0x0100) << 7 );
 		int	sx		=	source[4];
 		int	sy		=	source[6];
-		int	color	=	(source[7] & 0x3F) << 4;
+		int	color	=	source[7] & 0x3F;
 		int	flipx	=	size & 0x1000;
 		int	dimx	=	((size >> 0) & 0xf ) + 1;
 		int	dimy	=	((size >> 4) & 0xf ) + 1;
@@ -1104,22 +991,27 @@ static void DrawSprites()
 
 static void DrvDraw()
 {
-	memset(pBurnDraw, 0, 320*224*2);
+	if (bRecalcPalette) {
+		for (int i=0; i<0x800; i++) CalcCol(i);
+		bRecalcPalette = 0;
+	}
+
+	BurnTransferClear();
 	
 	TileBackground();
 	DrawSprites();
 	TileForeground();
+
+	BurnTransferCopy(RamCurPal);
 }
 
 static int powerinsFrame()
 {
+	int nInterleave = 200;
+	int nSoundBufferPos = 0;
+	
 	if (DrvReset) DrvDoReset();
-
-	if (bRecalcPalette) {
-		for (int i=0;i<0x800;i++) CalcCol(i);
-		bRecalcPalette = 0;
-	}
-
+	
 	DrvInput[0] = 0x00;
 	DrvInput[2] = 0x00;
 	DrvInput[3] = 0x00;
@@ -1128,84 +1020,115 @@ static int powerinsFrame()
 		DrvInput[3] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[0] |= (DrvButton[i] & 1) << i;
 	}
+	
+	nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 56));
+	if (game_drv == GAME_POWERINB) nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = 6000000 / 60;
+	nCyclesDone[0] = nCyclesDone[1] = 0;
 
 	SekNewFrame();
-
-	if (game_drv != GAME_POWERINA )
-		ZetNewFrame();
-
 	SekOpen(0);
+	if (game_drv != GAME_POWERINA) {
+		ZetNewFrame();
+		ZetOpen(0);
+	}
 
 	if ( game_drv == GAME_POWERINA ) {
-
 		nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 		SekRun(nCyclesTotal[0]);
 		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 
-		if ( pBurnSoundOut )
-			MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+		if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+	}
+	
+	if (game_drv == GAME_POWERINS) {
+		for (int i = 0; i < nInterleave; i++) {
+			int nCurrentCPU, nNext;
 
-	} else {
-
-		#define	nInterleave	1
-
-//		int nSoundBufferPos = 0;
-	if ( game_drv == GAME_POWERINS )
-		nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 56));
-	if ( game_drv == GAME_POWERINB )
-		nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-		nCyclesTotal[1] = (int)(6000000.0 / 60.0);
-		int nCyclesDone[2] = { 0, 0 };
-
-		short * pSoundBuf = pBurnSoundOut;
-
-		if (pBurnSoundOut)
-			memset(pBurnSoundOut, 0, nBurnSoundLen * 4);
-
-		static int z80i = 0;
-
-		for (int i=0;i<nInterleave;i++) {
-
-			nCyclesDone[0] += SekRun( (i + 1) * nCyclesTotal[0] / nInterleave - nCyclesDone[0] );
-			nCyclesDone[1] += ZetRun( (i + 1) * nCyclesTotal[1] / nInterleave - nCyclesDone[1] );
-
-			// powerinb hasn't YM2203 chip on board,
-			// static 150Hz interrupt for Z80 ???
-
-			if (z80i > 7) {
-				ZetSetIRQLine(0x0, ZET_IRQSTATUS_ACK);
-				z80i = 0;
-			} else z80i++;
-
-			if ( pBurnSoundOut ) {
-				int nSegmentLength = ( i + 1 ) * nBurnSoundLen / nInterleave - i * nBurnSoundLen / nInterleave;
-		if (game_drv == GAME_POWERINS ) {
-				BurnTimerEndFrame(nCyclesTotal[2]);
-				BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
-		}
+			nCurrentCPU = 0;
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		
+			BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
+		
+			if (pBurnSoundOut) {
+				int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				BurnYM2203Update(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
-				pSoundBuf += (nSegmentLength << 1);
+				nSoundBufferPos += nSegmentLength;
 			}
-			
 		}
 
 		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	}	
+	
+	if (game_drv == GAME_POWERINB) {
+		for (int i = 0; i < nInterleave; i++) {
+			int nCurrentCPU, nNext;
 
-	}
+			nCurrentCPU = 0;
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		
+			nCurrentCPU = 1;
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
+			if ((i & 180) == 0) {
+				ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+			}
+		
+			if (pBurnSoundOut) {
+				int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				MSM6295Render(1, pSoundBuf, nSegmentLength);
+				MSM6295Render(0, pSoundBuf, nSegmentLength);
+				nSoundBufferPos += nSegmentLength;
+			}
+		}
+
+		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	}	
 
 	SekClose();
+	
+	if (game_drv == GAME_POWERINS) {
+		BurnTimerEndFrame(nCyclesTotal[1]);
+	
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			if (nSegmentLength) {
+				BurnYM2203Update(pSoundBuf, nSegmentLength);
+				MSM6295Render(0, pSoundBuf, nSegmentLength);
+				MSM6295Render(1, pSoundBuf, nSegmentLength);
+			}
+		}
+		
+		ZetClose();
+	}
+	
+	if (game_drv == GAME_POWERINB) {
+		ZetRun(nCyclesTotal[1] - nCyclesDone[1]);
+	
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			if (nSegmentLength) {
+				MSM6295Render(1, pSoundBuf, nSegmentLength);
+				MSM6295Render(0, pSoundBuf, nSegmentLength);				
+			}
+		}
+		
+		ZetClose();
+	}
 
 	if (pBurnDraw) DrvDraw();
 
-/*
-	if (pBurnSoundOut) {
-		memset(pBurnSoundOut, 0, nBurnSoundLen * 4);
-		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
-		if (game_drv != GAME_POWERINA ) 
-			MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
-	}
-*/
 	return 0;
 }
 
@@ -1257,33 +1180,42 @@ static int powerinsScan(int nAction,int *pnMin)
 	return 0;
 }
 
-
 struct BurnDriver BurnDrvPowerins = {
-	"powerins", NULL, NULL, "1993",
+	"powerins", NULL, NULL, NULL, "1993",
+	"Power Instinct (USA)\0", NULL, "Atlus", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, FBF_PWRINST,
+	NULL, powerinsRomInfo, powerinsRomName, NULL, NULL, powerinsInputInfo, powerinsDIPInfo,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x800,
+	320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvPowerinj = {
+	"powerinsj", "powerins", NULL, NULL, "1993",
 	"Gouketsuji Ichizoku (Japan)\0", NULL, "Atlus", "Miscellaneous",
 	L"\u8C6A\u8840\u5BFA\u4E00\u65CF (Japan)\0Gouketsuji Ichizoku\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, powerinsRomInfo, powerinsRomName, powerinsInputInfo, powerinjDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, FBF_PWRINST,
+	NULL, powerinjRomInfo, powerinjRomName, NULL, NULL, powerinsInputInfo, powerinjDIPInfo,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x800,
 	320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPowerina = {
-	"powerina", "powerins", NULL, "1993",
+	"powerinsa", "powerins", NULL, NULL, "1993",
 	"Power Instinct (USA, bootleg set 1)\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
-	NULL, powerinaRomInfo, powerinaRomName, powerinsInputInfo, powerinsDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, FBF_PWRINST,
+	NULL, powerinaRomInfo, powerinaRomName, NULL, NULL, powerinsInputInfo, powerinsDIPInfo,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x800,
 	320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPowerinb = {
-	"powerinb", "powerins", NULL, "1993",
+	"powerinsb", "powerins", NULL, NULL, "1993",
 	"Power Instinct (USA, bootleg set 2)\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
-	NULL, powerinbRomInfo, powerinbRomName, powerinsInputInfo, powerinsDIPInfo,
-	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, &bRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, FBF_PWRINST,
+	NULL, powerinbRomInfo, powerinbRomName, NULL, NULL, powerinsInputInfo, powerinsDIPInfo,
+	powerinsInit, powerinsExit, powerinsFrame, NULL, powerinsScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x800,
 	320, 224, 4, 3
 };

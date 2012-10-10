@@ -1,5 +1,4 @@
 #include "burner.h"
-#include "png.h"
 
 #define SSHOT_NOERROR 0
 #define SSHOT_ERROR_BPP_NOTSUPPORTED 1
@@ -16,12 +15,12 @@ static FILE* ff;
 int MakeScreenShot()
 {
 	char szAuthor[256]; char szDescription[256]; char szCopyright[256];	char szSoftware[256]; char szSource[256];
-	png_text text_ptr[8] = { { 0, 0, 0, 0 }, };
+	png_text text_ptr[8] = { { 0, 0, 0, 0, 0, 0, 0 }, };
 	int num_text = 8;
 
     time_t currentTime;
     tm* tmTime;
-    png_time_struct png_time;
+    png_time_struct png_time_now;
 
     char szSShotName[MAX_PATH];
     int w, h;
@@ -130,11 +129,25 @@ int MakeScreenShot()
 
         pSShot = pConvertedImage;
 	}
+	else if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) { // fixed rotation by regret
+		unsigned char* pTemp = (unsigned char*)malloc(w * h * sizeof(int));
+
+		for (int y = h - 1; y >= 0; y--) {
+			for (int x = w - 1; x >= 0; x--) {
+				((unsigned int*)pTemp)[(w - x - 1) + (h - y - 1) * w] = ((unsigned int*)pSShot)[x + y * w];
+			}
+		}
+
+		free(pConvertedImage);
+		pConvertedImage = pTemp;
+
+        pSShot = pConvertedImage;
+	}
 
 	// Get the time
 	time(&currentTime);
     tmTime = localtime(&currentTime);
-	png_convert_from_time_t(&png_time, currentTime);
+	png_convert_from_time_t(&png_time_now, currentTime);
 
 	// construct our filename -> "romname-mm-dd-hms.png"
     sprintf(szSShotName,"%s%s-%.2d-%.2d-%.2d%.2d%.2d.png", SSHOT_DIRECTORY, BurnDrvGetTextA(DRV_NAME), tmTime->tm_mon + 1, tmTime->tm_mday, tmTime->tm_hour, tmTime->tm_min, tmTime->tm_sec);
@@ -168,7 +181,7 @@ int MakeScreenShot()
 	text_ptr[1].key = "Author";			text_ptr[1].text = szAuthor;
 	text_ptr[2].key = "Description";	text_ptr[2].text = szDescription;
 	text_ptr[3].key = "Copyright";		text_ptr[3].text = szCopyright;
-	text_ptr[4].key = "Creation Time";	text_ptr[4].text = png_convert_to_rfc1123(png_ptr, &png_time);
+	text_ptr[4].key = "Creation Time";	text_ptr[4].text = (char*)png_convert_to_rfc1123(png_ptr, &png_time_now);
 	text_ptr[5].key = "Software";		text_ptr[5].text = szSoftware;
 	text_ptr[6].key = "Source";			text_ptr[6].text = szSource;
 	text_ptr[7].key = "Comment";		text_ptr[7].text = "This screenshot was created by running the game in an emulator; it might not accurately reflect the actual hardware the game was designed to run on.";

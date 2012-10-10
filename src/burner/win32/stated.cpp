@@ -26,7 +26,7 @@ int StatedAuto(int bSave)
 	static TCHAR szName[32] = _T("");
 	int nRet;
 
-	_stprintf(szName, _T("config\\games\\%.8s.fs"), BurnDrvGetText(DRV_NAME));
+	_stprintf(szName, _T("config\\games\\%s.fs"), BurnDrvGetText(DRV_NAME));
 
 	if (bSave == 0) {
 		nRet = BurnStateLoad(szName, bDrvSaveAll, NULL);		// Load ram
@@ -55,7 +55,7 @@ int StatedLoad(int nSlot)
 		CreateStateName(nSlot);
 	} else {
 		if (bDrvOkay) {
-			_stprintf(szChoice, _T("%.8s*.fs"), BurnDrvGetText(DRV_NAME));
+			_stprintf(szChoice, _T("%s*.fs"), BurnDrvGetText(DRV_NAME));
 		} else {
 			_stprintf(szChoice, _T("savestate"));
 		}
@@ -119,7 +119,7 @@ int StatedSave(int nSlot)
 	if (nSlot) {
 		CreateStateName(nSlot);
 	} else {
-		_stprintf(szChoice, _T("%.8s"), BurnDrvGetText(DRV_NAME));
+		_stprintf(szChoice, _T("%s"), BurnDrvGetText(DRV_NAME));
 		MakeOfn(szFilter);
 		ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_STATE_SAVE, true);
 		ofn.Flags |= OFN_OVERWRITEPROMPT;

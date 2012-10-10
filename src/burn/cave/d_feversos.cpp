@@ -58,7 +58,7 @@ static struct BurnInputInfo feversosInputList[] = {
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
 };
 
-STDINPUTINFO(feversos);
+STDINPUTINFO(feversos)
 
 static void UpdateIRQStatus()
 {
@@ -100,7 +100,7 @@ unsigned char __fastcall feversosReadByte(unsigned int sekAddress)
 		case 0xB00001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0xB00002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0xB00003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -139,7 +139,7 @@ unsigned short __fastcall feversosReadWord(unsigned int sekAddress)
 		case 0xB00000:
 			return DrvInput[0] ^ 0xFFFF;
 		case 0xB00002:
-			return DrvInput[1] ^ 0xF7FF | (EEPROMRead() << 11);
+			return (DrvInput[1] ^ 0xF7FF) | (EEPROMRead() << 11);
 
 		default: {
 // 			bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
@@ -494,8 +494,16 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
+		if (nAction & ACB_WRITE) {
+
+		CaveRecalcPalette = 1;
+		}
+
 	return 0;
 }
+
+static const UINT8 default_eeprom[16] =	{0x00,0x0C,0x11,0x0D,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x11,0x11,0xFF,0xFF,0xFF,0xFF};
+static const UINT8 default_eeprom_feversos[18] = {0x00,0x0C,0x16,0x27,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x11,0x11,0xFF,0xFF,0xFF,0xFF,0x05,0x19};  /* Fever SOS (code checks for the 0x0519 or it won't boot) */
 
 static int DrvInit()
 {
@@ -513,15 +521,13 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
-
+	EEPROMInit(&eeprom_interface_93C46);
+	
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "dfeveron")) {
-		unsigned char data[] = { 0x0C, 0x00, 0x11, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x11 };
-		EEPROMFill(data, 0, 0x0C);
+		if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
 	}
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "feversos")) {
-		unsigned char data[] = { 0x0C, 0x00, 0x27, 0x16, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x11, 0x11, 0xFF, 0xFF, 0xFF, 0xFF, 0x19, 0x05 };
-		EEPROMFill(data, 0, 0x12);
+		if (!EEPROMAvailable()) EEPROMFill(default_eeprom_feversos,0, sizeof(default_eeprom_feversos));
 	}
 
 	// Load the roms into memory
@@ -553,7 +559,7 @@ static int DrvInit()
 
 	nCaveRowModeOffset = 1;
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(1, 0x1000000);
 	CaveTileInitLayer(0, 0x400000, 8, 0x4000);
@@ -589,11 +595,13 @@ static struct BurnRomInfo feversosRomDesc[] = {
 	{ "cv01-u49.bin", 0x200000, 0xD21CDDA7, BRF_GRA },			 //  5 Layer 1 Tile data
 
 	{ "cv01-u19.bin", 0x400000, 0x5F5514DA, BRF_SND },			 //  6 YMZ280B (AD)PCM data
+	
+	{ "eeprom-feversos.bin", 0x0080, 0xd80303aa, BRF_OPT },
 };
 
 
-STD_ROM_PICK(feversos);
-STD_ROM_FN(feversos);
+STD_ROM_PICK(feversos)
+STD_ROM_FN(feversos)
 
 static struct BurnRomInfo dfeveronRomDesc[] = {
 	{ "cv01-u34.bin", 0x080000, 0xBE87F19D, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -606,28 +614,32 @@ static struct BurnRomInfo dfeveronRomDesc[] = {
 	{ "cv01-u49.bin", 0x200000, 0xD21CDDA7, BRF_GRA },			 //  5 Layer 1 Tile data
 
 	{ "cv01-u19.bin", 0x400000, 0x5F5514DA, BRF_SND },			 //  6 YMZ280B (AD)PCM data
+	
+	{ "eeprom-dfeveron.bin", 0x0080, 0xc3174959, BRF_OPT },
 };
 
 
-STD_ROM_PICK(dfeveron);
-STD_ROM_FN(dfeveron);
+STD_ROM_PICK(dfeveron)
+STD_ROM_FN(dfeveron)
 
 struct BurnDriver BurnDrvFeverSOS = {
-	"feversos", NULL, NULL, "1998",
-	"Fever SOS (International ver. Fri Sep 25 1998)\0", NULL, "Cave / Nihon System inc.", "Cave",
+	"feversos", NULL, NULL, NULL, "1998",
+	"Fever SOS (International, ver. 98/09/25)\0", NULL, "Cave / Nihon System inc.", "Cave",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, feversosRomInfo, feversosRomName, feversosInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, feversosRomInfo, feversosRomName, NULL, NULL, feversosInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvDFeveron = {
-	"dfeveron", "feversos", NULL, "1998",
-	"Dangun Feveron (Japan ver. Thu Sep 17 1998)\0", NULL, "Cave / Nihon System inc.", "Cave",
-	L"\u5F3E\u9283 Feveron (Japan ver. Thu Sep 17 1998)\0Dangun Feveron (Japan ver. Thu Sep 17 1998)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, dfeveronRomInfo, dfeveronRomName, feversosInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"dfeveron", "feversos", NULL, NULL, "1998",
+	"Dangun Feveron (Japan, ver. 98/09/17)\0", NULL, "Cave / Nihon System inc.", "Cave",
+	L"\u5F3E\u9283 Feveron \u3060\u3093\u304C\u3093\u30D5\u30A3\u30FC\u30D0\u30ED\u30F3 (Japan, ver. 98/09/17)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, dfeveronRomInfo, dfeveronRomName, NULL, NULL, feversosInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };

@@ -9,6 +9,9 @@ int bAlwaysDrawFrames = 0;
 static bool bShowFPS = false;
 static unsigned int nDoFPS = 0;
 
+static bool bMute = false;
+static int nOldAudVolume;
+
 int kNetGame = 0;							// Non-zero if Kaillera is being used
 
 #ifdef FBA_DEBUG
@@ -73,12 +76,43 @@ static int RunFrame(int bDraw, int bPause)
 	static int bPrevPause = 0;
 	static int bPrevDraw = 0;
 
+	extern bool bDoPostInitialize;
+
+	// Exit Jukebox properly
+	
+	if(bDoPostInitialize == true && bJukeboxInUse == true) {
+		DrvExit();
+		bJukeboxDisplayed	= false;
+		bJukeboxInUse		= false;
+		bDoPostInitialize = false;
+		POST_INITIALISE_MESSAGE;
+	}
+
 	if (bPrevDraw && !bPause) {
 		VidPaint(0);							// paint the screen (no need to validate)
 	}
 
 	if (!bDrvOkay) {
 		return 1;
+	}
+
+	if (bPause && bJukeboxInUse == true) {
+		GetInput(false);						// Update burner inputs, but not game inputs
+		if (bPause != bPrevPause) {
+			VidPaint(2);                        // Redraw the screen (to ensure mode indicators are updated)
+		}
+		return 0;
+	}
+	
+	if (!bPause && bJukeboxInUse == true) {
+		//if (!bJukeboxDisplayed) JukeboxDialogCreate();
+		int TracklistDialog();
+
+		if (bJukeboxDisplayed == false) TracklistDialog();
+		nFramesEmulated++;
+		nCurrentFrame++;
+		BurnJukeboxFrame();
+		return 0;		
 	}
 
 	if (bPause) {
@@ -93,9 +127,9 @@ static int RunFrame(int bDraw, int bPause)
 
 		if (kNetGame) {
 			GetInput(true);						// Update inputs
-//			if (KailleraGetInput()) {			// Synchronize input with Kaillera
-//				return 0;
-//			}
+			if (KailleraGetInput()) {			// Synchronize input with Kaillera
+				return 0;
+			}
 		} else {
 			if (nReplayStatus == 2) {
 				GetInput(false);				// Update burner inputs, but not game inputs
@@ -181,22 +215,34 @@ static int RunGetNextSound(int bDraw)
 	return 0;
 }
 
+extern bool bRunFrame;
+
 int RunIdle()
 {
 	int nTime, nCount;
 
 	if (bAudPlaying) {
 		// Run with sound
-		AudSoundCheck();
-		return 0;
+		
+		if(bRunFrame) {
+			bRunFrame = false;
+			if(bAlwaysDrawFrames) {
+				RunFrame(1, 0);
+			} else {
+				RunGetNextSound(0);
+			}
+			return 0;
+		} else {
+			AudSoundCheck();
+			return 0;
+		}
 	}
 
 	// Run without sound
 	nTime = timeGetTime() - nNormalLast;
 	nCount = (nTime * nAppVirtualFps - nNormalFrac) / 100000;
 	if (nCount <= 0) {						// No need to do anything for a bit
-		Sleep(2);
-
+		//Sleep(2);
 		return 0;
 	}
 
@@ -204,9 +250,9 @@ int RunIdle()
 	nNormalLast += nNormalFrac / nAppVirtualFps;
 	nNormalFrac %= nAppVirtualFps;
 
-	if (bAppDoFast){						// Temporarily increase virtual fps
-		nCount *= nFastSpeed;
-	}
+	//if (bAppDoFast){						// Temporarily increase virtual fps
+	//	nCount *= nFastSpeed;
+	//}
 	if (nCount > 100) {						// Limit frame skipping
 		nCount = 100;
 	}
@@ -220,8 +266,16 @@ int RunIdle()
 	}
 	bAppDoStep = 0;
 
-	for (int i = nCount / 10; i > 0; i--) {	// Mid-frames
-		RunFrame(!bAlwaysDrawFrames, 0);
+	if (bAppDoFast) {									// do more frames
+		for (int i = 0; i < nFastSpeed; i++) {
+			RunFrame(0, 0);
+		}
+	}
+
+	if(!bAlwaysDrawFrames) {
+		for (int i = nCount / 10; i > 0; i--) {	// Mid-frames
+			RunFrame(0, 0);
+		}
 	}
 	RunFrame(1, 0);							// End-frame
 
@@ -287,6 +341,10 @@ int RunMessageLoop()
 		GameInpCheckLeftAlt();
 		GameInpCheckMouse();															// Hide the cursor
 
+		if(bVidDWMCore) {
+			DWM_StutterFix();
+		}
+
 		while (1) {
 			if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
 				// A message is waiting to be processed
@@ -319,8 +377,30 @@ int RunMessageLoop()
 								break;
 							}
 #endif
+							
+              				// 'Silence' & 'Sound Restored' Code (added by CaptainCPS-X) 
+							case 'S': {
+								TCHAR buffer[15];
+								bMute = !bMute;
 
+								if (bMute) {
+									nAudVolume = 0;// mute sound
+									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE, true), nAudVolume / 100);
+								} else {
+									nAudVolume = nOldAudVolume;// restore volume
+									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE_OFF, true), nAudVolume / 100);
+								}
+								if (AudSoundSetVolume() == 0) {
+									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
+								} else {
+									VidSNewShortMsg(buffer);
+								}
+								break;
+							}
+							
 							case VK_OEM_PLUS: {
+								if (bMute) break; // if mute, not do this
+								nOldAudVolume = nAudVolume;
 								TCHAR buffer[15];
 
 								nAudVolume += 100;
@@ -340,6 +420,8 @@ int RunMessageLoop()
 								break;
 							}
 							case VK_OEM_MINUS: {
+								if (bMute) break; // if mute, not do this
+							  	nOldAudVolume = nAudVolume;
 								TCHAR buffer[15];
 
 								nAudVolume -= 100;
@@ -398,9 +480,10 @@ int RunMessageLoop()
 											break;
 										}
 									}
-//									if (i) {
-//										kailleraChatSend(TCHARToANSI(EditText, NULL, 0));
-//									}
+									if (i) {
+										Kaillera_Chat_Send(TCHARToANSI(EditText, NULL, 0));
+										//kailleraChatSend(TCHARToANSI(EditText, NULL, 0));
+									}
 									DeActivateChat();
 
 									break;
@@ -419,7 +502,7 @@ int RunMessageLoop()
 									break;
 								}
 
-								if ((GetAsyncKeyState(VK_CONTROL) | GetAsyncKeyState(VK_SHIFT) & 0x80000000) == 0) {
+								if (((GetAsyncKeyState(VK_CONTROL) | GetAsyncKeyState(VK_SHIFT)) & 0x80000000) == 0) {
 									if (bRunPause) {
 										bAppDoStep = 1;
 									} else {
@@ -435,6 +518,7 @@ int RunMessageLoop()
 									DisplayFPS();
 								} else {
 									VidSKillShortMsg();
+									VidSKillOSDMsg();
 								}
 								break;
 							}

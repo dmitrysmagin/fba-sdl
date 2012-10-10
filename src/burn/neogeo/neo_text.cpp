@@ -69,7 +69,7 @@ int NeoRenderText()
 	if (!bBIOSTextROMEnabled && nBankswitch) {
 		if (nBankswitch == 1) {
 
-			// Garou, Metal Slug 3, Metal Slug 4
+			// GAROU, MSLUG3, MSLUG4, SAMSHO5, and SAMSH5SP
 
 			int nOffset[32];
 			int nBank = 0x001000 + (3 << 12);
@@ -102,7 +102,7 @@ int NeoRenderText()
 			}
 		} else {
 
-			// KOF2000
+			// KOF2000, MATRIM, SVC, and KOF2003
 
 			unsigned short* pBankInfo = (unsigned short*)(NeoGraphicsRAM + 0xEA00) + 1;
 			pTextROM = NeoTextROM + 0x020000;
@@ -149,9 +149,9 @@ int NeoRenderText()
 	return 0;
 }
 
+// kof10th
 static inline void NeoUpdateTextAttribOne(const int nOffset)
 {
-	NeoTextTileAttrib[nOffset >> 5] = 1;
 	for (int i = nOffset; i < nOffset + 32; i += 4) {
 		if (*((unsigned int*)(NeoTextROM + i))) {
 			NeoTextTileAttrib[nOffset >> 5] = 0;
@@ -171,7 +171,7 @@ void NeoUpdateTextOne(int nOffset, const unsigned char byteValue)
 			NeoUpdateTextAttribOne(nOffset);
 		}
 	}
-	NeoTextROM[nOffset] = (byteValue << 4) | (byteValue >> 4);
+	NeoTextROM[nOffset] = byteValue;
 }
 
 void NeoExitText()
@@ -216,7 +216,7 @@ int NeoInitText()
 	}
 
 	nBankswitch = 0;
-	if (nNeoTextROMSize > 0x020000) {
+	if (nNeoTextROMSize > 0x040000) {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_ALTERNATE_TEXT) {
 			nBankswitch = 2;
 

@@ -43,7 +43,7 @@ static struct BurnInputInfo NewsInputList[] =
 	{"Dip 1"             , BIT_DIPSWITCH, NewsDip + 0       , "dip"       },
 };
 
-STDINPUTINFO(News);
+STDINPUTINFO(News)
 
 inline void NewsClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -96,7 +96,7 @@ static struct BurnDIPInfo NewsDIPList[]=
 	{0x09, 0x01, 0x20, 0x20, "Virus"                  },
 };
 
-STDDIPINFO(News);
+STDDIPINFO(News)
 
 static struct BurnDIPInfo NewsaDIPList[]=
 {
@@ -121,7 +121,7 @@ static struct BurnDIPInfo NewsaDIPList[]=
 	{0x09, 0x01, 0x10, 0x00, "2"                      },
 };
 
-STDDIPINFO(Newsa);
+STDDIPINFO(Newsa)
 
 // Rom Definitions
 static struct BurnRomInfo NewsRomDesc[] = {
@@ -134,8 +134,8 @@ static struct BurnRomInfo NewsRomDesc[] = {
 };
 
 
-STD_ROM_PICK(News);
-STD_ROM_FN(News);
+STD_ROM_PICK(News)
+STD_ROM_FN(News)
 
 static struct BurnRomInfo NewsaRomDesc[] = {
 	{ "newsa_virus.4", 0x10000, 0x74a257da, BRF_ESS | BRF_PRG }, //  0	Z80 Program Code
@@ -147,15 +147,17 @@ static struct BurnRomInfo NewsaRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Newsa);
-STD_ROM_FN(Newsa);
+STD_ROM_PICK(Newsa)
+STD_ROM_FN(Newsa)
 
 // Misc Driver Functions and Memory Handlers
 int NewsDoReset()
 {
 	BgPic = 0;
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	MSM6295Reset(0);
 
@@ -278,6 +280,7 @@ int NewsInit()
 
 	// Setup the Z80 emulation
 	ZetInit(1);
+	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, NewsRom        );
 	ZetMapArea(0x0000, 0x7fff, 2, NewsRom        );
 	ZetMapArea(0x8000, 0x87ff, 0, NewsFgVideoRam );
@@ -292,6 +295,7 @@ int NewsInit()
 	ZetMemEnd();
 	ZetSetReadHandler(NewsRead);
 	ZetSetWriteHandler(NewsWrite);
+	ZetClose();
 
 	// Setup the OKIM6295 emulation
 	MSM6295Init(0, 8000, 100, 0);
@@ -383,8 +387,10 @@ int NewsFrame()
 
 	NewsMakeInputs();
 
+	ZetOpen(0);
 	ZetRun(8000000 / 60);
 	ZetRaiseIrq(0);
+	ZetClose();
 
 	if (pBurnDraw) NewsDraw();
 	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
@@ -425,21 +431,21 @@ static int NewsScan(int nAction,int *pnMin)
 
 // Driver Declaration
 struct BurnDriver BurnDrvNews = {
-	"news", NULL, NULL, "1993",
+	"news", NULL, NULL, NULL, "1993",
 	"News (set 1)\0", NULL, "Poby / Virus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S,
-	NULL, NewsRomInfo, NewsRomName, NewsInputInfo, NewsDIPInfo,
+	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, NewsRomInfo, NewsRomName, NULL, NULL, NewsInputInfo, NewsDIPInfo,
 	NewsInit, NewsExit, NewsFrame, NULL, NewsScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x100, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvNewsa = {
-	"newsa", "news", NULL, "1993",
+	"newsa", "news", NULL, NULL, "1993",
 	"News (set 2)\0", NULL, "Poby / Jeansole", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S,
-	NULL, NewsaRomInfo, NewsaRomName, NewsInputInfo, NewsaDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, NewsaRomInfo, NewsaRomName, NULL, NULL, NewsInputInfo, NewsaDIPInfo,
 	NewsInit, NewsExit, NewsFrame, NULL, NewsScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x100, 256, 224, 4, 3
 };

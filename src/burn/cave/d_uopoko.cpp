@@ -56,7 +56,7 @@ static struct BurnInputInfo uopokoInputList[] = {
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
 };
 
-STDINPUTINFO(uopoko);
+STDINPUTINFO(uopoko)
 
 static void UpdateIRQStatus()
 {
@@ -98,7 +98,7 @@ unsigned char __fastcall uopokoReadByte(unsigned int sekAddress)
 		case 0x900001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0x900002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0x900003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -483,6 +483,8 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
+static const UINT8 default_eeprom[16] =	{0x00,0x03,0x08,0x00,0xFF,0xFF,0xFF,0xFF,0x08,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
+
 static int DrvInit()
 {
 	int nLen;
@@ -499,13 +501,9 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
-
-	{
-		unsigned char data[] = { 0x03, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08 };
-		EEPROMFill(data, 0, 0x0A);
-	}
-
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
+	
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
@@ -537,7 +535,7 @@ static int DrvInit()
 
 	nCaveRowModeOffset = 1;
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(1, 0x800000);
 	CaveTileInitLayer(0, 0x400000, 8, 0x4000);
@@ -561,11 +559,13 @@ static struct BurnRomInfo uopokoRomDesc[] = {
 	{ "u49.bin",      0x400000, 0x12FB11BB, BRF_GRA },			 //  3 Layer 0 Tile data
 
 	{ "u4.bin",       0x200000, 0xA2D0D755, BRF_SND },			 //  4 YMZ280B (AD)PCM data
+	
+	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_OPT },
 };
 
 
-STD_ROM_PICK(uopoko);
-STD_ROM_FN(uopoko);
+STD_ROM_PICK(uopoko)
+STD_ROM_FN(uopoko)
 
 static struct BurnRomInfo uopokojRomDesc[] = {
 	{ "u26.bin",      0x080000, 0xE7EEC050, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -576,30 +576,34 @@ static struct BurnRomInfo uopokojRomDesc[] = {
 	{ "u49.bin",      0x400000, 0x12FB11BB, BRF_GRA },			 //  3 Layer 0 Tile data
 
 	{ "u4.bin",       0x200000, 0xA2D0D755, BRF_SND },			 //  4 YMZ280B (AD)PCM data
+	
+	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_OPT },
 };
 
 
-STD_ROM_PICK(uopokoj);
-STD_ROM_FN(uopokoj);
+STD_ROM_PICK(uopokoj)
+STD_ROM_FN(uopokoj)
 
 struct BurnDriver BurnDrvUoPoko = {
-	"uopoko", NULL, NULL, "1999",
-	"Puzzle Uo Poko (International)\0", NULL, "Cave / Jaleco", "Cave",
+	"uopoko", NULL, NULL, NULL, "1999",
+	"Puzzle Uo Poko (International, ver. 98/02/06)\0", NULL, "Cave / Jaleco", "Cave",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, uopokoRomInfo, uopokoRomName, uopokoInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_PUZZLE, 0,
+	NULL, uopokoRomInfo, uopokoRomName, NULL, NULL, uopokoInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvUoPokoj = {
-	"uopokoj", "uopoko", NULL, "1999",
-	"Uo Poko (Japan, ver. 1998 Feb 06)\0", NULL, "Cave / Jaleco", "Cave",
-	L"\u30D1\u30BA\u30EB - \u9B5A\u30DD\u30B3 (Japan, ver. 1998 Feb 06)\0Uo Poko (Japan, ver. 1998 Feb 06)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, uopokojRomInfo, uopokojRomName, uopokoInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	320, 240, 4, 3
+	"uopokoj", "uopoko", NULL, NULL, "1999",
+	"Puzzle Uo Poko (Japan, ver. 98/02/06)\0", NULL, "Cave / Jaleco", "Cave",
+	L"\u30D1\u30BA\u30EB \u9B5A\u30DD\u30B3 \u3046\u304A\u307D\u3053 (Japan, ver. 98/02/06)\0Puzzle Uo Poko\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_PUZZLE, 0,
+	NULL, uopokojRomInfo, uopokojRomName, NULL, NULL, uopokoInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 320, 240, 4, 3
 };
 
 

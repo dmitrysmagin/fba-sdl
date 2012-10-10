@@ -72,7 +72,7 @@ static struct BurnInputInfo PrehisleInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, PrehisleDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Prehisle);
+STDINPUTINFO(Prehisle)
 
 inline void PrehisleClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -160,28 +160,28 @@ static struct BurnDIPInfo PrehisleDIPList[]=
 	{0x17, 0x01, 0x40, 0x40, "On"                     },
 };
 
-STDDIPINFO(Prehisle);
+STDDIPINFO(Prehisle)
 
 // Rom Definitions
 static struct BurnRomInfo PrehisleRomDesc[] = {
-	{ "gt.2",          0x20000, 0x7083245a, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "gt.3",          0x20000, 0x6d8cdf58, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "gt-e2.2h",      0x20000, 0x7083245a, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "gt-e3.3h",      0x20000, 0x6d8cdf58, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 
 	{ "gt15.b15",      0x08000, 0xac652412, BRF_GRA },			 //  2	Text Layer Tiles
 	{ "pi8914.b14",    0x40000, 0x207d6187, BRF_GRA },			 //  3	Background2 Layer Tiles
 	{ "pi8916.h16",    0x40000, 0x7cffe0f6, BRF_GRA },			 //  4	Background1 Layer Tiles
 	{ "pi8910.k14",    0x80000, 0x5a101b0b, BRF_GRA },			 //  5	Sprite Layer Tiles
-	{ "gt.5",          0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
-	{ "gt.11",         0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
+	{ "gt5.5",         0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
+	{ "gt11.11",       0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
 
-	{ "gt.1",          0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
+	{ "gt1.1",         0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
 
-	{ "gt.4",          0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
+	{ "gt4.4",         0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
 };
 
 
-STD_ROM_PICK(Prehisle);
-STD_ROM_FN(Prehisle);
+STD_ROM_PICK(Prehisle)
+STD_ROM_FN(Prehisle)
 
 static struct BurnRomInfo PrehisluRomDesc[] = {
 	{ "gt-u2.2h",      0x20000, 0xa14f49bb, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -191,37 +191,57 @@ static struct BurnRomInfo PrehisluRomDesc[] = {
 	{ "pi8914.b14",    0x40000, 0x207d6187, BRF_GRA },			 //  3	Background2 Layer Tiles
 	{ "pi8916.h16",    0x40000, 0x7cffe0f6, BRF_GRA },			 //  4	Background1 Layer Tiles
 	{ "pi8910.k14",    0x80000, 0x5a101b0b, BRF_GRA },			 //  5	Sprite Layer Tiles
-	{ "gt.5",          0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
-	{ "gt.11",         0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
+	{ "gt5.5",         0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
+	{ "gt11.11",       0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
 
-	{ "gt.1",          0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
+	{ "gt1.1",         0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
 
-	{ "gt.4",          0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
+	{ "gt4.4",         0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
 };
 
 
-STD_ROM_PICK(Prehislu);
-STD_ROM_FN(Prehislu);
+STD_ROM_PICK(Prehislu)
+STD_ROM_FN(Prehislu)
 
-static struct BurnRomInfo GensitouRomDesc[] = {
-	{ "gt2j.bin",      0x20000, 0xa2da0b6b, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "gt3j.bin",      0x20000, 0xc1a0ae8e, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+static struct BurnRomInfo PrehislkRomDesc[] = {
+	{ "gt-k2.2h",      0x20000, 0xf2d3544d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "gt-k3.3h",      0x20000, 0xebf7439b, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 
 	{ "gt15.b15",      0x08000, 0xac652412, BRF_GRA },			 //  2	Text Layer Tiles
 	{ "pi8914.b14",    0x40000, 0x207d6187, BRF_GRA },			 //  3	Background2 Layer Tiles
 	{ "pi8916.h16",    0x40000, 0x7cffe0f6, BRF_GRA },			 //  4	Background1 Layer Tiles
 	{ "pi8910.k14",    0x80000, 0x5a101b0b, BRF_GRA },			 //  5	Sprite Layer Tiles
-	{ "gt.5",          0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
-	{ "gt.11",         0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
+	{ "gt5.5",         0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
+	{ "gt11.11",       0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
 
-	{ "gt.1",          0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
+	{ "gt1.1",         0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
 
-	{ "gt.4",          0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
+	{ "gt4.4",         0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
 };
 
 
-STD_ROM_PICK(Gensitou);
-STD_ROM_FN(Gensitou);
+STD_ROM_PICK(Prehislk)
+STD_ROM_FN(Prehislk)
+
+static struct BurnRomInfo GensitouRomDesc[] = {
+	{ "gt-j2.2h",      0x20000, 0xa2da0b6b, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "gt-j3.3h",      0x20000, 0xc1a0ae8e, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+
+	{ "gt15.b15",      0x08000, 0xac652412, BRF_GRA },			 //  2	Text Layer Tiles
+	{ "pi8914.b14",    0x40000, 0x207d6187, BRF_GRA },			 //  3	Background2 Layer Tiles
+	{ "pi8916.h16",    0x40000, 0x7cffe0f6, BRF_GRA },			 //  4	Background1 Layer Tiles
+	{ "pi8910.k14",    0x80000, 0x5a101b0b, BRF_GRA },			 //  5	Sprite Layer Tiles
+	{ "gt5.5",         0x20000, 0x3d3ab273, BRF_GRA },			 //  6	Sprite Layer Tiles
+	{ "gt11.11",       0x10000, 0xb4f0fcf0, BRF_GRA },			 //  7	Background 2 TileMap
+
+	{ "gt1.1",         0x10000, 0x80a4c093, BRF_SND },			 //  8	Z80 Program Code
+
+	{ "gt4.4",         0x20000, 0x85dfb9ec, BRF_SND },			 //  9	ADPCM Samples
+};
+
+
+STD_ROM_PICK(Gensitou)
+STD_ROM_FN(Gensitou)
 
 // Misc Driver Functions and Memory Handlers
 int PrehisleDoReset()
@@ -267,10 +287,10 @@ inline unsigned short PrehisleVBlankRegister()
 	int nCycles = SekTotalCycles();
 
 	// 262 == approximate number of scanlines on an arcade monitor
-	if (nCycles >= (262 - 16) * ((12000000 / 60) / 262)) {
+	if (nCycles >= (262 - 16) * ((9000000 / 60) / 262)) {
 		return 0x80;
 	} else {
-		if (nCycles < (262 - 210 - 16) * ((12000000 / 60) / 262)) {
+		if (nCycles < (262 - 210 - 16) * ((9000000 / 60) / 262)) {
 			return 0x80;
 		}
 	}
@@ -383,14 +403,14 @@ void __fastcall PrehisleZ80PortWrite(unsigned short a, unsigned char d)
 		}
 
 		case 0x40: {
-			UPD7759PortWrite(d);
-			UPD7759StartWrite(0);
-			UPD7759StartWrite(1);
+			UPD7759PortWrite(0,d);
+			UPD7759StartWrite(0,0);
+			UPD7759StartWrite(0,1);
 			return;
 		}
 
 		case 0x80: {
-			UPD7759ResetWrite(d);
+			UPD7759ResetWrite(0,d);
 			return;
 		}
 	}
@@ -524,9 +544,9 @@ int PrehisleInit()
 	ZetClose();
 
 	BurnYM3812Init(4000000, &prehisleFMIRQHandler, &prehisleSynchroniseStream, 0);
-	BurnTimerAttachZet(4000000);
+	BurnTimerAttachZetYM3812(4000000);
 	
-	UPD7759Init(UPD7759_STANDARD_CLOCK, PrehisleADPCMSamples);
+	UPD7759Init(0, UPD7759_STANDARD_CLOCK, PrehisleADPCMSamples);
 	
 	GenericTilesInit();
 
@@ -755,7 +775,7 @@ int PrehisleFrame()
 
 	PrehisleMakeInputs();
 
-	nCyclesTotal[0] = 12000000 / 60;
+	nCyclesTotal[0] = 9000000 / 60;
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
@@ -776,9 +796,9 @@ int PrehisleFrame()
 		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 	}
 	
-	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	UPD7759Update(pBurnSoundOut, nBurnSoundLen);
+	UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -810,7 +830,7 @@ static int PrehisleScan(int nAction,int *pnMin)
 		ZetScan(nAction);			// Scan Z80
 
 		BurnYM3812Scan(nAction, pnMin);
-		UPD7759Scan(nAction, pnMin);
+		UPD7759Scan(0, nAction, pnMin);
 
 		// Scan critical driver variables
 		SCAN_VAR(PrehisleInput);
@@ -825,31 +845,41 @@ static int PrehisleScan(int nAction,int *pnMin)
 
 // Driver Declarations
 struct BurnDriver BurnDrvPrehisle = {
-	"prehisle", NULL, NULL, "1989",
+	"prehisle", NULL, NULL, NULL, "1989",
 	"Prehistoric Isle in 1930 (World)\0", NULL, "SNK", "Prehistoric Isle (SNK)",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, PrehisleRomInfo, PrehisleRomName, PrehisleInputInfo, PrehisleDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	NULL, PrehisleRomInfo, PrehisleRomName, NULL, NULL, PrehisleInputInfo, PrehisleDIPInfo,
 	PrehisleInit, PrehisleExit, PrehisleFrame, NULL, PrehisleScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvPrehislu = {
-	"prehislu", "prehisle", NULL, "1989",
+	"prehisleu", "prehisle", NULL, NULL, "1989",
 	"Prehistoric Isle in 1930 (US)\0", NULL, "SNK of America", "Prehistoric Isle (SNK)",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, PrehisluRomInfo, PrehisluRomName, PrehisleInputInfo, PrehisleDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	NULL, PrehisluRomInfo, PrehisluRomName, NULL, NULL, PrehisleInputInfo, PrehisleDIPInfo,
 	PrehisleInit, PrehisleExit, PrehisleFrame, NULL, PrehisleScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvPrehislk = {
+	"prehislek", "prehisle", NULL, NULL, "1989",
+	"Prehistoric Isle in 1930 (Korea)\0", NULL, "SNK (Victor license)", "Prehistoric Isle (SNK)",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	NULL, PrehislkRomInfo, PrehislkRomName, NULL, NULL, PrehisleInputInfo, PrehisleDIPInfo,
+	PrehisleInit, PrehisleExit, PrehisleFrame, NULL, PrehisleScan,
+	0, NULL, NULL, NULL, NULL, 0x800, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGensitou = {
-	"gensitou", "prehisle", NULL, "1989",
+	"gensitou", "prehisle", NULL, NULL, "1989",
 	"Genshi-Tou 1930's (Japan)\0", NULL, "SNK", "Prehistoric Isle (SNK)",
 	L"Genshi-Tou 1930's (Japan)\0\u539F\u59CB\u5CF6 1930's (Japan)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, GensitouRomInfo, GensitouRomName, PrehisleInputInfo, PrehisleDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	NULL, GensitouRomInfo, GensitouRomName, NULL, NULL, PrehisleInputInfo, PrehisleDIPInfo,
 	PrehisleInit, PrehisleExit, PrehisleFrame, NULL, PrehisleScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 256, 224, 4, 3
 };

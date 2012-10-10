@@ -86,12 +86,12 @@ int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROM
 }
 
 // This function fills the screen with the first palette entry
-void ToaClearScreen()
+void ToaClearScreen(int PalOffset)
 {
 	if (*ToaPalette) {
 		switch (nBurnBpp) {
 			case 4: {
-				unsigned int* pClear = (unsigned int*)pBurnDraw;
+				unsigned int* pClear = (unsigned int*)pBurnDraw + PalOffset;
 				unsigned int nColour = *ToaPalette;
 				for (int i = 0; i < 320 * 240 / 8; i++) {
 					*pClear++ = nColour;
@@ -107,7 +107,7 @@ void ToaClearScreen()
 			}
 
 			case 3: {
-				unsigned char* pClear = pBurnDraw;
+				unsigned char* pClear = pBurnDraw + PalOffset;
 				unsigned char r = *ToaPalette;
 				unsigned char g = (r >> 8) & 0xFF;
 				unsigned char b = (r >> 16) & 0xFF;
@@ -121,7 +121,7 @@ void ToaClearScreen()
 			}
 
 			case 2: {
-				unsigned int* pClear = (unsigned int*)pBurnDraw;
+				unsigned int* pClear = (unsigned int*)pBurnDraw + PalOffset;
 				unsigned int nColour = *ToaPalette | *ToaPalette << 16;
 				for (int i = 0; i < 320 * 240 / 16; i++) {
 					*pClear++ = nColour;

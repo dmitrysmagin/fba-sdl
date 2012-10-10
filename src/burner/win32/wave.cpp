@@ -92,7 +92,7 @@ int WaveLogStart()
 			FBAPopupDisplay(PUF_TYPE_ERROR);
 			return 1;
 		}
-		WaveLogHeaderStart(WaveLog,nAudSampleRate);
+		WaveLogHeaderStart(WaveLog,nAudSampleRate[nAudSelect]);
 
 	}
 	MenuEnableItems();

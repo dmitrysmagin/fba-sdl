@@ -177,8 +177,8 @@ int ZetInit(int nCount)
 
 	nHasZet = nCount;
 
-	//for (int i = 0; i < nCount; i++)
-	//	CpuCheatRegister(0x0004, i);
+	for (int i = 0; i < nCount; i++)
+		CpuCheatRegister(0x0004, i);
 
 	return 0;
 }

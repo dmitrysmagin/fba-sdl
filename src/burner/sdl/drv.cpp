@@ -92,7 +92,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	nBurnSoundRate = 0;					// Assume no sound
 	pBurnSoundOut = NULL;
 	if (bAudOkay) {
-		nBurnSoundRate = nAudSampleRate;
+		nBurnSoundRate = nAudSampleRate[0];
 		nBurnSoundLen = nAudSegLen;
 	}	nBurnDrvSelect = nDrvNum;		// Set the driver number
 

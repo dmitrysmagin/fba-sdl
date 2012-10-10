@@ -12,14 +12,16 @@ static UINT16* fd1094_cacheregion[S16_NUMCACHE]; // a cache region where S16_NUM
 static int fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
 static int fd1094_current_cacheposition; // current position in cache array
 
-bool System18Banking;
+static int nFD1094CPU = 0;
 
+bool System18Banking;
+/*
 static void *fd1094_get_decrypted_base(void)
 {
 	if (!fd1094_key)
 		return NULL;
 	return fd1094_userregion;
-}
+}*/
 
 /* this function checks the cache to see if the current state is cached,
    if it is then it copies the cached data to the user region where code is
@@ -43,7 +45,7 @@ static void fd1094_setstate_and_decrypt(int state)
 		{
 			/* copy cached state */
 			fd1094_userregion=fd1094_cacheregion[i];
-			SekOpen(0);
+			SekOpen(nFD1094CPU);
 			SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
 			if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 			SekClose();
@@ -64,7 +66,7 @@ static void fd1094_setstate_and_decrypt(int state)
 
 	/* copy newly decrypted data to user region */
 	fd1094_userregion=fd1094_cacheregion[fd1094_current_cacheposition];
-	SekOpen(0);
+	SekOpen(nFD1094CPU);
 	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
 	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
@@ -113,7 +115,7 @@ void fd1094_kludge_reset_values(void)
 		fd1094_userregion[i] = fd1094_decode(i,fd1094_cpuregion[i],fd1094_key,1);
 	}
 		
-	SekOpen(0);
+	SekOpen(nFD1094CPU);
 	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
 	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
@@ -126,7 +128,7 @@ void fd1094_machine_init(void)
 	fd1094_setstate_and_decrypt(FD1094_STATE_RESET);
 	fd1094_kludge_reset_values();
 
-	SekOpen(0);
+	SekOpen(nFD1094CPU);
 	SekSetCmpCallback(fd1094_cmp_callback);
 	SekSetRTECallback(fd1094_rte_callback);
 	SekSetIrqCallback(fd1094_int_callback);
@@ -134,12 +136,26 @@ void fd1094_machine_init(void)
 }
 
 /* startup function, to be called from DRIVER_INIT (once on startup) */
-void fd1094_driver_init()
+void fd1094_driver_init(int nCPU)
 {
 	int i;
+	
+	nFD1094CPU = nCPU;
 
-	fd1094_cpuregion = (UINT16*)System16Rom;
-	fd1094_cpuregionsize = System16RomSize;
+	if (nFD1094CPU == 0) {
+		fd1094_cpuregion = (UINT16*)System16Rom;
+		fd1094_cpuregionsize = System16RomSize;
+	}
+	
+	if (nFD1094CPU == 1) {
+		fd1094_cpuregion = (UINT16*)System16Rom2;
+		fd1094_cpuregionsize = System16Rom2Size;
+	}
+	
+	if (nFD1094CPU >= 2) {
+		bprintf(PRINT_ERROR, _T("Invalid CPU called for FD1094 Driver Init\n"));
+	}
+	
 	fd1094_key = System16Key;
 
 	/* punt if no key; this allows us to be called even for non-FD1094 games */
@@ -162,6 +178,7 @@ void fd1094_driver_init()
 void fd1094_exit()
 {
 	System18Banking = false;
+	nFD1094CPU = 0;
 	
 	for (int i = 0; i < S16_NUMCACHE; i++) {
 		free(fd1094_cacheregion[i]);

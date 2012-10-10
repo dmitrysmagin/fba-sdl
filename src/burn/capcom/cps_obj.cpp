@@ -3,6 +3,8 @@
 
 int nCpsObjectBank;
 
+unsigned char *BootlegSpriteRam = NULL;
+
 int Sf2Hack = 0;
 
 // Our copy of the sprite table
@@ -98,16 +100,19 @@ int CpsObjGet()
 		pof->nShiftX = -CpsSaveFrg[0][0x9];
 		pof->nShiftY = -CpsSaveFrg[0][0xB];
 	} else {
-		if (!Sf2Hack) {
-			int nOff = *((unsigned short*)(CpsReg + 0x00)) << 8;
-			nOff &= 0xFFF800;
-			Get = CpsFindGfxRam(nOff, 0x0800);
+		int nOff = *((unsigned short*)(CpsReg + 0x00)) << 8;
+		nOff &= 0xfff800;
+		Get = CpsFindGfxRam(nOff, 0x800);		
+		
+		if (Sf2Hack) {
+			Get = CpsFindGfxRam(0x910000, 0x800);
 		} else {
-			// Uses only sprite port 0x910000
-			Get = CpsFindGfxRam(0x910000, 0x0800);
+			if (Dinopic) {
+				Get = BootlegSpriteRam + 0x1000;
+			}
 		}
 	}
-
+	
 	if (Get==NULL) return 1;
 
 	// Make a copy of all active sprites in the list
@@ -122,13 +127,25 @@ int CpsObjGet()
 				break;
 			}
 		} else {
-			if (ps[3] == 0xff00) {													// end of sprite list
-				break;
+			if (Dinopic) {
+				if (ps[1] == 0x8000) {													// end of sprite list
+					break;
+				}
+			} else {
+				if (ps[3] == 0xff00) {													// end of sprite list
+					break;
+				}
 			}
 		}
-
-		if ((ps[0] | ps[3]) == 0) {													// sprite blank
-			continue;
+		
+		if (Dinopic) {
+			if (((ps[2] - 461) | ps[1]) == 0) {													// sprite blank
+				continue;
+			}
+		} else {
+			if ((ps[0] | ps[3]) == 0) {													// sprite blank
+				continue;
+			}
 		}
 
 		// Okay - this sprite is active:
@@ -174,7 +191,7 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 	// Point to Obj list
 	ps=(unsigned short *)pof->Obj;
 
-	if (!Sf2Hack) {
+	if (!CpsDrawSpritesInReverse) {
 		ps+=(pof->nCount-1)<<2; nPsAdd=-4; // CPS1 is reversed
 	} else {
 		nPsAdd=4;
@@ -184,18 +201,22 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 	for (i=0; i<pof->nCount; i++,ps+=nPsAdd) {
 		int x,y,n,a,bx,by,dx,dy; int nFlip;
 
-		x=ps[0]; y=ps[1]; n=ps[2]; a=ps[3];
-
-/*		if (Wonders3 && n>=0x2a00) {
-			if (n==0xffff)	continue;
-			n+=0x4000;
-		} else if (Forgottn) {
-			if (n==0xd400)	continue;
-			n+=0x4000;
-		} else if (Ghouls && n>=0x1000)
-			n+=0x4000;*/
+		if (Dinopic) {
+			n = ps[0]; a = ps[1]; x = ps[2] - 461; y = 0x2f0 - ps[3];
+			bx = 1;
+			by = 1;
+		} else {
+			x = ps[0]; y = ps[1]; n = ps[2]; a = ps[3];
+			
+			// Find out sprite size
+			bx=((a>> 8)&15)+1;
+			by=((a>>12)&15)+1;
+		}
+		
 		n = GfxRomBankMapper(GFXTYPE_SPRITES, n);
 		if (n == -1) continue;
+		
+		n |= (y & 0x6000) << 3; // high bits of address
 		
 		// CPS1 coords are 9 bit signed?
 		x&=0x01ff; if (x>=0x1c0) x-=0x200;
@@ -204,16 +225,10 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 		x+=pof->nShiftX;
 		y+=pof->nShiftY;
 
-		n|=(ps[1]&0x6000)<<3; // high bits of address
-		n<<=7; // Find real tile address
-		
 		// Find the palette for the tiles on this sprite
 		CpstPal = CpsObjPal + ((a & 0x1F) << 4);
 
-		nFlip=(a>>5)&3;
-		// Find out sprite size
-		bx=((a>> 8)&15)+1;
-		by=((a>>12)&15)+1;
+		nFlip=(a>>5)&3;		
 
 		// Take care with tiles if the sprite goes off the screen
 		if (x<0 || y<0 || x+(bx<<4)>384 || y+(by<<4)>224) {
@@ -233,7 +248,8 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 
 				nCpstX=x+(ex<<4);
 				nCpstY=y+(ey<<4);
-				nCpstTile=n+(dy<<11)+(dx<<7);
+				nCpstTile = (n & ~0x0F) + (dy << 4) + ((n + dx) & 0x0F);
+				nCpstTile <<= 7;
 				CpstOneObjDoX[0]();
 			}
 		}
@@ -301,7 +317,7 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 		if (a & 0x80) {														// marvel vs capcom ending sprite off-set
 			x += CpsSaveFrg[0][0x9];
 		}
-
+		
 		// CPS2 coords are 10 bit signed (-512 to 511)
 		x &= 0x03FF; x ^= 0x200; x -= 0x200;
 		y &= 0x03FF; y ^= 0x200; y -= 0x200;
@@ -330,7 +346,7 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 
 #endif
 		n |= (ps[1] & 0x6000) << 3;	// high bits of address
-
+		
 		// Find the palette for the tiles on this sprite
 		CpstPal = CpsObjPal + ((a & 0x1F) << 4);
 
@@ -372,7 +388,7 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 
 //				nCpstTile = n + (dy << 4) + dx;								// normal version
 				nCpstTile = (n & ~0x0F) + (dy << 4) + ((n + dx) & 0x0F);	// pgear fix
-				nCpstTile <<= 7;											// Find real tile address
+				nCpstTile <<= 7;						// Find real tile address					
 
 				pCpstOne();
 			}

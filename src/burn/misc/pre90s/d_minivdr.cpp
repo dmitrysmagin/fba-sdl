@@ -1,67 +1,44 @@
+// FB Alpha Minivader driver module
+//Based on MAME Driver by Takahiro Nogi
 
-/*
-Minivader (Space Invaders's mini game)
-(c)1990 Taito Corporation
+#include "tiles_generic.h"
 
-This is a test board sold together with the cabinet (as required by law in
-Japan). It has no sound.
+static unsigned char *AllMem;
+static unsigned char *MemEnd;
+static unsigned char *AllRam;
+static unsigned char *RamEnd;
+static unsigned char *DrvZ80ROM;
+static unsigned char *DrvZ80RAM;
 
-Based on MAME Driver by Takahiro Nogi
-*/
-
-#include "burnint.h"
-
-
-static unsigned char DrvJoy[4], DrvReset, *Mem;
+static unsigned char DrvJoy1[4];
+static unsigned char DrvInputs[1];
+static unsigned char DrvReset;
 
 static struct BurnInputInfo DrvInputList[] = {
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy + 0, 	"p1 left"  },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy + 1, 	"p1 right" },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy + 2,	"p1 fire 1"},
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy + 3,	"p1 coin"  },
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 3,	"p1 coin"  },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 0, 	"p1 left"  },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 1, 	"p1 right" },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 2,	"p1 fire 1"},
 
 	{"Reset"        , BIT_DIGITAL  , &DrvReset  ,	"reset"    },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
-
-unsigned char __fastcall MinivadrMemRead(unsigned short a)
+unsigned char __fastcall minivdr_read(unsigned short address)
 {
-	if (a == 0xe008) {
-		return ~(DrvJoy[0] | (DrvJoy[1] << 1) | (DrvJoy[2] << 2) | (DrvJoy[3] << 3));
+	if (address == 0xe008) {
+		return DrvInputs[0];
 	}
 
 	return 0;
 }
-
-
-static int DrvScan(int nAction,int *pnMin)
-{
-	struct BurnArea ba;
-
-	if (pnMin) {
-		*pnMin = 0x029521;
-	}
-
-	if (nAction & ACB_VOLATILE) {	
-		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = Mem + 0x2000;
-		ba.nLen	  = 0x2000;
-		ba.szName = "All Ram";
-		BurnAcb(&ba);
-
-		ZetScan(nAction);
-	}
-
-	return 0;
-}
-
 
 static int DrvDoReset()
 {
 	DrvReset = 0;
-	memset (Mem + 0x2000, 0, 0x2000);
+
+	memset (AllRam, 0, RamEnd - AllRam);
 
 	ZetOpen(0);
 	ZetReset();
@@ -70,31 +47,89 @@ static int DrvDoReset()
 	return 0;
 }
 
-
-static int DrvDraw()
+static int MemIndex()
 {
-	int a, i, y;
-	unsigned char c, d, x;
+	unsigned char *Next; Next = AllMem;
 
-	for (a = 0x200; a < 0x1e00; a++)
-	{
-		x = a << 3;
-		y = ((a >> 5) - 0x10) << 8;
-		d = Mem[0x2000 + a];
+	DrvZ80ROM	= Next; Next += 0x010000;
 
-		for (i = 0; i < 8; i++)
-		{
-			c = (d & 0x80) ? 0xff : 0;
-			PutPix(pBurnDraw + (x + y) * nBurnBpp, BurnHighCol(c, c, c, 0));
+	AllRam		= Next;
 
-			d <<= 1;
-			x += 1;
-		}
-	}
+	DrvZ80RAM	= Next; Next += 0x002000;
+
+	RamEnd		= Next;
+
+	MemEnd		= Next;
 
 	return 0;
 }
 
+static int DrvInit()
+{
+	AllMem = NULL;
+	MemIndex();
+	int nLen = MemEnd - (unsigned char *)0;
+	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(AllMem, 0, nLen);
+	MemIndex();
+
+	{
+		if (BurnLoadRom(DrvZ80ROM, 0, 1)) return 1;
+	}
+
+	ZetInit(1);
+	ZetOpen(0);
+	ZetMapArea (0x0000, 0x1fff, 0, DrvZ80ROM);
+	ZetMapArea (0x0000, 0x1fff, 2, DrvZ80ROM);
+	ZetMapArea (0xa000, 0xbfff, 0, DrvZ80RAM);
+	ZetMapArea (0xa000, 0xbfff, 1, DrvZ80RAM);
+	ZetMapArea (0xa000, 0xbfff, 2, DrvZ80RAM);
+	ZetSetReadHandler(minivdr_read);
+	ZetMemEnd();
+	ZetClose();
+
+	GenericTilesInit();
+
+	DrvDoReset();
+
+	return 0;
+}
+
+static int DrvExit()
+{
+	GenericTilesExit();
+
+	ZetExit();
+
+	free (AllMem);
+	AllMem = NULL;
+
+	return 0;
+}
+
+static int DrvDraw()
+{
+	unsigned int DrvPalette[2];
+
+	DrvPalette[0] = 0;
+	DrvPalette[1] = BurnHighCol(0xff, 0xff, 0xff, 0);
+
+	for (int offs = 0x200; offs < 0x1e00; offs++)
+	{
+		int sx = (offs << 3) & 0xf8;
+		int sy = ((offs >> 5) - 0x10) << 8;
+		int d = DrvZ80RAM[offs];
+
+		for (int i = 0; i < 8; i++, sx++)
+		{
+			pTransDraw[sx + sy] = (d >> (7 - i)) & 1;
+		}
+	}
+
+	BurnTransferCopy(DrvPalette);
+
+	return 0;
+}
 
 static int DrvFrame()
 {
@@ -102,9 +137,16 @@ static int DrvFrame()
 		DrvDoReset();
 	}
 
+	{
+		DrvInputs[0] = 0xff;
+		for (int i = 0; i < 4; i++) {
+			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
+		}
+	}
+
 	ZetOpen(0);
 	ZetRun(4000000 / 60);
-	ZetSetIRQLine(0xFF, ZET_IRQSTATUS_AUTO);
+	ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 	ZetClose();
 
 	if (pBurnDraw) {
@@ -114,38 +156,23 @@ static int DrvFrame()
 	return 0;
 }
 
-
-static int DrvInit()
+static int DrvScan(int nAction,int *pnMin)
 {
-	Mem = (unsigned char*)malloc ( 0x4000 );
-	if (Mem == NULL) {
-		return 1;
+	struct BurnArea ba;
+
+	if (pnMin) {
+		*pnMin = 0x029702;
 	}
 
-	if (BurnLoadRom(Mem, 0, 1)) return 1;
+	if (nAction & ACB_VOLATILE) {	
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = AllRam;
+		ba.nLen	  = RamEnd - AllRam;
+		ba.szName = "All Ram";
+		BurnAcb(&ba);
 
-	ZetInit(1);
-	ZetOpen(0);
-	ZetMapArea (0x0000, 0x1fff, 0, Mem + 0x0000); // Read ROM
-	ZetMapArea (0x0000, 0x1fff, 2, Mem + 0x0000); // Fetch ROM
-	ZetMapArea (0xa000, 0xbfff, 0, Mem + 0x2000); // Read RAM
-	ZetMapArea (0xa000, 0xbfff, 1, Mem + 0x2000); // Write RAM
-	ZetSetReadHandler(MinivadrMemRead);
-	ZetMemEnd();
-	ZetClose();
-
-	DrvDoReset();
-	return 0;
-}
-
-
-static int DrvExit()
-{
-	ZetExit();
-
-	DrvReset = 0;
-	free (Mem);
-	Mem = NULL;
+		ZetScan(nAction);
+	}
 
 	return 0;
 }
@@ -157,17 +184,15 @@ static struct BurnRomInfo minivadrRomDesc[] = {
 	{ "d26-01.bin",	0x2000, 0xa96c823d, BRF_ESS | BRF_PRG }, //  Z80 code
 };
 
-STD_ROM_PICK(minivadr);
-STD_ROM_FN(minivadr);
+STD_ROM_PICK(minivadr)
+STD_ROM_FN(minivadr)
 
 struct BurnDriver BurnDrvminivadr = {
-	"minivadr", NULL, NULL, "1990",
+	"minivadr", NULL, NULL, NULL, "1990",
 	"Minivader\0", NULL, "Taito Corporation", "Minivader",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_PRE90S,
-	NULL, minivadrRomInfo, minivadrRomName, DrvInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,NULL,
+	BDF_GAME_WORKING, 1, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, minivadrRomInfo, minivadrRomName, NULL, NULL, DrvInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0,
 	256, 224, 4, 3
 };
-
-

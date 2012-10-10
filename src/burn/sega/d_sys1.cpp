@@ -1,7 +1,6 @@
 #include "tiles_generic.h"
 #include "sn76496.h"
 #include "bitswap.h"
-#include "z80.h"
 #include "mc8123.h"
 
 static unsigned char System1InputPort0[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -63,29 +62,18 @@ static int System1BankedRom = 0;
 
 typedef void (*Decode)();
 static Decode DecodeFunction;
+static Decode TileDecodeFunction;
+
+typedef void (*Render)();
+static Render System1Draw;
+static void System1Render();
+//static void WbmlRender();
 
 typedef void (*MakeInputs)();
 static MakeInputs MakeInputsFunction;
 
 static int nCyclesDone[2], nCyclesTotal[2];
 static int nCyclesSegment;
-
-static Z80_Regs Z80_0;
-static Z80_Regs Z80_1;
-static void OpenCPU(int nCPU);
-static void CloseCPU(int nCPU);
-
-struct CPU_Config {
-	Z80ReadIoHandler Z80In;
-	Z80WriteIoHandler Z80Out;
-	Z80ReadProgHandler Z80Read;
-	Z80WriteProgHandler Z80Write;
-	Z80ReadOpHandler Z80ReadOp;
-	Z80ReadOpArgHandler Z80ReadOpArg;
-};
-
-static CPU_Config Z80_0_Config;
-static CPU_Config Z80_1_Config;
 
 /*==============================================================================================
 Input Definitions
@@ -111,7 +99,7 @@ static struct BurnInputInfo BlockgalInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Blockgal);
+STDINPUTINFO(Blockgal)
 
 static struct BurnInputInfo FlickyInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -134,7 +122,7 @@ static struct BurnInputInfo FlickyInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Flicky);
+STDINPUTINFO(Flicky)
 
 static struct BurnInputInfo MyheroInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -163,7 +151,7 @@ static struct BurnInputInfo MyheroInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Myhero);
+STDINPUTINFO(Myhero)
 
 static struct BurnInputInfo SeganinjInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -194,7 +182,7 @@ static struct BurnInputInfo SeganinjInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Seganinj);
+STDINPUTINFO(Seganinj)
 
 static struct BurnInputInfo UpndownInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -221,7 +209,7 @@ static struct BurnInputInfo UpndownInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Upndown);
+STDINPUTINFO(Upndown)
 
 static struct BurnInputInfo WboyInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -246,7 +234,7 @@ static struct BurnInputInfo WboyInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Wboy);
+STDINPUTINFO(Wboy)
 
 static struct BurnInputInfo WmatchInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System1InputPort2 + 0, "p1 coin"   },
@@ -281,7 +269,7 @@ static struct BurnInputInfo WmatchInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, System1Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Wmatch);
+STDINPUTINFO(Wmatch)
 
 inline void System1ClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -362,6 +350,43 @@ static inline void BlockgalMakeInputs()
 	{dipval, 0x01, 0xf0, 0xb0, "1 Coin  5 Credits"      },				\
 	{dipval, 0x01, 0xf0, 0xa0, "1 Coin  6 Credits"      },
 
+static struct BurnDIPInfo FourdwarrioDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfe, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x14, 0x01, 0x01, 0x00, "Upright"                },
+	{0x14, 0x01, 0x01, 0x01, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x06, 0x06, "3"                      },
+	{0x14, 0x01, 0x06, 0x04, "4"                      },
+	{0x14, 0x01, 0x06, 0x02, "5"                      },
+	{0x14, 0x01, 0x06, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 8   , "Bonus Life"             },
+	{0x14, 0x01, 0x38, 0x38, "30k"                    },
+	{0x14, 0x01, 0x38, 0x30, "40k"                    },
+	{0x14, 0x01, 0x38, 0x28, "50k"                    },
+	{0x14, 0x01, 0x38, 0x20, "60k"                    },
+	{0x14, 0x01, 0x38, 0x18, "70k"                    },
+	{0x14, 0x01, 0x38, 0x10, "80k"                    },
+	{0x14, 0x01, 0x38, 0x08, "90k"                    },
+	{0x14, 0x01, 0x38, 0x00, "None"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Difficulty"             },
+	{0x14, 0x01, 0x40, 0x40, "Easy"                   },
+	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
+};
+
+STDDIPINFO(Fourdwarrio)
+
 static struct BurnDIPInfo BlockgalDIPList[]=
 {
 	// Default Values
@@ -397,7 +422,7 @@ static struct BurnDIPInfo BlockgalDIPList[]=
 	SYSTEM1_COINAGE(0x0d)
 };
 
-STDDIPINFO(Blockgal);
+STDDIPINFO(Blockgal)
 
 static struct BurnDIPInfo BrainDIPList[]=
 {
@@ -424,7 +449,40 @@ static struct BurnDIPInfo BrainDIPList[]=
 	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
 };
 
-STDDIPINFO(Brain);
+STDDIPINFO(Brain)
+
+static struct BurnDIPInfo BullfgtDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfc, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x14, 0x01, 0x01, 0x00, "Upright"                },
+	{0x14, 0x01, 0x01, 0x01, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x02, 0x02, "Off"                    },
+	{0x14, 0x01, 0x02, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x0c, 0x0c, "3"                      },
+	{0x14, 0x01, 0x0c, 0x08, "4"                      },
+	{0x14, 0x01, 0x0c, 0x04, "5"                      },
+	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x14, 0x01, 0x30, 0x30, "30k"                    },
+	{0x14, 0x01, 0x30, 0x20, "50k"                    },
+	{0x14, 0x01, 0x30, 0x10, "70k"                    },
+	{0x14, 0x01, 0x30, 0x00, "None"                   },
+};
+
+STDDIPINFO(Bullfgt)
 
 static struct BurnDIPInfo FlickyDIPList[]=
 {
@@ -457,7 +515,7 @@ static struct BurnDIPInfo FlickyDIPList[]=
 	{0x0e, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Flicky);
+STDDIPINFO(Flicky)
 
 static struct BurnDIPInfo GardiaDIPList[]=
 {
@@ -494,7 +552,40 @@ static struct BurnDIPInfo GardiaDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Gardia);
+STDDIPINFO(Gardia)
+
+static struct BurnDIPInfo ImsorryDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfc, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x14, 0x01, 0x01, 0x00, "Upright"                },
+	{0x14, 0x01, 0x01, 0x01, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x02, 0x02, "Off"                    },
+	{0x14, 0x01, 0x02, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x0c, 0x0c, "3"                      },
+	{0x14, 0x01, 0x0c, 0x08, "4"                      },
+	{0x14, 0x01, 0x0c, 0x04, "5"                      },
+	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x14, 0x01, 0x30, 0x30, "30k"                    },
+	{0x14, 0x01, 0x30, 0x20, "40k"                    },
+	{0x14, 0x01, 0x30, 0x10, "50k"                    },
+	{0x14, 0x01, 0x30, 0x00, "None"                   },
+};
+
+STDDIPINFO(Imsorry)
 
 static struct BurnDIPInfo MrvikingDIPList[]=
 {
@@ -531,7 +622,7 @@ static struct BurnDIPInfo MrvikingDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Mrviking);
+STDDIPINFO(Mrviking)
 
 static struct BurnDIPInfo MrvikngjDIPList[]=
 {
@@ -564,7 +655,7 @@ static struct BurnDIPInfo MrvikngjDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Mrvikngj);
+STDDIPINFO(Mrvikngj)
 
 static struct BurnDIPInfo MyheroDIPList[]=
 {
@@ -601,9 +692,9 @@ static struct BurnDIPInfo MyheroDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Myhero);
+STDDIPINFO(Myhero)
 
-static struct BurnDIPInfo NoboranbDIPList[]=
+static struct BurnDIPInfo NobbDIPList[]=
 {
 	// Default Values
 	{0x13, 0xff, 0xff, 0x2f, NULL                     },
@@ -658,7 +749,7 @@ static struct BurnDIPInfo NoboranbDIPList[]=
 	{0x14, 0x01, 0x20, 0x00, "On"                     },
 };
 
-STDDIPINFO(Noboranb);
+STDDIPINFO(Nobb)
 
 static struct BurnDIPInfo Pitfall2DIPList[]=
 {
@@ -697,7 +788,7 @@ static struct BurnDIPInfo Pitfall2DIPList[]=
 	{0x14, 0x01, 0x40, 0x40, "3 minutes"              },
 };
 
-STDDIPINFO(Pitfall2);
+STDDIPINFO(Pitfall2)
 
 static struct BurnDIPInfo PitfalluDIPList[]=
 {
@@ -734,7 +825,40 @@ static struct BurnDIPInfo PitfalluDIPList[]=
 	{0x14, 0x01, 0x40, 0x40, "3 minutes"              },
 };
 
-STDDIPINFO(Pitfallu);
+STDDIPINFO(Pitfallu)
+
+static struct BurnDIPInfo RaflesiaDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfc, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2	
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x14, 0x01, 0x01, 0x00, "Upright"                },
+	{0x14, 0x01, 0x01, 0x01, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x02, 0x02, "Off"                    },
+	{0x14, 0x01, 0x02, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x0c, 0x0c, "3"                      },
+	{0x14, 0x01, 0x0c, 0x08, "4"                      },
+	{0x14, 0x01, 0x0c, 0x04, "5"                      },
+	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x14, 0x01, 0x30, 0x30, "20k,  70k and 120k"     },
+	{0x14, 0x01, 0x30, 0x20, "30k,  80k and 150k"     },
+	{0x14, 0x01, 0x30, 0x10, "50k, 100k and 200k"     },
+	{0x14, 0x01, 0x30, 0x00, "None"                   },
+};
+
+STDDIPINFO(Raflesia)
 
 static struct BurnDIPInfo RegulusDIPList[]=
 {
@@ -765,7 +889,7 @@ static struct BurnDIPInfo RegulusDIPList[]=
 	{0x14, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Regulus);
+STDDIPINFO(Regulus)
 
 static struct BurnDIPInfo RegulusoDIPList[]=
 {
@@ -792,7 +916,7 @@ static struct BurnDIPInfo RegulusoDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Reguluso);
+STDDIPINFO(Reguluso)
 
 static struct BurnDIPInfo SeganinjDIPList[]=
 {
@@ -831,7 +955,44 @@ static struct BurnDIPInfo SeganinjDIPList[]=
 	{0x16, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Seganinj);
+STDDIPINFO(Seganinj)
+
+static struct BurnDIPInfo SpatterDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfc, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x14, 0x01, 0x01, 0x00, "Upright"                },
+	{0x14, 0x01, 0x01, 0x01, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x02, 0x02, "Off"                    },
+	{0x14, 0x01, 0x02, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x0c, 0x08, "2"                      },
+	{0x14, 0x01, 0x0c, 0x0c, "3"                      },
+	{0x14, 0x01, 0x0c, 0x04, "4"                      },
+	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x14, 0x01, 0x30, 0x30, "40k, 120k and 480k"     },
+	{0x14, 0x01, 0x30, 0x20, "50k and 200k"           },
+	{0x14, 0x01, 0x30, 0x10, "100k only"              },
+	{0x14, 0x01, 0x30, 0x00, "None"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Reset Timer/Objects on Life Loss" },
+	{0x14, 0x01, 0x40, 0x40, "No"                     },
+	{0x14, 0x01, 0x40, 0x00, "Yes"                    },
+};
+
+STDDIPINFO(Spatter)
 
 static struct BurnDIPInfo StarjackDIPList[]=
 {
@@ -870,7 +1031,7 @@ static struct BurnDIPInfo StarjackDIPList[]=
 	{0x14, 0x01, 0xc0, 0x00, "Hardest"                },
 };
 
-STDDIPINFO(Starjack);
+STDDIPINFO(Starjack)
 
 static struct BurnDIPInfo StarjacsDIPList[]=
 {
@@ -909,7 +1070,7 @@ static struct BurnDIPInfo StarjacsDIPList[]=
 	{0x14, 0x01, 0xc0, 0x00, "Hardest"                },
 };
 
-STDDIPINFO(Starjacs);
+STDDIPINFO(Starjacs)
 
 static struct BurnDIPInfo SwatDIPList[]=
 {
@@ -942,7 +1103,7 @@ static struct BurnDIPInfo SwatDIPList[]=
 	{0x14, 0x01, 0x38, 0x00, "None"                   },
 };
 
-STDDIPINFO(Swat);
+STDDIPINFO(Swat)
 
 static struct BurnDIPInfo TeddybbDIPList[]=
 {
@@ -979,7 +1140,7 @@ static struct BurnDIPInfo TeddybbDIPList[]=
 	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Teddybb);
+STDDIPINFO(Teddybb)
 
 static struct BurnDIPInfo UpndownDIPList[]=
 {
@@ -1018,7 +1179,7 @@ static struct BurnDIPInfo UpndownDIPList[]=
 	{0x12, 0x01, 0xc0, 0x00, "Hardest"                },
 };
 
-STDDIPINFO(Upndown);
+STDDIPINFO(Upndown)
 
 static struct BurnDIPInfo WboyDIPList[]=
 {
@@ -1057,7 +1218,7 @@ static struct BurnDIPInfo WboyDIPList[]=
 	{0x10, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Wboy);
+STDDIPINFO(Wboy)
 
 static struct BurnDIPInfo Wboy3DIPList[]=
 {
@@ -1096,7 +1257,7 @@ static struct BurnDIPInfo Wboy3DIPList[]=
 	{0x10, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Wboy3);
+STDDIPINFO(Wboy3)
 
 static struct BurnDIPInfo WboyuDIPList[]=
 {
@@ -1141,7 +1302,7 @@ static struct BurnDIPInfo WboyuDIPList[]=
 	{0x10, 0x01, 0xc0, 0x00, "Endless Game"           },
 };
 
-STDDIPINFO(Wboyu);
+STDDIPINFO(Wboyu)
 
 static struct BurnDIPInfo WbdeluxeDIPList[]=
 {
@@ -1184,7 +1345,7 @@ static struct BurnDIPInfo WbdeluxeDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Fast"                   },
 };
 
-STDDIPINFO(Wbdeluxe);
+STDDIPINFO(Wbdeluxe)
 
 static struct BurnDIPInfo WmatchDIPList[]=
 {
@@ -1219,13 +1380,38 @@ static struct BurnDIPInfo WmatchDIPList[]=
 	{0x1a, 0x01, 0x40, 0x00, "Hard"                   },
 };
 
-STDDIPINFO(Wmatch);
+STDDIPINFO(Wmatch)
 
 #undef SYSTEM1_COINAGE
 
 /*==============================================================================================
 ROM Descriptions
 ===============================================================================================*/
+
+static struct BurnRomInfo FourdwarrioRomDesc[] = {
+	{ "4d.116",            0x004000, 0x546d1bc7, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "4d.109",            0x004000, 0xf1074ec3, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "4d.96",             0x004000, 0x387c1e8f, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "4d.120",            0x002000, 0x5241c009, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "4d.62",             0x002000, 0xf31b2e09, BRF_GRA },		  //  4 Tiles
+	{ "4d.61",             0x002000, 0x5430e925, BRF_GRA },		  //  5 Tiles
+	{ "4d.64",             0x002000, 0x9f442351, BRF_GRA },		  //  6 Tiles
+	{ "4d.63",             0x002000, 0x633232bd, BRF_GRA },		  //  7 Tiles
+	{ "4d.66",             0x002000, 0x52bfa2ed, BRF_GRA },		  //  8 Tiles
+	{ "4d.65",             0x002000, 0xe9ba4658, BRF_GRA },		  //  9 Tiles
+	
+	{ "4d.117",            0x004000, 0x436e4141, BRF_GRA },		  //  10 Sprites
+	{ "4d.04",             0x004000, 0x8b7cecef, BRF_GRA },		  //  11 Sprites
+	{ "4d.110",            0x004000, 0x6ec5990a, BRF_GRA },		  //  12 Sprites
+	{ "4d.05",             0x004000, 0xf31a1e6a, BRF_GRA },		  //  13 Sprites
+
+	{ "pr5317.76",         0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Fourdwarrio)
+STD_ROM_FN(Fourdwarrio)
 
 static struct BurnRomInfo BlockgalRomDesc[] = {
 	{ "bg.116",            0x004000, 0xa99b231a, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1250,8 +1436,8 @@ static struct BurnRomInfo BlockgalRomDesc[] = {
 	{ "317-0029.key",      0x002000, 0x350d7f93, BRF_ESS | BRF_PRG }, //  14 MC8123 Key
 };
 
-STD_ROM_PICK(Blockgal);
-STD_ROM_FN(Blockgal);
+STD_ROM_PICK(Blockgal)
+STD_ROM_FN(Blockgal)
 
 static struct BurnRomInfo BrainRomDesc[] = {
 	{ "brain.1",           0x008000, 0x2d2aec31, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1274,8 +1460,57 @@ static struct BurnRomInfo BrainRomDesc[] = {
 	{ "pr5317.76",         0x000100, 0x648350b8, BRF_OPT },		  //  13 Timing PROM
 };
 
-STD_ROM_PICK(Brain);
-STD_ROM_FN(Brain);
+STD_ROM_PICK(Brain)
+STD_ROM_FN(Brain)
+
+static struct BurnRomInfo BullfgtRomDesc[] = {
+	{ "epr-.129",          0x002000, 0x29f19156, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-.130",          0x002000, 0xe37d2b95, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-.131",          0x002000, 0xeaf5773d, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	{ "epr-.132",          0x002000, 0x72c3c712, BRF_ESS | BRF_PRG }, //  3	Z80 #1 Program Code
+	{ "epr-.133",          0x002000, 0x7d9fa4cd, BRF_ESS | BRF_PRG }, //  4	Z80 #1 Program Code
+	{ "epr-.134",          0x002000, 0x061f2797, BRF_ESS | BRF_PRG }, //  5	Z80 #1 Program Code
+	
+	{ "epr-6077.120",      0x002000, 0x02a37602, BRF_ESS | BRF_PRG }, //  6	Z80 #2 Program Code
+	
+	{ "epr-.82",           0x002000, 0xb71c349f, BRF_GRA },		  //  7 Tiles
+	{ "epr-.65",           0x002000, 0x86deafa8, BRF_GRA },		  //  8 Tiles
+	{ "epr-6087.81",       0x002000, 0x2677742c, BRF_GRA },		  //  9 Tiles
+	{ "epr-.64",           0x002000, 0x6f0a62be, BRF_GRA },		  //  10 Tiles
+	{ "epr-6085.80",       0x002000, 0x9c3ddc62, BRF_GRA },		  //  11 Tiles
+	{ "epr-.63",           0x002000, 0xc0fce57c, BRF_GRA },		  //  12 Tiles
+	
+	{ "epr-6069.86",       0x004000, 0xfe691e41, BRF_GRA },		  //  13 Sprites
+	{ "epr-6070.93",       0x004000, 0x34f080df, BRF_GRA },		  //  14 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
+};
+
+STD_ROM_PICK(Bullfgt)
+STD_ROM_FN(Bullfgt)
+
+static struct BurnRomInfo ThetogyuRomDesc[] = {
+	{ "epr-6071.116",      0x004000, 0x96b57df9, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6072.109",      0x004000, 0xf7baadd0, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6073.96",       0x004000, 0x721af166, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6077.120",      0x002000, 0x02a37602, BRF_ESS | BRF_PRG }, //  6	Z80 #2 Program Code
+	
+	{ "epr-6089.62",       0x002000, 0xa183e5ff, BRF_GRA },		  //  7 Tiles
+	{ "epr-6088.61",       0x002000, 0xb919b4a6, BRF_GRA },		  //  8 Tiles
+	{ "epr-6087.64",       0x002000, 0x2677742c, BRF_GRA },		  //  9 Tiles
+	{ "epr-6086.63",       0x002000, 0x76b5a084, BRF_GRA },		  //  10 Tiles
+	{ "epr-6085.66",       0x002000, 0x9c3ddc62, BRF_GRA },		  //  11 Tiles
+	{ "epr-6084.65",       0x002000, 0x90e1fa5f, BRF_GRA },		  //  12 Tiles
+	
+	{ "epr-6069.117",      0x004000, 0xfe691e41, BRF_GRA },		  //  13 Sprites
+	{ "epr-6070.110",      0x004000, 0x34f080df, BRF_GRA },		  //  14 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
+};
+
+STD_ROM_PICK(Thetogyu)
+STD_ROM_FN(Thetogyu)
 
 static struct BurnRomInfo FlickyRomDesc[] = {
 	{ "epr5978a.116",      0x004000, 0x296f1492, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1296,10 +1531,10 @@ static struct BurnRomInfo FlickyRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  11 Timing PROM
 };
 
-STD_ROM_PICK(Flicky);
-STD_ROM_FN(Flicky);
+STD_ROM_PICK(Flicky)
+STD_ROM_FN(Flicky)
 
-static struct BurnRomInfo Flicks1RomDesc[] = {
+static struct BurnRomInfo Flickys1RomDesc[] = {
 	{ "ic129",             0x002000, 0x7011275c, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "ic130",             0x002000, 0xe7ed012d, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "ic131",             0x002000, 0xc5e98cd1, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1320,10 +1555,10 @@ static struct BurnRomInfo Flicks1RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  13 Timing PROM
 };
 
-STD_ROM_PICK(Flicks1);
-STD_ROM_FN(Flicks1);
+STD_ROM_PICK(Flickys1)
+STD_ROM_FN(Flickys1)
 
-static struct BurnRomInfo Flicks2RomDesc[] = {
+static struct BurnRomInfo Flickys2RomDesc[] = {
 	{ "epr-6621.bin",      0x004000, 0xb21ff546, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr-6622.bin",      0x004000, 0x133a8bf1, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	
@@ -1342,8 +1577,8 @@ static struct BurnRomInfo Flicks2RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  11 Timing PROM
 };
 
-STD_ROM_PICK(Flicks2);
-STD_ROM_FN(Flicks2);
+STD_ROM_PICK(Flickys2)
+STD_ROM_FN(Flickys2)
 
 static struct BurnRomInfo FlickyoRomDesc[] = {
 	{ "epr-5857.bin",      0x002000, 0xa65ac88e, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1366,8 +1601,8 @@ static struct BurnRomInfo FlickyoRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  13 Timing PROM
 };
 
-STD_ROM_PICK(Flickyo);
-STD_ROM_FN(Flickyo);
+STD_ROM_PICK(Flickyo)
+STD_ROM_FN(Flickyo)
 
 static struct BurnRomInfo GardiaRomDesc[] = {
 	{ "epr10255.1",        0x008000, 0x89282a6b, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1391,8 +1626,79 @@ static struct BurnRomInfo GardiaRomDesc[] = {
 	{ "pr5317.4",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Gardia);
-STD_ROM_FN(Gardia);
+STD_ROM_PICK(Gardia)
+STD_ROM_FN(Gardia)
+
+static struct BurnRomInfo GardiabRomDesc[] = {
+	{ "gardiabl.5",        0x008000, 0x207f9cbb, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "gardiabl.6",        0x008000, 0xb2ed05dc, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "gardiabl.7",        0x008000, 0x0a490588, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr10243.120",      0x004000, 0x87220660, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "gardiabl.8",        0x004000, 0x367c9a17, BRF_GRA },		  //  4 Tiles
+	{ "gardiabl.9",        0x004000, 0x1540fd30, BRF_GRA },		  //  5 Tiles
+	{ "gardiabl.10",       0x004000, 0xe5c9af10, BRF_GRA },		  //  6 Tiles
+	
+	{ "epr10234.117",      0x008000, 0x8a6aed33, BRF_GRA },		  //  7 Sprites
+	{ "epr10233.110",      0x008000, 0xc52784d3, BRF_GRA },		  //  8 Sprites
+	{ "epr10236.04",       0x008000, 0xb35ab227, BRF_GRA },		  //  9 Sprites
+	{ "epr10235.5",        0x008000, 0x006a3151, BRF_GRA },		  //  10 Sprites
+
+	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_OPT },		  //  11 Red PROM
+	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_OPT },		  //  12 Green PROM
+	{ "bprom.1",           0x000100, 0x371c44a6, BRF_OPT },		  //  13 Blue PROM
+	{ "pr5317.4",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Gardiab)
+STD_ROM_FN(Gardiab)
+
+static struct BurnRomInfo ImsorryRomDesc[] = {
+	{ "epr-6676.116",      0x004000, 0xeb087d7f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6677.109",      0x004000, 0xbd244bee, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6678.96",       0x004000, 0x2e16b9fd, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6656.120",      0x002000, 0x25e3d685, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6684.62",       0x002000, 0x2c8df377, BRF_GRA },		  //  4 Tiles
+	{ "epr-6683.61",       0x002000, 0x89431c48, BRF_GRA },		  //  5 Tiles
+	{ "epr-6682.64",       0x002000, 0x256a9246, BRF_GRA },		  //  6 Tiles
+	{ "epr-6681.63",       0x002000, 0x6974d189, BRF_GRA },		  //  7 Tiles
+	{ "epr-6680.66",       0x002000, 0x10a629d6, BRF_GRA },		  //  8 Tiles
+	{ "epr-6674.65",       0x002000, 0x143d883c, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6645.117",      0x004000, 0x1ba167ee, BRF_GRA },		  //  10 Sprites
+	{ "epr-6646.04",       0x004000, 0xedda7ad6, BRF_GRA },		  //  11 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  12 Timing PROM
+};
+
+STD_ROM_PICK(Imsorry)
+STD_ROM_FN(Imsorry)
+
+static struct BurnRomInfo ImsorryjRomDesc[] = {
+	{ "epr-6647.116",      0x004000, 0xcc5d915d, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6648.109",      0x004000, 0x37574d60, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6649.96",       0x004000, 0x5f59bdee, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6656.120",      0x002000, 0x25e3d685, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6655.62",       0x002000, 0xbe1f762f, BRF_GRA },		  //  4 Tiles
+	{ "epr-6654.61",       0x002000, 0xed5f7fc8, BRF_GRA },		  //  5 Tiles
+	{ "epr-6653.64",       0x002000, 0x8b4845a7, BRF_GRA },		  //  6 Tiles
+	{ "epr-6652.63",       0x002000, 0x001d68cb, BRF_GRA },		  //  7 Tiles
+	{ "epr-6651.66",       0x002000, 0x4ee9b5e6, BRF_GRA },		  //  8 Tiles
+	{ "epr-6650.65",       0x002000, 0x3fca4414, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6645.117",      0x004000, 0x1ba167ee, BRF_GRA },		  //  10 Sprites
+	{ "epr-6646.04",       0x004000, 0xedda7ad6, BRF_GRA },		  //  11 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  12 Timing PROM
+};
+
+STD_ROM_PICK(Imsorryj)
+STD_ROM_FN(Imsorryj)
 
 static struct BurnRomInfo MrvikingRomDesc[] = {
 	{ "epr-5873.129",      0x002000, 0x14d21624, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1417,10 +1723,10 @@ static struct BurnRomInfo MrvikingRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Mrviking);
-STD_ROM_FN(Mrviking);
+STD_ROM_PICK(Mrviking)
+STD_ROM_FN(Mrviking)
 
-static struct BurnRomInfo MrvikngjRomDesc[] = {
+static struct BurnRomInfo MrvikingjRomDesc[] = {
 	{ "epr-5751.129",      0x002000, 0xae97a4c5, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr-5752.130",      0x002000, 0xd48e6726, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "epr-5753.131",      0x002000, 0x28c60887, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1443,8 +1749,8 @@ static struct BurnRomInfo MrvikngjRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Mrvikngj);
-STD_ROM_FN(Mrvikngj);
+STD_ROM_PICK(Mrvikingj)
+STD_ROM_FN(Mrvikingj)
 
 static struct BurnRomInfo MyheroRomDesc[] = {
 	{ "epr6963b.116",      0x004000, 0x4daf89d4, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1468,10 +1774,84 @@ static struct BurnRomInfo MyheroRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Myhero);
-STD_ROM_FN(Myhero);
+STD_ROM_PICK(Myhero)
+STD_ROM_FN(Myhero)
 
-static struct BurnRomInfo NoboranbRomDesc[] = {
+static struct BurnRomInfo SscandalRomDesc[] = {
+	{ "epr6925b.116",      0x004000, 0xff54dcec, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr6926a.109",      0x004000, 0x5c41eea8, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6927.96",       0x004000, 0x3cbbaf64, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6934.120",      0x002000, 0xaf467223, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6933.62",       0x002000, 0xe7304036, BRF_GRA },		  //  4 Tiles
+	{ "epr-6932.61",       0x002000, 0xf5cfbfda, BRF_GRA },		  //  5 Tiles
+	{ "epr-6931.64",       0x002000, 0x599d7f87, BRF_GRA },		  //  6 Tiles
+	{ "epr-6930.63",       0x002000, 0xcb6616c2, BRF_GRA },		  //  7 Tiles
+	{ "epr-6929.66",       0x002000, 0x27a16856, BRF_GRA },		  //  8 Tiles
+	{ "epr-6928.65",       0x002000, 0xc0c9cfa4, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6921.117",      0x004000, 0xf19e05a1, BRF_GRA },		  //  10 Sprites
+	{ "epr-6923.04",       0x004000, 0x7988adc3, BRF_GRA },		  //  11 Sprites
+	{ "epr-6922.110",      0x004000, 0x37f77a78, BRF_GRA },		  //  12 Sprites
+	{ "epr-6924.05",       0x004000, 0x42bdc8f6, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Sscandal)
+STD_ROM_FN(Sscandal)
+
+static struct BurnRomInfo MyherokRomDesc[] = {
+	{ "ry-11.rom",         0x004000, 0x6f4c8ee5, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "ry-09.rom",         0x004000, 0x369302a1, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "ry-07.rom",         0x004000, 0xb8e9922e, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6934.120",      0x002000, 0xaf467223, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "ry-04.rom",         0x004000, 0xdfb75143, BRF_GRA },		  //  4 Tiles
+	{ "ry-03.rom",         0x004000, 0xcf68b4a2, BRF_GRA },		  //  5 Tiles
+	{ "ry-02.rom",         0x004000, 0xd100eaef, BRF_GRA },		  //  6 Tiles
+	
+	{ "epr-6921.117",      0x004000, 0xf19e05a1, BRF_GRA },		  //  7 Sprites
+	{ "epr-6923.04",       0x004000, 0x7988adc3, BRF_GRA },		  //  8 Sprites
+	{ "epr-6922.110",      0x004000, 0x37f77a78, BRF_GRA },		  //  9 Sprites
+	{ "epr-6924.05",       0x004000, 0x42bdc8f6, BRF_GRA },		  //  10 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  11 Timing PROM
+};
+
+STD_ROM_PICK(Myherok)
+STD_ROM_FN(Myherok)
+
+static struct BurnRomInfo NobRomDesc[] = {
+	{ "dm08.1f",           0x008000, 0x98d602d6, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "dm10.1k",           0x008000, 0xe7c06663, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "dm09.1h",           0x008000, 0xdc4c872f, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "dm03.9h",           0x004000, 0x415adf76, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "dm01.12b",          0x008000, 0x446fbcdd, BRF_GRA },		  //  4 Tiles
+	{ "dm02.13b",          0x008000, 0xf12df039, BRF_GRA },		  //  5 Tiles	
+	{ "dm00.10b",          0x008000, 0x35f396df, BRF_GRA },		  //  6 Tiles
+	
+	{ "dm04.5f",           0x008000, 0x2442b86d, BRF_GRA },		  //  7 Sprites
+	{ "dm06.5k",           0x008000, 0xe33743a6, BRF_GRA },		  //  8 Sprites
+	{ "dm05.5h",           0x008000, 0x7fbba01d, BRF_GRA },		  //  9 Sprites
+	{ "dm07.5l",           0x008000, 0x85e7a29f, BRF_GRA },		  //  10 Sprites
+
+	{ "nobo_pr.16d",       0x000100, 0x95010ac2, BRF_OPT },		  //  11 Red PROM
+	{ "nobo_pr.15d",       0x000100, 0xc55aac0c, BRF_OPT },		  //  12 Green PROM
+	{ "dm-12.ic3",         0x000100, 0xde394cee, BRF_OPT },		  //  13 Blue PROM
+	{ "dc-11.6a",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+	
+	{ "dm.bin",            0x001000, 0x6fde9dcb, BRF_PRG | BRF_OPT },		  //  15 MCU
+};
+
+STD_ROM_PICK(Nob)
+STD_ROM_FN(Nob)
+
+static struct BurnRomInfo NobbRomDesc[] = {
 	{ "nobo-t.bin",        0x008000, 0x176fd168, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "nobo-r.bin",        0x008000, 0xd61cf3c9, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "nobo-s.bin",        0x008000, 0xb0e7697f, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1493,8 +1873,8 @@ static struct BurnRomInfo NoboranbRomDesc[] = {
 	{ "nobo_pr.13a",       0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Noboranb);
-STD_ROM_FN(Noboranb);
+STD_ROM_PICK(Nobb)
+STD_ROM_FN(Nobb)
 
 static struct BurnRomInfo Pitfall2RomDesc[] = {
 	{ "epr6456a.116",      0x004000, 0xbcc8406b, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1516,10 +1896,33 @@ static struct BurnRomInfo Pitfall2RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  12 Timing PROM
 };
 
-STD_ROM_PICK(Pitfall2);
-STD_ROM_FN(Pitfall2);
+STD_ROM_PICK(Pitfall2)
+STD_ROM_FN(Pitfall2)
 
-static struct BurnRomInfo PitfalluRomDesc[] = {
+static struct BurnRomInfo Pitfall2aRomDesc[] = {
+	{ "epr-6505",          0x004000, 0xb6769739, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6506",          0x004000, 0x1ce6aec4, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr6458a.96",       0x004000, 0x5c30b3e8, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6462.120",      0x002000, 0x86bb9185, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr6474a.62",       0x002000, 0x9f1711b9, BRF_GRA },		  //  4 Tiles
+	{ "epr6473a.61",       0x002000, 0x8e53b8dd, BRF_GRA },		  //  5 Tiles
+	{ "epr6472a.64",       0x002000, 0xe0f34a11, BRF_GRA },		  //  6 Tiles
+	{ "epr6471a.63",       0x002000, 0xd5bc805c, BRF_GRA },		  //  7 Tiles
+	{ "epr6470a.66",       0x002000, 0x1439729f, BRF_GRA },		  //  8 Tiles
+	{ "epr6469a.65",       0x002000, 0xe4ac6921, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr6454a.117",      0x004000, 0xa5d96780, BRF_GRA },		  //  10 Sprites
+	{ "epr-6455.05",       0x004000, 0x32ee64a1, BRF_GRA },		  //  11 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  12 Timing PROM
+};
+
+STD_ROM_PICK(Pitfall2a)
+STD_ROM_FN(Pitfall2a)
+
+static struct BurnRomInfo Pitfall2uRomDesc[] = {
 	{ "epr-6623.116",      0x004000, 0xbcb47ed6, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr6624a.109",      0x004000, 0x6e8b09c1, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "epr-6625.96",       0x004000, 0xdc5484ba, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1539,8 +1942,33 @@ static struct BurnRomInfo PitfalluRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  12 Timing PROM
 };
 
-STD_ROM_PICK(Pitfallu);
-STD_ROM_FN(Pitfallu);
+STD_ROM_PICK(Pitfall2u)
+STD_ROM_FN(Pitfall2u)
+
+static struct BurnRomInfo RaflesiaRomDesc[] = {
+	{ "epr-7411.116",      0x004000, 0x88a0c6c6, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-7412.109",      0x004000, 0xd3b8cddf, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-7413.96",       0x004000, 0xb7e688b3, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-7420.120",      0x002000, 0x14387666, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-7419.62",       0x002000, 0xbfd5f34c, BRF_GRA },		  //  4 Tiles
+	{ "epr-7418.61",       0x002000, 0xf8cbc9b6, BRF_GRA },		  //  5 Tiles
+	{ "epr-7417.64",       0x002000, 0xe63501bc, BRF_GRA },		  //  6 Tiles
+	{ "epr-7416.63",       0x002000, 0x093e5693, BRF_GRA },		  //  7 Tiles
+	{ "epr-7415.66",       0x002000, 0x1a8d6bd6, BRF_GRA },		  //  8 Tiles
+	{ "epr-7414.65",       0x002000, 0x5d20f218, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-7407.117",      0x004000, 0xf09fc057, BRF_GRA },		  //  10 Sprites
+	{ "epr-7409.04",       0x004000, 0x819fedb8, BRF_GRA },		  //  11 Sprites
+	{ "epr-7408.110",      0x004000, 0x3189f33c, BRF_GRA },		  //  12 Sprites
+	{ "epr-7410.05",       0x004000, 0xced74789, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Raflesia)
+STD_ROM_FN(Raflesia)
 
 static struct BurnRomInfo RegulusRomDesc[] = {
 	{ "epr-5640a.129",     0x002000, 0xdafb1528, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1565,8 +1993,8 @@ static struct BurnRomInfo RegulusRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Regulus);
-STD_ROM_FN(Regulus);
+STD_ROM_PICK(Regulus)
+STD_ROM_FN(Regulus)
 
 static struct BurnRomInfo RegulusoRomDesc[] = {
 	{ "epr-5640.129",      0x002000, 0x8324d0d4, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1591,8 +2019,8 @@ static struct BurnRomInfo RegulusoRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Reguluso);
-STD_ROM_FN(Reguluso);
+STD_ROM_PICK(Reguluso)
+STD_ROM_FN(Reguluso)
 
 static struct BurnRomInfo RegulusuRomDesc[] = {
 	{ "epr-5950.129",      0x002000, 0x3b047b67, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1617,8 +2045,8 @@ static struct BurnRomInfo RegulusuRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Regulusu);
-STD_ROM_FN(Regulusu);
+STD_ROM_PICK(Regulusu)
+STD_ROM_FN(Regulusu)
 
 static struct BurnRomInfo SeganinjRomDesc[] = {
 	{ "epr-.116",          0x004000, 0xa5d0c9d0, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1642,10 +2070,10 @@ static struct BurnRomInfo SeganinjRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Seganinj);
-STD_ROM_FN(Seganinj);
+STD_ROM_PICK(Seganinj)
+STD_ROM_FN(Seganinj)
 
-static struct BurnRomInfo SeganinuRomDesc[] = {
+static struct BurnRomInfo SeganinjuRomDesc[] = {
 	{ "epr-7149.116",      0x004000, 0xcd9fade7, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr-7150.109",      0x004000, 0xc36351e2, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "epr-6552.96",       0x004000, 0xf2eeb0d8, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1667,10 +2095,88 @@ static struct BurnRomInfo SeganinuRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Seganinu);
-STD_ROM_FN(Seganinu);
+STD_ROM_PICK(Seganinju)
+STD_ROM_FN(Seganinju)
 
-static struct BurnRomInfo NprincsuRomDesc[] = {
+static struct BurnRomInfo NinjaRomDesc[] = {
+	{ "epr6594.bin",       0x004000, 0x3ef0e5fc, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr6595.bin",       0x004000, 0xb16f13cd, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6552.96",       0x004000, 0xf2eeb0d8, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6559.120",      0x002000, 0x5a1570ee, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6558.62",       0x002000, 0x2af9eaeb, BRF_GRA },		  //  4 Tiles
+	{ "epr6592.bin",       0x002000, 0x88d0c7a1, BRF_GRA },		  //  5 Tiles
+	{ "epr-6556.64",       0x002000, 0x79fd26f7, BRF_GRA },		  //  6 Tiles
+	{ "epr6590.bin",       0x002000, 0x956e3b61, BRF_GRA },		  //  7 Tiles
+	{ "epr-6554.66",       0x002000, 0x5ac9d205, BRF_GRA },		  //  8 Tiles
+	{ "epr6588.bin",       0x002000, 0x023a14a3, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6546.117",      0x004000, 0xa4785692, BRF_GRA },		  //  10 Sprites
+	{ "epr-6548.04",       0x004000, 0xbdf278c1, BRF_GRA },		  //  11 Sprites
+	{ "epr-6547.110",      0x004000, 0x34451b08, BRF_GRA },		  //  12 Sprites
+	{ "epr-6549.05",       0x004000, 0xd2057668, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Ninja)
+STD_ROM_FN(Ninja)
+
+static struct BurnRomInfo NprincesRomDesc[] = {
+	{ "epr-6612.129",      0x002000, 0x1b30976f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6613.130",      0x002000, 0x18281f27, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6614.131",      0x002000, 0x69fc3d73, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	{ "epr-6615.132",      0x002000, 0x1d0374c8, BRF_ESS | BRF_PRG }, //  3	Z80 #1 Program Code
+	{ "epr-6577.133",      0x002000, 0x73616e03, BRF_ESS | BRF_PRG }, //  4	Z80 #1 Program Code
+	{ "epr-6617.134",      0x002000, 0x20b6f895, BRF_ESS | BRF_PRG }, //  5	Z80 #1 Program Code
+	
+	{ "epr-6559.120",      0x002000, 0x5a1570ee, BRF_ESS | BRF_PRG }, //  6	Z80 #2 Program Code
+	
+	{ "epr-6558.62",       0x002000, 0x2af9eaeb, BRF_GRA },		  //  7 Tiles
+	{ "epr-6557.61",       0x002000, 0x6eb131d0, BRF_GRA },		  //  8 Tiles
+	{ "epr-6556.64",       0x002000, 0x79fd26f7, BRF_GRA },		  //  9 Tiles
+	{ "epr-6555.63",       0x002000, 0x7f669aac, BRF_GRA },		  //  10 Tiles
+	{ "epr-6554.66",       0x002000, 0x5ac9d205, BRF_GRA },		  //  11 Tiles
+	{ "epr-6553.65",       0x002000, 0xeb82a8fe, BRF_GRA },		  //  12 Tiles
+	
+	{ "epr-6546.117",      0x004000, 0xa4785692, BRF_GRA },		  //  13 Sprites
+	{ "epr-6548.04",       0x004000, 0xbdf278c1, BRF_GRA },		  //  14 Sprites
+	{ "epr-6547.110",      0x004000, 0x34451b08, BRF_GRA },		  //  15 Sprites
+	{ "epr-6549.05",       0x004000, 0xd2057668, BRF_GRA },		  //  16 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
+};
+
+STD_ROM_PICK(Nprinces)
+STD_ROM_FN(Nprinces)
+
+static struct BurnRomInfo NprincesoRomDesc[] = {
+	{ "epr-6550.116",      0x004000, 0x5f6d59f1, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6551.109",      0x004000, 0x1af133b2, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6552.96",       0x004000, 0xf2eeb0d8, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6559.120",      0x002000, 0x5a1570ee, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6558.62",       0x002000, 0x2af9eaeb, BRF_GRA },		  //  4 Tiles
+	{ "epr-6557.61",       0x002000, 0x6eb131d0, BRF_GRA },		  //  5 Tiles
+	{ "epr-6556.64",       0x002000, 0x79fd26f7, BRF_GRA },		  //  6 Tiles
+	{ "epr-6555.63",       0x002000, 0x7f669aac, BRF_GRA },		  //  7 Tiles
+	{ "epr-6554.66",       0x002000, 0x5ac9d205, BRF_GRA },		  //  8 Tiles
+	{ "epr-6553.65",       0x002000, 0xeb82a8fe, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6546.117",      0x004000, 0xa4785692, BRF_GRA },		  //  10 Sprites
+	{ "epr-6548.04",       0x004000, 0xbdf278c1, BRF_GRA },		  //  11 Sprites
+	{ "epr-6547.110",      0x004000, 0x34451b08, BRF_GRA },		  //  12 Sprites
+	{ "epr-6549.05",       0x004000, 0xd2057668, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Nprinceso)
+STD_ROM_FN(Nprinceso)
+
+static struct BurnRomInfo NprincesuRomDesc[] = {
 	{ "epr-6573.129",      0x002000, 0xd2919c7d, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr-6574.130",      0x002000, 0x5a132833, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "epr-6575.131",      0x002000, 0xa94b0bd4, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1695,8 +2201,85 @@ static struct BurnRomInfo NprincsuRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
 };
 
-STD_ROM_PICK(Nprincsu);
-STD_ROM_FN(Nprincsu);
+STD_ROM_PICK(Nprincesu)
+STD_ROM_FN(Nprincesu)
+
+static struct BurnRomInfo NprincesbRomDesc[] = {
+	{ "nprinces.001",      0x004000, 0xe0de073c, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "nprinces.002",      0x004000, 0x27219c7f, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6552.96",       0x004000, 0xf2eeb0d8, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6559.120",      0x002000, 0x5a1570ee, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6558.62",       0x002000, 0x2af9eaeb, BRF_GRA },		  //  4 Tiles
+	{ "epr-6557.61",       0x002000, 0x6eb131d0, BRF_GRA },		  //  5 Tiles
+	{ "epr-6556.64",       0x002000, 0x79fd26f7, BRF_GRA },		  //  6 Tiles
+	{ "epr-6555.63",       0x002000, 0x7f669aac, BRF_GRA },		  //  7 Tiles
+	{ "epr-6554.66",       0x002000, 0x5ac9d205, BRF_GRA },		  //  8 Tiles
+	{ "epr-6553.65",       0x002000, 0xeb82a8fe, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6546.117",      0x004000, 0xa4785692, BRF_GRA },		  //  10 Sprites
+	{ "epr-6548.04",       0x004000, 0xbdf278c1, BRF_GRA },		  //  11 Sprites
+	{ "epr-6547.110",      0x004000, 0x34451b08, BRF_GRA },		  //  12 Sprites
+	{ "epr-6549.05",       0x004000, 0xd2057668, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+	{ "nprinces.129",      0x000100, 0xae765f62, BRF_OPT },		  //  15 Decryption Table
+	{ "nprinces.123",      0x000020, 0xed5146e9, BRF_OPT },		  //  15 Decryption Table
+};
+
+STD_ROM_PICK(Nprincesb)
+STD_ROM_FN(Nprincesb)
+
+static struct BurnRomInfo SpatterRomDesc[] = {
+	{ "epr-6392.116",      0x004000, 0x329b4506, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6393.109",      0x004000, 0x3b56e25f, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6394.96",       0x004000, 0x647c1301, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6316.120",      0x002000, 0x1df95511, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6328.62",       0x002000, 0xa2bf2832, BRF_GRA },		  //  4 Tiles
+	{ "epr-6397.61",       0x002000, 0xc60d4471, BRF_GRA },		  //  5 Tiles
+	{ "epr-6326.64",       0x002000, 0x269fbb4c, BRF_GRA },		  //  6 Tiles
+	{ "epr-6396.63",       0x002000, 0xc15ccf3b, BRF_GRA },		  //  7 Tiles
+	{ "epr-6324.66",       0x002000, 0x8ab3b563, BRF_GRA },		  //  8 Tiles
+	{ "epr-6395.65",       0x002000, 0x3f083065, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6306.04",       0x004000, 0xe871e132, BRF_GRA },		  //  10 Sprites
+	{ "epr-6308.117",      0x004000, 0x99c2d90e, BRF_GRA },		  //  11 Sprites
+	{ "epr-6307.05",       0x004000, 0x0a5ad543, BRF_GRA },		  //  12 Sprites
+	{ "epr-6309.110",      0x004000, 0x7423ad98, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Spatter)
+STD_ROM_FN(Spatter)
+
+static struct BurnRomInfo SsanchanRomDesc[] = {
+	{ "epr-6310.116",      0x004000, 0x26b43701, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6311.109",      0x004000, 0xcb2bc620, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6312.96",       0x004000, 0x71b15b47, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-6316.120",      0x002000, 0x1df95511, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-6328.62",       0x002000, 0xa2bf2832, BRF_GRA },		  //  4 Tiles
+	{ "epr-6327.61",       0x002000, 0x53298109, BRF_GRA },		  //  5 Tiles
+	{ "epr-6326.64",       0x002000, 0x269fbb4c, BRF_GRA },		  //  6 Tiles
+	{ "epr-6325.63",       0x002000, 0xbf038745, BRF_GRA },		  //  7 Tiles
+	{ "epr-6324.66",       0x002000, 0x8ab3b563, BRF_GRA },		  //  8 Tiles
+	{ "epr-6323.65",       0x002000, 0x0394673c, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-6306.04",       0x004000, 0xe871e132, BRF_GRA },		  //  10 Sprites
+	{ "epr-6308.117",      0x004000, 0x99c2d90e, BRF_GRA },		  //  11 Sprites
+	{ "epr-6307.05",       0x004000, 0x0a5ad543, BRF_GRA },		  //  12 Sprites
+	{ "epr-6309.110",      0x004000, 0x7423ad98, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Ssanchan)
+STD_ROM_FN(Ssanchan)
 
 static struct BurnRomInfo StarjackRomDesc[] = {
 	{ "epr5320b.129",      0x002000, 0x7ab72ecd, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1721,10 +2304,10 @@ static struct BurnRomInfo StarjackRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Starjack);
-STD_ROM_FN(Starjack);
+STD_ROM_PICK(Starjack)
+STD_ROM_FN(Starjack)
 
-static struct BurnRomInfo StarjacsRomDesc[] = {
+static struct BurnRomInfo StarjacksRomDesc[] = {
 	{ "a1_ic29.129",       0x002000, 0x59a22a1f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "a1_ic30.130",       0x002000, 0x7f4597dc, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
 	{ "a1_ic31.131",       0x002000, 0x6074c046, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
@@ -1747,8 +2330,8 @@ static struct BurnRomInfo StarjacsRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Starjacs);
-STD_ROM_FN(Starjacs);
+STD_ROM_PICK(Starjacks)
+STD_ROM_FN(Starjacks)
 
 static struct BurnRomInfo SwatRomDesc[] = {
 	{ "epr5807b.129",      0x002000, 0x93db9c9f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1773,8 +2356,8 @@ static struct BurnRomInfo SwatRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Swat);
-STD_ROM_FN(Swat);
+STD_ROM_PICK(Swat)
+STD_ROM_FN(Swat)
 
 static struct BurnRomInfo TeddybbRomDesc[] = {
 	{ "epr-6768.116",      0x004000, 0x5939817e, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1798,8 +2381,8 @@ static struct BurnRomInfo TeddybbRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Teddybb);
-STD_ROM_FN(Teddybb);
+STD_ROM_PICK(Teddybb)
+STD_ROM_FN(Teddybb)
 
 static struct BurnRomInfo TeddybboRomDesc[] = {
 	{ "epr-6739.116",      0x004000, 0x81a37e69, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1823,8 +2406,8 @@ static struct BurnRomInfo TeddybboRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Teddybbo);
-STD_ROM_FN(Teddybbo);
+STD_ROM_PICK(Teddybbo)
+STD_ROM_FN(Teddybbo)
 
 static struct BurnRomInfo UpndownRomDesc[] = {
 	{ "epr5516a.129",      0x002000, 0x038c82da, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1849,8 +2432,8 @@ static struct BurnRomInfo UpndownRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Upndown);
-STD_ROM_FN(Upndown);
+STD_ROM_PICK(Upndown)
+STD_ROM_FN(Upndown)
 
 static struct BurnRomInfo UpndownuRomDesc[] = {
 	{ "epr-5679.129",      0x002000, 0xc4f2f9c2, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1875,8 +2458,8 @@ static struct BurnRomInfo UpndownuRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Upndownu);
-STD_ROM_FN(Upndownu);
+STD_ROM_PICK(Upndownu)
+STD_ROM_FN(Upndownu)
 
 static struct BurnRomInfo WboyRomDesc[] = {
 	{ "epr-7489.116",      0x004000, 0x130f4b70, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1900,8 +2483,8 @@ static struct BurnRomInfo WboyRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Wboy);
-STD_ROM_FN(Wboy);
+STD_ROM_PICK(Wboy)
+STD_ROM_FN(Wboy)
 
 static struct BurnRomInfo WboyoRomDesc[] = {
 	{ "epr-.116",          0x004000, 0x51d27534, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1925,8 +2508,8 @@ static struct BurnRomInfo WboyoRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Wboyo);
-STD_ROM_FN(Wboyo);
+STD_ROM_PICK(Wboyo)
+STD_ROM_FN(Wboyo)
 
 static struct BurnRomInfo Wboy2RomDesc[] = {
 	{ "epr-7587.129",      0x002000, 0x1bbb7354, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1953,8 +2536,8 @@ static struct BurnRomInfo Wboy2RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
 };
 
-STD_ROM_PICK(Wboy2);
-STD_ROM_FN(Wboy2);
+STD_ROM_PICK(Wboy2)
+STD_ROM_FN(Wboy2)
 
 static struct BurnRomInfo Wboy2uRomDesc[] = {
 	{ "ic129_02.bin",      0x002000, 0x32c4b709, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1981,8 +2564,8 @@ static struct BurnRomInfo Wboy2uRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
 };
 
-STD_ROM_PICK(Wboy2u);
-STD_ROM_FN(Wboy2u);
+STD_ROM_PICK(Wboy2u)
+STD_ROM_FN(Wboy2u)
 
 static struct BurnRomInfo Wboy3RomDesc[] = {
 	{ "wb_1",              0x004000, 0xbd6fef49, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2006,8 +2589,8 @@ static struct BurnRomInfo Wboy3RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Wboy3);
-STD_ROM_FN(Wboy3);
+STD_ROM_PICK(Wboy3)
+STD_ROM_FN(Wboy3)
 
 static struct BurnRomInfo Wboy4RomDesc[] = {
 	{ "ic2.bin",           0x008000, 0x48b2c006, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2025,8 +2608,8 @@ static struct BurnRomInfo Wboy4RomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  8 Timing PROM
 };
 
-STD_ROM_PICK(Wboy4);
-STD_ROM_FN(Wboy4);
+STD_ROM_PICK(Wboy4)
+STD_ROM_FN(Wboy4)
 
 static struct BurnRomInfo WboyuRomDesc[] = {
 	{ "ic116_89.bin",      0x004000, 0x73d8cef0, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2050,8 +2633,8 @@ static struct BurnRomInfo WboyuRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
-STD_ROM_PICK(Wboyu);
-STD_ROM_FN(Wboyu);
+STD_ROM_PICK(Wboyu)
+STD_ROM_FN(Wboyu)
 
 static struct BurnRomInfo WbdeluxeRomDesc[] = {
 	{ "wbd1.bin",          0x002000, 0xa1bedbd7, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2078,8 +2661,8 @@ static struct BurnRomInfo WbdeluxeRomDesc[] = {
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
 };
 
-STD_ROM_PICK(Wbdeluxe);
-STD_ROM_FN(Wbdeluxe);
+STD_ROM_PICK(Wbdeluxe)
+STD_ROM_FN(Wbdeluxe)
 
 static struct BurnRomInfo WmatchRomDesc[] = {
 	{ "wm.129",            0x002000, 0xb6db4442, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2104,8 +2687,8 @@ static struct BurnRomInfo WmatchRomDesc[] = {
 	{ "pr-5317.106",       0x000100, 0x648350b8, BRF_OPT },		  //  15 Timing PROM
 };
 
-STD_ROM_PICK(Wmatch);
-STD_ROM_FN(Wmatch);
+STD_ROM_PICK(Wmatch)
+STD_ROM_FN(Wmatch)
 
 /*==============================================================================================
 Decode Functions
@@ -2157,6 +2740,33 @@ static void sega_decode(const UINT8 convtable[32][4])
 		int bytes = 0x4000;
 		memcpy(&decrypted[0x8000], &rom[0x8000], bytes);
 	}
+}
+
+void bullfgtj_decode(void)
+{
+	static const UINT8 convtable[32][4] =
+	{
+		/*       opcode                   data                     address      */
+		/*  A    B    C    D         A    B    C    D                           */
+		{ 0xa0,0xa8,0x20,0x28 }, { 0x80,0xa0,0x00,0x20 },	/* ...0...0...0...0 */
+		{ 0x20,0x28,0x00,0x08 }, { 0x20,0x28,0x00,0x08 },	/* ...0...0...0...1 */
+		{ 0xa0,0xa8,0x20,0x28 }, { 0x08,0x28,0x00,0x20 },	/* ...0...0...1...0 */
+		{ 0x88,0x08,0xa8,0x28 }, { 0x88,0x08,0xa8,0x28 },	/* ...0...0...1...1 */
+		{ 0xa0,0xa8,0x20,0x28 }, { 0x20,0x28,0x00,0x08 },	/* ...0...1...0...0 */
+		{ 0x28,0xa8,0x20,0xa0 }, { 0x20,0x28,0x00,0x08 },	/* ...0...1...0...1 */
+		{ 0xa0,0xa8,0x20,0x28 }, { 0x08,0x28,0x00,0x20 },	/* ...0...1...1...0 */
+		{ 0x88,0x08,0xa8,0x28 }, { 0x88,0x08,0xa8,0x28 },	/* ...0...1...1...1 */
+		{ 0x28,0xa8,0x20,0xa0 }, { 0xa0,0xa8,0x20,0x28 },	/* ...1...0...0...0 */
+		{ 0x88,0x08,0xa8,0x28 }, { 0x80,0xa0,0x00,0x20 },	/* ...1...0...0...1 */
+		{ 0x28,0xa8,0x20,0xa0 }, { 0x08,0x28,0x00,0x20 },	/* ...1...0...1...0 */
+		{ 0x28,0xa8,0x20,0xa0 }, { 0x80,0xa0,0x00,0x20 },	/* ...1...0...1...1 */
+		{ 0x20,0x28,0x00,0x08 }, { 0x20,0x28,0x00,0x08 },	/* ...1...1...0...0 */
+		{ 0x88,0x08,0xa8,0x28 }, { 0x20,0x28,0x00,0x08 },	/* ...1...1...0...1 */
+		{ 0x08,0x28,0x00,0x20 }, { 0x80,0xa0,0x00,0x20 },	/* ...1...1...1...0 */
+		{ 0x08,0x28,0x00,0x20 }, { 0x88,0x08,0xa8,0x28 }	/* ...1...1...1...1 */
+	};
+
+	sega_decode(convtable);
 }
 
 static void flicky_decode(void)
@@ -2213,6 +2823,33 @@ static void hvymetal_decode(void)
 	sega_decode(convtable);
 }
 
+void imsorry_decode(void)
+{
+	static const UINT8 convtable[32][4] =
+	{
+		/*       opcode                   data                     address      */
+		/*  A    B    C    D         A    B    C    D                           */
+		{ 0x88,0x08,0x80,0x00 }, { 0x00,0x20,0x80,0xa0 },	/* ...0...0...0...0 */
+		{ 0x00,0x20,0x80,0xa0 }, { 0x88,0x08,0x80,0x00 },	/* ...0...0...0...1 */
+		{ 0x88,0x08,0xa8,0x28 }, { 0x00,0x20,0x80,0xa0 },	/* ...0...0...1...0 */
+		{ 0x00,0x20,0x80,0xa0 }, { 0x88,0x08,0xa8,0x28 },	/* ...0...0...1...1 */
+		{ 0x00,0x20,0x80,0xa0 }, { 0x08,0x00,0x88,0x80 },	/* ...0...1...0...0 */
+		{ 0x00,0x20,0x80,0xa0 }, { 0x20,0x28,0xa0,0xa8 },	/* ...0...1...0...1 */
+		{ 0x20,0x28,0xa0,0xa8 }, { 0x00,0x20,0x80,0xa0 },	/* ...0...1...1...0 */
+		{ 0x20,0x28,0xa0,0xa8 }, { 0x88,0x08,0xa8,0x28 },	/* ...0...1...1...1 */
+		{ 0x88,0x08,0x80,0x00 }, { 0x08,0x00,0x88,0x80 },	/* ...1...0...0...0 */
+		{ 0x08,0x00,0x88,0x80 }, { 0x88,0x08,0x80,0x00 },	/* ...1...0...0...1 */
+		{ 0x08,0x28,0x00,0x20 }, { 0x08,0x28,0x00,0x20 },	/* ...1...0...1...0 */
+		{ 0x88,0x08,0x80,0x00 }, { 0x08,0x28,0x00,0x20 },	/* ...1...0...1...1 */
+		{ 0x08,0x28,0x00,0x20 }, { 0x08,0x00,0x88,0x80 },	/* ...1...1...0...0 */
+		{ 0x08,0x28,0x00,0x20 }, { 0x20,0x28,0xa0,0xa8 },	/* ...1...1...0...1 */
+		{ 0x20,0x28,0xa0,0xa8 }, { 0x08,0x28,0x00,0x20 },	/* ...1...1...1...0 */
+		{ 0x20,0x28,0xa0,0xa8 }, { 0x08,0x28,0x00,0x20 }	/* ...1...1...1...1 */
+	};
+
+	sega_decode(convtable);
+}
+
 void mrviking_decode(void)
 {
 	static const UINT8 convtable[32][4] =
@@ -2235,6 +2872,65 @@ void mrviking_decode(void)
 		{ 0xa0,0x80,0x20,0x00 }, { 0xa0,0x80,0x20,0x00 },	/* ...1...1...0...1 */
 		{ 0xa0,0x80,0xa8,0x88 }, { 0x28,0x08,0xa8,0x88 },	/* ...1...1...1...0 */
 		{ 0xa0,0x80,0x20,0x00 }, { 0xa0,0x80,0xa8,0x88 }	/* ...1...1...1...1 */
+	};
+
+	sega_decode(convtable);
+}
+
+void myheroj_decode(void)
+{
+	static const UINT8 convtable[32][4] =
+	{
+		/*       opcode                   data                     address      */
+		/*  A    B    C    D         A    B    C    D                           */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...0...0 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...0...1 */
+		{ 0xa8,0xa0,0x88,0x80 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...0...1...0 */
+		{ 0x08,0x88,0x00,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...1...1 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x28,0xa8,0x08,0x88 },	/* ...0...1...0...0 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x08,0x88,0x00,0x80 },	/* ...0...1...0...1 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...1...1...0 */
+		{ 0x08,0x88,0x00,0x80 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...1...1...1 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0x20,0x00,0xa0,0x80 },	/* ...1...0...0...0 */
+		{ 0x80,0xa0,0x88,0xa8 }, { 0x20,0x00,0xa0,0x80 },	/* ...1...0...0...1 */
+		{ 0x80,0xa0,0x88,0xa8 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...0...1...0 */
+		{ 0xa8,0xa0,0x88,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...0...1...1 */
+		{ 0x88,0x80,0x08,0x00 }, { 0x88,0x80,0x08,0x00 },	/* ...1...1...0...0 */
+		{ 0x88,0x80,0x08,0x00 }, { 0x08,0x88,0x00,0x80 },	/* ...1...1...0...1 */
+		{ 0x88,0x80,0x08,0x00 }, { 0xa8,0xa0,0x88,0x80 },	/* ...1...1...1...0 */
+		{ 0x88,0x80,0x08,0x00 }, { 0xa8,0xa0,0x88,0x80 }	/* ...1...1...1...1 */
+	};
+
+	sega_decode(convtable);
+}
+
+void myherok_decode(void)
+{
+	UINT8 *rom = System1Rom1;
+
+	for (int A = 0; A < 0xc000; A++)
+		rom[A] = (rom[A] & 0xfc) | ((rom[A] & 1) << 1) | ((rom[A] & 2) >> 1);
+
+	static const UINT8 convtable[32][4] =
+	{
+		/*       opcode                   data                     address      */
+		/*  A    B    C    D         A    B    C    D                           */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...0...0 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...0...1 */
+		{ 0xa8,0xa0,0x88,0x80 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...0...1...0 */
+		{ 0x08,0x88,0x00,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...0...0...1...1 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x28,0xa8,0x08,0x88 },	/* ...0...1...0...0 */
+		{ 0x20,0x00,0xa0,0x80 }, { 0x08,0x88,0x00,0x80 },	/* ...0...1...0...1 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...1...1...0 */
+		{ 0x08,0x88,0x00,0x80 }, { 0xa8,0xa0,0x88,0x80 },	/* ...0...1...1...1 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0x20,0x00,0xa0,0x80 },	/* ...1...0...0...0 */
+		{ 0x80,0xa0,0x88,0xa8 }, { 0x20,0x00,0xa0,0x80 },	/* ...1...0...0...1 */
+		{ 0x80,0xa0,0x88,0xa8 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...0...1...0 */
+		{ 0xa8,0xa0,0x88,0x80 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...0...1...1 */
+		{ 0x88,0x80,0x08,0x00 }, { 0x88,0x80,0x08,0x00 },	/* ...1...1...0...0 */
+		{ 0x88,0x80,0x08,0x00 }, { 0x08,0x88,0x00,0x80 },	/* ...1...1...0...1 */
+		{ 0x88,0x80,0x08,0x00 }, { 0xa8,0xa0,0x88,0x80 },	/* ...1...1...1...0 */
+		{ 0x88,0x80,0x08,0x00 }, { 0xa8,0xa0,0x88,0x80 }	/* ...1...1...1...1 */
 	};
 
 	sega_decode(convtable);
@@ -2343,6 +3039,33 @@ static void seganinj_decode(void)
 		{ 0x28,0x08,0xa8,0x88 }, { 0x28,0x08,0xa8,0x88 },	/* ...1...1...0...1 */
 		{ 0x88,0xa8,0x80,0xa0 }, { 0x88,0xa8,0x80,0xa0 },	/* ...1...1...1...0 */
 		{ 0xa8,0xa0,0x28,0x20 }, { 0x28,0x08,0xa8,0x88 }	/* ...1...1...1...1 */
+	};
+
+	sega_decode(convtable);
+}
+
+void spatter_decode(void)
+{
+	static const UINT8 convtable[32][4] =
+	{
+		/*       opcode                   data                     address      */
+		/*  A    B    C    D         A    B    C    D                           */
+		{ 0x88,0x08,0x80,0x00 }, { 0x00,0x08,0x20,0x28 },	/* ...0...0...0...0 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0x28,0xa8,0x08,0x88 },	/* ...0...0...0...1 */
+		{ 0x28,0x20,0xa8,0xa0 }, { 0x28,0x20,0xa8,0xa0 },	/* ...0...0...1...0 */
+		{ 0x88,0x08,0x80,0x00 }, { 0x88,0x08,0x80,0x00 },	/* ...0...0...1...1 */
+		{ 0x00,0x08,0x20,0x28 }, { 0x88,0x08,0x80,0x00 },	/* ...0...1...0...0 */
+		{ 0xa0,0x80,0x20,0x00 }, { 0x80,0x88,0x00,0x08 },	/* ...0...1...0...1 */
+		{ 0x88,0x08,0x80,0x00 }, { 0xa0,0x80,0x20,0x00 },	/* ...0...1...1...0 */
+		{ 0x88,0x08,0x80,0x00 }, { 0x28,0x20,0xa8,0xa0 },	/* ...0...1...1...1 */
+		{ 0x28,0xa8,0x08,0x88 }, { 0x80,0x88,0x00,0x08 },	/* ...1...0...0...0 */
+		{ 0x80,0x88,0x00,0x08 }, { 0x00,0x08,0x20,0x28 },	/* ...1...0...0...1 */
+		{ 0x28,0x20,0xa8,0xa0 }, { 0x28,0xa8,0x08,0x88 },	/* ...1...0...1...0 */
+		{ 0x00,0x08,0x20,0x28 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...0...1...1 */
+		{ 0x80,0x88,0x00,0x08 }, { 0xa0,0x80,0x20,0x00 },	/* ...1...1...0...0 */
+		{ 0x80,0xa0,0x88,0xa8 }, { 0xa0,0x80,0x20,0x00 },	/* ...1...1...0...1 */
+		{ 0xa0,0x80,0x20,0x00 }, { 0x80,0xa0,0x88,0xa8 },	/* ...1...1...1...0 */
+		{ 0x28,0x20,0xa8,0xa0 }, { 0x00,0x08,0x20,0x28 }	/* ...1...1...1...1 */
 	};
 
 	sega_decode(convtable);
@@ -2468,6 +3191,8 @@ static void sega_decode_2(const UINT8 opcode_xor[64],const int opcode_swap_selec
 		tbl = swaptable[data_swap_select[row]];
 		rom[A] = BITSWAP08(src,7,tbl[0],5,tbl[1],3,tbl[2],1,tbl[3]) ^ data_xor[row];
 	}
+	
+	memcpy(System1Fetch1 + 0x8000, System1Rom1 + 0x8000, 0x4000);
 }
 
 static void astrofl_decode(void)
@@ -2513,7 +3238,7 @@ static void astrofl_decode(void)
 	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
-static void fdwarrio_decode(void)
+void fdwarrio_decode(void)
 {
 	static const UINT8 opcode_xor[64] =
 	{
@@ -2680,12 +3405,48 @@ static void gardia_decode()
 {
 	sega_decode_317( 1, 1, 1 );
 }
-#define BIT(x,n) (((x)>>(n))&1)
 
-#undef BIT
+static void gardiab_decode()
+{
+	sega_decode_317( 0, 1, 2 );
+}
+
 static void blockgal_decode()
 {
 	mc8123_decrypt_rom(0, 0, System1Rom1, System1Fetch1, System1MC8123Key);
+}
+
+static void myherok_tile_decode()
+{
+	int A;
+	UINT8 *rom = System1TempRom;
+
+	/* the first ROM has data lines D0 and D6 swapped. */
+	for (A = 0x0000;A < 0x4000;A++)
+		rom[A] = (rom[A] & 0xbe) | ((rom[A] & 0x01) << 6) | ((rom[A] & 0x40) >> 6);
+
+	/* the second ROM has data lines D1 and D5 swapped. */
+	for (A = 0x4000;A < 0x8000;A++)
+		rom[A] = (rom[A] & 0xdd) | ((rom[A] & 0x02) << 4) | ((rom[A] & 0x20) >> 4);
+
+	/* the third ROM has data lines D0 and D6 swapped. */
+	for (A = 0x8000;A < 0xc000;A++)
+		rom[A] = (rom[A] & 0xbe) | ((rom[A] & 0x01) << 6) | ((rom[A] & 0x40) >> 6);
+
+	/* also, all three ROMs have address lines A4 and A5 swapped. */
+	for (A = 0;A < 0xc000;A++)
+	{
+		int A1;
+		UINT8 temp;
+
+		A1 = (A & 0xffcf) | ((A & 0x0010) << 1) | ((A & 0x0020) >> 1);
+		if (A < A1)
+		{
+			temp = rom[A];
+			rom[A] = rom[A1];
+			rom[A1] = temp;
+		}
+	}
 }
 
 /*==============================================================================================
@@ -2736,13 +3497,13 @@ Reset Functions
 
 static int System1DoReset()
 {
-	OpenCPU(0);
-	Z80Reset();
-	CloseCPU(0);
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
 	
-	OpenCPU(1);
-	Z80Reset();
-	CloseCPU(1);
+	ZetOpen(1);
+	ZetReset();
+	ZetClose();
 	
 	System1ScrollX[0] = System1ScrollX[1] = System1ScrollY = 0;
 	System1BgScrollX = 0;
@@ -2764,7 +3525,18 @@ static int System1DoReset()
 Memory Handlers
 ===============================================================================================*/
 
-unsigned char __fastcall System1Z801PortRead(unsigned int a)
+static void System1BankRom()
+{
+	int BankAddress = (System1RomBank * 0x4000) + 0x10000;
+	ZetMapArea(0x8000, 0xbfff, 0, System1Rom1 + BankAddress);
+	if (DecodeFunction) {
+		ZetMapArea(0x8000, 0xbfff, 2, System1Fetch1 + BankAddress, System1Rom1 + BankAddress);
+	} else {
+		ZetMapArea(0x8000, 0xbfff, 2, System1Rom1 + BankAddress);
+	}
+}
+
+unsigned char __fastcall System1Z801PortRead(unsigned short a)
 {
 	a &= 0xff;
 	
@@ -2810,7 +3582,7 @@ unsigned char __fastcall System1Z801PortRead(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall BlockgalZ801PortRead(unsigned int a)
+unsigned char __fastcall BlockgalZ801PortRead(unsigned short a)
 {
 	a &= 0xff;
 	
@@ -2856,7 +3628,7 @@ unsigned char __fastcall BlockgalZ801PortRead(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall NoboranbZ801PortRead(unsigned int a)
+unsigned char __fastcall NoboranbZ801PortRead(unsigned short a)
 {
 	a &= 0xff;
 	
@@ -2906,9 +3678,7 @@ unsigned char __fastcall NoboranbZ801PortRead(unsigned int a)
 	return 0;
 }
 
-int FireNmi = 0;
-
-void __fastcall System1Z801PortWrite(unsigned int a, unsigned char d)
+void __fastcall System1Z801PortWrite(unsigned short a, unsigned char d)
 {
 	a &= 0xff;
 	
@@ -2917,14 +3687,11 @@ void __fastcall System1Z801PortWrite(unsigned int a, unsigned char d)
 		case 0x18: {
 			System1SoundLatch = d;
 			
-			CloseCPU(0);
-			OpenCPU(1);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
-			Z80Execute(0);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 0);
-			Z80Execute(0);
-			CloseCPU(1);
-			OpenCPU(0);
+			ZetClose();
+			ZetOpen(1);
+			ZetNmi();
+			ZetClose();
+			ZetOpen(0);
 			return;
 		}
 		
@@ -2939,7 +3706,7 @@ void __fastcall System1Z801PortWrite(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall BrainZ801PortWrite(unsigned int a, unsigned char d)
+void __fastcall BrainZ801PortWrite(unsigned short a, unsigned char d)
 {
 	a &= 0xff;
 	
@@ -2948,14 +3715,11 @@ void __fastcall BrainZ801PortWrite(unsigned int a, unsigned char d)
 		case 0x18: {
 			System1SoundLatch = d;
 			
-			CloseCPU(0);
-			OpenCPU(1);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
-			Z80Execute(0);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 0);
-			Z80Execute(0);
-			CloseCPU(1);
-			OpenCPU(0);
+			ZetClose();
+			ZetOpen(1);
+			ZetNmi();
+			ZetClose();
+			ZetOpen(0);
 			return;
 		}
 		
@@ -2965,6 +3729,7 @@ void __fastcall BrainZ801PortWrite(unsigned int a, unsigned char d)
 			System1FlipScreen = d & 0x80;
 			
 			System1RomBank = ((d & 0x04) >> 2) + ((d & 0x40) >> 5);
+			System1BankRom();
 			return;
 		}
 	}
@@ -2972,7 +3737,7 @@ void __fastcall BrainZ801PortWrite(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall NoboranbZ801PortWrite(unsigned int a, unsigned char d)
+void __fastcall NoboranbZ801PortWrite(unsigned short a, unsigned char d)
 {
 	a &= 0xff;
 	
@@ -2981,14 +3746,11 @@ void __fastcall NoboranbZ801PortWrite(unsigned int a, unsigned char d)
 		case 0x18: {
 			System1SoundLatch = d;
 			
-			CloseCPU(0);
-			OpenCPU(1);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
-			Z80Execute(0);
-			Z80SetIrqLine(Z80_INPUT_LINE_NMI, 0);
-			Z80Execute(0);
-			CloseCPU(1);
-			OpenCPU(0);
+			ZetClose();
+			ZetOpen(1);
+			ZetNmi();
+			ZetClose();
+			ZetOpen(0);
 			return;
 		}
 		
@@ -2997,6 +3759,7 @@ void __fastcall NoboranbZ801PortWrite(unsigned int a, unsigned char d)
 			System1FlipScreen = d & 0x80;
 
 			System1RomBank = ((d & 0x04) >> 2) + ((d & 0x40) >> 5);
+			System1BankRom();
 			return;
 		}
 		
@@ -3019,108 +3782,10 @@ void __fastcall NoboranbZ801PortWrite(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall System1Z801ProgRead(unsigned int a)
+void __fastcall System1Z801ProgWrite(unsigned short a, unsigned char d)
 {
-	if (a <= 0x7fff) return System1Rom1[a];
-	int BankAddress = (System1RomBank) ? (System1RomBank * 0x4000) + 0x10000 - 0x8000 + a : a;
-	if (a >= 0x8000 && a <= 0xbfff) return System1Rom1[BankAddress];
-	
-	if (a >= 0xc000 && a <= 0xcfff) return System1Ram1[a - 0xc000];
-	if (a >= 0xd000 && a <= 0xd1ff) return System1SpriteRam[a - 0xd000];
-	if (a >= 0xd200 && a <= 0xd7ff) return System1Ram1[a - 0xd200 + 0x1000];
-	if (a >= 0xd800 && a <= 0xddff) return System1PaletteRam[a - 0xd800];
-	if (a >= 0xde00 && a <= 0xdfff) return System1deRam[a - 0xde00];
-	if (a >= 0xe000 && a <= 0xe7ff) return System1BgRam[a - 0xe000];
-	if (a >= 0xe800 && a <= 0xeeff) return System1VideoRam[a - 0xe800];
-	if (a >= 0xef00 && a <= 0xefff) return System1efRam[a - 0xef00];
-	if (a >= 0xf000 && a <= 0xf3ff) return System1BgCollisionRam[a - 0xf000];
-	if (a >= 0xf400 && a <= 0xf7ff) return System1f4Ram[a - 0xf400];
-	if (a >= 0xf800 && a <= 0xfbff) return System1SprCollisionRam[a - 0xf800];
-	if (a >= 0xfc00 && a <= 0xffff) return System1fcRam[a - 0xfc00];
-	
-	bprintf(PRINT_NORMAL, _T("Prog Read %x\n"), a);
-	return 0;
-}
-
-unsigned char __fastcall NoboranbZ801ProgRead(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom1[a];
-	int BankAddress = (System1RomBank) ? (System1RomBank * 0x4000) + 0x10000 - 0x8000 + a : a;
-	if (a >= 0x8000 && a <= 0xbfff) return System1Rom1[BankAddress];
-	
-	if (a >= 0xc000 && a <= 0xc3ff) return System1BgCollisionRam[a - 0xc000];
-	if (a >= 0xc400 && a <= 0xc7ff) return System1f4Ram[a - 0xc400];
-	if (a >= 0xc800 && a <= 0xcbff) return System1SprCollisionRam[a - 0xc800];
-	if (a >= 0xcc00 && a <= 0xcfff) return System1fcRam[a - 0xcc00];
-	if (a >= 0xd000 && a <= 0xd1ff) return System1SpriteRam[a - 0xd000];
-	if (a >= 0xd200 && a <= 0xd7ff) return System1Ram1[a - 0xd200 + 0x1000];
-	if (a >= 0xd800 && a <= 0xddff) return System1PaletteRam[a - 0xd800];
-	if (a >= 0xde00 && a <= 0xdfff) return System1deRam[a - 0xde00];
-	if (a >= 0xe000 && a <= 0xe7ff) return System1BgRam[a - 0xe000];
-	if (a >= 0xe800 && a <= 0xeeff) return System1VideoRam[a - 0xe800];
-	if (a >= 0xef00 && a <= 0xefff) return System1efRam[a - 0xef00];
-	if (a >= 0xf000 && a <= 0xffff) return System1Ram1[a - 0xf000];
-	
-	bprintf(PRINT_NORMAL, _T("Prog Read %x\n"), a);
-	return 0;
-}
-
-void __fastcall System1Z801ProgWrite(unsigned int a, unsigned char d)
-{
-	if (a >= 0xc000 && a <= 0xcfff) {
-		System1Ram1[a - 0xc000] = d;
-		return;
-	}
-	
-	if (a >= 0xd000 && a <= 0xd1ff) {
-		System1SpriteRam[a - 0xd000] = d;
-		return;
-	}
-	
-	if (a >= 0xd200 && a <= 0xd7ff) {
-		System1Ram1[a - 0xd200 + 0x1000] = d;
-		return;
-	}
-	
-	if (a >= 0xd800 && a <= 0xddff) {
-		System1PaletteRam[a - 0xd800] = d;
-		return;
-	}
-	
-	if (a >= 0xde00 && a <= 0xdfff) {
-		System1deRam[a - 0xde00] = d;
-		return;
-	}
-	
-	if (a >= 0xe000 && a <= 0xe7ff) {
-		System1BgRam[a - 0xe000] = d;
-		return;
-	}
-	
-	if (a >= 0xe800 && a <= 0xeeff) {
-		System1VideoRam[a - 0xe800] = d;
-		return;
-	}
-	
-	if (a >= 0xf000 && a <= 0xf3ff) {
-		System1BgCollisionRam[a - 0xf000] = 0x7e;
-		return;
-	}
-	
-	if (a >= 0xf400 && a <= 0xf7ff) {
-		System1f4Ram[a - 0xf400] = d;
-		return;
-	}
-	
-	if (a >= 0xf800 && a <= 0xfbff) {
-		System1SprCollisionRam[a - 0xf800] = 0x7e;
-		return;
-	}
-	
-	if (a >= 0xfc00 && a <= 0xffff) {
-		System1fcRam[a - 0xfc00] = d;
-		return;
-	}
+	if (a >= 0xf000 && a <= 0xf3ff) { System1BgCollisionRam[a - 0xf000] = 0x7e; return; }
+	if (a >= 0xf800 && a <= 0xfbff) { System1SprCollisionRam[a - 0xf800] = 0x7e; return; }
 	
 	switch (a) {
 		case 0xefbd: {
@@ -3147,62 +3812,10 @@ void __fastcall System1Z801ProgWrite(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-void __fastcall NoboranbZ801ProgWrite(unsigned int a, unsigned char d)
+void __fastcall NoboranbZ801ProgWrite(unsigned short a, unsigned char d)
 {
-	if (a >= 0xc000 && a <= 0xc3ff) {
-		System1BgCollisionRam[a - 0xc000] = 0x7e;
-		return;
-	}
-	
-	if (a >= 0xc400 && a <= 0xc7ff) {
-		System1f4Ram[a - 0xc400] = d;
-		return;
-	}
-	
-	if (a >= 0xc800 && a <= 0xcbff) {
-		System1SprCollisionRam[a - 0xc800] = 0x7e;
-		return;
-	}
-	
-	if (a >= 0xcc00 && a <= 0xcfff) {
-		System1fcRam[a - 0xcc00] = d;
-		return;
-	}	
-	
-	if (a >= 0xd000 && a <= 0xd1ff) {
-		System1SpriteRam[a - 0xd000] = d;
-		return;
-	}
-	
-	if (a >= 0xd200 && a <= 0xd7ff) {
-		System1Ram1[a - 0xd200 + 0x1000] = d;
-		return;
-	}
-	
-	if (a >= 0xd800 && a <= 0xddff) {
-		System1PaletteRam[a - 0xd800] = d;
-		return;
-	}
-	
-	if (a >= 0xde00 && a <= 0xdfff) {
-		System1deRam[a - 0xde00] = d;
-		return;
-	}
-	
-	if (a >= 0xe000 && a <= 0xe7ff) {
-		System1BgRam[a - 0xe000] = d;
-		return;
-	}
-	
-	if (a >= 0xe800 && a <= 0xeeff) {
-		System1VideoRam[a - 0xe800] = d;
-		return;
-	}
-	
-	if (a >= 0xf000 && a <= 0xffff) {
-		System1Ram1[a - 0xf000] = d;
-		return;
-	}
+	if (a >= 0xc000 && a <= 0xc3ff) { System1BgCollisionRam[a - 0xc000] = 0x7e; return; }
+	if (a >= 0xc800 && a <= 0xcbff) { System1SprCollisionRam[a - 0xc800] = 0x7e; return; }
 	
 	switch (a) {
 		case 0xefbd: {
@@ -3229,105 +3842,14 @@ void __fastcall NoboranbZ801ProgWrite(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall System1Z801OpRead(unsigned int a)
+unsigned char __fastcall System1Z802ProgRead(unsigned short a)
 {
-	if (a <= 0x7fff) return System1Fetch1[a];
-	int BankAddress = (System1RomBank) ? (System1RomBank * 0x4000) + 0x10000 - 0x8000 + a : a;
-	if (a >= 0x8000 && a <= 0xbfff) return System1Fetch1[BankAddress];
-	
-	if (a >= 0xc000 && a <= 0xcfff) return System1Ram1[a - 0xc000];
-	if (a >= 0xd000 && a <= 0xd1ff) return System1SpriteRam[a - 0xd000];
-	if (a >= 0xd200 && a <= 0xd7ff) return System1Ram1[a - 0xd200 + 0x1000];
-	if (a >= 0xd800 && a <= 0xddff) return System1PaletteRam[a - 0xd800];
-	if (a >= 0xde00 && a <= 0xdfff) return System1deRam[a - 0xde00];
-	if (a >= 0xe000 && a <= 0xe7ff) return System1BgRam[a - 0xe000];
-	if (a >= 0xe800 && a <= 0xeeff) return System1VideoRam[a - 0xe800];
-	if (a >= 0xef00 && a <= 0xefff) return System1efRam[a - 0xef00];
-	if (a >= 0xf000 && a <= 0xf3ff) return System1BgCollisionRam[a - 0xf000];
-	if (a >= 0xf400 && a <= 0xf7ff) return System1f4Ram[a - 0xf400];
-	if (a >= 0xf800 && a <= 0xfbff) return System1SprCollisionRam[a - 0xf800];
-	if (a >= 0xfc00 && a <= 0xffff) return System1fcRam[a - 0xfc00];
-	
-	bprintf(PRINT_NORMAL, _T("Op Read %x\n"), a);
-	return 0;
-}
-
-unsigned char __fastcall System1Z801OpReadNotEnc(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom1[a];
-	int BankAddress = (System1RomBank) ? (System1RomBank * 0x4000) + 0x10000 - 0x8000 + a : a;
-	if (a >= 0x8000 && a <= 0xbfff) return System1Rom1[BankAddress];
-	
-	if (a >= 0xc000 && a <= 0xcfff) return System1Ram1[a - 0xc000];
-	if (a >= 0xd000 && a <= 0xd1ff) return System1SpriteRam[a - 0xd000];
-	if (a >= 0xd200 && a <= 0xd7ff) return System1Ram1[a - 0xd200 + 0x1000];
-	if (a >= 0xd800 && a <= 0xddff) return System1PaletteRam[a - 0xd800];
-	if (a >= 0xde00 && a <= 0xdfff) return System1deRam[a - 0xde00];
-	if (a >= 0xe000 && a <= 0xe7ff) return System1BgRam[a - 0xe000];
-	if (a >= 0xe800 && a <= 0xeeff) return System1VideoRam[a - 0xe800];
-	if (a >= 0xef00 && a <= 0xefff) return System1efRam[a - 0xef00];
-	if (a >= 0xf000 && a <= 0xf3ff) return System1BgCollisionRam[a - 0xf000];
-	if (a >= 0xf400 && a <= 0xf7ff) return System1f4Ram[a - 0xf400];
-	if (a >= 0xf800 && a <= 0xfbff) return System1SprCollisionRam[a - 0xf800];
-	if (a >= 0xfc00 && a <= 0xffff) return System1fcRam[a - 0xfc00];
-	
-	bprintf(PRINT_NORMAL, _T("Op Read %x\n"), a);
-	return 0;
-}
-
-unsigned char __fastcall System1Z801OpArgRead(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom1[a];
-	int BankAddress = (System1RomBank) ? (System1RomBank * 0x4000) + 0x10000 - 0x8000 + a: a;
-	if (a >= 0x8000 && a <= 0xbfff) return System1Rom1[BankAddress];
-	
-	if (a >= 0xc000 && a <= 0xcfff) return System1Ram1[a - 0xc000];
-	if (a >= 0xd000 && a <= 0xd1ff) return System1SpriteRam[a - 0xd000];
-	if (a >= 0xd200 && a <= 0xd7ff) return System1Ram1[a - 0xd200 + 0x1000];
-	if (a >= 0xd800 && a <= 0xddff) return System1PaletteRam[a - 0xd800];
-	if (a >= 0xde00 && a <= 0xdfff) return System1deRam[a - 0xde00];
-	if (a >= 0xe000 && a <= 0xe7ff) return System1BgRam[a - 0xe000];
-	if (a >= 0xe800 && a <= 0xeeff) return System1VideoRam[a - 0xe800];
-	if (a >= 0xef00 && a <= 0xefff) return System1efRam[a - 0xef00];
-	if (a >= 0xf000 && a <= 0xf3ff) return System1BgCollisionRam[a - 0xf000];
-	if (a >= 0xf400 && a <= 0xf7ff) return System1f4Ram[a - 0xf400];
-	if (a >= 0xf800 && a <= 0xfbff) return System1SprCollisionRam[a - 0xf800];
-	if (a >= 0xfc00 && a <= 0xffff) return System1fcRam[a - 0xfc00];
-	
-	bprintf(PRINT_NORMAL, _T("Op Arg Read %x\n"), a);
-	return 0;
-}
-
-unsigned char __fastcall System1Z802PortRead(unsigned int a)
-{
-	a &= 0xff;
-	
-	switch (a) {
-
-	}	
-
-	bprintf(PRINT_NORMAL, _T("Z80 2 IO Read %x\n"), a);
-	return 0;
-}
-
-void __fastcall System1Z802PortWrite(unsigned int a, unsigned char d)
-{
-	a &= 0xff;
-	
-	switch (a) {
-	}
-	
-	bprintf(PRINT_NORMAL, _T("Z80 2 IO Write %x, %x\n"), a, d);
-}
-
-unsigned char __fastcall System1Z802ProgRead(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom2[a];
-	
-	if (a >= 0x8000 && a <= 0x87ff) return System1Ram2[a - 0x8000];
-	
 	switch (a) {
 		case 0xe000: {
+			return System1SoundLatch;
+		}
+		
+		case 0xffff: {
 			return System1SoundLatch;
 		}
 	}
@@ -3336,15 +3858,8 @@ unsigned char __fastcall System1Z802ProgRead(unsigned int a)
 	return 0;
 }
 
-void __fastcall System1Z802ProgWrite(unsigned int a, unsigned char d)
+void __fastcall System1Z802ProgWrite(unsigned short a, unsigned char d)
 {
-	if (a < 0x8000) return;
-
-	if (a >= 0x8000 && a <= 0x87ff) {
-		System1Ram2[a - 0x8000] = d;
-		return;
-	}
-	
 	switch (a) {
 		case 0xa000:
 		case 0xa001:
@@ -3364,68 +3879,6 @@ void __fastcall System1Z802ProgWrite(unsigned int a, unsigned char d)
 	}
 	
 	bprintf(PRINT_NORMAL, _T("Z80 2 Prog Write %x, %x\n"), a, d);
-}
-
-unsigned char __fastcall System1Z802OpRead(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom2[a];
-	if (a >= 0x8000 && a <= 0x87ff) return System1Ram2[a - 0x8000];
-	
-	bprintf(PRINT_NORMAL, _T("Z80 2 Op Read %x\n"), a);
-	return 0;
-}
-
-unsigned char __fastcall System1Z802OpArgRead(unsigned int a)
-{
-	if (a <= 0x7fff) return System1Rom2[a];
-	if (a >= 0x8000 && a <= 0x87ff) return System1Ram2[a - 0x8000];
-	
-	bprintf(PRINT_NORMAL, _T("Z80 2 Op Arg Read %x\n"), a);
-	return 0;
-}
-
-static void OpenCPU(int nCPU)
-{
-	switch (nCPU) {
-		case 0: {
-			Z80SetContext(&Z80_0);
-			
-			Z80SetIOReadHandler(Z80_0_Config.Z80In);
-			Z80SetIOWriteHandler(Z80_0_Config.Z80Out);
-			Z80SetProgramReadHandler(Z80_0_Config.Z80Read);
-			Z80SetProgramWriteHandler(Z80_0_Config.Z80Write);
-			Z80SetCPUOpArgReadHandler(Z80_0_Config.Z80ReadOpArg);
-			Z80SetCPUOpReadHandler(Z80_0_Config.Z80ReadOp);
-			return;
-		}
-		
-		case 1: {
-			Z80SetContext(&Z80_1);
-			
-			Z80SetIOReadHandler(Z80_1_Config.Z80In);
-			Z80SetIOWriteHandler(Z80_1_Config.Z80Out);
-			Z80SetProgramReadHandler(Z80_1_Config.Z80Read);
-			Z80SetProgramWriteHandler(Z80_1_Config.Z80Write);
-			Z80SetCPUOpArgReadHandler(Z80_1_Config.Z80ReadOpArg);
-			Z80SetCPUOpReadHandler(Z80_1_Config.Z80ReadOp);
-			return;
-		}
-	}
-}
-
-static void CloseCPU(int nCPU)
-{
-	switch (nCPU) {
-		case 0: {
-			Z80GetContext(&Z80_0);
-			return;
-		}
-		
-		case 1: {
-			Z80GetContext(&Z80_1);
-			return;
-		}
-	}
 }
 
 /*==============================================================================================
@@ -3504,6 +3957,7 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	for (i = 0; i < nTileRomNum; i++) {
 		nRet = BurnLoadRom(System1TempRom + (i * nTileRomSize), i + RomOffset, 1);
 	}
+	if (TileDecodeFunction) TileDecodeFunction();
 	if (System1NumTiles > 0x800) {
 		GfxDecode(System1NumTiles, 3, 8, 8, NoboranbTilePlaneOffsets, TileXOffsets, TileYOffsets, 0x40, System1TempRom, System1Tiles);
 	} else {
@@ -3527,28 +3981,66 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	}
 	
 	// Setup the Z80 emulation
-	Z80Init();
-	
-	Z80_0_Config.Z80In = System1Z801PortRead;
-	Z80_0_Config.Z80Out = System1Z801PortWrite;
-	Z80_0_Config.Z80Read = System1Z801ProgRead;
-	Z80_0_Config.Z80Write = System1Z801ProgWrite;
-	Z80_0_Config.Z80ReadOpArg = System1Z801OpArgRead;
+	ZetInit(2);
+	ZetOpen(0);
+	ZetSetWriteHandler(System1Z801ProgWrite);
+	ZetSetInHandler(System1Z801PortRead);
+	ZetSetOutHandler(System1Z801PortWrite);
+	ZetMapArea(0x0000, 0x7fff, 0, System1Rom1);
+	ZetMapArea(0x8000, 0xbfff, 0, System1Rom1 + 0x8000);
 	if (DecodeFunction) {
-		Z80_0_Config.Z80ReadOp = System1Z801OpRead;
+		ZetMapArea(0x0000, 0x7fff, 2, System1Fetch1, System1Rom1);
+		ZetMapArea(0x8000, 0xbfff, 2, System1Fetch1 + 0x8000, System1Rom1 + 0x8000);
 	} else {
-		Z80_0_Config.Z80ReadOp = System1Z801OpReadNotEnc;
+		ZetMapArea(0x0000, 0x7fff, 2, System1Rom1);
+		ZetMapArea(0x8000, 0xbfff, 2, System1Rom1 + 0x8000);
 	}
+	ZetMapArea(0xc000, 0xcfff, 0, System1Ram1);
+	ZetMapArea(0xc000, 0xcfff, 1, System1Ram1);
+	ZetMapArea(0xc000, 0xcfff, 2, System1Ram1);
+	ZetMapArea(0xd000, 0xd1ff, 0, System1SpriteRam);
+	ZetMapArea(0xd000, 0xd1ff, 1, System1SpriteRam);
+	ZetMapArea(0xd000, 0xd1ff, 2, System1SpriteRam);
+	ZetMapArea(0xd200, 0xd7ff, 0, System1Ram1 + 0x1000);
+	ZetMapArea(0xd200, 0xd7ff, 1, System1Ram1 + 0x1000);
+	ZetMapArea(0xd200, 0xd7ff, 2, System1Ram1 + 0x1000);
+	ZetMapArea(0xd800, 0xddff, 0, System1PaletteRam);
+	ZetMapArea(0xd800, 0xddff, 1, System1PaletteRam);
+	ZetMapArea(0xd800, 0xddff, 2, System1PaletteRam);
+	ZetMapArea(0xde00, 0xdfff, 0, System1deRam);
+	ZetMapArea(0xde00, 0xdfff, 1, System1deRam);
+	ZetMapArea(0xde00, 0xdfff, 2, System1deRam);
+	ZetMapArea(0xe000, 0xe7ff, 0, System1BgRam);
+	ZetMapArea(0xe000, 0xe7ff, 1, System1BgRam);
+	ZetMapArea(0xe000, 0xe7ff, 2, System1BgRam);
+	ZetMapArea(0xe800, 0xeeff, 0, System1VideoRam);
+	ZetMapArea(0xe800, 0xeeff, 1, System1VideoRam);
+	ZetMapArea(0xe800, 0xeeff, 2, System1VideoRam);
+	ZetMapArea(0xef00, 0xefff, 0, System1efRam);
+	ZetMapArea(0xef00, 0xefff, 2, System1efRam);
+	ZetMapArea(0xf000, 0xf3ff, 0, System1BgCollisionRam);
+	ZetMapArea(0xf000, 0xf3ff, 2, System1BgCollisionRam);
+	ZetMapArea(0xf400, 0xf7ff, 0, System1f4Ram);
+	ZetMapArea(0xf400, 0xf7ff, 1, System1f4Ram);
+	ZetMapArea(0xf400, 0xf7ff, 2, System1f4Ram);
+	ZetMapArea(0xf800, 0xfbff, 0, System1SprCollisionRam);
+	ZetMapArea(0xf800, 0xfbff, 2, System1SprCollisionRam);
+	ZetMapArea(0xfc00, 0xffff, 0, System1fcRam);
+	ZetMapArea(0xfc00, 0xffff, 1, System1fcRam);
+	ZetMapArea(0xfc00, 0xffff, 2, System1fcRam);	
+	ZetMemEnd();
+	ZetClose();
 	
-	Z80_1_Config.Z80In = System1Z802PortRead;
-	Z80_1_Config.Z80Out = System1Z802PortWrite;
-	Z80_1_Config.Z80Read = System1Z802ProgRead;
-	Z80_1_Config.Z80Write = System1Z802ProgWrite;
-	Z80_1_Config.Z80ReadOpArg = System1Z802OpArgRead;
-	Z80_1_Config.Z80ReadOp = System1Z802OpRead;
-	
-	OpenCPU(0);
-	CloseCPU(0);
+	ZetOpen(1);
+	ZetSetReadHandler(System1Z802ProgRead);
+	ZetSetWriteHandler(System1Z802ProgWrite);
+	ZetMapArea(0x0000, 0x7fff, 0, System1Rom2);
+	ZetMapArea(0x0000, 0x7fff, 2, System1Rom2);
+	ZetMapArea(0x8000, 0x87ff, 0, System1Ram2);
+	ZetMapArea(0x8000, 0x87ff, 1, System1Ram2);
+	ZetMapArea(0x8000, 0x87ff, 2, System1Ram2);
+	ZetMemEnd();
+	ZetClose();
 	
 	memset(SpriteOnScreenMap, 255, 256 * 256);
 	
@@ -3563,11 +4055,19 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	GenericTilesInit();
 	
 	MakeInputsFunction = System1MakeInputs;
+	System1Draw = System1Render;
 	
 	// Reset the driver
 	if (bReset) System1DoReset();
 	
 	return 0;
+}
+
+static int FourdwarrioInit()
+{
+	DecodeFunction = fdwarrio_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
 static int BlockgalInit()
@@ -3582,7 +4082,9 @@ static int BlockgalInit()
 	nRet = System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 	free(System1MC8123Key);
 	
-	Z80_0_Config.Z80In = BlockgalZ801PortRead;
+	ZetOpen(0);
+	ZetSetInHandler(BlockgalZ801PortRead);
+	ZetClose();
 	MakeInputsFunction = BlockgalMakeInputs;
 
 	return nRet;
@@ -3597,11 +4099,27 @@ static int BrainInit()
 	
 	nRet = System1Init(3, 0x8000, 1, 0x8000, 3, 0x4000, 3, 0x8000, 0);
 	
-	Z80_0_Config.Z80Out = BrainZ801PortWrite;
+	ZetOpen(0);
+	ZetSetOutHandler(BrainZ801PortWrite);
+	ZetClose();
 	
 	System1DoReset();
 	
 	return nRet;
+}
+
+static int BullfgtInit()
+{
+	DecodeFunction = bullfgtj_decode;
+	
+	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
+}
+
+static int ThetogyuInit()
+{
+	DecodeFunction = bullfgtj_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
 static int FlickyInit()
@@ -3634,9 +4152,42 @@ static int GardiaInit()
 	
 	nRet = System1Init(3, 0x8000, 1, 0x4000, 3, 0x4000, 4, 0x8000, 0);
 	
-	Z80_0_Config.Z80Out = BrainZ801PortWrite;
+	ZetOpen(0);
+	ZetSetOutHandler(BrainZ801PortWrite);
+	ZetClose();
 		
 	System1DoReset();
+	
+	return nRet;
+}
+
+static int GardiabInit()
+{
+	int nRet;
+	
+	System1ColourProms = 1;
+	System1BankedRom = 1;
+	
+	DecodeFunction = gardiab_decode;
+	
+	nRet = System1Init(3, 0x8000, 1, 0x4000, 3, 0x4000, 4, 0x8000, 0);
+	
+	ZetOpen(0);
+	ZetSetOutHandler(BrainZ801PortWrite);
+	ZetClose();
+		
+	System1DoReset();
+	
+	return nRet;
+}
+
+static int ImsorryInit()
+{
+	int nRet;
+	
+	DecodeFunction = imsorry_decode;
+	
+	nRet = System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 	
 	return nRet;
 }
@@ -3653,7 +4204,22 @@ static int MyheroInit()
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int NoboranbInit()
+static int SscandalInit()
+{
+	DecodeFunction = myheroj_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
+static int MyherokInit()
+{
+	DecodeFunction = myherok_decode;
+	TileDecodeFunction = myherok_tile_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 3, 0x4000, 4, 0x4000, 1);
+}
+
+static int NobbInit()
 {
 	int nRet;
 	
@@ -3664,12 +4230,47 @@ static int NoboranbInit()
 	nCyclesTotal[0] = 8000000 / 60;
 	System1Rom2[0x02f9] = 0x28;
 	
-	Z80_0_Config.Z80In = NoboranbZ801PortRead;
-	Z80_0_Config.Z80Out = NoboranbZ801PortWrite;
-	Z80_0_Config.Z80Read = NoboranbZ801ProgRead;
-	Z80_0_Config.Z80Write = NoboranbZ801ProgWrite;
-	Z80_0_Config.Z80ReadOpArg = NoboranbZ801ProgRead;
-	Z80_0_Config.Z80ReadOp = NoboranbZ801ProgRead;
+	ZetOpen(0);
+	ZetSetWriteHandler(NoboranbZ801ProgWrite);
+	ZetSetInHandler(NoboranbZ801PortRead);
+	ZetSetOutHandler(NoboranbZ801PortWrite);
+	ZetMemCallback(0xc000, 0xffff, 0);
+	ZetMemCallback(0xc000, 0xffff, 1);
+	ZetMemCallback(0xc000, 0xffff, 2);
+	ZetMapArea(0xc000, 0xc3ff, 0, System1BgCollisionRam);
+	ZetMapArea(0xc000, 0xc3ff, 2, System1BgCollisionRam);
+	ZetMapArea(0xc400, 0xc7ff, 0, System1f4Ram);
+	ZetMapArea(0xc400, 0xc7ff, 1, System1f4Ram);
+	ZetMapArea(0xc400, 0xc7ff, 2, System1f4Ram);
+	ZetMapArea(0xc800, 0xcbff, 0, System1SprCollisionRam);
+	ZetMapArea(0xc800, 0xcbff, 2, System1SprCollisionRam);
+	ZetMapArea(0xcc00, 0xcfff, 0, System1fcRam);
+	ZetMapArea(0xcc00, 0xcfff, 1, System1fcRam);
+	ZetMapArea(0xcc00, 0xcfff, 2, System1fcRam);	
+	ZetMapArea(0xd000, 0xd1ff, 0, System1SpriteRam);
+	ZetMapArea(0xd000, 0xd1ff, 1, System1SpriteRam);
+	ZetMapArea(0xd000, 0xd1ff, 2, System1SpriteRam);
+	ZetMapArea(0xd200, 0xd7ff, 0, System1Ram1 + 0x1000);
+	ZetMapArea(0xd200, 0xd7ff, 1, System1Ram1 + 0x1000);
+	ZetMapArea(0xd200, 0xd7ff, 2, System1Ram1 + 0x1000);
+	ZetMapArea(0xd800, 0xddff, 0, System1PaletteRam);
+	ZetMapArea(0xd800, 0xddff, 1, System1PaletteRam);
+	ZetMapArea(0xd800, 0xddff, 2, System1PaletteRam);
+	ZetMapArea(0xde00, 0xdfff, 0, System1deRam);
+	ZetMapArea(0xde00, 0xdfff, 1, System1deRam);
+	ZetMapArea(0xde00, 0xdfff, 2, System1deRam);
+	ZetMapArea(0xe000, 0xe7ff, 0, System1BgRam);
+	ZetMapArea(0xe000, 0xe7ff, 1, System1BgRam);
+	ZetMapArea(0xe000, 0xe7ff, 2, System1BgRam);
+	ZetMapArea(0xe800, 0xeeff, 0, System1VideoRam);
+	ZetMapArea(0xe800, 0xeeff, 1, System1VideoRam);
+	ZetMapArea(0xe800, 0xeeff, 2, System1VideoRam);
+	ZetMapArea(0xef00, 0xefff, 0, System1efRam);
+	ZetMapArea(0xef00, 0xefff, 2, System1efRam);
+	ZetMapArea(0xf000, 0xffff, 0, System1Ram1);
+	ZetMapArea(0xf000, 0xffff, 1, System1Ram1);
+	ZetMapArea(0xf000, 0xffff, 2, System1Ram1);	
+	ZetClose();
 	
 	System1DoReset();
 	
@@ -3698,6 +4299,13 @@ static int PitfalluInit()
 	return nRet;
 }
 
+static int RaflesiaInit()
+{
+	DecodeFunction = fdwarrio_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
 static int RegulusInit()
 {
 	DecodeFunction = regulus_decode;
@@ -3722,9 +4330,37 @@ static int SeganinuInit()
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
+static int NprincesInit()
+{
+	DecodeFunction = flicky_decode;
+	
+	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
+static int NprincsoInit()
+{
+	DecodeFunction = nprinces_decode;
+
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
 static int NprincsuInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
+static int NprincsbInit()
+{
+	DecodeFunction = flicky_decode;
+
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
+static int SpatterInit()
+{
+	DecodeFunction = spatter_decode;
+
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
 static int StarjackInit()
@@ -3805,7 +4441,7 @@ static int WmatchInit()
 
 static int System1Exit()
 {
-	Z80Exit();
+	ZetExit();
 	
 	SN76496Exit();
 
@@ -3834,7 +4470,9 @@ static int System1Exit()
 	System1BankedRom = 0;
 	
 	DecodeFunction = NULL;
+	TileDecodeFunction = NULL;
 	MakeInputsFunction = NULL;
+	System1Draw = NULL;
 	
 	return 0;
 }
@@ -4115,8 +4753,16 @@ static void System1Render()
 	if (System1VideoMode & 0x010) BurnTransferClear();
 	BurnTransferCopy(System1Palette);
 }
-
-
+/*
+static void WbmlRender()
+{
+	BurnTransferClear();
+	System1CalcPalette();
+	System1DrawSprites();
+	if (System1VideoMode & 0x010) BurnTransferClear();
+	BurnTransferCopy(System1Palette);
+}
+*/
 /*==============================================================================================
 Frame functions
 ===============================================================================================*/
@@ -4137,32 +4783,22 @@ int System1Frame()
 		
 		// Run Z80 #1
 		nCurrentCPU = 0;
-		OpenCPU(nCurrentCPU);
+		ZetOpen(nCurrentCPU);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = Z80Execute(nCyclesSegment);
+		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 9) {
-			Z80SetIrqLine(0, 1);
-			Z80Execute(0);
-			Z80SetIrqLine(0, 0);
-			Z80Execute(0);
-		}
-		CloseCPU(nCurrentCPU);
+		if (i == 9) ZetRaiseIrq(0);
+		ZetClose();
 		
 		nCurrentCPU = 1;
-		OpenCPU(nCurrentCPU);
+		ZetOpen(nCurrentCPU);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = Z80Execute(nCyclesSegment);
+		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 2 || i == 4 || i == 6 || i == 8) {
-			Z80SetIrqLine(0, 1);
-			Z80Execute(0);
-			Z80SetIrqLine(0, 0);
-			Z80Execute(0);
-		}
-		CloseCPU(nCurrentCPU);
+		if (i == 2 || i == 4 || i == 6 || i == 8) ZetRaiseIrq(0);
+		ZetClose();
 		
 		int nSegmentLength = nBurnSoundLen / nInterleave;
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
@@ -4182,7 +4818,7 @@ int System1Frame()
 		}
 	}
 	
-	if (pBurnDraw) System1Render();
+	if (pBurnDraw) System1Draw();
 	
 	return 0;
 }
@@ -4208,7 +4844,7 @@ static int System1Scan(int nAction,int *pnMin)
 	}
 
 	if (nAction & ACB_DRIVER_DATA) {
-//		ZetScan(nAction);			// Scan Z80
+		ZetScan(nAction);			// Scan Z80
 		SN76496Scan(nAction, pnMin);
 
 		// Scan critical driver variables
@@ -4230,10 +4866,11 @@ static int System1Scan(int nAction,int *pnMin)
 	}
 	
 	if (nAction & ACB_WRITE) {
-//		ZetOpen(0);
-//		ZetMapArea(0x8000, 0xbfff, 0, System1Rom1 + 0x10000 + (System1RomBank * 0x4000));
-//		ZetMapArea(0x8000, 0xbfff, 2, System1Rom1 + 0x10000 + (System1RomBank * 0x4000));
-//		ZetClose();
+		if (System1BankedRom) {
+			ZetOpen(0);
+			System1BankRom();
+			ZetClose();
+		}
 	}
 	
 	return 0;
@@ -4243,352 +4880,534 @@ static int System1Scan(int nAction,int *pnMin)
 Driver defs
 ===============================================================================================*/
 
+struct BurnDriver BurnDrvFourdwarrio = {
+	"4dwarrio", NULL, NULL, NULL, "1985",
+	"4-D Warriors (315-5162)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_HORSHOOT, 0,
+	NULL, FourdwarrioRomInfo, FourdwarrioRomName, NULL, NULL, MyheroInputInfo, FourdwarrioDIPInfo,
+	FourdwarrioInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvBlockgal = {
-	"blockgal", NULL, NULL, "1987",
+	"blockgal", NULL, NULL, NULL, "1987",
 	"Block Gal (MC-8123B, 317-0029)\0", NULL, "Sega / Vic Tokai", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, BlockgalRomInfo, BlockgalRomName, BlockgalInputInfo, BlockgalDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SEGA_SYSTEM1, GBF_PUZZLE, 0,
+	NULL, BlockgalRomInfo, BlockgalRomName, NULL, NULL, BlockgalInputInfo, BlockgalDIPInfo,
 	BlockgalInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvBrain = {
-	"brain", NULL, NULL, "1986",
+	"brain", NULL, NULL, NULL, "1986",
 	"Brain\0", NULL, "Coreland / Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, BrainRomInfo, BrainRomName, MyheroInputInfo, BrainDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_HORSHOOT, 0,
+	NULL, BrainRomInfo, BrainRomName, NULL, NULL, MyheroInputInfo, BrainDIPInfo,
 	BrainInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvBullfgt = {
+	"bullfgt", NULL, NULL, NULL, "1984",
+	"Bullfight (315-5065)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_MISC, 0,
+	NULL, BullfgtRomInfo, BullfgtRomName, NULL, NULL, MyheroInputInfo, BullfgtDIPInfo,
+	BullfgtInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvThetogyu = {
+	"thetogyu", "bullfgt", NULL, NULL, "1984",
+	"The Togyu (315-5065, Japan)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_MISC, 0,
+	NULL, ThetogyuRomInfo, ThetogyuRomName, NULL, NULL, MyheroInputInfo, BullfgtDIPInfo,
+	ThetogyuInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvFlicky = {
-	"flicky", NULL, NULL, "1984",
+	"flicky", NULL, NULL, NULL, "1984",
 	"Flicky (128k Version, System 2, 315-5051)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, FlickyRomInfo, FlickyRomName, FlickyInputInfo, FlickyDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, FlickyRomInfo, FlickyRomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
 	FlickyInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvFlicks1 = {
-	"flicks1", "flicky", NULL, "1984",
+struct BurnDriver BurnDrvFlickys1 = {
+	"flickys1", "flicky", NULL, NULL, "1984",
 	"Flicky (64k Version, System 1, 315-5051, set 2)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Flicks1RomInfo, Flicks1RomName, FlickyInputInfo, FlickyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Flickys1RomInfo, Flickys1RomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
 	Flicks1Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvFlicks2 = {
-	"flicks2", "flicky", NULL, "1984",
+struct BurnDriver BurnDrvFlickys2 = {
+	"flickys2", "flicky", NULL, NULL, "1984",
 	"Flicky (128k Version, System 2, not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Flicks2RomInfo, Flicks2RomName, FlickyInputInfo, FlickyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Flickys2RomInfo, Flickys2RomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
 	Flicks2Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvFlickyo = {
-	"flickyo", "flicky", NULL, "1984",
+	"flickyo", "flicky", NULL, NULL, "1984",
 	"Flicky (64k Version, System 1, 315-5051, set 1)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, FlickyoRomInfo, FlickyoRomName, FlickyInputInfo, FlickyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, FlickyoRomInfo, FlickyoRomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
 	Flicks1Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvGardia = {
-	"gardia", NULL, NULL, "1986",
+	"gardia", NULL, NULL, NULL, "1986",
 	"Gardia (317-0006)\0", NULL, "Sega / Coreland", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, GardiaRomInfo, GardiaRomName, MyheroInputInfo, GardiaDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, GardiaRomInfo, GardiaRomName, NULL, NULL, MyheroInputInfo, GardiaDIPInfo,
 	GardiaInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
+};
+
+struct BurnDriverD BurnDrvGardiab = {
+	"gardiab", "gardia", NULL, NULL, "1986",
+	"Gardia (317-0007?, bootleg)\0", NULL, "Sega / Coreland", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, GardiabRomInfo, GardiabRomName, NULL, NULL, MyheroInputInfo, GardiaDIPInfo,
+	GardiabInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvImsorry = {
+	"imsorry", NULL, NULL, NULL, "1985",
+	"I'm Sorry (315-5110, US)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_MAZE, 0,
+	NULL, ImsorryRomInfo, ImsorryRomName, NULL, NULL, MyheroInputInfo, ImsorryDIPInfo,
+	ImsorryInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvImsorryj = {
+	"imsorryj", "imsorry", NULL, NULL, "1985",
+	"Gonbee no I'm Sorry (315-5110, Japan)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_MAZE, 0,
+	NULL, ImsorryjRomInfo, ImsorryjRomName, NULL, NULL, MyheroInputInfo, ImsorryDIPInfo,
+	ImsorryInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvMrviking = {
-	"mrviking", NULL, NULL, "1984",
+	"mrviking", NULL, NULL, NULL, "1984",
 	"Mister Viking (315-5041)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, MrvikingRomInfo, MrvikingRomName, MyheroInputInfo, MrvikingDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, MrvikingRomInfo, MrvikingRomName, NULL, NULL, MyheroInputInfo, MrvikingDIPInfo,
 	MrvikingInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
-struct BurnDriver BurnDrvMrvikngj = {
-	"mrvikngj", "mrviking", NULL, "1984",
+struct BurnDriver BurnDrvMrvikingj = {
+	"mrvikingj", "mrviking", NULL, NULL, "1984",
 	"Mister Viking (315-5041, Japan)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, MrvikngjRomInfo, MrvikngjRomName, MyheroInputInfo, MrvikingDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, MrvikingjRomInfo, MrvikingjRomName, NULL, NULL, MyheroInputInfo, MrvikngjDIPInfo,
 	MrvikingInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvMyhero = {
-	"myhero", NULL, NULL, "1985",
+	"myhero", NULL, NULL, NULL, "1985",
 	"My Hero (US, not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, MyheroRomInfo, MyheroRomName, MyheroInputInfo, MyheroDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, MyheroRomInfo, MyheroRomName, NULL, NULL, MyheroInputInfo, MyheroDIPInfo,
 	MyheroInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvNoboranb = {
-	"noboranb", NULL, NULL, "1986",
-	"Noboranka (Japan)\0", NULL, "bootleg", "System 1",
+struct BurnDriver BurnDrvSscandal = {
+	"sscandal", "myhero", NULL, NULL, "1985",
+	"Seishun Scandal (315-5132, Japan)\0", NULL, "Coreland / Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, NoboranbRomInfo, NoboranbRomName, MyheroInputInfo, NoboranbDIPInfo,
-	NoboranbInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, SscandalRomInfo, SscandalRomName, NULL, NULL, MyheroInputInfo, MyheroDIPInfo,
+	SscandalInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvMyherok = {
+	"myherok", "myhero", NULL, NULL, "1985",
+	"My Hero (Korea)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, MyherokRomInfo, MyherokRomName, NULL, NULL, MyheroInputInfo, MyheroDIPInfo,
+	MyherokInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvNob = {
+	"nob", NULL, NULL, NULL, "1986",
+	"Noboranka (Japan)\0", NULL, "Data East Corporation", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NobRomInfo, NobRomName, NULL, NULL, MyheroInputInfo, NobbDIPInfo,
+	NobbInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
+};
+
+struct BurnDriver BurnDrvNobb = {
+	"nobb", "nob", NULL, NULL, "1986",
+	"Noboranka (Japan, bootleg)\0", NULL, "bootleg", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NobbRomInfo, NobbRomName, NULL, NULL, MyheroInputInfo, NobbDIPInfo,
+	NobbInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvPitfall2 = {
-	"pitfall2", NULL, NULL, "1985",
+	"pitfall2", NULL, NULL, NULL, "1985",
 	"Pitfall II (315-5093)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Pitfall2RomInfo, Pitfall2RomName, MyheroInputInfo, Pitfall2DIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Pitfall2RomInfo, Pitfall2RomName, NULL, NULL, MyheroInputInfo, Pitfall2DIPInfo,
 	Pitfall2Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvPitfallu = {
-	"pitfallu", "pitfall2", NULL, "1985",
+struct BurnDriver BurnDrvPitfall2a = {
+	"pitfall2a", "pitfall2", NULL, NULL, "1985",
+	"Pitfall II (315-5093, Flicky Conversion)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Pitfall2aRomInfo, Pitfall2aRomName, NULL, NULL, MyheroInputInfo, Pitfall2DIPInfo,
+	Pitfall2Init, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvPitfall2u = {
+	"pitfall2u", "pitfall2", NULL, NULL, "1985",
 	"Pitfall II (not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, PitfalluRomInfo, PitfalluRomName, MyheroInputInfo, PitfalluDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Pitfall2uRomInfo, Pitfall2uRomName, NULL, NULL, MyheroInputInfo, PitfalluDIPInfo,
 	PitfalluInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvRaflesia = {
+	"raflesia", NULL, NULL, NULL, "1986",
+	"Rafflesia (315-5162)\0", NULL, "Coreland / Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, RaflesiaRomInfo, RaflesiaRomName, NULL, NULL, MyheroInputInfo, RaflesiaDIPInfo,
+	RaflesiaInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvRegulus = {
-	"regulus", NULL, NULL, "1983",
+	"regulus", NULL, NULL, NULL, "1983",
 	"Regulus (315-5033, rev. A)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, RegulusRomInfo, RegulusRomName, MyheroInputInfo, RegulusDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, RegulusRomInfo, RegulusRomName, NULL, NULL, MyheroInputInfo, RegulusDIPInfo,
 	RegulusInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvReguluso = {
-	"reguluso", "regulus", NULL, "1983",
+	"reguluso", "regulus", NULL, NULL, "1983",
 	"Regulus (315-5033)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, RegulusoRomInfo, RegulusoRomName, MyheroInputInfo, RegulusoDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, RegulusoRomInfo, RegulusoRomName, NULL, NULL, MyheroInputInfo, RegulusoDIPInfo,
 	RegulusInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvRegulusu = {
-	"regulusu", "regulus", NULL, "1983",
+	"regulusu", "regulus", NULL, NULL, "1983",
 	"Regulus (not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, RegulusuRomInfo, RegulusuRomName, MyheroInputInfo, RegulusDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, RegulusuRomInfo, RegulusuRomName, NULL, NULL, MyheroInputInfo, RegulusDIPInfo,
 	RegulusuInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvSeganinj = {
-	"seganinj", NULL, NULL, "1985",
+	"seganinj", NULL, NULL, NULL, "1985",
 	"Sega Ninja (315-5102)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, SeganinjRomInfo, SeganinjRomName, SeganinjInputInfo, SeganinjDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, SeganinjRomInfo, SeganinjRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
 	SeganinjInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvSeganinu = {
-	"seganinu", "seganinj", NULL, "1985",
+struct BurnDriver BurnDrvSeganinju = {
+	"seganinju", "seganinj", NULL, NULL, "1985",
 	"Sega Ninja (not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, SeganinuRomInfo, SeganinuRomName, SeganinjInputInfo, SeganinjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, SeganinjuRomInfo, SeganinjuRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
 	SeganinuInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvNprincsu = {
-	"nprincsu", "seganinj", NULL, "1985",
+struct BurnDriver BurnDrvNinja = {
+	"ninja", "seganinj", NULL, NULL, "1985",
+	"Ninja (315-5102)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NinjaRomInfo, NinjaRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
+	SeganinjInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvNprinces = {
+	"nprinces", "seganinj", NULL, NULL, "1985",
+	"Ninja Princess (315-5051, 64k Ver. bootleg?)\0", NULL, "bootleg?", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NprincesRomInfo, NprincesRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
+	NprincesInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvNprinceso = {
+	"nprinceso", "seganinj", NULL, NULL, "1985",
+	"Ninja Princess (315-5098, 128k Ver.)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NprincesoRomInfo, NprincesoRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
+	NprincsoInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvNprincesu = {
+	"nprincesu", "seganinj", NULL, NULL, "1985",
 	"Ninja Princess (64k Ver. not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, NprincsuRomInfo, NprincsuRomName, SeganinjInputInfo, SeganinjDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NprincesuRomInfo, NprincesuRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
 	NprincsuInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvNprincesb = {
+	"nprincesb", "seganinj", NULL, NULL, "1985",
+	"Ninja Princess (315-5051?, 128k Ver. bootleg?)\0", NULL, "bootleg?", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, NprincesbRomInfo, NprincesbRomName, NULL, NULL, SeganinjInputInfo, SeganinjDIPInfo,
+	NprincsbInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvSpatter = {
+	"spatter", NULL, NULL, NULL, "1984",
+	"Spatter\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_MAZE, 0,
+	NULL, SpatterRomInfo, SpatterRomName, NULL, NULL, MyheroInputInfo, SpatterDIPInfo,
+	SpatterInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 240, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvSsanchan = {
+	"ssanchan", "spatter", NULL, NULL, "1984",
+	"Sanrin San Chan (Japan)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_MAZE, 0,
+	NULL, SsanchanRomInfo, SsanchanRomName, NULL, NULL, MyheroInputInfo, SpatterDIPInfo,
+	SpatterInit, System1Exit, System1Frame, NULL, System1Scan,
+	0, NULL, NULL, NULL, NULL, 0x600, 240, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvStarjack = {
-	"starjack", NULL, NULL, "1983",
+	"starjack", NULL, NULL, NULL, "1983",
 	"Star Jacker (Sega)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, StarjackRomInfo, StarjackRomName, MyheroInputInfo, StarjackDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, StarjackRomInfo, StarjackRomName, NULL, NULL, MyheroInputInfo, StarjackDIPInfo,
 	StarjackInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
-struct BurnDriver BurnDrvStarjacs = {
-	"starjacs", "starjack", NULL, "1983",
+struct BurnDriver BurnDrvStarjacks = {
+	"starjacks", "starjack", NULL, NULL, "1983",
 	"Star Jacker (Stern)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, StarjacsRomInfo, StarjacsRomName, MyheroInputInfo, StarjacsDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, StarjacksRomInfo, StarjacksRomName, NULL, NULL, MyheroInputInfo, StarjacsDIPInfo,
 	StarjackInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
 
 struct BurnDriver BurnDrvSwat = {
-	"swat", NULL, NULL, "1984",
+	"swat", NULL, NULL, NULL, "1984",
 	"SWAT (315-5048)\0", NULL, "Coreland / Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, SwatRomInfo, SwatRomName, MyheroInputInfo, SwatDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_MISC, 0,
+	NULL, SwatRomInfo, SwatRomName, NULL, NULL, MyheroInputInfo, SwatDIPInfo,
 	SwatInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvTeddybb = {
-	"teddybb", NULL, NULL, "1985",
+	"teddybb", NULL, NULL, NULL, "1985",
 	"TeddyBoy Blues (315-5115, New Ver.)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, TeddybbRomInfo, TeddybbRomName, MyheroInputInfo, TeddybbDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, TeddybbRomInfo, TeddybbRomName, NULL, NULL, MyheroInputInfo, TeddybbDIPInfo,
 	TeddybbInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvTeddybbo = {
-	"teddybbo", "teddybb", NULL, "1985",
+	"teddybbo", "teddybb", NULL, NULL, "1985",
 	"TeddyBoy Blues (315-5115, Old Ver.)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, TeddybboRomInfo, TeddybboRomName, MyheroInputInfo, TeddybbDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, TeddybboRomInfo, TeddybboRomName, NULL, NULL, MyheroInputInfo, TeddybbDIPInfo,
 	TeddybbInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvUpndown = {
-	"upndown", NULL, NULL, "1983",
+	"upndown", NULL, NULL, NULL, "1983",
 	"Up'n Down (315-5030)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, UpndownRomInfo, UpndownRomName, UpndownInputInfo, UpndownDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_MISC, 0,
+	NULL, UpndownRomInfo, UpndownRomName, NULL, NULL, UpndownInputInfo, UpndownDIPInfo,
 	UpndownInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvUpndownu = {
-	"upndownu", "upndown", NULL, "1983",
+	"upndownu", "upndown", NULL, NULL, "1983",
 	"Up'n Down (not encrypted)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, UpndownuRomInfo, UpndownuRomName, UpndownInputInfo, UpndownDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_MISC, 0,
+	NULL, UpndownuRomInfo, UpndownuRomName, NULL, NULL, UpndownInputInfo, UpndownDIPInfo,
 	UpndownuInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvWboy = {
-	"wboy", NULL, NULL, "1986",
+	"wboy", NULL, NULL, NULL, "1986",
 	"Wonder Boy (set 1, 315-5177)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, WboyRomInfo, WboyRomName, WboyInputInfo, WboyDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, WboyRomInfo, WboyRomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	WboyInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboyo = {
-	"wboyo", "wboy", NULL, "1986",
+	"wboyo", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (set 1, 315-5135)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, WboyoRomInfo, WboyoRomName, WboyInputInfo, WboyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, WboyoRomInfo, WboyoRomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	WboyoInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboy2 = {
-	"wboy2", "wboy", NULL, "1986",
+	"wboy2", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (set 2, 315-5178)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Wboy2RomInfo, Wboy2RomName, WboyInputInfo, WboyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Wboy2RomInfo, Wboy2RomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	Wboy2Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboy2u = {
-	"wboy2u", "wboy", NULL, "1986",
+	"wboy2u", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (set 2, not encrypted)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Wboy2uRomInfo, Wboy2uRomName, WboyInputInfo, WboyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Wboy2uRomInfo, Wboy2uRomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	Wboy2uInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboy3 = {
-	"wboy3", "wboy", NULL, "1986",
+	"wboy3", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (set 3, 315-5135)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Wboy3RomInfo, Wboy3RomName, WboyInputInfo, Wboy3DIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Wboy3RomInfo, Wboy3RomName, NULL, NULL, WboyInputInfo, Wboy3DIPInfo,
 	WboyoInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboy4 = {
-	"wboy4", "wboy", NULL, "1986",
+	"wboy4", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (set 4, 315-5162)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, Wboy4RomInfo, Wboy4RomName, WboyInputInfo, WboyDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Wboy4RomInfo, Wboy4RomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	Wboy4Init, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWboyu = {
-	"wboyu", "wboy", NULL, "1986",
+	"wboyu", "wboy", NULL, NULL, "1986",
 	"Wonder Boy (not encrypted)\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, WboyuRomInfo, WboyuRomName, WboyInputInfo, WboyuDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, WboyuRomInfo, WboyuRomName, NULL, NULL, WboyInputInfo, WboyuDIPInfo,
 	WboyuInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWbdeluxe = {
-	"wbdeluxe", "wboy", NULL, "1986",
+	"wbdeluxe", "wboy", NULL, NULL, "1986",
 	"Wonder Boy Deluxe\0", NULL, "Sega (Escape License)", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, WbdeluxeRomInfo, WbdeluxeRomName, WboyInputInfo, WbdeluxeDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, WbdeluxeRomInfo, WbdeluxeRomName, NULL, NULL, WboyInputInfo, WbdeluxeDIPInfo,
 	Wboy2uInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvWmatch = {
-	"wmatch", NULL, NULL, "1984",
+	"wmatch", NULL, NULL, NULL, "1984",
 	"Water Match (315-5064)\0", NULL, "Sega", "System 1",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1,
-	NULL, WmatchRomInfo, WmatchRomName, WmatchInputInfo, WmatchDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_SPORTSMISC, 0,
+	NULL, WmatchRomInfo, WmatchRomName, NULL, NULL, WmatchInputInfo, WmatchDIPInfo,
 	WmatchInit, System1Exit, System1Frame, NULL, System1Scan,
-	NULL, 224, 240, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x600, 224, 240, 3, 4
 };
+
+
+
+// hvymetal
+// shtngmst and clones
+// chplft and clones
+// wboysys2
+// blckgalb
+// tokisens
+// wbml and clones
+// dakkochn
+// ufosensi

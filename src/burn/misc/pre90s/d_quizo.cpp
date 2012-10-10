@@ -30,7 +30,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip Switches",	BIT_DIPSWITCH,	&DrvDips,	"dip"      },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[] =
 {
@@ -48,7 +48,7 @@ static struct BurnDIPInfo DrvDIPList[] =
 	{0x08, 0x01, 0x40, 0x40, "1 coin 1 credit"},
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 
 static void quizo_palette_init()
@@ -371,16 +371,16 @@ static struct BurnRomInfo quizoRomDesc[] = {
 	{ "82s123", 0x0020, 0xc3f15914, BRF_GRA },	     //  4 Color Prom
 };
 
-STD_ROM_PICK(quizo);
-STD_ROM_FN(quizo);
+STD_ROM_PICK(quizo)
+STD_ROM_FN(quizo)
 
 struct BurnDriver BurnDrvQuizo = {
-	"quizo", NULL, NULL, "1985",
+	"quizo", NULL, NULL, NULL, "1985",
 	"Quiz Olympic\0", NULL, "Seoul Coin Corp.", "Miscellaneous",
 	L"\uD034\uC988\uC62C\uB9BC\uD53D\0Quiz Olympic\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_PRE90S,
-	NULL, quizoRomInfo, quizoRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 1, HARDWARE_MISC_PRE90S, GBF_QUIZ, 0,
+	NULL, quizoRomInfo, quizoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, 0, NULL, NULL, NULL, NULL, 0x10,
 	320, 200, 4, 3
 };
 

@@ -48,7 +48,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip 2"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
@@ -91,7 +91,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x12, 0x01, 0x40, 0x40, "Cocktail"    		  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 
 //----------------------------------------------------------------------------------------------
@@ -620,16 +620,16 @@ static struct BurnRomInfo myststonRomDesc[] = {
 	{ "ic61",         0x0020, 0xe802d6cf, 4 | BRF_GRA },  	       // 18 Color Prom
 };
 
-STD_ROM_PICK(mystston);
-STD_ROM_FN(mystston);
+STD_ROM_PICK(mystston)
+STD_ROM_FN(mystston)
 
 struct BurnDriver BurnDrvmystston = {
-	"mystston", NULL, NULL, "1984",
+	"mystston", NULL, NULL, NULL, "1984",
 	"Mysterious Stones - Dr. John's Adventure\0", NULL, "Technos", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, myststonRomInfo, myststonRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, myststonRomInfo, myststonRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 24,
 	240, 256, 3, 4
 };
 
@@ -661,16 +661,16 @@ static struct BurnRomInfo myststnoRomDesc[] = {
 	{ "ic61",         0x0020, 0xe802d6cf, 4 | BRF_GRA },  	       // 18 Color Prom
 };
 
-STD_ROM_PICK(myststno);
-STD_ROM_FN(myststno);
+STD_ROM_PICK(myststno)
+STD_ROM_FN(myststno)
 
 struct BurnDriver BurnDrvmyststno = {
-	"myststno", "mystston", NULL, "1984",
+	"myststono", "mystston", NULL, NULL, "1984",
 	"Mysterious Stones - Dr. Kick in Adventure\0", NULL, "Technos", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
-	NULL, myststnoRomInfo, myststnoRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, myststnoRomInfo, myststnoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 24,
 	240, 256, 3, 4
 };
 

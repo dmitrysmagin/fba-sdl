@@ -2,9 +2,15 @@
 #include "burner.h"
 #include "vid_directx_support.h"
 
+#ifdef _MSC_VER
+#pragma comment(lib, "d3d9")
+#pragma comment(lib, "d3dx9")
+
+
 // #define ENABLE_PROFILING FBA_DEBUG
 // #define LOAD_EFFECT_FROM_FILE
 
+#include <InitGuid.h>
 #define DIRECT3D_VERSION 0x0900							// Use this Direct3D version
 #define D3D_OVERLOADS
 #include <d3d9.h>
@@ -63,6 +69,9 @@ static ID3DXTextureShader* pEffectShader = NULL;
 static D3DXHANDLE hTechnique = NULL;
 static D3DXHANDLE hScanIntensity = NULL;
 static IDirect3DTexture9* pEffectTexture = NULL;
+
+static ID3DXFont* pFont = NULL;							// OSD font
+static D3DCOLOR osdColor = D3DCOLOR_ARGB(0xFF, 0xFF, 0xFF, 0xFF);
 
 static double dPrevCubicB, dPrevCubicC;
 
@@ -165,13 +174,10 @@ int dx9SelectFullscreenMode(VidSDisplayScoreInfo* pScoreInfo)
 			}
 
 			if (pScoreInfo->nBestWidth == -1U) {
-
 				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_FULL_NOMODE));
 				FBAPopupDisplay(PUF_TYPE_ERROR);
-
 				return 1;
 			}
-
 		} else {
 			pScoreInfo->nBestWidth = nVidWidth;
 			pScoreInfo->nBestHeight = nVidHeight;
@@ -248,6 +254,7 @@ static int dx9Exit()
 
 	VidSFreeVidImage();
 
+	RELEASE(pFont);
 	RELEASE(pD3DDevice);
 	RELEASE(pD3D);
 
@@ -271,7 +278,11 @@ static int dx9SurfaceInit()
 	nGameImageWidth = nVidImageWidth;
 	nGameImageHeight = nVidImageHeight;
 
-	nVidImageDepth = bDrvOkay ? 15 : 32;
+	if (bDrvOkay && (BurnDrvGetFlags() & BDF_16BIT_ONLY)) {
+		nVidImageDepth = 15;
+	} else {
+		nVidImageDepth = nVidScrnDepth;
+	}
 
 	switch (nVidImageDepth) {
 		case 32:
@@ -289,7 +300,7 @@ static int dx9SurfaceInit()
 	}
 
 	nVidImageBPP = (nVidImageDepth + 7) >> 3;
-	nBurnBpp = nVidImageBPP;								// Set Burn library Bytes per pixel
+	nBurnBpp = nVidImageBPP;					// Set Burn library Bytes per pixel
 
 	// Use our callback to get colors:
 	SetBurnHighCol(nVidImageDepth);
@@ -302,12 +313,12 @@ static int dx9SurfaceInit()
 
 	if (FAILED(pD3DDevice->CreateOffscreenPlainSurface(nVidImageWidth, nVidImageHeight, nFormat, D3DPOOL_DEFAULT, &pSurface, NULL))) {
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't create surface.\n"));
+		dprintf(_T("  * Error: Couldn't create surface.\n"));
 #endif
 		return 1;
 	}
 #ifdef PRINT_DEBUG_INFO
-   	dprintf(_T("  * Allocated a %i x %i (%s) surface.\n"), nVidImageWidth, nVidImageHeight, TextureFormatString(nFormat));
+	dprintf(_T("  * Allocated a %i x %i (%s) surface.\n"), nVidImageWidth, nVidImageHeight, TextureFormatString(nFormat));
 #endif
 
 	nTextureWidth = GetTextureSize(nGameImageWidth);
@@ -315,12 +326,12 @@ static int dx9SurfaceInit()
 
 	if (FAILED(pD3DDevice->CreateTexture(nTextureWidth, nTextureHeight, 1, D3DUSAGE_RENDERTARGET, nFormat, D3DPOOL_DEFAULT, &pTexture, NULL))) {
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't create texture.\n"));
+		dprintf(_T("  * Error: Couldn't create texture.\n"));
 #endif
 		return 1;
 	}
 #ifdef PRINT_DEBUG_INFO
-   	dprintf(_T("  * Allocated a %i x %i (%s) image texture.\n"), nTextureWidth, nTextureHeight, TextureFormatString(nFormat));
+	dprintf(_T("  * Allocated a %i x %i (%s) image texture.\n"), nTextureWidth, nTextureHeight, TextureFormatString(nFormat));
 #endif
 
 	return 0;
@@ -359,7 +370,7 @@ static int dx9EffectSurfaceInit()
 			return 1;
 		}
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Allocated a %i x %i (%s) LUT texture.\n"), 1024, 1, TextureFormatString(nFormat));
+		dprintf(_T("  * Allocated a %i x %i (%s) LUT texture.\n"), 1024, 1, TextureFormatString(nFormat));
 #endif
 	}
 
@@ -386,12 +397,12 @@ static int dx9EffectSurfaceInit()
 
 		if (FAILED(pD3DDevice->CreateTexture(nIntermediateTextureWidth, nIntermediateTextureHeight, 1, D3DUSAGE_RENDERTARGET, nFormat, D3DPOOL_DEFAULT, &pIntermediateTexture, NULL))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't create intermediate texture.\n"));
+			dprintf(_T("  * Error: Couldn't create intermediate texture.\n"));
 #endif
 			return 1;
 		}
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Allocated a %i x %i (%s) intermediate texture.\n"), nIntermediateTextureWidth, nIntermediateTextureHeight, TextureFormatString(nFormat));
+		dprintf(_T("  * Allocated a %i x %i (%s) intermediate texture.\n"), nIntermediateTextureWidth, nIntermediateTextureHeight, TextureFormatString(nFormat));
 #endif
 	}
 
@@ -431,19 +442,19 @@ static int dx9EffectSurfaceInit()
 
 		if (FAILED(pD3DDevice->CreateTexture(nSize, nSize, 1, D3DUSAGE_DYNAMIC, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &(pScanlineTexture[i]), NULL))) {
 #ifdef PRINT_DEBUG_INFO
-	   		dprintf(_T("  * Error: Couldn't create texture.\n"));
+			dprintf(_T("  * Error: Couldn't create texture.\n"));
 #endif
 			return 1;
 		}
 		if (FAILED(pScanlineTexture[i]->GetSurfaceLevel(0, &pSurf))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't get texture surface.\n"));
+			dprintf(_T("  * Error: Couldn't get texture surface.\n"));
 #endif
 		}
 
 		if (FAILED(D3DXLoadSurfaceFromMemory(pSurf, NULL, &rect, scandata[i], D3DFMT_X8R8G8B8, nSize * sizeof(int), NULL, &rect, D3DX_FILTER_NONE, 0))) {
 #ifdef PRINT_DEBUG_INFO
-	   		dprintf(_T("  * Error: D3DXLoadSurfaceFromMemory failed.\n"));
+			dprintf(_T("  * Error: D3DXLoadSurfaceFromMemory failed.\n"));
 #endif
 		}
 
@@ -477,13 +488,22 @@ int dx9GeometryInit()
 			double dTop    = 1.0 - (((double)((nRotateGame & 1) ? (RENDER_STRIPS - y - 0) : (y + 0))) * 2.0 / RENDER_STRIPS);
 			double dBottom = 1.0 - (((double)((nRotateGame & 1) ? (RENDER_STRIPS - y - 1) : (y + 1))) * 2.0 / RENDER_STRIPS);
 
+			// ugly fix for flipped game, modified by regret
+			if ((nRotateGame & 1) && (nRotateGame & 2)) {
+				dTop    = 1.0 - (((double)(y + 0)) * 2.0 / RENDER_STRIPS);
+				dBottom = 1.0 - (((double)(y + 1)) * 2.0 / RENDER_STRIPS);
+			}
+			else if (nRotateGame & 2) {
+				dTop    = 1.0 - (((double)(RENDER_STRIPS - y - 0)) * 2.0 / RENDER_STRIPS);
+				dBottom = 1.0 - (((double)(RENDER_STRIPS - y - 1)) * 2.0 / RENDER_STRIPS);
+			}
+
 			if (pIntermediateTexture && bVidScanlines) {
 				dTexCoordXl += 0.5 / (double)nIntermediateTextureWidth;
 				dTexCoordXr += 0.5 / (double)nIntermediateTextureWidth;
 				dTexCoordYt += 1.0 / (double)nIntermediateTextureHeight;
 				dTexCoordYb += 1.0 / (double)nIntermediateTextureHeight;
 			}
-
 
 #if 0
 			if (nPreScaleEffect) {
@@ -499,16 +519,17 @@ int dx9GeometryInit()
 #endif
 
 			// Set up the vertices for the game image, including the texture coordinates for the game image only
+			// ugly fix for flipped game, modified by regret
 			if (nRotateGame & 1) {
-				vScreen[(nRotateGame & 2) ? 3 : 0] = D3DLVERTEX2(dTop,    dLeft,  0.0, 0xFFFFFFFF, 0, dTexCoordXl, dTexCoordYt, 0, 0);
-				vScreen[(nRotateGame & 2) ? 2 : 1] = D3DLVERTEX2(dTop,    dRight, 0.0, 0xFFFFFFFF, 0, dTexCoordXr, dTexCoordYt, 0, 0);
-				vScreen[(nRotateGame & 2) ? 1 : 2] = D3DLVERTEX2(dBottom, dLeft,  0.0, 0xFFFFFFFF, 0, dTexCoordXl, dTexCoordYb, 0, 0);
-				vScreen[(nRotateGame & 2) ? 0 : 3] = D3DLVERTEX2(dBottom, dRight, 0.0, 0xFFFFFFFF, 0, dTexCoordXr, dTexCoordYb, 0, 0);
+				vScreen[(nRotateGame & 2) ? 3 : 0] = D3DLVERTEX2(dTop,    dLeft,  0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXr : dTexCoordXl, dTexCoordYt, 0, 0);
+				vScreen[(nRotateGame & 2) ? 2 : 1] = D3DLVERTEX2(dTop,    dRight, 0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXl : dTexCoordXr, dTexCoordYt, 0, 0);
+				vScreen[(nRotateGame & 2) ? 1 : 2] = D3DLVERTEX2(dBottom, dLeft,  0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXr : dTexCoordXl, dTexCoordYb, 0, 0);
+				vScreen[(nRotateGame & 2) ? 0 : 3] = D3DLVERTEX2(dBottom, dRight, 0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXl : dTexCoordXr, dTexCoordYb, 0, 0);
 			} else {
-				vScreen[(nRotateGame & 2) ? 3 : 0] = D3DLVERTEX2(dLeft,  dTop,    0.0, 0xFFFFFFFF, 0, dTexCoordXl, dTexCoordYt, 0, 0);
-				vScreen[(nRotateGame & 2) ? 2 : 1] = D3DLVERTEX2(dRight, dTop,    0.0, 0xFFFFFFFF, 0, dTexCoordXr, dTexCoordYt, 0, 0);
-				vScreen[(nRotateGame & 2) ? 1 : 2] = D3DLVERTEX2(dLeft,  dBottom, 0.0, 0xFFFFFFFF, 0, dTexCoordXl, dTexCoordYb, 0, 0);
-				vScreen[(nRotateGame & 2) ? 0 : 3] = D3DLVERTEX2(dRight, dBottom, 0.0, 0xFFFFFFFF, 0, dTexCoordXr, dTexCoordYb, 0, 0);
+				vScreen[(nRotateGame & 2) ? 3 : 0] = D3DLVERTEX2(dLeft,  dTop,    0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXr : dTexCoordXl, dTexCoordYt, 0, 0);
+				vScreen[(nRotateGame & 2) ? 2 : 1] = D3DLVERTEX2(dRight, dTop,    0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXl : dTexCoordXr, dTexCoordYt, 0, 0);
+				vScreen[(nRotateGame & 2) ? 1 : 2] = D3DLVERTEX2(dLeft,  dBottom, 0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXr : dTexCoordXl, dTexCoordYb, 0, 0);
+				vScreen[(nRotateGame & 2) ? 0 : 3] = D3DLVERTEX2(dRight, dBottom, 0.0, 0xFFFFFFFF, 0, (nRotateGame & 2) ? dTexCoordXl : dTexCoordXr, dTexCoordYb, 0, 0);
 			}
 
 			{
@@ -545,7 +566,7 @@ int dx9GeometryInit()
 
 			if (FAILED(pVB[y]->Lock(0, 4 * sizeof(D3DLVERTEX2), (void**)&pVertexData, 0))) {
 #ifdef PRINT_DEBUG_INFO
-			   	dprintf(_T("  * Error: Couldn't create vertex buffer.\n"));
+				dprintf(_T("  * Error: Couldn't create vertex buffer.\n"));
 #endif
 				return 1;
 			}
@@ -579,7 +600,7 @@ int dx9GeometryInit()
 
 		if (FAILED(pIntermediateVB->Lock(0, 4 * sizeof(D3DLVERTEX2), (void**)&pVertexData, 0))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't create vertex buffer.\n"));
+			dprintf(_T("  * Error: Couldn't create vertex buffer.\n"));
 #endif
 			return 1;
 		}
@@ -610,12 +631,12 @@ int dx9EffectInit()
 	D3DXCreateBuffer(0x10000, &pErrorBuffer);
 
 #ifdef LOAD_EFFECT_FROM_FILE
-	if (FAILED(D3DXCreateEffectFromFile(pD3DDevice, _T("bicubic.fx"), NULL /* d3dxm */, NULL, 0, NULL, &pEffect, &pErrorBuffer))) {
+	if (FAILED(D3DXCreateEffectFromFile(pD3DDevice, _T("bicubic.fx"), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
 #else
-	if (FAILED(D3DXCreateEffectFromResource(pD3DDevice, NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL /* d3dxm */, NULL, 0, NULL, &pEffect, &pErrorBuffer))) {
+	if (FAILED(D3DXCreateEffectFromResource(pD3DDevice, NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
 #endif
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't compile effect.\n"));
+		dprintf(_T("  * Error: Couldn't compile effect.\n"));
 		dprintf(_T("\n%hs\n\n"), pErrorBuffer->GetBufferPointer());
 #endif
 		goto HANDLE_ERROR;
@@ -674,7 +695,7 @@ int dx9EffectInit()
 	hTechnique = pEffect->GetTechniqueByName(pszTechnique);
 	if (FAILED(pEffect->SetTechnique(hTechnique))) {
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't set technique.\n"));
+		dprintf(_T("  * Error: Couldn't set technique.\n"));
 #endif
 		goto HANDLE_ERROR;
 	}
@@ -691,7 +712,7 @@ int dx9EffectInit()
 		if (FAILED(D3DXCompileShaderFromResource(NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL, NULL, (DX9_SHADERPRECISION < 4 && !bUsePS14) ? "genWeightTex20" : "genWeightTex14", "tx_1_0", 0, &pEffectShaderBuffer, &pErrorBuffer, NULL))) {
 #endif
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't compile shader.\n"));
+			dprintf(_T("  * Error: Couldn't compile shader.\n"));
 			dprintf(_T("\n%hs\n\n"), pErrorBuffer->GetBufferPointer());
 #endif
 			goto HANDLE_ERROR;
@@ -699,7 +720,7 @@ int dx9EffectInit()
 
 		if (FAILED(D3DXCreateTextureShader((DWORD*)(pEffectShaderBuffer->GetBufferPointer()), &pEffectShader))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't create texture shader.\n"));
+			dprintf(_T("  * Error: Couldn't create texture shader.\n"));
 #endif
 			RELEASE(pEffectShaderBuffer);
 
@@ -722,28 +743,73 @@ HANDLE_ERROR:
 	return 1;
 }
 
+// ==> osd for dx9 video output (ugly), added by regret
+static int dx9CreateFont()
+{
+	if (pFont) {
+		return 0;
+	}
+
+	HRESULT hr = D3DXCreateFont(pD3DDevice, d3dpp.BackBufferHeight / 18,
+		0, FW_DEMIBOLD, 1, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
+		DEFAULT_PITCH || FF_DONTCARE,
+		_T("Arial"), &pFont);
+
+	if (FAILED(hr)) {
+		return 1;
+	}
+	return 0;
+}
+
+static void dx9DrawText()
+{
+	if (nVidSDisplayStatus == 0 || nOSDTimer == 0) {
+		return;
+	}
+
+	if (nFramesEmulated > nOSDTimer) {
+		VidSKillShortMsg();
+		VidSKillOSDMsg();
+	}
+
+	RECT osdRect;
+	if (nVidFullscreen) {
+		osdRect.left = Dest.left;
+		osdRect.top = Dest.top;
+		osdRect.right = Dest.right - 1;
+		osdRect.bottom = Dest.bottom - 1;
+	} else {
+		osdRect.left = 0;
+		osdRect.top = 0;
+		osdRect.right = Dest.right - Dest.left - 1;
+		osdRect.bottom = Dest.bottom - Dest.top - 1;
+	}
+
+	pFont->DrawText(NULL, OSDMsg, -1, &osdRect, DT_RIGHT | DT_TOP, osdColor);
+}
+// <== osd for dx9 video output (ugly)
+
 static int dx9Init()
 {
-	DWORD dwBehaviorFlags;
+	if (nVidFullscreen && !hScrnWnd) {
+		return 1;
+	}
 
 #ifdef ENABLE_PROFILING
 	ProfileInit();
 #endif
 
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("*** Initialising Direct3D 9 blitter.\n"));
+	dprintf(_T("*** Initialising Direct3D 9 blitter.\n"));
 #endif
 
-	if (hScrnWnd == NULL) {
-		return 1;
-	}
-
-	hVidWnd = hScrnWnd;								// Use Screen window for video
+	hVidWnd = nVidFullscreen ? hScrnWnd : hVideoWindow;								// Use Screen window for video
 
 	// Get pointer to Direct3D
 	if ((pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't initialise Direct3D.\n"));
+		dprintf(_T("  * Error: Couldn't initialise Direct3D.\n"));
 #endif
 		dx9Exit();
 		return 1;
@@ -755,29 +821,28 @@ static int dx9Init()
 		if (dx9SelectFullscreenMode(&ScoreInfo)) {
 			dx9Exit();
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't determine display mode.\n"));
+			dprintf(_T("  * Error: Couldn't determine display mode.\n"));
 #endif
 			return 1;
 		}
 
-		d3dpp.BackBufferWidth = ScoreInfo.nBestWidth;
-		d3dpp.BackBufferHeight = ScoreInfo.nBestHeight;
-		d3dpp.BackBufferFormat = (nVidDepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
-		d3dpp.SwapEffect = D3DSWAPEFFECT_FLIP;
-		d3dpp.BackBufferCount = bVidTripleBuffer ? 2 : 1;
-		d3dpp.hDeviceWindow = hVidWnd;
-		d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-		d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
+		d3dpp.BackBufferWidth				= ScoreInfo.nBestWidth;
+		d3dpp.BackBufferHeight				= ScoreInfo.nBestHeight;
+		d3dpp.BackBufferFormat				= (nVidDepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+		d3dpp.SwapEffect					= D3DSWAPEFFECT_FLIP;
+		d3dpp.BackBufferCount				= bVidTripleBuffer ? 2 : 1;
+		d3dpp.hDeviceWindow					= hVidWnd;
+		d3dpp.FullScreen_RefreshRateInHz	= D3DPRESENT_RATE_DEFAULT;
+		d3dpp.PresentationInterval			= D3DPRESENT_INTERVAL_DEFAULT;
 	} else {
-		d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
-		d3dpp.SwapEffect = D3DSWAPEFFECT_COPY;
-		d3dpp.BackBufferCount = 1;
-		d3dpp.hDeviceWindow = hVidWnd;
-		d3dpp.Windowed = TRUE;
-		d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+		d3dpp.BackBufferFormat				= D3DFMT_UNKNOWN;
+		d3dpp.SwapEffect					= D3DSWAPEFFECT_COPY;
+		d3dpp.hDeviceWindow					= hVidWnd;
+		d3dpp.Windowed						= TRUE;
+		d3dpp.PresentationInterval			= bVidVSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
 
-	dwBehaviorFlags  = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE;
+	DWORD dwBehaviorFlags  = bVidVSync ? (D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE | D3DCREATE_MULTITHREADED) : (D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_FPU_PRESERVE);
 #ifdef _DEBUG
 	dwBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT;
 #endif
@@ -786,7 +851,7 @@ static int dx9Init()
 //	if (FAILED(pD3D->CreateDevice(pD3D->GetAdapterCount() - 1, D3DDEVTYPE_REF, hVidWnd, dwBehaviorFlags, &d3dpp, &pD3DDevice))) {
 
 #ifdef PRINT_DEBUG_INFO
-	   	dprintf(_T("  * Error: Couldn't create Direct3D device.\n"));
+		dprintf(_T("  * Error: Couldn't create Direct3D device.\n"));
 #endif
 
 		if (nVidFullscreen) {
@@ -803,7 +868,6 @@ static int dx9Init()
 
 	{
 		D3DDISPLAYMODE dm;
-
 		pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &dm);
 		nVidScrnWidth = dm.Width; nVidScrnHeight = dm.Height;
 		nVidScrnDepth = (dm.Format == D3DFMT_R5G6B5) ? 16 : 32;
@@ -816,7 +880,7 @@ static int dx9Init()
 		// Get the game screen size
 		BurnDrvGetVisibleSize(&nGameWidth, &nGameHeight);
 
-	    if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+		if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
 			if (nVidRotationAdjust & 1) {
 				int n = nGameWidth;
 				nGameWidth = nGameHeight;
@@ -873,14 +937,17 @@ static int dx9Init()
 		RECT rect;
 
 		GetClientScreenRect(hVidWnd, &rect);
-		rect.top += nMenuHeight; rect.bottom += nMenuHeight;
+		rect.top += 0 /*nMenuHeight*/; rect.bottom += 0 /*nMenuHeight*/;
 		pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 		pD3DDevice->Present(&rect, &rect, NULL, NULL);
 	}
 
+	// Create osd font
+	dx9CreateFont();
+
 #ifdef PRINT_DEBUG_INFO
 	{
-	   	dprintf(_T("  * Initialisation complete: %.2lfMB texture memory free (total).\n"), (double)pD3DDevice->GetAvailableTextureMem() / (1024 * 1024));
+		dprintf(_T("  * Initialisation complete: %.2lfMB texture memory free (total).\n"), (double)pD3DDevice->GetAvailableTextureMem() / (1024 * 1024));
 		dprintf(_T("    Displaying and rendering in %i-bit mode, emulation running in %i-bit mode.\n"), nVidScrnDepth, nVidImageDepth);
 		if (nVidFullscreen) {
 			dprintf(_T("    Running in fullscreen mode (%i x %i), "), nVidScrnWidth, nVidScrnHeight);
@@ -897,13 +964,21 @@ static int dx9Init()
 static int dx9Reset()
 {
 #ifdef PRINT_DEBUG_INFO
-   	dprintf(_T("*** Resestting Direct3D device.\n"));
+	dprintf(_T("*** Resestting Direct3D device.\n"));
 #endif
+
+	if (pFont) {
+		pFont->OnLostDevice();
+	}
 
 	dx9ReleaseResources();
 
 	if (FAILED(pD3DDevice->Reset(&d3dpp))) {
 		return 1;
+	}
+
+	if (pFont) {
+		pFont->OnResetDevice();
 	}
 
 	dx9SurfaceInit();
@@ -936,7 +1011,7 @@ static int dx9MemToSurf()
 	GetClientScreenRect(hVidWnd, &Dest);
 
 	if (nVidFullscreen == 0) {
-		Dest.top += nMenuHeight;
+		Dest.top += 0 /*nMenuHeight*/;
 	}
 
 	if (bVidArcaderes && nVidFullscreen) {
@@ -977,7 +1052,7 @@ static int dx9MemToSurf()
 
 		if (FAILED(pSurface->LockRect(&lr, NULL, 0))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't lock surface.\n"));
+			dprintf(_T("  * Error: Couldn't lock surface.\n"));
 #endif
 			return 1;
 		}
@@ -1002,14 +1077,14 @@ static int dx9MemToSurf()
 
 		if (FAILED(pTexture->GetSurfaceLevel(0, &pDest))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't get texture surface.\n"));
+			dprintf(_T("  * Error: Couldn't get texture surface.\n"));
 		   	return 1;
 #endif
 		}
 
 		if (FAILED(pD3DDevice->StretchRect(pSurface, &rect, pDest, &rect, D3DTEXF_NONE))) {
 #ifdef PRINT_DEBUG_INFO
-		   	dprintf(_T("  * Error: Couldn't copy image.\n"));
+			dprintf(_T("  * Error: Couldn't copy image.\n"));
 #endif
 		}
 
@@ -1149,6 +1224,9 @@ static int dx9MemToSurf()
 		}
 		pEffect->EndPass();
 
+		// draw osd text
+		dx9DrawText();
+
 		pD3DDevice->EndScene();
 	}
 
@@ -1172,15 +1250,14 @@ static int dx9MemToSurf()
 }
 
 // Run one frame and render the screen
-static int dx9Frame(bool bRedraw)								// bRedraw = 0
+static int dx9Frame(bool bRedraw)					// bRedraw = 0
 {
-	HRESULT nCoopLevel;
-
 	if (pVidImage == NULL) {
 		return 1;
 	}
 
-	if ((nCoopLevel = pD3DDevice->TestCooperativeLevel()) != D3D_OK) {		// We've lost control of the screen
+	HRESULT nCoopLevel = pD3DDevice->TestCooperativeLevel();
+	if (nCoopLevel != D3D_OK) {						// We've lost control of the screen
 		if (nCoopLevel != D3DERR_DEVICENOTRESET) {
 			return 1;
 		}
@@ -1193,6 +1270,7 @@ static int dx9Frame(bool bRedraw)								// bRedraw = 0
 #ifdef ENABLE_PROFILING
 //	ProfileProfileStart(0);
 #endif
+
 	if (bDrvOkay) {
 		if (bRedraw) {								// Redraw current frame
 			if (BurnDrvRedraw()) {
@@ -1202,11 +1280,14 @@ static int dx9Frame(bool bRedraw)								// bRedraw = 0
 			BurnDrvFrame();							// Run one frame and draw the screen
 		}
 	}
+
 #ifdef ENABLE_PROFILING
 //	ProfileProfileEnd(0);
 	ProfileProfileStart(1);
 #endif
+
 	dx9MemToSurf();									// Copy the memory buffer to the directdraw buffer for later blitting
+
 #ifdef ENABLE_PROFILING
 	ProfileProfileEnd(1);
 
@@ -1219,15 +1300,15 @@ static int dx9Frame(bool bRedraw)								// bRedraw = 0
 // Paint the BlitFX surface onto the primary surface
 static int dx9Paint(int bValidate)
 {
-	RECT rect = { 0, 0, 0, 0 };
-
 	if (pD3DDevice->TestCooperativeLevel()) {		// We've lost control of the screen
 		return 1;
 	}
 
+	RECT rect = { 0, 0, 0, 0 };
+
 	if (!nVidFullscreen) {
 		GetClientScreenRect(hVidWnd, &rect);
-		rect.top += nMenuHeight;
+		rect.top += 0 /*nMenuHeight*/;
 
 		dx9Scale(&rect, nGameWidth, nGameHeight);
 
@@ -1252,6 +1333,7 @@ static int dx9Paint(int bValidate)
 		ClientToScreen(hVidWnd, &c);
 		RECT dst = { rect.left - c.x, rect.top - c.y, rect.right - c.x, rect.bottom - c.y };
 
+		/*
 		if (bVidVSync) {
 			D3DRASTER_STATUS rs;
 			RECT window;
@@ -1266,6 +1348,7 @@ static int dx9Paint(int bValidate)
 				Sleep(1);
 			}
 		}
+		*/
 
 		pD3DDevice->Present(&src, &dst, NULL, NULL);
 
@@ -1360,4 +1443,6 @@ static int dx9GetSettings(InterfaceInfo* pInfo)
 
 // The Video Output plugin:
 struct VidOut VidOutDX9 = { dx9Init, dx9Exit, dx9Frame, dx9Paint, dx9Scale, dx9GetSettings, _T("DirectX9 Experimental video output") };
-
+#else
+struct VidOut VidOutDX9 = { NULL, NULL, NULL, NULL, NULL, NULL, _T("DirectX9 Experimental video output") };
+#endif

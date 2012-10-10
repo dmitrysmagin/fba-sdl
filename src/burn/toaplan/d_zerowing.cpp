@@ -40,8 +40,8 @@ static struct BurnRomInfo zerowingRomDesc[] = {
 };
 
 
-STD_ROM_PICK(zerowing);
-STD_ROM_FN(zerowing);
+STD_ROM_PICK(zerowing)
+STD_ROM_FN(zerowing)
 
 static struct BurnRomInfo zerowng2RomDesc[] = {
 	{ "o15-11iiw.bin",0x008000, 0x38b0bb5b, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -66,8 +66,8 @@ static struct BurnRomInfo zerowng2RomDesc[] = {
 };
 
 
-STD_ROM_PICK(zerowng2);
-STD_ROM_FN(zerowng2);
+STD_ROM_PICK(zerowng2)
+STD_ROM_FN(zerowng2)
 
 static struct BurnInputInfo zerowingInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -97,7 +97,7 @@ static struct BurnInputInfo zerowingInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(zerowing);
+STDINPUTINFO(zerowing)
 
 static struct BurnDIPInfo zerowingDIPList[] = {
 	// Defaults
@@ -158,7 +158,7 @@ static struct BurnDIPInfo zerowingDIPList[] = {
     {0x14,	0x01, 0x03,	0x02, "Europe"},
 };
 
-STDDIPINFO(zerowing);
+STDDIPINFO(zerowing)
 
 static struct BurnDIPInfo zerowng2DIPList[] = {
 	// Defaults
@@ -213,7 +213,7 @@ static struct BurnDIPInfo zerowng2DIPList[] = {
     	{0x13,	0x01, 0x80,	0x80, "No"},
 };
 
-STDDIPINFO(zerowng2);
+STDDIPINFO(zerowng2)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -598,7 +598,7 @@ static int DrvInit()
 	ToaPalInit();
 
 	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
-	BurnTimerAttachZet(28000000 / 8);
+	BurnTimerAttachZetYM3812(28000000 / 8);
 
 	bDrawScreen = true;
 
@@ -626,8 +626,8 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-//	ToaClearScreen();
-	BurnClearScreen();
+	ToaClearScreen(0);
+//	BurnClearScreen();
 	
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -717,7 +717,7 @@ static int DrvFrame()
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
-	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
@@ -734,21 +734,21 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvZerowing = {
-	"zerowing", NULL, NULL, "1989",
+	"zerowing", NULL, NULL, NULL, "1989",
 	"Zero Wing\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, zerowingRomInfo, zerowingRomName, zerowingInputInfo, zerowingDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING, 2, HARDWARE_TOAPLAN_RAIZING, GBF_HORSHOOT, 0,
+	NULL, zerowingRomInfo, zerowingRomName, NULL, NULL, zerowingInputInfo, zerowingDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvZerowng2 = {
-	"zerowng2", "zerowing", NULL, "1989",
+	"zerowing2", "zerowing", NULL, NULL, "1989",
 	"Zero Wing (2 player simultaneous ver.)\0", NULL, "[Toaplan] Williams Electronics Games, Inc", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, zerowng2RomInfo, zerowng2RomName, zerowingInputInfo, zerowng2DIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING, GBF_HORSHOOT, 0,
+	NULL, zerowng2RomInfo, zerowng2RomName, NULL, NULL, zerowingInputInfo, zerowng2DIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	320, 240, 4, 3
 };

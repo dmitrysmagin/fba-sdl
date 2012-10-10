@@ -1,10 +1,13 @@
 // Cave hardware sprites
 #include "cave.h"
 
+int CaveSpriteVisibleXOffset;
+
 unsigned char* CaveSpriteROM = NULL;
 unsigned char* CaveSpriteRAM = NULL;
 
 int nCaveSpriteBank;
+int nCaveSpriteBankDelay;
 
 static int nSpriteAddressMask;
 
@@ -365,7 +368,7 @@ static int CaveSpriteBuffer_NoZoom()
 #if 0
 		x = (pSprite[2] + nCaveExtraXOffset) & 0x03FF;
 #else
-		x = pSprite[2] & 0x03FF;
+		x = (pSprite[2] + CaveSpriteVisibleXOffset) & 0x03FF;
 #endif
 		if (x >= 320) {
 			if (x + xs <= 0x0400) {
@@ -448,7 +451,7 @@ static int CaveSpriteBuffer_ZoomA()
 
 		nPriority = (word >> 4) & 0x03;
 
-		x = ((pSprite[0] >> 6) + nCaveExtraXOffset) & 0x03FF;
+		x = ((pSprite[0] >> 6) + CaveSpriteVisibleXOffset) & 0x03FF;
 #if 0
 		y = ((pSprite[1] >> 6) + nCaveExtraYOffset) & 0x03FF;
 #else
@@ -517,7 +520,7 @@ static int CaveSpriteBuffer_ZoomB()
 
 	short word;
 	int x, y, xs, ys;
-
+	
 	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
 		word = pSprite[6];
@@ -532,7 +535,11 @@ static int CaveSpriteBuffer_ZoomB()
 
 		nPriority = (word >> 4) & 0x03;
 
+#if 0
 		x = (pSprite[0] + nCaveExtraXOffset) & 0x03FF;
+# else
+		x = (pSprite[0] + CaveSpriteVisibleXOffset) & 0x03FF;
+#endif
 #if 0
 		y = (pSprite[1] + nCaveExtraYOffset) & 0x03FF;
 #else
@@ -663,6 +670,8 @@ void CaveSpriteExit()
 
 	free(pZBuffer);
 	pZBuffer = NULL;
+	
+	CaveSpriteVisibleXOffset = 0;
 
 	return;
 }
@@ -717,9 +726,9 @@ int CaveSpriteInit(int nType, int nROMSize)
 	}
 
 	nCaveSpriteBank = 0;
+	nCaveSpriteBankDelay = 0;
 
 	RenderSprite = RenderSprite_ROT0[(nCaveXSize == 320) ? 0 : 1];
 
 	return 0;
 }
-

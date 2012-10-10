@@ -5,15 +5,15 @@
 // Base = 0x4000 long tile map
 // sx=Scroll X value, sy=Scroll Y value,
 int Ghouls=0;
-int Knights=0;
 int Mercs=0;
-int Msword=0;
 int Sf2jc=0;
 int Ssf2t=0;
 int Qad=0;
 int Xmcota=0;
-int Varth=0;
-int Wonders3=0;
+
+int Scroll1TileMask = 0;
+int Scroll2TileMask = 0;
+int Scroll3TileMask = 0;
 
 int Cps1Scr1Draw(unsigned char *Base,int sx,int sy)
 {
@@ -39,11 +39,8 @@ int Cps1Scr1Draw(unsigned char *Base,int sx,int sy)
       pst=(unsigned short *)(Base + p);
 
       t=pst[0];
-
-/*	  if (Knights && t==0xf020)      t=0x8820;
-      else if(Msword  && t==0xf020) continue;
-
-	  if(t==0x0020) continue;*/
+      
+      if (Scroll1TileMask) t &= Scroll1TileMask;
       
       t = GfxRomBankMapper(GFXTYPE_SCROLL1, t);
       if (t == -1) continue;
@@ -165,13 +162,9 @@ int Cps1Scr3Draw(unsigned char *Base,int sx,int sy)
       pst=(unsigned short *)(Base + p);
 
       t=pst[0];
-
-/*	  if(Wonders3 && t<0x0e00)       t+=0x1000;
-	  else if(Varth && t==0x5996)    continue;
-	  else if(Forgottn && t==0x1000) continue;
-
-	  if(t < StartScroll[SCROLL_3] || t > EndScroll[SCROLL_3]) continue;*/
-	  
+      
+      if (Scroll3TileMask) t &= Scroll3TileMask;
+      
       t = GfxRomBankMapper(GFXTYPE_SCROLL3, t);
       if (t == -1) continue;
 
@@ -241,7 +234,6 @@ int Cps2Scr3Draw(unsigned char *Base, int sx, int sy)
 
 			if(Xmcota && t>=0x5800)      t-=0x4000;
 	        else if(Ssf2t && t<0x5600)   t+=0x4000;
-
 			t <<= 9;										// Get real tile address
  			t += nCpsGfxScroll[3];							// add on offset to scroll tiles
 

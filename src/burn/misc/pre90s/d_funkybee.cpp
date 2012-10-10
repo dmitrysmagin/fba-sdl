@@ -39,7 +39,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo funkybeeDIPList[]=
 {
@@ -80,7 +80,7 @@ static struct BurnDIPInfo funkybeeDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Cocktail"    		  },
 };
 
-STDDIPINFO(funkybee);
+STDDIPINFO(funkybee)
 
 
 static struct BurnDIPInfo funkbeebDIPList[]=
@@ -122,7 +122,7 @@ static struct BurnDIPInfo funkbeebDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Cocktail"    		  },
 };
 
-STDDIPINFO(funkbeeb);
+STDDIPINFO(funkbeeb)
 
 static struct BurnDIPInfo skylancrDIPList[]=
 {
@@ -163,7 +163,7 @@ static struct BurnDIPInfo skylancrDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Cocktail"    		  },
 };
 
-STDDIPINFO(skylancr);
+STDDIPINFO(skylancr)
 
 static struct BurnDIPInfo skylanceDIPList[]=
 {
@@ -204,7 +204,7 @@ static struct BurnDIPInfo skylanceDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "Cocktail"    		  },
 };
 
-STDDIPINFO(skylance);
+STDDIPINFO(skylance)
 
 
 unsigned char __fastcall funkybee_read(unsigned short address)
@@ -214,7 +214,6 @@ unsigned char __fastcall funkybee_read(unsigned short address)
 	switch (address)
 	{
 		case 0xf000:
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 			return 0;
 
 		case 0xf800:
@@ -656,16 +655,16 @@ static struct BurnRomInfo funkybeeRomDesc[] = {
 	{ "funkybee.clr",  0x0020, 0xe2cf5fe2, 3 | BRF_GRA },		//  6 Color prom
 };
 
-STD_ROM_PICK(funkybee);
-STD_ROM_FN(funkybee);
+STD_ROM_PICK(funkybee)
+STD_ROM_FN(funkybee)
 
 struct BurnDriver BurnDrvfunkybee = {
-	"funkybee", NULL, NULL, "1982",
+	"funkybee", NULL, NULL, NULL, "1982",
 	"Funky Bee\0", NULL, "Orca", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, funkybeeRomInfo, funkybeeRomName, DrvInputInfo, funkybeeDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, funkybeeRomInfo, funkybeeRomName, NULL, NULL, DrvInputInfo, funkybeeDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x20,
 	224, 232, 3, 4
 };
 
@@ -684,16 +683,16 @@ static struct BurnRomInfo funkbeebRomDesc[] = {
 	{ "funkybee.clr",   0x0020, 0xe2cf5fe2, 3 | BRF_GRA },		 //  6 Color prom
 };
 
-STD_ROM_PICK(funkbeeb);
-STD_ROM_FN(funkbeeb);
+STD_ROM_PICK(funkbeeb)
+STD_ROM_FN(funkbeeb)
 
 struct BurnDriver BurnDrvfunkbeeb = {
-	"funkbeeb", "funkybee", NULL, "1982",
+	"funkybeeb", "funkybee", NULL, NULL, "1982",
 	"Funky Bee (bootleg, harder)\0", NULL, "bootleg", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, funkbeebRomInfo, funkbeebRomName, DrvInputInfo, funkbeebDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, funkbeebRomInfo, funkbeebRomName, NULL, NULL, DrvInputInfo, funkbeebDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x20,
 	224, 232, 3, 4
 };
 
@@ -711,8 +710,8 @@ static struct BurnRomInfo skylancrRomDesc[] = {
 	{ "18s030.1a",     0x0020, 0xe645bacb, 3 | BRF_GRA },		//  5 Color prom
 };
 
-STD_ROM_PICK(skylancr);
-STD_ROM_FN(skylancr);
+STD_ROM_PICK(skylancr)
+STD_ROM_FN(skylancr)
 
 static int skylancrInit()
 {
@@ -722,12 +721,12 @@ static int skylancrInit()
 }
 
 struct BurnDriver BurnDrvskylancr = {
-	"skylancr", NULL, NULL, "1983",
+	"skylancr", NULL, NULL, NULL, "1983",
 	"Sky Lancer\0", NULL, "Orca", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, skylancrRomInfo, skylancrRomName, DrvInputInfo, skylancrDIPInfo,
-	skylancrInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, skylancrRomInfo, skylancrRomName, NULL, NULL, DrvInputInfo, skylancrDIPInfo,
+	skylancrInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x20,
 	224, 232, 3, 4
 };
 
@@ -745,15 +744,15 @@ static struct BurnRomInfo skylanceRomDesc[] = {
 	{ "18s030.1a",     0x0020, 0xe645bacb, 3 | BRF_GRA },		//  5 Color prom
 };
 
-STD_ROM_PICK(skylance);
-STD_ROM_FN(skylance);
+STD_ROM_PICK(skylance)
+STD_ROM_FN(skylance)
 
 struct BurnDriver BurnDrvskylance = {
-	"skylance", "skylancr", NULL, "1983",
+	"skylancre", "skylancr", NULL, NULL, "1983",
 	"Sky Lancer (Esco Trading Co license)\0", NULL, "Orca (Esco Trading Co license)", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, skylanceRomInfo, skylanceRomName, DrvInputInfo, skylanceDIPInfo,
-	skylancrInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, skylanceRomInfo, skylanceRomName, NULL, NULL, DrvInputInfo, skylanceDIPInfo,
+	skylancrInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x20,
 	224, 232, 3, 4
 };

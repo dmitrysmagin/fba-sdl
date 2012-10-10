@@ -1,5 +1,9 @@
 #include "burner.h"
 
+#define		HORIZONTAL_ORIENTED_RES		0
+#define		VERTICAL_ORIENTED_RES		1
+int			nOrientation;
+
 static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static bool bOK;
@@ -27,7 +31,7 @@ static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPAR
 					// If not, add it
 					if (nItemValue == CB_ERR) {
 						TCHAR szTemp[32];
-						_stprintf(szTemp, _T(" %li × %li"), devMode.dmPelsWidth, devMode.dmPelsHeight);
+						_stprintf(szTemp, _T(" %li x %li"), devMode.dmPelsWidth, devMode.dmPelsHeight);
 						nItem = SendDlgItemMessage(hDlg, IDC_CHOOSE_LIST, CB_ADDSTRING, 0, (LPARAM)&szTemp);
 						SendDlgItemMessage(hDlg, IDC_CHOOSE_LIST, CB_SETITEMDATA, nItem, nNewRes);
 					}
@@ -57,8 +61,23 @@ static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPAR
 				long nItem = SendDlgItemMessage(hDlg, IDC_CHOOSE_LIST, CB_GETCURSEL, 0, 0);
 				long nItemValue = SendDlgItemMessage(hDlg, IDC_CHOOSE_LIST, CB_GETITEMDATA, nItem, 0);
 
-				nVidWidth = nItemValue >> 16;
-				nVidHeight = nItemValue & 0xFFFF;
+				if(nOrientation == HORIZONTAL_ORIENTED_RES) {
+					nVidHorWidth	= nItemValue >> 16;
+					nVidHorHeight	= nItemValue & 0xFFFF;
+				} 
+				if(nOrientation == VERTICAL_ORIENTED_RES)	{
+					nVidVerWidth	= nItemValue >> 16;
+					nVidVerHeight	= nItemValue & 0xFFFF;
+				}
+				if(bDrvOkay) {
+					if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+						nVidWidth	= nVidVerWidth;
+						nVidHeight	= nVidVerHeight;
+					} else {
+						nVidWidth	= nVidHorWidth;
+						nVidHeight	= nVidHorHeight;
+					}
+				}
 			}
 
 			EndDialog(hDlg, 0);
@@ -69,8 +88,10 @@ static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPAR
 }
 
 
-int ResCreate()
+int ResCreate(int nResOrientation)
 {
+	nOrientation = nResOrientation;
+
 	FBADialogBox(hAppInst,MAKEINTRESOURCE(IDD_CHOOSERES),hScrnWnd,ResProc);
 	return 0;
 }

@@ -12,38 +12,50 @@ struct dac_info
 };
 
 static struct dac_info *chip = NULL;
+static int nVolShift;
+static int bAddSignal;
 
 void DACUpdate(short* Buffer, int Length)
 {
 	INT16 Out = chip->Output;
 	
 	while (Length--) {
-		Buffer[0] += Out;
-		Buffer[1] += Out;
+		if (bAddSignal) {
+			Buffer[0] += Out;
+			Buffer[1] += Out;
+		} else {
+			Buffer[0] = Out;
+			Buffer[1] = Out;
+		}
 		Buffer += 2;
 	}
-	
 }
 
 void DACWrite(UINT8 Data)
 {
 	INT16 Out = chip->UnsignedVolTable[Data];
 	
-	chip->Output = Out;
+	chip->Output = Out >> nVolShift;
+}
+
+void DACSignedWrite(UINT8 Data)
+{
+	INT16 Out = chip->SignedVolTable[Data];
+	
+	chip->Output = Out >> nVolShift;
 }
 
 static void DACBuildVolTable()
 {
 	int i;
 	
-	for (i = 0;i < 256;i++)
-	{
+	for (i = 0;i < 256;i++) {
 		chip->UnsignedVolTable[i] = i * 0x101 / 2;
 		chip->SignedVolTable[i] = i * 0x101 - 0x8000;
 	}
 }
 
-void DACInit(int Clock)
+void DACInit(int Clock, int bAdd)
 {
 	chip = (struct dac_info*)malloc(sizeof(struct dac_info));
 	memset(chip, 0, sizeof(chip));
@@ -52,7 +64,15 @@ void DACInit(int Clock)
 	
 	DACBuildVolTable();
 	
+	nVolShift = 0;
+	bAddSignal = bAdd;
+	
 	chip->Output = 0;
+}
+
+void DACSetVolShift(int nShift)
+{
+	nVolShift = nShift;
 }
 
 void DACReset()

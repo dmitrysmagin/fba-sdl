@@ -101,7 +101,7 @@ void CpsMapObjectBanks(int nBank)
 int __fastcall CPSResetCallback()
 {
 	// Reset instruction on 68000
-	ZetReset();						// Reset Z80 (CPU #1)
+	if (!Cps1Pic) ZetReset();						// Reset Z80 (CPU #1)
 
 	return 0;
 }
@@ -420,6 +420,29 @@ int CpsAreaScan(int nAction, int *pnMin)
 	} else {											// Scan PSound chips
 		PsndScan(nAction);
 	}
-
+	
 	return 0;
+}
+
+void QSoundCMD(unsigned short nTrack)
+{
+	CpsZRamC0[0x00] = nTrack >> 8;
+	CpsZRamC0[0x01] = nTrack & 0xff;
+
+	// are all of these writes necessary? [seems like they are]
+
+	CpsZRamC0[0x02] = 0xFF;
+	CpsZRamC0[0x03] = 0x00;
+	CpsZRamC0[0x04] = 0x00;
+	CpsZRamC0[0x06] = 0x00;
+	CpsZRamC0[0x07] = 0x10;
+	CpsZRamC0[0x08] = 0x00;
+	CpsZRamC0[0x09] = 0x00;
+	CpsZRamC0[0x0A] = 0x00;
+	CpsZRamC0[0x0B] = 0x00;
+	CpsZRamC0[0x0C] = 0x00;
+//	CpsZRamC0[0x0D] = 0x00;
+//	CpsZRamC0[0x0E] = 0x00;
+	CpsZRamC0[0x0F] = 0x00;
+
 }

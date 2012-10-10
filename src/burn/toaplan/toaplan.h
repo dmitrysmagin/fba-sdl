@@ -12,6 +12,7 @@ const int TOA_Z80_SPEED = 4000000;
 const int TOA_VBLANK_LINES = 22;
 
 extern int Hellfire;
+extern int Rallybik;
 
 // toaplan.cpp
 extern int nToaCyclesScanline;
@@ -21,7 +22,7 @@ extern int nToaCyclesVBlankStart;
 int ToaLoadCode(unsigned char *Rom, int nStart, int nCount);
 int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROMSize, bool bSwap = false);
 
-void ToaClearScreen();
+void ToaClearScreen(int PalOffset);
 
 void ToaZExit();
 
@@ -193,6 +194,7 @@ int ToaExtraTextInit();
 void ToaExtraTextExit();
 
 // toa_bcu2.cpp
+extern int ToaOpaquePriority;
 extern unsigned char* ToaPalSrc2;
 extern unsigned int* ToaPalette2;
 

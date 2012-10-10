@@ -12,20 +12,20 @@ static bool bVBlank;
 
 // Rom information
 static struct BurnRomInfo drvRomDesc[] = {
-	{ "kbash01.bin",  0x080000, 0x2965F81D, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp023_01.bin",  0x080000, 0x2965F81D, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
-	{ "kbash03.bin",  0x200000, 0x32AD508B, BRF_GRA },			 //  1 GP9001 Tile data
-	{ "kbash05.bin",  0x200000, 0xB84C90EB, BRF_GRA },			 //  2
-	{ "kbash04.bin",  0x200000, 0xE493C077, BRF_GRA },			 //  3
-	{ "kbash06.bin",  0x200000, 0x9084B50A, BRF_GRA },			 //  4
+	{ "tp023_3.bin",  0x200000, 0x32AD508B, BRF_GRA },			 //  1 GP9001 Tile data
+	{ "tp023_5.bin",  0x200000, 0xB84C90EB, BRF_GRA },			 //  2
+	{ "tp023_4.bin",  0x200000, 0xE493C077, BRF_GRA },			 //  3
+	{ "tp023_6.bin",  0x200000, 0x9084B50A, BRF_GRA },			 //  4
 
-	{ "kbash02.bin",  0x008000, 0x4CD882A1, BRF_ESS | BRF_PRG }, //  5 Sound CPU
-	{ "kbash07.bin",  0x040000, 0x3732318F, BRF_SND },			 //  6 ADPCM data
+	{ "tp023_02.bin", 0x008000, 0x4CD882A1, BRF_ESS | BRF_PRG }, //  5 Sound CPU
+	{ "tp023_7.bin",  0x040000, 0x3732318F, BRF_SND },			 //  6 ADPCM data
 };
 
 
-STD_ROM_PICK(drv);
-STD_ROM_FN(drv);
+STD_ROM_PICK(drv)
+STD_ROM_FN(drv)
 
 static struct BurnInputInfo kbashInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -57,7 +57,7 @@ static struct BurnInputInfo kbashInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(kbash);
+STDINPUTINFO(kbash)
 
 static struct BurnDIPInfo kbashDIPList[] = {
 	// Defaults
@@ -132,7 +132,7 @@ static struct BurnDIPInfo kbashDIPList[] = {
 	{0x16,	0x01, 0x0F,	0x0F, ""},
 };
 
-STDDIPINFO(kbash);
+STDDIPINFO(kbash)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -396,7 +396,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -488,12 +488,12 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvKBash = {
-	"kbash", NULL, NULL, "1993",
+	"kbash", NULL, NULL, NULL, "1993",
 	"Knuckle Bash\0", "No sound (sound MCU not emulated)", "Toaplan", "Toaplan GP9001 based",
 	L"Knuckle Bash\0Knuckle Bash \u30CA\u30C3\u30AF\u30EB\u30D0\u30C3\u30B7\u30E5\0", NULL, NULL, NULL,
-	1, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, drvRomInfo, drvRomName, kbashInputInfo,kbashDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	1, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_SCRFIGHT, 0,
+	NULL, drvRomInfo, drvRomName, NULL, NULL, kbashInputInfo,kbashDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	320, 240, 4, 3
 };
 

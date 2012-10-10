@@ -26,8 +26,8 @@ static struct BurnRomInfo shippumdRomDesc[] = {
 };
 
 
-STD_ROM_PICK(shippumd);
-STD_ROM_FN(shippumd);
+STD_ROM_PICK(shippumd)
+STD_ROM_FN(shippumd)
 
 static struct BurnRomInfo kingdmgpRomDesc[] = {
 	{ "ma02rom1.bin", 0x080000, 0xA678B149, BRF_ESS | BRF_PRG }, //  0 CPU #0 code (even)
@@ -44,8 +44,8 @@ static struct BurnRomInfo kingdmgpRomDesc[] = {
 };
 
 
-STD_ROM_PICK(kingdmgp);
-STD_ROM_FN(kingdmgp);
+STD_ROM_PICK(kingdmgp)
+STD_ROM_FN(kingdmgp)
 
 static struct BurnInputInfo shippumdInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -77,7 +77,7 @@ static struct BurnInputInfo shippumdInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(shippumd);
+STDINPUTINFO(shippumd)
 
 static struct BurnDIPInfo shippumdDIPList[] = {
 	// Defaults
@@ -164,8 +164,8 @@ static struct BurnDIPInfo kingdmgpRegionDIPList[] = {
     {0x16,	0x01, 0x0E,	0x00, "Japan"},
 };
 
-STDDIPINFOEXT(shippumd, shippumd, shippumdRegion);
-STDDIPINFOEXT(kingdmgp, shippumd, kingdmgpRegion);
+STDDIPINFOEXT(shippumd, shippumd, shippumdRegion)
+STDDIPINFOEXT(kingdmgp, shippumd, kingdmgpRegion)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -555,7 +555,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -676,21 +676,21 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvShippuMD = {
-	"shippumd", NULL, NULL, "1994",
+	"shippumd", "kingdmgp", NULL, NULL, "1994",
 	"Shippu Mahou Daisakusen - kingdom grandprix (Japan)\0", NULL, "Raizing / 8ing", "Toaplan GP9001 based",
 	L"\u75BE\u98A8\u9B54\u6CD5\u5927\u4F5C\u6226 - kingdom grandprix (Japan)\0Shippu Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, shippumdRomInfo, shippumdRomName, shippumdInputInfo, shippumdDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, shippumdRomInfo, shippumdRomName, NULL, NULL, shippumdInputInfo, shippumdDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvKingdmGP = {
-	"kingdmgp", "shippumd", NULL, "1994",
+	"kingdmgp", NULL, NULL, NULL, "1994",
 	"Kingdom Grandprix (World)\0", NULL, "Raizing / 8ing", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, kingdmgpRomInfo, kingdmgpRomName, shippumdInputInfo, kingdmgpDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, kingdmgpRomInfo, kingdmgpRomName, NULL, NULL, shippumdInputInfo, kingdmgpDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };

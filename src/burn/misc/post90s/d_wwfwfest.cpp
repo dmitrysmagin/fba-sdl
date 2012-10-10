@@ -90,7 +90,7 @@ static struct BurnInputInfo DrvInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -183,59 +183,59 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x20, 0x01, 0x80, 0x80, "5th"                    },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 static struct BurnRomInfo DrvRomDesc[] = {
-	{ "31a13-2.19",    0x040000, 0x7175bca7, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "31a14-2.18",    0x040000, 0x5d06bfd1, BRF_ESS | BRF_PRG }, //  1
+	{ "31a13-2.ic19",  0x040000, 0x7175bca7, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "31a14-2.ic18",  0x040000, 0x5d06bfd1, BRF_ESS | BRF_PRG }, //  1
 	
-	{ "31a11-2.42",    0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
+	{ "31a11-2.ic42",  0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
 	
-	{ "31a12-0.33",    0x020000, 0xd0803e20, BRF_GRA },	      //  3	Chars
+	{ "31a12-0.ic33",  0x020000, 0xd0803e20, BRF_GRA },	      //  3	Chars
 	
-	{ "wf_01.rom",     0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
-	{ "wf_02.rom",     0x040000, 0x82ed7155, BRF_GRA },	      //  5
+	{ "31j0.ic1",      0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
+	{ "31j1.ic2",      0x040000, 0x82ed7155, BRF_GRA },	      //  5
 	
-	{ "wf_09.rom",     0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
-	{ "wf_08.rom",     0x100000, 0xb5a97465, BRF_GRA },	      //  7
-	{ "wf_11.rom",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
-	{ "wf_10.rom",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
-	{ "wf_12.rom",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
-	{ "wf_13.rom",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
-	{ "wf_15.rom",     0x100000, 0xdd387289, BRF_GRA },	      //  12
-	{ "wf_14.rom",     0x100000, 0x44abe127, BRF_GRA },	      //  13
+	{ "31j3.ic9",      0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
+	{ "31j2.ic8",      0x100000, 0xb5a97465, BRF_GRA },	      //  7
+	{ "31j5.ic11",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
+	{ "31j4.ic10",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
+	{ "31j6.ic12",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
+	{ "31j7.ic13",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
+	{ "31j9.ic15",     0x100000, 0xdd387289, BRF_GRA },	      //  12
+	{ "31j8.ic14",     0x100000, 0x44abe127, BRF_GRA },	      //  13
 	
-	{ "wf_73a.rom",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
+	{ "31j10.ic73",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
 };
 
-STD_ROM_PICK(Drv);
-STD_ROM_FN(Drv);
+STD_ROM_PICK(Drv)
+STD_ROM_FN(Drv)
 
 static struct BurnRomInfo DrvaRomDesc[] = {
 	{ "wf_19.rom",     0x040000, 0xbd02e3c4, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "wf_18.rom",     0x040000, 0x933ea1a0, BRF_ESS | BRF_PRG }, //  1	
 	
-	{ "31a11-2.42",    0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
+	{ "31a11-2.ic42",  0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
 	
 	{ "wf_33.rom",     0x020000, 0x06f22615, BRF_GRA },	      //  3	Chars
 	
-	{ "wf_01.rom",     0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
-	{ "wf_02.rom",     0x040000, 0x82ed7155, BRF_GRA },	      //  5
+	{ "31j0.ic1",      0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
+	{ "31j1.ic2",      0x040000, 0x82ed7155, BRF_GRA },	      //  5
 	
-	{ "wf_09.rom",     0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
-	{ "wf_08.rom",     0x100000, 0xb5a97465, BRF_GRA },	      //  7
-	{ "wf_11.rom",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
-	{ "wf_10.rom",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
-	{ "wf_12.rom",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
-	{ "wf_13.rom",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
-	{ "wf_15.rom",     0x100000, 0xdd387289, BRF_GRA },	      //  12
-	{ "wf_14.rom",     0x100000, 0x44abe127, BRF_GRA },	      //  13
+	{ "31j3.ic9",      0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
+	{ "31j2.ic8",      0x100000, 0xb5a97465, BRF_GRA },	      //  7
+	{ "31j5.ic11",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
+	{ "31j4.ic10",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
+	{ "31j6.ic12",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
+	{ "31j7.ic13",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
+	{ "31j9.ic15",     0x100000, 0xdd387289, BRF_GRA },	      //  12
+	{ "31j8.ic14",     0x100000, 0x44abe127, BRF_GRA },	      //  13
 	
-	{ "wf_73a.rom",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
+	{ "31j10.ic73",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
 };
 
-STD_ROM_PICK(Drva);
-STD_ROM_FN(Drva);
+STD_ROM_PICK(Drva)
+STD_ROM_FN(Drva)
 
 static struct BurnRomInfo DrvbRomDesc[] = {
 	{ "2",             0x040000, 0x632bb3a4, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -262,34 +262,34 @@ static struct BurnRomInfo DrvbRomDesc[] = {
 	{ "wf_73a.rom",    0x080000, 0x6c522edb, BRF_SND },	      //  16	Samples
 };
 
-STD_ROM_PICK(Drvb);
-STD_ROM_FN(Drvb);
+STD_ROM_PICK(Drvb)
+STD_ROM_FN(Drvb)
 
 static struct BurnRomInfo DrvjRomDesc[] = {
-	{ "31j13-0.bin",   0x040000, 0x2147780d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "31j14-0.bin",   0x040000, 0xd76fc747, BRF_ESS | BRF_PRG }, //  1
+	{ "31j13-0.ic19",  0x040000, 0x2147780d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "31j14-0.ic18",  0x040000, 0xd76fc747, BRF_ESS | BRF_PRG }, //  1
 	
-	{ "31a11-2.42",    0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
+	{ "31a11-2.ic42",  0x010000, 0x5ddebfea, BRF_ESS | BRF_PRG }, //  2	Z80 Program 
 	
-	{ "31j12-0.bin",   0x020000, 0xf4821fe0, BRF_GRA },	      //  3	Chars
+	{ "31j12-0.ic33",  0x020000, 0xf4821fe0, BRF_GRA },	      //  3	Chars
 	
-	{ "wf_01.rom",     0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
-	{ "wf_02.rom",     0x040000, 0x82ed7155, BRF_GRA },	      //  5
+	{ "31j0.ic1",      0x040000, 0x8a12b450, BRF_GRA },	      //  4	Tiles
+	{ "31j1.ic2",      0x040000, 0x82ed7155, BRF_GRA },	      //  5
 	
-	{ "wf_09.rom",     0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
-	{ "wf_08.rom",     0x100000, 0xb5a97465, BRF_GRA },	      //  7
-	{ "wf_11.rom",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
-	{ "wf_10.rom",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
-	{ "wf_12.rom",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
-	{ "wf_13.rom",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
-	{ "wf_15.rom",     0x100000, 0xdd387289, BRF_GRA },	      //  12
-	{ "wf_14.rom",     0x100000, 0x44abe127, BRF_GRA },	      //  13
+	{ "31j3.ic9",      0x100000, 0xe395cf1d, BRF_GRA },	      //  6	Sprites
+	{ "31j2.ic8",      0x100000, 0xb5a97465, BRF_GRA },	      //  7
+	{ "31j5.ic11",     0x100000, 0x2ce545e8, BRF_GRA },	      //  8
+	{ "31j4.ic10",     0x100000, 0x00edb66a, BRF_GRA }, 	      //  9
+	{ "31j6.ic12",     0x100000, 0x79956cf8, BRF_GRA },  	      //  10
+	{ "31j7.ic13",     0x100000, 0x74d774c3, BRF_GRA }, 	      //  11
+	{ "31j9.ic15",     0x100000, 0xdd387289, BRF_GRA },	      //  12
+	{ "31j8.ic14",     0x100000, 0x44abe127, BRF_GRA },	      //  13
 	
-	{ "wf_73a.rom",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
+	{ "31j10.ic73",    0x080000, 0x6c522edb, BRF_SND },	      //  14	Samples
 };
 
-STD_ROM_PICK(Drvj);
-STD_ROM_FN(Drvj);
+STD_ROM_PICK(Drvj)
+STD_ROM_FN(Drvj)
 
 static int MemIndex()
 {
@@ -1160,42 +1160,205 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
+// Jukebox support
+static int JukeboxMemIndex()
+{
+	unsigned char *Next; Next = Mem;
+
+	DrvZ80Rom              = Next; Next += 0x10000;
+	MSM6295ROM             = Next; Next += 0x40000;
+	DrvMSM6295ROMSrc       = Next; Next += 0x80000;
+
+	RamStart               = Next;
+
+	DrvZ80Ram              = Next; Next += 0x00800;
+
+	RamEnd                 = Next;
+
+	MemEnd                 = Next;
+
+	return 0;
+}
+
+static int DrvJukeboxDoReset()
+{
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	BurnYM2151Reset();
+	MSM6295Reset(0);
+	
+	DrvOkiBank = 0;
+	DrvSoundLatch = 0;
+	
+	return 0;
+}
+
+static int DrvJukeboxInit()
+{
+	int nRet = 0, nLen, RomOffset;
+	
+	RomOffset = 0;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "wwfwfstb")) RomOffset = 2;
+
+	// Allocate and Blank all required memory
+	Mem = NULL;
+	JukeboxMemIndex();
+	nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(Mem, 0, nLen);
+	JukeboxMemIndex();
+
+	// Load Z80 Program Roms
+	nRet = BurnLoadRom(DrvZ80Rom, 2, 1); if (nRet != 0) return 1;
+	
+	// Load Sample Roms
+	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x00000, 14 + RomOffset, 1); if (nRet != 0) return 1;
+	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
+	
+	// Setup the Z80 emulation
+	ZetInit(1);
+	ZetOpen(0);
+	ZetSetReadHandler(WwfwfestZ80Read);
+	ZetSetWriteHandler(WwfwfestZ80Write);
+	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80Rom                );
+	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80Rom                );
+	ZetMapArea(0xc000, 0xc7ff, 0, DrvZ80Ram                );
+	ZetMapArea(0xc000, 0xc7ff, 1, DrvZ80Ram                );
+	ZetMapArea(0xc000, 0xc7ff, 2, DrvZ80Ram                );
+	ZetMemEnd();
+	ZetClose();
+	
+	// Setup the YM2151 emulation
+	BurnYM2151Init(3579545, 25.0);
+	BurnYM2151SetIrqHandler(&DrvYM2151IrqHandler);
+	
+	// Setup the OKIM6295 emulation
+	MSM6295Init(0, 1024188 / 132, 100.0, 1);
+	
+	DrvJukeboxDoReset();
+
+	return 0;
+}
+
+static int DrvJukeboxExit()
+{
+	ZetExit();
+	
+	BurnYM2151Exit();
+	MSM6295Exit(0);
+	
+	DrvOkiBank = 0;
+	DrvSoundLatch = 0;
+	
+	free(Mem);
+	Mem = NULL;
+
+	return 0;
+}
+
+static int DrvJukeboxFrame()
+{
+	int nInterleave = 10;
+	int nSoundBufferPos = 0;
+	int nFireNmi = 0;
+
+	nCyclesTotal[1] = 3579545 / 60;
+	nCyclesDone[1] = 0;
+	
+	ZetNewFrame();
+	
+	if (JukeboxSoundCommand == JUKEBOX_SOUND_STOP) {
+		DrvJukeboxDoReset();
+		
+		JukeboxSoundCommand = JUKEBOX_SOUND_NULL;
+	}
+
+	if (JukeboxSoundCommand == JUKEBOX_SOUND_PLAY) {
+		DrvJukeboxDoReset();
+		
+		DrvSoundLatch = JukeboxSoundLatch;
+		nFireNmi = 1;
+		
+		JukeboxSoundCommand = JUKEBOX_SOUND_NULL;
+	}
+	
+	for (int i = 0; i < nInterleave; i++) {
+		int nCurrentCPU, nNext;
+
+		// Run Z80
+		nCurrentCPU = 1;
+		ZetOpen(0);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == 8 && nFireNmi) {
+			ZetNmi();
+			nFireNmi = 0;
+		}
+		ZetClose();
+		
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen / nInterleave;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
+	}
+	
+	// Make sure the buffer is entirely filled.
+	if (pBurnSoundOut) {
+		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		}
+	}
+	
+	return 0;
+}
+
 struct BurnDriver BurnDrvWwfwfest = {
-	"wwfwfest", NULL, NULL, "1991",
+	"wwfwfest", NULL, NULL, NULL, "1991",
 	"WWF WrestleFest (US set 1)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 4, HARDWARE_MISC_POST90S,
-	NULL, DrvRomInfo, DrvRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING, 4, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	NULL, DrvRomInfo, DrvRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	JBF_GAME_WORKING, DrvJukeboxInit, DrvJukeboxExit, DrvJukeboxFrame, NULL, 0x2000, 320, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvWwfwfsta = {
-	"wwfwfsta", "wwfwfest", NULL, "1991",
+struct BurnDriver BurnDrvWwfwfesta = {
+	"wwfwfesta", "wwfwfest", NULL, NULL, "1991",
 	"WWF WrestleFest (US Tecmo)\0", NULL, "Technos Japan (Tecmo License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S,
-	NULL, DrvaRomInfo, DrvaRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	NULL, DrvaRomInfo, DrvaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x2000, 320, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvWwfwfstb = {
-	"wwfwfstb", "wwfwfest", NULL, "1991",
+struct BurnDriver BurnDrvWwfwfestb = {
+	"wwfwfestb", "wwfwfest", NULL, NULL, "1991",
 	"WWF WrestleFest (US bootleg)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 4, HARDWARE_MISC_POST90S,
-	NULL, DrvbRomInfo, DrvbRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 4, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	NULL, DrvbRomInfo, DrvbRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x2000, 320, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvWwfwfstj = {
-	"wwfwfstj", "wwfwfest", NULL, "1991",
+struct BurnDriver BurnDrvWwfwfestj = {
+	"wwfwfestj", "wwfwfest", NULL, NULL, "1991",
 	"WWF WrestleFest (Japan)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S,
-	NULL, DrvjRomInfo, DrvjRomName, DrvInputInfo, DrvDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	NULL, DrvjRomInfo, DrvjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x2000, 320, 240, 4, 3
 };

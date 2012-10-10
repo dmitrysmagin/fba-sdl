@@ -128,17 +128,17 @@ foreach my $filename ( @Filelist ) {
 			# We now have the complete Burndriver structure without comments
 
 			# Extract the strings from the variable
-			$struct =~ /\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0),\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(\d|[^,]*)/si;
+			$struct =~ /\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0)\s*,\s*(".*"|null|0),\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(L".*"|null|0)\s*,\s*(\d|[^,]*)/si;
 
 			$Drivers{$name}[1] = $1;						# Name
-			$Drivers{$name}[2] = $5;						# Full name
-			$Drivers{$name}[3] = $6;						# Remarks
-			$Drivers{$name}[4] = $7;						# Company
-			$Drivers{$name}[5] = $8;						# Hardware
-			$Drivers{$name}[6] = $4;						# Year of release
+			$Drivers{$name}[2] = $6;						# Full name
+			$Drivers{$name}[3] = $7;						# Remarks
+			$Drivers{$name}[4] = $8;						# Company
+			$Drivers{$name}[5] = $9;						# Hardware
+			$Drivers{$name}[6] = $5;						# Year of release
 			$Drivers{$name}[7] = $2;						# Parent
 
-			if ( $13 ne "1" && ($13 =~ /BDF_GAME_WORKING/) == 0 ) {			# Working status
+			if ( $14 ne "1" && ($14 =~ /BDF_GAME_WORKING/) == 0 ) {			# Working status
 				$Drivers{$name}[8] = "NOT WORKING";
 			} else {
 				$Drivers{$name}[8] = "";

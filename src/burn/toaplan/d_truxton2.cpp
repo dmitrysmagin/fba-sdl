@@ -49,7 +49,7 @@ static struct BurnInputInfo truxton2InputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(truxton2);
+STDINPUTINFO(truxton2)
 
 static struct BurnDIPInfo truxton2DIPList[] = {
 	// Defaults
@@ -151,7 +151,7 @@ static struct BurnDIPInfo truxton2DIPList[] = {
 	{0x16,	0x01, 0x0F,	0x0F, "Japan"},
 };
 
-STDDIPINFO(truxton2);
+STDDIPINFO(truxton2)
 
 unsigned char __fastcall truxton2ReadByte(unsigned int sekAddress)
 {
@@ -329,7 +329,7 @@ static int DrvDoReset()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -486,6 +486,7 @@ static int LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
+	BurnByteswap(Rom01, 0x80000);
 	
 	// Load GP9001 tile data
 	ToaLoadGP9001Tiles(GP9001ROM[0], 1, 2, nGP9001ROMSize[0]);
@@ -599,7 +600,7 @@ static int DrvInit()
 
 // Rom information
 static struct BurnRomInfo truxton2RomDesc[] = {
-	{ "tp024_1.bin",  0x080000, 0xeb26f0e5, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp024_1.bin",  0x080000, 0xf5cfe6ee, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "tp024_4.bin",  0x100000, 0x805C449E, BRF_GRA },			 //  1 GP9001 Tile data
 	{ "tp024_3.bin",  0x100000, 0x47587164, BRF_GRA },			 //  2
@@ -608,17 +609,17 @@ static struct BurnRomInfo truxton2RomDesc[] = {
 };
 
 
-STD_ROM_PICK(truxton2);
-STD_ROM_FN(truxton2);
+STD_ROM_PICK(truxton2)
+STD_ROM_FN(truxton2)
 
 
 struct BurnDriver BurnDrvTruxton2 = {
-	"truxton2", NULL, NULL, "1992",
+	"truxton2", NULL, NULL, NULL, "1992",
 	"Truxton II\0Tatsujin Oh\0", NULL, "Toaplan", "Toaplan GP9001 based",
 	L"Truxton II\0\u9054\u4EBA\u738B\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_ONLY,
-	NULL, truxton2RomInfo, truxton2RomName, truxton2InputInfo, truxton2DIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, truxton2RomInfo, truxton2RomName, NULL, NULL, truxton2InputInfo, truxton2DIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 

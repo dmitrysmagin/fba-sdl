@@ -39,17 +39,26 @@ FASTCALL = 1
 # Perl is available
 PERL = 1
 
+# Build A68K ASM 68000 core
+#BUILD_A68K = 1
+
 #
 #	execute an appropriate system-specific makefile
 #
 
-mingw: FORCE
-	@$(MAKE) -s -f makefile.mingw
+mingw345: FORCE
+	@$(MAKE) -s -f makefile.mingw345
+	
+mingw452: FORCE
+	@$(MAKE) -s -f makefile.mingw452
 
 sdl: FORCE
 	@$(MAKE) -s -f makefile.sdl
 
 vc: FORCE
 	@$(MAKE) -s -f makefile.vc
+	
+vc64: FORCE
+	@$(MAKE) -s -f makefile.vc64
 
 FORCE:

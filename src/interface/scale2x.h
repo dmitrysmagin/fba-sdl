@@ -869,6 +869,7 @@ static inline void scale2x_32_mmx_single(scale2x_uint32* dst, const scale2x_uint
  * \param dst0 First destination row, double length in pixels.
  * \param dst1 Second destination row, double length in pixels.
  */
+#if 0
 static void scale2x_8_mmx(scale2x_uint8* dst0, scale2x_uint8* dst1, const scale2x_uint8* src0, const scale2x_uint8* src1, const scale2x_uint8* src2, unsigned count)
 {
 	assert(count >= 16);
@@ -877,7 +878,7 @@ static void scale2x_8_mmx(scale2x_uint8* dst0, scale2x_uint8* dst1, const scale2
 	scale2x_8_mmx_single(dst0, src0, src1, src2, count);
 	scale2x_8_mmx_single(dst1, src2, src1, src0, count);
 }
-
+#endif
 /**
  * Scale by a factor of 2 a row of pixels of 16 bits.
  * This function operates like scale2x_8_mmx() but for 16 bits pixels.

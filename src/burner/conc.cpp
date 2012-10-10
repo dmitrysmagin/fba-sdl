@@ -38,7 +38,7 @@ static void CheatError(TCHAR* pszFilename, int nLineNumber, CheatInfo* pCheat, T
 
 static int ConfigParseFile(TCHAR* pszFilename)
 {
-#define INSIDE_NOTHING (0xFFFF & (1 << (sizeof(TCHAR) * 8) - 1))
+#define INSIDE_NOTHING (0xFFFF & (1 << ((sizeof(TCHAR) * 8) - 1)))
 
 	TCHAR szLine[1024];
 	TCHAR* s;
@@ -84,10 +84,10 @@ static int ConfigParseFile(TCHAR* pszFilename)
 			TCHAR* szQuote = NULL;
 			QuoteRead(&szQuote, NULL, s);
 
-			_stprintf(szFilename, _T("cheats\\%s.dat"), szQuote);
+			_stprintf(szFilename, _T("%s%s.dat"), szAppCheatsPath, szQuote);
 
 			if (ConfigParseFile(szFilename)) {
-				_stprintf(szFilename, _T("cheats\\%s.ini"), szQuote);
+				_stprintf(szFilename, _T("%s%s.ini"), szAppCheatsPath, szQuote);
 				if (ConfigParseFile(szFilename)) {
 					CheatError(pszFilename, nLine, NULL, _T("included file doesn't exist"), szLine);
 				}
@@ -148,12 +148,10 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		}
 
 		if ((t = LabelCheck(s, _T("type"))) != 0) {					// Cheat type
-#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue cheat type"), szLine);
 				break;
 			}
-#endif
 			s = t;
 
 			// Set type
@@ -163,12 +161,10 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		}
 
 		if ((t = LabelCheck(s, _T("default"))) != 0) {				// Default option
-#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue default"), szLine);
 				break;
 			}
-#endif
 			s = t;
 
 			// Set default option
@@ -180,12 +176,10 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		int n = _tcstol(s, &t, 0);
 		if (t != s) {				   								// New option
 
-#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue option"), szLine);
 				break;
 			}
-#endif
 
 			// Link a new Option structure to the cheat
 			if (n < CHEAT_MAX_OPTIONS) {
@@ -290,15 +284,286 @@ static int ConfigParseFile(TCHAR* pszFilename)
 	return 0;
 }
 
+static int ConfigParseNebulaFile(TCHAR* pszFilename)
+{
+	FILE *fp = _tfopen(pszFilename, _T("rt"));
+	if (fp == NULL) {
+		return 1;
+	}
+
+	int nLen;
+	int i, j, n = 0;
+	TCHAR tmp[32];
+	TCHAR szLine[1024];
+
+	CheatInfo* pCurrentCheat = NULL;
+
+	while (1)
+	{
+		if (_fgetts(szLine, 1024, fp) == NULL)
+			break;
+
+		nLen = lstrlen(szLine);
+
+		if (nLen < 3 || szLine[0] == '[') continue;
+
+		if (!_tcsncmp (_T("Name="), szLine, 5))
+		{
+			n = 0;
+
+			// Link new node into the list
+			CheatInfo* pPreviousCheat = pCurrentCheat;
+			pCurrentCheat = (CheatInfo*)malloc(sizeof(CheatInfo));
+			if (pCheatInfo == NULL) {
+				pCheatInfo = pCurrentCheat;
+			}
+
+			memset(pCurrentCheat, 0, sizeof(CheatInfo));
+			pCurrentCheat->pPrevious = pPreviousCheat;
+			if (pPreviousCheat) {
+				pPreviousCheat->pNext = pCurrentCheat;
+			}
+
+			// Fill in defaults
+			pCurrentCheat->nType = 0;							// Default to cheat type 0 (apply each frame)
+			pCurrentCheat->nStatus = -1;							// Disable cheat
+			pCurrentCheat->nDefault = 0;							// Set default option
+
+			_tcsncpy (pCurrentCheat->szCheatName, szLine + 5, QUOTE_MAX);
+			pCurrentCheat->szCheatName[nLen-6] = '\0';
+
+			continue;
+		}
+
+		if (!_tcsncmp (_T("Default="), szLine, 8) && n >= 0)
+		{
+			_tcsncpy (tmp, szLine + 8, nLen-9);
+			tmp[nLen-9] = '\0';
+			_stscanf (tmp, _T("%d"), &(pCurrentCheat->nDefault));
+			continue;
+		}
+
+
+		i = 0, j = 0;
+		while (i < nLen)
+		{
+			if (szLine[i] == '=' && i < 4) j = i+1;
+			if (szLine[i] == ',' || szLine[i] == '\n')
+			{
+				if (pCurrentCheat->pOption[n] == NULL) {
+					pCurrentCheat->pOption[n] = (CheatOption*)malloc(sizeof(CheatOption));
+				}
+				memset(pCurrentCheat->pOption[n], 0, sizeof(CheatOption));
+
+				_tcsncpy (pCurrentCheat->pOption[n]->szOptionName, szLine + j, QUOTE_MAX * sizeof(TCHAR));
+				pCurrentCheat->pOption[n]->szOptionName[i-j] = '\0';
+
+				i++; j = i;
+				break;
+			}
+			i++;
+		}
+
+		int nAddress = -1, nValue = 0, nCurrentAddress = 0;
+		while (nCurrentAddress < CHEAT_MAX_ADDRESS)
+		{
+			if (i == nLen) break;
+
+			if (szLine[i] == ',' || szLine[i] == '\n')
+			{
+				_tcsncpy (tmp, szLine + j, i-j);
+				tmp[i-j] = '\0';
+
+				if (nAddress == -1) {
+					_stscanf (tmp, _T("%x"), &nAddress);
+				} else {
+					_stscanf (tmp, _T("%x"), &nValue);
+
+					pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nCPU = 0; 	// Always
+					pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nAddress = nAddress ^ 1;
+					pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nValue = nValue;
+					nCurrentAddress++;
+
+					nAddress = -1;
+					nValue = 0;
+				}
+				j = i+1;
+			}
+			i++;
+		}
+		n++;
+	}
+
+	fclose (fp);
+
+	return 0;
+}
+
+static int ConfigParseMAMEFile()
+{
+
+#define AddressInfo()	\
+	int k = (flags >> 20) & 3;	\
+	for (int i = 0; i < k+1; i++) {	\
+		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nCPU = 0;	\
+		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nAddress = nAddress + i;	\
+		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nValue = (nValue >> ((k*8)-(i*8))) & 0xff;	\
+		nCurrentAddress++;	\
+	}	\
+
+#define OptionName(a)	\
+	if (pCurrentCheat->pOption[n] == NULL) {						\
+		pCurrentCheat->pOption[n] = (CheatOption*)malloc(sizeof(CheatOption));		\
+	}											\
+	memset(pCurrentCheat->pOption[n], 0, sizeof(CheatOption));				\
+	_tcsncpy (pCurrentCheat->pOption[n]->szOptionName, a, QUOTE_MAX * sizeof(TCHAR));	\
+
+#define tmpcpy(a)	\
+	_tcsncpy (tmp, szLine + c0[a] + 1, c0[a+1] - (c0[a]+1));	\
+	tmp[c0[a+1] - (c0[a]+1)] = '\0';				\
+
+	TCHAR szFileName[MAX_PATH] = _T("");
+	_stprintf(szFileName, _T("%scheat.dat"), szAppCheatsPath);
+	
+	FILE *fz = _tfopen(szFileName, _T("rt"));
+	if (fz == NULL) {
+		return 1;
+	}
+
+	TCHAR tmp[256];
+	TCHAR gName[64];
+	TCHAR szLine[1024];
+
+	int nLen;
+	int n = 0;
+	int menu = 0;
+	int nFound = 0;
+	int nCurrentAddress = 0;
+	unsigned int flags = 0;
+	unsigned int nAddress = 0;
+	unsigned int nValue = 0;
+
+	CheatInfo* pCurrentCheat = NULL;
+	_stprintf(gName, _T(":%s:"), BurnDrvGetText(DRV_NAME));
+
+	while (1)
+	{
+		if (_fgetts(szLine, 1024, fz) == NULL)
+			break;
+
+		nLen = lstrlen (szLine);
+
+		if (szLine[0] == ';') continue;
+
+		if (_tcsncmp (szLine, gName, lstrlen(gName))) {
+			if (nFound) break;
+			else continue;
+		}
+
+		nFound = 1;
+
+		int c0[16], c1 = 0;					// find colons / break
+		for (int i = 0; i < nLen; i++)
+			if (szLine[i] == ':' || szLine[i] == '\n')
+				c0[c1++] = i;
+
+		tmpcpy(1);						// control flags
+		_stscanf (tmp, _T("%x"), &flags);
+
+		tmpcpy(2);						// cheat address
+		_stscanf (tmp, _T("%x"), &nAddress);
+
+		tmpcpy(3);						// cheat value
+		_stscanf (tmp, _T("%x"), &nValue);
+
+		tmpcpy(5);						// cheat name
+
+		if (flags & 0x80007f00) continue;			// skip various cheats
+
+		// controls how many bytes we're going to patch (only allow single bytes for now)
+	//	if (flags & 0x00300000) continue;
+	//	nValue &= 0x000000ff;			// only use a single byte
+
+		if ( flags & 0x00008000 || (flags & 0x0001000 && !menu)) {
+			if (nCurrentAddress < CHEAT_MAX_ADDRESS) {
+				AddressInfo();
+			}
+
+			continue;
+		}
+
+		if (~flags & 0x00010000) {
+			n = 0;
+			menu = 0;
+			nCurrentAddress = 0;
+
+			// Link new node into the list
+			CheatInfo* pPreviousCheat = pCurrentCheat;
+			pCurrentCheat = (CheatInfo*)malloc(sizeof(CheatInfo));
+			if (pCheatInfo == NULL) {
+				pCheatInfo = pCurrentCheat;
+			}
+
+			memset(pCurrentCheat, 0, sizeof(CheatInfo));
+			pCurrentCheat->pPrevious = pPreviousCheat;
+			if (pPreviousCheat) {
+				pPreviousCheat->pNext = pCurrentCheat;
+			}
+
+			// Fill in defaults
+			pCurrentCheat->nType = 0;							// Default to cheat type 0 (apply each frame)
+			pCurrentCheat->nStatus = -1;							// Disable cheat
+			pCurrentCheat->nDefault = 0;							// Set default option
+
+			_tcsncpy (pCurrentCheat->szCheatName, tmp, QUOTE_MAX);
+
+			if (lstrlen(tmp) <= 0 || flags == 0x60000000) {
+				n++;
+				continue;
+			}
+
+			OptionName(_T("Disabled"));
+
+			if (nAddress) {
+				n++;
+
+				OptionName(tmp);	
+				AddressInfo();
+			} else {
+				menu = 1;
+			}
+
+			continue;
+		}
+
+		if ( flags & 0x00010000 && menu) {
+			n++;
+			nCurrentAddress = 0;
+
+			OptionName(tmp);
+			AddressInfo();
+			
+			continue;
+		}
+	}
+
+	fclose (fz);
+
+	return 0;
+}
+
+
 int ConfigCheatLoad()
 {
 	TCHAR szFilename[MAX_PATH] = _T("");
 
-	_stprintf(szFilename, _T("cheats\\%s.dat"), BurnDrvGetText(DRV_NAME));
+	_stprintf(szFilename, _T("%s%s.ini"), szAppCheatsPath, BurnDrvGetText(DRV_NAME));
 	if (ConfigParseFile(szFilename)) {
-		_stprintf(szFilename, _T("cheats\\%s.ini"), BurnDrvGetText(DRV_NAME));
-		if (ConfigParseFile(szFilename)) {
-			return 1;
+		_stprintf(szFilename, _T("%s%s.dat"), szAppCheatsPath, BurnDrvGetText(DRV_NAME));
+		if (ConfigParseNebulaFile(szFilename)) {
+			if (ConfigParseMAMEFile()) {
+				return 1;
+			}
 		}
 	}
 

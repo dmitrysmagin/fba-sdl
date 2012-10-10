@@ -4,7 +4,7 @@
 
 #define NUM_CHANNELS	(8)
 
-
+static unsigned int nUpdateStep;
 
 struct pcm_channel
 {
@@ -19,7 +19,6 @@ struct pcm_channel
 
 struct rf5c68pcm
 {
-	unsigned int		Clock;
 	struct pcm_channel	chan[NUM_CHANNELS];
 	unsigned char		cbank;
 	unsigned char		wbank;
@@ -36,21 +35,22 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 {
 	if (!chip->enable) return;
 	
-	short *pDest = NULL, *pEnd = NULL;
-	
 	int i, j;
 	
-	memset(left, 0, (length << 1) * sizeof(int));
-	memset(right, 0, (length << 1) * sizeof(int));
+	left = (int*)malloc(nBurnSoundLen * sizeof(int));
+	right = (int*)malloc(nBurnSoundLen * sizeof(int));
+	
+	memset(left, 0, length * sizeof(int));
+	memset(right, 0, length * sizeof(int));
 	
 	for (i = 0; i < NUM_CHANNELS; i++) {
-		struct pcm_channel *chan = &chip->chan[i];
+		pcm_channel *chan = &chip->chan[i];
 		
 		if (chan->enable) {
 			int lv = (chan->pan & 0xf) * chan->env;
 			int rv = ((chan->pan >> 4) & 0xf) * chan->env;
 		
-			for (j = 0; j < length << 1; j++) {
+			for (j = 0; j < length; j++) {
 				int sample;
 				
 				sample = chip->data[(chan->addr >> 11) & 0xffff];
@@ -60,7 +60,7 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 					if (sample == 0xff) break;
 				}
 				
-				chan->addr += (chan->step * 1181) / 1000;
+				chan->addr += (chan->step * nUpdateStep) >> 15;//(chan->step * 1181) / 1000;
 				
 				if (sample & 0x80) {
 					sample &= 0x7f;
@@ -74,10 +74,7 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 		}
 	}
 	
-	pDest = pSoundBuf;
-	pEnd = pDest + (length << 1);
-	i = 0;	
-	do {
+	for (i = 0; i < length; i++) {
 		if (left[i] > 32767) left[i] = 32767;
 		if (left[i] < -32768) left[i] = -32768;
 		left[i] = left[i] & ~0x3f;
@@ -85,12 +82,14 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 		if (right[i] < -32768) right[i] = -32768;
 		right[i] = right[i] & ~0x3f;
 		
-		pDest[0] += left[i];
-		pDest[1] += right[i];
-		
-		pDest += 2;
-		i++;
-	} while (pDest < pEnd);
+		pSoundBuf[i + 0] = left[i];
+		pSoundBuf[i + 1] = right[i];
+	}
+	
+	free(left);
+	left = NULL;
+	free(right);
+	right = NULL;
 }
 
 void RF5C68PCMReset()
@@ -103,10 +102,9 @@ void RF5C68PCMInit(int clock)
 {
 	chip = (struct rf5c68pcm*)malloc(sizeof(struct rf5c68pcm));
 	
-	chip->Clock = clock;
-		
-	left = (int*)malloc(nBurnSoundRate * sizeof(int));
-	right = (int*)malloc(nBurnSoundRate * sizeof(int));
+	int Rate = clock / 384;
+	
+	nUpdateStep = (int)(((float)Rate / nBurnSoundRate) * 32768);
 }
 
 void RF5C68PCMRegWrite(unsigned char offset, unsigned char data)
@@ -174,14 +172,14 @@ void RF5C68PCMRegWrite(unsigned char offset, unsigned char data)
 	}
 }
 
-unsigned char RF5C68PCMRead(unsigned char offset)
+unsigned char RF5C68PCMRead(unsigned short offset)
 {
 	return chip->data[chip->wbank * 0x1000 + offset];
 }
 
-void RF5C68PCMWrite(unsigned char offset, unsigned char data)
+void RF5C68PCMWrite(unsigned short offset, unsigned char data)
 {
-	chip->data[chip->wbank * 0x1000 + offset] = data;
+	chip->data[(chip->wbank * 0x1000) + offset] = data;
 }
 
 #undef NUM_CHANNELS

@@ -32,7 +32,7 @@ static struct VidOut *pVidOut[] = {
 
 #define VID_LEN (sizeof(pVidOut) / sizeof(pVidOut[0]))
 
-int nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (meaning depens on module)
+long long nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (meaning depens on module)
 
 static InterfaceInfo VidInfo = { NULL, NULL, NULL };
 

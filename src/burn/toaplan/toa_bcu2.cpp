@@ -1,9 +1,12 @@
 #include "toaplan.h"
 
+int ToaOpaquePriority;
+
 static unsigned char* pTile;
 static unsigned int* pTileData;
 static unsigned int* pTilePalette;
 
+int Rallybik = 0;
 int Hellfire = 0;
 
 typedef void (*RenderTileFunction)();
@@ -23,6 +26,64 @@ struct ToaTile {
 };
 
 extern unsigned int* ToaPalette2;
+
+// ----------------------------------------------------------------------------
+// Rally Bike custom sprite function
+
+static void rallybik_draw_sprites(int priority)
+{
+	unsigned short *sprite = (unsigned short*)FCU2RAM; 
+
+	for (int offs = 0; offs < (0x1000/2); offs += 4)
+	{
+		int attrib = sprite[offs + 1];
+
+		if ((attrib & 0x0c00) == priority)
+		{
+			int sy = (sprite[offs + 3] >> 7) & 0x1ff;
+
+			if (sy != 0x0100)
+			{
+				int code	= sprite[offs] & 0x7ff;
+				int color	= attrib & 0x3f;
+				int sx		= (sprite[offs + 2] >> 7) & 0x1ff;
+				int flipx	= attrib & 0x100;
+				int flipy	= attrib & 0x200;
+				if (flipx) sx -= 15;
+
+				sx -= 31;
+				sy -= 16;
+
+				if (sy < -15 || sx < -15 || sy >= 240 || sx >= 320) continue;
+
+				{
+					int flip = 0;
+					if (flipx) flip |= 0x0f;
+					if (flipy) flip |= 0xf0;
+					unsigned char *gfx = FCU2ROM + (code * 0x100);
+
+					pTilePalette = &ToaPalette2[color << 4];
+
+					for (int y = 0; y < 16; y++, sy++) {
+						if (sy < 0 || sy >= 240) continue;
+
+						for (int x = 0; x < 16; x++, sx++) {
+							if (sx < 0 || sx >= 320) continue;
+
+							int pxl = gfx[((y * 16) + x) ^ flip];
+
+							if (pxl) {
+								PutPix(pBurnDraw + ((sy * 320) + sx) * nBurnBpp, pTilePalette[pxl]);
+							}
+						}
+						sx -= 16;
+					}
+				}
+			}
+		}
+	}
+}
+
 
 // ----------------------------------------------------------------------------
 // FCU-2 functions
@@ -206,7 +267,9 @@ static void BCU2RenderTileQueue(int nPriority)
 
 		pTile = pBurnBitmap + (nTileXPos * nBurnColumn) + (nTileYPos * nBurnRow);
 		
-		if ((nOpacity = BCU2TileAttrib[nTileNumber]) != 0) {
+		if ((nOpacity = BCU2TileAttrib[nTileNumber]) != 0 || nPriority < ToaOpaquePriority) {
+			if (nPriority < ToaOpaquePriority) nOpacity = 9;
+
 			pTileData = (unsigned int*)pTileStart;
 			if (nTileXPos >= 0 && nTileXPos < 312 && nTileYPos >= 0 && nTileYPos < 232) {
 				RenderTile[nOpacity - 1]();
@@ -241,10 +304,16 @@ int ToaRenderBCU2()
 	}
 
 	BCU2PrepareTiles();
-	FCU2PrepareSprites();
+	if (!Rallybik) {
+		FCU2PrepareSprites();
+	}
 
 	for (int nPriority = 0; nPriority < 16; nPriority++) {
-		FCU2RenderSpriteQueue(nPriority);
+		if (Rallybik) {
+			rallybik_draw_sprites(nPriority << 8);
+		} else {
+			FCU2RenderSpriteQueue(nPriority);
+		}
 		BCU2RenderTileQueue(nPriority);
 	}
 
@@ -344,6 +413,8 @@ int ToaInitBCU2()
 	if (!nLayer3YOffset) {
 		nLayer3YOffset = 0x0101;
 	}
+
+	ToaOpaquePriority = 0;
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 #include "burnint.h"
-#include "eeprom_93cxx.h"
+#include "eeprom.h"
 
 #define CAVE_REFRESHRATE (15625.0 / 271.5)
 
@@ -28,7 +28,7 @@ extern unsigned int* CavePalette;
 extern unsigned char* CavePalSrc;
 extern unsigned char CaveRecalcPalette;
 
-int CavePalInit();
+int CavePalInit(int nPalSize);
 int CavePalExit();
 int CavePalUpdate4Bit(int nOffset, int nNumPalettes);
 int CavePalUpdate8Bit(int nOffset, int nNumPalettes);
@@ -49,10 +49,13 @@ int CaveTileInit();
 int CaveTileInitLayer(int nLayer, int nROMSize, int nBitdepth, int nOffset);
 
 // cave_sprite.cpp
+extern int CaveSpriteVisibleXOffset;
+
 extern unsigned char* CaveSpriteROM;
 extern unsigned char* CaveSpriteRAM;
 
 extern int nCaveSpriteBank;
+extern int nCaveSpriteBankDelay;
 
 extern int (*CaveSpriteBuffer)();
 extern int CaveSpriteRender(int nLowPriority, int nHighPriority);

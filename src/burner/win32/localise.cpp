@@ -362,6 +362,7 @@ int BuildTemplateMenuTemplate(const MENUTEMPLATE* pTemplate, LPTSTR lpszName, FI
 	char* pTemplateDataIn = (char*)pTemplate + sizeof(MENUITEMTEMPLATEHEADER);
 	bool bLastPopup = false, bLastItem = false;
 	int nIndent = 0;
+	int bracketcnt = 0; // popup menu counter (BEGIN...END)
 	int i = 0;
 
 	if (fp) {
@@ -389,13 +390,16 @@ int BuildTemplateMenuTemplate(const MENUTEMPLATE* pTemplate, LPTSTR lpszName, FI
 		if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_POPUP) {
 			bLastPopup = false;
 			bLastItem = false;
+			bracketcnt++;
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastPopup = true;
+				bracketcnt--;
 			}
 			pTemplateDataIn += sizeof(WORD);
 		} else {
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastItem = true;
+				bracketcnt--;
 			}
 			wID = ((MENUITEMTEMPLATE*)pTemplateDataIn)->mtID;
 			pTemplateDataIn += sizeof(WORD) * 2;
@@ -434,7 +438,7 @@ int BuildTemplateMenuTemplate(const MENUTEMPLATE* pTemplate, LPTSTR lpszName, FI
 		}
 		pTemplateDataIn += wcslen((wchar_t*)pTemplateDataIn) * sizeof(wchar_t) + sizeof(wchar_t);
 
-	} while (i++ < 250 && !(bLastPopup && bLastItem));
+	} while (i++ < 1024 && (!(bLastPopup && bLastItem) || bracketcnt > 0));
 
 	if (fp) {
 		while (nIndent) {
@@ -927,20 +931,23 @@ void ParseMenuTemplate(const MENUTEMPLATE* pTemplate)
 #endif
 
 	int i = 0;
+	int bracketcnt = 0; // popup menu counter (BEGIN...END)
 	bool bLastPopup = false, bLastItem = false;
 	do {
-
 		if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_POPUP) {
 			bLastPopup = false;
 			bLastItem = false;
+			bracketcnt++;
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastPopup = true;
+				bracketcnt--;
 			}
 			dprintf(_T("   popup %03i "), i);
 			pTemplateDataIn += sizeof(WORD);
 		} else {
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastItem = true;
+				bracketcnt--;
 			}
 			dprintf(_T("   item %03i ID is %05i "), i, ((MENUITEMTEMPLATE*)pTemplateDataIn)->mtID);
 			pTemplateDataIn += sizeof(WORD) * 2;
@@ -948,7 +955,7 @@ void ParseMenuTemplate(const MENUTEMPLATE* pTemplate)
 
 		dprintf(_T("\"%ls\".\n"), ((wchar_t*)pTemplateDataIn));
 		pTemplateDataIn += wcslen((wchar_t*)pTemplateDataIn) * sizeof(wchar_t) + sizeof(wchar_t);
-	} while (i++ < 1024 && !(bLastPopup && bLastItem));
+	} while (i++ < 1024 && (!(bLastPopup && bLastItem) || bracketcnt > 0));
 }
 #endif
 
@@ -989,14 +996,16 @@ MENUTEMPLATE* TranslateMenuTemplate(const MENUTEMPLATE* pTemplate, const Localis
 #endif
 
 	int i = 0;
+	int bracketcnt = 0; // popup menu counter (BEGIN...END)
 	bool bLastPopup = false, bLastItem = false;
 	do {
-
 		if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_POPUP) {
 			bLastPopup = false;
 			bLastItem = false;
+			bracketcnt++;
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastPopup = true;
+				bracketcnt--;
 			}
 #ifdef PRINT_TRANSLATION_INFO
 			dprintf(_T("   popup %03i "), i);
@@ -1005,6 +1014,7 @@ MENUTEMPLATE* TranslateMenuTemplate(const MENUTEMPLATE* pTemplate, const Localis
 		} else {
 			if (((MENUITEMTEMPLATE*)pTemplateDataIn)->mtOption & MF_END) {
 				bLastItem = true;
+				bracketcnt--;
 			}
 #ifdef PRINT_TRANSLATION_INFO
 			dprintf(_T("   item %03i ID is %05i "), i, ((MENUITEMTEMPLATE*)pTemplateDataIn)->mtID);
@@ -1032,7 +1042,7 @@ MENUTEMPLATE* TranslateMenuTemplate(const MENUTEMPLATE* pTemplate, const Localis
 
 		pTemplateDataIn += wcslen((wchar_t*)pTemplateDataIn) * sizeof(wchar_t) + sizeof(wchar_t);
 		pTemplateDataInSync = pTemplateDataIn;
-	} while (i++ < 1024 && !(bLastPopup && bLastItem));
+	} while (i++ < 1024 && (!(bLastPopup && bLastItem) || bracketcnt > 0));
 
 	CATCH_UP;
 

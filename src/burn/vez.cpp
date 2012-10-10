@@ -8,15 +8,25 @@
 #define VEZ_MEM_SHIFT	11
 #define VEZ_MEM_MASK	((1 << VEZ_MEM_SHIFT) - 1)
 
+
+static unsigned char VezFakeDecode[0x100];
+static unsigned char *VezDecode[0x10]; // 
+
 static struct VezContext * VezCPUContext = 0;
 struct VezContext * VezCurrentCPU = 0;
 static int nCPUCount = 0;
 static int nOpenedCPU = -1;
+int nVezCount;
 
 unsigned char __fastcall VezDummyReadHandler(unsigned int) { return 0; }
 void __fastcall VezDummyWriteHandler(unsigned int, unsigned char) { }
 unsigned char __fastcall VezDummyReadPort(unsigned int) { return 0; }
 void __fastcall VezDummyWritePort(unsigned int, unsigned char) { }
+
+void VezSetDecode(unsigned char *decode)
+{
+	VezDecode[nOpenedCPU] = decode;
+}
 
 int VezDummyIrqCallBack(int i) 
 {
@@ -53,7 +63,7 @@ unsigned char cpu_readmem20_op(unsigned int a)
 	
 	unsigned char * p = VezCurrentCPU->ppMemFetch[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
-		return *(p + a);
+		return VezDecode[nOpenedCPU][*(p + a)];
 	else
 		return VezCurrentCPU->ReadHandler(a);
 }
@@ -119,8 +129,20 @@ int VezInit(int nCount, unsigned int * typelist)
 		VezCPUContext[i].WritePort = VezDummyWritePort;
 	}
 	
-	nCPUCount = nCount;
-	
+	nVezCount = nCPUCount = nCount;
+
+	for (int i = 0; i < nCount; i++)
+		CpuCheatRegister(0x0001, i);
+
+	for (int i = 0; i < 0x10; i++) {
+		nOpenedCPU = i;
+		VezSetDecode(VezFakeDecode);
+	}
+	nOpenedCPU = -1;
+
+	for (int i = 0; i < 0x100; i++)
+		VezFakeDecode[i] = i;
+
 	return 0;
 }
 
@@ -131,20 +153,25 @@ void VezExit()
 	VezCurrentCPU = 0;
 	nCPUCount = 0;
 	nOpenedCPU = -1;
+	nVezCount = 0;
+
+	for (int i = 0; i < 0x10; i++) {
+		nOpenedCPU = i;
+		VezSetDecode(NULL);
+	}
+	nOpenedCPU = -1;
 }
 
 void VezNewFrame()
 {
 }
 
-int VezOpen(int nCPU)
+void VezOpen(int nCPU)
 {
 	nOpenedCPU = nCPU;
 	VezCurrentCPU = &VezCPUContext[nCPU];
 	
 	nec_set_context( &(VezCurrentCPU->reg) );
-	
-	return 0;
 }
 
 void VezClose()
@@ -152,6 +179,11 @@ void VezClose()
 	nOpenedCPU = -1;
 	VezCurrentCPU = 0;
 	nec_set_context( 0 );
+}
+
+int VezGetActive()
+{
+	return nOpenedCPU;
 }
 
 int VezMemCallback(int nStart,int nEnd,int nMode)

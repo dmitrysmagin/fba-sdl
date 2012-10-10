@@ -1,12 +1,13 @@
 #include "tiles_generic.h"
 #include "burn_ym2151.h"
 #include "burn_ym2203.h"
+#include "burn_ym2413.h"
 #include "burn_ym2612.h"
 #include "rf5c68.h"
 #include "burn_gun.h"
 #include "bitswap.h"
 #include "genesis_vid.h"
-#include "z80.h"
+#include "8255ppi.h"
 
 #define SYS16_ROM_PROG		1
 #define SYS16_ROM_TILES		2
@@ -51,6 +52,7 @@ extern unsigned char *System16Rom;
 extern unsigned char *System16Code;
 extern unsigned char *System16Rom2;
 extern unsigned char *System16Z80Rom;
+extern unsigned char  *System16UPD7759Data;
 extern unsigned char *System16PCMData;
 extern unsigned char *System16RF5C68Data;
 extern unsigned char *System16Prom;
@@ -78,23 +80,28 @@ extern unsigned char *System16Roads;
 extern unsigned int System16NumTiles;
 extern unsigned int System16RomSize;
 extern unsigned int System16Rom2Size;
+extern unsigned int System16TileRomSize;
 extern unsigned int System16SpriteRomSize;
 extern unsigned int System16Sprite2RomSize;
 extern unsigned int System16RoadRomSize;
 extern unsigned int System16Z80RomSize;
 extern unsigned int System16PCMDataSize;
 extern unsigned int System16PCMDataSizePreAllocate;
+extern unsigned int System16ExtraRamSize;
 extern unsigned int System16SpriteRamSize;
 extern unsigned int System16SpriteRam2Size;
 extern unsigned int System16RotateRamSize;
+extern unsigned int System16UPD7759DataSize;
 
 extern unsigned char System16VideoControl;
 extern int System16SoundLatch;
 extern bool System16BTileAlt;
 extern bool Shangon;
 extern bool Hangon;
+extern bool System16Z80Enable;
 
 extern int YBoardIrq2Scanline;
+extern int System16YM2413IRQInterval;
 
 extern bool System16HasGears;
 
@@ -156,6 +163,7 @@ void __fastcall System16AWriteByte(unsigned int a, unsigned char d);
 // d_sys16b.cpp
 extern unsigned char __fastcall System16BReadByte(unsigned int a);
 void __fastcall System16BWriteByte(unsigned int a, unsigned char d);
+void __fastcall System16BWriteWord(unsigned int a, unsigned short d);
 
 // d_sys18.cpp
 extern unsigned short __fastcall System18ReadWord(unsigned int a);
@@ -176,6 +184,7 @@ void __fastcall HangonWriteByte(unsigned int a, unsigned char d);
 
 // d_outrun.cpp
 void OutrunPPI0WritePortC(UINT8 data);
+extern unsigned short __fastcall OutrunReadWord(unsigned int a);
 extern unsigned char __fastcall OutrunReadByte(unsigned int a);
 void __fastcall OutrunWriteWord(unsigned int a, unsigned short d);
 void __fastcall OutrunWriteByte(unsigned int a, unsigned char d);
@@ -213,7 +222,9 @@ extern int System16SpriteShadow;
 extern int System16SpriteXOffset;
 extern int System16SpriteBanks[16];
 extern int System16TileBanks[8];
+extern int System16OldTileBanks[8];
 extern int System16Page[4];
+extern int System16OldPage[4];
 extern unsigned char BootlegFgPage[4];
 extern unsigned char BootlegBgPage[4];
 extern int System16ScrollX[4];
@@ -229,6 +240,12 @@ extern int System16RoadPriority;
 extern int System16PaletteEntries;
 extern int System16TilemapColorOffset;
 extern int System16TileBankSize;
+extern int System16RecalcBgTileMap;
+extern int System16RecalcBgAltTileMap;
+extern int System16RecalcFgTileMap;
+extern int System16RecalcFgAltTileMap;
+extern int System16CreateOpaqueTileMaps;
+extern int System16IgnoreVideoEnable;
 
 extern bool bSystem16BootlegRender;
 
@@ -237,10 +254,17 @@ extern unsigned short *pTempDraw;
 void System16Decode8x8Tiles(unsigned char *pTile, int Num, int offs1, int offs2, int offs3);
 void OutrunDecodeRoad();
 void HangonDecodeRoad();
+void System16ATileMapsInit(int bOpaque);
+void System16BTileMapsInit(int bOpaque);
+void System16TileMapsExit();
 void System16ARender();
 void System16BRender();
 void System16BootlegRender();
 void System16BAltRender();
+void System16ATileByteWrite(unsigned int Offset, unsigned char d);
+void System16ATileWordWrite(unsigned int Offset, unsigned short d);
+void System16BTileByteWrite(unsigned int Offset, unsigned char d);
+void System16BTileWordWrite(unsigned int Offset, unsigned short d);
 void System18Render();
 void HangonRender();
 void HangonAltRender();
@@ -250,50 +274,12 @@ void XBoardRender();
 void YBoardRender();
 
 // fd1089.cpp
-typedef void (*FD1089Decrypt)();
-extern FD1089Decrypt FD1089_Decrypt;
-
-void fd1089_decrypt_alexkidd(void);
-void fd1089_decrypt_0013A(void);
-void fd1089_decrypt_0018(void);
-void fd1089_decrypt_0022(void);
-void fd1089_decrypt_0024(void);
-void fd1089_decrypt_0027(void);
-void fd1089_decrypt_0028(void);
-void fd1089_decrypt_0033(void);
-void fd1089_decrypt_0034(void);
-void fd1089_decrypt_0037(void);
-void fd1089_decrypt_0167(void);
-void fd1089_decrypt_0168(void);
-void fd1089_decrypt_5021(void);
+void FD1089Decrypt();
 
 // sys16_fd1094.cpp
-void fd1094_driver_init();
+void fd1094_driver_init(int nCPU);
 void fd1094_machine_init();
 void fd1094_exit();
-
-// sys16_ppi.cpp
-typedef UINT8 (*PPIPortRead)();
-typedef void (*PPIPortWrite)(UINT8 data);
-extern PPIPortRead PPI0PortReadA;
-extern PPIPortRead PPI0PortReadB;
-extern PPIPortRead PPI0PortReadC;
-extern PPIPortWrite PPI0PortWriteA;
-extern PPIPortWrite PPI0PortWriteB;
-extern PPIPortWrite PPI0PortWriteC;
-extern PPIPortRead PPI1PortReadA;
-extern PPIPortRead PPI1PortReadB;
-extern PPIPortRead PPI1PortReadC;
-extern PPIPortWrite PPI1PortWriteA;
-extern PPIPortWrite PPI1PortWriteB;
-extern PPIPortWrite PPI1PortWriteC;
-
-void ppi8255_init(int num);
-void ppi8255_exit();
-void ppi8255_scan();
-UINT8 ppi8255_r(int which, int offset);
-void ppi8255_w(int which, int offset, UINT8 data);
-void ppi8255_set_portC( int which, UINT8 data );
 
 // genesis_vid.cpp
 

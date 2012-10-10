@@ -34,7 +34,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip 2"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
@@ -99,7 +99,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x11, 0x01, 0xf0, 0x00, "Free_Play"              },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 void __fastcall mrdo_write(unsigned short address, unsigned char data)
 {
@@ -523,16 +523,16 @@ static struct BurnRomInfo mrdoRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrdo);
-STD_ROM_FN(mrdo);
+STD_ROM_PICK(mrdo)
+STD_ROM_FN(mrdo)
 
 struct BurnDriver BurnDrvmrdo = {
-	"mrdo", NULL, NULL, "1982",
+	"mrdo", NULL, NULL, NULL, "1982",
 	"Mr. Do!\0", NULL, "Universal", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrdoRomInfo, mrdoRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrdoRomInfo, mrdoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -560,16 +560,16 @@ static struct BurnRomInfo mrdotRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrdot);
-STD_ROM_FN(mrdot);
+STD_ROM_PICK(mrdot)
+STD_ROM_FN(mrdot)
 
 struct BurnDriver BurnDrvmrdot = {
-	"mrdot", "mrdo", NULL, "1982",
+	"mrdot", "mrdo", NULL, NULL, "1982",
 	"Mr. Do! (Taito license)\0", NULL, "Universal (Taito license)", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrdotRomInfo, mrdotRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrdotRomInfo, mrdotRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -596,16 +596,16 @@ static struct BurnRomInfo mrdofixRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrdofix);
-STD_ROM_FN(mrdofix);
+STD_ROM_PICK(mrdofix)
+STD_ROM_FN(mrdofix)
 
 struct BurnDriver BurnDrvmrdofix = {
-	"mrdofix", "mrdo", NULL, "1982",
+	"mrdofix", "mrdo", NULL, NULL, "1982",
 	"Mr. Do! (bugfixed)\0", NULL, "Universal (Taito license)", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrdofixRomInfo, mrdofixRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrdofixRomInfo, mrdofixRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -633,16 +633,16 @@ static struct BurnRomInfo mrloRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrlo);
-STD_ROM_FN(mrlo);
+STD_ROM_PICK(mrlo)
+STD_ROM_FN(mrlo)
 
 struct BurnDriver BurnDrvmrlo = {
-	"mrlo", "mrdo", NULL, "1982",
+	"mrlo", "mrdo", NULL, NULL, "1982",
 	"Mr. Lo!\0", NULL, "Bootleg", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrloRomInfo, mrloRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrloRomInfo, mrloRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -670,16 +670,16 @@ static struct BurnRomInfo mrduRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrdu);
-STD_ROM_FN(mrdu);
+STD_ROM_PICK(mrdu)
+STD_ROM_FN(mrdu)
 
 struct BurnDriver BurnDrvmrdu = {
-	"mrdu", "mrdo", NULL, "1982",
+	"mrdu", "mrdo", NULL, NULL, "1982",
 	"Mr. Du!\0", NULL, "Bootleg", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrduRomInfo, mrduRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrduRomInfo, mrduRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -707,16 +707,16 @@ static struct BurnRomInfo mrdoyRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(mrdoy);
-STD_ROM_FN(mrdoy);
+STD_ROM_PICK(mrdoy)
+STD_ROM_FN(mrdoy)
 
 struct BurnDriver BurnDrvmrdoy = {
-	"mrdoy", "mrdo", NULL, "1982",
+	"mrdoy", "mrdo", NULL, NULL, "1982",
 	"Mr. Do! (prototype)\0", NULL, "Universal", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_PROTOTYPE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, mrdoyRomInfo, mrdoyRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_PROTOTYPE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, mrdoyRomInfo, mrdoyRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 
@@ -744,16 +744,16 @@ static struct BurnRomInfo yankeedoRomDesc[] = {
 	{ "j10--4.bin",   0x0020, 0xff7fe284, 5 | BRF_GRA },	       // 13 Timing (not used)
 };
 
-STD_ROM_PICK(yankeedo);
-STD_ROM_FN(yankeedo);
+STD_ROM_PICK(yankeedo)
+STD_ROM_FN(yankeedo)
 
 struct BurnDriver BurnDrvyankeedo = {
-	"yankeedo", "mrdo", NULL, "1982",
+	"yankeedo", "mrdo", NULL, NULL, "1982",
 	"Yankee DO!\0", NULL, "hack", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, yankeedoRomInfo, yankeedoRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, yankeedoRomInfo, yankeedoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x140,
 	192, 240, 3, 4
 };
 

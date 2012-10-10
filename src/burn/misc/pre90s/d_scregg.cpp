@@ -39,7 +39,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip 2"	   },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
@@ -80,7 +80,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x10, 0x01, 0x80, 0x00, "Hard"    		  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 static inline int calc_mirror_offset(unsigned short address)
 {
@@ -593,16 +593,16 @@ static struct BurnRomInfo dommyRomDesc[] = {
 	{ "dommy.e60",  0x0020, 0x24da2b63, 4 | BRF_OPT },	     //  7
 };
 
-STD_ROM_PICK(dommy);
-STD_ROM_FN(dommy);
+STD_ROM_PICK(dommy)
+STD_ROM_FN(dommy)
 
 struct BurnDriver BurnDrvdommy = {
-	"dommy", NULL, NULL, "198?",
+	"dommy", NULL, NULL, NULL, "198?",
 	"Dommy\0", NULL, "Technos", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, dommyRomInfo, dommyRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, dommyRomInfo, dommyRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x08,
 	240, 248, 3, 4
 };
 
@@ -610,26 +610,26 @@ struct BurnDriver BurnDrvdommy = {
 // Scrambled Egg
 
 static struct BurnRomInfo screggRomDesc[] = {
-	{ "scregg.e14",   0x1000, 0x29226d77, 1 | BRF_ESS | BRF_PRG }, //  0 M6502 Code
-	{ "scregg.d14",   0x1000, 0xeb143880, 1 | BRF_ESS | BRF_PRG }, //  1
-	{ "scregg.c14",   0x1000, 0x4455f262, 1 | BRF_ESS | BRF_PRG }, //  2
-	{ "scregg.b14",   0x1000, 0x044ac5d2, 1 | BRF_ESS | BRF_PRG }, //  3
-	{ "scregg.a14",   0x1000, 0xb5a0814a, 1 | BRF_ESS | BRF_PRG }, //  4
+	{ "d00.e14",      0x1000, 0x29226d77, 1 | BRF_ESS | BRF_PRG }, //  0 M6502 Code
+	{ "d10.d14",      0x1000, 0xeb143880, 1 | BRF_ESS | BRF_PRG }, //  1
+	{ "d20.c14",      0x1000, 0x4455f262, 1 | BRF_ESS | BRF_PRG }, //  2
+	{ "d30.b14",      0x1000, 0x044ac5d2, 1 | BRF_ESS | BRF_PRG }, //  3
+	{ "d40.a14",      0x1000, 0xb5a0814a, 1 | BRF_ESS | BRF_PRG }, //  4
 
-	{ "scregg.j12",   0x1000, 0xa485c10c, 2 | BRF_GRA },	       //  5 Graphics
-	{ "scregg.j10",   0x1000, 0x1fd4e539, 2 | BRF_GRA },	       //  6
-	{ "scregg.h12",   0x1000, 0x8454f4b2, 2 | BRF_GRA },	       //  7
-	{ "scregg.h10",   0x1000, 0x72bd89ee, 2 | BRF_GRA },	       //  8
-	{ "scregg.g12",   0x1000, 0xff3c2894, 2 | BRF_GRA },	       //  9
-	{ "scregg.g10",   0x1000, 0x9c20214a, 2 | BRF_GRA },	       // 10
+	{ "d50.j12",      0x1000, 0xa485c10c, 2 | BRF_GRA },	       //  5 Graphics
+	{ "d60.j10",      0x1000, 0x1fd4e539, 2 | BRF_GRA },	       //  6
+	{ "d70.h12",      0x1000, 0x8454f4b2, 2 | BRF_GRA },	       //  7
+	{ "d80.h10",      0x1000, 0x72bd89ee, 2 | BRF_GRA },	       //  8
+	{ "d90.g12",      0x1000, 0xff3c2894, 2 | BRF_GRA },	       //  9
+	{ "da0.g10",      0x1000, 0x9c20214a, 2 | BRF_GRA },	       // 10
 
-	{ "screggco.c6",  0x0020, 0xff23bdd6, 3 | BRF_GRA },	       // 11 Palette
+	{ "dc0.c6 ",      0x0020, 0xff23bdd6, 3 | BRF_GRA },	       // 11 Palette
 
-	{ "screggco.b4",  0x0020, 0x7cc4824b, 0 | BRF_OPT },	       // 12
+	{ "db1.b4",       0x0020, 0x7cc4824b, 0 | BRF_OPT },	       // 12
 };
 
-STD_ROM_PICK(scregg);
-STD_ROM_FN(scregg);
+STD_ROM_PICK(scregg)
+STD_ROM_FN(scregg)
 
 static int screggInit()
 {
@@ -639,12 +639,12 @@ static int screggInit()
 }
 
 struct BurnDriver BurnDrvscregg = {
-	"scregg", NULL, NULL, "1983",
+	"scregg", NULL, NULL, NULL, "1983",
 	"Scrambled Egg\0", NULL, "Technos", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, screggRomInfo, screggRomName, DrvInputInfo, DrvDIPInfo,
-	screggInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, screggRomInfo, screggRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	screggInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x08,
 	240, 240, 3, 4
 };
 
@@ -667,19 +667,19 @@ static struct BurnRomInfo eggsRomDesc[] = {
 
 	{ "eggs.c6",      0x0020, 0xe8408c81, 3 | BRF_GRA },	       // 11 Palette
 
-	{ "screggco.b4",  0x0020, 0x7cc4824b, 0 | BRF_OPT },	       // 12
+	{ "db1.b4",       0x0020, 0x7cc4824b, 0 | BRF_OPT },	       // 12
 };
 
-STD_ROM_PICK(eggs);
-STD_ROM_FN(eggs);
+STD_ROM_PICK(eggs)
+STD_ROM_FN(eggs)
 
 struct BurnDriver BurnDrveggs = {
-	"eggs", "scregg", NULL, "1983",
+	"eggs", "scregg", NULL, NULL, "1983",
 	"Eggs\0", NULL, "[Technos] Universal USA", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, eggsRomInfo, eggsRomName, DrvInputInfo, DrvDIPInfo,
-	screggInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, eggsRomInfo, eggsRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	screggInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x08,
 	240, 240, 3, 4
 };
 
@@ -699,8 +699,8 @@ static struct BurnRomInfo rockduckRomDesc[] = {
 	{ "eggs.c6",      0x0020, 0xe8408c81, 3 | BRF_GRA },  //  6 Palette 
 };
 
-STD_ROM_PICK(rockduck);
-STD_ROM_FN(rockduck);
+STD_ROM_PICK(rockduck)
+STD_ROM_FN(rockduck)
 
 static int rockduckInit()
 {
@@ -711,11 +711,11 @@ static int rockduckInit()
 }
 
 struct BurnDriver BurnDrvrockduck = {
-	"rockduck", NULL, NULL, "1983",
+	"rockduck", NULL, NULL, NULL, "1983",
 	"Rock Duck (prototype?)\0", "incorrect colors", "Datel SAS", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, rockduckRomInfo, rockduckRomName, DrvInputInfo, DrvDIPInfo,
-	rockduckInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, rockduckRomInfo, rockduckRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	rockduckInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPal, 0x08,
 	240, 240, 3, 4
 };

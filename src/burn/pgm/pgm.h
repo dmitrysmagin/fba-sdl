@@ -1,7 +1,44 @@
-#include "burnint.h"
+#include "tiles_generic.h"
+#include "arm7_intf.h"
 #include "ics2115.h"
 
-// pgm_run.cpp
+#define HARDWARE_IGS_JAMMAPCB		0x0002
+
+#ifdef LSB_FIRST
+#define SWAP_WORD_LSB(x)	(((x&0xff)<<8)|((x>>8)&0xff))
+#else
+#define SWAP_WORD_LSB(x)	(x)
+#endif
+
+// pgm_run
+extern int nPGM68KROMLen;
+extern int nPGMSPRColMaskLen;
+extern int nPGMSPRMaskMaskLen;
+extern int nPGMTileROMLen;
+extern int nPGMExternalARMLen;
+
+extern unsigned char *PGM68KRAM;
+extern unsigned char *PGM68KROM;
+extern unsigned char *PGMTileROM;
+extern unsigned char *PGMTileROMExp;
+extern unsigned char *PGMSPRColROM;
+extern unsigned char *PGMSPRMaskROM;
+extern unsigned char *PGMARMROM;
+extern unsigned char *PGMUSER0;
+extern unsigned char *PGMARMRAM0;
+extern unsigned char *PGMARMRAM1;
+extern unsigned char *PGMARMRAM2;
+extern unsigned char *PGMARMShareRAM;
+extern unsigned char *PGMARMShareRAM2;
+extern unsigned short *PGMRowRAM;
+extern unsigned short *PGMPalRAM;
+extern unsigned short *PGMVidReg;
+extern unsigned short *PGMSprBuf;
+extern unsigned int *PGMBgRAM;
+extern unsigned int *PGMTxtRAM;
+extern unsigned int *RamCurPal;
+extern unsigned char nPgmPalRecalc;
+
 extern unsigned char PgmJoy1[];
 extern unsigned char PgmJoy2[];
 extern unsigned char PgmJoy3[];
@@ -11,68 +48,66 @@ extern unsigned char PgmBtn2[];
 extern unsigned char PgmInput[];
 extern unsigned char PgmReset;
 
-extern int pgmInit();
-extern int pgmExit();
-extern int pgmFrame();
-extern int pgmDraw();
-extern int pgmScan(int nAction, int *pnMin);
-
-extern int nPGM68KROMLen;
-extern unsigned char *USER0, *USER1, *USER2;
-extern unsigned char *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM;
-extern unsigned short *RamRs, *RamPal, *RamVReg, *RamSpr;
-extern unsigned int *RamBg, *RamTx, *RamCurPal;
-extern unsigned char nPgmPalRecalc;
-
 extern void (*pPgmInitCallback)();
+extern void (*pPgmResetCallback)();
 extern int (*pPgmScanCallback)(int, int*);
+extern void (*pPgmProtCallback)();
+
+extern int nPGMEnableIRQ4;
+extern int nPGMArm7Type;
+
+int pgmInit();
+int pgmExit();
+int pgmFrame();
+int pgmScan(int nAction, int *pnMin);
 
 // pgm_draw
-extern int pgmDraw();
+void pgmInitDraw();
+void pgmExitDraw();
+int pgmDraw();
 
-// pgm_prot.cpp
+// pgm_prot
+void install_protection_asic3_orlegend();
+void install_protection_asic25_asic12_dw2();
+void install_protection_asic25_asic22_killbld();
+void install_protection_asic25_asic28_olds();
+void install_protection_asic27_kov();
+void install_protection_asic27a_kovsh();
+void install_protection_asic27a_martmast();
+void install_protection_asic27a_oldsplus();
+void install_protection_asic27a_puzlstar();
+void install_protection_asic27a_ddp2();
+void install_protection_asic27a_svg();
+void install_protection_asic27a_ketsui();
+void install_protection_asic27a_ddp3();
 
-extern void pgm_asic28_w(unsigned short offset, unsigned short data);
-extern unsigned short pgm_asic28_r(unsigned short offset);
+// pgm_crypt
+void pgm_decrypt_kov();
+void pgm_decrypt_kovsh();
+void pgm_decrypt_kovshp();
+void pgm_decrypt_puzzli2();
+void pgm_decrypt_dw2();
+void pgm_decrypt_photoy2k();
+void pgm_decrypt_puzlstar();
+void pgm_decrypt_dw3();
+void pgm_decrypt_killbld();
+void pgm_decrypt_dfront();
+void pgm_decrypt_ddp2();
+void pgm_decrypt_martmast();
+void pgm_decrypt_kov2();
+void pgm_decrypt_kov2p();
+void pgm_decrypt_theglad();
+void pgm_decrypt_killbldp();
+void pgm_decrypt_oldsplus();
+void pgm_decrypt_svg();
+void pgm_decrypt_happy6in1();
+void pgm_decrypt_dw2001();
+void pgm_decrypt_py2k2();
+void pgm_decrypt_espgaluda();
+void pgm_decrypt_ketsui();
 
-extern void pgm_asic3_reg_w(unsigned short offset, unsigned short data);
-extern void pgm_asic3_w(unsigned short offset, unsigned short data);
-extern unsigned char pgm_asic3_r(unsigned short offset);
-extern unsigned short sango_protram_r(unsigned short offset);
-
-extern unsigned short dw2_d80000_r(unsigned int sekAddress);
-
-extern unsigned short *killbld_sharedprotram;
-extern void killbld_prot_w(unsigned int sekAddress, unsigned short data);
-extern unsigned short killbld_prot_r(unsigned int sekAddress);
-
-extern unsigned short PSTARS_protram_r(unsigned int sekAddress);
-extern unsigned short PSTARS_r16(unsigned int sekAddress);
-extern void PSTARS_w16(unsigned int sekAddress, unsigned short data);
-
-extern void olds_w16(unsigned int offset, unsigned short data);
-extern unsigned short olds_r16(unsigned short offset);
-
-extern void prot_reset();
-
-extern int asic28Scan(int nAction,int */*pnMin*/);
-extern int asic3Scan(int nAction,int */*pnMin*/);
-extern int killbldtScan(int nAction,int */*pnMin*/);
-extern int pstarsScan(int nAction,int */*pnMin*/);
-extern int oldsScan(int nAction,int */*pnMin*/);
-
-// pgm_crypt.cpp
-
-extern void pgm_kov_decrypt();
-extern void pgm_kovsh_decrypt();
-extern void pgm_dw2_decrypt();
-extern void pgm_djlzz_decrypt();
-extern void pgm_pstar_decrypt();
-extern void pgm_dw3_decrypt();
-extern void pgm_killbld_decrypt();
-extern void pgm_dfront_decrypt();
-extern void pgm_ddp2_decrypt();
-extern void pgm_mm_decrypt();
-extern void pgm_kov2_decrypt();
-extern void pgm_puzzli2_decrypt();
-
+void pgm_decode_kovqhsgs_gfx_block(unsigned char *src);
+void pgm_decode_kovqhsgs_tile_data(unsigned char *source);
+void pgm_decrypt_kovqhsgs();
+void pgm_decrypt_kovlsqh2();
+void pgm_decrypt_kovassg();

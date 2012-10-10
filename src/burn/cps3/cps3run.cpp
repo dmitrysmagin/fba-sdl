@@ -14,7 +14,6 @@ SCSI code by ElSemi
 **********************************************************************
 
 Port to FBA by OopsWare
-Region patching updates by CaptainCPS-X
 
 **********************************************************************/
 
@@ -48,7 +47,7 @@ static unsigned char *RamC000_D;
 
 static unsigned short *EEPROM;
 
-static unsigned short *CurPal;
+unsigned short *Cps3CurPal;
 static unsigned int *RamScreen;
 
 unsigned char cps3_reset = 0;
@@ -203,6 +202,18 @@ void cps3_flash_write(flash_chip * chip, unsigned int addr, unsigned int data)
 			chip->flash_mode = FM_NORMAL;
 		}
 		break;				
+	}
+}
+
+// ------------------------------------------------------------------------
+
+inline static void Cps3ClearOpposites(unsigned short* nJoystickInputs)
+{
+	if ((*nJoystickInputs & 0x03) == 0x03) {
+		*nJoystickInputs &= ~0x03;
+	}
+	if ((*nJoystickInputs & 0x0c) == 0x0c) {
+		*nJoystickInputs &= ~0x0c;
 	}
 }
 
@@ -486,7 +497,7 @@ static int MemIndex()
 	
 	RamEnd		= Next;
 	
-	CurPal		= (unsigned short *) Next; Next += 0x040000;
+	Cps3CurPal		= (unsigned short *) Next; Next += 0x040002; // iq_132 - layer disable
 	RamScreen	= (unsigned int *) Next; Next += (512 * 2) * (224 * 2 + 32) * sizeof(int);
 	
 	MemEnd		= Next;
@@ -497,11 +508,11 @@ unsigned char __fastcall cps3ReadByte(unsigned int addr)
 {
 	addr &= 0xc7ffffff;
 	
-	switch (addr) {
-
-	default:
-		bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %8x\n"), addr);
-	}
+//	switch (addr) {
+//
+//	default:
+//		bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %8x\n"), addr);
+//	}
 	return 0;
 }
 
@@ -670,7 +681,7 @@ void __fastcall cps3WriteWord(unsigned int addr, unsigned short data)
 				b = b << 3;
 
 				RamPal[(paldma_dest + i) ^ 1] = coldata;
-				CurPal[(paldma_dest + i) ] = BurnHighCol(r, g, b, 0);
+				Cps3CurPal[(paldma_dest + i) ] = BurnHighCol(r, g, b, 0);
 			}
 			Sh2SetIRQLine(10, SH2_IRQSTATUS_AUTO);
 		}
@@ -912,7 +923,7 @@ void __fastcall cps3VidWriteWord(unsigned int addr, unsigned short data)
 		g |= g >> 5;
 		b |= b >> 5;
 			
-		CurPal[palindex] = BurnHighCol(r, g, b, 0);
+		Cps3CurPal[palindex] = BurnHighCol(r, g, b, 0);
 	
 	} else
 	bprintf(PRINT_NORMAL, _T("Video Attempt to write word value %4x to location %8x\n"), data, addr);
@@ -967,14 +978,14 @@ unsigned int __fastcall cps3RamReadLong(unsigned int addr)
 	return *(unsigned int *)(RamMain + addr);
 }
 
-// CPS3 Region Patching for regular games
+// CPS3 Region Patch
 static void Cps3PatchRegion()
 {
 	if ( cps3_region_address ) {
 
 		bprintf(0, _T("Region: %02x -> %02x\n"), RomBios[cps3_region_address], (RomBios[cps3_region_address] & 0xf0) | (cps3_dip & 0x0f));				
 
-		RomBios[cps3_region_address] = (RomBios[cps3_region_address] & 0xf0) | (cps3_dip & 0x0f);
+		RomBios[cps3_region_address] = (RomBios[cps3_region_address] & 0xf0) | (cps3_dip & 0x7f);
 		if ( cps3_ncd_address ) {
 			if (cps3_dip & 0x10)
 				RomBios[cps3_ncd_address] |= 0x01;
@@ -1005,6 +1016,14 @@ static int Cps3Reset()
 			Sh2Reset( *(unsigned int *)(RomGame_D + 0), *(unsigned int *)(RomGame_D + 4) );
 			Sh2SetVBR(0x06000000);
 		}
+	}
+	
+	if (cps3_dip & 0x80) {
+		EEPROM[0x11] = 0x100 + (EEPROM[0x11] & 0xff);
+		EEPROM[0x29] = 0x100 + (EEPROM[0x29] & 0xff);
+	} else {
+		EEPROM[0x11] = 0x000 + (EEPROM[0x11] & 0xff);
+		EEPROM[0x29] = 0x000 + (EEPROM[0x29] & 0xff);
 	}
 
 	cps3_current_eeprom_read = 0;	
@@ -1172,7 +1191,10 @@ int cps3Init()
 	
 	BurnDrvGetVisibleSize(&cps3_gfx_width, &cps3_gfx_height);	
 	RamScreen	+= (512 * 2) * 16 + 16; // safe draw	
-	cps3SndInit(RomUser);	
+	cps3SndInit(RomUser);
+	
+	pBurnDrvPalette = (unsigned int*)Cps3CurPal;
+		
 	Cps3Reset();
 	return 0;
 }
@@ -1195,7 +1217,7 @@ static void cps3_drawgfxzoom_0(unsigned int code, unsigned int pal, int flipx, i
 	if ((x > (cps3_gfx_width - 8)) || (y > (cps3_gfx_height - 8))) return;
 	unsigned short * dst = (unsigned short *) pBurnDraw;
 	unsigned char * src = (unsigned char *)RamSS;
-	unsigned short * color = CurPal + (pal << 4);
+	unsigned short * color = Cps3CurPal + (pal << 4);
 	dst += (y * cps3_gfx_width + x);
 	src += code * 64;
 	
@@ -1647,6 +1669,8 @@ static void cps3_draw_tilemapsprite_line(int drawline, unsigned int * regs )
 	}
 }
 
+static int WideScreenFrameDelay = 0;
+
 static void DrvDraw()
 {
 	int bg_drawn[4] = { 0, 0, 0, 0 };
@@ -1662,7 +1686,30 @@ static void DrvDraw()
     //                0x80 for double size 
     //				  0x20 for half size
 	unsigned int fullscreenzoom = RamVReg[ 6 * 4 + 3 ] & 0xff;	// cps3_fullscreenzoom[3]
-
+	unsigned int fullscreenzoomwidecheck = RamVReg[6 * 4 + 1];
+	
+	if (((fullscreenzoomwidecheck & 0xffff0000) >> 16) == 0x0265) {
+		int Width, Height;
+		BurnDrvGetVisibleSize(&Width, &Height);
+		
+		if (Width != 496) {
+			BurnDrvSetVisibleSize(496, 224);
+			BurnDrvSetAspect(16, 9);
+			Reinitialise();
+			WideScreenFrameDelay = GetCurrentFrame() + 1;
+		}
+	} else {
+		int Width, Height;
+		BurnDrvGetVisibleSize(&Width, &Height);
+		
+		if (Width != 384) {
+			BurnDrvSetVisibleSize(384, 224);
+			BurnDrvSetAspect(4, 3);
+			Reinitialise();
+			WideScreenFrameDelay = GetCurrentFrame() + 1;
+		}
+	}
+	
 	if (fullscreenzoom > 0x80) fullscreenzoom = 0x80;
 	unsigned int fsz = (fullscreenzoom << (16 - 6));
 	
@@ -1685,8 +1732,8 @@ if (Cps3But2[9]) {
 	fwrite(RamPal, 1, 0x0040000, f);
 	fclose(f);
 	
-	f = fopen("CurPal.raw", "wb+");
-	fwrite(CurPal, 1, 0x0040000, f);
+	f = fopen("Cps3CurPal.raw", "wb+");
+	fwrite(Cps3CurPal, 1, 0x0040000, f);
 	fclose(f);
 	
 
@@ -1702,6 +1749,7 @@ if (Cps3But2[9]) {
 }
 #endif
 
+	if (nBurnLayer & 1) // iq_132 - layer disable
 	{
 		// Clear Screen Buffer
 		//memset(RamScreen, 0, 512 * 448 * sizeof(int));
@@ -1710,6 +1758,17 @@ if (Cps3But2[9]) {
 		for(int yy = 0; yy<=cps3_gfx_max_y; yy++, pscr += 512*2)
 			memset(pscr, 0, clrsz);
 	}
+	// iq_132 - layer disable
+	else
+	{
+		Cps3CurPal[0x20000] = BurnHighCol(0xff, 0x00, 0xff, 0); // ma-fucking-genta
+
+		int i;
+		for (i = 0; i < 1024 * 448; i++) {
+			RamScreen[i] = 0x20000;
+		}
+	}
+	// iq_132 - layer disable
 	
 	// Draw Sprites
 	{
@@ -1767,6 +1826,9 @@ if (Cps3But2[9]) {
 				// xsize of 0 tiles seems to be a special command to draw tilemaps
 				if (xsize2==0) {
 
+		if (nBurnLayer & 1) // iq_132 - layer disable
+		{
+
 					int tilemapnum = ((value3 & 0x00000030)>>4);
 					int startline;// = value2 & 0x3ff;
 					int endline;
@@ -1794,9 +1856,13 @@ if (Cps3But2[9]) {
 						for (int uu=0;uu<1023;uu++)
 							cps3_draw_tilemapsprite_line( uu, regs );
 					bg_drawn[tilemapnum] = 1;
-				
+
+		} // iq_132 - layer disable
+
 				} else {
-				
+
+				if (~nSpriteEnable & 1) continue;
+
 					ysize2 = tilestable[ysize2];
 					xsize2 = tilestable[xsize2];
 
@@ -1918,7 +1984,7 @@ if (Cps3But2[9]) {
 			srcbitmap = RamScreen + (srcy >> 16) * 512 * 2;
 			srcx=0;
 			for (int renderx=0; renderx<cps3_gfx_width; renderx++, dstbitmap ++) {
-				*dstbitmap = CurPal[ srcbitmap[srcx>>16] ];
+				*dstbitmap = Cps3CurPal[ srcbitmap[srcx>>16] ];
 				srcx += fsz;
 			}
 			srcy += fsz;
@@ -1927,6 +1993,7 @@ if (Cps3But2[9]) {
 	
 
 	// fg layer
+	if (nBurnLayer & 2) // iq_132 -- layer disable
 	{
 		// bank select? (sfiii2 intro)
 		int count = (ss_bank_base & 0x01000000) ? 0x0000 : 0x0800;
@@ -1965,11 +2032,19 @@ int cps3Frame()
 			r |= r >> 5;
 			g |= g >> 5;
 			b |= b >> 5;
-			CurPal[i] = BurnHighCol(r, g, b, 0);	
+			Cps3CurPal[i] = BurnHighCol(r, g, b, 0);	
 		}
 		cps3_palette_change = 0;
 	}
 	
+	if (WideScreenFrameDelay == GetCurrentFrame()) {
+		BurnDrvGetVisibleSize(&cps3_gfx_width, &cps3_gfx_height);
+		WideScreenFrameDelay = 0;
+	}
+	
+//	EEPROM[0x11] = 0x100 + (EEPROM[0x11] & 0xff);
+//	EEPROM[0x29] = 0x100 + (EEPROM[0x29] & 0xff);
+
 	Cps3Input[0] = 0;
 	Cps3Input[1] = 0;
 	//Cps3Input[2] = 0;
@@ -1979,7 +2054,11 @@ int cps3Frame()
 		Cps3Input[1] |= (Cps3But2[i] & 1) << i;
 		Cps3Input[3] |= (Cps3But3[i] & 1) << i;
 	}
-	
+
+	// Clear Opposites
+	Cps3ClearOpposites(&Cps3Input[0]);
+	Cps3ClearOpposites(&Cps3Input[1]);
+
 	for (int i=0; i<4; i++) {
 
 		Sh2Run(6250000 * 4 / 60 / 4);
@@ -2008,7 +2087,7 @@ int cps3Scan(int nAction, int *pnMin)
 	struct BurnArea ba;
 	
 	if (nAction & ACB_NVRAM) {
-		// Scan nvram, backup this can save inner config by F2 ???
+		// Save EEPROM configuration
 		ba.Data		= EEPROM;
 		ba.nLen		= 0x0000400;
 		ba.nAddress = 0;
@@ -2045,7 +2124,7 @@ int cps3Scan(int nAction, int *pnMin)
 		ba.Data		= RamC000;
 		ba.nLen		= 0x0000400 * 2;
 		ba.nAddress = 0;
-		ba.szName	= "0xC0000000";
+		ba.szName	= "RAM C000";
 		BurnAcb(&ba);				
 		
 		ba.Data		= RamPal;
@@ -2113,5 +2192,3 @@ int cps3Scan(int nAction, int *pnMin)
 	
 	return 0;
 }
-
-

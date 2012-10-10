@@ -12,26 +12,6 @@ static bool bVBlank;
 
 // Rom information
 static struct BurnRomInfo batsugunRomDesc[] = {
-	{ "tp030_01.bin", 0x080000, 0x3873D7DD, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-
-	{ "tp030_3l.bin", 0x100000, 0x3024B793, BRF_GRA },			 //  1 GP9001 #1 Tile data
-	{ "tp030_3h.bin", 0x100000, 0xED75730B, BRF_GRA },			 //  2
-	{ "tp030_4l.bin", 0x100000, 0xFEDB9861, BRF_GRA },			 //  3
-	{ "tp030_4h.bin", 0x100000, 0xD482948B, BRF_GRA },			 //  4
-
-	{ "tp030_5.bin",  0x100000, 0xBCF5BA05, BRF_GRA },			 //  5
-	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
-
-//	{"tp030.mcu",	 0x010000, 0x00000000,    2}, //  7 Sound CPU
-
-	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
-};
-
-
-STD_ROM_PICK(batsugun);
-STD_ROM_FN(batsugun);
-
-static struct BurnRomInfo batsugnaRomDesc[] = {
 	{ "tp030_1a.bin", 0x080000, 0xcb1d4554, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "tp030_3l.bin", 0x100000, 0x3024B793, BRF_GRA },			 //  1 GP9001 #1 Tile data
@@ -47,9 +27,27 @@ static struct BurnRomInfo batsugnaRomDesc[] = {
 	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
 };
 
+STD_ROM_PICK(batsugun)
+STD_ROM_FN(batsugun)
 
-STD_ROM_PICK(batsugna);
-STD_ROM_FN(batsugna);
+static struct BurnRomInfo batsugnaRomDesc[] = {
+	{ "tp030_01.bin", 0x080000, 0x3873D7DD, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+
+	{ "tp030_3l.bin", 0x100000, 0x3024B793, BRF_GRA },			 //  1 GP9001 #1 Tile data
+	{ "tp030_3h.bin", 0x100000, 0xED75730B, BRF_GRA },			 //  2
+	{ "tp030_4l.bin", 0x100000, 0xFEDB9861, BRF_GRA },			 //  3
+	{ "tp030_4h.bin", 0x100000, 0xD482948B, BRF_GRA },			 //  4
+
+	{ "tp030_5.bin",  0x100000, 0xBCF5BA05, BRF_GRA },			 //  5
+	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
+
+//	{"tp030.mcu",	 0x010000, 0x00000000,    2}, //  7 Sound CPU
+
+	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
+};
+
+STD_ROM_PICK(batsugna)
+STD_ROM_FN(batsugna)
 
 static struct BurnRomInfo batugnspRomDesc[] = {
 	{ "tp030-sp.u69", 0x080000, 0x8072A0CD, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -67,9 +65,8 @@ static struct BurnRomInfo batugnspRomDesc[] = {
 	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
 };
 
-
-STD_ROM_PICK(batugnsp);
-STD_ROM_FN(batugnsp);
+STD_ROM_PICK(batugnsp)
+STD_ROM_FN(batugnsp)
 
 static struct BurnInputInfo batsugunInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -101,7 +98,7 @@ static struct BurnInputInfo batsugunInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(batsugun);
+STDINPUTINFO(batsugun)
 
 static struct BurnDIPInfo batsugunDIPList[] = {
 	// Defaults
@@ -188,25 +185,25 @@ static struct BurnDIPInfo batsugunDIPList[] = {
 
 	// Region
 	{0,		0xFE, 0,	14,	  "Region"},
-	{0x16,	0x01, 0x0F,	0x00, "Korea (Unite Trading)"},
+	{0x16,	0x01, 0x0F,	0x00, "Korea (Unite Trading license)"},
 	{0x16,	0x01, 0x0F,	0x01, "Korea"},
-	{0x16,	0x01, 0x0F,	0x02, "Hong Kong (Taito corp.)"},
+	{0x16,	0x01, 0x0F,	0x02, "Hong Kong (Taito Corp license)"},
 	{0x16,	0x01, 0x0F,	0x03, "Hong Kong"},
-	{0x16,	0x01, 0x0F,	0x04, "Taiwan (Taito corp.)"},
+	{0x16,	0x01, 0x0F,	0x04, "Taiwan (Taito Corp license)"},
 	{0x16,	0x01, 0x0F,	0x05, "Taiwan"},
-	{0x16,	0x01, 0x0F,	0x06, "South East Asia (Taito corp.)"},
+	{0x16,	0x01, 0x0F,	0x06, "South East Asia (Taito Corp license)"},
 	{0x16,	0x01, 0x0F,	0x07, "South East Asia"},
-	{0x16,	0x01, 0x0F,	0x08, "Europe (Taito corp.)"},
+	{0x16,	0x01, 0x0F,	0x08, "Europe (Taito Corp license)"},
 	{0x16,	0x01, 0x0F,	0x09, "Europe"},
-	{0x16,	0x01, 0x0F,	0x0A, "U.S.A (Taito corp.)"},
+	{0x16,	0x01, 0x0F,	0x0A, "U.S.A (Taito Corp license)"},
 	{0x16,	0x01, 0x0F,	0x0B, "U.S.A"},
-	{0x16,	0x01, 0x0F,	0x0C, "Japan (Taito corp.)"},
-	{0x16,	0x01, 0x0F,	0x0D, "Japan"},
-	{0x16,	0x01, 0x0F,	0x0E, "Japan (Taito corp.)"},
+//	{0x16,	0x01, 0x0F,	0x0C, "Japan (Taito Corp license)"},
+	{0x16,	0x01, 0x0F,	0x0D, "Japan (Taito Corp license"},
+//	{0x16,	0x01, 0x0F,	0x0E, "Japan"},
 	{0x16,	0x01, 0x0F,	0x0F, "Japan"},
 };
 
-STDDIPINFO(batsugun);
+STDDIPINFO(batsugun)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -495,7 +492,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -593,31 +590,31 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvBatsugun = {
-	"batsugun", NULL, NULL, "1993",
+	"batsugun", NULL, NULL, NULL, "1993",
 	"Batsugun (set 1)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, batsugunRomInfo, batsugunRomName, batsugunInputInfo, batsugunDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, batsugunRomInfo, batsugunRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvBatsugunSP = {
-	"batugnsp", "batsugun", NULL, "1993",
-	"Batsugun Special Ver.\0", "No sound (sound MCU not dumped)", "Dual Toaplan", "Toaplan GP9001 based",
+	"batsugunsp", "batsugun", NULL, NULL, "1993",
+	"Batsugun (Special Ver.)\0", "No sound (sound MCU not dumped)", "Dual Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, batugnspRomInfo, batugnspRomName, batsugunInputInfo, batsugunDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, batugnspRomInfo, batugnspRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvBatsugna = {
-	"batsugna", "batsugun", NULL, "1993",
+	"batsuguna", "batsugun", NULL, NULL, "1993",
 	"Batsugun (set 2)\0", "No sound (sound MCU not dumped)", "Dual Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, batsugnaRomInfo, batsugnaRomName, batsugunInputInfo, batsugunDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, batsugnaRomInfo, batsugnaRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };

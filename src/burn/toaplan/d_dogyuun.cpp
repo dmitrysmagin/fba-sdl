@@ -26,8 +26,44 @@ static struct BurnRomInfo dogyuunRomDesc[] = {
 };
 
 
-STD_ROM_PICK(dogyuun);
-STD_ROM_FN(dogyuun);
+STD_ROM_PICK(dogyuun)
+STD_ROM_FN(dogyuun)
+
+static struct BurnRomInfo dogyuunkRomDesc[] = {
+	{ "01.u64",       0x080000, 0xfe5bd7f4, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+
+	{ "tp022_3.w92",  0x100000, 0x191B595F, BRF_GRA },			 //  1 GP9001 #1 Tile data
+	{ "tp022_4.w93",  0x100000, 0xD58D29CA, BRF_GRA },			 //  2
+
+	{ "tp022_5.w16",  0x200000, 0xD4C1DB45, BRF_GRA },			 //  3 GP9001 #2 Tile data
+	{ "tp022_6.w17",  0x200000, 0xD48DC74F, BRF_GRA },			 //  4
+
+//	{"tp022.mcu",	0x010000, 0x00000000, 0x10}, //  5 Sound CPU
+
+	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  6 ADPCM data
+};
+
+
+STD_ROM_PICK(dogyuunk)
+STD_ROM_FN(dogyuunk)
+
+static struct BurnRomInfo dogyuuntRomDesc[] = {
+	{ "sample10.9.u64.bin",     0x080000, 0x585f5016, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+
+	{ "tp022_3.w92",  0x100000, 0x191B595F, BRF_GRA },			 //  1 GP9001 #1 Tile data
+	{ "tp022_4.w93",  0x100000, 0xD58D29CA, BRF_GRA },			 //  2
+
+	{ "tp022_5.w16",  0x200000, 0xD4C1DB45, BRF_GRA },			 //  3 GP9001 #2 Tile data
+	{ "tp022_6.w17",  0x200000, 0xD48DC74F, BRF_GRA },			 //  4
+
+//	{"tp022.mcu",	0x010000, 0x00000000, 0x10}, //  5 Sound CPU
+
+	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  6 ADPCM data
+};
+
+
+STD_ROM_PICK(dogyuunt)
+STD_ROM_FN(dogyuunt)
 
 static struct BurnInputInfo dogyuunInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -59,14 +95,13 @@ static struct BurnInputInfo dogyuunInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(dogyuun);
+STDINPUTINFO(dogyuun)
 
 static struct BurnDIPInfo dogyuunDIPList[] = {
 	// Defaults
 	{0x14,	0xFF, 0xFF,	0x00, NULL},
 	{0x15,	0xFF, 0xFF,	0x00, NULL},
-	{0x16,	0xFF, 0x0F,	0x00, NULL},
-
+	
 	// DIP 1
 	{0,		0xFE, 0,	2,	  NULL},
 	{0x14,	0x01, 0x01,	0x00, "Coin play"},
@@ -143,28 +178,73 @@ static struct BurnDIPInfo dogyuunDIPList[] = {
 	{0,		0xFE, 0,	2,	  "Continue play"},
     {0x15,	0x01, 0x80,	0x00, "On"},
 	{0x15,	0x01, 0x80,	0x80, "Off"},
+};
 
+static struct BurnDIPInfo dogyuunRegionDIPList[] = {
 	// Region
-	{0,		0xFE, 0,	7,	  "Region"},
+	{0x16,	0xFF, 0x0F,	0x03, NULL},
+	{0,		0xFE, 0,	9,	  "Region"},
     {0x16,	0x01, 0x0F,	0x00, "Japan"},
     {0x16,	0x01, 0x0F,	0x01, "U.S.A."},
-    {0x16,	0x01, 0x0F,	0x02, "U.S.A. (Atari Games corp.)"},
+    {0x16,	0x01, 0x0F,	0x02, "U.S.A. (Atari Games Corp.)"},
     {0x16,	0x01, 0x0F,	0x03, "Europe"},
     {0x16,	0x01, 0x0F,	0x04, "Hong Kong (Charterfield)"},
     {0x16,	0x01, 0x0F,	0x05, "Korea (Unite Trading)"},
     {0x16,	0x01, 0x0F,	0x06, "Taiwan"},
+//	{0x16,	0x01, 0x0F,	0x07, "U.S.A."},
     {0x16,	0x01, 0x0F,	0x08, "South East Asia (Charterfield)"},
-    {0x16,	0x01, 0x0F,	0x07, "U.S.A."},
-    {0x16,	0x01, 0x0F,	0x09, "Hong Kong (Charterfield)"},
-    {0x16,	0x01, 0x0F,	0x0A, "Korea (Unite Trading)"},
-    {0x16,	0x01, 0x0F,	0x0B, "Taiwan"},
-    {0x16,	0x01, 0x0F,	0x0C, "U.S.A. (Atari Games corp.)"},
-    {0x16,	0x01, 0x0F,	0x0D, "South East Asia (Charterfield)"},
-    {0x16,	0x01, 0x0F,	0x0E, "Europe"},
-    {0x16,	0x01, 0x0F,	0x0F, "Taiwan"},
+//	{0x16,	0x01, 0x0F,	0x09, "Hong Kong (Charterfield)"},
+//	{0x16,	0x01, 0x0F,	0x0A, "Korea (Unite Trading)"},
+//	{0x16,	0x01, 0x0F,	0x0B, "Taiwan"},
+//	{0x16,	0x01, 0x0F,	0x0C, "U.S.A. (Atari Games Corp.)"},
+//	{0x16,	0x01, 0x0F,	0x0D, "South East Asia (Charterfield)"},
+    {0x16,	0x01, 0x0F,	0x0F, "Japan (Taito Corp license)"},
 };
 
-STDDIPINFO(dogyuun);
+STDDIPINFOEXT(dogyuun, dogyuunRegion, dogyuun)
+
+static struct BurnDIPInfo dogyuunkRegionDIPList[] = {
+	// Region
+	{0x16,	0xFF, 0x0F,	0x05, NULL},
+	{0,		0xFE, 0,	9,	  "Region"},
+    {0x16,	0x01, 0x0F,	0x00, "Japan"},
+    {0x16,	0x01, 0x0F,	0x01, "U.S.A."},
+    {0x16,	0x01, 0x0F,	0x02, "U.S.A. (Atari Games Corp.)"},
+    {0x16,	0x01, 0x0F,	0x03, "Europe"},
+    {0x16,	0x01, 0x0F,	0x04, "Hong Kong (Charterfield)"},
+    {0x16,	0x01, 0x0F,	0x05, "Korea (Unite Trading)"},
+    {0x16,	0x01, 0x0F,	0x06, "Taiwan"},
+//	{0x16,	0x01, 0x0F,	0x07, "U.S.A."},
+    {0x16,	0x01, 0x0F,	0x08, "South East Asia (Charterfield)"},
+//	{0x16,	0x01, 0x0F,	0x09, "Hong Kong (Charterfield)"},
+//	{0x16,	0x01, 0x0F,	0x0A, "Korea (Unite Trading)"},
+//	{0x16,	0x01, 0x0F,	0x0B, "Taiwan"},
+//	{0x16,	0x01, 0x0F,	0x0C, "U.S.A. (Atari Games Corp.)"},
+//	{0x16,	0x01, 0x0F,	0x0D, "South East Asia (Charterfield)"},
+    {0x16,	0x01, 0x0F,	0x0F, "Japan (Taito Corp license)"},
+};
+
+STDDIPINFOEXT(dogyuunk, dogyuunkRegion, dogyuun)
+
+static struct BurnDIPInfo dogyuuntRegionDIPList[] = {
+	// Region
+	{0x16,	0xFF, 0x0F,	0x00, NULL},
+    {0,		0xFE, 0,	12,	  "Region"},
+    {0x16,	0x01, 0x0F,	0x00, "Japan"},
+    {0x16,	0x01, 0x0F,	0x01, "U.S.A."},
+    {0x16,	0x01, 0x0F,	0x02, "Europe"},
+    {0x16,	0x01, 0x0F,	0x03, "Hong Kong"},
+    {0x16,	0x01, 0x0F,	0x04, "Korea"},
+    {0x16,	0x01, 0x0F,	0x05, "Taiwan"},
+    {0x16,	0x01, 0x0F,	0x06, "South East Asia (Charterfield license)"},
+	{0x16,	0x01, 0x0F,	0x07, "USA (Romstar license)"},
+    {0x16,	0x01, 0x0F,	0x08, "Hong Kong and China (Honest Trading Co. license)"},
+    {0x16,	0x01, 0x0F,	0x09, "Korea (JC Trading Corp. license)"},
+    {0x16,	0x01, 0x0F,	0x0A, "USA (Fabtek license)"},
+    {0x16,	0x01, 0x0F,	0x0F, "Japan (Taito Corp license)"},
+ };
+
+STDDIPINFOEXT(dogyuunt, dogyuuntRegion, dogyuun)
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -486,7 +566,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -574,12 +654,31 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvDogyuun = {
-	"dogyuun", NULL, NULL, "1992",
+	"dogyuun", NULL, NULL, NULL, "1992",
 	"Dogyuun\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
 	L"Dogyuun\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80,
-	NULL, dogyuunRomInfo, dogyuunRomName, dogyuunInputInfo, dogyuunDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, dogyuunRomInfo, dogyuunRomName, NULL, NULL, dogyuunInputInfo, dogyuunDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
 
+struct BurnDriver BurnDrvDogyuunk = {
+	"dogyuuna", "dogyuun", NULL, NULL, "1992",
+	"Dogyuun (Licensed to Unite Trading For Korea)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	L"Dogyuun (Licensed to Unite Trading For Korea)\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, dogyuunkRomInfo, dogyuunkRomName, NULL, NULL, dogyuunInputInfo, dogyuunkDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
+	240, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvDogyuunt = {
+	"dogyuunt", "dogyuun", NULL, NULL, "1992",
+	"Dogyuun (test location version)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	L"Dogyuun (test location version)\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
+	NULL, dogyuuntRomInfo, dogyuuntRomName, NULL, NULL, dogyuunInputInfo, dogyuuntDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x800,
+	240, 320, 3, 4
+};

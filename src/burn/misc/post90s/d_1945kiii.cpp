@@ -77,7 +77,7 @@ static struct BurnInputInfo _1945kiiiInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(_1945kiii);
+STDINPUTINFO(_1945kiii)
 
 static struct BurnDIPInfo _1945kiiiDIPList[] = {
 	// Defaults
@@ -118,7 +118,7 @@ static struct BurnDIPInfo _1945kiiiDIPList[] = {
 	
 };
 
-STDDIPINFO(_1945kiii);
+STDDIPINFO(_1945kiii)
 
 static struct BurnRomInfo _1945kiiiRomDesc[] = {
 	{ "prg-1.u51",	0x080000, 0x6b345f27, BRF_ESS | BRF_PRG },	// 68000 code 
@@ -134,8 +134,8 @@ static struct BurnRomInfo _1945kiiiRomDesc[] = {
 	{ "snd-2.su4",	0x080000, 0x47e3952e, BRF_SND }, 			// sound 2
 };
 
-STD_ROM_PICK(_1945kiii);
-STD_ROM_FN(_1945kiii);
+STD_ROM_PICK(_1945kiii)
+STD_ROM_FN(_1945kiii)
 
 static void sndSetBank(unsigned char bank0, unsigned char bank1)
 {
@@ -619,11 +619,11 @@ static int DrvScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrv1945kiii = {
-	"1945kiii", NULL, NULL, "2000",
+	"1945kiii", NULL, NULL, NULL, "2000",
 	"1945k III\0", NULL, "Oriental", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, _1945kiiiRomInfo, _1945kiiiRomName, _1945kiiiInputInfo, _1945kiiiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, &bRecalcPalette, 
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, _1945kiiiRomInfo, _1945kiiiRomName, NULL, NULL, _1945kiiiInputInfo, _1945kiiiDIPInfo,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x1000,
 	224, 320, 3, 4
 };

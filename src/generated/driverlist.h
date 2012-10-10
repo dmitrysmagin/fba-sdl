@@ -2,789 +2,1434 @@
 
 // Declaration of all drivers
 #define DRV extern struct BurnDriver
+DRV		BurnDrvEightballact;
+DRV		BurnDrvAsurabus;
+DRV		BurnDrvBagman;
+DRV		BurnDrvCkong;
+DRV		BurnDrvDkongjr;
+DRV		BurnDrvDockman;
 #if defined FBA_DEBUG
-DRV		BurnDrvEightballact;	// Seatongrove Ltd (Magic Eletronics USA licence) [NOT WORKING]
+DRV		BurnDrvDrgw3;			// IGS [NOT WORKING]
 #endif
-DRV		BurnDrvarkanoid;
-DRV		BurnDrvAstorm;
+DRV		BurnDrvDsoccr94;
 #if defined FBA_DEBUG
-DRV		BurnDrvdrivfrcp;		// Shinkai Inc. (Magic Eletronics Inc. licence) [NOT WORKING]
-DRV		BurnDrvMDg_2020;		// Unsorted [NOT WORKING]
-DRV		BurnDrvMDabea;			// Sega [NOT WORKING]
-#endif
-DRV		BurnDrvMDabz2;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDagla;			// Unsorted [NOT WORKING]
-DRV		BurnDrvMDalex;			// Sega [NOT WORKING]
-DRV		BurnDrvMDbatf;			// Unsorted [NOT WORKING]
-DRV		BurnDrvMDbglf;			// Unsorted [NOT WORKING]
-DRV		BurnDrvMDblocb2;		// Unsorted [NOT WORKING]
-DRV		BurnDrvMDbody;			// Unsorted [NOT WORKING]
-DRV		BurnDrvMDbttf;			// Unsorted [NOT WORKING]
-DRV		BurnDrvMDbuck;			// Unsorted [NOT WORKING]
+DRV		BurnDrvDw2001;			// IGS [NOT WORKING]
+DRV		BurnDrvDwex;			// IGS [NOT WORKING]
+DRV		BurnDrvFuncube2;		// Namco [NOT WORKING]
+DRV		BurnDrvFuncube4;		// Namco [NOT WORKING]
 #endif
 DRV		BurnDrvGetStar;
-DRV		BurnDrvGprider;
 #if defined FBA_DEBUG
-DRV		BurnDrvManiacsq;		// Gaelco [NOT WORKING]
+DRV		BurnDrvhappy6;			// IGS [NOT WORKING]
+#endif
+DRV		BurnDrvHunchbak;
+DRV		BurnDrvHuncholy;
+#if defined FBA_DEBUG
+DRV		BurnDrvJockeyc;			// [Seta] (Visco license) [NOT WORKING]
+DRV		BurnDrvkovshp;			// IGS [NOT WORKING]
+#endif
+DRV		BurnDrvManiacsq;
+#if defined FBA_DEBUG
+DRV		BurnDrvMonsterz;		// Nihon [NOT WORKING]
 #endif
 DRV		BurnDrvMWalk;
-DRV		BurnDrvopwolf;
+DRV		BurnDrvPhoenix;
 #if defined FBA_DEBUG
-DRV		BurnDrvporky;			// Shinkai Inc. (Magic Eletronics Inc. licence) [NOT WORKING]
+DRV		BurnDrvPuzzli2;			// IGS [NOT WORKING]
+DRV		BurnDrvRiskchal;		// Irem [NOT WORKING]
+DRV		BurnDrvRobocop;			// Data East Corporation [NOT WORKING]
 #endif
+DRV		BurnDrvThepit;
 DRV		BurnDrvTumblep;
+DRV		BurnDrvgames88;
 DRV		BurnDrv99lstwar;
-DRV		BurnDrv99lstwra;
-DRV		BurnDrv99lstwrk;
-//		BurnDrv4play;			// 4 player  input test cartridge
-DRV		BurnDrvMDg_007;
+DRV		BurnDrv99lstwara;
+DRV		BurnDrv99lstwark;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_007shi;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvGtmra;
 DRV		BurnDrvGtmr;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDg_16ton;		// No sound
-#endif
+DRV		BurnDrvMDg_12inun;
+DRV		BurnDrvMDg_16tons;
+DRV		BurnDrvMDg_16zhan;
+DRV		BurnDrvMDg_16tjap;
+DRV		BurnDrvCps1941u;
 DRV		BurnDrvCps1941j;
 DRV		BurnDrvCps1941;
-DRV		BurnDrvNineteen42;
-DRV		BurnDrvNineteen42a;
 DRV		BurnDrvNineteen42b;
-#if defined FBA_DEBUG
-DRV		BurnDrvNineteen43kai;	// No sound
-DRV		BurnDrvNineteen43j;		// No sound
-DRV		BurnDrvNineteen43;		// No sound
-#endif
+DRV		BurnDrvNineteen42a;
+DRV		BurnDrvNineteen42abl;
+DRV		BurnDrvNineteen42;
+DRV		BurnDrvNineteen42w;
+DRV		BurnDrvNineteen43kai;
+DRV		BurnDrvNineteen43ja;
+DRV		BurnDrvNineteen43j;
+DRV		BurnDrvNineteen43b;
+DRV		BurnDrvNineteen43;
+DRV		BurnDrvNineteen43u;
 DRV		BurnDrvCps1944j;
+DRV		BurnDrvCps1944d;
 DRV		BurnDrvCps1944;
 DRV		BurnDrv1945kiii;
 DRV		BurnDrvCps19xxa;
 DRV		BurnDrvCps19xxjr1;
+DRV		BurnDrvCps19xxd;
 DRV		BurnDrvCps19xx;
 DRV		BurnDrvCps19xxb;
 DRV		BurnDrvCps19xxh;
 DRV		BurnDrvCps19xxj;
 DRV		BurnDrvbb2020;
-DRV		BurnDrvbba2020;
-DRV		BurnDrvbbh2020;
-DRV		BurnDrv3Countb;
-DRV		BurnDrvMDg_3nin;
-DRV		BurnDrvenraya4;
-DRV		BurnDrvMDg_688a;
-DRV		BurnDrvMDaresha;
-DRV		BurnDrvAbcop;
+DRV		BurnDrvbb2020a;
+DRV		BurnDrvbb2020h;
+DRV		BurnDrvMDg_2020to;
+DRV		BurnDrvcountb3;
+DRV		BurnDrvMDg_3ninja;
+DRV		BurnDrvMDg_3in1fl;
+DRV		BurnDrvMDg_3in1ro;
+DRV		BurnDrvEnraya4;
+DRV		BurnDrvFourin1;
+DRV		BurnDrv4play;
+DRV		BurnDrvFourdwarrio;
+DRV		BurnDrvMDg_4in1pb;
+DRV		BurnDrvMDg_6pakus;
+DRV		BurnDrvSixhundred;
+DRV		BurnDrvMDg_688att;
+DRV		BurnDrvOrdi7;
+DRV		BurnDrvEighthundredfath;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDreal;			// no comment
+DRV		BurnDrvMDg_bioscd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosla;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosl1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosl2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosme;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosm1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosm2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosm3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosm4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosm5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosmu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosse;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bioss1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bioss2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bioss3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bioss4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bioswo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_biosxe;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDaahh;
+DRV		BurnDrvMDg_aressh;
+DRV		BurnDrvAbcop;
+DRV		BurnDrvAd2083;
+DRV		BurnDrvMDg_aahari;
+DRV		BurnDrvMDg_aaahhr;
+DRV		BurnDrvMDg_aaahh1;
 DRV		BurnDrvabscam;
 DRV		BurnDrvAceattac;
-DRV		BurnDrvAceattaa;
+DRV		BurnDrvAceattaca;
+DRV		BurnDrvAcrobatm;
+DRV		BurnDrvMDg_action;
+DRV		BurnDrvMDg_actio1;
 DRV		BurnDrvAFighter;
-DRV		BurnDrvMDafav;
-DRV		BurnDrvMDadamb;
-DRV		BurnDrvMDafam;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDadvdai;		// Bad sound
-DRV		BurnDrvMDabate;			// No Sound
-DRV		BurnDrvMDabat;			// No sound
-DRV		BurnDrvMDmmaxe;			// no comment
-DRV		BurnDrvMDmmax;			// no comment
+DRV		BurnDrvMDg_actrp;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDaerobl;
+DRV		BurnDrvMDg_afv;
+DRV		BurnDrvMDg_addam2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_addam1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_addam;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_advanc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_advdai;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHatena;
+DRV		BurnDrvMDg_advent;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_adven2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adven9;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adve10;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adve11;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adve12;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adve13;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_adven1;
+DRV		BurnDrvMDg_advemm;
+DRV		BurnDrvMDg_advem1;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_adverb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_adveby;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_aerobl;
 DRV		BurnDrvAerofgt;
 DRV		BurnDrvAerofgtb;
 DRV		BurnDrvAerofgtc;
-DRV		BurnDrvSonicwi2;
-DRV		BurnDrvSonicwi3;
+DRV		BurnDrvsonicwi2;
+DRV		BurnDrvsonicwi3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDacro;			// No sound
-DRV		BurnDrvMDacro2e;		// Bad sound
-DRV		BurnDrvMDacr2;			// No sound
+DRV		BurnDrvMDg_aerot1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDaero;
+DRV		BurnDrvMDg_aeroth;
+DRV		BurnDrvMDg_aerot2;
+DRV		BurnDrvMDg_aero2;
+DRV		BurnDrvMDg_aero2u;
+DRV		BurnDrvMDg_aerobi;
+DRV		BurnDrvMDg_aerobs;
 DRV		BurnDrvAburner;
 DRV		BurnDrvAburner2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDabrn2j;		// No sound
-DRV		BurnDrvMDabu2;			// Bad sound
+DRV		BurnDrvMDg_abur2j;		// Sound Problems
+DRV		BurnDrvMDg_abur2;		// Sound Problems
 #endif
-DRV		BurnDrvAODK;
-DRV		BurnDrvMDabus;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDadivej;		// no comment [NOT WORKING]
-#endif
-DRV		BurnDrvMDadiv;
+DRV		BurnDrvSuperbon;
+DRV		BurnDrvaodk;
+DRV		BurnDrvAgress;
+DRV		BurnDrvAgressb;
+DRV		BurnDrvKoshien;
+DRV		BurnDrvAirattck;
+DRV		BurnDrvAirattcka;
+DRV		BurnDrvMDg_airbus;
+DRV		BurnDrvAirbustrb;
+DRV		BurnDrvAirbustrj;
+DRV		BurnDrvAirbustr;
+DRV		BurnDrvMDg_airdvj;
+DRV		BurnDrvMDg_airdv;
+DRV		BurnDrvAirduel;
 DRV		BurnDrvAirGallet;
-DRV		BurnDrvMDairm;
-DRV		BurnDrvMDairm2;
+DRV		BurnDrvAirGalleth;
+DRV		BurnDrvAirGalletj;
+DRV		BurnDrvAirGalletk;
+DRV		BurnDrvAirGallett;
+DRV		BurnDrvAirGalletu;
+DRV		BurnDrvMDg_airman;
+DRV		BurnDrvMDg_airmas;
 DRV		BurnDrvAirwolf;
 DRV		BurnDrvAirwolfa;
+DRV		BurnDrvAjax;
+DRV		BurnDrvAjaxj;
+DRV		BurnDrvHcastljo;
+DRV		BurnDrvHcastlej;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDalexkk;		// No sound
-DRV		BurnDrvMDalxkeb;		// no comment [NOT WORKING]
-DRV		BurnDrvMDalexke;		// no comment [NOT WORKING]
-DRV		BurnDrvMDalexkj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_akumaj;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvAlexkid1;
+DRV		BurnDrvMDg_aladdi;
+DRV		BurnDrvMDg_aladd1;
+DRV		BurnDrvMDg_aladd3;
+DRV		BurnDrvMDg_aladd2;
+DRV		BurnDrvMDg_alad2;
+DRV		BurnDrvAlcon;
+DRV		BurnDrvMDg_alexk2;
+DRV		BurnDrvMDg_alexk1;
+DRV		BurnDrvMDg_alexk3;
+DRV		BurnDrvMDg_alexkd;
+DRV		BurnDrvMDg_alexk4;
+DRV		BurnDrvAlexkidd1;
 DRV		BurnDrvAlexkidd;
 DRV		BurnDrvalibaba;
-DRV		BurnDrvMDali300;
-DRV		BurnDrvMDali3;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDasolde;		// no comment [NOT WORKING]
-#endif
-DRV		BurnDrvMDasol;
+DRV		BurnDrvMDg_alien1;
+DRV		BurnDrvMDg_alienu;
+DRV		BurnDrvAlienchac;
+DRV		BurnDrvAliencha;
+DRV		BurnDrvAliensec;
+DRV		BurnDrvMDg_aliens;
+DRV		BurnDrvMDg_alien2;
 DRV		BurnDrvAstormj;
 DRV		BurnDrvAstormu;
 DRV		BurnDrvAstorm3;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDasto;			// No sound
-#endif
-DRV		BurnDrvAliensy1;
-DRV		BurnDrvAliensy2;
-DRV		BurnDrvAliensy3;
+DRV		BurnDrvAstorm;
+DRV		BurnDrvMDg_alstm;
+DRV		BurnDrvAliensynjo;
+DRV		BurnDrvAliensyn2;
+DRV		BurnDrvAliensyn3;
 DRV		BurnDrvAliensyn;
-DRV		BurnDrvAliensy5;
+DRV		BurnDrvAliensyn5;
+DRV		BurnDrvAliensynj;
 DRV		BurnDrvCpsAvspa;
+DRV		BurnDrvCpsAvspd;
 DRV		BurnDrvCpsAvsp;
 DRV		BurnDrvCpsAvsph;
 DRV		BurnDrvCpsAvspj;
 DRV		BurnDrvCpsAvspu;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDalisie;		// Bad sound
-DRV		BurnDrvMDalisij;		// Bad sound
-DRV		BurnDrvMDalis;			// Bad sound
-#endif
-DRV		BurnDrvAlpham2;
-DRV		BurnDrvAltbeas2;
-DRV		BurnDrvAltbeas4;
-DRV		BurnDrvAltbeas5;
+DRV		BurnDrvAliensa;
+DRV		BurnDrvAliensj;
+DRV		BurnDrvAliensj2;
+DRV		BurnDrvAliensu;
+DRV		BurnDrvAliens;
+DRV		BurnDrvAliens2;
+DRV		BurnDrvAliens3;
+DRV		BurnDrvMDg_alisia;
+DRV		BurnDrvMDg_alisi1;
+DRV		BurnDrvMDg_alisi2;
+DRV		BurnDrvalpham2;
+DRV		BurnDrvAltbeast2;
+DRV		BurnDrvAltbeast4;
+DRV		BurnDrvAltbeast5;
 DRV		BurnDrvAltbeast;
-DRV		BurnDrvambush;
-DRV		BurnDrvambusht;
-DRV		BurnDrvambushv;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDaateb;			// No sound
-DRV		BurnDrvMDaatee;			// No sound
-DRV		BurnDrvMDaate;			// No sound
-#endif
+DRV		BurnDrvMDg_altere;
+DRV		BurnDrvAmbush;
+DRV		BurnDrvAmbushj;
+DRV		BurnDrvAmbushv;
+DRV		BurnDrvAnteaterg;
+DRV		BurnDrvMDg_americ;
+DRV		BurnDrvAmidar;
+DRV		BurnDrvAmidarb;
+DRV		BurnDrvAmidar1;
+DRV		BurnDrvAmidaro;
+DRV		BurnDrvAmidars;
+DRV		BurnDrvAmidaru;
+DRV		BurnDrvAmigo;
+DRV		BurnDrvMDg_andrea;
+DRV		BurnDrvMDg_andre2;
+DRV		BurnDrvMDg_andre1;
 DRV		BurnDrvandrodun;
+DRV		BurnDrvAngelkds;
+DRV		BurnDrvMDg_animan;
+DRV		BurnDrvMDg_anima1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDanime;			// No sound
-DRV		BurnDrvMDanim;			// Bad sound
+DRV		BurnDrvMDg_anothe;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDawld;
+DRV		BurnDrvAnteater;
+DRV		BurnDrvMDg_aokioo;
+DRV		BurnDrvAponow;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDaoki;			// no comment
+DRV		BurnDrvMDg_aqrenk;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvAquajckj;
+DRV		BurnDrvAquajackj;
 DRV		BurnDrvAquajack;
-DRV		BurnDrvMDaqua;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDarca;			// Bad sound
-#endif
-DRV		BurnDrvMDarch;
-DRV		BurnDrvMDarcusj;
-DRV		BurnDrvMDarcu;
+DRV		BurnDrvAquarium;
+DRV		BurnDrvMDg_aquati;
+DRV		BurnDrvarabian;
+DRV		BurnDrvarabiana;
+DRV		BurnDrvAracnis;
+DRV		BurnDrvArbalest;
+DRV		BurnDrvMDg_arcade;
+DRV		BurnDrvMDg_archri;
+DRV		BurnDrvMDg_arcusj;
+DRV		BurnDrvMDg_arcus;
+DRV		BurnDrvCpsArea88r;
 DRV		BurnDrvCpsArea88;
-DRV		BurnDrvMDarie;
+DRV		BurnDrvLwingsjp;
+DRV		BurnDrvRygarj;
+DRV		BurnDrvMDg_arielt;
 DRV		BurnDrvarkgcbl;
-#if defined FBA_DEBUG
-DRV		BurnDrvarkmcubl;		// Unsupported MCU [NOT WORKING]
-DRV		BurnDrvark1ball;		// Unsupported MCU [NOT WORKING]
-#endif
+DRV		BurnDrvarkmcubl;
+DRV		BurnDrvark1ball;
 DRV		BurnDrvarkangc;
 DRV		BurnDrvarkangc2;
-#if defined FBA_DEBUG
-DRV		BurnDrvarknoidj;		// Unsupported MCU [NOT WORKING]
-#endif
+DRV		BurnDrvarknoidj;
 DRV		BurnDrvarkatayt;
 DRV		BurnDrvarktayt2;
-#if defined FBA_DEBUG
-DRV		BurnDrvarknoidu;		// Unsupported MCU [NOT WORKING]
-DRV		BurnDrvarknoiuo;		// Unsupported MCU [NOT WORKING]
-#endif
-DRV		BurnDrvBatrider;
-DRV		BurnDrvBatridrk;
-DRV		BurnDrvBatridra;
+DRV		BurnDrvarknoidu;
+DRV		BurnDrvarknoiuo;
+DRV		BurnDrvarkanoid;
+DRV		BurnDrvArknid2j;
+DRV		BurnDrvArknid2u;
+DRV		BurnDrvArknoid2;
+DRV		BurnDrvArmedf;
+DRV		BurnDrvArmedff;
+DRV		BurnDrvBatridc;
+DRV		BurnDrvBatrid;
+DRV		BurnDrvBatridk;
+DRV		BurnDrvBatridu;
+DRV		BurnDrvBatridja;
+DRV		BurnDrvBatridta;
+DRV		BurnDrvBatridj;
+DRV		BurnDrvArmorcar;
+DRV		BurnDrvArmorcar2;
 DRV		BurnDrvCpsArmwara;
+DRV		BurnDrvCpsArmwaru1;
+DRV		BurnDrvCpsArmwar1d;
 DRV		BurnDrvCpsArmwarr1;
 DRV		BurnDrvCpsArmwar;
 DRV		BurnDrvCpsArmwaru;
+DRV		BurnDrvMDg_arnold;
+DRV		BurnDrvMDg_arrowj;
+DRV		BurnDrvMDg_arrow;
+DRV		BurnDrvMDg_artali;
+DRV		BurnDrvMDg_artoff;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDaptg;			// No sound
-DRV		BurnDrvMDarrowj;		// no comment
-DRV		BurnDrvMDarro;			// No sound
+DRV		BurnDrvMDg_artof1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDarta;
-DRV		BurnDrvMDaofe;
-DRV		BurnDrvMDaof;
-DRV		BurnDrvAof2;
-DRV		BurnDrvAof2a;
-DRV		BurnDrvAof3k;
-DRV		BurnDrvAof3;
-DRV		BurnDrvAof;
+DRV		BurnDrvMDg_artof2;
+DRV		BurnDrvaof;
+DRV		BurnDrvaof2;
+DRV		BurnDrvaof2a;
+DRV		BurnDrvaof3k;
+DRV		BurnDrvaof3;
+DRV		BurnDrvAshnojoe;
+DRV		BurnDrvAshuraj;
+DRV		BurnDrvAshurau;
+DRV		BurnDrvAshura;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDasl;			// Bad sound
-DRV		BurnDrvMDasgr;			// No sound
-DRV		BurnDrvMDastgru;		// no comment
-DRV		BurnDrvMDaspg;			// No sound
-DRV		BurnDrvMDastpgx;		// No sound
+DRV		BurnDrvMDg_assaul;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_asteri;
+DRV		BurnDrvMDg_aster1;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_astepb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_astepg;
+DRV		BurnDrvAsukaj;
+DRV		BurnDrvAsuka;
+DRV		BurnDrvAsurabld;
+DRV		BurnDrvAtehate;
 DRV		BurnDrvacitya;
+DRV		BurnDrvAtomboya;
+DRV		BurnDrvAtomboy;
+DRV		BurnDrvAtomicp;
+DRV		BurnDrvAtompunk;
+DRV		BurnDrvMDg_aroboj;
+DRV		BurnDrvMDg_arobo;
+DRV		BurnDrvMDg_atomrn;
+DRV		BurnDrvMDg_atomr1;
+DRV		BurnDrvMDg_atptou;
 #if defined FBA_DEBUG
-DRV		BurnDrvatompunk;		// Preliminary driver [NOT WORKING]
+DRV		BurnDrvMDg_atpto1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_atpto8;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDrobokj;
-DRV		BurnDrvMDakid;
-DRV		BurnDrvMDarunre;
-DRV		BurnDrvMDarun;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDatpte;			// No sound
-#endif
-DRV		BurnDrvMDatpt;
+DRV		BurnDrvMDg_atpto9;
 DRV		BurnDrvAurailj;
 DRV		BurnDrvAurail1;
 DRV		BurnDrvAurail;
-DRV		BurnDrvMDarug;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDawsep;			// No sound
-DRV		BurnDrvMDawep;			// No sound
-#endif
-DRV		BurnDrvMDaworg;
-DRV		BurnDrvMDawsp;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsmgp2a;		// no comment
-DRV		BurnDrvMDsgp2;			// no comment
-#endif
+DRV		BurnDrvMDg_austra;
+DRV		BurnDrvAvengers;
+DRV		BurnDrvAvenger2;
+DRV		BurnDrvMDg_aweso;
+DRV		BurnDrvMDg_awesob;
+DRV		BurnDrvMDg_aworgj;
+DRV		BurnDrvMDg_awspro;
+DRV		BurnDrvMDg_asmgpj;
+DRV		BurnDrvMDg_asmgp;
+DRV		BurnDrvAzurian;
 DRV		BurnDrvBonkadv;
 DRV		BurnDrvBcstry;
 DRV		BurnDrvBcstrya;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbobb;			// no comment
-DRV		BurnDrvMDbob;			// No sound in-game
-DRV		BurnDrvMDbabyb1;		// No sound
+DRV		BurnDrvMDg_bobb;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbabyb2;
+DRV		BurnDrvMDg_bob;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbttfe;			// No sound
-DRV		BurnDrvbaddudes;		// no comment
-DRV		BurnDrvMDbdomen;		// No sound
-DRV		BurnDrvMDbaha;			// no comment
+DRV		BurnDrvMDg_babybo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_babyb1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_babyb2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvBakatono;
+DRV		BurnDrvMDg_babyd;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_babydo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvbackfirt;
+DRV		BurnDrvBssoccer;
+DRV		BurnDrvMDg_backto;
+DRV		BurnDrvMDg_backt1;
+DRV		BurnDrvBackfire;
+DRV		BurnDrvBackfirea;
+#if defined FBA_DEBUG
+DRV		BurnDrvBaddudes;		// no comment
+DRV		BurnDrvMDg_badome;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBagmanmc;
+DRV		BurnDrvMDg_bahamu;
+DRV		BurnDrvbakatono;
 DRV		BurnDrvBakubrkr;
-DRV		BurnDrvMDbjak;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDbalz;			// No sound
-#endif
+DRV		BurnDrvMDg_ballja;
+DRV		BurnDrvBallbros;
+DRV		BurnDrvMDg_ballzd;
 DRV		BurnDrvbangbead;
+//		BurnDrvbngbeadn;		// no comment
+DRV		BurnDrvbangbedp;
 DRV		BurnDrvbankp;
-DRV		BurnDrvMDbarb;
+DRV		BurnDrvBaraduke;
+DRV		BurnDrvMDg_barbie;
+DRV		BurnDrvMDg_barbi1;
+DRV		BurnDrvMDg_bk2b;
+DRV		BurnDrvMDg_bk2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbarbvb;		// Bad sound
+DRV		BurnDrvMDg_bk3b;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbk2b;
-DRV		BurnDrvMDbk3b;
-DRV		BurnDrvMDbar3;
+DRV		BurnDrvMDg_bk3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsuj2;			// no comment
-DRV		BurnDrvMDsuj;			// no comment
-DRV		BurnDrvMDbarn;			// No sound
+DRV		BurnDrvMDg_barkle;		// Gfx Problems
+DRV		BurnDrvMDg_bark2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bark2;		// Gfx Problems
 #endif
-DRV		BurnDrvBstars2;
-DRV		BurnDrvBstars;
-DRV		BurnDrvMDbasp;
-DRV		BurnDrvMDbass;
+DRV		BurnDrvMDg_barney;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbatme;			// No sound
+DRV		BurnDrvMDg_barver;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbatmnj;
-DRV		BurnDrvMDbat;
+DRV		BurnDrvbstars2;
+DRV		BurnDrvbstars;
+DRV		BurnDrvbstarsh;
+DRV		BurnDrvMDg_bassma;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbatj;			// No sound in-game
-DRV		BurnDrvMDbatr;			// Bad sound
+DRV		BurnDrvMDg_bassmp;		// Gfx Problems
 #endif
+DRV		BurnDrvMDg_batman;
+DRV		BurnDrvMDg_batma1;
+DRV		BurnDrvMDg_batma2;
+DRV		BurnDrvMDg_batmrd;
+DRV		BurnDrvMDg_batmfr;
+DRV		BurnDrvBatman2;
+DRV		BurnDrvMDg_batmrt;
 DRV		BurnDrvBatsugun;
 DRV		BurnDrvBatsugna;
 DRV		BurnDrvBatsugunSP;
-DRV		BurnDrvBattleBakraid;
-DRV		BurnDrvBattleBakraidU;
+DRV		BurnDrvBattleBkraidj;
+DRV		BurnDrvBattleBkraiduj;
+DRV		BurnDrvBattleBkraidu;
+DRV		BurnDrvBchopper;
 DRV		BurnDrvCpsBatcira;
+DRV		BurnDrvCpsBatcird;
 DRV		BurnDrvCpsBatcir;
 DRV		BurnDrvCpsBatcirj;
-DRV		BurnDrvFlipshot;
+DRV		BurnDrvflipshot;
 DRV		BurnDrvBgareghk;
+DRV		BurnDrvBgaregtw;
 DRV		BurnDrvBgaregga;
 DRV		BurnDrvBgaregnv;
 DRV		BurnDrvBgaregcn;
 DRV		BurnDrvBgaregt2;
+DRV		BurnDrvMDg_battle;
 DRV		BurnDrvBtlKRoad;
-DRV		BurnDrvMDbtlm;
-DRV		BurnDrvMDbtl2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_battma;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_battmd;
+DRV		BurnDrvAtlantisb;
+DRV		BurnDrvAtlantis;
+DRV		BurnDrvAtlantis2;
 DRV		BurnDrvBsharkj;
 DRV		BurnDrvBshark;
-DRV		BurnDrvMDbsqu;
-DRV		BurnDrvMDbtms;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbtec;			// No sound in-game
-DRV		BurnDrvMDbtoa;			// No sound
+DRV		BurnDrvMDg_battsq;		// Sound Problems
+DRV		BurnDrvMDg_battms;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbtdd;
-DRV		BurnDrvBayrout1;
-DRV		BurnDrvBayroutj;
+DRV		BurnDrvMDg_batttc;
+DRV		BurnDrvMDg_btoadd;
+DRV		BurnDrvMDg_btoads;
+DRV		BurnDrvBayroute1;
+DRV		BurnDrvBayroutej;
 DRV		BurnDrvBayroute;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbeaswr;		// Bad sound
-DRV		BurnDrvMDbwre;			// Bad sound
+DRV		BurnDrvMDg_beaswj;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_beasw;
 DRV		BurnDrvbeastf;
+DRV		BurnDrvMDg_beauty;
+DRV		BurnDrvMDg_beaurb;
+DRV		BurnDrvMDg_beavis;
+DRV		BurnDrvMDg_beavi2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbbbq;			// No sound
-DRV		BurnDrvMDbbrb;			// No sound
-DRV		BurnDrvMDbeavib;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beavi1;		// no comment [NOT WORKING]
+DRV		BurnDrvDdp2100;			// Incomplete Dump [NOT WORKING]
+DRV		BurnDrvDdp2101;			// Incomplete Dump [NOT WORKING]
+DRV		BurnDrvDdp2;			// Incomplete Dump [NOT WORKING]
 #endif
-DRV		BurnDrvMDbeave;
-DRV		BurnDrvMDbeav;
+DRV		BurnDrvBlswhstl;
 #if defined FBA_DEBUG
-DRV		BurnDrvDdp2;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beren9;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere10;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere11;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere12;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere13;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere14;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere15;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere16;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere17;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere18;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere19;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bere20;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbear;
-DRV		BurnDrvMDbotbb;
-DRV		BurnDrvMDbotb;
-DRV		BurnDrvMDboas;
-DRV		BurnDrvMDbzerot;
+DRV		BurnDrvMDg_berens;
+DRV		BurnDrvBestbest;
+DRV		BurnDrvMDg_bestof;
+DRV		BurnDrvMDg_besto1;
+DRV		BurnDrvBestri;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_beyonp;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_beyonu;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_beyzt;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsPunisherbz;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_biblea;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBigbang;
 DRV		BurnDrvbigbucks;
-DRV		BurnDrvMDbw95;
-DRV		BurnDrvMDbwcf;
-DRV		BurnDrvMDbimi;
-DRV		BurnDrvMDbiohzb;
-DRV		BurnDrvMDbhb;
+DRV		BurnDrvBigkarnk;
+DRV		BurnDrvMDg_billwa;
+DRV		BurnDrvMDg_bill95;
+DRV		BurnDrvMDg_bimini;
+DRV		BurnDrvMDg_biohzb;
+DRV		BurnDrvMDg_biohz;
+DRV		BurnDrvBioship;
+DRV		BurnDrvBiomtoya;
 DRV		BurnDrvBiomtoy;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsail;			// no comment
-DRV		BurnDrvMDblav;			// No sound
-DRV		BurnDrvMDblam2b;		// No sound
-DRV		BurnDrvMDblma;			// No sound
-#endif
+DRV		BurnDrvbionicc;
+DRV		BurnDrvbionicc1;
+DRV		BurnDrvbionicc2;
+DRV		BurnDrvMDg_bishou;
+DRV		BurnDrvBlkdrgon;
+DRV		BurnDrvBlkdrgonb;
+DRV		BurnDrvBlkheart;
+DRV		BurnDrvBlkheartj;
+DRV		BurnDrvBlkhole;
+DRV		BurnDrvBlktiger;
+DRV		BurnDrvBlktigerb1;
+DRV		BurnDrvBktigrb2;
+DRV		BurnDrvBlktigera;
+DRV		BurnDrvBmaster;
+DRV		BurnDrvMDg_blades;
+DRV		BurnDrvBlandia;
+DRV		BurnDrvBlandiap;
+DRV		BurnDrvMDg_blast;
+DRV		BurnDrvMDg_blastb;
 DRV		BurnDrvBlazeon;
-DRV		BurnDrvBlazStar;
+DRV		BurnDrvblazstar;
 DRV		BurnDrvarkblock;
 DRV		BurnDrvarkbloc2;
+DRV		BurnDrvBlockbl;
+DRV		BurnDrvBlockj;
+DRV		BurnDrvBlock;
+DRV		BurnDrvBlockjoy;
+DRV		BurnDrvBlockcar;
 DRV		BurnDrvBlockgal;
-DRV		BurnDrvMDbloc;
+DRV		BurnDrvBlockhl;
+DRV		BurnDrvBlckoutj;
+DRV		BurnDrvBlockout;
+DRV		BurnDrvBlckout2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbsht;			// No sound in-game
+DRV		BurnDrvMDg_blockb;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_blocko;
+DRV		BurnDrvBloodbro;
+DRV		BurnDrvBloodbroa;
+DRV		BurnDrvBloodbrob;
 DRV		BurnDrvBloodwar;
 #if defined FBA_DEBUG
-DRV		BurnDrvBloxeed;			// Incomplete Sound
-DRV		BurnDrvMDblueal;		// no comment
+DRV		BurnDrvMDg_bloods;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvBJourney;
-DRV		BurnDrvbwcasino;
+DRV		BurnDrvBloxeed;
+DRV		BurnDrvBlox16b;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbcounb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_blueal;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBlueprnj;
+DRV		BurnDrvBlueprnt;
+DRV		BurnDrvbjourney;
+DRV		BurnDrvbwcasino;
+DRV		BurnDrvBoblbobl;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_bodyc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodyca;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodycb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodycc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodycd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodyce;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodycf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodycg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bodych;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvBodyslam;
 DRV		BurnDrvBombjack;
 DRV		BurnDrvBombjac2;
+DRV		BurnDrvBombkick;
+DRV		BurnDrvBombrman;
+DRV		BurnDrvBbmanwj;
+DRV		BurnDrvBbmanw;
+DRV		BurnDrvBjtwin;
+DRV		BurnDrvBjtwina;
 #if defined FBA_DEBUG
-DRV		BurnDrvbombrman;		// Preliminary driver [NOT WORKING]
-DRV		BurnDrvMDbnza00;		// No sound
-DRV		BurnDrvMDbnza01;		// No sound
-DRV		BurnDrvMDbnza;			// No sound
-DRV		BurnDrvMDbonk;			// No sound in-game
-DRV		BurnDrvMDbooge;			// no comment
+DRV		BurnDrvMDg_bonan1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonanz;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonan2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDboog;
+DRV		BurnDrvBongo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbwbw;			// Bad sound
-DRV		BurnDrvMDboxl;			// Bad Sound
+DRV		BurnDrvMDg_bonkra;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonkrb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonkrc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonkrd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonkre;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bonkr;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBonzeadvu;
+DRV		BurnDrvBonzeadv;
+DRV		BurnDrvBonzeadvo;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_booger;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_booge1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_boogie;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBottom9n;
+DRV		BurnDrvBottom9;
+DRV		BurnDrvBballs;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_boxing;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvBrain;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdrace;			// no comment
-DRV		BurnDrvMDdrac;			// no comment
+DRV		BurnDrvMDg_bramst;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_brams1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvBreakers;
-DRV		BurnDrvBreakRev;
+DRV		BurnDrvbreakers;
+DRV		BurnDrvbreakrev;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbh95;			// No sound in-game
-DRV		BurnDrvMDblcrb;			// No sound
-DRV		BurnDrvMDblcr;			// No sound
-DRV		BurnDrvMDblc96x;		// no comment [NOT WORKING]
-DRV		BurnDrvMDbl96;			// No sound
+DRV		BurnDrvMDg_bretth;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBreywood;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_brianl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_brian1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bri96;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bri96a;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvbrix;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbrutle;		// No sound in-game
-DRV		BurnDrvMDbrpw;			// No sound in-game
-DRV		BurnDrvMDbubbab;		// No sound
-DRV		BurnDrvMDbubbae;		// No sound
-DRV		BurnDrvMDbuba;			// Bad sound
+DRV		BurnDrvMDg_brutal;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bruta1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bubba;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bubbab;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bubbau;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbusq;
-DRV		BurnDrvMDbub2;
-DRV		BurnDrvMDbubs;
-DRV		BurnDrvMDbudoe;
-DRV		BurnDrvMDbudo;
-DRV		BurnDrvMDbbny;
+DRV		BurnDrvBubl2000;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_bubble;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bubbl1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBublbobl;
+DRV		BurnDrvBub68705;
+DRV		BurnDrvBublbob1;
+DRV		BurnDrvBublbobr;
+DRV		BurnDrvBubbobr1;
+DRV		BurnDrvMDg_bubsy2;
+DRV		BurnDrvMDg_bubsy;
+DRV		BurnDrvBuccanrs;
+DRV		BurnDrvBuccanrsa;
+DRV		BurnDrvMDg_buckro;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_budoka;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_budok1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bugsli;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bugsbu;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvBullet;
-DRV		BurnDrvMDbvsb;
-DRV		BurnDrvMDbvsl;
-DRV		BurnDrvBurningf;
-DRV		BurnDrvBurningh;
+DRV		BurnDrvBullfgt;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDburnfe;		// no comment
-DRV		BurnDrvMDburnfj;		// Bad sound
-DRV		BurnDrvMDburf;			// Bad sound
+DRV		BurnDrvMDg_bullsv;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_bullla;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvBurglarx;
+DRV		BurnDrvburningf;
+DRV		BurnDrvburningfh;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_burnin;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_burni1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_burni2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBbros;
 DRV		BurnDrvBuzzard;
+DRV		BurnDrvCactus;
+DRV		BurnDrvCadashf;
+DRV		BurnDrvCadashg;
+DRV		BurnDrvCadashi;
+DRV		BurnDrvCadashj;
+DRV		BurnDrvCadashu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcada;			// no comment
+DRV		BurnDrvMDg_cadash;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvCadash;
 DRV		BurnDrvCpsDino;
 DRV		BurnDrvCpsDinou;
+DRV		BurnDrvCpsDinoh;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsDinopic;		// Missing sprites, no sound [NOT WORKING]
+DRV		BurnDrvCpsDinopic2;		// Missing sprites, no sound [NOT WORKING]
+#endif
+DRV		BurnDrvCpsDinoeh;
+//		BurnDrvCpsDinob;		// Missing sprites, no sound [NOT WORKING]
+DRV		BurnDrvCpsDinoha;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsDinohb;		// no comment [NOT WORKING]
+//		BurnDrvCpsKl2d;			// no comment
+#endif
 DRV		BurnDrvCpsDinoj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcaeno;			// no comment
-DRV		BurnDrvMDcaeno2;		// no comment
-DRV		BurnDrvMDcaes;			// no comment
-DRV		BurnDrvMDcrjb;			// no comment
-DRV		BurnDrvMDc50;			// no comment
+DRV		BurnDrvMDg_caesar;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDcgam;
-DRV		BurnDrvcannonbp;
+DRV		BurnDrvMDg_caes2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcano;			// no comment
+DRV		BurnDrvMDg_caespl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_calrip;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_calibe;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCalibr50;
+DRV		BurnDrvMDg_califo;
+DRV		BurnDrvCalipso;
+DRV		BurnDrvCameltryj;
+DRV		BurnDrvCameltrya;
+DRV		BurnDrvCameltry;
+DRV		BurnDrvCameltryau;
+DRV		BurnDrvcannonbp;
+DRV		BurnDrvCandance;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_cannon;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsCscluba;
-DRV		BurnDrvCpsCsclub;
-DRV		BurnDrvCpscsclubh;
+DRV		BurnDrvCpsCsclub1d;
+DRV		BurnDrvCpsCsclub1;
+DRV		BurnDrvCpsCsclubh;
 DRV		BurnDrvCpsCsclubj;
+DRV		BurnDrvCpsCsclubjr;
+DRV		BurnDrvCpsCsclub;
+DRV		BurnDrvCworld;
 DRV		BurnDrvCpsCworld2j;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcaptha;		// no comment
-DRV		BurnDrvMDcapamb;		// no comment
-DRV		BurnDrvMDcapame;		// no comment
-DRV		BurnDrvMDcapa;			// no comment
+DRV		BurnDrvMDg_havoce;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_captai;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_capta2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_capta1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsCaptcomu;
+DRV		BurnDrvCpsCaptcommjr1;
+DRV		BurnDrvCpsCaptcommu;
+DRV		BurnDrvCpsCaptcommr1;
+DRV		BurnDrvCpsCaptcommj;
 DRV		BurnDrvCpsCaptcomm;
-DRV		BurnDrvCpsCaptcomj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcappb;			// no comment
-DRV		BurnDrvMDcapp;			// no comment
+DRV		BurnDrvCpsCaptcommb;	// Sprite issues [NOT WORKING]
+DRV		BurnDrvMDg_captpl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_captp1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCTomaday;
+DRV		BurnDrvCsilverj;
+DRV		BurnDrvCsilver;
+DRV		BurnDrvctomaday;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsCawingb;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvCpsCawingr1;
 DRV		BurnDrvCpsCawing;
 DRV		BurnDrvCpsCawingu;
+DRV		BurnDrvMDg_castlj;
+DRV		BurnDrvMDg_castl;
+DRV		BurnDrvMDg_cvania;
+DRV		BurnDrvMDg_cvani2;
+DRV		BurnDrvMDg_cvani1;
+DRV		BurnDrvCatacomb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcill;			// no comment
-DRV		BurnDrvMDcasv;			// no comment
-DRV		BurnDrvMDcvtngb;		// no comment
-DRV		BurnDrvMDcvane;			// no comment
 DRV		BurnDrvCatapult;		// Bad dump [NOT WORKING]
 #endif
 DRV		BurnDrvctrpllrp;
+DRV		BurnDrvCatt;
+DRV		BurnDrvCavelon;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcdor;			// no comment
-DRV		BurnDrvMDchak;			// no comment
-DRV		BurnDrvMDckid;			// no comment
-DRV		BurnDrvMDcwcs;			// no comment
-DRV		BurnDrvMDcbwl;			// Bad sound
-DRV		BurnDrvMDcpoo;			// no comment
-DRV		BurnDrvMDcpam;			// no comment
-DRV		BurnDrvMDcengb;			// no comment
-DRV		BurnDrvMDchao;			// no comment
-DRV		BurnDrvMDwbug;			// no comment
+DRV		BurnDrvMDg_centur;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvChaknpop;
+DRV		BurnDrvChainrec;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chakan;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chamel;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_champi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_champ1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_champl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cpam;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chaoji;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPgmdemo;
+DRV		BurnDrvCpsCps1demo;
+DRV		BurnDrvneodemo;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chao2p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chaose;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCharlien;
 DRV		BurnDrvChasehqj;
+DRV		BurnDrvChasehqu;
 DRV		BurnDrvChasehq;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDchq2;			// no comment
-DRV		BurnDrvMDchav2;			// No sound
-DRV		BurnDrvMDchee;			// no comment
+DRV		BurnDrvMDg_chaseh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chavez;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDchelno;
+DRV		BurnDrvCheckman;
+DRV		BurnDrvCheckmanj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDche;			// no comment
-DRV		BurnDrvMDche2;			// no comment
-DRV		BurnDrvMDchibi;			// no comment
+DRV		BurnDrvMDg_cheese;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMarukodq;
+DRV		BurnDrvMDg_chelno;
+DRV		BurnDrvChelnovj;
+DRV		BurnDrvChelnovu;
+DRV		BurnDrvChelnov;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chessu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cheste;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chestw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvChewing;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chichi;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSeventoitsu;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chibim;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvmarukodq;
 DRV		BurnDrvCpsChikij;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDchikij;		// no comment
-DRV		BurnDrvMDchik;			// no comment
-DRV		BurnDrvMDchi;			// no comment
+DRV		BurnDrvMDg_chikij;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chiki;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chines;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chinf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chinfb;		// no comment [NOT WORKING]
+DRV		BurnDrvcndi;			// no comment
 #endif
 DRV		BurnDrvCpsChoko;
 DRV		BurnDrvChokChok;
+DRV		BurnDrvMDg_chouky;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDchouya;		// no comment
-DRV		BurnDrvMDchk2b;			// no comment
-DRV		BurnDrvMDchk2e;			// no comment
-DRV		BurnDrvMDchk2j;			// no comment
-DRV		BurnDrvMDchk2;			// no comment
-DRV		BurnDrvMDchkrke;		// no comment
-DRV		BurnDrvMDchuk;			// no comment
-DRV		BurnDrvMDchuck;			// no comment
+DRV		BurnDrvMDg_chouto;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvLegiono;
+DRV		BurnDrvLegion;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_chuckr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chuck1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chuk21;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chuk2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chuk23;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chuk22;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_chucks;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvChukataj;
+DRV		BurnDrvChukatau;
+DRV		BurnDrvChukatai;
 DRV		BurnDrvDrgw2j;
+DRV		BurnDrvMDg_classi;
+DRV		BurnDrvMDg_clay;
+DRV		BurnDrvMDg_clayu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDclascl;		// no comment
-DRV		BurnDrvMDclay;			// no comment
-DRV		BurnDrvMDclifhb;		// no comment
-DRV		BurnDrvMDclifhe;		// no comment
-DRV		BurnDrvMDclif;			// no comment
-DRV		BurnDrvMDclue;			// no comment
+DRV		BurnDrvMDg_cliffb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cliff;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cliffu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_clueus;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCltchtrj;
+DRV		BurnDrvCltchitrj;
 DRV		BurnDrvCltchitr;
+DRV		BurnDrvMDg_coachk;
+DRV		BurnDrvCobracmj;
+DRV		BurnDrvCobracom;
+DRV		BurnDrvcnbe;
+DRV		BurnDrvMDg_colleg;
+DRV		BurnDrvMDg_coll97;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcoak;			// no comment
-DRV		BurnDrvMDcf96;			// no comment
-DRV		BurnDrvMDcf97;			// no comment
-DRV		BurnDrvMDcfn;			// no comment
-DRV		BurnDrvMDcfn2;			// no comment
-DRV		BurnDrvMDcsla;			// no comment
-DRV		BurnDrvMDcol00;			// no comment
-DRV		BurnDrvMDcol;			// no comment
-DRV		BurnDrvMDcol3;			// no comment
-DRV		BurnDrvMDcol3j;			// no comment
-DRV		BurnDrvMDcomacb;		// no comment
-DRV		BurnDrvMDcomc;			// no comment
+DRV		BurnDrvMDg_colle2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_colle9;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll10;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll11;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll12;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll13;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll14;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll15;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll16;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll17;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll18;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll19;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_coll20;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_collnc;
+DRV		BurnDrvMDg_colln2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_cslam;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvcolumnsn;
+DRV		BurnDrvMDg_colum1;
+DRV		BurnDrvMDg_column;
+DRV		BurnDrvMDg_cols3;
+DRV		BurnDrvMDg_cols3a;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_combat;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_combca;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvcombh;
+DRV		BurnDrvMDg_comix1;
+DRV		BurnDrvMDg_comix;
+DRV		BurnDrvMDg_comix2;
+DRV		BurnDrvMDg_comix3;
+DRV		BurnDrvMDg_comix4;
+DRV		BurnDrvMDg_comix5;
+DRV		BurnDrvMDg_comix6;
+DRV		BurnDrvMDg_comix7;
+DRV		BurnDrvMDg_comix8;
+DRV		BurnDrvMDg_comix9;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcomixb;		// no comment
-DRV		BurnDrvMDcomixe;		// no comment
-DRV		BurnDrvMDcomixj;		// no comment
-DRV		BurnDrvMDcomx;			// no comment
+DRV		BurnDrvMDg_comi10;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi11;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi12;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi13;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi14;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi15;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi17;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_comi16;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvContcrcu;
-DRV		BurnDrvContcrua;
+DRV		BurnDrvCommandb;
+DRV		BurnDrvCommandu;
+DRV		BurnDrvCommando;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_congou;		// no comment [NOT WORKING]
+DRV		BurnDrvConquer;			// Bad dump [NOT WORKING]
+#endif
+DRV		BurnDrvContcircu;
+DRV		BurnDrvContcircua;
 DRV		BurnDrvContcirc;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDcont;			// no comment
-DRV		BurnDrvMDcontrj;		// no comment
-#endif
+DRV		BurnDrvContrab;
+DRV		BurnDrvContrajb;
+DRV		BurnDrvContraj;
+DRV		BurnDrvContra;
+DRV		BurnDrvContra1;
+DRV		BurnDrvMDg_contra;
+DRV		BurnDrvMDg_contr1;
 DRV		BurnDrvCookbib;
 DRV		BurnDrvCookbib2;
 DRV		BurnDrvCookbib3;
+DRV		BurnDrvMDg_coolsp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDspotb;			// no comment
-DRV		BurnDrvMDcoole;			// no comment
-DRV		BurnDrvMDcool;			// no comment
-DRV		BurnDrvMDcorp;			// no comment
-DRV		BurnDrvMDcoss;			// no comment
+DRV		BurnDrvMDg_cools1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_cools3;
+DRV		BurnDrvMDg_cools2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_corpor;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCavenger;
+DRV		BurnDrvCosmccop;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_cosmic;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCottonj;
 DRV		BurnDrvCottonu;
 DRV		BurnDrvCotton;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcrkde;			// no comment
-DRV		BurnDrvMDcrkdj;			// no comment
-DRV		BurnDrvMDcrkd;			// no comment
-DRV		BurnDrvMDcrayon;		// no comment
+DRV		BurnDrvMDg_crack1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crackd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crack2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crayon;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCrSword;
+DRV		BurnDrvQcrayon2;
+DRV		BurnDrvCclimbr2;
+DRV		BurnDrvCclmbr2a;
+DRV		BurnDrvCrazycop;
+DRV		BurnDrvCrazyfgt;
+DRV		BurnDrvCkongg;
+DRV		BurnDrvCkongmc;
+DRV		BurnDrvCkongs;
+DRV		BurnDrvCrimecj;
+DRV		BurnDrvCrimecu;
+DRV		BurnDrvCrimec;
+DRV		BurnDrvCrimfgtj;
+DRV		BurnDrvCrimfght;
+DRV		BurnDrvCrimfgt2;
+DRV		BurnDrvVendettaj;
+DRV		BurnDrvCroquis;
+DRV		BurnDrvCrossbld;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcfir;			// no comment
+DRV		BurnDrvMDg_crossf;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvcthd;
-DRV		BurnDrvct2k3sa;
+DRV		BurnDrvCrospang;
+DRV		BurnDrvcrsword;
+DRV		BurnDrvcthd2k3a;
+DRV		BurnDrvcthd2003;
 DRV		BurnDrvct2k3sp;
+DRV		BurnDrvct2k3sa;
+DRV		BurnDrvMDg_crudeb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcrudeb;		// Bad sound
-DRV		BurnDrvMDcruej;			// no comment
-DRV		BurnDrvMDcrue;			// no comment
-DRV		BurnDrvMDcc;			// no comment
+DRV		BurnDrvMDg_cruej;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crue;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_crusad;
 DRV		BurnDrvcrushbl;
 DRV		BurnDrvcrush3;
 DRV		BurnDrvcrush2;
 DRV		BurnDrvcrush;
 DRV		BurnDrvcrush4;
 DRV		BurnDrvcrushs;
-DRV		BurnDrvMDcrying;
+DRV		BurnDrvCrusherm;
+DRV		BurnDrvMDg_crying;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcrys;			// no comment
-DRV		BurnDrvMDcurs;			// no comment
-DRV		BurnDrvMDcutt;			// no comment
-DRV		BurnDrvMDcuty;			// no comment
-DRV		BurnDrvMDccop;			// no comment
+DRV		BurnDrvMDg_cryst0;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cryst9;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crys10;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crys11;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crys12;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crys13;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crys14;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_crysta;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCyberlip;
+DRV		BurnDrvCuebrckj;
+DRV		BurnDrvCuebrick;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcybb;			// no comment
+DRV		BurnDrvMDg_cursej;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cuties;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cutthr;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_cyberp;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_cyberc;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvcyberlip;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_cyberb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsCybotsj;
 DRV		BurnDrvCpsCybots;
+DRV		BurnDrvCpsCybotsud;
 DRV		BurnDrvCpsCybotsu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDcyjusb;		// no comment
-DRV		BurnDrvMDcybo;			// no comment
-DRV		BurnDrvMDddwe;			// no comment
+DRV		BurnDrvMDg_cyborb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_cybor;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDcon;
 DRV		BurnDrvDdcrew1;
 DRV		BurnDrvDdcrew2;
 DRV		BurnDrvDdcrewu;
 DRV		BurnDrvDdcrew;
 DRV		BurnDrvDdcrewj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdaffyb;		// no comment
-DRV		BurnDrvMDdaff;			// no comment
-DRV		BurnDrvMDdahna;			// no comment
-DRV		BurnDrvMDkonsen;		// no comment
+DRV		BurnDrvMDg_daffyb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_daffy;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dahnak;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dahnam;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvCpsDaimakair;
 DRV		BurnDrvCpsDaimakai;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdaim;			// no comment
-DRV		BurnDrvMDdaikou;		// no comment
-DRV		BurnDrvMDdaik2;			// no comment
+DRV		BurnDrvCpsDaimakb;		// No scroll layers [NOT WORKING]
+DRV		BurnDrvMDg_daimak;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_daik;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_daik2;
+DRV		BurnDrvDkgensanm72;
+DRV		BurnDrvDkgensan;
+DRV		BurnDrvDaioh;
 DRV		BurnDrvDaisenpu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdang;			// no comment
+DRV		BurnDrvMDg_daisen;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDambustruk;
+DRV		BurnDrvDambustr;
+DRV		BurnDrvDambustra;
+#if defined FBA_DEBUG
+DRV		BurnDrvDdungeon;		// no comment
+DRV		BurnDrvMDg_danger;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvDFeveron;
+DRV		BurnDrvDaraku;
+DRV		BurnDrvDariuse;
+DRV		BurnDrvDariuso;
+DRV		BurnDrvDariusj;
+DRV		BurnDrvDarius;
+DRV		BurnDrvDarius2do;
+DRV		BurnDrvDarius2d;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdari2a;		// no comment
-DRV		BurnDrvMDdar2;			// no comment
-DRV		BurnDrvMDdark;			// no comment
+DRV		BurnDrvMDg_darius;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDarius2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dariu1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDarkadv;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_darkca;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDarkplnt;
+DRV		BurnDrvDarkseaj;
+DRV		BurnDrvDarksea1;
+DRV		BurnDrvDarkseal;
+DRV		BurnDrvDarktowr;
 DRV		BurnDrvCpsDstlka;
 DRV		BurnDrvCpsDstlk;
+DRV		BurnDrvCpsDstlku1d;
 DRV		BurnDrvCpsDstlkur1;
+DRV		BurnDrvCpsDstlkh;
 DRV		BurnDrvCpsDstlku;
-DRV		BurnDrvMDg_4081;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdashb;			// no comment
-DRV		BurnDrvMDdash;			// no comment
+DRV		BurnDrvdwi;				// no comment
+#endif
+DRV		BurnDrvMDg_darwin;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dashba;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dash;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dashb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvDquizgo;
+DRV		BurnDrvpowj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdcat;			// no comment
-DRV		BurnDrvMDdrbb;			// no comment
-DRV		BurnDrvMDdrsc;			// no comment
-DRV		BurnDrvMDdavi;			// no comment
-DRV		BurnDrvMDdwctb1;		// no comment
-DRV		BurnDrvMDdwctb;			// no comment
-DRV		BurnDrvMDdwctb2;		// no comment
-DRV		BurnDrvMDdazeb;			// no comment
-DRV		BurnDrvMDdaze;			// no comment
-DRV		BurnDrvMDdmov;			// no comment
-DRV		BurnDrvMDdrs;			// no comment
-DRV		BurnDrvMDduel;			// no comment
-DRV		BurnDrvMDdcap;			// no comment
+DRV		BurnDrvMDg_davidc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_drscj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_drsc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dcup2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dcup;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dcupa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dcup2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_daze;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dazeb;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDeadconxj;
+DRV		BurnDrvDeadconx;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_deadly;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deatha;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deathd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_debugc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flavio;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_decapa;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDeerhunc;
+DRV		BurnDrvDeerhunb;
+DRV		BurnDrvDeerhuna;
+DRV		BurnDrvDeerhunt;
+DRV		BurnDrvRedufo;
+DRV		BurnDrvRedufob;
 DRV		BurnDrvDefense;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdemomb;		// no comment
-DRV		BurnDrvMDdemo;			// no comment
-DRV		BurnDrvDmnfrnt;			// no comment [NOT WORKING]
-DRV		BurnDrvDmnfrnta;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_demob;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_demo;		// no comment [NOT WORKING]
+DRV		BurnDrvDmnfrnt;			// Incomplete Dump [NOT WORKING]
+DRV		BurnDrvDmnfrnt105;		// Incomplete Dump [NOT WORKING]
 #endif
+DRV		BurnDrvDemonwld;
+DRV		BurnDrvDemonwld2;
+DRV		BurnDrvDemonwld3;
+DRV		BurnDrvDemonwld4;
+DRV		BurnDrvDemonwld1;
+DRV		BurnDrvDeroon;
+DRV		BurnDrvDesertbrj;
 DRV		BurnDrvDesertbr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdesd;			// no comment
+DRV		BurnDrvMDg_deser0;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser6;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser7;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_deser8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_desert;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dstrkj;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDdstr;
+DRV		BurnDrvMDg_dstrk;
+DRV		BurnDrvDetatwin;
+DRV		BurnDrvDevstors3;
+DRV		BurnDrvDevstors2;
+DRV		BurnDrvDevstors;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdcmd;			// no comment
-DRV		BurnDrvMDdc3d;			// no comment
-DRV		BurnDrvMDdevi;			// No sound
-DRV		BurnDrvMDdick;			// no comment
-DRV		BurnDrvMDdicv;			// no comment
+DRV		BurnDrvMDg_devilc;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDevilfsh;
+DRV		BurnDrvDevilfsg;
+DRV		BurnDrvDevilw;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_devili;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dialqo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDiamond;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dicktr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dickvi;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvdiggerma;
 DRV		BurnDrvCpsDimahoo;
+DRV		BurnDrvCpsDimahoud;
 DRV		BurnDrvCpsDimahoou;
+DRV		BurnDrvDingo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdino;			// no comment
-DRV		BurnDrvMDdinolj;		// no comment
-DRV		BurnDrvMDdlnd;			// no comment
-DRV		BurnDrvMDhire;			// no comment
-DRV		BurnDrvMDdiscol;		// no comment
-DRV		BurnDrvMDaladb;			// No sound
-DRV		BurnDrvMDalade;			// No sound
-DRV		BurnDrvMDaladj;			// No sound
-DRV		BurnDrvMDalad;			// No sound
-DRV		BurnDrvMDdjboye;		// no comment
-DRV		BurnDrvMDdjboyj;		// no comment
-DRV		BurnDrvMDdjby;			// no comment
+DRV		BurnDrvDingoe;			// Encrypted [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_dinodi;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dinola;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDinorexj;
+DRV		BurnDrvDinorexu;
+DRV		BurnDrvDinorex;
+DRV		BurnDrvCpsDinohunt;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dinosa;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDd_hirea;
+DRV		BurnDrvMDd_hireb;
+DRV		BurnDrvMDd_hirec;
+DRV		BurnDrvMDd_hire;
+DRV		BurnDrvMDg_disney;
+DRV		BurnDrvDiverboy;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_divine;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_djboye;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_djboyj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_djboyu;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvDoDonpachi;
 DRV		BurnDrvDoDonpachiJ;
+DRV		BurnDrvDdp3b;
+DRV		BurnDrvDdp3a;
+DRV		BurnDrvDdp3;
+DRV		BurnDrvDdp3blk;
+DRV		BurnDrvDogyuunk;
+DRV		BurnDrvDogyuunt;
 DRV		BurnDrvDogyuun;
+DRV		BurnDrvDokaben;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDddpl;			// no comment
-DRV		BurnDrvMDdominu;		// no comment
+DRV		BurnDrvMDg_dokido;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_domino;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dominu;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvdommy;
+DRV		BurnDrvDondokodj;
+DRV		BurnDrvDondokodu;
+DRV		BurnDrvDondokod;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmaui;			// no comment
+DRV		BurnDrvMDg_donald;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_donggu;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvDonpachj;
+DRV		BurnDrvDkongjrm;
+DRV		BurnDrvDonpachihk;
+DRV		BurnDrvDonpachij;
+DRV		BurnDrvDonpachikr;
 DRV		BurnDrvDonpachi;
-DRV		BurnDrvDonpachk;
-DRV		BurnDrvDonpachkr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdtro;			// no comment
-DRV		BurnDrvMDdora;			// no comment
+DRV		BurnDrvMDg_doomtr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_doraem;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDorodon;
+DRV		BurnDrvDorodon2;
 DRV		BurnDrvdotrikun;
 DRV		BurnDrvdotriku2;
+DRV		BurnDrvDblaxle;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdblc;			// no comment
+DRV		BurnDrvMDg_double;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvDoubledr;
+DRV		BurnDrvDdragonb;
+DRV		BurnDrvDdragnba;
+DRV		BurnDrvDdragob2;
+DRV		BurnDrvDdragon;
+DRV		BurnDrvdoubledr;
+DRV		BurnDrvDdragonu;
+DRV		BurnDrvDdragoua;
+DRV		BurnDrvDdragoub;
+DRV		BurnDrvMDg_dd;
+DRV		BurnDrvDdragonw;
+DRV		BurnDrvDdragnw1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDddr;			// no comment
-DRV		BurnDrvMDddr2;			// no comment
+DRV		BurnDrvMDg_dd3;			// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvDdrago3b;
 DRV		BurnDrvDdrago3j;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDddr3;			// no comment
-#endif
+DRV		BurnDrvDdrago3p;
 DRV		BurnDrvDdragon3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDddrv;			// no comment
-DRV		BurnDrvMDdrib;			// no comment
-DRV		BurnDrvMDbeanb;			// Bad sound
-DRV		BurnDrvMDbeane;			// No sound
-DRV		BurnDrvMDbean;			// Bad sound
-DRV		BurnDrvMDdrgble;		// No sound
-DRV		BurnDrvMDblee;			// No sound
-DRV		BurnDrvMDdbzj;			// no comment
-DRV		BurnDrvMDdbzf;			// no comment
-DRV		BurnDrvMDdslay;			// no comment
-DRV		BurnDrvMDdslay2;		// no comment
-DRV		BurnDrvDrgw3;			// no comment [NOT WORKING]
-DRV		BurnDrvDrgw3k;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dd2;			// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDdragon2u;
+DRV		BurnDrvDdragon2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dd5;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ddribl;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDblpoint;
+DRV		BurnDrvDblpoind;
+DRV		BurnDrvDowntownj;
+DRV		BurnDrvDowntownp;
+DRV		BurnDrvDowntown;
+DRV		BurnDrvDowntown2;
+DRV		BurnDrvMDg_drrobo;
+DRV		BurnDrvMDg_drrob2;
+DRV		BurnDrvMDg_drrob1;
+DRV		BurnDrvDrtomy;
+DRV		BurnDrvDrtopplu;
+DRV		BurnDrvDrtoppel;
+DRV		BurnDrvDrtopplj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dragon;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_drago1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dbz;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dbzf;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDragnblz;
+DRV		BurnDrvDrgnbowl;
+DRV		BurnDrvDbreedm72;
+DRV		BurnDrvDbreed;
+DRV		BurnDrvDrgnbstr;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dslay;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dslay2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDrgnunit;
+#if defined FBA_DEBUG
+DRV		BurnDrvDrgw3100;		// no comment [NOT WORKING]
+DRV		BurnDrvDrgw3105;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDrgw2x;
 DRV		BurnDrvDrgw2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdeye;			// no comment
-DRV		BurnDrvMDdfry;			// no comment
-DRV		BurnDrvMDdrev;			// no comment
-DRV		BurnDrvMDdraxos;		// no comment
+DRV		BurnDrvMDg_shai3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dfury;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dragrv;		// no comment [NOT WORKING]
+DRV		BurnDrvDrgninja;		// no comment
 #endif
+DRV		BurnDrvDland;
 DRV		BurnDrvdremshpr;
+DRV		BurnDrvDsoccr94j;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdtusa;			// no comment
-DRV		BurnDrvMDdn3d;			// no comment
+DRV		BurnDrvMDg_dreamt;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvDriftout;
+DRV		BurnDrvDriveout;
+DRV		BurnDrvDrivfrcb;
+DRV		BurnDrvDrivfrcg;
+DRV		BurnDrvDrivfrcp;
+#if defined FBA_DEBUG
+DRV		BurnDrvducki;			// no comment
+#endif
+DRV		BurnDrvMDg_dukenu;
 DRV		BurnDrvDumpmtmt;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDduneg;			// no comment
-DRV		BurnDrvMDdunee;			// no comment
-DRV		BurnDrvMDdune;			// no comment
+DRV		BurnDrvMDg_duneth;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dune2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dune2a;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsDdsomjr1;
 DRV		BurnDrvCpsDdsomr3;
@@ -792,819 +1437,1364 @@ DRV		BurnDrvCpsDdsomr2;
 DRV		BurnDrvCpsDdsomur1;
 DRV		BurnDrvCpsDdsomb;
 DRV		BurnDrvCpsDdsomr1;
+DRV		BurnDrvCpsDdsomh;
 DRV		BurnDrvCpsDdsoma;
 DRV		BurnDrvCpsDdsom;
 DRV		BurnDrvCpsDdsomj;
+DRV		BurnDrvCpsDdsomud;
 DRV		BurnDrvCpsDdsomu;
 DRV		BurnDrvCpsDdtoda;
 DRV		BurnDrvCpsDdtodr1;
+DRV		BurnDrvCpsDdtodhr2;
 DRV		BurnDrvCpsDdtodjr2;
 DRV		BurnDrvCpsDdtodur1;
-DRV		BurnDrvCpsDdtodh;
+DRV		BurnDrvCpsDdtodhr1;
 DRV		BurnDrvCpsDdtodjr1;
 DRV		BurnDrvCpsDdtodu;
+DRV		BurnDrvCpsDdtodd;
 DRV		BurnDrvCpsDdtod;
+DRV		BurnDrvCpsDdtodh;
 DRV		BurnDrvCpsDdtodj;
+DRV		BurnDrvMDg_dungeo;
 DRV		BurnDrvDunkshot;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdynabr;		// no comment
-DRV		BurnDrvMDdynab2;		// no comment
-DRV		BurnDrvdynablsb;		// Preliminary driver [NOT WORKING]
-DRV		BurnDrvdynablst;		// Preliminary driver [NOT WORKING]
-DRV		BurnDrvMDdduk;			// no comment
-DRV		BurnDrvMDddukea;		// no comment
+DRV		BurnDrvMDg_dynabr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dyna2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvDynablst;
+DRV		BurnDrvDynduke;
+DRV		BurnDrvDyndukef;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_dynam1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dynami;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvDduxbl;
 DRV		BurnDrvDdux1;
 DRV		BurnDrvDdux;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdheadb;		// no comment
-DRV		BurnDrvMDdheadj;		// no comment
-DRV		BurnDrvMDdhed;			// no comment
+DRV		BurnDrvMDg_dheadj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dheada;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dheadb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dheadc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dheadd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dheade;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_dhead;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsDw;
+DRV		BurnDrvCpsDwa;
 DRV		BurnDrvEswatbl;
 DRV		BurnDrvEswatj;
 DRV		BurnDrvEswatu;
 DRV		BurnDrvEswat;
-DRV		BurnDrvMDeaho;
+DRV		BurnDrvMDg_eahock;
+DRV		BurnDrvMDg_eahoc1;
+DRV		BurnDrvMDg_easpor;
+DRV		BurnDrvEagle;
+DRV		BurnDrvEagle2;
+DRV		BurnDrvEagle3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDeadoub;		// no comment
-DRV		BurnDrvMDearn;			// no comment
-DRV		BurnDrvMDejime;			// no comment
-DRV		BurnDrvMDejim;			// no comment
-DRV		BurnDrvMDejim2e;		// no comment
-DRV		BurnDrvMDjim2;			// no comment
-DRV		BurnDrvMDecco2b;		// no comment
-DRV		BurnDrvMDecco2e;		// no comment
-DRV		BurnDrvMDecco2j;		// no comment
-DRV		BurnDrvMDeco2;			// no comment
-DRV		BurnDrvMDecjr;			// no comment
-DRV		BurnDrvMDecjr01;		// no comment
-DRV		BurnDrvMDeccodj;		// no comment
-DRV		BurnDrvMDecco;			// no comment
+DRV		BurnDrvMDg_earnes;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_earthd;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsEcofghta;
+DRV		BurnDrvMDg_ejim;
+DRV		BurnDrvMDg_ejimu;
+DRV		BurnDrvMDg_ejim2;
+DRV		BurnDrvMDg_ejim2u;
+DRV		BurnDrvMDg_ecco2b;
+DRV		BurnDrvMDg_ecco2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ecco2x;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_ecco2u;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ecco2p;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_eccojr;
+DRV		BurnDrvMDg_eccoj1;
+DRV		BurnDrvMDg_eccoj;
+DRV		BurnDrvMDg_ecco;
+DRV		BurnDrvMDg_ecco2j;
+DRV		BurnDrvCpsEcofghtra;
 DRV		BurnDrvCpsEcofghtr;
-DRV		BurnDrvCpsEcofgtu1;
-DRV		BurnDrvCpsEcofghtu;
+DRV		BurnDrvCpsEcofghtrh;
+DRV		BurnDrvCpsEcofghtru1;
+DRV		BurnDrvCpsEcofghtrd;
+DRV		BurnDrvCpsEcofghtru;
+DRV		BurnDrvEgghunt;
 DRV		BurnDrveggor;
 DRV		BurnDrveggs;
+DRV		BurnDrv_8bpm;
+DRV		BurnDrvEightfrc;
+DRV		BurnDrveightman;
+DRV		BurnDrvMDg_elvinj;
+DRV		BurnDrvMDg_elvin;
+DRV		BurnDrvMDg_elemsj;
+DRV		BurnDrvMDg_elems;
 #if defined FBA_DEBUG
-DRV		BurnDrvbpm8;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_elfwor;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvEightman;
+DRV		BurnDrvMDg_elimin;
+DRV		BurnDrvMDg_elit95;
+DRV		BurnDrvMDg_elit96;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDelvinj;		// no comment
-DRV		BurnDrvMDelvi;			// no comment
-DRV		BurnDrvMDelemj;			// no comment
-DRV		BurnDrvMDelem;			// no comment
-DRV		BurnDrvMDelim;			// no comment
+DRV		BurnDrvMDg_empire;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvEndurobl;
 DRV		BurnDrvEnduror;
 DRV		BurnDrvEnduror1;
 DRV		BurnDrvEnforce;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDtaz2e;			// no comment
-DRV		BurnDrvMDtaz2;			// no comment
-#endif
-DRV		BurnDrvEsprade;
-DRV		BurnDrvEspradeo;
+DRV		BurnDrvEsckids;
+DRV		BurnDrvEsckidsj;
+DRV		BurnDrvEspradejo;
 DRV		BurnDrvEspradej;
+DRV		BurnDrvEsprade;
+DRV		BurnDrvEspgal;
+DRV		BurnDrvMDg_espnba;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDe_bt;			// no comment
-DRV		BurnDrvMDe_nhb;			// no comment
-DRV		BurnDrvMDe_hn;			// no comment
-DRV		BurnDrvMDe_sw;			// no comment
-DRV		BurnDrvMDe_sn;			// no comment
-DRV		BurnDrvMDeswatj;		// no comment
-DRV		BurnDrvMDeswa;			// no comment
-DRV		BurnDrvMDetchmb;		// no comment
-DRV		BurnDrvMDechmpe;		// no comment
-DRV		BurnDrvMDechmpj;		// no comment
-DRV		BurnDrvMDetch;			// no comment
-DRV		BurnDrvMDeuropa;		// no comment
+DRV		BurnDrvMDg_esphna;		// Gfx Problems
+DRV		BurnDrvMDg_esphn;		// Gfx Problems
 #endif
-DRV		BurnDrvMDecs;
+DRV		BurnDrvMDg_espsp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDehrd;			// no comment
-DRV		BurnDrvMDexmu;			// no comment
-DRV		BurnDrvMDexrnzb;		// no comment
-DRV		BurnDrvMDexranz;		// no comment
+DRV		BurnDrvMDg_espspb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_espnf;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_espnfb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_eswatc;
+DRV		BurnDrvMDg_etern;
+DRV		BurnDrvMDg_eternb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_eternp;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_eternj;
+DRV		BurnDrvMDg_eternu;
+DRV		BurnDrvEuroch92;
+DRV		BurnDrvWc90b1;
+DRV		BurnDrvMDg_europa;
+DRV		BurnDrvMDg_europe;
+DRV		BurnDrvMDg_evande;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_exmuta;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_exran;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_exranb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvExctleag;
+DRV		BurnDrvExedexes;
+DRV		BurnDrvExerizrb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDexil;			// no comment
-DRV		BurnDrvMDexosb;			// no comment
-DRV		BurnDrvMDexos;			// no comment
+DRV		BurnDrvMDg_exileu;		// Gfx Problems
+DRV		BurnDrvMDg_exilet;		// Gfx Problems
 #endif
+DRV		BurnDrvMDg_exosqu;
+DRV		BurnDrvMDg_exosq2;
+DRV		BurnDrvMDg_exosq1;
+DRV		BurnDrvExodus;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_exodus;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvExplorer;
 DRV		BurnDrvExplbrkr;
+DRV		BurnDrvExtrmatj;
+DRV		BurnDrvExtrmatu;
+DRV		BurnDrvExtrmatn;
+DRV		BurnDrvExtdwnhl;
 DRV		BurnDrveyes;
 DRV		BurnDrveyes2;
 DRV		BurnDrveyeszac;
+DRV		BurnDrvF1dream;
+DRV		BurnDrvF1dreamb;
+DRV		BurnDrvF1gp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDf117;			// no comment
-DRV		BurnDrvMDf117j;			// no comment
-DRV		BurnDrvMDf15b;			// no comment
-DRV		BurnDrvMDf15e;			// no comment
-DRV		BurnDrvMDf15s;			// no comment
-DRV		BurnDrvMDf22b;			// no comment
-DRV		BurnDrvMDf22i;			// no comment
-DRV		BurnDrvMDf22ua;			// no comment
-DRV		BurnDrvMDf22u;			// no comment
-DRV		BurnDrvMDf22j;			// no comment
+DRV		BurnDrvF1gpb;			// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvF1gp2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_f117ni;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f117st;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f15str;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f15st2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f15st1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f22j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f22u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f22ub;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_f22o;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_f22;
+DRV		BurnDrvMDg_f22_realdump;
 DRV		BurnDrvFx;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDf1gp;			// no comment
-DRV		BurnDrvMDf1h;			// no comment
-DRV		BurnDrvMDf1sl;			// no comment
-DRV		BurnDrvMDf1wlce;		// no comment
-DRV		BurnDrvMDf1wc;			// no comment
-DRV		BurnDrvMDf1wceb;		// no comment
-DRV		BurnDrvMDf1ce;			// no comment
-DRV		BurnDrvMDf1c;			// no comment
-DRV		BurnDrvMDfaer;			// no comment
-DRV		BurnDrvMDfeud;			// no comment
+DRV		BurnDrvMDg_f1euro;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_f1wc;
+DRV		BurnDrvMDg_f1wcb;
+DRV		BurnDrvMDg_f1circ;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_faeryt;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_family;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvFancywld;
 DRV		BurnDrvFantasia;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfante;			// no comment
-DRV		BurnDrvMDfant;			// no comment
-DRV		BurnDrvMDfant00;		// no comment
+DRV		BurnDrvMDg_fantas;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fanta2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fanta1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvFantsia2;
-DRV		BurnDrvFntsia2a;
+DRV		BurnDrvFantsia2a;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfanda;			// no comment
-DRV		BurnDrvMDfand;			// no comment
+DRV		BurnDrvMDg_fantdz;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fantd1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvFantsy95;
-DRV		BurnDrvFantzon1;
+DRV		BurnDrvFantzonep;
 DRV		BurnDrvFantzone;
+DRV		BurnDrvFantzone1;
+DRV		BurnDrvFantzn2x;
+DRV		BurnDrvFantznta;
+DRV		BurnDrvFantazia;
+DRV		BurnDrvkabukikl;
+DRV		BurnDrvFarmer;
+DRV		BurnDrvMDg_fastes;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfas1;			// no comment
-DRV		BurnDrvMDfatfue;		// no comment
-DRV		BurnDrvMDfaf;			// no comment
+DRV		BurnDrvMDg_fatalf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fatal1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvFatFury1;
+DRV		BurnDrvfatfury1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfaf2;			// no comment
+DRV		BurnDrvMDg_fatal2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvFatfury2;
-DRV		BurnDrvFatfury3;
-DRV		BurnDrvFatfursp;
-DRV		BurnDrvFatfursa;
+DRV		BurnDrvfatfury2;
+DRV		BurnDrvfatfury3;
+DRV		BurnDrvfatfursp;
+DRV		BurnDrvfatfurspa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfatl;			// no comment
-DRV		BurnDrvMDfatr;			// no comment
-DRV		BurnDrvMDfatm;			// no comment
-DRV		BurnDrvMDferias;		// no comment
-DRV		BurnDrvMDfergpb;		// no comment
-DRV		BurnDrvMDfrgp;			// no comment
-DRV		BurnDrvMDfever;			// no comment
+DRV		BurnDrvMDg_fatlbx;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fatlb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fatalr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fatman;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fengku;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fengsh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ferias;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ferrb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ferr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ferru;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_feverp;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvFeverSOS;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfido;			// no comment
+DRV		BurnDrvMDg_fidodi;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDfifa;
-DRV		BurnDrvMDfi95;
-DRV		BurnDrvMDfi96;
+DRV		BurnDrvMDg_fi98;
+DRV		BurnDrvMDg_fifa;
+DRV		BurnDrvMDg_fi2k;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfi97;			// no comment
-DRV		BurnDrvMDf98;			// no comment
+DRV		BurnDrvMDg_fi95k;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDfi99r;
-DRV		BurnDrvFightfev;
-DRV		BurnDrvFightfeva;
-DRV		BurnDrvFswords;
+DRV		BurnDrvMDg_fi95;
+DRV		BurnDrvMDg_fi96;
+DRV		BurnDrvMDg_fi97;
+DRV		BurnDrvMDg_fi97_realdump;
+DRV		BurnDrvMDg_fi99;
+DRV		BurnDrvfightfev;
+DRV		BurnDrvfightfeva;
+DRV		BurnDrvfswords;
+DRV		BurnDrvFghtbskt;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfghmsj;		// no comment
-DRV		BurnDrvMDfmas;			// no comment
-DRV		BurnDrvMDfblo;			// no comment
+DRV		BurnDrvMDg_fightj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fghtm;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsFfightua;
+DRV		BurnDrvFinalbj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_finalb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvFinalbu;
+DRV		BurnDrvFinalb;
 DRV		BurnDrvCpsFfightj1;
+DRV		BurnDrvCpsFfightua;
+DRV		BurnDrvCpsFfightj2;
 DRV		BurnDrvCpsFfightub;
 DRV		BurnDrvCpsFfightj;
 DRV		BurnDrvCpsFfightu;
+DRV		BurnDrvCpsFfightu1;
 DRV		BurnDrvCpsFfight;
+DRV		BurnDrvFstarfrcj;
 DRV		BurnDrvFstarfrc;
 DRV		BurnDrvFinalttr;
+DRV		BurnDrvFirehawk;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfzon;			// no comment
-DRV		BurnDrvMDmust;			// no comment
-DRV		BurnDrvMDfpro;			// no comment
-DRV		BurnDrvMDfshrke;		// no comment
-DRV		BurnDrvMDfshk;			// no comment
-DRV		BurnDrvMDfshrku;		// no comment
+DRV		BurnDrvMDg_firemu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_firesh;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvFireshrkd;
+DRV		BurnDrvFireshrkdh;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_fires1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fires2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvFireshrk;
 DRV		BurnDrvFpointbj;
 DRV		BurnDrvFpoint1;
 DRV		BurnDrvFpoint;
 DRV		BurnDrvFpointbl;
-DRV		BurnDrvMDfbcke;
-DRV		BurnDrvMDfbckj;
-DRV		BurnDrvMDfbak;
-DRV		BurnDrvMDfbckua;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_flashb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flash1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flash3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flash2;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvFlashgal;
-DRV		BurnDrvFlashgla;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDfdma;			// no comment
-#endif
+DRV		BurnDrvFlashgala;
 DRV		BurnDrvFlicky;
-DRV		BurnDrvFlicks2;
+DRV		BurnDrvFlickys2;
 DRV		BurnDrvFlickyo;
-DRV		BurnDrvFlicks1;
+DRV		BurnDrvFlickys1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDflic;			// no comment
-DRV		BurnDrvMDflinte;		// no comment
-DRV		BurnDrvMDflintj;		// no comment
-DRV		BurnDrvMDflin;			// no comment
+DRV		BurnDrvMDg_flicky;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flintj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flint;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_flintu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fluxeu;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvFbfrenzy;
+DRV		BurnDrvFootchmp;
+DRV		BurnDrvfbfrenzy;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfore;			// no comment
+DRV		BurnDrvMDg_forema;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvCpsForgottnua;
+DRV		BurnDrvCpsForgottnu;
 DRV		BurnDrvCpsForgottn;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfw00;			// no comment
-DRV		BurnDrvMDfw;			// no comment
-DRV		BurnDrvMDftbhb;			// no comment
+DRV		BurnDrvMDg_forgo1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_forgot;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_formul;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_frankt;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvfreeze;
+DRV		BurnDrvFrogf;
+DRV		BurnDrvFrogg;
+DRV		BurnDrvFroggers;
+DRV		BurnDrvCpsCps1frog;
+DRV		BurnDrvngfrog;
+DRV		BurnDrvPgmfrog;
+DRV		BurnDrvFrogger;
+DRV		BurnDrvFroggermc;
+DRV		BurnDrvFroggers1;
+DRV		BurnDrvFroggers2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfrog;			// no comment
-DRV		BurnDrvMDfcr;			// no comment
-DRV		BurnDrvMDfunnge;		// no comment
-DRV		BurnDrvMDfung;			// no comment
+DRV		BurnDrvMDg_frogge;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fromtv;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvFullthrl;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_funnga;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_funng1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_funcar;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvfunkybee;
 DRV		BurnDrvfunkbeeb;
+DRV		BurnDrvfnkyfish;
+DRV		BurnDrvFunybubl;
+DRV		BurnDrvFunybubc;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfushig;		// no comment
+DRV		BurnDrvMDg_funnyw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_fushig;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDfut98;
+DRV		BurnDrvMDg_futbol;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDglocb;			// no comment
+DRV		BurnDrvMDg_fzsenk;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGloc;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgloc;			// no comment
+DRV		BurnDrvMDg_gloc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_glocb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGlocr360;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgtwi;			// no comment
+DRV		BurnDrvMDg_gadget;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGaia;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgaia;			// no comment
-DRV		BurnDrvMDggrouj;		// no comment
-DRV		BurnDrvMDgain;			// no comment
+DRV		BurnDrvMDg_gaiare;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gaing1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gaingr;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGalaxyfg;
+DRV		BurnDrvGalagamf;
+DRV		BurnDrvGalagamw;
+DRV		BurnDrvGalagamk;
+DRV		BurnDrvGalaga;
+DRV		BurnDrvGalagao;
+DRV		BurnDrvGalaxbsf;
+DRV		BurnDrvGalaxianm;
+DRV		BurnDrvGalaxianmo;
+DRV		BurnDrvGalaxian;
+DRV		BurnDrvGalaxiana;
+DRV		BurnDrvGalaxiant;
+DRV		BurnDrvGalap4;
+DRV		BurnDrvGalapx;
+DRV		BurnDrvTstgalx;
+DRV		BurnDrvGalturbo;
+DRV		BurnDrvgalaxyfg;
 DRV		BurnDrvGforce2;
 DRV		BurnDrvGforce2j;
+DRV		BurnDrvGforce2ja;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDglf200;		// no comment
-DRV		BurnDrvMDgf2;			// no comment
+DRV		BurnDrvMDg_galax1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_galaxy;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvGallag;
+DRV		BurnDrvGallop;
+DRV		BurnDrvGalmedes;
 DRV		BurnDrvGalhustl;
 DRV		BurnDrvGalpanic;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgamblr;		// no comment
-DRV		BurnDrvMDgameno;		// no comment
+DRV		BurnDrvMDg_gamble;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gamege;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gameg1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gameno;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gameto;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGinkun;
-DRV		BurnDrvGanryu;
+DRV		BurnDrvGangonta;
+DRV		BurnDrvGbusters;
+DRV		BurnDrvGbustera;
+DRV		BurnDrvganryu;
+//		BurnDrvganryun;			// no comment
 DRV		BurnDrvGardia;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgarf;			// no comment
-DRV		BurnDrvMDgarg;			// no comment
+DRV		BurnDrvGardiab;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_garfie;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gargoy;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGaroubl;
-DRV		BurnDrvGaroup;
-DRV		BurnDrvGarou;
-DRV		BurnDrvGarouo;
+DRV		BurnDrvGarogun;
+DRV		BurnDrvgaroubl;
+//		BurnDrvgaroun;			// no comment
+DRV		BurnDrvgaroup;
+DRV		BurnDrvgarou;
+DRV		BurnDrvgarouo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgarou;			// no comment
-DRV		BurnDrvMDgarou2;		// no comment
-DRV		BurnDrvMDgaunt;			// no comment
-DRV		BurnDrvMDgau4;			// no comment
-DRV		BurnDrvMDgaun4a;		// no comment
-DRV		BurnDrvMDgemfi;			// no comment
-DRV		BurnDrvMDgenc;			// no comment
-DRV		BurnDrvMDglos;			// no comment
-DRV		BurnDrvMDgeng;			// no comment
+DRV		BurnDrvMDg_garoud;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_garou2;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvGaruka;
+DRV		BurnDrvGaryoret;
+DRV		BurnDrvGatedom1;
+DRV		BurnDrvGatedoom;
+DRV		BurnDrvGauntlet2pg1;
+DRV		BurnDrvGauntlet2pg;
+DRV		BurnDrvGauntlet2pj2;
+DRV		BurnDrvGauntlet2pj;
+DRV		BurnDrvGauntlet2pr3;
+DRV		BurnDrvGauntlet2p;
+DRV		BurnDrvGauntletg;
+DRV		BurnDrvGauntletgr3;
+DRV		BurnDrvGauntletgr6;
+DRV		BurnDrvGauntletgr8;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_gauntj;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvGauntletj12;
+DRV		BurnDrvGauntletj;
+DRV		BurnDrvGauntletr1;
+DRV		BurnDrvGauntlet;
+DRV		BurnDrvGauntletr2;
+DRV		BurnDrvGauntletr4;
+DRV		BurnDrvGauntletr5;
+DRV		BurnDrvGauntletr7;
+DRV		BurnDrvGauntletr9;
+DRV		BurnDrvGauntlets;
+DRV		BurnDrvGaunt2;
+DRV		BurnDrvGaunt22pg;
+DRV		BurnDrvGaunt22p1;
+DRV		BurnDrvGaunt22p;
+DRV		BurnDrvGaunt2g;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_gaunto;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gaunt;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_gemfir;
+DRV		BurnDrvGemini;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_genera;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gener1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_genelo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_genghi;
+DRV		BurnDrvGenix;
 DRV		BurnDrvGensitou;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgfkobe;		// no comment
-DRV		BurnDrvMDgfko;			// no comment
+DRV		BurnDrvMDg_george;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_georg1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGetStarB;
-DRV		BurnDrvGetStarBa;
-DRV		BurnDrvGpilots;
-DRV		BurnDrvGpilotsh;
+DRV		BurnDrvGeostorm;
+DRV		BurnDrvGetStarb1;
+DRV		BurnDrvGetStarb2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgbus00;		// no comment
-DRV		BurnDrvMDgbus;			// no comment
+DRV		BurnDrvghostbi;			// no comment
+#endif
+DRV		BurnDrvgpilots;
+DRV		BurnDrvgpilotsh;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ghost1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ghostb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvghostlop;
+DRV		BurnDrvGmgalax;
+DRV		BurnDrvGngbl;
+DRV		BurnDrvGngblita;
+DRV		BurnDrvGngt;
+DRV		BurnDrvGngc;
+DRV		BurnDrvGng;
+DRV		BurnDrvGnga;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgng01;			// no comment
-DRV		BurnDrvMDgng;			// no comment
+DRV		BurnDrvMDg_ghoul1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ghouls;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsGhoulsu;
 DRV		BurnDrvCpsGhouls;
-DRV		BurnDrvCpsGwinga;
+DRV		BurnDrvCpsGigawinga;
+DRV		BurnDrvCpsGigawingb;
+DRV		BurnDrvCpsGigawingh;
+DRV		BurnDrvCpsGigawingd;
 DRV		BurnDrvCpsGigawing;
-DRV		BurnDrvCpsGwingj;
+DRV		BurnDrvCpsGigawingjd;
+DRV		BurnDrvCpsGigawingj;
+DRV		BurnDrvGigandes;
+DRV		BurnDrvGigandesj;
+DRV		BurnDrvGinganin;
+DRV		BurnDrvGinganina;
+DRV		BurnDrvGteikoku;
+DRV		BurnDrvGteikokb;
+DRV		BurnDrvGteikob2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgley;			// no comment
+DRV		BurnDrvMDg_global;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGoalx3;
+DRV		BurnDrvgoalx3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgodsb;			// no comment
-DRV		BurnDrvMDgodse;			// no comment
-DRV		BurnDrvMDgodsj;			// no comment
-DRV		BurnDrvMDgods;			// no comment
+DRV		BurnDrvMDg_gods;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_godsj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_godsu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_godsub;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_golden;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_golde1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGoldnax1;
-DRV		BurnDrvGoldnax2;
-DRV		BurnDrvGoldnax3;
-DRV		BurnDrvGoldnaxj;
-DRV		BurnDrvGoldnaxu;
+DRV		BurnDrvGoldnaxe1;
+DRV		BurnDrvGoldnaxe2;
+DRV		BurnDrvGoldnaxe3;
+DRV		BurnDrvGoldnaxej;
+DRV		BurnDrvGoldnaxeu;
 DRV		BurnDrvGoldnaxe;
-DRV		BurnDrvMDgax00;
-DRV		BurnDrvMDgax;
+DRV		BurnDrvMDg_gaxea;
+DRV		BurnDrvMDg_gaxe;
+DRV		BurnDrvMDg_gaxe2;
+DRV		BurnDrvMDg_gaxe2b;
+DRV		BurnDrvMDg_gaxe3;
+DRV		BurnDrvImsorryj;
+DRV		BurnDrvGondo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgax2b;			// no comment
-DRV		BurnDrvMDgax2;			// no comment
-DRV		BurnDrvMDgax3;			// no comment
-DRV		BurnDrvMDgoof;			// no comment
+DRV		BurnDrvMDg_goofys;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvgorkans;
-DRV		BurnDrvPowerins;
-DRV		BurnDrvGprider1;
+DRV		BurnDrvGotcha;
+DRV		BurnDrvPlegends;
+DRV		BurnDrvPlegendsj;
+DRV		BurnDrvPowerinj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgran00;		// no comment
-DRV		BurnDrvMDgran;			// no comment
-DRV		BurnDrvMDgste;			// no comment
-DRV		BurnDrvMDgstenj;		// no comment
+DRV		BurnDrvMDg_gouket;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPwrinst2j;
+DRV		BurnDrvGprider1;
+DRV		BurnDrvGprider;
+DRV		BurnDrvGradius2;
+DRV		BurnDrvGradius2a;
+DRV		BurnDrvGradius2b;
+DRV		BurnDrvGrdius3a;
+DRV		BurnDrvGradius3;
+DRV		BurnDrvGrdius3e;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_grana1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_granad;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_grands;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_grand1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGtmr2u;
 DRV		BurnDrvGtmre;
 DRV		BurnDrvGtmrusa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgcm;			// no comment
+DRV		BurnDrvMDg_greatc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_great1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsGreatMahouDaiJ;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgws;			// no comment
-DRV		BurnDrvMDghwj;			// no comment
-DRV		BurnDrvMDghwor;			// no comment
-DRV		BurnDrvMDgdog;			// no comment
+DRV		BurnDrvMDg_greatw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ghw;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ghwj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ghwu;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvGberet;
+DRV		BurnDrvGberetb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_greend;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGrindStormerA;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgrin;			// no comment
+DRV		BurnDrvMDg_grinds;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGrindStormer;
+DRV		BurnDrvGrowlu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgrwl;			// no comment
+DRV		BurnDrvMDg_growlu;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvGrowl;
+DRV		BurnDrvGryzor;
+DRV		BurnDrvGryzora;
+DRV		BurnDrvGrdnstrm;
 DRV		BurnDrvGrdians;
-DRV		BurnDrvgunsmokj;
-DRV		BurnDrvgunsmoku;
-DRV		BurnDrvgunsmoka;
-DRV		BurnDrvgunsmoke;
+DRV		BurnDrvGumbo;
+DRV		BurnDrvGunfront;
+DRV		BurnDrvGunfrontj;
+DRV		BurnDrvGunhohki;
+DRV		BurnDrvGunsmokj;
+DRV		BurnDrvGunsmoku;
+DRV		BurnDrvGunsmoka;
+DRV		BurnDrvGunsmoke;
+DRV		BurnDrvGnbarich;
 DRV		BurnDrvGunbirdj;
 DRV		BurnDrvGunbirdk;
 DRV		BurnDrvGunbird;
+DRV		BurnDrvGunbird2;
+DRV		BurnDrvGundhara;
+DRV		BurnDrvGunforcej;
+DRV		BurnDrvGunforceu;
+DRV		BurnDrvGunforce;
+DRV		BurnDrvGunforc2;
+DRV		BurnDrvGunnail;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgshi;			// no comment
-DRV		BurnDrvMDgshe;			// no comment
-DRV		BurnDrvMDgshj;			// no comment
-DRV		BurnDrvMDgshsam;		// no comment
-DRV		BurnDrvMDgsh;			// no comment
+DRV		BurnDrvMDg_gunshi;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGururin;
+DRV		BurnDrvMDg_gunsta;
+DRV		BurnDrvMDg_gunst2;
+DRV		BurnDrvMDg_gunst1;
+DRV		BurnDrvMDg_gunst3;
+DRV		BurnDrvgururin;
+#if defined FBA_DEBUG
+DRV		BurnDrvGussun;			// Unemulated CPU functions [NOT WORKING]
+#endif
 DRV		BurnDrvGuwange;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgyno;			// no comment
-DRV		BurnDrvMDgynoge;		// no comment
+DRV		BurnDrvMDg_gynoug;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_gynou1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvGyrodinc;
 DRV		BurnDrvGyrodine;
+DRV		BurnDrvGyrodinet;
+DRV		BurnDrvGyrussb;
+DRV		BurnDrvGyrussce;
+DRV		BurnDrvGyruss;
+DRV		BurnDrvHachamf;
+DRV		BurnDrvHharryu;
+DRV		BurnDrvHharry;
 DRV		BurnDrvHangon1;
 DRV		BurnDrvHangon;
 DRV		BurnDrvhangly;
 DRV		BurnDrvhangly2;
 DRV		BurnDrvhangly3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDhard;			// no comment
-DRV		BurnDrvMDhb94;			// no comment
-DRV		BurnDrvMDhb;			// no comment
-DRV		BurnDrvMDhb95;			// no comment
-DRV		BurnDrvMDhb3;			// no comment
+DRV		BurnDrvMDg_harddr;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvHtchctch;
+DRV		BurnDrvHpuncher;
+DRV		BurnDrvMDg_hard94;
+DRV		BurnDrvMDg_hard95;
+DRV		BurnDrvMDg_hard3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDhaun;			// no comment
-DRV		BurnDrvMDhoso;			// no comment
-DRV		BurnDrvMDhnov;			// no comment
-DRV		BurnDrvMDhuni;			// no comment
+DRV		BurnDrvMDg_hardb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHasamu;
+DRV		BurnDrvHthero;
+DRV		BurnDrvHtchctch;
+DRV		BurnDrvHcastleo;
+DRV		BurnDrvHcastle;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_haunti;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHedpanic;
+DRV		BurnDrvHedpanif;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_headon;		// no comment [NOT WORKING]
+DRV		BurnDrvHbarrel;			// no comment
+DRV		BurnDrvMDg_heavyn;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_heavyu;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvHwchamp;
+DRV		BurnDrvHwchampj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_heitao;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvHellfir1;
+DRV		BurnDrvHellfir3;
 DRV		BurnDrvHellfire;
 DRV		BurnDrvHellfir2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDhelfie;		// no comment
-DRV		BurnDrvMDhelfij;		// no comment
-DRV		BurnDrvMDhell;			// no comment
-DRV		BurnDrvMDherzoj;		// no comment
-DRV		BurnDrvMDherz;			// no comment
-DRV		BurnDrvMDhssoc;			// no comment
-DRV		BurnDrvMDhsh;			// no comment
-DRV		BurnDrvMDhice;			// no comment
-DRV		BurnDrvMDhokuto;		// no comment
-DRV		BurnDrvMDhomeab;		// no comment
-DRV		BurnDrvMDhome;			// no comment
-DRV		BurnDrvMDhom2;			// no comment
+DRV		BurnDrvMDg_hellfi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hellf1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hellf2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hercul;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_herc2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_herzj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_herz;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHeuksun;
+DRV		BurnDrvHexpoola;
+DRV		BurnDrvHexpool;
+DRV		BurnDrvHexa;
+DRV		BurnDrvHexion;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_highse;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBuraiken;
+DRV		BurnDrvHiticej;
+DRV		BurnDrvHitice;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_hitthe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hokuto;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_homeab;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_homea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_homea2;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvHoneydol;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdodg;			// no comment
-DRV		BurnDrvHookj;			// Preliminary driver
-DRV		BurnDrvMDhook;			// no comment
-DRV		BurnDrvHooku;			// Preliminary driver
-DRV		BurnDrvHook;			// Preliminary driver
-DRV		BurnDrvMDhuma;			// no comment
-DRV		BurnDrvMDhurr;			// no comment
-DRV		BurnDrvMDhybrid;		// no comment
-DRV		BurnDrvMDhybrip;		// no comment
-DRV		BurnDrvMDhyokk;			// no comment
-DRV		BurnDrvMDhdunkb;		// no comment
-DRV		BurnDrvMDhydu;			// no comment
-DRV		BurnDrvMDhdunkj;		// no comment
-DRV		BurnDrvMDhymar;			// no comment
+DRV		BurnDrvMDg_honoon;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHookj;
+DRV		BurnDrvHooku;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_hookus;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHook;
+DRV		BurnDrvHorizon;
+DRV		BurnDrvHotbubl;
+DRV		BurnDrvHotshock;
+DRV		BurnDrvHotshockb;
+DRV		BurnDrvhotdogst;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_huamul;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_huanle;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_humans;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvHunchbkg;
+DRV		BurnDrvHunchbks;
+DRV		BurnDrvHncholms;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_hurric;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_hybri;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_hybrib;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hyokko;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hyperd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hyper2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hyper1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hypem;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_hypema;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvHyperpac;
-DRV		BurnDrvHyperpcb;
+DRV		BurnDrvHyperpacb;
+DRV		BurnDrvHypsptsp;
 DRV		BurnDrvCpsHsf2j;
+DRV		BurnDrvCpsHsf2d;
+DRV		BurnDrvCpsHsf2a;
 DRV		BurnDrvCpsHsf2;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDmicdo;			// no comment
-DRV		BurnDrvMDmickey;		// no comment
-DRV		BurnDrvMDmick;			// no comment
-DRV		BurnDrvMDichir;			// no comment
-#endif
+DRV		BurnDrvImsorry;
+DRV		BurnDrvfr2ch;
 DRV		BurnDrvIgmo;
+DRV		BurnDrvikari3;
+DRV		BurnDrvikari3u;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDimgi;			// no comment
-DRV		BurnDrvMDimmorj;		// no comment
-DRV		BurnDrvMDimmo;			// no comment
-DRV		BurnDrvInthuntu;		// Preliminary driver
-DRV		BurnDrvInthunt;			// Preliminary driver
-DRV		BurnDrvMDicdb;			// no comment
-DRV		BurnDrvMDicd;			// no comment
-DRV		BurnDrvMDhulk;			// no comment
-DRV		BurnDrvMDindlce;		// no comment
-DRV		BurnDrvMDindl;			// no comment
-DRV		BurnDrvMDinsxj;			// no comment
-DRV		BurnDrvMDinsx;			// no comment
-DRV		BurnDrvMDintr;			// no comment
-DRV		BurnDrvMDiss;			// no comment
-DRV		BurnDrvMDishi;			// no comment
-DRV		BurnDrvMDicftd;			// no comment
-DRV		BurnDrvMDitch;			// no comment
-DRV		BurnDrvMDizzy;			// no comment
-DRV		BurnDrvMDjlcs;			// no comment [NOT WORKING]
-DRV		BurnDrvMDjlps00;		// no comment
-DRV		BurnDrvMDjlpp;			// no comment
-DRV		BurnDrvMDjlp2;			// no comment
-DRV		BurnDrvMDjlp;			// no comment
-DRV		BurnDrvMDjlpf;			// no comment
-DRV		BurnDrvMDjnpg;			// no comment
+DRV		BurnDrvMDg_ikazus;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvIkki;
+DRV		BurnDrvImgfighto;
+DRV		BurnDrvImgfight;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_imgint;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_immort;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvInthuntu;
+DRV		BurnDrvInthunt;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ictdb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ictd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_inhulk;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_indian;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_india1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_indy;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_insecj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_insec;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvInsectx;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_inst;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_instb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_intern;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_inter1;		// no comment [NOT WORKING]
+DRV		BurnDrvInttoote;		// no comment [NOT WORKING]
+DRV		BurnDrvInttootea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_iraqwa;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvironclad;
+DRV		BurnDrvironclado;
+DRV		BurnDrvIsgsm;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ishido;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_itcame;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_itchya;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_izzysq;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvJjsquawk;
+DRV		BurnDrvJjsquawkb;
+DRV		BurnDrvMDg_jl;
+DRV		BurnDrvMDg_jl_ps;
+DRV		BurnDrvMDg_jl_psa;
+DRV		BurnDrvMDg_jl_ps2;
+DRV		BurnDrvMDg_jl_fs;
+DRV		BurnDrvMDg_jl_pf;
+DRV		BurnDrvMDg_jackni;
 DRV		BurnDrvjack;
 DRV		BurnDrvjack2;
 DRV		BurnDrvjack3;
-DRV		BurnDrvMDbond;
-DRV		BurnDrvMDjbondw;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjbdb;			// no comment
+DRV		BurnDrvMDg_jamesb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jb007;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jb007a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jamesp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_james3;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDjp3;
-DRV		BurnDrvMDjp2j;
-DRV		BurnDrvMDjp2;
+DRV		BurnDrvMDg_jroboj;
+DRV		BurnDrvMDg_jrobo;
+DRV		BurnDrvMDg_jp2_realdump;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjamm;			// no comment
-DRV		BurnDrvMDjano;			// no comment
-DRV		BurnDrvMDjanout;		// no comment
-DRV		BurnDrvMDjant;			// no comment
-DRV		BurnDrvMDjely;			// no comment
-DRV		BurnDrvMDjcte;			// no comment
-DRV		BurnDrvMDjeop;			// no comment
-DRV		BurnDrvMDjeod;			// no comment
-DRV		BurnDrvMDjeos;			// no comment
-DRV		BurnDrvMDjgpf;			// no comment
-DRV		BurnDrvMDjewlj;			// no comment
-DRV		BurnDrvMDjewl;			// no comment
-DRV		BurnDrvMDjimp;			// no comment
-DRV		BurnDrvMDjwws;			// no comment
+DRV		BurnDrvMDg_jammit;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvJockeygp;
+DRV		BurnDrvMDg_janout;
+DRV		BurnDrvMDg_janou1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjmac;			// no comment
-DRV		BurnDrvMDjmof;			// no comment
+DRV		BurnDrvMDg_jantei;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jashin;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jellyb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jennif;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jeopar;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jeopa1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jeopa2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jerryg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jwlmsj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jwlms;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDjmons2;
+DRV		BurnDrvJigkmgri;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjms;			// no comment
+DRV		BurnDrvMDg_jimpow;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jimmyw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jiujim;		// no comment [NOT WORKING]
+//		BurnDrvjckygpnd;		// no comment
 #endif
-DRV		BurnDrvMDjms2;
-DRV		BurnDrvMDma92;
+DRV		BurnDrvjockeygp;
+DRV		BurnDrvjockeygpa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDma93;			// no comment
-DRV		BurnDrvMDma3c;			// no comment
+DRV		BurnDrvMDg_joemac;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDmadj;
-DRV		BurnDrvMDma;
+DRV		BurnDrvJoemacra;
+DRV		BurnDrvJoemacr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDma94;			// no comment
+DRV		BurnDrvMDg_joemon;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_joem2a;
+DRV		BurnDrvMDg_joem2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ma92;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ma93;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_ma93ce;
+DRV		BurnDrvMDg_ma;
+DRV		BurnDrvMDg_maj;
 DRV		BurnDrvjoinem;
 DRV		BurnDrvJojobane;
 DRV		BurnDrvJojoba;
 DRV		BurnDrvJojoban;
+DRV		BurnDrvJojoan;
 DRV		BurnDrvJojon;
-DRV		BurnDrvJojoaltn;
+DRV		BurnDrvJojoaj;
+DRV		BurnDrvJojoj;
+DRV		BurnDrvJojoa;
 DRV		BurnDrvJojo;
+DRV		BurnDrvltorb1;
 #if defined FBA_DEBUG
-DRV		BurnDrvJojoalt;			// no comment [NOT WORKING]
-DRV		BurnDrvMDjb11j;			// no comment
-DRV		BurnDrvMDjb1100;		// no comment
-DRV		BurnDrvMDjb11;			// no comment
-DRV		BurnDrvMDstr2;			// no comment
+DRV		BurnDrvMDg_jorda1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jordan;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jorda2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_joshua;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvjoyman;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjdrdb;			// no comment
-DRV		BurnDrvMDjdrdba;		// no comment
-DRV		BurnDrvMDjdre;			// no comment
-DRV		BurnDrvMDjuju;			// no comment
+DRV		BurnDrvMDg_judgeb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_judgea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_judge;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvJuju;
+DRV		BurnDrvJujub;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_jujud1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jujude;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvJumpbug;
+DRV		BurnDrvJumpbugb;
 DRV		BurnDrvJumpkids;
 DRV		BurnDrvjumpshot;
-DRV		BurnDrvjumpshtp;
+DRV		BurnDrvjumpshotp;
+DRV		BurnDrvJumping;
+DRV		BurnDrvJpopnics;
 DRV		BurnDrvJumppop;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDjunc;			// no comment
-DRV		BurnDrvMDjbok;			// no comment
-DRV		BurnDrvMDjbooke;		// no comment
-DRV		BurnDrvMDjstrkb;		// no comment
-DRV		BurnDrvMDjstrj;			// no comment
-DRV		BurnDrvMDjstr;			// no comment
-DRV		BurnDrvMDjunkb;			// no comment
-DRV		BurnDrvMDjparkb;		// no comment
-DRV		BurnDrvMDjparke;		// no comment
-DRV		BurnDrvMDjparkj;		// no comment
-DRV		BurnDrvMDjpar;			// no comment
-DRV		BurnDrvMDjpra;			// no comment
-DRV		BurnDrvMDjpa2;			// no comment
-DRV		BurnDrvMDjltf;			// no comment
-DRV		BurnDrvMDjuuo00;		// no comment [NOT WORKING]
-DRV		BurnDrvMDjuuo01;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_juncti;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jungle;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jungl1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvAltbeaj3;
-DRV		BurnDrvAltbeasj;
+DRV		BurnDrvMDg_jstria;
+DRV		BurnDrvMDg_jstrik;
+DRV		BurnDrvMDg_jstrib;
+#if defined FBA_DEBUG
+DRV		BurnDrvJungler;			// no comment
+DRV		BurnDrvMDg_junker;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jurass;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_juras1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_juras3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_juras2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmph;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmpi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_jprmp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_justic;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_juuou1;
+DRV		BurnDrvMDg_juuouk;
+DRV		BurnDrvAltbeastj3;
+DRV		BurnDrvAltbeastj;
 DRV		BurnDrvCpsJyangoku;
-DRV		BurnDrvJanshin;
+DRV		BurnDrvjanshin;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDkageki;		// no comment
-DRV		BurnDrvMDkgk;			// no comment
+DRV		BurnDrvMDg_kagekj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kagek;		// no comment [NOT WORKING]
+DRV		BurnDrvKabukizj;		// Bad Graphics & Sound
+DRV		BurnDrvKabukiz;			// Bad Graphics & Sound
 #endif
-DRV		BurnDrvKabukiKl;
-#if defined FBA_DEBUG
-DRV		BurnDrvKaiteids;		// Preliminary driver
-#endif
+DRV		BurnDrvKagekih;
+DRV		BurnDrvKagekij;
+DRV		BurnDrvKageki;
+DRV		BurnDrvYanchamr;
+DRV		BurnDrvKaiteids;
+DRV		BurnDrvKamakazi3;
+DRV		BurnDrvkangaroo;
+DRV		BurnDrvkangaroa;
+DRV		BurnDrvkangarob;
 DRV		BurnDrvKaratblj;
 DRV		BurnDrvKaratblu;
 DRV		BurnDrvKaratblz;
-DRV		BurnDrvKarnovR;
+DRV		BurnDrvKarianx;
+DRV		BurnDrvKarnovj;
+DRV		BurnDrvKarnov;
+DRV		BurnDrvkarnovr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDkawab;			// no comment
-DRV		BurnDrvMDkawa;			// no comment
+DRV		BurnDrvMDg_kawab;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kawa;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDkbox;
+DRV		BurnDrvKengo;
+DRV		BurnDrvKeroppi;
+DRV		BurnDrvKetb;
+DRV		BurnDrvKeta;
+DRV		BurnDrvKet;
+DRV		BurnDrvMDg_kickbo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDko3;			// no comment
-DRV		BurnDrvMDkidc;			// no comment
-DRV		BurnDrvMDkgs;			// no comment
-DRV		BurnDrvMDkgsr;			// no comment
-DRV		BurnDrvMDkingcj;		// no comment
+DRV		BurnDrvMDg_kickof;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvKog;
+DRV		BurnDrvKikcubicb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDkotme;			// no comment
+DRV		BurnDrvMDg_kidcha;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvKotm;
-DRV		BurnDrvKotmh;
+DRV		BurnDrvKidnikiu;
+DRV		BurnDrvKidniki;
+DRV		BurnDrvMDg_kidouk;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDktm;			// no comment
-DRV		BurnDrvMDktm2;			// no comment
+DRV		BurnDrvMDg_killin;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_killi1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvKotm2;
+DRV		BurnDrvKingballj;
+DRV		BurnDrvKingball;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDksalmj;		// no comment
-DRV		BurnDrvMDksal;			// no comment
-DRV		BurnDrvMDkbou;			// no comment
+DRV		BurnDrvMDg_kof98;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kof98a;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvkog;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_kotm;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvkotm;
+DRV		BurnDrvkotmh;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_kotmu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kotm2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvkotm2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_kingsj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kings;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kingsb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvKingdmGP;
+DRV		BurnDrvMDg_kishid;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDkishi;			// no comment
-DRV		BurnDrvMDkisssh;		// no comment
+DRV		BurnDrvMDg_kisssh;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvKizuna;
+DRV		BurnDrvkizuna;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDklaxj;			// no comment
-DRV		BurnDrvMDklax;			// no comment
+DRV		BurnDrvMDg_klaxja;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_klaxus;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsKnightsb2;	// Some sprite problems [NOT WORKING]
 #endif
+DRV		BurnDrvCpsKnightsh;
+DRV		BurnDrvCpsKnghtsha;
 DRV		BurnDrvCpsKnights;
+DRV		BurnDrvCpsKnightsja;
 DRV		BurnDrvCpsKnightsj;
 DRV		BurnDrvCpsKnightsu;
-DRV		BurnDrvKovj;
+DRV		BurnDrvKov100;
 DRV		BurnDrvKov115;
 DRV		BurnDrvKov;
-#if defined FBA_DEBUG
-DRV		BurnDrvKov2106;			// Needs second CPU emulated (ARM7) [NOT WORKING]
-DRV		BurnDrvKov2;			// Needs second CPU emulated (ARM7) [NOT WORKING]
-DRV		BurnDrvKov2p;			// Needs second CPU emulated (ARM7) [NOT WORKING]
-#endif
+DRV		BurnDrvKov2100;
+DRV		BurnDrvKov2102;
+DRV		BurnDrvKov2103;
+DRV		BurnDrvKov2106;
+DRV		BurnDrvKov2;
+DRV		BurnDrvKov2p;
+DRV		BurnDrvKov2p205;
 DRV		BurnDrvKovplusa;
 DRV		BurnDrvKovplus;
+DRV		BurnDrvKovsh103;
+DRV		BurnDrvKovsh;
 #if defined FBA_DEBUG
-DRV		BurnDrvKovsh;			// no comment [NOT WORKING]
+DRV		BurnDrvkovassg;			// no comment [NOT WORKING]
+DRV		BurnDrvkovshxas;		// Incomplete dump [NOT WORKING]
+DRV		BurnDrvkovlsjba;		// no comment [NOT WORKING]
+DRV		BurnDrvkovlsjb;			// no comment [NOT WORKING]
+DRV		BurnDrvkovlsqh;			// no comment [NOT WORKING]
+DRV		BurnDrvkovlsqh2;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvkovqhsgs;
+#if defined FBA_DEBUG
+DRV		BurnDrvKovsgqyz;		// no comment [NOT WORKING]
+DRV		BurnDrvKovsgqyza;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvKnockout;
+DRV		BurnDrvKbash2;
 DRV		BurnDrvKBash;
+DRV		BurnDrvMDg_knuckl;
+DRV		BurnDrvEto;
+DRV		BurnDrvKonami88;
+DRV		BurnDrvKorokoro;
 DRV		BurnDrvkorosuke;
 DRV		BurnDrvMyangel;
 DRV		BurnDrvMyangel2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDkout;			// no comment
-DRV		BurnDrvMDksfh00;		// no comment
-DRV		BurnDrvMDksfh;			// no comment
-DRV		BurnDrvMDkujaku;		// no comment
-DRV		BurnDrvMDkuuga;			// no comment
-DRV		BurnDrvMDkyuuk;			// no comment
-DRV		BurnDrvMDkyuuky;		// no comment
-DRV		BurnDrvMDlabyd;			// no comment
-DRV		BurnDrvMDlvsc;			// no comment
-DRV		BurnDrvMDlandsj;		// no comment
-DRV		BurnDrvMDlandsb;		// no comment
-DRV		BurnDrvMDlandse;		// no comment
-DRV		BurnDrvMDlandsf;		// no comment
-DRV		BurnDrvMDlandsg;		// no comment
-DRV		BurnDrvMDland;			// no comment
-DRV		BurnDrvMDlangr;			// no comment
-DRV		BurnDrvMDlngr2a;		// no comment
-DRV		BurnDrvMDlng201;		// no comment
-DRV		BurnDrvMDlngr2c;		// no comment
+DRV		BurnDrvMDg_koutet;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvStrahl;
+DRV		BurnDrvStrahla;
+DRV		BurnDrvKozure;
+DRV		BurnDrvKrzybowl;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_krust1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_krusty;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kujaku;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvKungfum;
+DRV		BurnDrvKungfub;
+DRV		BurnDrvKungfub2;
+DRV		BurnDrvKungfumd;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_kuugao;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kyuuka;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_kyuuky;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_laruss;
+DRV		BurnDrvLadybug;
+DRV		BurnDrvLadybugg;
+DRV		BurnDrvLadybugb;
+DRV		BurnDrvLadybgb2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_lakers;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_lands1;
+DRV		BurnDrvMDg_landst;
+DRV		BurnDrvMDg_lands2;
+DRV		BurnDrvMDg_lands3;
+DRV		BurnDrvMDg_lands4;
+DRV		BurnDrvMDg_lands5;
+DRV		BurnDrvMDg_langri;
+DRV		BurnDrvMDg_lang2b;
+DRV		BurnDrvMDg_lang2a;
+DRV		BurnDrvMDg_lang2;
 DRV		BurnDrvlans2004;
+DRV		BurnDrvLvgirl94;
 DRV		BurnDrvLghostu;
 DRV		BurnDrvLghost;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlast;			// no comment
-DRV		BurnDrvMDlbat;			// no comment
+DRV		BurnDrvMDg_lastac;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lastba;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvLstduelb;
+DRV		BurnDrvlastblad;
+DRV		BurnDrvlastbladh;
+DRV		BurnDrvlastbld2;
+DRV		BurnDrvLsstduelb;
+DRV		BurnDrvLastduelj;
 DRV		BurnDrvLastduel;
-DRV		BurnDrvLstduela;
-DRV		BurnDrvLresort;
+DRV		BurnDrvLastduelo;
+DRV		BurnDrvlhcdb;
+DRV		BurnDrvLastmsnj;
+DRV		BurnDrvLastmsno;
+DRV		BurnDrvLastmisn;
+DRV		BurnDrvlresort;
+DRV		BurnDrvKyustrkr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlawn;			// no comment
+DRV		BurnDrvMDg_lawnmo;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvLbowling;
+DRV		BurnDrvlbowling;
 DRV		BurnDrvMadgearu;
 DRV		BurnDrvLedstrm2;
 DRV		BurnDrvLegend;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlgal;			// no comment
+DRV		BurnDrvMDg_legend;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvLegendos;
+DRV		BurnDrvLoht;
+DRV		BurnDrvLohtb;
+DRV		BurnDrvLohtb2;
+DRV		BurnDrvLohtj;
+DRV		BurnDrvlegendos;
+DRV		BurnDrvLwingsb;
+DRV		BurnDrvLwings;
+DRV		BurnDrvLwings2;
+DRV		BurnDrvMDg_legen1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDleme;			// no comment
-DRV		BurnDrvMDlem00;			// no comment
-DRV		BurnDrvMDlem;			// no comment
-DRV		BurnDrvMDlem2e;			// no comment
-DRV		BurnDrvMDlem2;			// no comment
-DRV		BurnDrvMDlenfe;			// no comment
-DRV		BurnDrvMDlenfj;			// no comment
-DRV		BurnDrvMDlen;			// no comment
-DRV		BurnDrvMDlth2j;			// no comment
-DRV		BurnDrvMDlen2;			// no comment
-DRV		BurnDrvMDlhxj;			// no comment
-DRV		BurnDrvMDlhx;			// no comment
-DRV		BurnDrvMDlibrty;		// no comment
-DRV		BurnDrvMDlicrue;		// no comment
-DRV		BurnDrvMDlicruj;		// no comment
-DRV		BurnDrvMDlicruk;		// no comment
-DRV		BurnDrvMDligh;			// no comment
-DRV		BurnDrvMDlighfr;		// no comment
+DRV		BurnDrvMDg_lems;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lemsb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lemsa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lems2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lems2a;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvShangnle;
+DRV		BurnDrvCrshrace;
+DRV		BurnDrvCrshrace2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_le;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lej;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_leu;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_le2;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_le2u;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvLethalth;
+DRV		BurnDrvLevers;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_lhxj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lhx;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_libert;
+DRV		BurnDrvMDg_lightc;
+DRV		BurnDrvMDg_light1;
+DRV		BurnDrvMDg_light2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_light3;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_light4;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_lighte;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvLgtnfghta;
+DRV		BurnDrvLgtnfghtu;
+DRV		BurnDrvLgtnfght;
+DRV		BurnDrvShangonle;
 DRV		BurnDrvLoffirej;
 DRV		BurnDrvLoffireu;
 DRV		BurnDrvLoffire;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlion;			// no comment
+DRV		BurnDrvMDg_lion3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lionk1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lionk2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lionk;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvLiquidku;
+DRV		BurnDrvLiquidk;
+DRV		BurnDrvLithero;
+DRV		BurnDrvLivequiz;
 DRV		BurnDrvlizwiz;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlordmo;		// no comment
-DRV		BurnDrvMDlostvb;		// no comment
-DRV		BurnDrvMDlost;			// no comment
-DRV		BurnDrvMDlostve;		// no comment
+DRV		BurnDrvMDg_lobous;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsLostwrld;
+DRV		BurnDrvLdrun;
+DRV		BurnDrvLdruna;
+DRV		BurnDrvLdrun2;
+DRV		BurnDrvLdrun3j;
+DRV		BurnDrvLdrun3;
+DRV		BurnDrvLdrun4;
+DRV		BurnDrvLogicpro;
+DRV		BurnDrvLogicpr2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDlotu2b;		// no comment
-DRV		BurnDrvMDlot2;			// no comment
-DRV		BurnDrvMDlot;			// no comment
+DRV		BurnDrvMDg_longch;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lordmo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvLordgun;
+DRV		BurnDrvLosttomb;
+DRV		BurnDrvLosttombh;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_lvik;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lvikb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lviku;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lostwo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsLostwrldo;
+DRV		BurnDrvCpsLostwrld;
+DRV		BurnDrvLotlot;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_lot2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lot2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_lotus_realdump;// Gfx and Sound Problems
+DRV		BurnDrvMDg_lotust;		// Gfx and Sound Problems
 #endif
 DRV		BurnDrvloverboy;
+DRV		BurnDrvLuctoday;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDm1tank;		// no comment
-DRV		BurnDrvMDmush;			// no comment
+DRV		BurnDrvMDg_m1abra;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMiaj;
+DRV		BurnDrvMia2;
+DRV		BurnDrvMia;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_majian;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_maqiao;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvMadgearj;
 DRV		BurnDrvMadgear;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDma95;			// no comment
-DRV		BurnDrvMDma96;			// no comment
-DRV		BurnDrvMDma97;			// no comment
-DRV		BurnDrvMDma98;			// no comment
-DRV		BurnDrvMDmadou;			// no comment
-#endif
+DRV		BurnDrvMadshark;
+DRV		BurnDrvMDg_madden;
+DRV		BurnDrvMDg_mad95;
+DRV		BurnDrvMDg_mad96;
+DRV		BurnDrvMDg_mad97;
+DRV		BurnDrvMDg_mad98;
+DRV		BurnDrvMDg_madoum;
 DRV		BurnDrvmbrush;
+DRV		BurnDrvMagicbub;
+DRV		BurnDrvMagicbuba;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmsbu;			// no comment
+DRV		BurnDrvMDg_msbpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbph;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpk;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msbpl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_msb;			// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsMswordj;
+DRV		BurnDrvCpsMswordr1;
 DRV		BurnDrvCpsMsword;
 DRV		BurnDrvCpsMswordu;
-DRV		BurnDrvCpsMswordr1;
-DRV		BurnDrvMgcrsytj;
-DRV		BurnDrvMgcrsyto;
+DRV		BurnDrvMcatadv;
+DRV		BurnDrvMcatadvj;
+DRV		BurnDrvMgcrsytlj;
+DRV		BurnDrvMgcrsytlo;
 DRV		BurnDrvMgcrsytl;
-DRV		BurnDrvMagDrop2;
-DRV		BurnDrvMagDrop3;
+DRV		BurnDrvMagdrop;
+DRV		BurnDrvmagdrop2;
+DRV		BurnDrvmagdrop3;
+DRV		BurnDrvMagdropp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmhat;			// no comment
-DRV		BurnDrvMDtaru;			// no comment
+DRV		BurnDrvMDg_mhat;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mtaru;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMagLord;
-DRV		BurnDrvMagLordh;
+DRV		BurnDrvmaglord;
+DRV		BurnDrvmaglordh;
 DRV		BurnDrvttmahjng;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmahcop;		// no comment
+DRV		BurnDrvMDg_mahjon;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMahretsu;
+DRV		BurnDrvMjgtaste;
+DRV		BurnDrvMgakuen;
+DRV		BurnDrvMgakuen2;
+DRV		BurnDrvmahretsu;
+DRV		BurnDrvMjnquest;
+DRV		BurnDrvMjnquestb;
 DRV		BurnDrvMahouDai;
+DRV		BurnDrvMstadium;
+DRV		BurnDrvMajest12;
 DRV		BurnDrvMjleague;
+DRV		BurnDrvMajtitlej;
+DRV		BurnDrvMajtitle;
+DRV		BurnDrvMajtitl2j;
+DRV		BurnDrvMajtitl2;
+DRV		BurnDrvMajuu;
+DRV		BurnDrvMakaimuc;
+DRV		BurnDrvMakaimug;
+DRV		BurnDrvMakaimur;
 DRV		BurnDrvmaketrax;
 DRV		BurnDrvmaketrxb;
+DRV		BurnDrvMakyosen;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmhy;			// no comment
-DRV		BurnDrvMDmano;			// no comment
-DRV		BurnDrvManiacsp;		// Missing GFXs
-DRV		BurnDrvMDmaoure;		// no comment
-DRV		BurnDrvMDmmad;			// no comment
-DRV		BurnDrvMDmamr;			// no comment
-DRV		BurnDrvMDmlem;			// no comment
-DRV		BurnDrvMDmmfb;			// no comment
-DRV		BurnDrvMDmmftbe;		// no comment
-DRV		BurnDrvMDmmf;			// no comment
+DRV		BurnDrvMDg_mamono;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_manove;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMangchi;
+DRV		BurnDrvManiacsp;
+DRV		BurnDrvManybloc;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_maoure;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_marble;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMarineb;
+DRV		BurnDrvMariner;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_marioa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mariol;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMarkham;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_marko;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_markob;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_markou;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMars;
 DRV		BurnDrvCpsMarsMatrixJ;
+DRV		BurnDrvCpsMarsMatrixd;
 DRV		BurnDrvCpsMarsMatrix;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmarsue;		// no comment
-DRV		BurnDrvMDmars;			// no comment
-DRV		BurnDrvMartmast;		// Needs second CPU emulated (ARM7) [NOT WORKING]
-DRV		BurnDrvMDmarvj;			// no comment
-DRV		BurnDrvMDmarv;			// no comment
+DRV		BurnDrvMDg_marsup;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_marsu1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvmartmastc102;
+DRV		BurnDrvmartmastc;
+DRV		BurnDrvMartmast;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mvlndj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mvlnd;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsMsha;
 DRV		BurnDrvCpsMsh;
 DRV		BurnDrvCpsMshjr1;
+DRV		BurnDrvCpsMshud;
 DRV		BurnDrvCpsMshu;
 DRV		BurnDrvCpsMshb;
 DRV		BurnDrvCpsMshh;
@@ -1615,181 +2805,289 @@ DRV		BurnDrvCpsMshvsfb1;
 DRV		BurnDrvCpsMshvsf;
 DRV		BurnDrvCpsMshvsfh;
 DRV		BurnDrvCpsMshvsfj2;
+DRV		BurnDrvCpsMshvsfu1d;
 DRV		BurnDrvCpsMshvsfu1;
 DRV		BurnDrvCpsMshvsfj1;
 DRV		BurnDrvCpsMshvsfj;
 DRV		BurnDrvCpsMshvsfb;
 DRV		BurnDrvCpsMshvsfu;
+DRV		BurnDrvCpsMvscur1;
 DRV		BurnDrvCpsMvscar1;
-DRV		BurnDrvCpsMvsc;
+DRV		BurnDrvCpsMvscr1;
 DRV		BurnDrvCpsMvscjr1;
 DRV		BurnDrvCpsMvsca;
 DRV		BurnDrvCpsMvscb;
+DRV		BurnDrvCpsMvsc;
 DRV		BurnDrvCpsMvsch;
 DRV		BurnDrvCpsMvscj;
+DRV		BurnDrvCpsMvscud;
 DRV		BurnDrvCpsMvscu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDfran;			// no comment
-DRV		BurnDrvMDmomonj;		// no comment
-DRV		BurnDrvMDmamo;			// no comment
-DRV		BurnDrvMDmowe;			// no comment
-DRV		BurnDrvMDmaten;			// no comment
-DRV		BurnDrvMDmath;			// no comment
-DRV		BurnDrvMDmazib;			// no comment
-DRV		BurnDrvMDmazij;			// no comment
-DRV		BurnDrvMDmazi;			// no comment
-DRV		BurnDrvMDmazie;			// no comment
-DRV		BurnDrvMDmcdtlb;		// no comment
-DRV		BurnDrvMDmcdtle;		// no comment
-DRV		BurnDrvMDmcdtj;			// no comment
-DRV		BurnDrvMDmtla;			// no comment
-DRV		BurnDrvMDmedalc;		// no comment
-DRV		BurnDrvMDmanser;		// no comment
-DRV		BurnDrvMDmbmb;			// no comment
-DRV		BurnDrvMDmbmba;			// no comment
-DRV		BurnDrvMDmb8p;			// no comment
-DRV		BurnDrvMDmg10i1;		// no comment
-DRV		BurnDrvMDmg2e;			// no comment
-DRV		BurnDrvMDmg3e;			// no comment
-DRV		BurnDrvMDmg6v1e;		// no comment
-DRV		BurnDrvMDmg6v2e;		// no comment
-DRV		BurnDrvMDmg6v3e;		// no comment
-DRV		BurnDrvMDmg1e;			// no comment
-DRV		BurnDrvMDmlo;			// no comment
-DRV		BurnDrvMDmlom01;		// no comment
-DRV		BurnDrvMDmloj;			// no comment
+DRV		BurnDrvMDg_marysh;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvKamenrid;
+DRV		BurnDrvMDg_master;
+DRV		BurnDrvMDg_maste1;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mweap;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMasterwj;
+DRV		BurnDrvMasterwu;
+DRV		BurnDrvMasterw;
+DRV		BurnDrvMatchit2;
+DRV		BurnDrvMDg_matenn;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mathbl;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvmatrim;
+DRV		BurnDrvmatrimbl;
+//		BurnDrvmatrimnd;		// no comment
+DRV		BurnDrvMofflott;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mazins;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mazin1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mazin2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mazinw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvmazingerj;
+DRV		BurnDrvmazinger;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mcdona;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mcdon2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mcdon1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mcdon3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_medalc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megaan;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMegablstj;
+DRV		BurnDrvMegablstu;
+DRV		BurnDrvMegablst;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_megabo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megab1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mbm8;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megaga;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megag6;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsMegamana;
 DRV		BurnDrvCpsMegaman;
 DRV		BurnDrvCpsMmancp2u;
-DRV		BurnDrvCpsMegamn2a;
+DRV		BurnDrvMDg_megama;
+DRV		BurnDrvCpsMegaman2a;
+DRV		BurnDrvCpsMegamn2d;
 DRV		BurnDrvCpsMegaman2;
+DRV		BurnDrvCpsMegaman2h;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmegaq;			// no comment
-DRV		BurnDrvMDmswive;		// no comment
-DRV		BurnDrvMDmswi;			// no comment
-DRV		BurnDrvMDmturre;		// no comment
-DRV		BurnDrvMDmtur;			// no comment
+DRV		BurnDrvMDg_mswivb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mswiv;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megatu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megat1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsMtwins;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_megal1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megalo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megal2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megal3;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvMegadon;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgen6pk;		// no comment
-DRV		BurnDrvMDmegme;			// no comment
-DRV		BurnDrvMDmegamd;		// no comment
-DRV		BurnDrvMDmegp;			// no comment
-DRV		BurnDrvMDmtrx;			// no comment
+DRV		BurnDrvMDg_megami;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megane;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megapa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_megatr;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvMeijinsn;
+DRV		BurnDrvKikcubic;
+DRV		BurnDrvMeikyuh;
+DRV		BurnDrvMeikyuha;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmenace;		// no comment
+DRV		BurnDrvMDg_menace;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_menghu;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsMercs;
+DRV		BurnDrvCpsMercsur1;
 DRV		BurnDrvCpsMercsu;
-DRV		BurnDrvCpsMercsua;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmerc;			// no comment
-DRV		BurnDrvMDmfang;			// no comment
+DRV		BurnDrvMDg_mercs;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMetafox;
+DRV		BurnDrvMetalbj;
+DRV		BurnDrvMetalb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_metalf;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvMetlsavr;
-DRV		BurnDrvMSlug;
-DRV		BurnDrvMSlug2;
+DRV		BurnDrvmslug;
+DRV		BurnDrvmslug2;
 DRV		BurnDrvmslug3;
-DRV		BurnDrvmslug3n;
+DRV		BurnDrvmslug3h;
+//		BurnDrvmslug3hd;		// no comment
+//		BurnDrvmslug4nd;		// no comment
 DRV		BurnDrvmslug4;
+DRV		BurnDrvmslug4h;
 DRV		BurnDrvms4plus;
 DRV		BurnDrvmslug5;
 DRV		BurnDrvmslug5h;
+DRV		BurnDrvmslug5b;
+//		BurnDrvmslug5nd;		// no comment
 DRV		BurnDrvms5pcb;
+//		BurnDrvms5pcbnd;		// no comment
 DRV		BurnDrvms5plus;
 DRV		BurnDrvmslug3b6;
-DRV		BurnDrvMSlugX;
+DRV		BurnDrvmslugx;
+DRV		BurnDrvmetmqstr;
+DRV		BurnDrvMetrocrs;
+DRV		BurnDrvMetrocrsa;
 DRV		BurnDrvMWalkbl;
-DRV		BurnDrvMDmwlk00;
-DRV		BurnDrvMDmjmw;
+DRV		BurnDrvMDg_micha1;
+DRV		BurnDrvMDg_michae;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmicmab;		// no comment
-DRV		BurnDrvMDmicmaj;		// no comment
-DRV		BurnDrvMDmicm;			// no comment
-DRV		BurnDrvMDmmanib;		// no comment
-DRV		BurnDrvMDmmanie;		// no comment
-DRV		BurnDrvMDmmanij;		// no comment
-DRV		BurnDrvMDmman;			// no comment
-DRV		BurnDrvMDminnie;		// no comment
-DRV		BurnDrvMDmult;			// no comment
+DRV		BurnDrvMDg_mickm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mickmb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mickey;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_micke1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_micke3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_micke2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mickuc;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDmicmc;
-DRV		BurnDrvMDmica;
-DRV		BurnDrvMDmic;
+DRV		BurnDrvMDg_micma;
+DRV		BurnDrvMDg_micm;
+DRV		BurnDrvMDg_micmb;
+DRV		BurnDrvMDg_micmc;
+DRV		BurnDrvMDg_micm2a;
+DRV		BurnDrvMDg_micm2;
+DRV		BurnDrvMDg_mmm;
+DRV		BurnDrvMDg_mmma;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmicm96;		// no comment
-DRV		BurnDrvMDmic9;			// no comment
-DRV		BurnDrvMDmicm2e;		// no comment
-DRV		BurnDrvMDmic2;			// no comment
-DRV		BurnDrvMDmimmx;			// no comment
-DRV		BurnDrvMDmidrej;		// no comment
-DRV		BurnDrvMDmidr;			// no comment
-DRV		BurnDrvMDmig29e;		// no comment
-DRV		BurnDrvMDm29;			// no comment
-DRV		BurnDrvMDmmg;			// no comment
-DRV		BurnDrvMDmima3b;		// no comment
-DRV		BurnDrvMDmmpre;			// no comment
-DRV		BurnDrvMDmmpr;			// no comment
-DRV		BurnDrvMDmmprme;		// no comment
-DRV		BurnDrvMDmmpm;			// no comment
+DRV		BurnDrvMDg_mic96a;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_mic96b;
+DRV		BurnDrvMDg_mic96;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_midrsj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_midrs;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_midway;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mig2fi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mig2f1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mig2f2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_mighta;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mm3p;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMimonkey;
+DRV		BurnDrvMimonscr;
+DRV		BurnDrvMimonsco;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pr;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prpf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pru;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtmpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtmpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtmpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtmpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prtmu;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsMPangr1;
 DRV		BurnDrvCpsMPang;
+DRV		BurnDrvCpsMPangu;
 DRV		BurnDrvCpsMPangj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmike;			// no comment
-DRV		BurnDrvMDmdpfua;		// no comment
+DRV		BurnDrvMDg_miked1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mikedi;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvGtmr2a;
 DRV		BurnDrvGtmr2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDminato;		// no comment
+DRV		BurnDrvMDg_minato;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMinefld;
 DRV		BurnDrvminivadr;
-DRV		BurnDrvMinasan;
+DRV		BurnDrvminasan;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmfpl;			// no comment
-DRV		BurnDrvMDmpiano;		// no comment
-DRV		BurnDrvMDmfli;			// no comment
+DRV		BurnDrvMDg_minnes;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_miracl;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMsbingo;
 DRV		BurnDrvMissmw96;
+DRV		BurnDrvMspuzzle;
+DRV		BurnDrvMspuzzlg;
+DRV		BurnDrvMspuzzlen;
 DRV		BurnDrvMissw96;
-#if defined FBA_DEBUG
-DRV		BurnDrvMia;				// no comment
-#endif
 DRV		BurnDrvMrviking;
-DRV		BurnDrvMrvikngj;
+DRV		BurnDrvMrvikingj;
+DRV		BurnDrvQuiz18k;
+DRV		BurnDrvMizubaku;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmlbb;			// no comment
-DRV		BurnDrvMDmlbs;			// no comment
+DRV		BurnDrvMDg_mk5mor;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mk5mo1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mlbpab;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvmole;
-DRV		BurnDrvMiexchng;
+DRV		BurnDrvMsgundam;
+DRV		BurnDrvMsgundam1;
+DRV		BurnDrvGundamex;
+DRV		BurnDrvMogura;
+DRV		BurnDrvMole;
+DRV		BurnDrvmiexchng;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmonob;			// no comment
-DRV		BurnDrvMDmono;			// no comment
-DRV		BurnDrvMDmonwr4;		// no comment
+DRV		BurnDrvMDg_mono;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_monob;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_monste;
+DRV		BurnDrvMstworld;
+DRV		BurnDrvMoonaln;
+DRV		BurnDrvMoonal2;
+DRV		BurnDrvMoonal2b;
+DRV		BurnDrvMooncrsb;
+DRV		BurnDrvMooncrs2;
+DRV		BurnDrvMooncrs3;
+DRV		BurnDrvMooncrgx;
+DRV		BurnDrvMooncrstg;
+DRV		BurnDrvMooncrstuk;
+DRV		BurnDrvMooncrstu;
+DRV		BurnDrvMooncrst;
+DRV		BurnDrvMooncrsto;
+DRV		BurnDrvMoonqsr;
+DRV		BurnDrvMshuttlej2;
+DRV		BurnDrvMshuttlej;
+DRV		BurnDrvMshuttle2;
+DRV		BurnDrvMshuttle;
+DRV		BurnDrvMooncmw;
+DRV		BurnDrvMoonwar;
+DRV		BurnDrvMoonwara;
 DRV		BurnDrvMoremore;
 DRV		BurnDrvMoremorp;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDmk;			// no comment
-DRV		BurnDrvMDmk00;			// no comment
-DRV		BurnDrvMDmk3e;			// no comment
-DRV		BurnDrvMDmk3;			// no comment
-DRV		BurnDrvMDmk2;			// no comment
-#endif
+DRV		BurnDrvMDg_mka;
+DRV		BurnDrvMDg_mk;
+DRV		BurnDrvMDg_mk3;
+DRV		BurnDrvMDg_mk3a;
+DRV		BurnDrvMDg_mk2;
 DRV		BurnDrvmrdo;
 DRV		BurnDrvmrdofix;
 DRV		BurnDrvmrdoy;
 DRV		BurnDrvmrdot;
 DRV		BurnDrvmrdu;
+DRV		BurnDrvMrgoemon;
+DRV		BurnDrvMrheli;
+DRV		BurnDrvMrkougar;
+DRV		BurnDrvMrkougb;
+DRV		BurnDrvMrkougb2;
+DRV		BurnDrvMrkougar2;
 DRV		BurnDrvmrlo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnutz;			// no comment
+DRV		BurnDrvMDg_mrnutz;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvmrtnt;
 DRV		BurnDrvmspacman;
@@ -1797,709 +3095,1218 @@ DRV		BurnDrvmspacmab;
 DRV		BurnDrvmspacmat;
 DRV		BurnDrvmspacmbe;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmpac;			// no comment
+DRV		BurnDrvMDg_mspac1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mspacm;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvmspacmnf;
 DRV		BurnDrvmspacpls;
-DRV		BurnDrvmschamp;
+DRV		BurnDrvmschamps;
 DRV		BurnDrvrocktrv2;
+DRV		BurnDrvMugsmash;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmahbb;			// no comment
-DRV		BurnDrvMDmahbe;			// no comment
-DRV		BurnDrvMDmahb;			// no comment
+DRV		BurnDrvMDg_mugens;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_muhamm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_muham2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_muham1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvSemibase;
+DRV		BurnDrvNmg5;
+DRV		BurnDrvNmg5e;
+DRV		BurnDrvMultchmk;
+DRV		BurnDrvMultchmp;
+DRV		BurnDrvMchampdx;
+DRV		BurnDrvMchampda;
 DRV		BurnDrvCpsMbomberj;
+//		BurnDrvCpsMbombdje;		// no comment
 DRV		BurnDrvCpsMbombrdj;
+//		BurnDrvCpsMbombrda;		// no comment
 DRV		BurnDrvCpsMbombrd;
+//		BurnDrvCpsMbombrdh;		// no comment
+//		BurnDrvCpsMbombrdu;		// no comment
+DRV		BurnDrvMDg_musham;
+DRV		BurnDrvMDg_mushaa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmushaj;		// no comment
-DRV		BurnDrvMDmutlfj;		// no comment
-DRV		BurnDrvMDmlfoot;		// no comment
-DRV		BurnDrvMDmuth;			// no comment
+DRV		BurnDrvMDg_mutant;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mutan1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mlhock;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMutnat;
+DRV		BurnDrvmutnat;
 DRV		BurnDrvMvpj;
 DRV		BurnDrvMvp;
+DRV		BurnDrvMyherok;
 DRV		BurnDrvMyhero;
 DRV		BurnDrvmystston;
 DRV		BurnDrvmyststno;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDmysd00;		// no comment
-DRV		BurnDrvMDmysd;			// no comment
-DRV		BurnDrvMDmysf;			// no comment
+DRV		BurnDrvMDg_mysti1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_mystic;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvNam1975;
+DRV		BurnDrvMysticrib;
+DRV		BurnDrvMysticri;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_mysti2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nakaji;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nakaj1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nakaj2;
+DRV		BurnDrvnam1975;
 #if defined FBA_DEBUG
 DRV		BurnDrvNaname;			// no comment
+DRV		BurnDrvMDg_naomic;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvNastar;
+DRV		BurnDrvNastarw;
 DRV		BurnDrvnmouse;
 DRV		BurnDrvnmouseb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDna95;			// no comment
-DRV		BurnDrvMDnact;			// no comment
-DRV		BurnDrvMDnasc;			// no comment
-DRV		BurnDrvMDnbahte;		// no comment
-DRV		BurnDrvMDnbah;			// no comment
-DRV		BurnDrvMDnbajj;			// no comment
-DRV		BurnDrvMDnbaj00;		// no comment
-DRV		BurnDrvMDnjam;			// no comment
-DRV		BurnDrvMDnbajt0;		// no comment
-DRV		BurnDrvMDnjte;			// no comment
-DRV		BurnDrvMDnl95;			// no comment
-DRV		BurnDrvMDnl96;			// no comment
-DRV		BurnDrvMDnl97;			// no comment
-DRV		BurnDrvMDnl98;			// no comment
-DRV		BurnDrvMDnpbb;			// no comment
-DRV		BurnDrvMDnpbl;			// no comment
-DRV		BurnDrvMDnba9;			// no comment
-DRV		BurnDrvMDnba94b;		// no comment
-DRV		BurnDrvMDnbs9;			// no comment
-DRV		BurnDrvMDnccf;			// no comment
-DRV		BurnDrvMDncff;			// no comment
+DRV		BurnDrvMDg_naa95a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95h;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95i;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95k;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95l;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95m;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95n;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95o;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95q;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95r;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95s;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95t;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95v;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95w;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95x;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_naa95y;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_naa95;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nbaap1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbaap2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbaap3;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nbaa;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nbaall;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbahan;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbaha1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbajj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbaja;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbaj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbajt;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbajta;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbl95k;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nbl95;
+DRV		BurnDrvMDg_nbal96;
+DRV		BurnDrvMDg_nbal97;
+DRV		BurnDrvMDg_nbal98;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nbapla;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nbapl1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nbapro;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nbapr1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nbashb;
+DRV		BurnDrvMDg_nbash;
+DRV		BurnDrvMDg_ncaafi;
+DRV		BurnDrvMDg_ncaafo;
+DRV		BurnDrvKuniokunb;
+DRV		BurnDrvKuniokun;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nekket;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsNemoj;
 DRV		BurnDrvCpsNemo;
-DRV		BurnDrvNeobombe;
-DRV		BurnDrvNeodrift;
+DRV		BurnDrvneo2500;
+DRV		BurnDrvneobombe;
+DRV		BurnDrvneodrift;
 DRV		BurnDrvNeoGeo;
-DRV		BurnDrvNeomrdo;
-DRV		BurnDrvTurfmast;
-DRV		BurnDrvNeocup98;
+DRV		BurnDrvneomrdo;
+DRV		BurnDrvneonopon;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnew3dg;		// no comment
+DRV		BurnDrvneoponga;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvneopong;
+DRV		BurnDrvsyscheck;
+DRV		BurnDrvturfmast;
+DRV		BurnDrvneocup98;
+DRV		BurnDrvMDg_new3dg;
+DRV		BurnDrvMDg_new3d1;
+DRV		BurnDrvMDg_new3d2;
+DRV		BurnDrvMDg_new3d3;
+DRV		BurnDrvNewapunk;
 DRV		BurnDrvNewfant;
 DRV		BurnDrvnewpuckx;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtnzs;			// no comment
-DRV		BurnDrvMDnhir;			// no comment
+DRV		BurnDrvNrallyx;			// no comment
+#endif
+DRV		BurnDrvNewsin7;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_newzea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_newman;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvnewpuc2;
 DRV		BurnDrvnewpuc2b;
 DRV		BurnDrvNews;
 DRV		BurnDrvNewsa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnfl5;			// no comment
-DRV		BurnDrvMDnfl8;			// no comment
-DRV		BurnDrvMDnfl94j;		// no comment
-DRV		BurnDrvMDnfl4;			// no comment
-DRV		BurnDrvMDnfpt;			// no comment
-DRV		BurnDrvMDnqc;			// no comment
-DRV		BurnDrvMDnqc6;			// no comment
-DRV		BurnDrvMDnh94;			// no comment
-DRV		BurnDrvMDnh95;			// no comment
-DRV		BurnDrvMDnh9e;			// no comment
-DRV		BurnDrvMDnh96;			// no comment
-DRV		BurnDrvMDnhl96e;		// no comment
-DRV		BurnDrvMDnh97;			// no comment
-DRV		BurnDrvMDnh98;			// no comment
-DRV		BurnDrvMDnash;			// no comment
+DRV		BurnDrvMDg_nfl95a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95h;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95i;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95k;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95l;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95m;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95n;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95o;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95q;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95r;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95s;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95t;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nfl95u;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDnhlh;
+DRV		BurnDrvMDg_nfl95;
+DRV		BurnDrvMDg_nfl98;
+DRV		BurnDrvMDg_nfl94j;
+DRV		BurnDrvMDg_nfl94;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnhlp00;		// no comment
-DRV		BurnDrvMDnhlp;			// no comment
-DRV		BurnDrvMDnigwce;		// no comment
-DRV		BurnDrvMDnigel;			// no comment
+DRV		BurnDrvMDg_nflqua;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nflq96;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_nflspo;
+DRV		BurnDrvngem2k;
+DRV		BurnDrvMDg_nhktai;
+DRV		BurnDrvMDg_nhl94;
+DRV		BurnDrvMDg_nh94_realdump;
+DRV		BurnDrvMDg_nhl95;
+DRV		BurnDrvMDg_nhl96;
+DRV		BurnDrvMDg_nhl97;
+DRV		BurnDrvMDg_nhl98;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nhlasa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlase;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlash;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlask;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasn;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlaso;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlasp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlas;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nhlhoc;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nhlpa1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nhlpah;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nigelm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_nigel1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvNightstrj;
+DRV		BurnDrvNightstru;
 DRV		BurnDrvNightstr;
+DRV		BurnDrvCpsNwarra;
 DRV		BurnDrvCpsNwarr;
 DRV		BurnDrvCpsNwarrb;
 DRV		BurnDrvCpsNwarrh;
+DRV		BurnDrvCpsNwarrud;
 DRV		BurnDrvCpsNwarru;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDncir;			// no comment
-DRV		BurnDrvMDncircb;		// no comment
+DRV		BurnDrvMDg_ncirc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ncircb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ncircp;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvNitD;
-DRV		BurnDrvNitDbl;
+DRV		BurnDrvnitd;
+DRV		BurnDrvnitdbl;
+//		BurnDrvnitdn;			// no comment
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnikkan;		// no comment
-DRV		BurnDrvMDnbd;			// no comment
+DRV		BurnDrvMDg_nikkan;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvNCombat;
-DRV		BurnDrvNCombath;
-DRV		BurnDrvNCommand;
+DRV		BurnDrvNinja;
+DRV		BurnDrvNbbatman;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDngaidb;		// no comment
+DRV		BurnDrvMDg_ninjab;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvNinjaMas;
-DRV		BurnDrvNprincsu;
+DRV		BurnDrvncombat;
+DRV		BurnDrvncombath;
+DRV		BurnDrvncommand;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnoes;			// no comment
+DRV		BurnDrvMDg_ninjag;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvNoboranb;
+DRV		BurnDrvGaiden;
+DRV		BurnDrvninjamas;
+DRV		BurnDrvNprinces;
+DRV		BurnDrvNprincesb;
+DRV		BurnDrvNprinceso;
+DRV		BurnDrvNprincesu;
+DRV		BurnDrvRyukendn;
+DRV		BurnDrvRyukenda;
+DRV		BurnDrvNspirit;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDnobbus;		// no comment
-DRV		BurnDrvMDnobzen;		// no comment
-DRV		BurnDrvMDnoblor;		// no comment
-DRV		BurnDrvMDnobu;			// no comment
-DRV		BurnDrvMDnorm;			// no comment
+DRV		BurnDrvMDg_noesca;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvNob;
+DRV		BurnDrvNobb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_nobbus;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_nobhao;
+DRV		BurnDrvMDg_nobzen;
+DRV		BurnDrvMDg_nobamb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_normys;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvNost;
+DRV		BurnDrvNostj;
+DRV		BurnDrvNostk;
+DRV		BurnDrvNouryoku;
 DRV		BurnDrvOhmygod;
+DRV		BurnDrvOisipuzl;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDolgole;		// no comment
-DRV		BurnDrvMDolgolj;		// no comment
-DRV		BurnDrvMDolgolu;		// no comment
-DRV		BurnDrvMDogol;			// no comment
-DRV		BurnDrvMDolsg;			// no comment
-DRV		BurnDrvMDolwge;			// no comment
-DRV		BurnDrvMDolwgj;			// no comment
-DRV		BurnDrvMDolwg;			// no comment
-DRV		BurnDrvMDonsl;			// no comment
-DRV		BurnDrvMDoozee;			// no comment
-DRV		BurnDrvMDooze;			// no comment
+DRV		BurnDrvMDg_olympi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_olymp1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_olymp3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_olymp2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_olsum;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvopwolfb;
+DRV		BurnDrvOmega;
+DRV		BurnDrvOmni;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDopeu;			// no comment
+DRV		BurnDrvMDg_ondalj;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvragnagrd;
+DRV		BurnDrvnmaster;
+DRV		BurnDrvOnna34ro;
+DRV		BurnDrvOnna34ra;
 #if defined FBA_DEBUG
-DRV		BurnDrvOpwolfu;			// Protection C-Chip not emulated [NOT WORKING]
+DRV		BurnDrvMDg_onslau;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozepa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ooze;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozeju;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozepb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozepc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozepd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozepe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozetf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oozetg;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvOrld105k;
-DRV		BurnDrvOrld111c;
-DRV		BurnDrvOrlegnde;
-DRV		BurnDrvOrlegndc;
+DRV		BurnDrvOpwolfb;
+DRV		BurnDrvMDg_operat;
+DRV		BurnDrvOthunderj;
+DRV		BurnDrvOthunderu;
+DRV		BurnDrvOthunderuo;
+DRV		BurnDrvOthunder;
+DRV		BurnDrvOpwolfj;
+DRV		BurnDrvOpwolfu;
+DRV		BurnDrvOpwolf;
+DRV		BurnDrvOpwolfa;
+DRV		BurnDrvOpwolf3u;
+DRV		BurnDrvOpwolf3;
+DRV		BurnDrvOrbitron;
+DRV		BurnDrvOrbs;
+DRV		BurnDrvOrlegend105k;
+DRV		BurnDrvOrlegend111c;
+DRV		BurnDrvOrlegend112ca;
+DRV		BurnDrvOrlegend112e;
+DRV		BurnDrvOrlegend112c;
 DRV		BurnDrvOrlegend;
+DRV		BurnDrvOlds100a;
+DRV		BurnDrvOlds100;
+DRV		BurnDrvoldsplus;
+DRV		BurnDrvOlds;
+DRV		BurnDrvOsman;
 #if defined FBA_DEBUG
-DRV		BurnDrvOlds;			// no comment [NOT WORKING]
-DRV		BurnDrvOlds100a;		// no comment [NOT WORKING]
-DRV		BurnDrvOlds100;			// no comment [NOT WORKING]
-DRV		BurnDrvMDosom;			// no comment
-DRV		BurnDrvMDotti;			// no comment
-DRV		BurnDrvMDottifb;		// no comment
+DRV		BurnDrvMDg_osomat;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ottifa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ottif1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ootwb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ootw;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDootwb;
-DRV		BurnDrvMDootw;
 DRV		BurnDrvOutrunb;
-DRV		BurnDrvOutrun1;
-DRV		BurnDrvOutrun2;
+DRV		BurnDrvOutrundx;
+DRV		BurnDrvOutruno;
+DRV		BurnDrvOutrunra;
 DRV		BurnDrvOutrun;
 DRV		BurnDrvOutZone;
 DRV		BurnDrvOutZonea;
 DRV		BurnDrvOutZoneb;
 DRV		BurnDrvOutZonec;
+DRV		BurnDrvOutZoned;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDoutlnb;		// no comment
-DRV		BurnDrvMDolan;			// no comment
-DRV		BurnDrvMDorunj;			// no comment
-DRV		BurnDrvMDg_2019b;		// no comment
-DRV		BurnDrvMDg_2019e;		// no comment
-DRV		BurnDrvMDg_2019j;		// no comment
-DRV		BurnDrvMDor20;			// no comment
-DRV		BurnDrvMDorun;			// no comment
-DRV		BurnDrvMDorunrj;		// no comment
-DRV		BurnDrvMDorur;			// no comment
+DRV		BurnDrvMDg_outlan;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_outla1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_oruna;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_orun;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_o2019;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_o2019j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_o2019u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_o2019b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_orunrj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_orunr;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvOvertop;
+DRV		BurnDrvovertop;
+DRV		BurnDrvOzon1;
+DRV		BurnDrvPgemeni;
+DRV		BurnDrvpow;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpto;			// no comment
-DRV		BurnDrvMDpaca;			// no comment
+DRV		BurnDrvMDg_pacatt;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvpacgal;
+DRV		BurnDrvPacmanbl;
+DRV		BurnDrvPacmanbla;
 DRV		BurnDrvpacheart;
 DRV		BurnDrvpacman;
 DRV		BurnDrvpacmod;
 DRV		BurnDrvpacmanf;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpac2;			// no comment
+DRV		BurnDrvMDg_pacman;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvpacplus;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpacm;			// no comment
-DRV		BurnDrvMDpachin;		// no comment
+DRV		BurnDrvMDg_pmania;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pachin;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_pacifi;
 DRV		BurnDrvpaddle2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpadfi;			// no comment
-DRV		BurnDrvMDpageme;		// no comment
-DRV		BurnDrvMDpagemb;		// no comment
-DRV		BurnDrvMDpage;			// no comment
+DRV		BurnDrvMDg_paddle;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_paddl1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvsamsho4k;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pagema;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pagem2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pagem1;		// no comment [NOT WORKING]
 DRV		BurnDrvpaintrlr;		// no comment
 #endif
+DRV		BurnDrvPairlove;
+DRV		BurnDrvPangb;
+DRV		BurnDrvPangbold;
+DRV		BurnDrvPang;
 DRV		BurnDrvPangpang;
-DRV		BurnDrvCpsPang3;
+DRV		BurnDrvCpsPang3n;
 DRV		BurnDrvCpsPang3j;
-DRV		BurnDrvPanicbom;
+DRV		BurnDrvCpsPang3;
+DRV		BurnDrvpanicbom;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpano;			// no comment
-DRV		BurnDrvMDpboyj;			// no comment
-DRV		BurnDrvMDpapb;			// no comment
-DRV		BurnDrvMDpap2;			// no comment
+DRV		BurnDrvMDg_panora;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPaprazzi;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_paperb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_paper1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_paper2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvParodisj;
+DRV		BurnDrvParodius;
+DRV		BurnDrvParodiusa;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_partyq;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPrtytime;
+DRV		BurnDrvPpchamp;
+DRV		BurnDrvPass;
+#if defined FBA_DEBUG
 DRV		BurnDrvPassshtb;		// no comment
 #endif
 DRV		BurnDrvPassshtj;
-DRV		BurnDrvPshot16a;
+DRV		BurnDrvPasssht16a;
 DRV		BurnDrvPasssht;
 DRV		BurnDrvPassshta;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpatb;			// no comment
-DRV		BurnDrvMDpatlab;		// no comment
-DRV		BurnDrvMDpblbee;		// no comment
-DRV		BurnDrvMDpbgl;			// no comment
-DRV		BurnDrvMDpblbej;		// no comment
-DRV		BurnDrvMDpele;			// no comment
-DRV		BurnDrvMDpelw;			// no comment
-DRV		BurnDrvMDpeng;			// no comment
+DRV		BurnDrvMDg_patril;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_pebble;
+DRV		BurnDrvMDg_pebbl1;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_peleii;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_peleus;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvPenbros;
 DRV		BurnDrvpkunwarj;
 DRV		BurnDrvpkunwar;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpste03;		// no comment
-DRV		BurnDrvMDps96;			// no comment
-DRV		BurnDrvMDpgae;			// no comment
-DRV		BurnDrvMDpg96;			// no comment
-DRV		BurnDrvMDpgat01;		// no comment
-DRV		BurnDrvMDpga;			// no comment
-DRV		BurnDrvMDpga2j;			// no comment
-DRV		BurnDrvMDpga200;		// no comment
-DRV		BurnDrvMDpga2;			// no comment
-DRV		BurnDrvMDpga3;			// no comment
+DRV		BurnDrvMDg_pepeng;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPsoldier;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_petes2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_petesa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_petes1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPpan;
+DRV		BurnDrvMDg_pgaeur;
+DRV		BurnDrvMDg_pga96;
+DRV		BurnDrvMDg_pgaa;
+DRV		BurnDrvMDg_pga;
+DRV		BurnDrvMDg_pga2b;
+DRV		BurnDrvMDg_pga2a;
+DRV		BurnDrvMDg_pga2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pga3;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvPgm;
+DRV		BurnDrvMDg_pstr4j;
+DRV		BurnDrvMDg_pstr2a;
+DRV		BurnDrvMDg_pstr2b;
+DRV		BurnDrvMDg_pstr2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpstr4j;		// no comment
-DRV		BurnDrvMDpst4;			// no comment
-DRV		BurnDrvMDphst2b;		// no comment
-DRV		BurnDrvMDpstr2j;		// no comment
-DRV		BurnDrvMDpst201;		// no comment
-DRV		BurnDrvMDpst;			// no comment
-DRV		BurnDrvMDpst2;			// no comment
-DRV		BurnDrvMDp2anne;		// no comment
-DRV		BurnDrvMDp2huey;		// no comment
-DRV		BurnDrvMDp2kind;		// no comment
-DRV		BurnDrvMDp2shil;		// no comment
-DRV		BurnDrvMDphst3b;		// no comment
-DRV		BurnDrvMDpst3;			// no comment
-DRV		BurnDrvMDpstr3j;		// no comment
-DRV		BurnDrvMDg_2040e;		// No sound
-DRV		BurnDrvMDg_2040;		// No sound
-DRV		BurnDrvMDphelie;		// no comment
-DRV		BurnDrvMDphelij;		// no comment
-DRV		BurnDrvMDphel;			// no comment
+DRV		BurnDrvMDg_ps2aa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2ab;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2ac;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_pstr2j;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ps2ad;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2ae;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2af;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2ag;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ps2ah;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_pstr3;
+DRV		BurnDrvMDg_pstr3a;
+DRV		BurnDrvMDg_pstr3b;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pstr4a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pstr4b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pstr4c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pstr4d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pstr4e;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_pstr4;
+DRV		BurnDrvMDg_phanto;
+DRV		BurnDrvMDg_phan22;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_phelio;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pheli1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pheli2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPhoenxp2;
+#if defined FBA_DEBUG
+DRV		BurnDrvPy2k2;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPhotoy2k104;
 DRV		BurnDrvPhotoy2k;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpinkb;			// no comment
-DRV		BurnDrvMDpink;			// no comment
-DRV		BurnDrvMDpinnoe;		// no comment
-DRV		BurnDrvMDpino;			// no comment
+DRV		BurnDrvMDg_pink;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pinkb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pinocc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pinoc1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvpiranha;
 DRV		BurnDrvpiranhah;
 DRV		BurnDrvpiranhao;
+DRV		BurnDrvhigemaru;
+DRV		BurnDrvPirates;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpirdwu;		// no comment
-DRV		BurnDrvMDpidw;			// no comment
-DRV		BurnDrvMDpgoldb;		// no comment
-DRV		BurnDrvMDpirg;			// no comment
-DRV		BurnDrvMDpifia;			// no comment
-DRV		BurnDrvMDpifg;			// no comment
-DRV		BurnDrvMDpitfe;			// no comment
-DRV		BurnDrvMDpitf;			// no comment
+DRV		BurnDrvMDg_pirate;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pirat1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pgold;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pgoldb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPisces;
+DRV		BurnDrvPiscesb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pitfi1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pitfig;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pitfal;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pitfa1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvPitfall2;
-DRV		BurnDrvPitfallu;
-DRV		BurnDrvPgoal;
+DRV		BurnDrvPitfall2a;
+DRV		BurnDrvPitfall2u;
+DRV		BurnDrvpgoal;
+DRV		BurnDrvPlumppop;
 DRV		BurnDrvCpsPnickj;
+//		BurnDrvCpsPnicku;		// no comment
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpocae;			// no comment
-DRV		BurnDrvMDpoca;			// no comment
+DRV		BurnDrvMDg_pocaho;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pocah1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvpnyaa;
+//		BurnDrvpnyaand;			// no comment
 DRV		BurnDrvCpsPfghtj;
+DRV		BurnDrvPktgaldx;
+#if defined FBA_DEBUG
+DRV		BurnDrvPktgaldxb;		// no comment
+#endif
+DRV		BurnDrvPktgaldxj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_pocket;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pocke1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pocke2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pokemo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pokem1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPkladies;
+DRV		BurnDrvPkladiesla;
+DRV		BurnDrvPkladiesl;
+DRV		BurnDrvpoknight;
+DRV		BurnDrvPompingw;
 DRV		BurnDrvponpoko;
 DRV		BurnDrvponpokov;
-DRV		BurnDrvpootan;
-DRV		BurnDrvpooyan;
-DRV		BurnDrvpooyans;
-DRV		BurnDrvPopbounc;
+DRV		BurnDrvPootan;
+DRV		BurnDrvPooyan;
+DRV		BurnDrvPooyans;
+DRV		BurnDrvpopbounc;
+DRV		BurnDrvPopspops;
+DRV		BurnDrvpopeyeman;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpopue;			// no comment
-DRV		BurnDrvMDpopuj;			// no comment
-DRV		BurnDrvMDpopu;			// no comment
-DRV		BurnDrvMDpop2;			// no comment
-DRV		BurnDrvMDpath;			// no comment
+DRV		BurnDrvMDg_populo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_popul1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_popul2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPorky;
+DRV		BurnDrvPorter;
+DRV		BurnDrvPoundforj;
+DRV		BurnDrvPoundforu;
+DRV		BurnDrvPoundfor;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_powera;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvPdriftj;
 DRV		BurnDrvPdrifta;
 DRV		BurnDrvPdrifte;
 DRV		BurnDrvPdrift;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpdri;			// no comment
-DRV		BurnDrvMDpins;			// no comment
+DRV		BurnDrvMDg_powerd;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvPowerins;
 DRV		BurnDrvPowerina;
 DRV		BurnDrvPowerinb;
+DRV		BurnDrvPwrinst2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpmonj;			// no comment
-DRV		BurnDrvMDpmon;			// no comment
+DRV		BurnDrvMDg_pmongj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pmong;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvPspikes2;
+DRV		BurnDrvpspikes2;
+DRV		BurnDrvPwheelsj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpwbl;			// no comment
+DRV		BurnDrvMDg_powerb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsPgearr1;
 DRV		BurnDrvCpsPgear;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpre2;			// no comment
+DRV		BurnDrvMDg_predat;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvpreisle2;
+//		BurnDrvpreisl2n;		// no comment
+DRV		BurnDrvPrehislk;
 DRV		BurnDrvPrehislu;
 DRV		BurnDrvPrehisle;
+DRV		BurnDrvMDg_premie;
+DRV		BurnDrvMDg_prem97;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpman;			// no comment
-DRV		BurnDrvMDpm97;			// no comment
+DRV		BurnDrvMDg_pretty;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSailorMoonO;
+DRV		BurnDrvSailorMoonOh;
+DRV		BurnDrvSailorMoonOj;
+DRV		BurnDrvSailorMoonOk;
+DRV		BurnDrvSailorMoonOt;
+DRV		BurnDrvSailorMoonOu;
 DRV		BurnDrvSailorMoon;
-DRV		BurnDrvSailorMoonB;
+DRV		BurnDrvSailorMoonh;
+DRV		BurnDrvSailorMoonj;
+DRV		BurnDrvSailorMoonk;
+DRV		BurnDrvSailorMoont;
+DRV		BurnDrvSailorMoonu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDprim;			// no comment
-DRV		BurnDrvMDpersb1;		// no comment
-DRV		BurnDrvMDpersb2;		// no comment
-DRV		BurnDrvMDperse;			// no comment
-DRV		BurnDrvMDprin;			// no comment
-DRV		BurnDrvMDprinc2;		// no comment
+DRV		BurnDrvMDg_primal;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDprho;
+DRV		BurnDrvMDg_primet;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDprqu;			// no comment
-DRV		BurnDrvMDprobot;		// no comment
+DRV		BurnDrvMDg_prinp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prinp2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prinp1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prinp3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_prin2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_proact;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_proa2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_proa2a;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvKiwame;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_proqua;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_proyak;
+DRV		BurnDrvMDg_probot;
 DRV		BurnDrvCpsProgeara;
 DRV		BurnDrvCpsProgear;
+DRV		BurnDrvCpsProgearjd;
 DRV		BurnDrvCpsProgearj;
+DRV		BurnDrvCpsProgearjbl;
+DRV		BurnDrvCpsProgearud;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpsyobl;		// no comment
-DRV		BurnDrvMDppin;			// no comment
-DRV		BurnDrvMDppina;			// no comment
+DRV		BurnDrvMDg_psyobl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_psycho;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_psych1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvOscarj1;
+DRV		BurnDrvOscarj2;
+DRV		BurnDrvOscaru;
+DRV		BurnDrvOscar;
 DRV		BurnDrvpuckmanh;
 DRV		BurnDrvpuckmanf;
 DRV		BurnDrvpuckman;
 DRV		BurnDrvpuckmana;
 DRV		BurnDrvpuckmod;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpuggsb;		// no comment
-DRV		BurnDrvMDpuggse;		// no comment
-DRV		BurnDrvMDpugg;			// no comment
-DRV		BurnDrvMDpuls;			// no comment
+DRV		BurnDrvMDg_puggsb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_puggs;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_puggsu;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvPulstar;
+DRV		BurnDrvPulirulaj;
+DRV		BurnDrvPulirula;
+DRV		BurnDrvMDg_pulsem;
+DRV		BurnDrvpulstar;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDpuni;			// no comment
-DRV		BurnDrvMDpunise;		// no comment
-DRV		BurnDrvMDputter;		// no comment
-DRV		BurnDrvMDpuyo;			// no comment
-DRV		BurnDrvMDpuy200;		// no comment
-DRV		BurnDrvMDpuy2;			// no comment
+DRV		BurnDrvMDg_punish;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_punis1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPunkshotj;
+DRV		BurnDrvPunkshot2;
+DRV		BurnDrvPunkshot;
+DRV		BurnDrvPushmans;
+DRV		BurnDrvPushman;
+DRV		BurnDrvPushmana;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_putter;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_putte1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_puyopu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_puyo2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_puyo2;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsPzloop2j;
 DRV		BurnDrvCpsPzloop2;
-DRV		BurnDrvPbobblen;
-DRV		BurnDrvPbobblna;
-DRV		BurnDrvPbobbl2n;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ichir;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tantr;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvPbobble;
+DRV		BurnDrvpbobblenb;
+DRV		BurnDrvpbobblen;
+DRV		BurnDrvpbobbl2n;
+DRV		BurnDrvPzlbreak;
+DRV		BurnDrvPclubys;
+DRV		BurnDrvPclubysa;
 DRV		BurnDrvPzlbowl;
-DRV		BurnDrvPuzzledp;
-DRV		BurnDrvPuzzldpr;
+DRV		BurnDrvpuzzledp;
+DRV		BurnDrvpuzzldpr;
 DRV		BurnDrvFourin1boot;
 DRV		BurnDrvPuzlstar;
 DRV		BurnDrvUoPoko;
-DRV		BurnDrvJoyjoy;
+DRV		BurnDrvUoPokoj;
+DRV		BurnDrvjoyjoy;
 #if defined FBA_DEBUG
-DRV		BurnDrvPuzzli2;			// no comment [NOT WORKING]
-DRV		BurnDrvMDpymag;			// no comment
-DRV		BurnDrvMDpymag2;		// no comment
-DRV		BurnDrvMDpymag3;		// no comment
-DRV		BurnDrvMDpymags;		// no comment
-DRV		BurnDrvMDquac00;		// no comment
-DRV		BurnDrvMDquac;			// no comment
-DRV		BurnDrvMDquac01;		// no comment
-DRV		BurnDrvMDquad;			// no comment
+DRV		BurnDrvMDg_pyrami;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pyram1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pyram2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pyram3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_pyram4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_quack2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_quacks;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_quack1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_quadch;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvQuartet1;
+DRV		BurnDrvQuarteta;
 DRV		BurnDrvQuartet;
-DRV		BurnDrvQuart21;
-DRV		BurnDrvQuart2;
+DRV		BurnDrvQuartet2;
+DRV		BurnDrvQuartet2a;
+DRV		BurnDrvQuarth;
 DRV		BurnDrvCpsQadj;
 DRV		BurnDrvCpsQad;
-DRV		BurnDrvQuizdais;
-DRV		BurnDrvQuizkof;
-DRV		BurnDrvQuizdai2;
+DRV		BurnDrvQzchikyu;
+DRV		BurnDrvQcrayon;
+DRV		BurnDrvquizdais;
+DRV		BurnDrvquizdaisk;
+DRV		BurnDrvQuizf1;
+DRV		BurnDrvQgakumon;
+DRV		BurnDrvQuizhq;
+DRV		BurnDrvQjinsei;
+DRV		BurnDrvquizkof;
+DRV		BurnDrvquizkofk;
+DRV		BurnDrvQzkklogy;
+DRV		BurnDrvQzkklgy2;
+DRV		BurnDrvquizdai2;
 DRV		BurnDrvCpsQndream;
 DRV		BurnDrvQuizo;
-DRV		BurnDrvCpsQtono2;
+DRV		BurnDrvQzquest;
+DRV		BurnDrvQsangoku;
+DRV		BurnDrvQzshowby;
+DRV		BurnDrvQtono1;
+DRV		BurnDrvCpsQtono2j;
+DRV		BurnDrvQtorimon;
+DRV		BurnDrvRtypejp;
+DRV		BurnDrvRtypej;
+DRV		BurnDrvRtypeu;
+DRV		BurnDrvRtypeb;
+DRV		BurnDrvRtype;
+DRV		BurnDrvRtype2;
+DRV		BurnDrvRtype2j;
+DRV		BurnDrvRtype2jc;
+DRV		BurnDrvRtypelej;
+DRV		BurnDrvRtypeleo;
 #if defined FBA_DEBUG
-DRV		BurnDrvRtypelej;		// Preliminary driver [NOT WORKING]
-DRV		BurnDrvRtypeleo;		// Preliminary driver [NOT WORKING]
-DRV		BurnDrvMDrace;			// no comment
+DRV		BurnDrvMDg_rbi93;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rbi94;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rbi4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rbi4b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rbi4j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rbi4u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_racedr;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvRachero;
+DRV		BurnDrvRacknrol;
+DRV		BurnDrvMDradicasf;
+DRV		BurnDrvMDradicav1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDdicasf;		// no comment
-DRV		BurnDrvMDdicav1;		// no comment
-DRV		BurnDrvMDrrexe;			// no comment
-DRV		BurnDrvMDradr;			// no comment
+DRV		BurnDrvMDg_radica;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_radic1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvRaflesia;
 DRV		BurnDrvrotd;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDragna;			// no comment
-#endif
+//		BurnDrvrotdnd;			// no comment
+DRV		BurnDrvMDg_ragnac;
+DRV		BurnDrvragnagrd;
 DRV		BurnDrvRaiden;
 DRV		BurnDrvRaidena;
 DRV		BurnDrvRaidenk;
 DRV		BurnDrvRaident;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDraid;			// no comment
+DRV		BurnDrvMDg_raiden;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvRaiga;
+DRV		BurnDrvStratof;
+DRV		BurnDrvRchasej;
 DRV		BurnDrvRchase;
-DRV		BurnDrvrainbowe;
-DRV		BurnDrvrainbow;
-DRV		BurnDrvrainbowo;
+DRV		BurnDrvRainbowe;
+DRV		BurnDrvRainbow;
+DRV		BurnDrvRainbowo;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrain;			// no comment
-DRV		BurnDrvMDram300;		// no comment
-DRV		BurnDrvMDram3;			// no comment
-DRV		BurnDrvMDramp;			// no comment
-DRV		BurnDrvMDranxe;			// no comment
-DRV		BurnDrvMDranx;			// no comment
-DRV		BurnDrvMDransei;		// no comment
+DRV		BurnDrvMDg_rainbo;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvrastanu;
-DRV		BurnDrvrastanu2;
-DRV		BurnDrvrastan;
-DRV		BurnDrvrastsag1;
-DRV		BurnDrvrastsaga;
+DRV		BurnDrvRallybik;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrastj;			// no comment
-DRV		BurnDrvMDrast;			// no comment
-DRV		BurnDrvMDrb3;			// no comment
-DRV		BurnDrvMDrbi4b;			// no comment
-DRV		BurnDrvMDrb4;			// no comment
-DRV		BurnDrvMDrb93;			// no comment
-DRV		BurnDrvMDrb94;			// no comment
+DRV		BurnDrvRallyxa;			// no comment
+DRV		BurnDrvRallyx;			// no comment
+DRV		BurnDrvRallyxm;			// no comment
 #endif
-DRV		BurnDrvRaf102j;
+DRV		BurnDrvRambo3;
+DRV		BurnDrvRambo3p;
+DRV		BurnDrvRambo3u;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_rambo1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ramboi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rampj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ramp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ranger;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_range1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ransei;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRaphero;
+DRV		BurnDrvRastanu;
+DRV		BurnDrvRastanu2;
+DRV		BurnDrvRastan;
+DRV		BurnDrvRastsaga1;
+DRV		BurnDrvRastsaga;
+DRV		BurnDrvRastsag2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_rastj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rast;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvphotoy2k102;
 DRV		BurnDrvrbff1;
 DRV		BurnDrvrbff1a;
 DRV		BurnDrvrbff2k;
 DRV		BurnDrvrbff2;
 DRV		BurnDrvrbff2h;
 DRV		BurnDrvrbffspec;
+DRV		BurnDrvrbffspeck;
+DRV		BurnDrvRedeartha;
+DRV		BurnDrvRedeartna;
 DRV		BurnDrvRedearth;
 DRV		BurnDrvRedeartn;
+DRV		BurnDrvRedhawke;
+DRV		BurnDrvRedhawki;
+DRV		BurnDrvRedhawk;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDredz;			// no comment
+DRV		BurnDrvMDg_redzon;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvReguluso;
 DRV		BurnDrvRegulus;
 DRV		BurnDrvRegulusu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrenstb;		// no comment
-DRV		BurnDrvMDrenste;		// no comment
-DRV		BurnDrvMDrens;			// no comment
-DRV		BurnDrvMDrenthe;		// no comment
+DRV		BurnDrvMDg_rensti;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_renst2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_renst1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvRenegade;
+DRV		BurnDrvMDg_rentah;
 DRV		BurnDrvRepulse;
+DRV		BurnDrvRescue;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDresq;			// no comment
-DRV		BurnDrvMDrshi00;		// no comment
-DRV		BurnDrvMDrshi02;		// no comment
-DRV		BurnDrvMDrevs;			// no comment
-DRV		BurnDrvMDrshi01;		// no comment
-DRV		BurnDrvRevenger;		// Bad dump [NOT WORKING]
-DRV		BurnDrvMDrevx;			// no comment
-DRV		BurnDrvMDrsbt;			// no comment
-DRV		BurnDrvMDriddle;		// no comment
+DRV		BurnDrvMDg_resqeu;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvRidhero;
-DRV		BurnDrvRidheroh;
+DRV		BurnDrvRetofinv;
+DRV		BurnDrvRetofin1;
+DRV		BurnDrvRetofin2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_reven2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_reveng;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_reven1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRevenger;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_revolu;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRezon;
+DRV		BurnDrvRezont;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_rsbtpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbtpg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rsbt;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_riddle;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvridhero;
+DRV		BurnDrvridheroh;
+DRV		BurnDrvRingohja;
+DRV		BurnDrvCpsRingdesta;
+DRV		BurnDrvCpsRingdstd;
 DRV		BurnDrvCpsRingdest;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrop;			// no comment
+DRV		BurnDrvMDg_ringso;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvRiot;
 DRV		BurnDrvRiotcity;
+DRV		BurnDrvMDg_riseof;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrise;			// no comment
-DRV		BurnDrvMDrisk;			// no comment
-DRV		BurnDrvMDrwoo;			// no comment
-DRV		BurnDrvMDrist00;		// no comment
-DRV		BurnDrvMDrist;			// no comment
-DRV		BurnDrvMDristj;			// no comment
-DRV		BurnDrvMDroadbj;		// no comment
-DRV		BurnDrvMDrbls;			// no comment
-DRV		BurnDrvMDrrsh;			// no comment
-DRV		BurnDrvMDrrs3;			// no comment
-DRV		BurnDrvMDrrsh2j;		// no comment
-DRV		BurnDrvMDrrs2;			// no comment
-DRV		BurnDrvMDrrsh22;		// no comment
+DRV		BurnDrvMDg_rise_realdump;// no comment [NOT WORKING]
+DRV		BurnDrvMDg_riskus;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_riskyw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ristpa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ristpb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ristpc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ristpd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_risto;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rist;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ristj;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvRoboarmy;
+DRV		BurnDrvMDg_roadra;
 #if defined FBA_DEBUG
-DRV		BurnDrvrobocopb;		// no comment
-DRV		BurnDrvrobocop;			// no comment
-DRV		BurnDrvMDrobo3;			// no comment
-DRV		BurnDrvMDrobtb1;		// no comment
-DRV		BurnDrvMDrobtb2;		// no comment
-DRV		BurnDrvMDrobte;			// no comment
-DRV		BurnDrvMDrobt;			// no comment
-DRV		BurnDrvMDrobobt;		// no comment
-DRV		BurnDrvMDrobw;			// no comment
-DRV		BurnDrvMDrobwrb;		// no comment
+DRV		BurnDrvMDg_rrsh3a;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_rrsh3;
+DRV		BurnDrvMDg_rrsh2;
+DRV		BurnDrvMDg_rrsh2b;
+DRV		BurnDrvMDg_rrsh2a;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_roadbj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_roadb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvroboarmy;
+#if defined FBA_DEBUG
+DRV		BurnDrvrobocopi;		// no comment
+DRV		BurnDrvRobocopb;		// no comment
+DRV		BurnDrvMDg_roboco;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robtea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robte;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robteb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robtec;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robotb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_robotw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRockclim;
 DRV		BurnDrvrockduck;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrnrre;			// no comment
-DRV		BurnDrvMDrrr;			// no comment
-DRV		BurnDrvMDrkadve;		// no comment
-DRV		BurnDrvMDrkadvj;		// no comment
-DRV		BurnDrvMDrkni;			// no comment
+DRV		BurnDrvMDg_rocknr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rockn1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_rocket;
+DRV		BurnDrvMDg_rocke1;
+DRV		BurnDrvMDg_rocke2;
 DRV		BurnDrvCpsRockmanj;
-DRV		BurnDrvCpsRckman2j;
+DRV		BurnDrvCpsRockman2j;
+DRV		BurnDrvMDg_rockm1;
+DRV		BurnDrvMDg_rockma;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrmmw;			// no comment
-DRV		BurnDrvMDrkmnja;		// no comment
+DRV		BurnDrvMDg_rmx3;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsRmancp2j;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDrcvm;			// no comment
-DRV		BurnDrvMDrthn2e;		// no comment
-DRV		BurnDrvMDrthn2j;		// no comment
-DRV		BurnDrvMDrth2;			// no comment
-DRV		BurnDrvMDrth3;			// no comment
-DRV		BurnDrvMDrolo;			// no comment
-DRV		BurnDrvMDr3k2;			// no comment
-DRV		BurnDrvMDr3k3;			// no comment
-DRV		BurnDrvMDron98b;		// no comment
+DRV		BurnDrvMDg_rogerc;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRollergj;
+DRV		BurnDrvRollerg;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_rth2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rth2j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rth2u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_rth3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_roloto;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_r3k2;
+DRV		BurnDrvMDg_r3k3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ronald;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvroute16;
 DRV		BurnDrvroute16b;
 DRV		BurnDrvroute16a;
 DRV		BurnDrvroutex;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDroybld;		// no comment
-DRV		BurnDrvMDrw93;			// no comment
-DRV		BurnDrvMDrunark;		// no comment
+DRV		BurnDrvRascot2;			// no comment
 #endif
-DRV		BurnDrvRyukyu;
-DRV		BurnDrvMDryuuko;
-DRV		BurnDrvSrdmissn;
+DRV		BurnDrvMDg_royalb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsagia;			// no comment
-DRV		BurnDrvMDsswoj;			// no comment
-DRV		BurnDrvMDsswo;			// no comment
-DRV		BurnDrvMDsamex3;		// no comment
+DRV		BurnDrvMDg_rugbyw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRunark;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_runark;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvRushcrsh;
+DRV		BurnDrvRushatck;
+DRV		BurnDrvRygar;
+DRV		BurnDrvRygar2;
+DRV		BurnDrvRygar3;
+DRV		BurnDrvRyujin;
+DRV		BurnDrvRyukyu;
+DRV		BurnDrvMDg_ryuuko;
+DRV		BurnDrvSpyu;
+DRV		BurnDrvSpy;
+DRV		BurnDrvSrdmissn;
+DRV		BurnDrvSsmissin;
+#if defined FBA_DEBUG
+DRV		BurnDrvSvg;				// Incomplete Dump [NOT WORKING]
+#endif
+DRV		BurnDrvSabotenb;
+DRV		BurnDrvSabotenba;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sagaia;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvNspiritj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sswrdj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sswrd;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSamesame;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_samesa;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSamesame2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sampra;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvSamuraiA;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsamshe;		// no comment
-DRV		BurnDrvMDsams;			// no comment
+DRV		BurnDrvMDg_samura;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_samur1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvSamSho;
-DRV		BurnDrvSamShoh;
-DRV		BurnDrvSamSho2;
-DRV		BurnDrvSamSho3;
-DRV		BurnDrvSamSho3a;
-DRV		BurnDrvSamSho4;
+DRV		BurnDrvsamsho;
+DRV		BurnDrvsamshoh;
+DRV		BurnDrvsamsho2;
+DRV		BurnDrvsamsho3;
+DRV		BurnDrvsamsho3h;
+DRV		BurnDrvsamsho4;
 DRV		BurnDrvsamsho5b;
+//		BurnDrvsamsh5nd;		// no comment
 DRV		BurnDrvsamsho5;
 DRV		BurnDrvsamsho5h;
+//		BurnDrvss5shnd;			// no comment
 DRV		BurnDrvsamsh5sp;
-DRV		BurnDrvsamsh5sh;
-DRV		BurnDrvsamsh5sn;
+DRV		BurnDrvsamsh5sph;
+DRV		BurnDrvsamsh5spn;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsamspi;		// no comment
+DRV		BurnDrvMDg_samur2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_sanguo;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sangu1;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsWofa;
+DRV		BurnDrvCpsWofah;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsango2;		// no comment
-DRV		BurnDrvMDsango3;		// no comment
-DRV		BurnDrvMDsanret;		// no comment
-DRV		BurnDrvMDsangor;		// no comment
-DRV		BurnDrvMDsnsme;			// no comment
+DRV		BurnDrvCpsWofaha;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_sangok;
+DRV		BurnDrvCpsWofhfh;
+DRV		BurnDrvCpsWof3js;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsWof3sj;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsWof3sja;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsWofh;			// no comment [NOT WORKING]
+DRV		BurnDrvCpsWofha;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsWofsj;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsWofsja;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsWofsjb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_sango1;
+DRV		BurnDrvMDg_sango2;
+DRV		BurnDrvSsanchan;
+DRV		BurnDrvsercharj;
+DRV		BurnDrvsercharu;
+DRV		BurnDrvsearchar;
+//		BurnDrvCpsSlammasa;		// no comment
 DRV		BurnDrvCpsSlammast;
-DRV		BurnDrvCpsSlammasu;
+//		BurnDrvCpsSlammash;		// no comment
+DRV		BurnDrvCpsSlammastu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsnsm;			// no comment
+DRV		BurnDrvMDg_saturd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_satur1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvSavagere;
+DRV		BurnDrvSaturnzi;
+DRV		BurnDrvsamsho2k;
+DRV		BurnDrvSavgbees;
+DRV		BurnDrvsavagere;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDscob;			// no comment
-DRV		BurnDrvMDscrabb;		// no comment
+DRV		BurnDrvMDg_scooby;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvScotrsht;
+DRV		BurnDrvScorpionmc;
+DRV		BurnDrvScorpion;
+DRV		BurnDrvScorpiona;
+DRV		BurnDrvScorpionb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_scrabb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvScramble;
+DRV		BurnDrvScramblb;
+DRV		BurnDrvScramb2;
+DRV		BurnDrvScramblebb;
+DRV		BurnDrvScramblebf;
+DRV		BurnDrvScrambles;
 DRV		BurnDrvscregg;
 DRV		BurnDrvSdfight;
+DRV		BurnDrvNeobattl;
+DRV		BurnDrvSdgndmps;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sdvali;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvSdibl;
 DRV		BurnDrvSdi;
 DRV		BurnDrvSdib;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDseaqe;			// no comment
-DRV		BurnDrvMDseaq;			// no comment
+DRV		BurnDrvMDg_seaque;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_seaqu1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDg_2sam;
-DRV		BurnDrvSeganinj;
-DRV		BurnDrvSeganinu;
+DRV		BurnDrvSearchey;
+DRV		BurnDrvSearchp2;
+DRV		BurnDrvMDg_second;
+DRV		BurnDrvSectionz;
+DRV		BurnDrvSctionza;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsegsp1;		// no comment
-DRV		BurnDrvMDstop5b;		// no comment
+DRV		BurnDrvMDg_segach;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvSengoku;
-DRV		BurnDrvSengokh;
-DRV		BurnDrvSengoku2;
-DRV		BurnDrvSengoku3;
+DRV		BurnDrvSeganinj;
+DRV		BurnDrvSeganinju;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_segasp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_segato;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSscandal;
+DRV		BurnDrvSelfeena;
+DRV		BurnDrvGrdnstrmk;
+DRV		BurnDrvsengoku;
+DRV		BurnDrvsengokuh;
+DRV		BurnDrvsengoku2;
+DRV		BurnDrvsengoku3;
+//		BurnDrvsngoku3n;		// no comment
 DRV		BurnDrvSngkAce;
 DRV		BurnDrvCpsMercsj;
+DRV		BurnDrvCommandj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsensib;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sensib;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDsen;
-DRV		BurnDrvMDseni;
+DRV		BurnDrvMDg_sensi;
+DRV		BurnDrvMDg_sensii;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsscc;			// no comment
-DRV		BurnDrvMDsbls;			// no comment
-DRV		BurnDrvShdancbl;		// Incomplete Sound [NOT WORKING]
+DRV		BurnDrvMDg_sesame;		// no comment [NOT WORKING]
+DRV		BurnDrvSetaroul;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvShdance1;
-DRV		BurnDrvShdancej;
+DRV		BurnDrvSfx;
+DRV		BurnDrvShackled;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_shadow;		// no comment [NOT WORKING]
+DRV		BurnDrvShdancbl;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvShdancer1;
+DRV		BurnDrvShdancerj;
 DRV		BurnDrvShdancer;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsdan;			// no comment
+DRV		BurnDrvMDg_shdanc;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvShadfrcjv2;
 DRV		BurnDrvShadfrcj;
 DRV		BurnDrvShadfrce;
+DRV		BurnDrvbeast;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshbeaj;		// no comment
-DRV		BurnDrvMDsbea;			// no comment
-DRV		BurnDrvMDsbe2;			// no comment
-DRV		BurnDrvMDshrunj;		// no comment
-DRV		BurnDrvMDsrun;			// no comment
-DRV		BurnDrvMDswcr;			// no comment
-DRV		BurnDrvMDshan2b;		// no comment
-DRV		BurnDrvMDs2de;			// no comment
-DRV		BurnDrvMDshaq;			// no comment
-DRV		BurnDrvMDshikin;		// no comment
-DRV		BurnDrvMDshinch;		// no comment
-DRV		BurnDrvMDshi;			// no comment
+DRV		BurnDrvMDg_beast;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beastj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_beast2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvmatrim;
+DRV		BurnDrvShadoww;
+DRV		BurnDrvShadowwa;
+DRV		BurnDrvMDg_shdwrj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshdrkj;		// no comment
-DRV		BurnDrvMDsfrcbt;		// no comment
-DRV		BurnDrvMDshf1;			// no comment
-DRV		BurnDrvMDshfrcj;		// no comment
-DRV		BurnDrvMDshfr2e;		// no comment
-DRV		BurnDrvMDshf2;			// no comment
-DRV		BurnDrvMDshfr2j;		// no comment
-DRV		BurnDrvMDshdrkb;		// no comment
-DRV		BurnDrvMDsitd;			// no comment
+DRV		BurnDrvMDg_shdwra;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shdwrb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shdwrc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shdwrd;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_shdwr;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_shanew;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shai2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shai2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shai2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shaqfu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shijie;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shinom;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shijou;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shikin;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_shinso;
+DRV		BurnDrvMDg_shinin;
+DRV		BurnDrvMDg_shnf;
+DRV		BurnDrvMDg_shnfa;
+DRV		BurnDrvMDg_shnfb;
+DRV		BurnDrvMDg_shf2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_shf2pa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shf2pb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_shf2u;
+DRV		BurnDrvMDg_shf2j;
+DRV		BurnDrvMDg_sitdb;
+DRV		BurnDrvMDg_sitd;
+DRV		BurnDrvShinoblb;
 DRV		BurnDrvShinobi1;
 DRV		BurnDrvShinobi2;
 DRV		BurnDrvShinobi3;
@@ -2507,377 +4314,650 @@ DRV		BurnDrvShinobi4;
 DRV		BurnDrvShinobi5;
 DRV		BurnDrvShinobi;
 DRV		BurnDrvShinobls;
+DRV		BurnDrvShinfz;
+DRV		BurnDrvMDg_shin3;
+DRV		BurnDrvMDg_shin3u;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshin3e;		// no comment
-DRV		BurnDrvMDshi3;			// no comment
+DRV		BurnDrvMDg_shipun;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvShippuMD;
+DRV		BurnDrvShisen2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshiten;		// no comment
+DRV		BurnDrvMDg_shiten;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvshocktro;
-DRV		BurnDrvShocktra;
+DRV		BurnDrvshocktroa;
 DRV		BurnDrvshocktr2;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDshogi;			// no comment
-#endif
+DRV		BurnDrvShocking;
 DRV		BurnDrvshootbul;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshov;			// no comment
-DRV		BurnDrvMDshowd;			// no comment
-DRV		BurnDrvMDshowd2;		// no comment
-DRV		BurnDrvMDshwd2a;		// no comment
-DRV		BurnDrvMDshura;			// no comment
-DRV		BurnDrvMDsidepe;		// no comment
-DRV		BurnDrvMDside;			// no comment
+DRV		BurnDrvMDg_shougi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shovei;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sdm;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sdm2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sdm2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shuihu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shuih1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shuran;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sidepo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sidep1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sidep2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDbart00;
-DRV		BurnDrvMDbart;
+DRV		BurnDrvSilentdj;
+DRV		BurnDrvSilentdu;
+DRV		BurnDrvSilentd;
+DRV		BurnDrvSilkworm;
+DRV		BurnDrvSilkwrmj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDbtnm;			// No sound
-DRV		BurnDrvMDskrewe;		// no comment
-DRV		BurnDrvMDkrew;			// no comment
-DRV		BurnDrvMDskit;			// no comment
+DRV		BurnDrvMDg_simps1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_simpso;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_simpbn;		// no comment [NOT WORKING]
+DRV		BurnDrvSkelagon;		// Bad Dump [NOT WORKING]
+DRV		BurnDrvMDg_skelet;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_skele1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_skitch;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSkybase;
+DRV		BurnDrvSkyfox;
+DRV		BurnDrvSkykidd;
+DRV		BurnDrvSkykid;
+DRV		BurnDrvSkykido;
+DRV		BurnDrvSkykids;
 DRV		BurnDrvskylancr;
 DRV		BurnDrvskylance;
+DRV		BurnDrvSkyraidr;
+DRV		BurnDrvSkysmash;
 DRV		BurnDrvSkywolf;
 DRV		BurnDrvSkywolf2;
+DRV		BurnDrvSkywolf3;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsdnk;			// no comment
-#endif
-DRV		BurnDrvSlapFghtr;
-DRV		BurnDrvSlapBtUK;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDslapf;			// no comment
+DRV		BurnDrvMDg_slamsh;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvSlapBtJP;
-DRV		BurnDrvSlapFigh;
+DRV		BurnDrvSlapBtUK;
+DRV		BurnDrvSlapFghtr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsspo;			// no comment
-DRV		BurnDrvMDsmf;			// no comment
-DRV		BurnDrvMDsmf2;			// no comment
-DRV		BurnDrvMDsrr;			// no comment
-DRV		BurnDrvMDsnow;			// no comment
+DRV		BurnDrvSlapFigh;		// Protection MCU not emulated [NOT WORKING]
+DRV		BurnDrvMDg_slapfi;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSlapshot;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_slaugh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_slimew;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_smf2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_smurfs;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_snaker;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSnapjack;
+DRV		BurnDrvSnapper;
+DRV		BurnDrvsvc;
+DRV		BurnDrvsvcboot;
+//		BurnDrvsvcnd;			// no comment
+DRV		BurnDrvsvcpcb;
+//		BurnDrvsvcpcbnd;		// no comment
+DRV		BurnDrvsvcpcba;
+DRV		BurnDrvsvcplus;
+DRV		BurnDrvsvcplusa;
+DRV		BurnDrvsvcsplus;
+DRV		BurnDrvSnowbrod;
 DRV		BurnDrvSnowbroj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_snowbr;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvSnowbros;
 DRV		BurnDrvSnowbroa;
 DRV		BurnDrvSnowbrob;
 DRV		BurnDrvSnowbroc;
 DRV		BurnDrvSnowbro2;
 DRV		BurnDrvSnowbro3;
-DRV		BurnDrvSocbrawl;
-DRV		BurnDrvSocbrala;
+DRV		BurnDrvsocbrawla;
+DRV		BurnDrvsocbrawlh;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsock;			// no comment
-DRV		BurnDrvMDsokoba;		// no comment
-DRV		BurnDrvMDsold;			// no comment
-DRV		BurnDrvMDsoldf;			// no comment
-DRV		BurnDrvMDsoleib;		// no comment
-DRV		BurnDrvMDsole;			// no comment
-DRV		BurnDrvMDsoleif;		// no comment
-DRV		BurnDrvMDsoleig;		// no comment
-DRV		BurnDrvMDsoleis;		// no comment
+DRV		BurnDrvMDg_socket;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSokonuke;
+DRV		BurnDrvSoldivid;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_soldea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_soldie;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_soleil;
+DRV		BurnDrvMDg_solei1;
+DRV		BurnDrvMDg_solei2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_solei3;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_solei4;
+DRV		BurnDrvSolfigtr;
 DRV		BurnDrvSolomonj;
 DRV		BurnDrvSolomon;
 DRV		BurnDrvSonofphx;
-DRV		BurnDrvMDs3d;
-DRV		BurnDrvMDsoncrk;
-DRV		BurnDrvMDsks1;
-DRV		BurnDrvMDsks2;
-DRV		BurnDrvMDsks3;
-DRV		BurnDrvMDsnkn;
+DRV		BurnDrvSonson;
+DRV		BurnDrvSonsonj;
+DRV		BurnDrvMDg_ska;
+DRV		BurnDrvMDg_skb;
+DRV		BurnDrvMDg_skc;
+DRV		BurnDrvMDg_skd;
+DRV		BurnDrvMDg_ske;
+DRV		BurnDrvMDg_skf;
+DRV		BurnDrvMDg_skg;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_skh;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ski;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_skj;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_skk;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_skl;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_sk;
+DRV		BurnDrvMDg_sks1;
+DRV		BurnDrvMDg_sks2;
+DRV		BurnDrvMDg_sks3;
+DRV		BurnDrvMDg_son3c;
+DRV		BurnDrvMDg_son3ca;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_s3da;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3db;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3dc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3dd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3de;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3df;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3dg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s3dh;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_s3d;
+DRV		BurnDrvSbm;
 DRV		BurnDrvSonicbom;
+DRV		BurnDrvMDg_comp;
+DRV		BurnDrvMDg_compa;
+DRV		BurnDrvMDg_scrack;
+DRV		BurnDrvMDg_sonice;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsoncle;		// no comment [NOT WORKING]
-DRV		BurnDrvMDsonclu;		// Bad sound
-DRV		BurnDrvMDserase;		// no comment
-DRV		BurnDrvMDsonsb;			// No sound in-game
-DRV		BurnDrvMDsonse;			// No sound in-game
-DRV		BurnDrvMDsonsj;			// No sound in-game
-DRV		BurnDrvMDsspa;			// No sound in-game
-DRV		BurnDrvMDsons;			// No sound in-game
+DRV		BurnDrvMDg_sonicj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sonij2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDsoni00;
-DRV		BurnDrvMDsoni;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsoni2p;		// no comment
-#endif
-DRV		BurnDrvMDson200;
-DRV		BurnDrvMDson2;
-DRV		BurnDrvMDson2a;
-DRV		BurnDrvMDson3e;
-DRV		BurnDrvMDson3j;
-DRV		BurnDrvMDson3;
+DRV		BurnDrvMDg_sspin;
+DRV		BurnDrvMDg_sspina;
+DRV		BurnDrvMDg_sspind;
+DRV		BurnDrvMDg_sspinb;
+DRV		BurnDrvMDg_sspinc;
+DRV		BurnDrvMDg_sonica;
+DRV		BurnDrvMDg_sonic;
+DRV		BurnDrvMDg_sonicb;
+DRV		BurnDrvMDg_soni2b;
+DRV		BurnDrvMDg_soni2c;
+DRV		BurnDrvMDg_soni2d;
+DRV		BurnDrvMDg_soni2e;
+DRV		BurnDrvMDg_soni2f;
+DRV		BurnDrvMDg_soni2g;
+DRV		BurnDrvMDg_soni2h;
+DRV		BurnDrvMDg_soni2i;
+DRV		BurnDrvMDg_soni2j;
+DRV		BurnDrvMDg_soni2a;
+DRV		BurnDrvMDg_soni2k;
+DRV		BurnDrvMDg_soni2;
+DRV		BurnDrvMDg_soni3a;
+DRV		BurnDrvMDg_soni3b;
+DRV		BurnDrvMDg_soni3c;
+DRV		BurnDrvMDg_soni3;
 DRV		BurnDrvSonicwi;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsorkin;		// no comment
-#endif
+DRV		BurnDrvMDg_sorcer;
 DRV		BurnDrvSStriker;
 DRV		BurnDrvSStrikrA;
+DRV		BurnDrvMDg_skinga;
+DRV		BurnDrvMDg_sking;
+DRV		BurnDrvMDg_sorcn;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsork00;		// no comment
-DRV		BurnDrvMDsorckd;		// no comment
-DRV		BurnDrvMDsorcer;		// no comment
+DRV		BurnDrvMDg_soulbl;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSpacbatt;
+DRV		BurnDrvSpacbat2;
+DRV		BurnDrvSbsgomo;
+DRV		BurnDrvSbombera;
+DRV		BurnDrvSbomber;
+DRV		BurnDrvSpcdrag;
+DRV		BurnDrvSpcdraga;
 DRV		BurnDrvspacecho;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsfbob;			// no comment
-#endif
+DRV		BurnDrvSpacempr;
+DRV		BurnDrvMDg_spacef;
 DRV		BurnDrvSpacegun;
-DRV		BurnDrvSharrir1;
+DRV		BurnDrvSharrier1;
 DRV		BurnDrvSharrier;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDshar2j;		// no comment
-DRV		BurnDrvMDshar;			// no comment
-DRV		BurnDrvMDsi90;			// no comment
-DRV		BurnDrvMDsi91;			// no comment
-DRV		BurnDrvMDsparke;		// no comment
-DRV		BurnDrvMDsparkj;		// no comment
-DRV		BurnDrvMDsprk;			// no comment
+DRV		BurnDrvMDg_sharrj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sharr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_si90;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_si91;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSpacedxo;
+DRV		BurnDrvSpacedxj;
+DRV		BurnDrvSpacedx;
+DRV		BurnDrvGalap1;
+DRV		BurnDrvSinvasnb;
+DRV		BurnDrvSinvasn;
+DRV		BurnDrvSpcpostn;
+DRV		BurnDrvSraider;
+DRV		BurnDrvSpctbird;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sparks;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spark1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spark2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSpartanx;
+DRV		BurnDrvSpatter;
 DRV		BurnDrvspeakres;
 DRV		BurnDrvScij;
+DRV		BurnDrvScinegro;
 DRV		BurnDrvSciu;
 DRV		BurnDrvSci;
 DRV		BurnDrvScia;
+DRV		BurnDrvSpec2k;
+DRV		BurnDrvSpdcoin;
+DRV		BurnDrvSpeedspn;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsbal2e;		// no comment
-DRV		BurnDrvMDspb2;			// no comment
-DRV		BurnDrvMDs_asb1;		// no comment
-DRV		BurnDrvMDs_asb2;		// no comment
-DRV		BurnDrvMDs_as;			// no comment
-DRV		BurnDrvMDs_mc;			// no comment
-DRV		BurnDrvMDs_sa;			// no comment
-DRV		BurnDrvMDs_ar;			// no comment
-DRV		BurnDrvMDs_kp;			// no comment
+DRV		BurnDrvMDg_speedb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_speed1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_speed2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSpelunkr;
+DRV		BurnDrvSpelunkrj;
+DRV		BurnDrvSpelunk2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_spidmb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spidma;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spidm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sp_mc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sp_sa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sp_xm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sp_kp;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvspinmast;
 DRV		BurnDrvSpinlbrj;
 DRV		BurnDrvSpinlbru;
 DRV		BurnDrvSpinlbrk;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDspir;			// no comment
-DRV		BurnDrvMDshou2e;		// no comment
-DRV		BurnDrvMDsho;			// no comment
-DRV		BurnDrvMDspl2;			// no comment
-DRV		BurnDrvMDspl3;			// no comment
-DRV		BurnDrvMDsho3ja;		// no comment
-DRV		BurnDrvMDshou3j;		// no comment
-DRV		BurnDrvMDsptgb;			// no comment
-DRV		BurnDrvMDspot2e;		// no comment
-DRV		BurnDrvMDspo2;			// no comment
+DRV		BurnDrvMDg_spirit;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spirou;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splatt;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splata;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splh3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splatb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splh3a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_splh3b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sportg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sports;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spotgo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spotg1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvStakwin;
-DRV		BurnDrvStakwin2;
+DRV		BurnDrvSpringer;
+DRV		BurnDrvSquash;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDscon;			// no comment
-DRV		BurnDrvMDstarcj;		// no comment
+DRV		BurnDrvMDg_squirr;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvStagger1;
+DRV		BurnDrvstakwin;
+DRV		BurnDrvstakwin2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_starco;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_starcr;
+DRV		BurnDrvStarfght;
 DRV		BurnDrvStarjack;
-DRV		BurnDrvStarjacs;
+DRV		BurnDrvStarjacks;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDstds9e;		// no comment
-DRV		BurnDrvMDstd9;			// no comment
-DRV		BurnDrvMDstng00;		// no comment
-DRV		BurnDrvMDstng;			// no comment
-DRV		BurnDrvMDstrf00;		// no comment
-DRV		BurnDrvMDsfli;			// no comment
-DRV		BurnDrvMDsgatb;			// no comment
-DRV		BurnDrvMDsgat;			// Bad sound
-DRV		BurnDrvMDsempb;			// no comment
-DRV		BurnDrvMDsemp;			// no comment
-DRV		BurnDrvMDstalj;			// no comment
-DRV		BurnDrvMDstalon;		// no comment
-DRV		BurnDrvMDslordj;		// no comment
-DRV		BurnDrvMDstol;			// no comment
+DRV		BurnDrvMDg_stds9;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stds9u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttngb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttngc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttngd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttnge;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttngf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sttngg;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDsthorb;
-DRV		BurnDrvMDsthor;
-DRV		BurnDrvMDsthorf;
-DRV		BurnDrvMDsthorg;
-DRV		BurnDrvMDsthorj;
-DRV		BurnDrvMDsthork;
-DRV		BurnDrvMDsthors;
+DRV		BurnDrvMDg_sttnga;
+DRV		BurnDrvMDg_sttng;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_starf1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_starfl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stargb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_starg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_steele;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stalnj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stalnb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_staln;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvStera;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_slordj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_slord;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_storyo;
+DRV		BurnDrvMDg_story1;
+DRV		BurnDrvMDg_story2;
+DRV		BurnDrvMDg_story3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_story4;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_story5;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_story6;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_story7;
+DRV		BurnDrvMDg_story8;
+DRV		BurnDrvStrfbomb;
+DRV		BurnDrvStratgyx;
+DRV		BurnDrvStratgys;
 DRV		BurnDrvstratvox;
 DRV		BurnDrvstratvob;
+DRV		BurnDrvStreakng;
+DRV		BurnDrvStreaknga;
+DRV		BurnDrvsfjp;
+DRV		BurnDrvsfp;
+DRV		BurnDrvsfu;
+DRV		BurnDrvsfua;
+DRV		BurnDrvsf;
 DRV		BurnDrvCpsSfach;
 DRV		BurnDrvCpsSfar3;
 DRV		BurnDrvCpsSfar2;
 DRV		BurnDrvCpsSfau;
 DRV		BurnDrvCpsSfar1;
+DRV		BurnDrvCpsSfad;
 DRV		BurnDrvCpsSfa;
 DRV		BurnDrvCpsSfa2;
+DRV		BurnDrvCpsSfa2ur1;
+DRV		BurnDrvCpsSfa2u;
 DRV		BurnDrvCpsSfa3b;
+DRV		BurnDrvCpsSfa3hr1;
 DRV		BurnDrvCpsSfa3ur1;
 DRV		BurnDrvCpsSfa3;
+DRV		BurnDrvCpsSfa3h;
+DRV		BurnDrvCpsSfa3ud;
 DRV		BurnDrvCpsSfa3u;
 DRV		BurnDrvCpsSf2ua;
 DRV		BurnDrvCpsSf2eb;
+DRV		BurnDrvCpsSf2ebbl;
 DRV		BurnDrvCpsSf2ja;
 DRV		BurnDrvCpsSf2ub;
+DRV		BurnDrvCpsSf2ee;
 DRV		BurnDrvCpsSf2ue;
 DRV		BurnDrvCpsSf2jc;
+DRV		BurnDrvCpsSf2uc;
 DRV		BurnDrvCpsSf2ud;
 DRV		BurnDrvCpsSf2uf;
 DRV		BurnDrvCpsSf2;
 DRV		BurnDrvCpsSf2ui;
 DRV		BurnDrvCpsSf2uk;
 DRV		BurnDrvCpsSf2j;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsSf2b;			// Resets itself [NOT WORKING]
+#endif
+DRV		BurnDrvCpsSf2qp1;
+DRV		BurnDrvCpsSf2thndr;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsSf2th;		// Resets itself [NOT WORKING]
+#endif
 DRV		BurnDrvCpsSf2accp2;
-DRV		BurnDrvCpsKouryu;
+DRV		BurnDrvCpsSf2acc;
+//		BurnDrvCpsSf2cebr;		// no comment
+DRV		BurnDrvCpsSf2dkot2;
+//		BurnDrvCpsSf2ceh;		// no comment
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsSf2m1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsSf2m10;
+DRV		BurnDrvCpsSf2m11;
+DRV		BurnDrvCpsSf2m12;
+DRV		BurnDrvCpsSf2m13;
 DRV		BurnDrvCpsSf2m2;
+DRV		BurnDrvCpsSf2m3;
 DRV		BurnDrvCpsSf2m4;
 DRV		BurnDrvCpsSf2m5;
 DRV		BurnDrvCpsSf2m6;
 DRV		BurnDrvCpsSf2m7;
+DRV		BurnDrvCpsSf2m8;
+DRV		BurnDrvCpsSf2m9;
 DRV		BurnDrvCpsSf2rb;
 DRV		BurnDrvCpsSf2rb2;
+DRV		BurnDrvCpsSf2rb3;
 DRV		BurnDrvCpsSf2red;
+DRV		BurnDrvCpsSf2tlona;
+DRV		BurnDrvCpsSf2tlonb;
 DRV		BurnDrvCpsSf2v004;
 DRV		BurnDrvCpsSf2yyc;
-DRV		BurnDrvCpsSf2ce;
+DRV		BurnDrvCpsKouryu;
+//		BurnDrvCpsSf2ce13;		// no comment [NOT WORKING]
+//		BurnDrvCpsSf2turyu;		// no comment
+//		BurnDrvCpsSf2tlonc;		// no comment
+//		BurnDrvCpsSf2tury2;		// no comment
+DRV		BurnDrvCpsSf2ceea;
 DRV		BurnDrvCpsSf2ceua;
+DRV		BurnDrvCpsSf2ce;
 DRV		BurnDrvCpsSf2cej;
 DRV		BurnDrvCpsSf2ceub;
 DRV		BurnDrvCpsSf2ceuc;
 DRV		BurnDrvCpsSf2hf;
-DRV		BurnDrvCpsSf2t;
+DRV		BurnDrvCpsSf2hfu;
+DRV		BurnDrvMDg_sf2;
+DRV		BurnDrvMDg_sf2u;
+DRV		BurnDrvMDg_sf2p;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsf2e;			// no comment
-DRV		BurnDrvMDsf2c;			// no comment
-DRV		BurnDrvMDsf2j;			// no comment
-DRV		BurnDrvMDsf2b;			// no comment
+DRV		BurnDrvMDg_sf2tb;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsSf2tj;
+DRV		BurnDrvCpsSf2hfj;
 DRV		BurnDrvSfiii2n;
+DRV		BurnDrvSfiii2j;
 DRV		BurnDrvSfiii2;
-#if defined FBA_DEBUG
-DRV		BurnDrvSfiii2u;			// no comment [NOT WORKING]
-#endif
-DRV		BurnDrvSfiii3n;
 DRV		BurnDrvSfiii3an;
+DRV		BurnDrvSfiii3n;
+DRV		BurnDrvSfiii3a;
 DRV		BurnDrvSfiii3;
-#if defined FBA_DEBUG
-DRV		BurnDrvSfiii3a;			// no comment [NOT WORKING]
-#endif
 DRV		BurnDrvSfiiin;
+DRV		BurnDrvSfiiih;
+DRV		BurnDrvSfiiij;
 DRV		BurnDrvSfiii;
-#if defined FBA_DEBUG
-DRV		BurnDrvSfiiiu;			// no comment [NOT WORKING]
-#endif
 DRV		BurnDrvCpsSfzjr2;
 DRV		BurnDrvCpsSfza;
-DRV		BurnDrvCpsSfzh;
+DRV		BurnDrvCpsSfzhr1;
 DRV		BurnDrvCpsSfzjr1;
+DRV		BurnDrvCpsSfzh;
 DRV		BurnDrvCpsSfzbr1;
 DRV		BurnDrvCpsSfzj;
-DRV		BurnDrvCpsSfzch;
 DRV		BurnDrvCpsSfzb;
+DRV		BurnDrvCpsSfzbch;
+DRV		BurnDrvCpsSfzech;
+DRV		BurnDrvCpsSfzhch;
+DRV		BurnDrvCpsSfzach;
+DRV		BurnDrvCpsSfzch;
+DRV		BurnDrvCpsSfz2ad;
 DRV		BurnDrvCpsSfz2a;
+DRV		BurnDrvCpsSfz2jd;
 DRV		BurnDrvCpsSfz2j;
 DRV		BurnDrvCpsSfz2n;
 DRV		BurnDrvCpsSfz2br1;
 DRV		BurnDrvCpsSfz2h;
 DRV		BurnDrvCpsSfz2b;
-DRV		BurnDrvCpsSfz2aj;
-DRV		BurnDrvCpsSfz2ab;
-DRV		BurnDrvCpsSfz2ah;
-DRV		BurnDrvCpsSfz2aa;
+DRV		BurnDrvCpsSfz2alj;
+DRV		BurnDrvCpsSfz2alb;
+DRV		BurnDrvCpsSfz2alh;
+DRV		BurnDrvCpsSfz2ald;
+DRV		BurnDrvCpsSfz2al;
+DRV		BurnDrvCpsSfz3jr2d;
 DRV		BurnDrvCpsSfz3jr2;
 DRV		BurnDrvCpsSfz3ar1;
 DRV		BurnDrvCpsSfz3jr1;
 DRV		BurnDrvCpsSfz3a;
 DRV		BurnDrvCpsSfz3j;
-DRV		BurnDrvStrHoop;
+DRV		BurnDrvstrhoop;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDstra;			// no comment
-DRV		BurnDrvMDssma;			// no comment
+DRV		BurnDrvMDg_sracer;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDsor00;
-DRV		BurnDrvMDsor;
-DRV		BurnDrvMDsor2je;
-DRV		BurnDrvMDsor2;
-DRV		BurnDrvMDsor3e;
-DRV		BurnDrvMDsor3ea;
-DRV		BurnDrvMDsor3;
-DRV		BurnDrvCpsStrider;
-DRV		BurnDrvCpsStridrua;
-DRV		BurnDrvCpsStriderj;
-DRV		BurnDrvCpsStridrja;
+DRV		BurnDrvstreetsj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDstridj;		// no comment
-DRV		BurnDrvMDstrid2;		// no comment
-DRV		BurnDrvMDstri;			// no comment
+DRV		BurnDrvMDg_ssmart;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvstreets1;
+DRV		BurnDrvstreetsm;
+DRV		BurnDrvstreetsw;
+DRV		BurnDrvCpsFfightjh;
+DRV		BurnDrvMDg_sor2;
+DRV		BurnDrvMDg_sor3a;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sor3pa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pe;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_sor3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sor3pf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3ph;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pk;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3pn;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sor3po;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_sor3u;
+DRV		BurnDrvMDg_sora;
+DRV		BurnDrvMDg_sor;
+DRV		BurnDrvCpsStrider;
+DRV		BurnDrvCpsStriderua;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_stride;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsStriderjr;
+DRV		BurnDrvCpsStriderj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_strid1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stri2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stri2u;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvStrkfgtr;
+DRV		BurnDrvStg;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDstrikb;		// no comment
-DRV		BurnDrvMDstrk;			// no comment
+DRV		BurnDrvMDg_strkrb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_strkr;		// Gfx Problems
 #endif
 DRV		BurnDrvS1945;
 DRV		BurnDrvS1945a;
 DRV		BurnDrvS1945j;
 DRV		BurnDrvS1945jn;
 DRV		BurnDrvS1945k;
+DRV		BurnDrvS1945ii;
+DRV		BurnDrvS1945iii;
 DRV		BurnDrvs1945p;
+//		BurnDrvs1945pn;			// no comment
+DRV		BurnDrvStrongx;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsubtb1;		// no comment
-DRV		BurnDrvMDsubtb2;		// no comment
-DRV		BurnDrvMDsubte;			// no comment
-DRV		BurnDrvMDsubtj;			// no comment
-DRV		BurnDrvMDsubt;			// no comment
+DRV		BurnDrvMDg_subt;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_subtj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_subtp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_subtu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_subtub;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_subtua;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvScessjoe;
 DRV		BurnDrvSjryuko1;
 DRV		BurnDrvSjryuko;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsumc;			// no comment
-DRV		BurnDrvMDssride;		// no comment
-DRV		BurnDrvMDssri;			// no comment
-DRV		BurnDrvMDsair;			// no comment
-DRV		BurnDrvMDg_2020j;		// no comment [NOT WORKING]
-DRV		BurnDrvMDsbt;			// no comment
-DRV		BurnDrvMDsbat;			// no comment
+DRV		BurnDrvMDg_summer;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSunaq;
+DRV		BurnDrvSsridersabd;
+DRV		BurnDrvSsridersebc;
+DRV		BurnDrvSsridersebd;
+DRV		BurnDrvSsridersjbd;
+DRV		BurnDrvSsridersubc;
+DRV		BurnDrvSsridersadd;
+DRV		BurnDrvSsriderseaa;
+DRV		BurnDrvSsriders;
+DRV		BurnDrvSsridersuac;
+DRV		BurnDrvSsridersuda;
+#if defined FBA_DEBUG
+DRV		BurnDrvSsridersb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sunset;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sunse1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s15in1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_s19in1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_supera;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSuperbar;
+DRV		BurnDrvMDg_sb2020;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sbs;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sbt;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSboblboa;
+DRV		BurnDrvSboblbob;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_supbub;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSbbros;
 DRV		BurnDrvsucasino;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsupdai;		// no comment
+DRV		BurnDrvSuperchs;		// no comment
 #endif
-DRV		BurnDrvSdodgeb;
+DRV		BurnDrvScobra;
+DRV		BurnDrvScobrab;
+DRV		BurnDrvScobrase;
+DRV		BurnDrvScobras;
+DRV		BurnDrvScontra;
+DRV		BurnDrvScontraj;
+DRV		BurnDrvMDg_superd;
+DRV		BurnDrvsdodgeb;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsfz;			// no comment
-DRV		BurnDrvMDsfze;			// no comment
+DRV		BurnDrvMDg_sdk99;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sdk99a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sfz;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sfzj;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSuperg;
 DRV		BurnDrvCpsSgemfa;
 DRV		BurnDrvCpsSgemfh;
+DRV		BurnDrvCpsSgemfd;
 DRV		BurnDrvCpsSgemf;
 DRV		BurnDrvSuprglob;
 DRV		BurnDrvsprglobp;
 DRV		BurnDrvsprglbpg;
 #if defined FBA_DEBUG
-DRV		BurnDrvShangupb;		// no comment
+DRV		BurnDrvSupergx;			// Bad Dump [NOT WORKING]
+DRV		BurnDrvMDg_superh;		// no comment [NOT WORKING]
+DRV		BurnDrvShangonrb;		// no comment [NOT WORKING]
+DRV		BurnDrvShangonro;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvShangon2;
 DRV		BurnDrvShangon3;
 DRV		BurnDrvShangon;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsho00;			// no comment
-DRV		BurnDrvMDsuphq;			// no comment
-DRV		BurnDrvMDshyde;			// no comment
-DRV		BurnDrvMDshydj;			// no comment
-DRV		BurnDrvMDshyd;			// no comment
-DRV		BurnDrvMDskik;			// no comment
-DRV		BurnDrvMDsl;			// no comment
-DRV		BurnDrvMDsleage;		// no comment
+DRV		BurnDrvMDg_shanga;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_shang;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSuprheli;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_shi;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_suphy;
+DRV		BurnDrvMDg_suphyj;
+DRV		BurnDrvMDg_suphyu;
+DRV		BurnDrvMDg_superk;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_skk99;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_suplg;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvSuprleag;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsl91;			// no comment
-DRV		BurnDrvMDsmas;			// no comment
+DRV		BurnDrvMDg_suplgj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_superm;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_supe16;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_supe17;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_supe18;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMarukin;
 DRV		BurnDrvSupmodel;
+DRV		BurnDrvMDg_smgpj;
+DRV		BurnDrvMDg_smgpb;
+DRV		BurnDrvMDg_smgpa;
 DRV		BurnDrvSmgpja;
 DRV		BurnDrvSmgpj;
 DRV		BurnDrvSmgpu3;
@@ -2887,402 +4967,683 @@ DRV		BurnDrvSmgpu;
 DRV		BurnDrvSmgp5;
 DRV		BurnDrvSmgp6;
 DRV		BurnDrvSmgp;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsmgp03;		// no comment
-DRV		BurnDrvMDsmgp00;		// no comment
-DRV		BurnDrvMDsmgp01;		// no comment
-DRV		BurnDrvMDsmgp;			// no comment
-#endif
+DRV		BurnDrvMDg_smgp;
+DRV		BurnDrvSmooncrs;
 DRV		BurnDrvCpsSmbombr1;
 DRV		BurnDrvCpsSmbomb;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsoff;			// no comment
-#endif
+DRV		BurnDrvMDg_supero;
+DRV		BurnDrvSpangj;
+DRV		BurnDrvSpang;
 DRV		BurnDrvCpsSpf2ta;
+DRV		BurnDrvCpsSpf2th;
+DRV		BurnDrvCpsSpf2td;
 DRV		BurnDrvCpsSpf2t;
+DRV		BurnDrvCpsSpf2xjd;
 DRV		BurnDrvCpsSpf2xj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsrba;			// no comment
-DRV		BurnDrvMDsrealj;		// no comment
-DRV		BurnDrvMDsshi2b;		// no comment
-DRV		BurnDrvMDsshin2;		// no comment
+DRV		BurnDrvMDg_srb;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_srbj;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvSsideki2;
-DRV		BurnDrvSsideki3;
-DRV		BurnDrvSsideki;
+DRV		BurnDrvSrdarwnj;
+DRV		BurnDrvSrdarwin;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDskid;			// no comment
-DRV		BurnDrvMDskida;			// no comment
-DRV		BurnDrvMDsstv;			// no comment
+DRV		BurnDrvMDg_sups2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sups2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sups2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_supshi;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvssideki;
+DRV		BurnDrvssideki2;
+DRV		BurnDrvssideki3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_sskidb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sskid;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sstv;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvSsi;
+DRV		BurnDrvMacross;
+DRV		BurnDrvMacross2;
+DRV		BurnDrvSstarcrs;
+DRV		BurnDrvMDg_ssf2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ssf2j;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsSsf2jr2;
 DRV		BurnDrvCpsSsf2;
+DRV		BurnDrvCpsSsf2h;
 DRV		BurnDrvCpsSsf2jr1;
+DRV		BurnDrvCpsSsf2ud;
 DRV		BurnDrvCpsSsf2u;
 DRV		BurnDrvCpsSsf2ar1;
 DRV		BurnDrvCpsSsf2a;
 DRV		BurnDrvCpsSsf2j;
+DRV		BurnDrvMDg_ssf2u;
 DRV		BurnDrvCpsSsf2tbr1;
 DRV		BurnDrvCpsSsf2tbj;
+DRV		BurnDrvCpsSsf2tbd;
 DRV		BurnDrvCpsSsf2tb;
 DRV		BurnDrvCpsSsf2ta;
 DRV		BurnDrvCpsSsf2t;
 DRV		BurnDrvCpsSsf2tur1;
 DRV		BurnDrvCpsSsf2tu;
+DRV		BurnDrvCpsSsf2xjd;
 DRV		BurnDrvCpsSsf2xj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDstb00;			// no comment
-DRV		BurnDrvMDstb;			// no comment
+DRV		BurnDrvMDg_stbj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_stb;			// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvSuprtrio;
 DRV		BurnDrvstriv;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsvolx;			// no comment
-DRV		BurnDrvMDsvolua;		// no comment
-DRV		BurnDrvMDsvol;			// no comment
+DRV		BurnDrvMDg_svbjx;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_svbj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_svbjy;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_svb;			// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvSsoldier;
 DRV		BurnDrvSuperman;
+DRV		BurnDrvSupermanj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDsupmnb;		// no comment
-DRV		BurnDrvMDsupmne;		// no comment
+DRV		BurnDrvMDg_spman;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spmanb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_spmane;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_surgin;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvSuprmanj;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDsupm;			// no comment
-DRV		BurnDrvMDsurgin;		// no comment
-#endif
-DRV		BurnDrvsvcpcb;
-DRV		BurnDrvsvcpcba;
-DRV		BurnDrvsvc;
-DRV		BurnDrvsvcboot;
-DRV		BurnDrvsvcplus;
-DRV		BurnDrvsvcplusa;
-DRV		BurnDrvsvcsplus;
+DRV		BurnDrvSuratka;
+DRV		BurnDrvSuratkj;
+DRV		BurnDrvSuratk;
+DRV		BurnDrvSwarm;
 DRV		BurnDrvSwat;
+DRV		BurnDrvSwatpolc;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDswsoj;			// no comment
-DRV		BurnDrvMDswso;			// no comment
-DRV		BurnDrvMDswvej;			// no comment
-DRV		BurnDrvMDswve;			// no comment
-DRV		BurnDrvMDsydval;		// no comment
-DRV		BurnDrvMDsylvb;			// no comment
-DRV		BurnDrvMDsylv;			// no comment
-DRV		BurnDrvMDsynd;			// no comment
+DRV		BurnDrvMDg_swordo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sword1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMOSyougi;
+DRV		BurnDrvMDg_swdv;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDt2arcb;		// no comment
-DRV		BurnDrvMDt2ar;			// no comment
-DRV		BurnDrvMDtaiga;			// no comment
-DRV		BurnDrvMDtaikou;		// no comment
-DRV		BurnDrvMDtale;			// no comment
-DRV		BurnDrvMDtalmit;		// no comment
-DRV		BurnDrvMDtanr;			// no comment
-DRV		BurnDrvMDtarg;			// no comment
-DRV		BurnDrvMDtfhxj;			// no comment
-DRV		BurnDrvMDtfh;			// no comment
+DRV		BurnDrvMDg_sydofv;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sylves;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_sylve1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_syndic;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDtazm;
+DRV		BurnDrvmosyougi;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtusa;			// no comment
-DRV		BurnDrvMDtcls;			// no comment
-DRV		BurnDrvMDtc;			// no comment
-DRV		BurnDrvMDtcop;			// no comment
-DRV		BurnDrvMDtcupx;			// no comment
-DRV		BurnDrvMDtsb;			// no comment
-DRV		BurnDrvMDtsbwlj;		// no comment
-DRV		BurnDrvMDtsbw;			// no comment
-DRV		BurnDrvMDtsbwlu;		// no comment
-DRV		BurnDrvMDtsbw2j;		// no comment
-DRV		BurnDrvMDtbw2;			// no comment
-DRV		BurnDrvMDtbw3;			// no comment
-DRV		BurnDrvMDtsnbaj;		// no comment
-DRV		BurnDrvMDtsnb;			// no comment
-DRV		BurnDrvMDtw92;			// no comment
-DRV		BurnDrvMDtw93;			// no comment
+DRV		BurnDrvMDg_t2term;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_t2agj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_t2agb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_t2ag;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_taikou;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_taiwan;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_talesp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_talmit;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvTws96;
+DRV		BurnDrvTangtang;
+DRV		BurnDrvTaotaido;
+DRV		BurnDrvTaotaidoa;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDteddy;			// no comment
+DRV		BurnDrvMDg_target;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTharrier;
+DRV		BurnDrvTharrierj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tfhj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tfh;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTrojanj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tatsuj;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_tazem;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tazema;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazeme;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tazemk;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_tazemu;
+DRV		BurnDrvMDg_tazman;
+DRV		BurnDrvTazzmang;
+DRV		BurnDrvTazmania;
+DRV		BurnDrvTazmani2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tc2000;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_teamus;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_techno;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tcop;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tecmoc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tecmo1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTknight;
+DRV		BurnDrvMDg_tecmos;
+DRV		BurnDrvMDg_tsbj;
+DRV		BurnDrvMDg_tsb;
+DRV		BurnDrvMDg_tsbo;
+DRV		BurnDrvMDg_tsb2j;
+DRV		BurnDrvMDg_tsb2;
+DRV		BurnDrvMDg_tsb3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tsh;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_tsbbj;
+DRV		BurnDrvMDg_tsbb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tecmow;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tecm11;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvtws96;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_teddyb;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvTeddybb;
 DRV		BurnDrvTeddybbo;
+DRV		BurnDrvTmht2p;
+DRV		BurnDrvTmht2pa;
+DRV		BurnDrvTmht;
+DRV		BurnDrvTmhta;
+DRV		BurnDrvMDg_tmhsh;
 #if defined FBA_DEBUG
-DRV		BurnDrvTmht2p;			// Preliminary driver
-DRV		BurnDrvTmht2pa;			// Preliminary driver
-DRV		BurnDrvTmht;			// Preliminary driver
-DRV		BurnDrvMDtmhte;			// no comment
-DRV		BurnDrvMDtmhtte;		// no comment
-DRV		BurnDrvTmnt2pj;			// Preliminary driver
-DRV		BurnDrvTmntj;			// Preliminary driver
-DRV		BurnDrvTmnt2po;			// Preliminary driver
-DRV		BurnDrvTmntu;			// Preliminary driver
-DRV		BurnDrvTmntua;			// Preliminary driver
-DRV		BurnDrvTmnt;			// Preliminary driver
-DRV		BurnDrvMDtmntj;			// no comment
-DRV		BurnDrvMDturt;			// no comment
-DRV		BurnDrvMDtmnttj;		// no comment
-DRV		BurnDrvMDtutf;			// no comment
-DRV		BurnDrvMDteitok;		// no comment
+DRV		BurnDrvMDg_tmtf;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvTmht22pe;
+#if defined FBA_DEBUG
+DRV		BurnDrvtmnti;			// no comment
+#endif
+DRV		BurnDrvTmht2pj;
+DRV		BurnDrvTmntj;
+DRV		BurnDrvTmht2po;
+DRV		BurnDrvTmntu;
+DRV		BurnDrvTmntua;
+DRV		BurnDrvTmnt;
+DRV		BurnDrvMDg_tmhshj;
+DRV		BurnDrvMDg_tmhshu;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tmtfj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tmtfu;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTmnt22pu;
+DRV		BurnDrvTmnt2a;
+DRV		BurnDrvTmnt2;
+DRV		BurnDrvMDg_teitok;
 DRV		BurnDrvTekiPaki;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtelmj;			// no comment
-DRV		BurnDrvMDtelstd;		// no comment
-DRV		BurnDrvMDtelerb;		// no comment
+DRV		BurnDrvMDg_tk3sp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_telmah;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsDwj;
-DRV		BurnDrvCpsWofj;
-DRV		BurnDrvTengai;
+DRV		BurnDrvMDg_telsta;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDterm;			// no comment
-DRV		BurnDrvMDterme;			// no comment
-DRV		BurnDrvMDter2;			// no comment
-DRV		BurnDrvMDtd2;			// no comment
+DRV		BurnDrvMDg_telebr;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsDwjr;
+DRV		BurnDrvCpsDwj;
+DRV		BurnDrvCpsWofjh;
+DRV		BurnDrvCpsWofj;
+DRV		BurnDrvCpsWofch;
+DRV		BurnDrvTengai;
+DRV		BurnDrvTengaij;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_termin;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_termi1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTerrafb;
+#if defined FBA_DEBUG
+DRV		BurnDrvTerrafjb;		// imperfect graphics [NOT WORKING]
+#endif
+DRV		BurnDrvTerrafu;
+DRV		BurnDrvTerraf;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_testdr;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvTetrisbl;
+DRV		BurnDrvtetrsark;
 #if defined FBA_DEBUG
-DRV		BurnDrvtetrsark;		// Wrong colors
-DRV		BurnDrvMDtetr;			// no comment
+DRV		BurnDrvMDg_tetris;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvTetrista;
+DRV		BurnDrvTetrist;
 DRV		BurnDrvTetris1;
 DRV		BurnDrvTetris2;
 DRV		BurnDrvTetris3;
 DRV		BurnDrvTetris;
+DRV		BurnDrvTetrbx;
+DRV		BurnDrvTgm2;
+DRV		BurnDrvTgm2p;
 DRV		BurnDrvmrflea;
+DRV		BurnDrvAnteateruk;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_redclf;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvBattroad;
 DRV		BurnDrvBerlwall;
-DRV		BurnDrvBerlwalt;
+DRV		BurnDrvBerlwallt;
+DRV		BurnDrvBilliard;
 DRV		BurnDrvCtribeb;
+DRV		BurnDrvCtribeb2;
+DRV		BurnDrvCtribej;
 DRV		BurnDrvCtribe;
 DRV		BurnDrvCtribe1;
+DRV		BurnDrvDealer;
+DRV		BurnDrvDbldyn;
+DRV		BurnDrvDbldynf;
+DRV		BurnDrvTheend;
+DRV		BurnDrvTheends;
+DRV		BurnDrvFlstory;
+DRV		BurnDrvFlstoryj;
+DRV		BurnDrvFroundl;
+DRV		BurnDrvFround;
 #if defined FBA_DEBUG
-DRV		BurnDrvDealer;			// Bad dump [NOT WORKING]
-DRV		BurnDrvTheglad;			// Needs second CPU emulated (ARM7) [NOT WORKING]
+DRV		BurnDrvTheglad;			// Incomplete Dump [NOT WORKING]
+DRV		BurnDrvThegladpcb;		// Incomplete Dump [NOT WORKING]
+DRV		BurnDrvTheglad101;		// Incomplete Dump [NOT WORKING]
 #endif
 DRV		BurnDrvTheglob;
 DRV		BurnDrvTheglob2;
 DRV		BurnDrvtheglobp;
 DRV		BurnDrvTheglob3;
-DRV		BurnDrvIrrmaze;
+DRV		BurnDrvSkingame;
+DRV		BurnDrvSkingame2;
+DRV		BurnDrvirrmaze;
+DRV		BurnDrvKillbld104;
 DRV		BurnDrvKillbld;
-DRV		BurnDrvKillbldt;
+#if defined FBA_DEBUG
+DRV		BurnDrvKillbldp;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvCpsKodr1;
 DRV		BurnDrvCpsKod;
-DRV		BurnDrvCpsKodj;
-DRV		BurnDrvCpsKodu;
 #if defined FBA_DEBUG
 DRV		BurnDrvCpsKodb;			// No Sprites [NOT WORKING]
 #endif
-DRV		BurnDrvKof94;
-DRV		BurnDrvKof95;
-DRV		BurnDrvKof95a;
-DRV		BurnDrvKof96;
-DRV		BurnDrvKof96h;
-DRV		BurnDrvKof97;
-DRV		BurnDrvKof97a;
-DRV		BurnDrvKof97p;
-DRV		BurnDrvKof98k;
-DRV		BurnDrvKof98n;
-DRV		BurnDrvKof98;
-//		BurnDrvKof98a;			// Alternate version
+DRV		BurnDrvCpsKodh;
+DRV		BurnDrvCpsKodja;
+DRV		BurnDrvCpsKodj;
+DRV		BurnDrvCpsKodu;
+DRV		BurnDrvkof94;
+DRV		BurnDrvkof95;
+DRV		BurnDrvkof95h;
+DRV		BurnDrvkof96ae;
+DRV		BurnDrvkof96ep;
+DRV		BurnDrvkof96cn;
+DRV		BurnDrvkof96;
+DRV		BurnDrvkof96h;
+DRV		BurnDrvkof97cn;
+DRV		BurnDrvkof97k;
+DRV		BurnDrvkof97;
+DRV		BurnDrvkof97h;
+DRV		BurnDrvkof97xt;
+DRV		BurnDrvkof97pls;
+DRV		BurnDrvkof97pla;
+DRV		BurnDrvkof98ae;
+DRV		BurnDrvkof98;
+DRV		BurnDrvkof98h;
+DRV		BurnDrvkof98k;
+DRV		BurnDrvkof98ka;
+//		BurnDrvkof99nd;			// no comment
 DRV		BurnDrvkof99e;
-DRV		BurnDrvkof99n;
+DRV		BurnDrvkof99k;
 DRV		BurnDrvkof99p;
 DRV		BurnDrvkof99;
-DRV		BurnDrvkof99a;
+DRV		BurnDrvkof99h;
 DRV		BurnDrvkof10th;
 DRV		BurnDrvkf2k5uni;
 DRV		BurnDrvkf10thep;
 DRV		BurnDrvkof2000;
+//		BurnDrvkof2knd;			// no comment
 DRV		BurnDrvkof2000n;
+//		BurnDrvkof2k1nd;		// no comment
 DRV		BurnDrvkof2001;
 DRV		BurnDrvkof2001h;
+DRV		BurnDrvkf2k1pls;
+DRV		BurnDrvkf2k1pa;
 DRV		BurnDrvkof2002;
+DRV		BurnDrvkof2002b;
+//		BurnDrvkof2k2nd;		// no comment
+DRV		BurnDrvkf2k2ps2;
 DRV		BurnDrvkf2k2mp;
 DRV		BurnDrvkf2k2mp2;
 DRV		BurnDrvkf2k2pls;
 DRV		BurnDrvkf2k2pla;
+DRV		BurnDrvkf2k2plb;
+DRV		BurnDrvkf2k2plc;
 DRV		BurnDrvkf2k3bl;
 DRV		BurnDrvkf2k3bla;
+//		BurnDrvkof2k3nd;		// no comment
 DRV		BurnDrvkf2k3pcb;
+//		BurnDrvk2k3pcbd;		// no comment
+DRV		BurnDrvkof2003h;
 DRV		BurnDrvkof2003;
 DRV		BurnDrvkf2k3pl;
 DRV		BurnDrvkf2k3upl;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_thekin;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvkof2k4se;
-DRV		BurnDrvlastblad;
-DRV		BurnDrvlastbldh;
-DRV		BurnDrvlastbld2;
+DRV		BurnDrvkf2k4pls;
 DRV		BurnDrvlastsold;
+DRV		BurnDrvLkage;
+DRV		BurnDrvLkageb;
+DRV		BurnDrvLkageb2;
+DRV		BurnDrvLkageb3;
+DRV		BurnDrvLkageo;
+DRV		BurnDrvLkageoo;
+DRV		BurnDrvSilkroad;
+DRV		BurnDrvMainevt2p;
+DRV		BurnDrvMainevto;
+DRV		BurnDrvMainevt;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_flinke;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvtnzsj;
+DRV		BurnDrvTnzsjo;
 DRV		BurnDrvtnzs;
+DRV		BurnDrvTnzso;
+DRV		BurnDrvTnzsop;
+DRV		BurnDrvNinjakj;
+DRV		BurnDrvNinjaku;
+DRV		BurnDrvNinjak;
+DRV		BurnDrvNinjawj;
+DRV		BurnDrvNinjaw;
+DRV		BurnDrvThepitm;
 DRV		BurnDrvCpsPunisher;
-DRV		BurnDrvCpsPunishrj;
-DRV		BurnDrvCpsPunishru;
-DRV		BurnDrvSuperspy;
-DRV		BurnDrvSsideki4;
+DRV		BurnDrvCpsPunisherj;
+DRV		BurnDrvCpsPunisheru;
+#if defined FBA_DEBUG
+DRV		BurnDrvCpsPunipic;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsPunipic2;		// no comment [NOT WORKING]
+DRV		BurnDrvCpsPunipic3;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvGhostb;
+DRV		BurnDrvGhostb3;
+DRV		BurnDrvSimpsons2pa;
+DRV		BurnDrvSimpsons2pj;
+DRV		BurnDrvSimpsons2p;
+DRV		BurnDrvSimpsons2p2;
+DRV		BurnDrvSimpsons;
+DRV		BurnDrvSimpsons4pa;
+DRV		BurnDrvSrumbler;
+DRV		BurnDrvSrumblr2;
+DRV		BurnDrvsuperspy;
+DRV		BurnDrvThetogyu;
 DRV		BurnDrvWintbob;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtprk;			// no comment
-DRV		BurnDrvMDttnk;			// no comment
+DRV		BurnDrvMDg_themep;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_thomas;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvTRally;
+DRV		BurnDrvtrally;
+DRV		BurnDrvCps3wondersh;
 DRV		BurnDrvCps3wonders;
-DRV		BurnDrvCps3wonderu;
-DRV		BurnDrvThndrbd1;
+DRV		BurnDrvCps3wondersu;
+DRV		BurnDrvThunderl;
+DRV		BurnDrvThndrbld1;
 DRV		BurnDrvThndrbld;
+DRV		BurnDrvThndblst;
+DRV		BurnDrvThunderxj;
+DRV		BurnDrvThunderx;
+DRV		BurnDrvThunderxa;
+DRV		BurnDrvThunderxb;
+DRV		BurnDrvThndrx2a;
+DRV		BurnDrvThndrx2j;
+DRV		BurnDrvThndrx2;
+DRV		BurnDrvTdragon1;
+DRV		BurnDrvTdragon;
+DRV		BurnDrvTdragonb;
+DRV		BurnDrvTdragon2a;
+DRV		BurnDrvTdragon2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtf2;			// no comment
-DRV		BurnDrvMDtf2md;			// no comment
-DRV		BurnDrvMDtf3;			// no comment
-DRV		BurnDrvMDtf4e;			// no comment
-DRV		BurnDrvMDtf4;			// no comment
-DRV		BurnDrvMDtfoxj;			// no comment
-DRV		BurnDrvMDtfox;			// no comment
+DRV		BurnDrvMDg_tfii;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tfiij;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvTheroes;
+DRV		BurnDrvMDg_tfiii;
+DRV		BurnDrvMDg_tfiv;
+DRV		BurnDrvMDg_tfivj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtick;			// no comment
+DRV		BurnDrvMDg_tfoxj;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvThundfoxj;
+DRV		BurnDrvThundfoxu;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tfox;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvThundfox;
+DRV		BurnDrvTheroes;
+DRV		BurnDrvThoop;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tpwres;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTndrcade;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tickth;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvTigerHB1;
 DRV		BurnDrvTigerHB2;
+DRV		BurnDrvTigerHB3;
+DRV		BurnDrvTigerhJ;
 DRV		BurnDrvTigerH;
+DRV		BurnDrvTigerodb;
+DRV		BurnDrvTigeroad;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtdom1;			// no comment
-DRV		BurnDrvMDtkille;		// no comment
-DRV		BurnDrvMDtkil;			// no comment
+DRV		BurnDrvMDg_timedo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_timeki;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_timek1;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvTimesca1;
+DRV		BurnDrvTimescan1;
 DRV		BurnDrvTimescan;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtinh;			// no comment
-DRV		BurnDrvMDtint;			// no comment
-DRV		BurnDrvMDttadae;		// no comment
-DRV		BurnDrvMDttaa;			// no comment
-DRV		BurnDrvMDttabe;			// no comment
-DRV		BurnDrvMDtta;			// no comment
-DRV		BurnDrvMDtnnb;			// no comment
-DRV		BurnDrvMDtnno;			// no comment
-DRV		BurnDrvMDtoddj;			// no comment
-DRV		BurnDrvMDtodd;			// no comment
+DRV		BurnDrvMDg_tinhea;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tintin;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tinyk;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tacme;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tacmeu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tiny;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tinyu;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDtje00;
-DRV		BurnDrvMDtje;
+DRV		BurnDrvMDg_tnnbas;
+DRV		BurnDrvMDg_tnnout;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtje2e;			// no comment
-DRV		BurnDrvMDtje2g;			// no comment
-DRV		BurnDrvMDtje2j;			// no comment
-DRV		BurnDrvMDtje2;			// no comment
-DRV		BurnDrvMDtoki;			// no comment
-DRV		BurnDrvMDtajua;			// no comment
-DRV		BurnDrvMDtomj;			// no comment
-DRV		BurnDrvMDtlbb;			// no comment
-DRV		BurnDrvMDtrbb;			// no comment
-DRV		BurnDrvMDtr95;			// no comment
-DRV		BurnDrvMDtg2;			// no comment
+DRV		BurnDrvTjumpman;		// Coin input not working? [NOT WORKING]
+DRV		BurnDrvMDg_toddsa;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvtophntr;
-DRV		BurnDrvtophunta;
-DRV		BurnDrvTpgolf;
+DRV		BurnDrvMDg_toeja1;
+DRV		BurnDrvMDg_toejam;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtpglf2;		// no comment
-DRV		BurnDrvMDtpglf;			// no comment
+DRV		BurnDrvMDg_tje2g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tje2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tje2j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tje2u;		// no comment [NOT WORKING]
+DRV		BurnDrvTokib;			// no comment
 #endif
+DRV		BurnDrvTokiu;
+DRV		BurnDrvToki;
+DRV		BurnDrvTokia;
+DRV		BurnDrvTokiob;
+DRV		BurnDrvTokio;
+#if defined FBA_DEBUG
+DRV		BurnDrvTokioo;			// no comment [NOT WORKING]
+DRV		BurnDrvTokiou;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTndrcadej;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tomand;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_toman1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tommyl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tonyla;		// Gfx Problems
+DRV		BurnDrvMDg_topfig;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_topgea;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvtophuntr;
+DRV		BurnDrvtophuntrh;
+DRV		BurnDrvtpgolf;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tpglf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tpglf2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvtopsecrt;
+DRV		BurnDrvTopspeedu;
+DRV		BurnDrvTopspeed;
 DRV		BurnDrvToppyrap;
+DRV		BurnDrvToramich;
 DRV		BurnDrvToryumon;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtotf;			// no comment
+DRV		BurnDrvMDg_totalf;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvTturfu;
 DRV		BurnDrvTturf;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtoug;			// no comment
-DRV		BurnDrvarkatour;		// Unsupported MCU [NOT WORKING]
-DRV		BurnDrvMDtoxi;			// no comment
-DRV		BurnDrvMDtoyste;		// no comment
-DRV		BurnDrvMDtoys;			// no comment
-DRV		BurnDrvMDtoy;			// no comment
-DRV		BurnDrvMDtter;			// no comment
-DRV		BurnDrvMDtraysi;		// no comment
+DRV		BurnDrvMDg_toughm;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_tougio;
+DRV		BurnDrvTkdenshoa;
+DRV		BurnDrvTkdensho;
+DRV		BurnDrvarkatour;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_toxicc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_toysto;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_toyst1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_toysus;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_trampo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_traysi;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvtreahunt;
 DRV		BurnDrvtripool;
 DRV		BurnDrvtripoola;
+DRV		BurnDrvTrigon;
+DRV		BurnDrvTdpgal;
+DRV		BurnDrvTriplfun;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtp96;			// no comment
-DRV		BurnDrvMDtpgola;		// no comment
-DRV		BurnDrvMDtpgo;			// no comment
-DRV		BurnDrvMDtsh;			// no comment
+DRV		BurnDrvMDg_triple;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tpgld;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tpglda;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDtsht;
+DRV		BurnDrvTriplep;
+DRV		BurnDrvTrojanr;
+DRV		BurnDrvTrojan;
+DRV		BurnDrvTrophyh;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtanf;			// no comment
-DRV		BurnDrvMDtrue;			// no comment
-DRV		BurnDrvMDtrux;			// no comment
+DRV		BurnDrvMDg_troubl;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_troyai;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_truc96;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_trueli;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvTruxton2;
 DRV		BurnDrvTruxton;
 DRV		BurnDrvTumbleb;
 DRV		BurnDrvTumbleb2;
-DRV		BurnDrvTurbofrc;
-DRV		BurnDrvToutrun;
-DRV		BurnDrvToutrun2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtout;			// no comment
-DRV		BurnDrvMDturma;			// no comment
-DRV		BurnDrvMDturr;			// no comment
+DRV		BurnDrvMDg_tunshi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_tunsh1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvTurbofrc;
+#if defined FBA_DEBUG
+DRV		BurnDrvToutrun2;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvToutrun1;
+DRV		BurnDrvToutrun;
+DRV		BurnDrvToutrun3;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_turboo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTurkhunt;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_turmad;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTurpin;
+DRV		BurnDrvTurpins;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_turric;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvTurtles;
+DRV		BurnDrvTwinactn;
 DRV		BurnDrvTwinadvk;
 DRV		BurnDrvTwinadv;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtwic;			// no comment
-DRV		BurnDrvMDtwih;			// no comment
+DRV		BurnDrvMDg_twinco;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvtwinhwku;
-DRV		BurnDrvtwinhawk;
+DRV		BurnDrvTwineagl;
+DRV		BurnDrvTwinhawku;
+DRV		BurnDrvTwinhawk;
 DRV		BurnDrvTwinkle;
+DRV		BurnDrvtwinspri;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtwintl;		// no comment
+DRV		BurnDrvMDg_twinkl;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_twiste;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvTwinSpri;
+DRV		BurnDrvMDg_twocru;
+DRV		BurnDrvMDg_twocr1;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDtwisf;			// no comment
-DRV		BurnDrvMDcrudee;		// Bad sound
-DRV		BurnDrvMDg_2cd;			// Bad sound
-DRV		BurnDrvMDtyra;			// no comment
+DRV		BurnDrvMDg_twotri;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvTyphoon;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_tyrant;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvEarthjkr;
 DRV		BurnDrvCpsUnsquad;
+DRV		BurnDrvUsclssic;
 DRV		BurnDrvCpsCawingj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDgomo;			// no comment
+DRV		BurnDrvMDg_uchuus;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvssideki4;
 DRV		BurnDrvCpsUecology;
+DRV		BurnDrvMDg_umk3;
+DRV		BurnDrvMDg_umk3a;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDumk3e;			// no comment
-DRV		BurnDrvMDumk3;			// no comment
-DRV		BurnDrvMDuqix;			// no comment
-DRV		BurnDrvMDusoc;			// no comment
-DRV		BurnDrvMDuman;			// no comment
-DRV		BurnDrvMDuw;			// no comment
-DRV		BurnDrvMDuwnh;			// no comment
-DRV		BurnDrvMDuded;			// no comment
-DRV		BurnDrvMDunis;			// no comment
-DRV		BurnDrvMDur95;			// no comment
+DRV		BurnDrvMDg_uqix;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_usoccr;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvUoPokoj;
+DRV		BurnDrvUballoon;
+DRV		BurnDrvUtoukond;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_ultram;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvUltraman;
+DRV		BurnDrvUmanclub;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_unchw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_unchw2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_undead;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvUccopsar;
+DRV		BurnDrvUccopsj;
+DRV		BurnDrvUccopsu;
+DRV		BurnDrvUccops;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_univer;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvUniwars;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_unknow;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_unnece;
 DRV		BurnDrvUpndown;
 DRV		BurnDrvUpndownu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDustr;			// no comment
-DRV		BurnDrvMDuzuke;			// no comment
-DRV		BurnDrvMDv5;			// no comment
+DRV		BurnDrvMDg_urbans;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMustangs;
+DRV		BurnDrvMustang;
+DRV		BurnDrvMustangb;
+DRV		BurnDrvMustangb2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_uzukeo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vvjapa;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvVFive;
-DRV		BurnDrvVliner;
-DRV		BurnDrvVlinero;
+DRV		BurnDrvvliner;
+DRV		BurnDrvvlinero;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDvalj;			// no comment
-DRV		BurnDrvMDvali;			// no comment
-DRV		BurnDrvMDval3j;			// no comment
-DRV		BurnDrvMDval3;			// no comment
-DRV		BurnDrvMDvalsdj;		// no comment
+DRV		BurnDrvMDg_valisu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_val3j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_val3;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsVampjr1;
 DRV		BurnDrvCpsVampj;
@@ -3290,113 +5651,209 @@ DRV		BurnDrvCpsVampja;
 DRV		BurnDrvCpsVhuntjr2;
 DRV		BurnDrvCpsVhuntjr1;
 DRV		BurnDrvCpsVhuntj;
+DRV		BurnDrvCpsVhunt2d;
 DRV		BurnDrvCpsVhunt2r1;
 DRV		BurnDrvCpsVhunt2;
-#if defined FBA_DEBUG
-DRV		BurnDrvMDvamkil;		// no comment
-#endif
 DRV		BurnDrvCpsVsava;
+DRV		BurnDrvCpsVsavd;
 DRV		BurnDrvCpsVsav;
 DRV		BurnDrvCpsVsavh;
 DRV		BurnDrvCpsVsavj;
 DRV		BurnDrvCpsVsavu;
+DRV		BurnDrvCpsVsav2d;
 DRV		BurnDrvCpsVsav2;
 DRV		BurnDrvvanvan;
 DRV		BurnDrvvanvank;
 DRV		BurnDrvvanvanb;
+DRV		BurnDrvVandykeb;
+DRV		BurnDrvVandykejal;
+DRV		BurnDrvVandykejal2;
+DRV		BurnDrvVandyke;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDvapt;			// no comment
+DRV		BurnDrvMDg_vaport;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvVmetaln;
+DRV		BurnDrvVmetal;
 DRV		BurnDrvCpsVarthr1;
 DRV		BurnDrvCpsVarthu;
 DRV		BurnDrvCpsVarth;
 DRV		BurnDrvCpsVarthj;
+DRV		BurnDrvMDg_vmana;
+DRV		BurnDrvMDg_vmanb;
+DRV		BurnDrvMDg_vmanc;
+DRV		BurnDrvMDg_vman;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDvectb;			// no comment
-DRV		BurnDrvMDvectp;			// no comment
-DRV		BurnDrvMDvect;			// no comment
-DRV		BurnDrvMDvect2p;		// no comment
-DRV		BurnDrvMDvec2;			// no comment
-DRV		BurnDrvMDverytx;		// no comment
+DRV		BurnDrvMDg_vman2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vman2a;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvViewpoin;
+DRV		BurnDrvVendetta2pd;
+DRV		BurnDrvVendetta2pu;
+DRV		BurnDrvVendetta2p;
+DRV		BurnDrvVendettar;
+DRV		BurnDrvVendetta;
+DRV		BurnDrvVenus;
+DRV		BurnDrvMDg_vermil;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDviewpb;		// no comment
-DRV		BurnDrvMDview;			// no comment
-DRV		BurnDrvMDvf2;			// no comment
-DRV		BurnDrvMDvirrae;		// no comment
-DRV		BurnDrvMDvirrea;		// no comment
-DRV		BurnDrvMDvirraj;		// no comment
-DRV		BurnDrvMDvirr;			// no comment
-DRV		BurnDrvMDvbar;			// no comment
-DRV		BurnDrvMDvpin;			// no comment
-DRV		BurnDrvMDvix357;		// no comment
-DRV		BurnDrvMDvolf;			// no comment
+DRV		BurnDrvMDg_veryte;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvVictnine;
+DRV		BurnDrvHustler;
+DRV		BurnDrvHustlerb;
+DRV		BurnDrvVpool;
+DRV		BurnDrvviewpoin;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_viewp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_viewpb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvVigilantj;
+DRV		BurnDrvVigilantu;
+DRV		BurnDrvVigilant;
+DRV		BurnDrvVigilant1;
+DRV		BurnDrvVimanan;
+DRV		BurnDrvVimana1;
+DRV		BurnDrvVimana;
+DRV		BurnDrvRedhawkb;
+DRV		BurnDrvViofightj;
+DRV		BurnDrvViofightu;
+DRV		BurnDrvViofight;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_vf2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vf2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vf2c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vf2d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vf2e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vf2f;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_vf2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_vf2tek;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vra;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vr;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vrj;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vru;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_vbart;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_virtpb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_vixenj;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_volfie;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvVolfiedjo;
+DRV		BurnDrvVolfiedj;
+DRV		BurnDrvVolfiedu;
+DRV		BurnDrvVolfied;
 DRV		BurnDrvgowcaizr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDvrtr;			// no comment
-DRV		BurnDrvMDwacrac;		// no comment
-DRV		BurnDrvMDwack;			// no comment
-DRV		BurnDrvMDwaiala;		// no comment
+DRV		BurnDrvMDg_vrtroo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvVulcan;
+DRV		BurnDrvVulcana;
+DRV		BurnDrvVulcanb;
+DRV		BurnDrvvulgusj;
+DRV		BurnDrvvulgus;
+DRV		BurnDrvvulgusa;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wackyr;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwa;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwb;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwc;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_ww;			// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvMj4simai;
-DRV		BurnDrvWakuwak7;
-DRV		BurnDrvwallc;
-DRV		BurnDrvwallca;
+DRV		BurnDrvwakuwak7;
+DRV		BurnDrvWallc;
+DRV		BurnDrvWallca;
 DRV		BurnDrvWwallyja;
 DRV		BurnDrvWwallyj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwani;			// no comment
-DRV		BurnDrvWarzard;			// no comment [NOT WORKING]
-DRV		BurnDrvMDward;			// no comment
-DRV		BurnDrvMDwardj;			// no comment
-DRV		BurnDrvMDwarlob;		// no comment
-DRV		BurnDrvMDwloc;			// no comment
-DRV		BurnDrvMDwarps;			// no comment
-DRV		BurnDrvMDwrom;			// no comment
-DRV		BurnDrvMDwrom2;			// no comment
+DRV		BurnDrvMDg_waniwa;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvWrofaero;
+DRV		BurnDrvWarofbug;
+#if defined FBA_DEBUG
+DRV		BurnDrvWarofbugg;		// no comment
+#endif
+DRV		BurnDrvWarzarda;
+DRV		BurnDrvWarzard;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wardne;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wardn1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_warlkb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_warlk;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_warpsp;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvWarriorb;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_warrio;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_warri1;
 DRV		BurnDrvCpsWof;
 DRV		BurnDrvCpsWofu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwars;			// no comment
+DRV		BurnDrvCpsWofb;			// no comment [NOT WORKING]
+//		BurnDrvCpsWoffr;		// no comment
 #endif
+DRV		BurnDrvMDg_warson;
 DRV		BurnDrvWmatch;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwatrb;			// no comment
-DRV		BurnDrvMDwgas;			// no comment
-DRV		BurnDrvMDwayn;			// no comment
-DRV		BurnDrvMDwbdt;			// no comment
-DRV		BurnDrvMDweap;			// no comment
-DRV		BurnDrvMDwfor;			// no comment
-DRV		BurnDrvMDwwics;			// no comment
-DRV		BurnDrvMDwwcse;			// no comment
-DRV		BurnDrvMDwtics;			// no comment
-DRV		BurnDrvMDwticsa;		// no comment
-DRV		BurnDrvMDwhipj;			// no comment
-DRV		BurnDrvMDwhip;			// no comment
-DRV		BurnDrvMDwild;			// no comment
-DRV		BurnDrvMDwaghe;			// no comment
-DRV		BurnDrvMDwagh;			// no comment
+DRV		BurnDrvMDg_waterw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wayneg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_waynes;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_weapon;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvCpsWillowje;
+DRV		BurnDrvWelltrisj;
+DRV		BurnDrvWelltris;
+#if defined FBA_DEBUG
+DRV		BurnDrvWeststry;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_whacac;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheelo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwlrdb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwlrd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wtimeb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wtime;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_whipru;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_whipr1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvWiggie;
+DRV		BurnDrvWildfang;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wildsn;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_willia;		// no comment [NOT WORKING]
+#endif
 DRV		BurnDrvCpsWillowj;
+DRV		BurnDrvCpsWillowo;
 DRV		BurnDrvCpsWillow;
+DRV		BurnDrvWilytowr;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwimbe;			// no comment
-DRV		BurnDrvMDwimbp;			// no comment
-DRV		BurnDrvMDwimb;			// no comment
+DRV		BurnDrvMDg_wimble;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wimbl1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wimbl3;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wimbl2;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWJammers;
+DRV		BurnDrvwjammers;
+DRV		BurnDrvWschampa;
+DRV		BurnDrvWschamp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwinwor;		// no comment
-DRV		BurnDrvMDwchalb;		// no comment
-DRV		BurnDrvMDwinc;			// no comment
-DRV		BurnDrvMDwizlie;		// no comment
-DRV		BurnDrvMDwizl;			// no comment
-DRV		BurnDrvMDwolf;			// no comment
-DRV		BurnDrvMDwolv;			// no comment
+DRV		BurnDrvMDg_wingso;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wintcb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wintca;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wintc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_winto;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wintoe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wintoj;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvWits;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wiznli;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wiznl1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wizard;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wolfch;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wolver;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsWonder3;
 DRV		BurnDrvWboyu;
@@ -3409,158 +5866,326 @@ DRV		BurnDrvWboy4;
 DRV		BurnDrvWbdeluxe;
 #if defined FBA_DEBUG
 DRV		BurnDrvWb3bbl;			// no comment
-DRV		BurnDrvMDwb3;			// no comment
+DRV		BurnDrvMDg_wonder;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvWb31;
 DRV		BurnDrvWb32;
 DRV		BurnDrvWb33;
 DRV		BurnDrvWb34;
 DRV		BurnDrvWb3;
+DRV		BurnDrvMDg_wbmw;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwbmw;			// no comment
-DRV		BurnDrvMDwboy5;			// no comment
+DRV		BurnDrvMDg_wboy5;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvWondl96;
 DRV		BurnDrvWlstar;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwonlib;		// no comment
+DRV		BurnDrvMDg_wondli;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvwoodpek;
+DRV		BurnDrvWndrplnt;
+DRV		BurnDrvWondstck;
+DRV		BurnDrvwoodpeck;
 #if defined FBA_DEBUG
 DRV		BurnDrvwoodpeka;		// no comment [NOT WORKING]
-DRV		BurnDrvMDwcs00;			// no comment
-DRV		BurnDrvMDwcs02;			// no comment
-DRV		BurnDrvMDwcs;			// no comment
-DRV		BurnDrvMDwcs2b;			// no comment
-DRV		BurnDrvMDwcs2;			// no comment
-DRV		BurnDrvMDwclbx;			// no comment
-DRV		BurnDrvMDwcl;			// no comment
+DRV		BurnDrvMDg_wcs2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2h;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2i;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2k;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2l;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2m;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2n;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2o;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2q;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2r;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2s;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2t;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs2u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcl;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcla;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWc90;
+DRV		BurnDrvWc90b2;
 DRV		BurnDrvWc90a;
+DRV		BurnDrvWc90b;
 DRV		BurnDrvWc90t;
+DRV		BurnDrvWc90;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwc90;			// no comment
-DRV		BurnDrvMDwc94;			// no comment
-DRV		BurnDrvMDwheroj;		// no comment
+DRV		BurnDrvMDg_wc90;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcsb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcs;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcsa;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wcup94;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherob;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherod;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherof;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherog;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroa;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWH1;
-DRV		BurnDrvWH1h;
-DRV		BurnDrvWH1ha;
+DRV		BurnDrvwh1;
+DRV		BurnDrvwh1h;
+DRV		BurnDrvwh1ha;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwher;			// no comment
+DRV		BurnDrvMDg_wheroi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherok;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherol;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherom;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheron;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherop;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheroq;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheror;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wheros;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wherot;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_whero;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWH2;
-DRV		BurnDrvWH2J;
-DRV		BurnDrvWH2Jh;
-DRV		BurnDrvWHP;
+DRV		BurnDrvwh2;
+DRV		BurnDrvwh2j;
+DRV		BurnDrvwhp;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwillb;			// no comment
-DRV		BurnDrvMDwille;			// no comment
-DRV		BurnDrvMDwill;			// no comment
-DRV		BurnDrvMDws95;			// no comment
-DRV		BurnDrvMDws96;			// no comment
-DRV		BurnDrvMDws98;			// no comment
-DRV		BurnDrvMDwsb;			// no comment
+DRV		BurnDrvMDg_wolj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_woljb;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvMDwts;
+DRV		BurnDrvMDg_wol;
+DRV		BurnDrvMDg_wolu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwormp;			// no comment
-DRV		BurnDrvMDworm;			// no comment
-DRV		BurnDrvMDwwarb;			// no comment
-DRV		BurnDrvMDwwar;			// no comment
+DRV		BurnDrvMDg_wsb95a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95h;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95i;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95k;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95l;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95m;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95n;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95o;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95q;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95r;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95s;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95t;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95u;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95v;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95w;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb95;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb96;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWrestwa1;
-DRV		BurnDrvWrestwa2;
+DRV		BurnDrvMDg_wsb98;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wsba;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbe;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsbj;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wsb;			// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvMDg_worldt;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_worms;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wormsb;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvWownfant;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_wreswb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wresw;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvWrestwar1;
+DRV		BurnDrvWrestwar2;
 DRV		BurnDrvWrestwar;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwresbl;		// no comment
-DRV		BurnDrvMDwfra;			// no comment
-DRV		BurnDrvMDwfrr;			// no comment
-DRV		BurnDrvMDwfsw;			// no comment
+DRV		BurnDrvMDg_wball;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wukong;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwfraw;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwfroy;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwfsup;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvWwfwfstj;
-DRV		BurnDrvWwfwfstb;
+DRV		BurnDrvWwfsstar;
+DRV		BurnDrvWwfsstarj;
+DRV		BurnDrvWwfsstaru;
+DRV		BurnDrvWwfsstara;
+DRV		BurnDrvWwfwfestj;
+DRV		BurnDrvWwfwfestb;
 DRV		BurnDrvWwfwfest;
-DRV		BurnDrvWwfwfsta;
+DRV		BurnDrvWwfwfesta;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDwfwaal;		// no comment
-DRV		BurnDrvMDwmar;			// no comment
-DRV		BurnDrvMDxdaze;			// no comment
-DRV		BurnDrvMDxmene;			// no comment
-DRV		BurnDrvMDxmen;			// no comment
+DRV		BurnDrvMDg_wwfaga;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_wwfag;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvXmultiplm72;
+DRV		BurnDrvXmultipl;
+DRV		BurnDrvXmen2pa;
+DRV		BurnDrvXmen2pe;
+DRV		BurnDrvXmen2pj;
+DRV		BurnDrvXmene;
+DRV		BurnDrvXmenj;
+DRV		BurnDrvXmen;
+#if defined FBA_DEBUG
+DRV		BurnDrvXmen6p;			// no comment [NOT WORKING]
+DRV		BurnDrvXmen6pu;			// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmenus;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsXmcotajr;
-DRV		BurnDrvCpsXmcotaa;
+DRV		BurnDrvCpsXmcotaar1;
+DRV		BurnDrvCpsXmcotaj3;
 DRV		BurnDrvCpsXmcotaj2;
 DRV		BurnDrvCpsXmcotaj1;
-DRV		BurnDrvCpsXmcotaj;
+DRV		BurnDrvCpsXmcotaa;
+DRV		BurnDrvCpsXmcotad;
 DRV		BurnDrvCpsXmcota;
+DRV		BurnDrvCpsXmcotahr1;
+DRV		BurnDrvCpsXmcotaj;
 DRV		BurnDrvCpsXmcotau;
 DRV		BurnDrvCpsXmcotah;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDxme2;			// no comment
+DRV		BurnDrvMDg_xmen2a;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2b;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2c;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2d;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2e;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2f;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2g;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2h;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2i;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2j;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2k;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2l;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2m;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2n;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2o;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2p;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2q;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2r;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2s;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xmen2;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvCpsXmvsfjr2;
+DRV		BurnDrvCpsXmvsfar2;
 DRV		BurnDrvCpsXmvsfr1;
 DRV		BurnDrvCpsXmvsfjr1;
 DRV		BurnDrvCpsXmvsfar1;
 DRV		BurnDrvCpsXmvsf;
 DRV		BurnDrvCpsXmvsfh;
 DRV		BurnDrvCpsXmvsfj;
+DRV		BurnDrvCpsXmvsfu1d;
 DRV		BurnDrvCpsXmvsfur1;
 DRV		BurnDrvCpsXmvsfa;
 DRV		BurnDrvCpsXmvsfb;
 DRV		BurnDrvCpsXmvsfu;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDxper;			// no comment
-DRV		BurnDrvMDxen2;			// no comment
+DRV		BurnDrvMDg_xpertp;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xpert;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xdrxda;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xenonm;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvThreein1semi;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDxzr;			// no comment
+DRV		BurnDrvMDg_xiaomo;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xinqig;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_xinqi1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvXorworld;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_yasech;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvLeaguemn;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_yangji;		// no comment [NOT WORKING]
 #endif
 DRV		BurnDrvyankeedo;
+DRV		BurnDrvYesnoj;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDyogi;			// no comment
-DRV		BurnDrvMDyindyb;		// no comment
-DRV		BurnDrvMDyidy;			// no comment
-DRV		BurnDrvMDyindcb;		// no comment
-DRV		BurnDrvMDys3j;			// no comment
-DRV		BurnDrvMDys3;			// no comment
-DRV		BurnDrvMDyuyu;			// no comment
-DRV		BurnDrvMDyuyub;			// no comment
-DRV		BurnDrvMDyuyuga;		// no comment
-DRV		BurnDrvMDzanya;			// no comment
-DRV		BurnDrvMDzany;			// no comment
-DRV		BurnDrvMDzany01;		// no comment
+DRV		BurnDrvMDg_yogibe;		// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvZedblade;
+DRV		BurnDrvYoujyudn;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDztkse;			// no comment
-DRV		BurnDrvMDztks;			// no comment
-DRV		BurnDrvMDg_0tol;		// No sound in-game
+DRV		BurnDrvMDg_yindyh;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindyb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindya;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindyc;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindyd;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindye;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindyf;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindyg;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yindy;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvMDg_yswand;
+DRV		BurnDrvMDg_ysiiiu;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_yuusf;		// Gfx and Sound Problems
+DRV		BurnDrvMDg_yuusfb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_yuugai;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvYuyugogo;
+DRV		BurnDrvMDg_zanyas;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_zanyg1;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zanygo;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvzedblade;
+DRV		BurnDrvZeropnt;
+DRV		BurnDrvZeropnta;
+DRV		BurnDrvZeropnt2;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_zeroth;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zerot1;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvZerotime;
+DRV		BurnDrvMDg_zeroto;
 DRV		BurnDrvZerowing;
 DRV		BurnDrvZerowng2;
 #if defined FBA_DEBUG
-DRV		BurnDrvMDzwin;			// no comment
-DRV		BurnDrvMDzwingj;		// no comment
+DRV		BurnDrvMDg_zerowi;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zerow1;		// no comment [NOT WORKING]
 #endif
+DRV		BurnDrvZerozone;
 DRV		BurnDrvDrgw2c;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_zhuogu;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvZigzag;
+DRV		BurnDrvZigzag2;
+DRV		BurnDrvZingzip;
 DRV		BurnDrvzintrckb;
+DRV		BurnDrvzintrkcd;
 #if defined FBA_DEBUG
 DRV		BurnDrvZipzap;			// Imperfect GFXs, No Sound
-DRV		BurnDrvMDzombhb;		// no comment
-DRV		BurnDrvMDzombe;			// no comment
-DRV		BurnDrvMDzomb;			// no comment
-DRV		BurnDrvMDzoole;			// no comment
-DRV		BurnDrvMDzool;			// no comment
-DRV		BurnDrvMDzoom;			// no comment
-DRV		BurnDrvMDzoope;			// no comment
-DRV		BurnDrvMDzoop;			// no comment
-DRV		BurnDrvMDzouzou;		// no comment
+DRV		BurnDrvMDg_zhs;			// no comment [NOT WORKING]
 #endif
-DRV		BurnDrvZupapa;
+DRV		BurnDrvZombraid;
+#if defined FBA_DEBUG
+DRV		BurnDrvMDg_zomb;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zombu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zool;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zoolu;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zoom;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zoop;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zoopus;		// no comment [NOT WORKING]
+DRV		BurnDrvMDg_zouzou;		// no comment [NOT WORKING]
+#endif
+DRV		BurnDrvzupapa;
+//		BurnDrvzupapan;			// no comment
 DRV		BurnDrvzzyzzyxx;
 DRV		BurnDrvzzyzzyx2;
 #undef DRV
@@ -3568,789 +6193,1434 @@ DRV		BurnDrvzzyzzyx2;
 // Structure containing addresses of all drivers
 // Needs to be kept sorted (using the full game name as the key) to prevent problems with the gamelist in Kaillera
 static struct BurnDriver* pDriver[] = {
-#if defined FBA_DEBUG
 	&BurnDrvEightballact,		// "8ballact" [Seatongrove Ltd (Magic Eletronics USA licence), NOT WORKING]
-#endif
-	&BurnDrvarkanoid,			// "arkanoid"
-	&BurnDrvAstorm,				// "astorm" [Sega, NOT WORKING]
+	&BurnDrvAsurabus,			// "asurabus" [Fuuki, NOT WORKING]
+	&BurnDrvBagman,				// "bagman" [Valadon Automation, NOT WORKING]
+	&BurnDrvCkong,				// "ckong" [Falcon, NOT WORKING]
+	&BurnDrvDkongjr,			// "dkongjr" [Nintendo of America, NOT WORKING]
+	&BurnDrvDockman,			// "dockman" [Taito Corporation, NOT WORKING]
 #if defined FBA_DEBUG
-	&BurnDrvdrivfrcp,			// "drivfrcp" [Shinkai Inc. (Magic Eletronics Inc. licence), NOT WORKING]
-	&BurnDrvMDg_2020,			// "g_2020" [Unsorted, NOT WORKING]
-	&BurnDrvMDabea,				// "g_abea" [Sega, NOT WORKING]
+	&BurnDrvDrgw3,				// "drgw3" [IGS, NOT WORKING]
 #endif
-	&BurnDrvMDabz2,				// "g_abz2" [Koei, NOT WORKING]
+	&BurnDrvDsoccr94,			// "dsoccr94" [Irem (Data East Corporation license), NOT WORKING]
 #if defined FBA_DEBUG
-	&BurnDrvMDagla,				// "g_agla" [Unsorted, NOT WORKING]
-	&BurnDrvMDalex,				// "g_alex" [Sega, NOT WORKING]
-	&BurnDrvMDbatf,				// "g_batf" [Unsorted, NOT WORKING]
-	&BurnDrvMDbglf,				// "g_bglf" [Unsorted, NOT WORKING]
-	&BurnDrvMDblocb2,			// "g_blocb2" [Unsorted, NOT WORKING]
-	&BurnDrvMDbody,				// "g_body" [Unsorted, NOT WORKING]
-	&BurnDrvMDbttf,				// "g_bttf" [Unsorted, NOT WORKING]
-	&BurnDrvMDbuck,				// "g_buck" [Unsorted, NOT WORKING]
+	&BurnDrvDw2001,				// "dw2001" [IGS, NOT WORKING]
+	&BurnDrvDwex,				// "dwex" [IGS, NOT WORKING]
+	&BurnDrvFuncube2,			// "funcube2" [Namco, NOT WORKING]
+	&BurnDrvFuncube4,			// "funcube4" [Namco, NOT WORKING]
 #endif
 	&BurnDrvGetStar,			// "getstar" [Taito, NOT WORKING]
-	&BurnDrvGprider,			// "gprider" [Sega, NOT WORKING]
 #if defined FBA_DEBUG
+	&BurnDrvhappy6,				// "happy6" [IGS, NOT WORKING]
+#endif
+	&BurnDrvHunchbak,			// "hunchbak" [Century Electronics, NOT WORKING]
+	&BurnDrvHuncholy,			// "huncholy" [Seatongrove Ltd, NOT WORKING]
+#if defined FBA_DEBUG
+	&BurnDrvJockeyc,			// "jockeyc" [[Seta] (Visco license), NOT WORKING]
+	&BurnDrvkovshp,				// "kovshp" [IGS, NOT WORKING]
+#endif
 	&BurnDrvManiacsq,			// "maniacsq" [Gaelco, NOT WORKING]
+#if defined FBA_DEBUG
+	&BurnDrvMonsterz,			// "monsterz" [Nihon, NOT WORKING]
 #endif
 	&BurnDrvMWalk,				// "mwalk" [Sega, NOT WORKING]
-	&BurnDrvopwolf,				// "opwolf"
+	&BurnDrvPhoenix,			// "phoenix" [Amstar, NOT WORKING]
 #if defined FBA_DEBUG
-	&BurnDrvporky,				// "porky" [Shinkai Inc. (Magic Eletronics Inc. licence), NOT WORKING]
+	&BurnDrvPuzzli2,			// "puzzli2" [IGS, NOT WORKING]
+	&BurnDrvRiskchal,			// "riskchal" [Irem, NOT WORKING]
+	&BurnDrvRobocop,			// "robocop" [Data East Corporation, NOT WORKING]
 #endif
+	&BurnDrvThepit,				// "thepit" [Taito, NOT WORKING]
 	&BurnDrvTumblep,			// "tumblep" [Data East Corporation, NOT WORKING]
+	&BurnDrvgames88,			// '88 Games
 	&BurnDrv99lstwar,			// '99: The Last War
-	&BurnDrv99lstwra,			// '99: The Last War (alternate)
-	&BurnDrv99lstwrk,			// '99: The Last War (Kyugo)
-//	&BurnDrv4play,				// * 4 player input test [4 player  input test cartridge]
-	&BurnDrvMDg_007,			// 007 Shitou (J) [!]
+	&BurnDrv99lstwara,			// '99: The Last War (alternate)
+	&BurnDrv99lstwark,			// '99: The Last War (Kyugo)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_007shi,			// 007 Shitou - The Duel (Japan) [no comment, NOT WORKING]
+#endif
 	&BurnDrvGtmra,				// 1000 Miglia: Great 1000 Miles Rally (94/06/13)
 	&BurnDrvGtmr,				// 1000 Miglia: Great 1000 Miles Rally (94/07/18)
-#if defined FBA_DEBUG
-	&BurnDrvMDg_16ton,			// 16 Ton (SN) (J) [!] [No sound]
-#endif
+	&BurnDrvMDg_12inun,			// 12-in-1 (Unl) [!]
+	&BurnDrvMDg_16tons,			// 16 Ton (SN) (GNKO) (J) [!]
+	&BurnDrvMDg_16zhan,			// 16 Zhang Ma Jiang (China) (Unl)
+	&BurnDrvMDg_16tjap,			// 16t (Japan) (SegaNet)
+	&BurnDrvCps1941u,			// 1941 - Counter Attack (900227 USA)
 	&BurnDrvCps1941j,			// 1941 - Counter Attack (Japan)
 	&BurnDrvCps1941,			// 1941 - Counter Attack (World)
-	&BurnDrvNineteen42,			// 1942 (set 1)
-	&BurnDrvNineteen42a,		// 1942 (set 2)
-	&BurnDrvNineteen42b,		// 1942 (set 3)
-#if defined FBA_DEBUG
-	&BurnDrvNineteen43kai,		// 1943 Kai: Midway Kaisen (Japan) [No sound]
-	&BurnDrvNineteen43j,		// 1943: Midway Kaisen (Japan) [No sound]
-	&BurnDrvNineteen43,			// 1943: The Battle of Midway (US) [No sound]
-#endif
+	&BurnDrvNineteen42b,		// 1942 (First Version)
+	&BurnDrvNineteen42a,		// 1942 (Revision A)
+	&BurnDrvNineteen42abl,		// 1942 (Revision A, bootleg)
+	&BurnDrvNineteen42,			// 1942 (Revision B)
+	&BurnDrvNineteen42w,		// 1942 (Williams Electronics license)
+	&BurnDrvNineteen43kai,		// 1943 Kai: Midway Kaisen (Japan)
+	&BurnDrvNineteen43ja,		// 1943: Midway Kaisen (Japan)
+	&BurnDrvNineteen43j,		// 1943: Midway Kaisen (Japan, Rev B)
+	&BurnDrvNineteen43b,		// 1943: The Battle of Midway (bootleg, hack of Japan set)
+	&BurnDrvNineteen43,			// 1943: The Battle of Midway (Euro)
+	&BurnDrvNineteen43u,		// 1943: The Battle of Midway (US)
 	&BurnDrvCps1944j,			// 1944 - the loop master (000620 Japan)
+	&BurnDrvCps1944d,			// 1944 - the loop master (000620 USA Phoenix Edition)
 	&BurnDrvCps1944,			// 1944 - the loop master (000620 USA)
 	&BurnDrv1945kiii,			// 1945k III
 	&BurnDrvCps19xxa,			// 19XX - the war against destiny (951207 Asia)
 	&BurnDrvCps19xxjr1,			// 19XX - the war against destiny (951207 Japan)
+	&BurnDrvCps19xxd,			// 19XX - the war against destiny (951207 USA Phoenix Edition)
 	&BurnDrvCps19xx,			// 19XX - the war against destiny (951207 USA)
 	&BurnDrvCps19xxb,			// 19XX - the war against destiny (951218 Brazil)
 	&BurnDrvCps19xxh,			// 19XX - the war against destiny (951218 Hispanic)
 	&BurnDrvCps19xxj,			// 19XX - the war against destiny (951225 Japan)
 	&BurnDrvbb2020,				// 2020 Super Baseball (set 1)
-	&BurnDrvbba2020,			// 2020 Super Baseball (set 2)
-	&BurnDrvbbh2020,			// 2020 Super Baseball (set 3)
-	&BurnDrv3Countb,			// 3 Count Bout\0Fire Suplex
-	&BurnDrvMDg_3nin,			// 3 Ninjas Kick Back (U) [!]
-	&BurnDrvenraya4,			// 4 En Raya
-	&BurnDrvMDg_688a,			// 688 Attack Sub (UE) [!]
-	&BurnDrvMDaresha,			// A Ressha de Gyoukou MD (J) [!]
-	&BurnDrvAbcop,				// A.B. Cop (FD1094 317-0169b)
+	&BurnDrvbb2020a,			// 2020 Super Baseball (set 2)
+	&BurnDrvbb2020h,			// 2020 Super Baseball (set 3)
+	&BurnDrvMDg_2020to,			// 2020 Toshi Super Baseball (Japan)
+	&BurnDrvcountb3,			// 3 Count Bout / Fire Suplex
+	&BurnDrvMDg_3ninja,			// 3 Ninjas Kick Back (USA)
+	&BurnDrvMDg_3in1fl,			// 3-in-1 Flashback - World Champ. Soccer - Tecmo World Cup 92 [p1][!]
+	&BurnDrvMDg_3in1ro,			// 3-in-1 Road Rash - Ms. Pac-Man - Block Out [p1][!]
+	&BurnDrvEnraya4,			// 4 En Raya
+	&BurnDrvFourin1,			// 4 Fun in 1
+	&BurnDrv4play,				// 4 player input test
+	&BurnDrvFourdwarrio,		// 4-D Warriors (315-5162)
+	&BurnDrvMDg_4in1pb,			// 4-in-1 [p1][!]
+	&BurnDrvMDg_6pakus,			// 6-Pak (USA)
+	&BurnDrvSixhundred,			// 600
+	&BurnDrvMDg_688att,			// 688 Attack Sub (USA, Europe)
+	&BurnDrvOrdi7,				// 7 Ordi (Korea)
+	&BurnDrvEighthundredfath,	// 800 Fathoms
 #if defined FBA_DEBUG
-	&BurnDrvMDreal,				// AAAHH!!! Real Monsters (UE) [!] [no comment]
+	&BurnDrvMDg_bioscd,			// [BIOS] CDX (USA) (v2.21X) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosla,			// [BIOS] LaserActive (Japan) (v0.98) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosl1,			// [BIOS] LaserActive (USA) (v0.98) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosl2,			// [BIOS] LaserActive (USA) (v1.04) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosme,			// [BIOS] Mega-CD (Europe) (v1.00) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosm1,			// [BIOS] Mega-CD (Japan) (v1.00P) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosm2,			// [BIOS] Mega-CD (Japan) (v1.00S) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosm3,			// [BIOS] Mega-CD 2 (Europe) (v2.00) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosm4,			// [BIOS] Mega-CD 2 (Europe) (v2.00W) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosm5,			// [BIOS] Mega-CD 2 (Japan) (v2.00C) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosmu,			// [BIOS] Multi-Mega (Europe) (v2.21X) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosse,			// [BIOS] Sega CD (USA) (v1.10) [no comment, NOT WORKING]
+	&BurnDrvMDg_bioss1,			// [BIOS] Sega CD 2 (USA) (v2.00) [b] [no comment, NOT WORKING]
+	&BurnDrvMDg_bioss2,			// [BIOS] Sega CD 2 (USA) (v2.00W) [no comment, NOT WORKING]
+	&BurnDrvMDg_bioss3,			// [BIOS] Sega CD 2 (USA) (v2.11X) [no comment, NOT WORKING]
+	&BurnDrvMDg_bioss4,			// [BIOS] Sega TMSS (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_bioswo,			// [BIOS] WonderMega (Japan) (v1.00) (Sega) [no comment, NOT WORKING]
+	&BurnDrvMDg_biosxe,			// [BIOS] X'Eye (USA) (v2.00) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDaahh,				// Aah! Harimanada (J) [!]
+	&BurnDrvMDg_aressh,			// A Ressha de Ikou MD (Japan)
+	&BurnDrvAbcop,				// A.B. Cop (FD1094 317-0169b)
+	&BurnDrvAd2083,				// A.D. 2083
+	&BurnDrvMDg_aahari,			// Aa Harimanada (Japan)
+	&BurnDrvMDg_aaahhr,			// AAAHH!!! Real Monsters (Europe)
+	&BurnDrvMDg_aaahh1,			// AAAHH!!! Real Monsters (USA)
 	&BurnDrvabscam,				// Abscam
 	&BurnDrvAceattac,			// Ace Attacker (FD1094 317-0059) [no comment, NOT WORKING]
-	&BurnDrvAceattaa,			// Ace Attacker (Japan, System 16A, FD1094 317-0060)
+	&BurnDrvAceattaca,			// Ace Attacker (Japan, System 16A, FD1094 317-0060)
+	&BurnDrvAcrobatm,			// Acrobat Mission
+	&BurnDrvMDg_action,			// Action 52 (USA) (Alt) (Unl)
+	&BurnDrvMDg_actio1,			// Action 52 (USA) (Unl)
 	&BurnDrvAFighter,			// Action Fighter, FD1089A 317-0018
-	&BurnDrvMDafav,				// Addams Family Values (E) (M3) [!]
-	&BurnDrvMDadamb,			// Addams Family, The (Beta)
-	&BurnDrvMDafam,				// Addams Family, The (UE) [!]
 #if defined FBA_DEBUG
-	&BurnDrvMDadvdai,			// Advanced Daisenryaku (J) (REV01) [!] [Bad sound]
-	&BurnDrvMDabate,			// Adventures of Batman and Robi [No Sound]
-	&BurnDrvMDabat,				// Adventures of Batman and Robi [No sound]
-	&BurnDrvMDmmaxe,			// Adventures of Mighty Ma [no comment]
-	&BurnDrvMDmmax,				// Adventures of Mighty Ma [no comment]
+	&BurnDrvMDg_actrp,			// Action Replay (Europe) (Program) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDaerobl,			// Aero Blasters (J) [!]
+	&BurnDrvMDg_afv,			// Addams Family Values (Europe) (En,Fr,De)
+	&BurnDrvMDg_addam2,			// Addams Family, The (USA) (Beta)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_addam1,			// Addams Family, The (USA) (Beta) (Alt) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_addam,			// Addams Family, The (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_advanc,			// Advanced Busterhawk Gleylancer (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_advdai,			// Advanced Daisenryaku - Deutsch Dengeki Sakusen (Japan) (Rev A) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHatena,				// Adventure Quiz 2 Hatena Hatena no Dai-Bouken (Japan 900228)
+	&BurnDrvMDg_advent,			// Adventures of Batman & Robin, The (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_adven2,			// Adventures of Batman & Robin, The (Prototype - Apr 06, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven3,			// Adventures of Batman & Robin, The (Prototype - Apr 10, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven4,			// Adventures of Batman & Robin, The (Prototype - Apr 11, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven5,			// Adventures of Batman & Robin, The (Prototype - Apr 18, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven6,			// Adventures of Batman & Robin, The (Prototype - Apr 19, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven7,			// Adventures of Batman & Robin, The (Prototype - Apr 21, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven8,			// Adventures of Batman & Robin, The (Prototype - Apr 22, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adven9,			// Adventures of Batman & Robin, The (Prototype - Apr 24, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adve10,			// Adventures of Batman & Robin, The (Prototype - Apr 26, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adve11,			// Adventures of Batman & Robin, The (Prototype - Apr 27, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adve12,			// Adventures of Batman & Robin, The (Prototype - Apr 28, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_adve13,			// Adventures of Batman & Robin, The (Prototype - May 01, 1995) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_adven1,			// Adventures of Batman & Robin, The (USA)
+	&BurnDrvMDg_advemm,			// Adventures of Mighty Max, The (Europe)
+	&BurnDrvMDg_advem1,			// Adventures of Mighty Max, The (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_adverb,			// Adventures of Rocky and Bullwinkle and Friends, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_adveby,			// Adventurous Boy - Mao Xian Xiao Zi (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_aerobl,			// Aero Blasters (Japan)
 	&BurnDrvAerofgt,			// Aero Fighters
 	&BurnDrvAerofgtb,			// Aero Fighters (Turbo Force hardware set 1)
 	&BurnDrvAerofgtc,			// Aero Fighters (Turbo Force hardware set 2)
-	&BurnDrvSonicwi2,			// Aero Fighters 2\0Sonic Wings 2
-	&BurnDrvSonicwi3,			// Aero Fighters 3\0Sonic Wings 3
+	&BurnDrvsonicwi2,			// Aero Fighters 2 / Sonic Wings 2
+	&BurnDrvsonicwi3,			// Aero Fighters 3 / Sonic Wings 3
 #if defined FBA_DEBUG
-	&BurnDrvMDacro,				// Aero the Acro-Bat (U) [c][!] [No sound]
-	&BurnDrvMDacro2e,			// Aero the Acro-Bat 2 (E) [!] [Bad sound]
-	&BurnDrvMDacr2,				// Aero the Acro-Bat 2 (U) [!] [No sound]
+	&BurnDrvMDg_aerot1,			// Aero the Acro-Bat (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDaero,				// Aerobiz (U) [!]
+	&BurnDrvMDg_aeroth,			// Aero the Acro-Bat (Europe)
+	&BurnDrvMDg_aerot2,			// Aero the Acro-Bat (USA)
+	&BurnDrvMDg_aero2,			// Aero the Acro-Bat 2 (Europe)
+	&BurnDrvMDg_aero2u,			// Aero the Acro-Bat 2 (USA)
+	&BurnDrvMDg_aerobi,			// Aerobiz (USA)
+	&BurnDrvMDg_aerobs,			// Aerobiz Supersonic (USA)
 	&BurnDrvAburner,			// After Burner (Japan)
 	&BurnDrvAburner2,			// After Burner II
 #if defined FBA_DEBUG
-	&BurnDrvMDabrn2j,			// After Burner II (J) [!] [No sound]
-	&BurnDrvMDabu2,				// After Burner II (UE) [!] [Bad sound]
+	&BurnDrvMDg_abur2j,			// After Burner II (Japan) [Sound Problems]
+	&BurnDrvMDg_abur2,			// After Burner II (USA, Europe) [Sound Problems]
 #endif
-	&BurnDrvAODK,				// Aggressors of Dark Kombat\0Tsuukai GANGAN Koushinkyoku
-	&BurnDrvMDabus,				// Air Buster (U) [c][!]
-#if defined FBA_DEBUG
-	&BurnDrvMDadivej,			// Air Diver (J) [!] [no comment, NOT WORKING]
-#endif
-	&BurnDrvMDadiv,				// Air Diver (U) [!]
-	&BurnDrvAirGallet,			// Air Gallet
-	&BurnDrvMDairm,				// Air Management - Oozora ni Kakeru (J) [c][!]
-	&BurnDrvMDairm2,			// Air Management II - Kouku Ou wo Mezase (J) [!]
+	&BurnDrvSuperbon,			// Agent Super Bond (scobra hardware)
+	&BurnDrvaodk,				// Aggressors of Dark Kombat / Tsuukai GANGAN Koushinkyoku
+	&BurnDrvAgress,				// Agress
+	&BurnDrvAgressb,			// Agress (English bootleg)
+	&BurnDrvKoshien,			// Ah Eikou no Koshien (Japan)
+	&BurnDrvAirattck,			// Air Attack (set 1)
+	&BurnDrvAirattcka,			// Air Attack (set 2)
+	&BurnDrvMDg_airbus,			// Air Buster (USA)
+	&BurnDrvAirbustrb,			// Air Buster: Trouble Specialty Raid Unit (bootleg)
+	&BurnDrvAirbustrj,			// Air Buster: Trouble Specialty Raid Unit (Japan)
+	&BurnDrvAirbustr,			// Air Buster: Trouble Specialty Raid Unit (World)
+	&BurnDrvMDg_airdvj,			// Air Diver (Japan)
+	&BurnDrvMDg_airdv,			// Air Diver (USA)
+	&BurnDrvAirduel,			// Air Duel (Japan)
+	&BurnDrvAirGallet,			// Air Gallet (Europe)
+	&BurnDrvAirGalleth,			// Air Gallet (Hong Kong)
+	&BurnDrvAirGalletj,			// Air Gallet (Japan)
+	&BurnDrvAirGalletk,			// Air Gallet (Korea)
+	&BurnDrvAirGallett,			// Air Gallet (Taiwan)
+	&BurnDrvAirGalletu,			// Air Gallet (USA)
+	&BurnDrvMDg_airman,			// Air Management - Oozora ni Kakeru (Japan)
+	&BurnDrvMDg_airmas,			// Air Management II - Koukuuou o Mezase (Japan)
 	&BurnDrvAirwolf,			// Airwolf
 	&BurnDrvAirwolfa,			// Airwolf (US)
+	&BurnDrvAjax,				// Ajax
+	&BurnDrvAjaxj,				// Ajax (Japan)
+	&BurnDrvHcastljo,			// Akuma-Jou Dracula (Japan ver. N)
+	&BurnDrvHcastlej,			// Akuma-Jou Dracula (Japan ver. P)
 #if defined FBA_DEBUG
-	&BurnDrvMDalexkk,			// Alex Kidd - Cheongongmaseong (K) [!] [No sound]
-	&BurnDrvMDalxkeb,			// Alex Kidd in the Enchanted Castle (E) (MD Bundle) [!] [no comment, NOT WORKING]
-	&BurnDrvMDalexke,			// Alex Kidd in the Enchanted Castle (E) [!] [no comment, NOT WORKING]
-	&BurnDrvMDalexkj,			// Alex Kidd in the Enchanted Castle (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_akumaj,			// Akumajou Dracula - Vampire Killer (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvAlexkid1,			// Alex Kidd: The Lost Stars (set 1, FD1089A 317-unknown)
+	&BurnDrvMDg_aladdi,			// Aladdin (Europe)
+	&BurnDrvMDg_aladd1,			// Aladdin (Japan)
+	&BurnDrvMDg_aladd3,			// Aladdin (USA)
+	&BurnDrvMDg_aladd2,			// Aladdin (USA) (Beta)
+	&BurnDrvMDg_alad2,			// Aladdin II (Unl)
+	&BurnDrvAlcon,				// Alcon (US) [Protection MCU not emulated, NOT WORKING]
+	&BurnDrvMDg_alexk2,			// Alex Kidd - Cheongong Maseong (Korea)
+	&BurnDrvMDg_alexk1,			// Alex Kidd - Tenkuu Majou (Japan)
+	&BurnDrvMDg_alexk3,			// Alex Kidd in the Enchanted Castle (Europe)
+	&BurnDrvMDg_alexkd,			// Alex Kidd in the Enchanted Castle (Europe) (Rev A)
+	&BurnDrvMDg_alexk4,			// Alex Kidd in the Enchanted Castle (USA)
+	&BurnDrvAlexkidd1,			// Alex Kidd: The Lost Stars (set 1, FD1089A 317-unknown)
 	&BurnDrvAlexkidd,			// Alex Kidd: The Lost Stars (set 2, unprotected)
 	&BurnDrvalibaba,			// Ali Baba and 40 Thieves
-	&BurnDrvMDali300,			// Alien 3 (UE) (REV00) [!]
-	&BurnDrvMDali3,				// Alien 3 (UE) (REV01) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDasolde,			// Alien Soldier (E) [!] [no comment, NOT WORKING]
-#endif
-	&BurnDrvMDasol,				// Alien Soldier (J) [!]
+	&BurnDrvMDg_alien1,			// Alien 3 (USA, Europe)
+	&BurnDrvMDg_alienu,			// Alien 3 (USA, Europe) (Rev A)
+	&BurnDrvAlienchac,			// Alien Challenge (China)
+	&BurnDrvAliencha,			// Alien Challenge (World)
+	&BurnDrvAliensec,			// Alien Sector
+	&BurnDrvMDg_aliens,			// Alien Soldier (Europe)
+	&BurnDrvMDg_alien2,			// Alien Soldier (Japan)
 	&BurnDrvAstormj,			// Alien Storm (set 1, Japan, 2 Players, FD1094 317-0146)
 	&BurnDrvAstormu,			// Alien Storm (set 2, US, 3 Players, FD1094 317-0147)
 	&BurnDrvAstorm3,			// Alien Storm (set 3, World, 3 Players, FD1094 317-0148)
-#if defined FBA_DEBUG
-	&BurnDrvMDasto,				// Alien Storm (W) [!] [No sound]
-#endif
-	&BurnDrvAliensy1,			// Alien Syndrome (set 1, System 16A, FD1089A 317-0033)
-	&BurnDrvAliensy2,			// Alien Syndrome (set 2, System 16A, FD1089A 317-0033)
-	&BurnDrvAliensy3,			// Alien Syndrome (set 3, System 16B, FD1089A 317-0033)
+	&BurnDrvAstorm,				// Alien Storm (set 4, World, 2 Players, FD1094 317-0154)
+	&BurnDrvMDg_alstm,			// Alien Storm (World)
+	&BurnDrvAliensynjo,			// Alien Syndrome (set 1, Japan, old, System 16A, FD1089A 317-0033)
+	&BurnDrvAliensyn2,			// Alien Syndrome (set 2, System 16A, FD1089A 317-0033)
+	&BurnDrvAliensyn3,			// Alien Syndrome (set 3, System 16B, FD1089A 317-0033)
 	&BurnDrvAliensyn,			// Alien Syndrome (set 4, System 16B, unprotected)
-	&BurnDrvAliensy5,			// Alien Syndrome (set 5, System 16A, FD1089B 317-0037)
+	&BurnDrvAliensyn5,			// Alien Syndrome (set 5, System 16A, FD1089B 317-0037)
+	&BurnDrvAliensynj,			// Alien Syndrome (set 6, Japan, new, System 16B, FD1089A 317-0033)
 	&BurnDrvCpsAvspa,			// Alien vs Predator (940520 Asia)
+	&BurnDrvCpsAvspd,			// Alien vs Predator (940520 Euro Phoenix Edition)
 	&BurnDrvCpsAvsp,			// Alien vs Predator (940520 Euro)
 	&BurnDrvCpsAvsph,			// Alien vs Predator (940520 Hispanic)
 	&BurnDrvCpsAvspj,			// Alien vs Predator (940520 Japan)
 	&BurnDrvCpsAvspu,			// Alien vs Predator (940520 USA)
-#if defined FBA_DEBUG
-	&BurnDrvMDalisie,			// Alisia Dragoon (E) [!] [Bad sound]
-	&BurnDrvMDalisij,			// Alisia Dragoon (J) [!] [Bad sound]
-	&BurnDrvMDalis,				// Alisia Dragoon (U) [!] [Bad sound]
-#endif
-	&BurnDrvAlpham2,			// Alpha Mission II\0ASO II - last guardian
-	&BurnDrvAltbeas2,			// Altered Beast (set 2, MC-8123B 317-0066)
-	&BurnDrvAltbeas4,			// Altered Beast (set 4, MC-8123B 317-0066)
-	&BurnDrvAltbeas5,			// Altered Beast (set 5, 8751 317-0076)
+	&BurnDrvAliensa,			// Aliens (Asia)
+	&BurnDrvAliensj,			// Aliens (Japan set 1)
+	&BurnDrvAliensj2,			// Aliens (Japan set 2)
+	&BurnDrvAliensu,			// Aliens (US)
+	&BurnDrvAliens,				// Aliens (World set 1)
+	&BurnDrvAliens2,			// Aliens (World set 2)
+	&BurnDrvAliens3,			// Aliens (World set 3)
+	&BurnDrvMDg_alisia,			// Alisia Dragoon (Europe)
+	&BurnDrvMDg_alisi1,			// Alisia Dragoon (Japan)
+	&BurnDrvMDg_alisi2,			// Alisia Dragoon (USA)
+	&BurnDrvalpham2,			// Alpha Mission II / ASO II - Last Guardian
+	&BurnDrvAltbeast2,			// Altered Beast (set 2, MC-8123B 317-0066)
+	&BurnDrvAltbeast4,			// Altered Beast (set 4, MC-8123B 317-0066)
+	&BurnDrvAltbeast5,			// Altered Beast (set 5, 8751 317-0076)
 	&BurnDrvAltbeast,			// Altered Beast (set 7, 8751 317-0078)
-	&BurnDrvambush,				// Ambush
-	&BurnDrvambusht,			// Ambush (Tecfri)
-	&BurnDrvambushv,			// Ambush (Volt Elec co-ltd)
-#if defined FBA_DEBUG
-	&BurnDrvMDaateb,			// Andre Agassi Tennis (Beta) [No sound]
-	&BurnDrvMDaatee,			// Andre Agassi Tennis (E) (REV01) [c][!] [No sound]
-	&BurnDrvMDaate,				// Andre Agassi Tennis (U) (REV00) [!] [No sound]
-#endif
+	&BurnDrvMDg_altere,			// Altered Beast (USA, Europe)
+	&BurnDrvAmbush,				// Ambush
+	&BurnDrvAmbushj,			// Ambush (Japan)
+	&BurnDrvAmbushv,			// Ambush (Volt Elec co-ltd)
+	&BurnDrvAnteaterg,			// Ameisenbaer (German)
+	&BurnDrvMDg_americ,			// American Gladiators (USA)
+	&BurnDrvAmidar,				// Amidar
+	&BurnDrvAmidarb,			// Amidar (bootleg)
+	&BurnDrvAmidar1,			// Amidar (older)
+	&BurnDrvAmidaro,			// Amidar (Olympia)
+	&BurnDrvAmidars,			// Amidar (Scramble hardware)
+	&BurnDrvAmidaru,			// Amidar (Stern)
+	&BurnDrvAmigo,				// Amigo
+	&BurnDrvMDg_andrea,			// Andre Agassi Tennis (Europe)
+	&BurnDrvMDg_andre2,			// Andre Agassi Tennis (USA)
+	&BurnDrvMDg_andre1,			// Andre Agassi Tennis (USA) (Beta)
 	&BurnDrvandrodun,			// Andro Dunos
+	&BurnDrvAngelkds,			// Angel Kids (Japan)
+	&BurnDrvMDg_animan,			// Animaniacs (Europe) (En,Fr,De)
+	&BurnDrvMDg_anima1,			// Animaniacs (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDanime,			// Animaniacs (E) [!] [No sound]
-	&BurnDrvMDanim,				// Animaniacs (U) [!] [Bad sound]
+	&BurnDrvMDg_anothe,			// Another World (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDawld,				// Another World (E) [!]
+	&BurnDrvAnteater,			// Anteater
+	&BurnDrvMDg_aokioo,			// Aoki Ookami to Shiroki Meshika - Genchou Hishi (Japan)
+	&BurnDrvAponow,				// Apocaljpse Now
 #if defined FBA_DEBUG
-	&BurnDrvMDaoki,				// Aoki Ookami to Shiroki Meshika - Genchou Hishi (J) [!] [no comment]
+	&BurnDrvMDg_aqrenk,			// Aq Renkan Awa (China) (Unl) [no comment, NOT WORKING]
 #endif
-	&BurnDrvAquajckj,			// Aquajack (Japan)
+	&BurnDrvAquajackj,			// Aquajack (Japan)
 	&BurnDrvAquajack,			// Aquajack (World)
-	&BurnDrvMDaqua,				// Aquatic Games - Starring James Pond, The (UE) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDarca,				// Arcade Classics (U) [!] [Bad sound]
-#endif
-	&BurnDrvMDarch,				// Arch Rivals (UE) [!]
-	&BurnDrvMDarcusj,			// Arcus Odyssey (J) [!]
-	&BurnDrvMDarcu,				// Arcus Odyssey (U) [!]
+	&BurnDrvAquarium,			// Aquarium (Japan)
+	&BurnDrvMDg_aquati,			// Aquatic Games Starring James Pond and the Aquabats, The (USA, Europe)
+	&BurnDrvarabian,			// Arabian
+	&BurnDrvarabiana,			// Arabian (Atari)
+	&BurnDrvAracnis,			// Aracnis (bootleg of Scorpion on Moon Cresta hardware)
+	&BurnDrvArbalest,			// Arbalester
+	&BurnDrvMDg_arcade,			// Arcade Classics (USA, Europe)
+	&BurnDrvMDg_archri,			// Arch Rivals - The Arcade Game (USA, Europe)
+	&BurnDrvMDg_arcusj,			// Arcus Odyssey (Japan)
+	&BurnDrvMDg_arcus,			// Arcus Odyssey (USA)
+	&BurnDrvCpsArea88r,			// Area 88 (Japan Resale ver.)
 	&BurnDrvCpsArea88,			// Area 88 (Japan)
-	&BurnDrvMDarie,				// Ariel - The Little Mermaid (UE) [!]
+	&BurnDrvLwingsjp,			// Ares no Tsubasa (Japan)
+	&BurnDrvRygarj,				// Argus no Senshi (Japan)
+	&BurnDrvMDg_arielt,			// Ariel the Little Mermaid (USA, Europe)
 	&BurnDrvarkgcbl,			// Arkanoid (bootleg on Block hardware)
-#if defined FBA_DEBUG
-	&BurnDrvarkmcubl,			// Arkanoid (bootleg with MCU) [Unsupported MCU, NOT WORKING]
-	&BurnDrvark1ball,			// Arkanoid (bootleg with MCU, harder) [Unsupported MCU, NOT WORKING]
-#endif
+	&BurnDrvarkmcubl,			// Arkanoid (bootleg with MCU)
+	&BurnDrvark1ball,			// Arkanoid (bootleg with MCU, harder)
 	&BurnDrvarkangc,			// Arkanoid (Game Corporation bootleg, set 1)
 	&BurnDrvarkangc2,			// Arkanoid (Game Corporation bootleg, set 2)
-#if defined FBA_DEBUG
-	&BurnDrvarknoidj,			// Arkanoid (Japan) [Unsupported MCU, NOT WORKING]
-#endif
+	&BurnDrvarknoidj,			// Arkanoid (Japan)
 	&BurnDrvarkatayt,			// Arkanoid (Tayto bootleg)
 	&BurnDrvarktayt2,			// Arkanoid (Tayto bootleg, harder)
-#if defined FBA_DEBUG
-	&BurnDrvarknoidu,			// Arkanoid (US) [Unsupported MCU, NOT WORKING]
-	&BurnDrvarknoiuo,			// Arkanoid (US, older) [Unsupported MCU, NOT WORKING]
-#endif
-	&BurnDrvBatrider,			// Armed police Batrider (Batrider ver. Fri Feb 13 1998, Japan)
-	&BurnDrvBatridrk,			// Armed police Batrider (Batrider ver. Fri Feb 13 1998, Korea)
-	&BurnDrvBatridra,			// Armed police Batrider (Batrider ver. Mon Dec 22 1997, Japan)
+	&BurnDrvarknoidu,			// Arkanoid (US)
+	&BurnDrvarknoiuo,			// Arkanoid (US, older)
+	&BurnDrvarkanoid,			// Arkanoid (World)
+	&BurnDrvArknid2j,			// Arkanoid - Revenge of DOH (Japan)
+	&BurnDrvArknid2u,			// Arkanoid - Revenge of DOH (US)
+	&BurnDrvArknoid2,			// Arkanoid - Revenge of DOH (World)
+	&BurnDrvArmedf,				// Armed Formation
+	&BurnDrvArmedff,			// Armed Formation (Fillmore license)
+	&BurnDrvBatridc,			// Armed Police Batrider (China) (Fri Feb 13 1998)
+	&BurnDrvBatrid,				// Armed Police Batrider (Europe) (Fri Feb 13 1998)
+	&BurnDrvBatridk,			// Armed Police Batrider (Korea) (Fri Feb 13 1998)
+	&BurnDrvBatridu,			// Armed Police Batrider (U.S.A.) (Fri Feb 13 1998)
+	&BurnDrvBatridja,			// Armed Police Batrider - A Version (Japan) (Mon Dec 22 1997)
+	&BurnDrvBatridta,			// Armed Police Batrider - A Version (Taiwan) (Mon Dec 22 1997)
+	&BurnDrvBatridj,			// Armed Police Batrider - B Version (Japan) (Fri Feb 13 1998)
+	&BurnDrvArmorcar,			// Armored Car (set 1)
+	&BurnDrvArmorcar2,			// Armored Car (set 2)
 	&BurnDrvCpsArmwara,			// Armored Warriors (940920 Asia)
+	&BurnDrvCpsArmwaru1,		// Armored Warriors (940920 USA)
+	&BurnDrvCpsArmwar1d,		// Armored Warriors (941011 Europe Phoenix Edition)
 	&BurnDrvCpsArmwarr1,		// Armored Warriors (941011 Europe)
 	&BurnDrvCpsArmwar,			// Armored Warriors (941024 Europe)
 	&BurnDrvCpsArmwaru,			// Armored Warriors (941024 USA)
+	&BurnDrvMDg_arnold,			// Arnold Palmer Tournament Golf (USA, Europe)
+	&BurnDrvMDg_arrowj,			// Arrow Flash (Japan)
+	&BurnDrvMDg_arrow,			// Arrow Flash (USA, Europe)
+	&BurnDrvMDg_artali,			// Art Alive (World)
+	&BurnDrvMDg_artoff,			// Art of Fighting (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDaptg,				// Arnold Palmer Tournament Golf (UE) [!] [No sound]
-	&BurnDrvMDarrowj,			// Arrow Flash (J) [!] [no comment]
-	&BurnDrvMDarro,				// Arrow Flash (UE) [!] [No sound]
+	&BurnDrvMDg_artof1,			// Art of Fighting (Prototype - Jul 11, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDarta,				// Art Alive! (W) [!]
-	&BurnDrvMDaofe,				// Art of Fighting (E) [!]
-	&BurnDrvMDaof,				// Art of Fighting (U) [!]
-	&BurnDrvAof2,				// Art of Fighting 2 (set 1)\0Ryuuko no Ken 2
-	&BurnDrvAof2a,				// Art of Fighting 2 (set 2)\0Ryuuko no Ken 2
-	&BurnDrvAof3k,				// Art of Fighting 3 - the path of the warrior (korean release)
-	&BurnDrvAof3,				// Art of Fighting 3 - the path of the warrior\0Art of Fighting - ryuuko no ken gaiden
-	&BurnDrvAof,				// Art of Fighting\0Ryuuko no Ken
+	&BurnDrvMDg_artof2,			// Art of Fighting (USA)
+	&BurnDrvaof,				// Art of Fighting / Ryuuko no Ken
+	&BurnDrvaof2,				// Art of Fighting 2 / Ryuuko no Ken 2 (set 1)
+	&BurnDrvaof2a,				// Art of Fighting 2 / Ryuuko no Ken 2 (set 2)
+	&BurnDrvaof3k,				// Art of Fighting 3 - The Path of the Warrior (Korean release)
+	&BurnDrvaof3,				// Art of Fighting 3 - The Path of the Warrior / Art of Fighting - Ryuuko no Ken Gaiden
+	&BurnDrvAshnojoe,			// Ashita no Joe (Japan)
+	&BurnDrvAshuraj,			// Ashura Blaster (Japan)
+	&BurnDrvAshurau,			// Ashura Blaster (US)
+	&BurnDrvAshura,				// Ashura Blaster (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDasl,				// Assault Suits Leynos (J) [!] [Bad sound]
-	&BurnDrvMDasgr,				// Asterix and the Great Rescue (E) (M5) [c][!] [No sound]
-	&BurnDrvMDastgru,			// Asterix and the Great Rescue (U) [!] [no comment]
-	&BurnDrvMDaspg,				// Asterix and the Power of The Gods (E) (M4) [!] [No sound]
-	&BurnDrvMDastpgx,			// Asterix and the Power of The Gods (E) (M5) [x] (Beta?) [No sound]
+	&BurnDrvMDg_assaul,			// Assault Suit Leynos (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_asteri,			// Asterix and the Great Rescue (Europe) (En,Fr,De,Es,It)
+	&BurnDrvMDg_aster1,			// Asterix and the Great Rescue (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_astepb,			// Asterix and the Power of the Gods (Europe) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_astepg,			// Asterix and the Power of the Gods (Europe) (En,Fr,De,Es)
+	&BurnDrvAsukaj,				// Asuka & Asuka (Japan)
+	&BurnDrvAsuka,				// Asuka & Asuka (World)
+	&BurnDrvAsurabld,			// Asura Blade - Sword of Dynasty (Japan)
+	&BurnDrvAtehate,			// Athena no Hatena ?
 	&BurnDrvacitya,				// Atlantic City Action
+	&BurnDrvAtomboya,			// Atomic Boy (revision A)
+	&BurnDrvAtomboy,			// Atomic Boy (revision B)
+	&BurnDrvAtomicp,			// Atomic Point (Korea)
+	&BurnDrvAtompunk,			// Atomic Punk (US)
+	&BurnDrvMDg_aroboj,			// Atomic Robo-Kid (Japan)
+	&BurnDrvMDg_arobo,			// Atomic Robo-Kid (USA)
+	&BurnDrvMDg_atomrn,			// Atomic Runner (Europe)
+	&BurnDrvMDg_atomr1,			// Atomic Runner (USA)
+	&BurnDrvMDg_atptou,			// ATP Tour (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvatompunk,			// Atomic Punk (US) [Preliminary driver, NOT WORKING]
+	&BurnDrvMDg_atpto1,			// ATP Tour Championship Tennis (Prototype - Aug 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto2,			// ATP Tour Championship Tennis (Prototype - Aug 05, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto3,			// ATP Tour Championship Tennis (Prototype - Aug 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto4,			// ATP Tour Championship Tennis (Prototype - Jul 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto5,			// ATP Tour Championship Tennis (Prototype - Jul 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto6,			// ATP Tour Championship Tennis (Prototype - Jul 25, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto7,			// ATP Tour Championship Tennis (Prototype - May 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_atpto8,			// ATP Tour Championship Tennis (Prototype - Sep 08, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDrobokj,			// Atomic Robo-Kid (J) [c][!]
-	&BurnDrvMDakid,				// Atomic Robo-Kid (U) [c][!]
-	&BurnDrvMDarunre,			// Atomic Runner (E) [!]
-	&BurnDrvMDarun,				// Atomic Runner (U) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDatpte,			// ATP Tour Championship Tennis (E) [No sound]
-#endif
-	&BurnDrvMDatpt,				// ATP Tour Championship Tennis (U) [!]
+	&BurnDrvMDg_atpto9,			// ATP Tour Championship Tennis (USA)
 	&BurnDrvAurailj,			// Aurail (set 1, Japan, FD1089A 317-0167)
 	&BurnDrvAurail1,			// Aurail (set 2, World, FD1089B 317-0168)
 	&BurnDrvAurail,				// Aurail (set 3, US, unprotected)
-	&BurnDrvMDarug,				// Australian Rugby League (E) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDawsep,			// Awesome Possum Kicks Dr. Machino's Butt! (Beta) [No sound]
-	&BurnDrvMDawep,				// Awesome Possum Kicks Dr. Machino's Butt! (U) [!] [No sound]
-#endif
-	&BurnDrvMDaworg,			// Aworg (SN) (J)
-	&BurnDrvMDawsp,				// AWS Pro Moves Soccer (U) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDsmgp2a,			// Ayrton Senna's Super Monaco GP II (JE) [!] [no comment]
-	&BurnDrvMDsgp2,				// Ayrton Senna's Super Monaco GP II (U) [!] [no comment]
-#endif
+	&BurnDrvMDg_austra,			// Australian Rugby League (Europe)
+	&BurnDrvAvengers,			// Avengers (US set 1)
+	&BurnDrvAvenger2,			// Avengers (US set 2)
+	&BurnDrvMDg_aweso,			// Awesome Possum (USA)
+	&BurnDrvMDg_awesob,			// Awesome Possum (USA) (Beta)
+	&BurnDrvMDg_aworgj,			// Aworg (Japan) (SegaNet)
+	&BurnDrvMDg_awspro,			// AWS Pro Moves Soccer (USA)
+	&BurnDrvMDg_asmgpj,			// Ayrton Senna's Super Monaco GP II (Japan, Europe) (En,Ja)
+	&BurnDrvMDg_asmgp,			// Ayrton Senna's Super Monaco GP II (USA) (En,Ja)
+	&BurnDrvAzurian,			// Azurian Attack
 	&BurnDrvBonkadv,			// B.C. Kid / Bonk's Adventure / Kyukyoku!! PC Genjin
 	&BurnDrvBcstry,				// B.C. Story (set 1)
 	&BurnDrvBcstrya,			// B.C. Story (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDbobb,				// B.O.B (Beta) [no comment]
-	&BurnDrvMDbob,				// B.O.B (UE) (REV01) [!] [No sound in-game]
-	&BurnDrvMDbabyb1,			// Baby's Day Out (Beta 1) [No sound]
+	&BurnDrvMDg_bobb,			// B.O.B. (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbabyb2,			// Baby's Day Out (Beta 2)
+	&BurnDrvMDg_bob,			// B.O.B. (USA, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDbttfe,			// Back to the Future Part III (E) [!] [No sound]
-	&BurnDrvbaddudes,			// Bad Dudes vs. Dragonninja (US) [no comment]
-	&BurnDrvMDbdomen,			// Bad Omen (J) [c][!] [No sound]
-	&BurnDrvMDbaha,				// Bahamut Senki (J) [c][!] [no comment]
+	&BurnDrvMDg_babybo,			// Baby Boom (Prototype - Aug 11, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_babyb1,			// Baby Boom (Prototype - Jun 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_babyb2,			// Baby Boom (Prototype - Jun 06, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvBakatono,			// Bakatonosama Mahjong Manyuki
+	&BurnDrvMDg_babyd,			// Baby's Day Out (USA) (Proto)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_babydo,			// Baby's Day Out (USA) (Proto) (Earlier) [no comment, NOT WORKING]
+#endif
+	&BurnDrvbackfirt,			// Back Fire (Tecmo) (Japan, Bootleg, Prototype?)
+	&BurnDrvBssoccer,			// Back Street Soccer
+	&BurnDrvMDg_backto,			// Back to the Future Part III (Europe)
+	&BurnDrvMDg_backt1,			// Back to the Future Part III (USA)
+	&BurnDrvBackfire,			// Backfire! (set 1)
+	&BurnDrvBackfirea,			// Backfire! (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvBaddudes,			// Bad Dudes vs. Dragonninja (US) [no comment]
+	&BurnDrvMDg_badome,			// Bad Omen (Japan, Korea) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBagmanmc,			// Bagman (Moon Cresta hardware)
+	&BurnDrvMDg_bahamu,			// Bahamut Senki (Japan)
+	&BurnDrvbakatono,			// Bakatonosama Mahjong Manyuki
 	&BurnDrvBakubrkr,			// Bakuretsu Breaker
-	&BurnDrvMDbjak,				// Ball Jacks (JE) [c][!]
-#if defined FBA_DEBUG
-	&BurnDrvMDbalz,				// Ballz (UE) [!] [No sound]
-#endif
+	&BurnDrvMDg_ballja,			// Ball Jacks (Japan, Europe)
+	&BurnDrvBallbros,			// Balloon Brothers
+	&BurnDrvMDg_ballzd,			// Ballz 3D - Fighting at Its Ballziest (USA, Europe)
 	&BurnDrvbangbead,			// Bang Bead
+//	&BurnDrvbngbeadn,			// Bang Bead (decrypted C) [no comment]
+	&BurnDrvbangbedp,			// Bang Bead (Prototype?)
 	&BurnDrvbankp,				// Bank Panic
-	&BurnDrvMDbarb,				// Barbie Super Model (U) [!]
+	&BurnDrvBaraduke,			// Baraduke
+	&BurnDrvMDg_barbie,			// Barbie Super Model (USA)
+	&BurnDrvMDg_barbi1,			// Barbie Vacation Adventure (USA) (Proto)
+	&BurnDrvMDg_bk2b,			// Bare Knuckle II (Japan) (Beta)
+	&BurnDrvMDg_bk2,			// Bare Knuckle II - Shitou heno Chingonka ~ Streets of Rage II (Japan, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDbarbvb,			// Barbie Vacation Adventure (Beta) [Bad sound]
+	&BurnDrvMDg_bk3b,			// Bare Knuckle III (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbk2b,				// Bare Knuckle II (Beta)
-	&BurnDrvMDbk3b,				// Bare Knuckle III (Beta)
-	&BurnDrvMDbar3,				// Bare Knuckle III (J) [!]
+	&BurnDrvMDg_bk3,			// Bare Knuckle III (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsuj2,				// Barkley Shut Up and Jam! 2 (U) [!] [no comment]
-	&BurnDrvMDsuj,				// Barkley Shut Up and Jam! 2 (U) [!] [no comment]
-	&BurnDrvMDbarn,				// Barney's Hide & Seek Game (U) [!] [No sound]
+	&BurnDrvMDg_barkle,			// Barkley Shut Up and Jam! (USA, Europe) [Gfx Problems]
+	&BurnDrvMDg_bark2b,			// Barkley Shut Up and Jam! 2 (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_bark2,			// Barkley Shut Up and Jam! 2 (USA) [Gfx Problems]
 #endif
-	&BurnDrvBstars2,			// Baseball Stars 2
-	&BurnDrvBstars,				// Baseball Stars Professional
-	&BurnDrvMDbasp,				// Bass Masters Classic Pro Edition (U) [!]
-	&BurnDrvMDbass,				// Bass Masters Classics (U) [!]
+	&BurnDrvMDg_barney,			// Barney's Hide & Seek Game (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDbatme,			// Batman (E) [No sound]
+	&BurnDrvMDg_barver,			// Barver Battle Saga - Tai Kong Zhan Shi (China) (Unl) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbatmnj,			// Batman (J) [!]
-	&BurnDrvMDbat,				// Batman (U)
+	&BurnDrvbstars2,			// Baseball Stars 2
+	&BurnDrvbstars,				// Baseball Stars Professional (set 1)
+	&BurnDrvbstarsh,			// Baseball Stars Professional (set 2)
+	&BurnDrvMDg_bassma,			// Bass Masters Classic (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDbatj,				// Batman - Revenge of the Joker (U) [!] [No sound in-game]
-	&BurnDrvMDbatr,				// Batman Returns (W) [!] [Bad sound]
+	&BurnDrvMDg_bassmp,			// Bass Masters Classic - Pro Edition (USA) [Gfx Problems]
 #endif
+	&BurnDrvMDg_batman,			// Batman (Europe)
+	&BurnDrvMDg_batma1,			// Batman (Japan)
+	&BurnDrvMDg_batma2,			// Batman (USA)
+	&BurnDrvMDg_batmrd,			// Batman - Revenge of the Joker (USA)
+	&BurnDrvMDg_batmfr,			// Batman Forever (World)
+	&BurnDrvBatman2,			// Batman Part 2
+	&BurnDrvMDg_batmrt,			// Batman Returns (World)
 	&BurnDrvBatsugun,			// Batsugun (set 1)
 	&BurnDrvBatsugna,			// Batsugun (set 2)
-	&BurnDrvBatsugunSP,			// Batsugun Special Ver.
-	&BurnDrvBattleBakraid,		// Battle Bakraid (ver. Wed Apr 7 1999)
-	&BurnDrvBattleBakraidU,		// Battle Bakraid - Unlimited Version (ver. Tue Jun 8 1999)
+	&BurnDrvBatsugunSP,			// Batsugun (Special Ver.)
+	&BurnDrvBattleBkraidj,		// Battle Bakraid (Japan) (Wed Apr 7 1999)
+	&BurnDrvBattleBkraiduj,		// Battle Bakraid - Unlimited Version (Japan) (Tue Jun 8 1999)
+	&BurnDrvBattleBkraidu,		// Battle Bakraid - Unlimited Version (U.S.A.) (Tue Jun 8 1999)
+	&BurnDrvBchopper,			// Battle Chopper
 	&BurnDrvCpsBatcira,			// Battle Circuit (970319 Asia)
+	&BurnDrvCpsBatcird,			// Battle Circuit (970319 Euro Phoenix Edition)
 	&BurnDrvCpsBatcir,			// Battle Circuit (970319 Euro)
 	&BurnDrvCpsBatcirj,			// Battle Circuit (970319 Japan)
-	&BurnDrvFlipshot,			// Battle Flip Shot
-	&BurnDrvBgareghk,			// Battle Garegga (Austria / Hong Kong) (Sat Feb 3 1996)
-	&BurnDrvBgaregga,			// Battle Garegga (Europe / USA / Japan / Asia) (Sat Feb 3 1996)
-	&BurnDrvBgaregnv,			// Battle Garegga - New Version (Austria / Hong Kong) (Sat Mar 2 1996)
-	&BurnDrvBgaregcn,			// Battle Garegga - Type 2 (Denmark / China) (Tue Apr 2 1996)
-	&BurnDrvBgaregt2,			// Battle Garegga - Type 2 (Europe / USA / Japan / Asia) (Sat Mar 2 1996)
+	&BurnDrvflipshot,			// Battle Flip Shot
+	&BurnDrvBgareghk,			// Battle Garegga (Hong Kong / Austria?) (Sat Feb 3 1996)
+	&BurnDrvBgaregtw,			// Battle Garegga (Taiwan / Germany) (Thu Feb 1 1996)
+	&BurnDrvBgaregga,			// Battle Garegga (World) (Sat Feb 3 1996)
+	&BurnDrvBgaregnv,			// Battle Garegga - New Version (Hong Kong / Austria?) (Sat Mar 2 1996)
+	&BurnDrvBgaregcn,			// Battle Garegga - Type 2 (China / Denmark?) (Tue Apr 2 1996)
+	&BurnDrvBgaregt2,			// Battle Garegga - Type 2 (World) (Sat Mar 2 1996)
+	&BurnDrvMDg_battle,			// Battle Golfer Yui (Japan)
 	&BurnDrvBtlKRoad,			// Battle K-Road
-	&BurnDrvMDbtlm,				// Battle Mania (J) [!]
-	&BurnDrvMDbtl2,				// Battle Mania - Dai Gin Jou (J) [c][!]
+#if defined FBA_DEBUG
+	&BurnDrvMDg_battma,			// Battle Mania (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_battmd,			// Battle Mania Daiginjou (Japan, Korea)
+	&BurnDrvAtlantisb,			// Battle of Atlantis (bootleg)
+	&BurnDrvAtlantis,			// Battle of Atlantis (set 1)
+	&BurnDrvAtlantis2,			// Battle of Atlantis (set 2)
 	&BurnDrvBsharkj,			// Battle Shark (Japan)
 	&BurnDrvBshark,				// Battle Shark (US)
-	&BurnDrvMDbsqu,				// Battle Squadron (UE) [!]
-	&BurnDrvMDbtms,				// Battlemaster (U) [c][!]
 #if defined FBA_DEBUG
-	&BurnDrvMDbtec,				// Battletech (U) [!] [No sound in-game]
-	&BurnDrvMDbtoa,				// Battletoads (W) [!] [No sound]
+	&BurnDrvMDg_battsq,			// Battle Squadron (USA, Europe) [Sound Problems]
+	&BurnDrvMDg_battms,			// Battlemaster (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbtdd,				// Battletoads and Double Dragon (U) [c][!]
-	&BurnDrvBayrout1,			// Bay Route (set 1, US, unprotected)
-	&BurnDrvBayroutj,			// Bay Route (set 2, Japan, FD1094 317-0115)
+	&BurnDrvMDg_batttc,			// BattleTech - A Game of Armored Combat (USA)
+	&BurnDrvMDg_btoadd,			// Battletoads & Double Dragon (USA)
+	&BurnDrvMDg_btoads,			// Battletoads (World)
+	&BurnDrvBayroute1,			// Bay Route (set 1, US, unprotected)
+	&BurnDrvBayroutej,			// Bay Route (set 2, Japan, FD1094 317-0115)
 	&BurnDrvBayroute,			// Bay Route (set 3, World, FD1094 317-0116)
 #if defined FBA_DEBUG
-	&BurnDrvMDbeaswr,			// Beast Warriors (J) [!] [Bad sound]
-	&BurnDrvMDbwre,				// Beast Wrestler (U) [!] [Bad sound]
+	&BurnDrvMDg_beaswj,			// Beast Warriors (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_beasw,			// Beast Wrestler (USA)
 	&BurnDrvbeastf,				// Beastie Feastie
+	&BurnDrvMDg_beauty,			// Beauty and the Beast - Belle's Quest (USA)
+	&BurnDrvMDg_beaurb,			// Beauty and the Beast - Roar of the Beast (USA)
+	&BurnDrvMDg_beavis,			// Beavis and Butt-Head (Europe)
+	&BurnDrvMDg_beavi2,			// Beavis and Butt-Head (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDbbbq,				// Beauty and the Beast - Belle's Quest (U) [!] [No sound]
-	&BurnDrvMDbbrb,				// Beauty and the Beast - Roar of the Beast (U) [!] [No sound]
-	&BurnDrvMDbeavib,			// Beavis and Butt-head (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_beavi1,			// Beavis and Butt-Head (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvDdp2100,			// Bee Storm - DoDonPachi II (V100) [Incomplete Dump, NOT WORKING]
+	&BurnDrvDdp2101,			// Bee Storm - DoDonPachi II (V101) [Incomplete Dump, NOT WORKING]
+	&BurnDrvDdp2,				// Bee Storm - DoDonPachi II (V102) [Incomplete Dump, NOT WORKING]
 #endif
-	&BurnDrvMDbeave,			// Beavis and Butt-head (E) [!]
-	&BurnDrvMDbeav,				// Beavis and Butt-head (U) [!]
+	&BurnDrvBlswhstl,			// Bells & Whistles (ver. L)
 #if defined FBA_DEBUG
-	&BurnDrvDdp2,				// Bee Storm - DoDonPachi II (V100) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren1,			// Berenstain Bears' Camping Adventure, The (Prototype - Apr 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren2,			// Berenstain Bears' Camping Adventure, The (Prototype - Apr 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren3,			// Berenstain Bears' Camping Adventure, The (Prototype - Aug 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren4,			// Berenstain Bears' Camping Adventure, The (Prototype - Aug 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren5,			// Berenstain Bears' Camping Adventure, The (Prototype - Aug 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren6,			// Berenstain Bears' Camping Adventure, The (Prototype - Aug 05, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren7,			// Berenstain Bears' Camping Adventure, The (Prototype - Aug 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren8,			// Berenstain Bears' Camping Adventure, The (Prototype - Jul 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_beren9,			// Berenstain Bears' Camping Adventure, The (Prototype - Jul 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere10,			// Berenstain Bears' Camping Adventure, The (Prototype - Jul 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere11,			// Berenstain Bears' Camping Adventure, The (Prototype - Jun 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere12,			// Berenstain Bears' Camping Adventure, The (Prototype - Jun 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere13,			// Berenstain Bears' Camping Adventure, The (Prototype - Mar 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere14,			// Berenstain Bears' Camping Adventure, The (Prototype - May 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere15,			// Berenstain Bears' Camping Adventure, The (Prototype - May 11, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere16,			// Berenstain Bears' Camping Adventure, The (Prototype - May 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere17,			// Berenstain Bears' Camping Adventure, The (Prototype - May 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere18,			// Berenstain Bears' Camping Adventure, The (Prototype - May 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere19,			// Berenstain Bears' Camping Adventure, The (Prototype - May 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bere20,			// Berenstain Bears' Camping Adventure, The (Prototype - May 30, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbear,				// Berenstain Bears', The - Camping Adventure (U) [!]
-	&BurnDrvMDbotbb,			// Best of the Best - Championship Karate (Beta)
-	&BurnDrvMDbotb,				// Best of the Best - Championship Karate (U) [c][!]
-	&BurnDrvMDboas,				// Beyond Oasis (U) [!]
-	&BurnDrvMDbzerot,			// Beyond Zero Tolerance (Beta)
+	&BurnDrvMDg_berens,			// Berenstain Bears' Camping Adventure, The (USA)
+	&BurnDrvBestbest,			// Best Of Best
+	&BurnDrvMDg_bestof,			// Best of the Best - Championship Karate (Europe)
+	&BurnDrvMDg_besto1,			// Best of the Best - Championship Karate (USA)
+	&BurnDrvBestri,				// Bestri (Korea)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_beyonp,			// Beyond Oasis (Prototype - Nov 01, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_beyonu,			// Beyond Oasis (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_beyzt,			// Beyond Zero Tolerance (USA) (Proto) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsPunisherbz,		// Biaofeng Zhanjing (Chinese bootleg of The Punisher)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_biblea,			// Bible Adventures (USA) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBigbang,			// Big Bang (9th Nov. 1993)
 	&BurnDrvbigbucks,			// Big Bucks
-	&BurnDrvMDbw95,				// Bill Walsh College Football '95 (U) [!]
-	&BurnDrvMDbwcf,				// Bill Walsh College Football (UE) [c][!]
-	&BurnDrvMDbimi,				// Bimini Run (U) (REV02) [!]
-	&BurnDrvMDbiohzb,			// Bio-Hazard Battle (Beta)
-	&BurnDrvMDbhb,				// Bio-Hazard Battle (UE) [!]
-	&BurnDrvBiomtoy,			// Biomechanical Toy (unprotected)
-#if defined FBA_DEBUG
-	&BurnDrvMDsail,				// Bishoujo Senshi Sailor Moon (J) [!] [no comment]
-	&BurnDrvMDblav,				// Blades of Vengeance (UE) [!] [No sound]
-	&BurnDrvMDblam2b,			// Blaster Master 2 (Beta) [No sound]
-	&BurnDrvMDblma,				// Blaster Master 2 (U) [c][!] [No sound]
-#endif
+	&BurnDrvBigkarnk,			// Big Karnak
+	&BurnDrvMDg_billwa,			// Bill Walsh College Football (USA, Europe)
+	&BurnDrvMDg_bill95,			// Bill Walsh College Football 95 (USA)
+	&BurnDrvMDg_bimini,			// Bimini Run (USA)
+	&BurnDrvMDg_biohzb,			// Bio Hazard Battle (USA) (Beta)
+	&BurnDrvMDg_biohz,			// Bio Hazard Battle (USA, Europe)
+	&BurnDrvBioship,			// Bio-ship Paladin
+	&BurnDrvBiomtoya,			// Biomechanical Toy (Ver. 1.0.1884)
+	&BurnDrvBiomtoy,			// Biomechanical Toy (Ver. 1.0.1885)
+	&BurnDrvbionicc,			// Bionic Commando (Euro)
+	&BurnDrvbionicc1,			// Bionic Commando (US set 1)
+	&BurnDrvbionicc2,			// Bionic Commando (US set 2)
+	&BurnDrvMDg_bishou,			// Bishoujo Senshi Sailor Moon (Japan)
+	&BurnDrvBlkdrgon,			// Black Dragon
+	&BurnDrvBlkdrgonb,			// Black Dragon (bootleg)
+	&BurnDrvBlkheart,			// Black Heart
+	&BurnDrvBlkheartj,			// Black Heart (Japan)
+	&BurnDrvBlkhole,			// Black Hole
+	&BurnDrvBlktiger,			// Black Tiger
+	&BurnDrvBlktigerb1,			// Black Tiger (bootleg set 1)
+	&BurnDrvBktigrb2,			// Black Tiger (bootleg set 2)
+	&BurnDrvBlktigera,			// Black Tiger (older)
+	&BurnDrvBmaster,			// Blade Master (World)
+	&BurnDrvMDg_blades,			// Blades of Vengeance (USA, Europe)
+	&BurnDrvBlandia,			// Blandia
+	&BurnDrvBlandiap,			// Blandia (prototype)
+	&BurnDrvMDg_blast,			// Blaster Master 2 (USA)
+	&BurnDrvMDg_blastb,			// Blaster Master 2 (USA) (Beta)
 	&BurnDrvBlazeon,			// Blaze On (Japan)
-	&BurnDrvBlazStar,			// Blazing Star
+	&BurnDrvblazstar,			// Blazing Star
 	&BurnDrvarkblock,			// Block (Game Corporation bootleg, set 1)
 	&BurnDrvarkbloc2,			// Block (Game Corporation bootleg, set 2)
+	&BurnDrvBlockbl,			// Block Block (bootleg)
+	&BurnDrvBlockj,				// Block Block (Japan 910910)
+	&BurnDrvBlock,				// Block Block (World 910910)
+	&BurnDrvBlockjoy,			// Block Block (World 911116 Joystick)
+	&BurnDrvBlockcar,			// Block Carnival / Thunder & Lightning 2
 	&BurnDrvBlockgal,			// Block Gal (MC-8123B, 317-0029)
-	&BurnDrvMDbloc,				// Block Out (W) (REV01) [!]
+	&BurnDrvBlockhl,			// Block Hole
+	&BurnDrvBlckoutj,			// Block Out (Japan)
+	&BurnDrvBlockout,			// Block Out (set 1)
+	&BurnDrvBlckout2,			// Block Out (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDbsht,				// Blood Shot (E) (M4) [!] [No sound in-game]
+	&BurnDrvMDg_blockb,			// Blockbuster World Video Game Championship II (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_blocko,			// Blockout (World)
+	&BurnDrvBloodbro,			// Blood Bros. (set 1)
+	&BurnDrvBloodbroa,			// Blood Bros. (set 2)
+	&BurnDrvBloodbrob,			// Blood Bros. (set 3)
 	&BurnDrvBloodwar,			// Blood Warrior
 #if defined FBA_DEBUG
-	&BurnDrvBloxeed,			// Bloxeed (Japan, FD1094 317-0139) [Incomplete Sound]
-	&BurnDrvMDblueal,			// Blue Almanac (J) [!] [no comment]
+	&BurnDrvMDg_bloods,			// Bloodshot (Europe) (En,Fr,De,Es) [no comment, NOT WORKING]
 #endif
-	&BurnDrvBJourney,			// Blue's Journey\0Raguy
-	&BurnDrvbwcasino,			// Boardwalk Casino
+	&BurnDrvBloxeed,			// Bloxeed (Japan, FD1094 317-0139)
+	&BurnDrvBlox16b,			// Bloxeed (System 16B, PS2 data file)
 #if defined FBA_DEBUG
-	&BurnDrvMDbcounb,			// Body Count (Beta) (M5) [no comment, NOT WORKING]
+	&BurnDrvMDg_blueal,			// Blue Almanac (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBlueprnj,			// Blue Print (Jaleco)
+	&BurnDrvBlueprnt,			// Blue Print (Midway)
+	&BurnDrvbjourney,			// Blue's Journey / Raguy
+	&BurnDrvbwcasino,			// Boardwalk Casino
+	&BurnDrvBoblbobl,			// Bobble Bobble
+#if defined FBA_DEBUG
+	&BurnDrvMDg_bodyc,			// Body Count (Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodyca,			// Body Count (Europe) (En,Fr,De,Es,It) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodycb,			// Body Count (Prototype - Feb 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodycc,			// Body Count (Prototype - Feb 28, 1994 - U) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodycd,			// Body Count (Prototype - Jan 27, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodyce,			// Body Count (Prototype - Mar 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodycf,			// Body Count (Prototype - Mar 08, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodycg,			// Body Count (Prototype - Mar 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bodych,			// Body Count (Prototype - Mar 09, 1994) [no comment, NOT WORKING]
 #endif
 	&BurnDrvBodyslam,			// Body Slam (8751 317-0015)
 	&BurnDrvBombjack,			// Bomb Jack (set 1)
 	&BurnDrvBombjac2,			// Bomb Jack (set 2)
+	&BurnDrvBombkick,			// Bomb Kick
+	&BurnDrvBombrman,			// Bomber Man (Japan)
+	&BurnDrvBbmanwj,			// Bomber Man World (Japan)
+	&BurnDrvBbmanw,				// Bomber Man World / New Dyna Blaster - Global Quest
+	&BurnDrvBjtwin,				// Bombjack Twin (set 1)
+	&BurnDrvBjtwina,			// Bombjack Twin (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvbombrman,			// Bomber Man (Japan) [Preliminary driver, NOT WORKING]
-	&BurnDrvMDbnza00,			// Bonanza Bros. (JE) (REV00) [!] [No sound]
-	&BurnDrvMDbnza01,			// Bonanza Bros. (JE) (REV01) [!] [No sound]
-	&BurnDrvMDbnza,				// Bonanza Bros. (U) [!] [No sound]
-	&BurnDrvMDbonk,				// Bonkers (UE) [!] [No sound in-game]
-	&BurnDrvMDbooge,			// Boogerman (E) [!] [no comment]
+	&BurnDrvMDg_bonan1,			// Bonanza Bros. (Japan, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonanz,			// Bonanza Bros. (Japan, Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonan2,			// Bonanza Bros. (USA, Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDboog,				// Boogerman (U) [!]
+	&BurnDrvBongo,				// Bongo
 #if defined FBA_DEBUG
-	&BurnDrvMDbwbw,				// Boogie Woogie Bowling (J) [!] [Bad sound]
-	&BurnDrvMDboxl,				// Boxing Legends of the Ring (U) [!] [Bad Sound]
+	&BurnDrvMDg_bonkra,			// Bonkers (Prototype - Mar 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonkrb,			// Bonkers (Prototype - May 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonkrc,			// Bonkers (Prototype - Oct 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonkrd,			// Bonkers (Prototype - Oct 25, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonkre,			// Bonkers (Prototype - Oct 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_bonkr,			// Bonkers (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBonzeadvu,			// Bonze Adventure (US)
+	&BurnDrvBonzeadv,			// Bonze Adventure (World, Newer)
+	&BurnDrvBonzeadvo,			// Bonze Adventure (World, Older)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_booger,			// Boogerman - A Pick and Flick Adventure (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_booge1,			// Boogerman - A Pick and Flick Adventure (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_boogie,			// Boogie Woogie Bowling (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBottom9n,			// Bottom of the Ninth (ver. N)
+	&BurnDrvBottom9,			// Bottom of the Ninth (ver. T)
+	&BurnDrvBballs,				// Bouncing Balls
+#if defined FBA_DEBUG
+	&BurnDrvMDg_boxing,			// Boxing Legends of the Ring (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvBrain,				// Brain
 #if defined FBA_DEBUG
-	&BurnDrvMDdrace,			// Bram Stoker's Dracula (E) [!] [no comment]
-	&BurnDrvMDdrac,				// Bram Stoker's Dracula (U) [!] [no comment]
+	&BurnDrvMDg_bramst,			// Bram Stoker's Dracula (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_brams1,			// Bram Stoker's Dracula (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvBreakers,			// Breakers
-	&BurnDrvBreakRev,			// Breakers Revenge
+	&BurnDrvbreakers,			// Breakers
+	&BurnDrvbreakrev,			// Breakers Revenge
 #if defined FBA_DEBUG
-	&BurnDrvMDbh95,				// Brett Hull Hockey '95 (U) [!] [No sound in-game]
-	&BurnDrvMDblcrb,			// Brian Lara Cricket (Beta) [No sound]
-	&BurnDrvMDblcr,				// Brian Lara Cricket (E) [c][!] [No sound]
-	&BurnDrvMDblc96x,			// Brian Lara Cricket 96 (E) [a1][x] [no comment, NOT WORKING]
-	&BurnDrvMDbl96,				// Brian Lara Cricket 96 (E) [c][!] [No sound]
+	&BurnDrvMDg_bretth,			// Brett Hull Hockey '95 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBreywood,			// Breywood (Japan revision 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_brianl,			// Brian Lara Cricket (Europe) (June 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_brian1,			// Brian Lara Cricket (Europe) (March 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_bri96,			// Brian Lara Cricket 96 (Europe) (April 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_bri96a,			// Brian Lara Cricket 96 (Europe) (March 1996) [no comment, NOT WORKING]
 #endif
 	&BurnDrvbrix,				// Brix
 #if defined FBA_DEBUG
-	&BurnDrvMDbrutle,			// Brutal - Paws of Fury (E) [No sound in-game]
-	&BurnDrvMDbrpw,				// Brutal - Paws of Fury (U) [!] [No sound in-game]
-	&BurnDrvMDbubbab,			// Bubba N Stix (Beta) [No sound]
-	&BurnDrvMDbubbae,			// Bubba N Stix (E) [c][!] [No sound]
-	&BurnDrvMDbuba,				// Bubba N Stix (U) [!] [Bad sound]
+	&BurnDrvMDg_brutal,			// Brutal - Paws of Fury (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_bruta1,			// Brutal - Paws of Fury (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_bubba,			// Bubba'n'Stix (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_bubbab,			// Bubba'n'Stix (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_bubbau,			// Bubba'n'Stix - A Strategy Adventure (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbusq,				// Bubble and Squeak (U) [!]
-	&BurnDrvMDbub2,				// Bubsy II (UE) [!]
-	&BurnDrvMDbubs,				// Bubsy in Claws Encounters of the Furred Kind (UE) [!]
-	&BurnDrvMDbudoe,			// Budokan - The Martial Spirit (E) [!]
-	&BurnDrvMDbudo,				// Budokan - The Martial Spirit (U) [c][!]
-	&BurnDrvMDbbny,				// Bugs Bunny in Double Trouble (U) [!]
+	&BurnDrvBubl2000,			// Bubble 2000
+#if defined FBA_DEBUG
+	&BurnDrvMDg_bubble,			// Bubble and Squeak (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_bubbl1,			// Bubble and Squeak (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBublbobl,			// Bubble Bobble
+	&BurnDrvBub68705,			// Bubble Bobble (boolteg with 68705)
+	&BurnDrvBublbob1,			// Bubble Bobble (older)
+	&BurnDrvBublbobr,			// Bubble Bobble (US with mode select)
+	&BurnDrvBubbobr1,			// Bubble Bobble (US)
+	&BurnDrvMDg_bubsy2,			// Bubsy II (USA, Europe)
+	&BurnDrvMDg_bubsy,			// Bubsy in Claws Encounters of the Furred Kind (USA, Europe)
+	&BurnDrvBuccanrs,			// Buccaneers (set 1)
+	&BurnDrvBuccanrsa,			// Buccaneers (set 2)
+	&BurnDrvMDg_buckro,			// Buck Rogers - Countdown to Doomsday (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_budoka,			// Budokan - The Martial Spirit (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_budok1,			// Budokan - The Martial Spirit (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_bugsli,			// Bug's Life, A (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_bugsbu,			// Bugs Bunny in Double Trouble (USA) [no comment, NOT WORKING]
+#endif
 	&BurnDrvBullet,				// Bullet (FD1094 317-0041)
-	&BurnDrvMDbvsb,				// Bulls vs Blazers and the NBA Playoffs (UE) [!]
-	&BurnDrvMDbvsl,				// Bulls vs Lakers and the NBA Playoffs (UE) [!]
-	&BurnDrvBurningf,			// Burning Fight (set 1)
-	&BurnDrvBurningh,			// Burning Fight (set 2)
+	&BurnDrvBullfgt,			// Bullfight (315-5065)
 #if defined FBA_DEBUG
-	&BurnDrvMDburnfe,			// Burning Force (E) [no comment]
-	&BurnDrvMDburnfj,			// Burning Force (J) [!] [Bad sound]
-	&BurnDrvMDburf,				// Burning Force (U) [!] [Bad sound]
+	&BurnDrvMDg_bullsv,			// Bulls versus Blazers and the NBA Playoffs (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_bullla,			// Bulls Vs Lakers and the NBA Playoffs (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvBurglarx,			// Burglar X
+	&BurnDrvburningf,			// Burning Fight (set 1)
+	&BurnDrvburningfh,			// Burning Fight (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_burnin,			// Burning Force (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_burni1,			// Burning Force (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_burni2,			// Burning Force (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBbros,				// Buster Bros. (US)
 	&BurnDrvBuzzard,			// Buzzard
+	&BurnDrvCactus,				// Cactus (bootleg of Saboten Bombers)
+	&BurnDrvCadashf,			// Cadash (France)
+	&BurnDrvCadashg,			// Cadash (Germany)
+	&BurnDrvCadashi,			// Cadash (Italy)
+	&BurnDrvCadashj,			// Cadash (Japan)
+	&BurnDrvCadashu,			// Cadash (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDcada,				// Cadash (JU) [c][!] [no comment]
+	&BurnDrvMDg_cadash,			// Cadash (USA, Asia) [no comment, NOT WORKING]
 #endif
+	&BurnDrvCadash,				// Cadash (World)
 	&BurnDrvCpsDino,			// Cadillacs & Dinosaurs (930201 etc)
 	&BurnDrvCpsDinou,			// Cadillacs & Dinosaurs (930201 USA)
+	&BurnDrvCpsDinoh,			// Cadillacs and Dinosaurs (930223 Asia TW bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvCpsDinopic,			// Cadillacs and Dinosaurs (bootleg with PIC16c57, set 1) [Missing sprites, no sound, NOT WORKING]
+	&BurnDrvCpsDinopic2,		// Cadillacs and Dinosaurs (bootleg with PIC16c57, set 2) [Missing sprites, no sound, NOT WORKING]
+#endif
+	&BurnDrvCpsDinoeh,			// Cadillacs and Dinosaurs (hack)
+//	&BurnDrvCpsDinob,			// Cadillacs and Dinosaurs (identical to dinopic) [Missing sprites, no sound, NOT WORKING]
+	&BurnDrvCpsDinoha,			// Cadillacs and Dinosaurs Turbo (930223 Asia TW bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvCpsDinohb,			// Cadillacs and Dinosaurs Turbo (bootleg with PIC16c57) [no comment, NOT WORKING]
+//	&BurnDrvCpsKl2d,			// Cadillacs and Dinosaurs Turbo (identical to dinoha) [no comment]
+#endif
 	&BurnDrvCpsDinoj,			// Cadillacs Kyouryuu-Shinseiki (Cadillacs 930201 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcaeno,			// Caesar no Yabo (J) [no comment]
-	&BurnDrvMDcaeno2,			// Caesar no Yabo II (J) [no comment]
-	&BurnDrvMDcaes,				// Caesars Palace (U) [!] [no comment]
-	&BurnDrvMDcrjb,				// Cal Ripken Jr. Baseball (U) [c][!] [no comment]
-	&BurnDrvMDc50,				// Caliber Fifty (U) [!] [no comment]
+	&BurnDrvMDg_caesar,			// Caesar no Yabou (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDcgam,				// California Games (UE) [!]
-	&BurnDrvcannonbp,			// Cannon Ball (Pacman Hardware)
+	&BurnDrvMDg_caes2,			// Caesar no Yabou II (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcano,				// Cannon Fodder (E) [!] [no comment]
+	&BurnDrvMDg_caespl,			// Caesars Palace (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_calrip,			// Cal Ripken Jr. Baseball (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_calibe,			// Caliber .50 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCalibr50,			// Caliber 50
+	&BurnDrvMDg_califo,			// California Games (USA, Europe)
+	&BurnDrvCalipso,			// Calipso
+	&BurnDrvCameltryj,			// Cameltry (Japan, YM2610)
+	&BurnDrvCameltrya,			// Cameltry (US, YM2203 + M6295)
+	&BurnDrvCameltry,			// Cameltry (US, YM2610)
+	&BurnDrvCameltryau,			// Cameltry (World, YM2203 + M6295)
+	&BurnDrvcannonbp,			// Cannon Ball (Pacman Hardware)
+	&BurnDrvCandance,			// Cannon Dancer (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_cannon,			// Cannon Fodder (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsCscluba,			// Capcom Sports Club (970722 Asia)
-	&BurnDrvCpsCsclub,			// Capcom Sports Club (970722 Euro)
-	&BurnDrvCpscsclubh,			// Capcom Sports Club (970722 Hispanic)
+	&BurnDrvCpsCsclub1d,		// Capcom Sports Club (970722 Euro Phoenix Edition)
+	&BurnDrvCpsCsclub1,			// Capcom Sports Club (970722 Euro)
+	&BurnDrvCpsCsclubh,			// Capcom Sports Club (970722 Hispanic)
 	&BurnDrvCpsCsclubj,			// Capcom Sports Club (970722 Japan)
+	&BurnDrvCpsCsclubjr,		// Capcom Sports Club (970722 Japan, Rent version)
+	&BurnDrvCpsCsclub,			// Capcom Sports Club (971017 Euro)
+	&BurnDrvCworld,				// Capcom World (Japan)
 	&BurnDrvCpsCworld2j,		// Capcom World 2 (920611 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcaptha,			// Capt'n Havoc (E) [!] [no comment]
-	&BurnDrvMDcapamb,			// Captain America and the Avengers (Beta) [no comment]
-	&BurnDrvMDcapame,			// Captain America and the Avengers (E) [no comment]
-	&BurnDrvMDcapa,				// Captain America and the Avengers (U) [!] [no comment]
+	&BurnDrvMDg_havoce,			// Capt'n Havoc (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_captai,			// Captain America and the Avengers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_capta2,			// Captain America and the Avengers (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_capta1,			// Captain America and the Avengers (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsCaptcomu,		// Captain Commando (910928 USA)
-	&BurnDrvCpsCaptcomm,		// Captain Commando (911014 other country)
-	&BurnDrvCpsCaptcomj,		// Captain Commando (911202 Japan)
+	&BurnDrvCpsCaptcommjr1,		// Captain Commando (910928 Japan)
+	&BurnDrvCpsCaptcommu,		// Captain Commando (910928 USA)
+	&BurnDrvCpsCaptcommr1,		// Captain Commando (911014 other country)
+	&BurnDrvCpsCaptcommj,		// Captain Commando (911202 Japan)
+	&BurnDrvCpsCaptcomm,		// Captain Commando (911202 other country)
 #if defined FBA_DEBUG
-	&BurnDrvMDcappb,			// Captain Planet and the Planeteers (Beta) [no comment]
-	&BurnDrvMDcapp,				// Captain Planet and the Planeteers (E) [!] [no comment]
+	&BurnDrvCpsCaptcommb,		// Captain Commando (bootleg) [Sprite issues, NOT WORKING]
+	&BurnDrvMDg_captpl,			// Captain Planet and the Planeteers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_captp1,			// Captain Planet and the Planeteers (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCTomaday,			// Captain Tomaday
+	&BurnDrvCsilverj,			// Captain Silver (Japan)
+	&BurnDrvCsilver,			// Captain Silver (World)
+	&BurnDrvctomaday,			// Captain Tomaday
+#if defined FBA_DEBUG
+	&BurnDrvCpsCawingb,			// Carrier Air Wing (bootleg) [no comment, NOT WORKING]
+#endif
 	&BurnDrvCpsCawingr1,		// Carrier Air Wing (U.S. navy 901009 etc)
 	&BurnDrvCpsCawing,			// Carrier Air Wing (U.S. navy 901012 etc)
 	&BurnDrvCpsCawingu,			// Carrier Air Wing (U.S. navy 901012 USA)
+	&BurnDrvMDg_castlj,			// Castle of Illusion - Fushigi no Oshiro Daibouken (Japan)
+	&BurnDrvMDg_castl,			// Castle of Illusion Starring Mickey Mouse (USA, Europe)
+	&BurnDrvMDg_cvania,			// Castlevania - Bloodlines (USA)
+	&BurnDrvMDg_cvani2,			// Castlevania - The New Generation (Europe)
+	&BurnDrvMDg_cvani1,			// Castlevania - The New Generation (Europe) (Beta)
+	&BurnDrvCatacomb,			// Catacomb
 #if defined FBA_DEBUG
-	&BurnDrvMDcill,				// Castle of Illusion Starring Mickey Mouse (UE) [!] [no comment]
-	&BurnDrvMDcasv,				// Castlevania - Bloodlines (U) [!] [no comment]
-	&BurnDrvMDcvtngb,			// Castlevania - The New Generation (Beta) [no comment]
-	&BurnDrvMDcvane,			// Castlevania - The New Generation (E) [!] [no comment]
 	&BurnDrvCatapult,			// Catapult [Bad dump, NOT WORKING]
 #endif
 	&BurnDrvctrpllrp,			// Caterpillar Pacman Hack
+	&BurnDrvCatt,				// Catt (Japan)
+	&BurnDrvCavelon,			// Cavelon
 #if defined FBA_DEBUG
-	&BurnDrvMDcdor,				// Centurion - Defender of Rome (UE) [!] [no comment]
-	&BurnDrvMDchak,				// Chakan - The Forever Man (UE) [!] [no comment]
-	&BurnDrvMDckid,				// Chameleon Kid (J) [!] [no comment]
-	&BurnDrvMDcwcs,				// Champions World Class Soccer (W) (M4) [!] [no comment]
-	&BurnDrvMDcbwl,				// Championship Bowling (U) [!] [Bad sound]
-	&BurnDrvMDcpoo,				// Championship Pool (U) [!] [no comment]
-	&BurnDrvMDcpam,				// Championship Pro-Am (U) [c][!] [no comment]
-	&BurnDrvMDcengb,			// Chaos Engin [no comment]
-	&BurnDrvMDchao,				// Chaos Engin [no comment]
-	&BurnDrvMDwbug,				// Charles' Window Bug Example [no comment]
+	&BurnDrvMDg_centur,			// Centurion - Defender of Rome (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvChaknpop,			// Chack'n Pop
+	&BurnDrvChainrec,			// Chain Reaction (World, Version 2.2, 1995.09.25)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chakan,			// Chakan (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_chamel,			// Chameleon Kid (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_champi,			// Champions World Class Soccer (World) (En,Fr,De,Es) [no comment, NOT WORKING]
+	&BurnDrvMDg_champ1,			// Championship Bowling (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_champl,			// Championship Pool (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_cpam,			// Championship Pro-Am (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_chaoji,			// Chao Ji Da Fu Weng (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPgmdemo,			// Chaos (PGM Demo)
+	&BurnDrvCpsCps1demo,		// Chaos Demo (CPS-1)
+	&BurnDrvneodemo,			// Chaos Demo (Neo Geo)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chao2p,			// Chaos Engine 2, The (Europe) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_chaose,			// Chaos Engine, The (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCharlien,			// Charlie Ninja
 	&BurnDrvChasehqj,			// Chase H.Q. (Japan)
+	&BurnDrvChasehqu,			// Chase H.Q. (US)
 	&BurnDrvChasehq,			// Chase H.Q. (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDchq2,				// Chase HQ II (U) [!] [no comment]
-	&BurnDrvMDchav2,			// Chavez II (U) [!] [No sound]
-	&BurnDrvMDchee,				// Cheese Cat-Astrophe Starring Speedy Gonzales (E) (M4) [!] [no comment]
+	&BurnDrvMDg_chaseh,			// Chase H.Q. II (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_chavez,			// Chavez II (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDchelno,			// Chelnov (J) [!]
+	&BurnDrvCheckman,			// Check Man
+	&BurnDrvCheckmanj,			// Check Man (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDche,				// Chester Cheetah (U) [c][!] [no comment]
-	&BurnDrvMDche2,				// Chester Cheetah 2 - Wild Wild Quest (U) [!] [no comment]
-	&BurnDrvMDchibi,			// Chibi Maruko-Chan - Wakuwaku Shopping (J) [c][!] [no comment]
+	&BurnDrvMDg_cheese,			// Cheese Cat-Astrophe Starring Speedy Gonzales (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMarukodq,			// Chibi Marukochan Deluxe Quiz
+	&BurnDrvMDg_chelno,			// Chelnov (Japan)
+	&BurnDrvChelnovj,			// Chelnov - Atomic Runner (Japan)
+	&BurnDrvChelnovu,			// Chelnov - Atomic Runner (US)
+	&BurnDrvChelnov,			// Chelnov - Atomic Runner (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chessu,			// Chess (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_cheste,			// Chester Cheetah - Too Cool to Fool (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_chestw,			// Chester Cheetah - Wild Wild Quest (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvChewing,			// Chewing Gum
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chichi,			// Chi Chi's Pro Challenge Golf (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSeventoitsu,		// Chi-Toitsu
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chibim,			// Chibi Maruko-chan - Wakuwaku Shopping (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvmarukodq,			// Chibi Marukochan Deluxe Quiz
 	&BurnDrvCpsChikij,			// Chiki Chiki Boys (900619 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDchikij,			// Chiki Chiki Boys (J) [!] [no comment]
-	&BurnDrvMDchik,				// Chiki Chiki Boys (UE) [!] [no comment]
-	&BurnDrvMDchi,				// Chiki Chiki Boys (UE) [!] [no comment]
+	&BurnDrvMDg_chikij,			// Chiki Chiki Boys (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_chiki,			// Chiki Chiki Boys (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_chines,			// Chinese Chess (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_chinf,			// Chinese Fighter III (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_chinfb,			// Chinese Fighter III (Unl) (bootleg) [no comment, NOT WORKING]
+	&BurnDrvcndi,				// Chip n Dale (Intro demo) [no comment]
 #endif
 	&BurnDrvCpsChoko,			// Choko (010820 Japan)
 	&BurnDrvChokChok,			// Choky! Choky!
+	&BurnDrvMDg_chouky,			// Chou Kyuukai Miracle Nine (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDchouya,			// Chou Yakyuu Miracle Nine (J) [!] [no comment]
-	&BurnDrvMDchk2b,			// Chuck II - Son of Chuck (Beta) [no comment]
-	&BurnDrvMDchk2e,			// Chuck II - Son of Chuck (E) [c][!] [no comment]
-	&BurnDrvMDchk2j,			// Chuck II - Son of Chuck (J) [!] [no comment]
-	&BurnDrvMDchk2,				// Chuck II - Son of Chuck (U) [!] [no comment]
-	&BurnDrvMDchkrke,			// Chuck Rock (E) [c][!] [no comment]
-	&BurnDrvMDchuk,				// Chuck Rock (U) [c][!] [no comment]
-	&BurnDrvMDchuck,			// Chuck's Excellent Art Tool Animator (U) [no comment]
+	&BurnDrvMDg_chouto,			// Chou Touryuu Retsuden Dino Land (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvLegiono,			// Chouji Meikyuu Legion (ver 1.05)
+	&BurnDrvLegion,				// Chouji Meikyuu Legion (ver 2.03)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_chuckr,			// Chuck Rock (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_chuck1,			// Chuck Rock (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_chuk21,			// Chuck Rock II (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_chuk2,			// Chuck Rock II - Son of Chuck (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_chuk23,			// Chuck Rock II - Son of Chuck (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_chuk22,			// Chuck Rock II - Son of Chuck (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_chucks,			// Chuck's Excellent Art Tool Animator (U) [no comment, NOT WORKING]
+#endif
+	&BurnDrvChukataj,			// Chuka Taisen (Japan)
+	&BurnDrvChukatau,			// Chuka Taisen (US)
+	&BurnDrvChukatai,			// Chuka Taisen (World)
 	&BurnDrvDrgw2j,				// Chuugokuryuu II (V100J, Japan)
+	&BurnDrvMDg_classi,			// Classic Collection (Europe)
+	&BurnDrvMDg_clay,			// Clay Fighter (Europe)
+	&BurnDrvMDg_clayu,			// Clay Fighter (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDclascl,			// Classic Collection (UE) [!] [no comment]
-	&BurnDrvMDclay,				// Clay Fighter (U) [!] [no comment]
-	&BurnDrvMDclifhb,			// Cliffhanger (Beta) [no comment]
-	&BurnDrvMDclifhe,			// Cliffhanger (E) [no comment]
-	&BurnDrvMDclif,				// Cliffhanger (U) [c][!] [no comment]
-	&BurnDrvMDclue,				// Clue (U) [!] [no comment]
+	&BurnDrvMDg_cliffb,			// Cliffhanger (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_cliff,			// Cliffhanger (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_cliffu,			// Cliffhanger (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_clueus,			// Clue (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCltchtrj,			// Clutch Hitter (set 1, Japan, FD1094 317-0175)
+	&BurnDrvCltchitrj,			// Clutch Hitter (set 1, Japan, FD1094 317-0175)
 	&BurnDrvCltchitr,			// Clutch Hitter (set 2, US, FD1094 317-0176)
+	&BurnDrvMDg_coachk,			// Coach K College Basketball (USA)
+	&BurnDrvCobracmj,			// Cobra-Command (Japan)
+	&BurnDrvCobracom,			// Cobra-Command (World revision 5)
+	&BurnDrvcnbe,				// Codename - Blut Engel (2006-01-19)
+	&BurnDrvMDg_colleg,			// College Football USA 96 (USA)
+	&BurnDrvMDg_coll97,			// College Football USA 97 (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDcoak,				// Coach K College Basketball (U) [!] [no comment]
-	&BurnDrvMDcf96,				// College Football USA 96 (U) [!] [no comment]
-	&BurnDrvMDcf97,				// College Football USA 97 - The Road to New Orleans (U) [!] [no comment]
-	&BurnDrvMDcfn,				// College Football's National Championship (U) [!] [no comment]
-	&BurnDrvMDcfn2,				// College Football's National Championship II (U) [!] [no comment]
-	&BurnDrvMDcsla,				// College Slam (U) [!] [no comment]
-	&BurnDrvMDcol00,			// Columns (W) (REV00) [!] [no comment]
-	&BurnDrvMDcol,				// Columns (W) (REV01) [!] [no comment]
-	&BurnDrvMDcol3,				// Columns III - Revenge of Columns (U) [!] [no comment]
-	&BurnDrvMDcol3j,			// Columns III - Taiketsu! Columns World (J) [!] [no comment]
-	&BurnDrvMDcomacb,			// Combat Aces (Beta) [no comment]
-	&BurnDrvMDcomc,				// Combat Cars (UE) [!] [no comment]
+	&BurnDrvMDg_colle2,			// College Football's National Championship (Prototype - Apr 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle3,			// College Football's National Championship (Prototype - Apr 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle4,			// College Football's National Championship (Prototype - Apr 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle5,			// College Football's National Championship (Prototype - Apr 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle6,			// College Football's National Championship (Prototype - Jun 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle7,			// College Football's National Championship (Prototype - Jun 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle8,			// College Football's National Championship (Prototype - Jun 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_colle9,			// College Football's National Championship (Prototype - Jun 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll10,			// College Football's National Championship (Prototype - Jun 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll11,			// College Football's National Championship (Prototype - Jun 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll12,			// College Football's National Championship (Prototype - Jun 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll13,			// College Football's National Championship (Prototype - Jun 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll14,			// College Football's National Championship (Prototype - May 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll15,			// College Football's National Championship (Prototype - May 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll16,			// College Football's National Championship (Prototype - May 11, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll17,			// College Football's National Championship (Prototype - May 17, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll18,			// College Football's National Championship (Prototype - May 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll19,			// College Football's National Championship (Prototype - May 25, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_coll20,			// College Football's National Championship (Prototype - May 31, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_collnc,			// College Football's National Championship (USA)
+	&BurnDrvMDg_colln2,			// College Football's National Championship II (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_cslam,			// College Slam (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvcolumnsn,			// Columns (Neo Geo)
+	&BurnDrvMDg_colum1,			// Columns (World)
+	&BurnDrvMDg_column,			// Columns (World) (v1.1)
+	&BurnDrvMDg_cols3,			// Columns III - Revenge of Columns (USA)
+	&BurnDrvMDg_cols3a,			// Columns III - Taiketsu! Columns World (Japan, Korea)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_combat,			// Combat Aces (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_combca,			// Combat Cars (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvcombh,				// Combat Hawk
+	&BurnDrvMDg_comix1,			// Comix Zone (E) (Prototype - Jun 28, 1995)
+	&BurnDrvMDg_comix,			// Comix Zone (Europe)
+	&BurnDrvMDg_comix2,			// Comix Zone (Japan)
+	&BurnDrvMDg_comix3,			// Comix Zone (K) (Prototype - Jun 09, 1995)
+	&BurnDrvMDg_comix4,			// Comix Zone (Prototype - Jul 12, 1995 - FULSCR)
+	&BurnDrvMDg_comix5,			// Comix Zone (Prototype - Jul 12, 1995)
+	&BurnDrvMDg_comix6,			// Comix Zone (Prototype - Jun 01, 1995 - B)
+	&BurnDrvMDg_comix7,			// Comix Zone (Prototype - Jun 01, 1995 - C)
+	&BurnDrvMDg_comix8,			// Comix Zone (Prototype - Jun 01, 1995 - D)
+	&BurnDrvMDg_comix9,			// Comix Zone (Prototype - Jun 01, 1995)
 #if defined FBA_DEBUG
-	&BurnDrvMDcomixb,			// Comix Zone (Beta) [no comment]
-	&BurnDrvMDcomixe,			// Comix Zone (E) (M4) [!] [no comment]
-	&BurnDrvMDcomixj,			// Comix Zone (J) [!] [no comment]
-	&BurnDrvMDcomx,				// Comix Zone (U) [!] [no comment]
+	&BurnDrvMDg_comi10,			// Comix Zone (Prototype - Jun 02, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi11,			// Comix Zone (Prototype - Jun 02, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi12,			// Comix Zone (Prototype - Jun 03, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi13,			// Comix Zone (Prototype - May 26, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi14,			// Comix Zone (Prototype - May 30, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi15,			// Comix Zone (Sega Channel) (Prototype - Jun 12, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi17,			// Comix Zone (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_comi16,			// Comix Zone (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvContcrcu,			// Continental Circus (US set 1)
-	&BurnDrvContcrua,			// Continental Circus (US set 2)
+	&BurnDrvCommandb,			// Commando (bootleg)
+	&BurnDrvCommandu,			// Commando (US)
+	&BurnDrvCommando,			// Commando (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_congou,			// Congo (Unknown) (Proto) [no comment, NOT WORKING]
+	&BurnDrvConquer,			// Conquer [Bad dump, NOT WORKING]
+#endif
+	&BurnDrvContcircu,			// Continental Circus (US set 1)
+	&BurnDrvContcircua,			// Continental Circus (US set 2)
 	&BurnDrvContcirc,			// Continental Circus (World)
-#if defined FBA_DEBUG
-	&BurnDrvMDcont,				// Contra - Hard Corps (U) [!] [no comment]
-	&BurnDrvMDcontrj,			// Contra - The Hard Corps (J) [!] [no comment]
-#endif
+	&BurnDrvContrab,			// Contra (bootleg)
+	&BurnDrvContrajb,			// Contra (Japan bootleg)
+	&BurnDrvContraj,			// Contra (Japan)
+	&BurnDrvContra,				// Contra (US, Set 1)
+	&BurnDrvContra1,			// Contra (US, Set 2)
+	&BurnDrvMDg_contra,			// Contra - Hard Corps (USA, Korea)
+	&BurnDrvMDg_contr1,			// Contra - The Hard Corps (Japan)
 	&BurnDrvCookbib,			// Cookie & Bibi
 	&BurnDrvCookbib2,			// Cookie & Bibi 2
 	&BurnDrvCookbib3,			// Cookie & Bibi 3
+	&BurnDrvMDg_coolsp,			// Cool Spot (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDspotb,			// Cool Spot (Beta) [no comment]
-	&BurnDrvMDcoole,			// Cool Spot (E) [!] [no comment]
-	&BurnDrvMDcool,				// Cool Spot (U) [!] [no comment]
-	&BurnDrvMDcorp,				// Corporation (E) [c][!] [no comment]
-	&BurnDrvMDcoss,				// Cosmic Spacehead (E) (M4) [c][!] [no comment]
+	&BurnDrvMDg_cools1,			// Cool Spot (Japan, Korea) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_cools3,			// Cool Spot (USA)
+	&BurnDrvMDg_cools2,			// Cool Spot (USA) (Beta)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_corpor,			// Corporation (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCavenger,			// Cosmic Avenger
+	&BurnDrvCosmccop,			// Cosmic Cop (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_cosmic,			// Cosmic Spacehead (USA, Europe) (En,Fr,De,Es) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCottonj,			// Cotton (set 1, Japan, FD1094 317-0179a))
 	&BurnDrvCottonu,			// Cotton (set 2, US, FD1094 317-0180)
 	&BurnDrvCotton,				// Cotton (set 3, World, FD1094 317-0181a)
 #if defined FBA_DEBUG
-	&BurnDrvMDcrkde,			// Crack Down (E) [!] [no comment]
-	&BurnDrvMDcrkdj,			// Crack Down (J) [!] [no comment]
-	&BurnDrvMDcrkd,				// Crack Down (U) [!] [no comment]
-	&BurnDrvMDcrayon,			// Crayon Shin-Chan - Arashi o Yobu Sono Ko (J) [!] [no comment]
+	&BurnDrvMDg_crack1,			// Crack Down (Japan, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_crackd,			// Crack Down (Japan, Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_crack2,			// Crack Down (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_crayon,			// Crayon Shin-chan - Arashi o Yobu Enji (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCrSword,			// Crossed Swords
+	&BurnDrvQcrayon2,			// Crayon Shinchan Orato Asobo (Japan)
+	&BurnDrvCclimbr2,			// Crazy Climber 2 (Japan)
+	&BurnDrvCclmbr2a,			// Crazy Climber 2 (Japan, Harder)
+	&BurnDrvCrazycop,			// Crazy Cop (Japan)
+	&BurnDrvCrazyfgt,			// Crazy Fight
+	&BurnDrvCkongg,				// Crazy Kong (bootleg on Galaxian hardware)
+	&BurnDrvCkongmc,			// Crazy Kong (bootleg on Moon Cresta hardware)
+	&BurnDrvCkongs,				// Crazy Kong (Scramble hardware)
+	&BurnDrvCrimecj,			// Crime City (Japan)
+	&BurnDrvCrimecu,			// Crime City (US)
+	&BurnDrvCrimec,				// Crime City (World)
+	&BurnDrvCrimfgtj,			// Crime Fighters (Japan 2 Players)
+	&BurnDrvCrimfght,			// Crime Fighters (US 4 players)
+	&BurnDrvCrimfgt2,			// Crime Fighters (World 2 Players)
+	&BurnDrvVendettaj,			// Crime Fighters 2 (Japan 2 Players ver. P)
+	&BurnDrvCroquis,			// Croquis (Germany)
+	&BurnDrvCrossbld,			// Cross Blades! (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcfir,				// CrossFire (U) [c][!] [no comment]
+	&BurnDrvMDg_crossf,			// Cross Fire (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvcthd,				// Crouching Tiger Hidden Dragon 2003 (bootleg)
-	&BurnDrvct2k3sa,			// Crouching Tiger Hidden Dragon 2003 Super Plus (alt, bootleg)
-	&BurnDrvct2k3sp,			// Crouching Tiger Hidden Dragon 2003 Super Plus (bootleg)
+	&BurnDrvCrospang,			// Cross Pang
+	&BurnDrvcrsword,			// Crossed Swords
+	&BurnDrvcthd2k3a,			// Crouching Tiger Hidden Dragon 2003 (The King of Fighters 2001 bootleg set 2)
+	&BurnDrvcthd2003,			// Crouching Tiger Hidden Dragon 2003 (The King of Fighters 2001 bootleg)
+	&BurnDrvct2k3sp,			// Crouching Tiger Hidden Dragon 2003 Super Plus (The King of Fighters 2001 bootleg)
+	&BurnDrvct2k3sa,			// Crouching Tiger Hidden Dragon 2003 Super Plus alternate (The King of Fighters 2001 bootleg)
+	&BurnDrvMDg_crudeb,			// Crude Buster (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcrudeb,			// Crude Buster (J) [!] [Bad sound]
-	&BurnDrvMDcruej,			// Crue Ball (J) [!] [no comment]
-	&BurnDrvMDcrue,				// Crue Ball (UE) [!] [no comment]
-	&BurnDrvMDcc,				// Crusader of Centy (U) [!] [no comment]
+	&BurnDrvMDg_cruej,			// Crue Ball (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_crue,			// Crue Ball - Heavy Metal Pinball (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_crusad,			// Crusader of Centy (USA)
 	&BurnDrvcrushbl,			// Crush Roller (bootleg)
 	&BurnDrvcrush3,				// Crush Roller (Kural - bootleg?)
 	&BurnDrvcrush2,				// Crush Roller (Kural Esco - bootleg?)
 	&BurnDrvcrush,				// Crush Roller (Kural Samno)
 	&BurnDrvcrush4,				// Crush Roller (Kural TWT)
 	&BurnDrvcrushs,				// Crush Roller (Sidam bootleg)
-	&BurnDrvMDcrying,			// Crying - Asia Seimei Sensou (J) [!]
+	&BurnDrvCrusherm,			// Crusher Makochan (Japan)
+	&BurnDrvMDg_crying,			// Crying - Aseimei Sensou (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDcrys,				// Crystal's Pony Tale (U) [!] [no comment]
-	&BurnDrvMDcurs,				// Curse (J) [!] [no comment]
-	&BurnDrvMDcutt,				// Cutthroat Island (UE) [!] [no comment]
-	&BurnDrvMDcuty,				// Cuty Suzuki no Ringside Angel (J) [!] [no comment]
-	&BurnDrvMDccop,				// Cyber-Cop (U) [c][!] [no comment]
+	&BurnDrvMDg_cryst0,			// Crystal's Pony Tale (Prototype - Jul 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst1,			// Crystal's Pony Tale (Prototype - Jul 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst2,			// Crystal's Pony Tale (Prototype - Jul 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst3,			// Crystal's Pony Tale (Prototype - Jul 12, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst4,			// Crystal's Pony Tale (Prototype - Jul 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst5,			// Crystal's Pony Tale (Prototype - Jul 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst6,			// Crystal's Pony Tale (Prototype - Jun 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst7,			// Crystal's Pony Tale (Prototype - Jun 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst8,			// Crystal's Pony Tale (Prototype - Jun 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_cryst9,			// Crystal's Pony Tale (Prototype - Jun 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crys10,			// Crystal's Pony Tale (Prototype - Jun 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crys11,			// Crystal's Pony Tale (Prototype - Jun 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crys12,			// Crystal's Pony Tale (Prototype - May 11, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crys13,			// Crystal's Pony Tale (Prototype - May 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crys14,			// Crystal's Pony Tale (Prototype - May 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_crysta,			// Crystal's Pony Tale (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCyberlip,			// Cyber-Lip
+	&BurnDrvCuebrckj,			// Cue Brick (Japan)
+	&BurnDrvCuebrick,			// Cue Brick (World ver. D)
 #if defined FBA_DEBUG
-	&BurnDrvMDcybb,				// CyberBall (W) [!] [no comment]
+	&BurnDrvMDg_cursej,			// Curse (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_cuties,			// Cutie Suzuki no Ringside Angel (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_cutthr,			// CutThroat Island (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_cyberp,			// Cyber Police ESWAT (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_cyberc,			// Cyber-Cop (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvcyberlip,			// Cyber-Lip
+#if defined FBA_DEBUG
+	&BurnDrvMDg_cyberb,			// CyberBall (World) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsCybotsj,			// Cyberbots - fullmetal madness (950420 Japan)
 	&BurnDrvCpsCybots,			// Cyberbots - fullmetal madness (950424 Euro)
+	&BurnDrvCpsCybotsud,		// Cyberbots - fullmetal madness (950424 USA Phoenix Edition)
 	&BurnDrvCpsCybotsu,			// Cyberbots - fullmetal madness (950424 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDcyjusb,			// Cyborg Justice (Beta) [no comment]
-	&BurnDrvMDcybo,				// Cyborg Justice (W) [!] [no comment]
-	&BurnDrvMDddwe,				// D&D - Warriors of the Eternal Sun (UE) [!] [no comment]
+	&BurnDrvMDg_cyborb,			// Cyborg Justice (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_cybor,			// Cyborg Justice (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDcon,				// D-Con
 	&BurnDrvDdcrew1,			// D. D. Crew (set 1, World, 4 Player, FD1094 317-?)
 	&BurnDrvDdcrew2,			// D. D. Crew (set 2, World, 2 Player, FD1094 317-0184)
 	&BurnDrvDdcrewu,			// D. D. Crew (set 3, US, 4 Player, FD1094 317-0186)
 	&BurnDrvDdcrew,				// D. D. Crew (set 4, World, 3 Player, FD1094 317-0190)
 	&BurnDrvDdcrewj,			// D. D. Crew (set 5, Japan, 2 Player, FD1094 317-0182)
 #if defined FBA_DEBUG
-	&BurnDrvMDdaffyb,			// Daffy Duck in Hollywood (Beta) [no comment]
-	&BurnDrvMDdaff,				// Daffy Duck in Hollywood (E) (M5) [!] [no comment]
-	&BurnDrvMDdahna,			// Dahna - Megami Tanjou (J) [!] [no comment]
-	&BurnDrvMDkonsen,			// Dai Konsen (J) [!] [no comment]
+	&BurnDrvMDg_daffyb,			// Daffy Duck in Hollywood (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_daffy,			// Daffy Duck in Hollywood (Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+	&BurnDrvMDg_dahnak,			// Dahna (Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_dahnam,			// Dahna Megami Tanjou (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvCpsDaimakair,		// Dai Makai-Mura (Japan Resale Ver.)
 	&BurnDrvCpsDaimakai,		// Dai Makai-Mura (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDdaim,				// Dai Makaimura (J) [!] [no comment]
-	&BurnDrvMDdaikou,			// Daikoukai Jidai (J) [c][!] [no comment]
-	&BurnDrvMDdaik2,			// Daikoukai Jidai II (J) [no comment]
+	&BurnDrvCpsDaimakb,			// Dai Makai-Mura (Japan, bootleg) [No scroll layers, NOT WORKING]
+	&BurnDrvMDg_daimak,			// Dai Makaimura (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_daik,			// Daikoukai Jidai (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_daik2,			// Daikoukai Jidai II (Japan)
+	&BurnDrvDkgensanm72,		// Daiku no Gensan (Japan, M72)
+	&BurnDrvDkgensan,			// Daiku no Gensan (Japan, M82)
+	&BurnDrvDaioh,				// Daioh
 	&BurnDrvDaisenpu,			// Daisenpu (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDdang,				// Dangerous Seed (J) [!] [no comment]
+	&BurnDrvMDg_daisen,			// Daisenpuu ~ Twin Hawk (Japan, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvDFeveron,			// Dangun Feveron (Japan ver. Thu Sep 17 1998)
+	&BurnDrvDambustruk,			// Dambusters (UK)
+	&BurnDrvDambustr,			// Dambusters (US, set 1)
+	&BurnDrvDambustra,			// Dambusters (US, set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDdari2a,			// Darius II (J) [a1] [no comment]
-	&BurnDrvMDdar2,				// Darius II (J) [c][!] [no comment]
-	&BurnDrvMDdark,				// Dark Castle (UE) [!] [no comment]
+	&BurnDrvDdungeon,			// Dangerous Dungeons [no comment]
+	&BurnDrvMDg_danger,			// Dangerous Seed (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDFeveron,			// Dangun Feveron (Japan, ver. 98/09/17)
+	&BurnDrvDaraku,				// Daraku Tenshi - The Fallen Angels
+	&BurnDrvDariuse,			// Darius (Extra) (Japan)
+	&BurnDrvDariuso,			// Darius (Japan old version)
+	&BurnDrvDariusj,			// Darius (Japan)
+	&BurnDrvDarius,				// Darius (World)
+	&BurnDrvDarius2do,			// Darius II (dual screen) (Japan old version)
+	&BurnDrvDarius2d,			// Darius II (dual screen) (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_darius,			// Darius II (J) [a1] [no comment, NOT WORKING]
+#endif
+	&BurnDrvDarius2,			// Darius II (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dariu1,			// Darius II (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDarkadv,			// Dark Adventure
+#if defined FBA_DEBUG
+	&BurnDrvMDg_darkca,			// Dark Castle (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDarkplnt,			// Dark Planet
+	&BurnDrvDarkseaj,			// Dark Seal (Japan)
+	&BurnDrvDarksea1,			// Dark Seal (World revision 1)
+	&BurnDrvDarkseal,			// Dark Seal (World revision 3)
+	&BurnDrvDarktowr,			// Dark Tower
 	&BurnDrvCpsDstlka,			// Darkstalkers - the night warriors (940705 Asia)
 	&BurnDrvCpsDstlk,			// Darkstalkers - the night warriors (940705 Euro)
+	&BurnDrvCpsDstlku1d,		// Darkstalkers - the night warriors (940705 USA Phoenix Edition)
 	&BurnDrvCpsDstlkur1,		// Darkstalkers - the night warriors (940705 USA)
+	&BurnDrvCpsDstlkh,			// Darkstalkers - the night warriors (940818 Hispanic)
 	&BurnDrvCpsDstlku,			// Darkstalkers - the night warriors (940818 USA)
-	&BurnDrvMDg_4081,			// Darwin 4081 (J) [!]
 #if defined FBA_DEBUG
-	&BurnDrvMDdashb,			// Dashin' Desperadoes (Beta) [no comment]
-	&BurnDrvMDdash,				// Dashin' Desperadoes (U) [!] [no comment]
+	&BurnDrvdwi,				// DarkWing Duck (Intro demo) [no comment]
+#endif
+	&BurnDrvMDg_darwin,			// Darwin 4081 (Japan, Korea)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dashba,			// Dashin' Desperadoes (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_dash,			// Dashin' Desperadoes (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_dashb,			// Dashin' Desperadoes (USA) (Beta) [no comment, NOT WORKING]
 #endif
 	&BurnDrvDquizgo,			// Date Quiz Go Go (Korea)
+	&BurnDrvpowj,				// Datsugoku - Prisoners of War (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDdcat,				// David Crane's Amazing Tennis (U) [!] [no comment]
-	&BurnDrvMDdrbb,				// David Robinson Basketball (J) [!] [no comment]
-	&BurnDrvMDdrsc,				// David Robinson's Supreme Court (U) [!] [no comment]
-	&BurnDrvMDdavi,				// Davis Cup World Tour Tennis (UE) [!] [no comment]
-	&BurnDrvMDdwctb1,			// Davis Cup World Tour Tennis 2 (Beta 1) [no comment]
-	&BurnDrvMDdwctb,			// Davis Cup World Tour Tennis 2 (Beta 1) [no comment]
-	&BurnDrvMDdwctb2,			// Davis Cup World Tour Tennis 2 (Beta 2) [no comment]
-	&BurnDrvMDdazeb,			// Daze Before Christma [no comment]
-	&BurnDrvMDdaze,				// Daze Before Christma [no comment]
-	&BurnDrvMDdmov,				// Deadly Moves (U) [!] [no comment]
-	&BurnDrvMDdrs,				// Death and Return of Superma [no comment]
-	&BurnDrvMDduel,				// Death Duel (U) [!] [no comment]
-	&BurnDrvMDdcap,				// Decap Attack (UE) [!] [no comment]
+	&BurnDrvMDg_davidc,			// David Crane's Amazing Tennis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_drscj,			// David Robinson Basketball (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_drsc,			// David Robinson's Supreme Court (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_dcup2a,			// Davis Cup II (USA) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_dcup,			// Davis Cup World Tour (USA, Europe) (July 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_dcupa,			// Davis Cup World Tour (USA, Europe) (June 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_dcup2,			// Davis Cup World Tour Tennis 2 (Beta 1) [no comment, NOT WORKING]
+	&BurnDrvMDg_daze,			// Daze Before Christmas (Australia) [no comment, NOT WORKING]
+	&BurnDrvMDg_dazeb,			// Daze Before Christmas (Australia) (Beta) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDeadconxj,			// Dead Connection (Japan)
+	&BurnDrvDeadconx,			// Dead Connection (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_deadly,			// Deadly Moves (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_deatha,			// Death and Return of Superman, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_deathd,			// Death Duel (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_debugc,			// DEBUG - Charles Window Bug Example (PD) [no comment, NOT WORKING]
+	&BurnDrvMDg_flavio,			// DEBUG Flavio's DMA Test (PD) [no comment, NOT WORKING]
+	&BurnDrvMDg_decapa,			// DecapAttack (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDeerhunc,			// Deer Hunting USA V2
+	&BurnDrvDeerhunb,			// Deer Hunting USA V4.0
+	&BurnDrvDeerhuna,			// Deer Hunting USA V4.2
+	&BurnDrvDeerhunt,			// Deer Hunting USA V4.3
+	&BurnDrvRedufo,				// Defend the Terra Attack on the Red UFO
+	&BurnDrvRedufob,			// Defend the Terra Attack on the Red UFO (bootleg)
 	&BurnDrvDefense,			// Defense (System 16B, FD1089A 317-0028)
 #if defined FBA_DEBUG
-	&BurnDrvMDdemomb,			// Demolition Man (Beta) [no comment]
-	&BurnDrvMDdemo,				// Demolition Man (UE) [!] [no comment]
-	&BurnDrvDmnfrnt,			// Demon Front (V102) [no comment, NOT WORKING]
-	&BurnDrvDmnfrnta,			// Demon Front (V105) [no comment, NOT WORKING]
+	&BurnDrvMDg_demob,			// Demolition Man (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_demo,			// Demolition Man (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvDmnfrnt,			// Demon Front (V102) [Incomplete Dump, NOT WORKING]
+	&BurnDrvDmnfrnt105,			// Demon Front (V105, China) [Incomplete Dump, NOT WORKING]
 #endif
-	&BurnDrvDesertbr,			// Desert Breaker (FD1094 317-0196)
+	&BurnDrvDemonwld,			// Demon's World / Horror Story (set 1)
+	&BurnDrvDemonwld2,			// Demon's World / Horror Story (set 3)
+	&BurnDrvDemonwld3,			// Demon's World / Horror Story (set 4)
+	&BurnDrvDemonwld4,			// Demon's World / Horror Story (set 5)
+	&BurnDrvDemonwld1,			// Demon's World / Horror Story (Taito license, set 2)
+	&BurnDrvDeroon,				// Deroon DeroDero
+	&BurnDrvDesertbrj,			// Desert Breaker (Japan, FD1094 317-0194)
+	&BurnDrvDesertbr,			// Desert Breaker (World, FD1094 317-0196)
 #if defined FBA_DEBUG
-	&BurnDrvMDdesd,				// Desert Demolition (UE) [!] [no comment]
+	&BurnDrvMDg_deser0,			// Desert Demolition (Prototype - Dec 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser1,			// Desert Demolition (Prototype - Dec 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser2,			// Desert Demolition (Prototype - Dec 12, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser3,			// Desert Demolition (Prototype - Dec 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser4,			// Desert Demolition (Prototype - Dec 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser5,			// Desert Demolition (Prototype - Dec 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser6,			// Desert Demolition (Prototype - Dec 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser7,			// Desert Demolition (Prototype - Dec 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_deser8,			// Desert Demolition (Prototype - Dec 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_desert,			// Desert Demolition Starring Road Runner and Wile E. Coyote (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_dstrkj,			// Desert Strike (Japan, Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDdstr,				// Desert Strike - Return to the Gulf (UE) [!]
+	&BurnDrvMDg_dstrk,			// Desert Strike (USA, Europe)
+	&BurnDrvDetatwin,			// Detana!! Twin Bee (Japan ver. J)
+	&BurnDrvDevstors3,			// Devastators (ver. V)
+	&BurnDrvDevstors2,			// Devastators (ver. X)
+	&BurnDrvDevstors,			// Devastators (ver. Z)
 #if defined FBA_DEBUG
-	&BurnDrvMDdcmd,				// Devil Crash MD (J) [!] [no comment]
-	&BurnDrvMDdc3d,				// Devil's Course 3-D Golf (J) [!] [no comment]
-	&BurnDrvMDdevi,				// Devilish - The Next Possession (U) [c][!] [No sound]
-	&BurnDrvMDdick,				// Dick Tracy (W) [c][!] [no comment]
-	&BurnDrvMDdicv,				// Dick Vitale's Awesome Baby! College Hoops (U) [!] [no comment]
+	&BurnDrvMDg_devilc,			// Devil Crash MD (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDevilfsh,			// Devil Fish
+	&BurnDrvDevilfsg,			// Devil Fish (Galaxian hardware, bootleg?)
+	&BurnDrvDevilw,				// Devil World
+#if defined FBA_DEBUG
+	&BurnDrvMDg_devili,			// Devilish - The Next Possession (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_dialqo,			// Dial Q o Mawase! (Japan) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDiamond,			// Diamond Run
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dicktr,			// Dick Tracy (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_dickvi,			// Dick Vitale's 'Awesome, Baby!' College Hoops (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvdiggerma,			// Digger Man
 	&BurnDrvCpsDimahoo,			// Dimahoo (000121 Euro)
+	&BurnDrvCpsDimahoud,		// Dimahoo (000121 USA Phoenix Edition)
 	&BurnDrvCpsDimahoou,		// Dimahoo (000121 USA)
+	&BurnDrvDingo,				// Dingo
 #if defined FBA_DEBUG
-	&BurnDrvMDdino,				// Dino Dini's Soccer (E) [no comment]
-	&BurnDrvMDdinolj,			// Dino Land (J) [!] [no comment]
-	&BurnDrvMDdlnd,				// Dino Land (U) [!] [no comment]
-	&BurnDrvMDhire,				// Dinosaurs for Hire (U) [!] [no comment]
-	&BurnDrvMDdiscol,			// Disney Collection - Castle of Illusion & Quack Shot (E) [!] [no comment]
-	&BurnDrvMDaladb,			// Disney's Aladdin (Beta) [!] [No sound]
-	&BurnDrvMDalade,			// Disney's Aladdin (E) [!] [No sound]
-	&BurnDrvMDaladj,			// Disney's Aladdin (J) [!] [No sound]
-	&BurnDrvMDalad,				// Disney's Aladdin (U) [!] [No sound]
-	&BurnDrvMDdjboye,			// DJ Boy (E) [!] [no comment]
-	&BurnDrvMDdjboyj,			// DJ Boy (J) [!] [no comment]
-	&BurnDrvMDdjby,				// DJ Boy (U) [!] [no comment]
+	&BurnDrvDingoe,				// Dingo (encrypted) [Encrypted, NOT WORKING]
 #endif
-	&BurnDrvDoDonpachi,			// DoDonPachi (1997 2/5 master ver, international)
-	&BurnDrvDoDonpachiJ,		// DoDonPachi (1997 2/5 master ver, Japan)
-	&BurnDrvDogyuun,			// Dogyuun
+	&BurnDrvMDg_dinodi,			// Dino Dini's Soccer (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDddpl,				// Doki Doki Penguin Land MD (SN) (J) [!] [no comment]
-	&BurnDrvMDdominu,			// Dominus (Beta) [no comment]
+	&BurnDrvMDg_dinola,			// Dino Land (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDinorexj,			// Dino Rex (Japan)
+	&BurnDrvDinorexu,			// Dino Rex (US)
+	&BurnDrvDinorex,			// Dino Rex (World)
+	&BurnDrvCpsDinohunt,		// Dinosaur Hunter (Chinese bootleg of Cadillacs and Dinosaurs (930223 Asia TW))
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dinosa,			// Dinosaur's Tale, A (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDd_hirea,			// Dinosaurs for Hire (Prototype - Apr 26, 1993)
+	&BurnDrvMDd_hireb,			// Dinosaurs for Hire (Prototype - Apr 27, 1993)
+	&BurnDrvMDd_hirec,			// Dinosaurs for Hire (Prototype - May 02, 1993)
+	&BurnDrvMDd_hire,			// Dinosaurs for Hire (USA)
+	&BurnDrvMDg_disney,			// Disney Collection, The (Europe)
+	&BurnDrvDiverboy,			// Diver Boy
+#if defined FBA_DEBUG
+	&BurnDrvMDg_divine,			// Divine Sealing (Japan) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_djboye,			// DJ Boy (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_djboyj,			// DJ Boy (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_djboyu,			// DJ Boy (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDoDonpachi,			// DoDonPachi (International, master ver. 97/02/05)
+	&BurnDrvDoDonpachiJ,		// DoDonPachi (Japan, master ver. 97/02/05)
+	&BurnDrvDdp3b,				// DoDonPachi Dai-Ou-Jou (V100 (first version), Japan)
+	&BurnDrvDdp3a,				// DoDonPachi Dai-Ou-Jou (V100 (second version), Japan)
+	&BurnDrvDdp3,				// DoDonPachi Dai-Ou-Jou (V101, Japan)
+	&BurnDrvDdp3blk,			// DoDonPachi Dai-Ou-Jou Black Label (V100, Japan)
+	&BurnDrvDogyuunk,			// Dogyuun (Licensed to Unite Trading For Korea)
+	&BurnDrvDogyuunt,			// Dogyuun (test location version)
+	&BurnDrvDogyuun,			// Dogyuun
+	&BurnDrvDokaben,			// Dokaben (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dokido,			// Doki Doki Penguin Land MD (SN) (GNKO) (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_domino,			// Domino (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_dominu,			// Dominus (USA) (Proto) [no comment, NOT WORKING]
 #endif
 	&BurnDrvdommy,				// Dommy
+	&BurnDrvDondokodj,			// Don Doko Don (Japan)
+	&BurnDrvDondokodu,			// Don Doko Don (US)
+	&BurnDrvDondokod,			// Don Doko Don (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDmaui,				// Donald in Maui Mallard (E) [!] [no comment]
+	&BurnDrvMDg_donald,			// Donald in Maui Mallard (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_donggu,			// Dong Gu Ri Te Chi Jak Jeon (Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvDonpachj,			// DonPachi (ver. 1.01 1995/05/11, Japan)
-	&BurnDrvDonpachi,			// DonPachi (ver. 1.01 1995/05/11, U.S.A)
-	&BurnDrvDonpachk,			// DonPachi (ver. 1.12 1995/05/2x, Hong Kong)
-	&BurnDrvDonpachkr,			// DonPachi (ver. 1.12 1995/05/2x, Korea)
+	&BurnDrvDkongjrm,			// Donkey Kong Jr. (Moon Cresta hardware)
+	&BurnDrvDonpachihk,			// DonPachi (Hong Kong, ver. 1.10, 95/05/17)
+	&BurnDrvDonpachij,			// DonPachi (Japan, ver. 1.01, 95/05/11)
+	&BurnDrvDonpachikr,			// DonPachi (Korea, ver. 1.12, 95/05/2x)
+	&BurnDrvDonpachi,			// DonPachi (USA, ver. 1.12, 95/05/2x)
 #if defined FBA_DEBUG
-	&BurnDrvMDdtro,				// Doom Troopers - The Mutant Chronicles (U) [c][!] [no comment]
-	&BurnDrvMDdora,				// Doraemon - Yume Dorobouto 7 Nin No Gozansu (J) [!] [no comment]
+	&BurnDrvMDg_doomtr,			// Doom Troopers - The Mutant Chronicles (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_doraem,			// Doraemon - Yume Dorobou to 7 Nin no Gozans (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDorodon,			// Dorodon (set 1)
+	&BurnDrvDorodon2,			// Dorodon (set 2)
 	&BurnDrvdotrikun,			// Dottori Kun (new version)
 	&BurnDrvdotriku2,			// Dottori Kun (old version)
+	&BurnDrvDblaxle,			// Double Axle (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDdblc,				// Double Clutch (E) [c][!] [no comment]
+	&BurnDrvMDg_double,			// Double Clutch (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvDoubledr,			// Double Dragon
+	&BurnDrvDdragonb,			// Double Dragon (bootleg with HD6309)
+	&BurnDrvDdragnba,			// Double Dragon (bootleg with M6803)
+	&BurnDrvDdragob2,			// Double Dragon (bootleg)
+	&BurnDrvDdragon,			// Double Dragon (Japan)
+	&BurnDrvdoubledr,			// Double Dragon (Neo-Geo)
+	&BurnDrvDdragonu,			// Double Dragon (US set 1)
+	&BurnDrvDdragoua,			// Double Dragon (US set 2)
+	&BurnDrvDdragoub,			// Double Dragon (US set 3)
+	&BurnDrvMDg_dd,				// Double Dragon (USA, Europe)
+	&BurnDrvDdragonw,			// Double Dragon (World set 1)
+	&BurnDrvDdragnw1,			// Double Dragon (World set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDddr,				// Double Dragon (U) [!] [no comment]
-	&BurnDrvMDddr2,				// Double Dragon 2 - The Revenge (J) [!] [no comment]
+	&BurnDrvMDg_dd3,			// Double Dragon 3 - The Arcade Game (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvDdrago3b,			// Double Dragon 3 - The Rosetta Stone (bootleg)
 	&BurnDrvDdrago3j,			// Double Dragon 3 - The Rosetta Stone (Japan)
-#if defined FBA_DEBUG
-	&BurnDrvMDddr3,				// Double Dragon 3 - The Rosetta Stone (UE) [!] [no comment]
-#endif
+	&BurnDrvDdrago3p,			// Double Dragon 3 - The Rosetta Stone (prototype)
 	&BurnDrvDdragon3,			// Double Dragon 3 - The Rosetta Stone (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDddrv,				// Double Dragon V - The Shadow Falls (U) [!] [no comment]
-	&BurnDrvMDdrib,				// Double Dribble - The Playoff Edition (U) [!] [no comment]
-	&BurnDrvMDbeanb,			// Dr. Robotnik's Mean Bean Machine (Beta) [Bad sound]
-	&BurnDrvMDbeane,			// Dr. Robotnik's Mean Bean Machine (E) [!] [No sound]
-	&BurnDrvMDbean,				// Dr. Robotnik's Mean Bean Machine (U) [!] [Bad sound]
-	&BurnDrvMDdrgble,			// Dragon - The Bruce Lee Story (E) [No sound]
-	&BurnDrvMDblee,				// Dragon - The Bruce Lee Story (U) [!] [No sound]
-	&BurnDrvMDdbzj,				// Dragon Ball Z - Buyuu Retsuden (J) [!] [no comment]
-	&BurnDrvMDdbzf,				// Dragon Ball Z - L'Appel du Destin (F) [!] [no comment]
-	&BurnDrvMDdslay,			// Dragon Slayer - The Legend of Heroes (J) [!] [no comment]
-	&BurnDrvMDdslay2,			// Dragon Slayer II - The Legend of Heroes (J) [!] [no comment]
-	&BurnDrvDrgw3,				// Dragon World 3 (V100J) [no comment, NOT WORKING]
-	&BurnDrvDrgw3k,				// Dragon World 3 (V106, Korean Board) [no comment, NOT WORKING]
+	&BurnDrvMDg_dd2,			// Double Dragon II - The Revenge (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvDrgw2,				// Dragon World II (V110X, Export)
+	&BurnDrvDdragon2u,			// Double Dragon II - The Revenge (US)
+	&BurnDrvDdragon2,			// Double Dragon II - The Revenge (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDdeye,				// Dragon's Eye - Shanghai 3 (J) [!] [no comment]
-	&BurnDrvMDdfry,				// Dragon's Fury (UE) [!] [no comment]
-	&BurnDrvMDdrev,				// Dragon's Revenge (UE) [!] [no comment]
-	&BurnDrvMDdraxos,			// Draxos (J) [!] [no comment]
+	&BurnDrvMDg_dd5,			// Double Dragon V - The Shadow Falls (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_ddribl,			// Double Dribble - The Playoff Edition (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDblpoint,			// Double Point
+	&BurnDrvDblpoind,			// Double Point (Dong Bang Electron, bootleg?)
+	&BurnDrvDowntownj,			// DownTown / Mokugeki (Joystick Hack)
+	&BurnDrvDowntownp,			// DownTown / Mokugeki (prototype)
+	&BurnDrvDowntown,			// DownTown / Mokugeki (Set 1)
+	&BurnDrvDowntown2,			// DownTown / Mokugeki (Set 2)
+	&BurnDrvMDg_drrobo,			// Dr. Robotnik's Mean Bean Machine (Europe)
+	&BurnDrvMDg_drrob2,			// Dr. Robotnik's Mean Bean Machine (USA)
+	&BurnDrvMDg_drrob1,			// Dr. Robotnik's Mean Bean Machine (USA) (Beta)
+	&BurnDrvDrtomy,				// Dr. Tomy
+	&BurnDrvDrtopplu,			// Dr. Toppel's Adventure (US)
+	&BurnDrvDrtoppel,			// Dr. Toppel's Adventure (World)
+	&BurnDrvDrtopplj,			// Dr. Toppel's Tankentai (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dragon,			// Dragon - The Bruce Lee Story (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_drago1,			// Dragon - The Bruce Lee Story (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_dbz,			// Dragon Ball Z - Buyuu Retsuden (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_dbzf,			// Dragon Ball Z - L'Appel du Destin (France) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDragnblz,			// Dragon Blaze
+	&BurnDrvDrgnbowl,			// Dragon Bowl
+	&BurnDrvDbreedm72,			// Dragon Breed (M72 PCB version)
+	&BurnDrvDbreed,				// Dragon Breed (M81 PCB version)
+	&BurnDrvDrgnbstr,			// Dragon Buster
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dslay,			// Dragon Slayer - Eiyuu Densetsu (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_dslay2,			// Dragon Slayer - Eiyuu Densetsu II (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDrgnunit,			// Dragon Unit / Castle of Dragon
+#if defined FBA_DEBUG
+	&BurnDrvDrgw3100,			// Dragon World 3 (ver. 100) [no comment, NOT WORKING]
+	&BurnDrvDrgw3105,			// Dragon World 3 (ver. 105) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDrgw2x,				// Dragon World II (V100X, World)
+	&BurnDrvDrgw2,				// Dragon World II (V110X, World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_shai3,			// Dragon's Eye Plus - Shanghai III (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_dfury,			// Dragon's Fury (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_dragrv,			// Dragon's Revenge (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvDrgninja,			// Dragonninja (Japan) [no comment]
+#endif
+	&BurnDrvDland,				// Dream Land / Super Dream Land (bootleg of Bubble Bobble)
 	&BurnDrvdremshpr,			// Dream Shopper
+	&BurnDrvDsoccr94j,			// Dream Soccer '94 (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDdtusa,			// Dream Team USA (J) [!] [no comment]
-	&BurnDrvMDdn3d,				// Duke Nukem 3D (B) [!] [no comment]
+	&BurnDrvMDg_dreamt,			// Dream Team USA (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvDriftout,			// Drift Out (Japan)
+	&BurnDrvDriveout,			// Drive Out
+	&BurnDrvDrivfrcb,			// Driving Force (Galaxian conversion bootleg)
+	&BurnDrvDrivfrcg,			// Driving Force (Galaxian conversion)
+	&BurnDrvDrivfrcp,			// Driving Force (Pac-Man conversion)
+#if defined FBA_DEBUG
+	&BurnDrvducki,				// Duck Tales (Intro demo) [no comment]
+#endif
+	&BurnDrvMDg_dukenu,			// Duke Nukem 3D (Brazil)
 	&BurnDrvDumpmtmt,			// Dump Matsumoto (Japan, 8751 317-unknown)
 #if defined FBA_DEBUG
-	&BurnDrvMDduneg,			// Dune - Der Kampf um den Wuestenplaneten (G) [no comment]
-	&BurnDrvMDdunee,			// Dune - The Battle for Arrakis (E) [no comment]
-	&BurnDrvMDdune,				// Dune - The Battle for Arrakis (U) [!] [no comment]
+	&BurnDrvMDg_duneth,			// Dune - The Battle for Arrakis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_dune2,			// Dune II - Kampf um den Wustenplaneten (Germany) [no comment, NOT WORKING]
+	&BurnDrvMDg_dune2a,			// Dune II - The Battle for Arrakis (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsDdsomjr1,		// Dungeons & Dragons - shadow over mystara (960206 Japan)
 	&BurnDrvCpsDdsomr3,			// Dungeons & Dragons - shadow over mystara (960208 Euro)
@@ -4358,819 +7628,1364 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvCpsDdsomur1,		// Dungeons & Dragons - shadow over mystara (960209 USA)
 	&BurnDrvCpsDdsomb,			// Dungeons & Dragons - shadow over mystara (960223 Brazil)
 	&BurnDrvCpsDdsomr1,			// Dungeons & Dragons - shadow over mystara (960223 Euro)
+	&BurnDrvCpsDdsomh,			// Dungeons & Dragons - shadow over mystara (960223 Hispanic)
 	&BurnDrvCpsDdsoma,			// Dungeons & Dragons - shadow over mystara (960619 Asia)
 	&BurnDrvCpsDdsom,			// Dungeons & Dragons - shadow over mystara (960619 Euro)
 	&BurnDrvCpsDdsomj,			// Dungeons & Dragons - shadow over mystara (960619 Japan)
+	&BurnDrvCpsDdsomud,			// Dungeons & Dragons - shadow over mystara (960619 USA Phoenix Edition)
 	&BurnDrvCpsDdsomu,			// Dungeons & Dragons - shadow over mystara (960619 USA)
 	&BurnDrvCpsDdtoda,			// Dungeons & Dragons - tower of doom (940113 Asia)
 	&BurnDrvCpsDdtodr1,			// Dungeons & Dragons - tower of doom (940113 Euro)
+	&BurnDrvCpsDdtodhr2,		// Dungeons & Dragons - tower of doom (940113 Hispanic)
 	&BurnDrvCpsDdtodjr2,		// Dungeons & Dragons - tower of doom (940113 Japan)
 	&BurnDrvCpsDdtodur1,		// Dungeons & Dragons - tower of doom (940113 USA)
-	&BurnDrvCpsDdtodh,			// Dungeons & Dragons - tower of doom (940125 Hispanic)
+	&BurnDrvCpsDdtodhr1,		// Dungeons & Dragons - tower of doom (940125 Hispanic)
 	&BurnDrvCpsDdtodjr1,		// Dungeons & Dragons - tower of doom (940125 Japan)
 	&BurnDrvCpsDdtodu,			// Dungeons & Dragons - tower of doom (940125 USA)
+	&BurnDrvCpsDdtodd,			// Dungeons & Dragons - tower of doom (940412 Euro Phoenix Edition)
 	&BurnDrvCpsDdtod,			// Dungeons & Dragons - tower of doom (940412 Euro)
+	&BurnDrvCpsDdtodh,			// Dungeons & Dragons - tower of doom (940412 Hispanic)
 	&BurnDrvCpsDdtodj,			// Dungeons & Dragons - tower of doom (940412 Japan)
+	&BurnDrvMDg_dungeo,			// Dungeons & Dragons - Warriors of the Eternal Sun (USA, Europe)
 	&BurnDrvDunkshot,			// Dunk Shot (FD1089 317-0022)
 #if defined FBA_DEBUG
-	&BurnDrvMDdynabr,			// Dyna Brothers (J) (REV01) [no comment]
-	&BurnDrvMDdynab2,			// Dyna Brothers 2 (J) [!] [no comment]
-	&BurnDrvdynablsb,			// Dynablaster (bootleg) [Preliminary driver, NOT WORKING]
-	&BurnDrvdynablst,			// Dynablaster / Bomber Man [Preliminary driver, NOT WORKING]
-	&BurnDrvMDdduk,				// Dynamite Duke (W) [!] [no comment]
-	&BurnDrvMDddukea,			// Dynamite Duke (W) [a1][!] [no comment]
+	&BurnDrvMDg_dynabr,			// Dyna Brothers (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_dyna2,			// Dyna Brothers 2 (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvDynablst,			// Dynablaster / Bomber Man
+	&BurnDrvDynduke,			// Dynamite Duke (Japan)
+	&BurnDrvDyndukef,			// Dynamite Duke (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_dynam1,			// Dynamite Duke (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_dynami,			// Dynamite Duke (World) (Rev A) [no comment, NOT WORKING]
 #endif
 	&BurnDrvDduxbl,				// Dynamite Dux (bootleg)
 	&BurnDrvDdux1,				// Dynamite Dux (set 1, 8751 317-0095)
 	&BurnDrvDdux,				// Dynamite Dux (set 2, FD1094 317-0096)
 #if defined FBA_DEBUG
-	&BurnDrvMDdheadb,			// Dynamite Headdy (Beta) [no comment]
-	&BurnDrvMDdheadj,			// Dynamite Headdy (J) [c][!] [no comment]
-	&BurnDrvMDdhed,				// Dynamite Headdy (UE) [c][!] [no comment]
+	&BurnDrvMDg_dheadj,			// Dynamite Headdy (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_dheada,			// Dynamite Headdy (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_dheadb,			// Dynamite Headdy (Prototype - Jun 14, 1994 - CABEZA) [no comment, NOT WORKING]
+	&BurnDrvMDg_dheadc,			// Dynamite Headdy (Prototype - Jun 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_dheadd,			// Dynamite Headdy (Prototype - Jun 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_dheade,			// Dynamite Headdy (Prototype - Jun 22, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_dhead,			// Dynamite Headdy (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsDw,				// Dynasty Wars (World)
+	&BurnDrvCpsDw,				// Dynasty Wars (US set 1)
+	&BurnDrvCpsDwa,				// Dynasty Wars (US set 2)
 	&BurnDrvEswatbl,			// E-Swat - Cyber Police (bootleg)
 	&BurnDrvEswatj,				// E-Swat - Cyber Police (set 1, Japan, FD1094 317-0128)
 	&BurnDrvEswatu,				// E-Swat - Cyber Police (set 2, US, FD1094 317-0129)
 	&BurnDrvEswat,				// E-Swat - Cyber Police (set 3, World, FD1094 317-0130)
-	&BurnDrvMDeaho,				// EA Hockey (E) [!]
+	&BurnDrvMDg_eahock,			// EA Hockey (Europe)
+	&BurnDrvMDg_eahoc1,			// EA Hockey (Japan)
+	&BurnDrvMDg_easpor,			// EA Sports Double Header (Europe)
+	&BurnDrvEagle,				// Eagle (set 1)
+	&BurnDrvEagle2,				// Eagle (set 2)
+	&BurnDrvEagle3,				// Eagle (set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDeadoub,			// EA Sports Double Header (E) [!] [no comment]
-	&BurnDrvMDearn,				// Earnest Evans (U) [!] [no comment]
-	&BurnDrvMDejime,			// Earthworm Jim (E) [!] [no comment]
-	&BurnDrvMDejim,				// Earthworm Jim (U) [!] [no comment]
-	&BurnDrvMDejim2e,			// Earthworm Jim 2 (E) [!] [no comment]
-	&BurnDrvMDjim2,				// Earthworm Jim 2 (U) [!] [no comment]
-	&BurnDrvMDecco2b,			// ECCO - The Tides of Time (Beta) [no comment]
-	&BurnDrvMDecco2e,			// ECCO - The Tides of Time (E) [!] [no comment]
-	&BurnDrvMDecco2j,			// ECCO - The Tides of Time (J) [!] [no comment]
-	&BurnDrvMDeco2,				// ECCO - The Tides of Time (U) [!] [no comment]
-	&BurnDrvMDecjr,				// ECCO Jr. (U) (REV00) [!] [no comment]
-	&BurnDrvMDecjr01,			// ECCO Jr. (U) (REV01) [!] [no comment]
-	&BurnDrvMDeccodj,			// ECCO The Dolphin (J) [!] [no comment]
-	&BurnDrvMDecco,				// ECCO The Dolphin (UE) [!] [no comment]
+	&BurnDrvMDg_earnes,			// Earnest Evans (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_earthd,			// Earth Defense (USA) (Unl) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsEcofghta,		// Eco Fighters (931203 Asia)
+	&BurnDrvMDg_ejim,			// Earthworm Jim (Europe)
+	&BurnDrvMDg_ejimu,			// Earthworm Jim (USA)
+	&BurnDrvMDg_ejim2,			// Earthworm Jim 2 (Europe)
+	&BurnDrvMDg_ejim2u,			// Earthworm Jim 2 (USA)
+	&BurnDrvMDg_ecco2b,			// Ecco - The Tides of Time (Beta)
+	&BurnDrvMDg_ecco2,			// Ecco - The Tides of Time (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ecco2x,			// Ecco - The Tides of Time (Prototype X11 - Apr 13, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_ecco2u,			// Ecco - The Tides of Time (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ecco2p,			// Ecco - The Tides of Time (USA) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_eccojr,			// Ecco Jr. (USA, Australia) (February 1995)
+	&BurnDrvMDg_eccoj1,			// Ecco Jr. (USA, Australia) (March 1995)
+	&BurnDrvMDg_eccoj,			// Ecco the Dolphin (Japan)
+	&BurnDrvMDg_ecco,			// Ecco the Dolphin (USA, Europe)
+	&BurnDrvMDg_ecco2j,			// Ecco the Dolphin II (Japan)
+	&BurnDrvCpsEcofghtra,		// Eco Fighters (931203 Asia)
 	&BurnDrvCpsEcofghtr,		// Eco Fighters (931203 etc)
-	&BurnDrvCpsEcofgtu1,		// Eco Fighters (931203 USA)
-	&BurnDrvCpsEcofghtu,		// Eco Fighters (940215 USA)
+	&BurnDrvCpsEcofghtrh,		// Eco Fighters (931203 Hispanic)
+	&BurnDrvCpsEcofghtru1,		// Eco Fighters (931203 USA)
+	&BurnDrvCpsEcofghtrd,		// Eco Fighters (931203 World Phoenix Edition)
+	&BurnDrvCpsEcofghtru,		// Eco Fighters (940215 USA)
+	&BurnDrvEgghunt,			// Egg Hunt
 	&BurnDrveggor,				// Eggor
 	&BurnDrveggs,				// Eggs
+	&BurnDrv_8bpm,				// Eight Ball Action (Pac-Man conversion)
+	&BurnDrvEightfrc,			// Eight Forces
+	&BurnDrveightman,			// Eight Man
+	&BurnDrvMDg_elvinj,			// El Viento (Japan)
+	&BurnDrvMDg_elvin,			// El Viento (USA)
+	&BurnDrvMDg_elemsj,			// Elemental Master (Japan)
+	&BurnDrvMDg_elems,			// Elemental Master (USA)
 #if defined FBA_DEBUG
-	&BurnDrvbpm8,				// Eight Ball Action (Pac-Man conversion) [no comment, NOT WORKING]
+	&BurnDrvMDg_elfwor,			// Elf Wor (China) (Unl) [no comment, NOT WORKING]
 #endif
-	&BurnDrvEightman,			// Eight Man
+	&BurnDrvMDg_elimin,			// Eliminate Down (Japan)
+	&BurnDrvMDg_elit95,			// Elitserien 95 (Sweden)
+	&BurnDrvMDg_elit96,			// Elitserien 96 (Sweden)
 #if defined FBA_DEBUG
-	&BurnDrvMDelvinj,			// El Viento (J) [!] [no comment]
-	&BurnDrvMDelvi,				// El Viento (U) [!] [no comment]
-	&BurnDrvMDelemj,			// Elemental Master (J) [!] [no comment]
-	&BurnDrvMDelem,				// Elemental Master (U) [!] [no comment]
-	&BurnDrvMDelim,				// Eliminate Down (J) [!] [no comment]
+	&BurnDrvMDg_empire,			// Empire of Steel (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvEndurobl,			// Enduro Racer (bootleg set 1)
 	&BurnDrvEnduror,			// Enduro Racer (YM2151, FD1089B 317-0013A)
 	&BurnDrvEnduror1,			// Enduro Racer (YM2203, FD1089B 317-0013A)
 	&BurnDrvEnforce,			// Enforce (Japan)
+	&BurnDrvEsckids,			// Escape Kids (Asia, 4 Players)
+	&BurnDrvEsckidsj,			// Escape Kids (Japan, 2 Players)
+	&BurnDrvEspradejo,			// ESP Ra.De. (Japan, ver. 98/04/14)
+	&BurnDrvEspradej,			// ESP Ra.De. (Japan, ver. 98/04/21)
+	&BurnDrvEsprade,			// ESP Ra.De. - A.D.2018 Tokyo (International, ver. 98/04/22)
+	&BurnDrvEspgal,				// Espgaluda (V100, Japan)
+	&BurnDrvMDg_espnba,			// ESPN Baseball Tonight (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDtaz2e,			// Escape From Mars Starring Taz (E) [!] [no comment]
-	&BurnDrvMDtaz2,				// Escape From Mars Starring Taz (U) [!] [no comment]
+	&BurnDrvMDg_esphna,			// ESPN National Hockey Night (USA) (Beta) [Gfx Problems]
+	&BurnDrvMDg_esphn,			// ESPN National Hockey Night (USA) [Gfx Problems]
 #endif
-	&BurnDrvEsprade,			// ESP Ra.De. (1998 4/22 international ver.)
-	&BurnDrvEspradeo,			// ESP Ra.De. (Japan, 1998 4/14 master ver.)
-	&BurnDrvEspradej,			// ESP Ra.De. (Japan, 1998 4/21 master ver.)
+	&BurnDrvMDg_espsp,			// ESPN Speed World (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDe_bt,				// ESPN Baseball Tonight (U) [!] [no comment]
-	&BurnDrvMDe_nhb,			// ESPN National Hockey Night (Beta) [no comment]
-	&BurnDrvMDe_hn,				// ESPN National Hockey Night (U) [c][!] [no comment]
-	&BurnDrvMDe_sw,				// ESPN SpeedWorld (U) [c][!] [no comment]
-	&BurnDrvMDe_sn,				// ESPN Sunday Night NFL (U) [!] [no comment]
-	&BurnDrvMDeswatj,			// ESWAT Cyber Police (J) [!] [no comment]
-	&BurnDrvMDeswa,				// ESWAT Cyber Police - City Under Siege (U) [!] [no comment]
-	&BurnDrvMDetchmb,			// Eternal Champions (Beta) [no comment]
-	&BurnDrvMDechmpe,			// Eternal Champions (E) [!] [no comment]
-	&BurnDrvMDechmpj,			// Eternal Champions (J) [c][!] [no comment]
-	&BurnDrvMDetch,				// Eternal Champions (U) [!] [no comment]
-	&BurnDrvMDeuropa,			// Europa Sensen (J) [!] [no comment]
+	&BurnDrvMDg_espspb,			// ESPN Speed World (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDecs,				// European Club Soccer (E) [!]
+	&BurnDrvMDg_espnf,			// ESPN Sunday Night NFL (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDehrd,				// Evander Holyfield's Real Deal Boxing (JU) [!] [no comment]
-	&BurnDrvMDexmu,				// Ex-Mutants (U) [!] [no comment]
-	&BurnDrvMDexrnzb,			// Ex-Ranza (Beta) [no comment]
-	&BurnDrvMDexranz,			// Ex-Ranza (J) [!] [no comment]
+	&BurnDrvMDg_espnfb,			// ESPN Sunday Night NFL (USA) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_eswatc,			// ESWAT - City Under Siege (USA)
+	&BurnDrvMDg_etern,			// Eternal Champions (Europe)
+	&BurnDrvMDg_eternb,			// Eternal Champions (Europe) (Beta)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_eternp,			// Eternal Champions (J) (Prototype - Nov 17, 1993) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_eternj,			// Eternal Champions (Japan, Korea)
+	&BurnDrvMDg_eternu,			// Eternal Champions (USA)
+	&BurnDrvEuroch92,			// Euro Champ '92 (World)
+	&BurnDrvWc90b1,				// Euro League (Italian hack of Tecmo World Cup '90)
+	&BurnDrvMDg_europa,			// Europa Sensen (Japan)
+	&BurnDrvMDg_europe,			// European Club Soccer (Europe)
+	&BurnDrvMDg_evande,			// Evander Holyfield's 'Real Deal' Boxing (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_exmuta,			// Ex-Mutants (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_exran,			// Ex-Ranza (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_exranb,			// Ex-Ranza (Japan) (Beta) [no comment, NOT WORKING]
 #endif
 	&BurnDrvExctleag,			// Excite League (FD1094 317-0079)
+	&BurnDrvExedexes,			// Exed Exes
+	&BurnDrvExerizrb,			// Exerizer (Japan) (bootleg)
 #if defined FBA_DEBUG
-	&BurnDrvMDexil,				// Exile (U) [!] [no comment]
-	&BurnDrvMDexosb,			// Exo-Squad (Beta) [no comment]
-	&BurnDrvMDexos,				// Exo-Squad (U) [!] [no comment]
+	&BurnDrvMDg_exileu,			// Exile (USA) [Gfx Problems]
+	&BurnDrvMDg_exilet,			// Exile - Toki no Hazama he (Japan) [Gfx Problems]
 #endif
+	&BurnDrvMDg_exosqu,			// Exo Squad (Europe)
+	&BurnDrvMDg_exosq2,			// Exo Squad (USA)
+	&BurnDrvMDg_exosq1,			// Exo Squad (USA) (Beta)
+	&BurnDrvExodus,				// Exodus (bootleg?)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_exodus,			// Exodus - Journey to the Promised Land (USA) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvExplorer,			// Explorer
 	&BurnDrvExplbrkr,			// Explosive Breaker
+	&BurnDrvExtrmatj,			// Extermination (Japan)
+	&BurnDrvExtrmatu,			// Extermination (US)
+	&BurnDrvExtrmatn,			// Extermination (World)
+	&BurnDrvExtdwnhl,			// Extreme Downhill (v1.5)
 	&BurnDrveyes,				// Eyes (Digitrex Techstar)
 	&BurnDrveyes2,				// Eyes (Techstar)
 	&BurnDrveyeszac,			// Eyes (Zaccaria)
+	&BurnDrvF1dream,			// F-1 Dream
+	&BurnDrvF1dreamb,			// F-1 Dream (bootleg)
+	&BurnDrvF1gp,				// F-1 Grand Prix
 #if defined FBA_DEBUG
-	&BurnDrvMDf117,				// F-117 Night Storm (UE) [!] [no comment]
-	&BurnDrvMDf117j,			// F-117 Stealth - Operation Night Storm (J) [!] [no comment]
-	&BurnDrvMDf15b,				// F-15 Strike Eagle II (Beta) [no comment]
-	&BurnDrvMDf15e,				// F-15 Strike Eagle II (E) [!] [no comment]
-	&BurnDrvMDf15s,				// F-15 Strike Eagle II (U) [!] [no comment]
-	&BurnDrvMDf22b,				// F-22 Interceptor (Beta) [c][!] [no comment]
-	&BurnDrvMDf22i,				// F-22 Interceptor (U) (Jun 1992) [c][!] [no comment]
-	&BurnDrvMDf22ua,			// F-22 Interceptor (U) (Sep 1991) [a1][c][!] [no comment]
-	&BurnDrvMDf22u,				// F-22 Interceptor (U) (Sep 1991) [c][!] [no comment]
-	&BurnDrvMDf22j,				// F-22 Interceptor - Advanced Tactical Fighter (J) [!] [no comment]
+	&BurnDrvF1gpb,				// F-1 Grand Prix (Playmark bootleg) [no comment, NOT WORKING]
 #endif
+	&BurnDrvF1gp2,				// F-1 Grand Prix Part II
+#if defined FBA_DEBUG
+	&BurnDrvMDg_f117ni,			// F-117 Night Storm (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_f117st,			// F-117 Stealth - Operation Night Storm (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_f15str,			// F-15 Strike Eagle II (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_f15st2,			// F-15 Strike Eagle II (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_f15st1,			// F-15 Strike Eagle II (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_f22j,			// F-22 Interceptor (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_f22u,			// F-22 Interceptor (U) (Sep 1991) [a1][c][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_f22ub,			// F-22 Interceptor (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_f22o,			// F-22 Interceptor (USA, Europe) (June 1992) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_f22,			// F-22 Interceptor (USA, Europe) (September 1991)
+	&BurnDrvMDg_f22_realdump,	// F-22 Interceptor (USA, Europe) (September 1991) (proper dump)
 	&BurnDrvFx,					// F-X
 #if defined FBA_DEBUG
-	&BurnDrvMDf1gp,				// F1 Grand Prix - Nakajima Satoru (J) [!] [no comment]
-	&BurnDrvMDf1h,				// F1 Hero MD (J) [c][!] [no comment]
-	&BurnDrvMDf1sl,				// F1 Super License - Nakajima Satoru (J) [!] [no comment]
-	&BurnDrvMDf1wlce,			// F1 World Championship (E) [!] [no comment]
-	&BurnDrvMDf1wc,				// F1 World Championship Edition (Beta) [no comment]
-	&BurnDrvMDf1wceb,			// F1 World Championship Edition (Beta) [no comment]
-	&BurnDrvMDf1ce,				// F1 World Championship Edition (E) [!] [no comment]
-	&BurnDrvMDf1c,				// F1 World Championship Edition (E) [!] [no comment]
-	&BurnDrvMDfaer,				// Faery Tale Adventur [no comment]
-	&BurnDrvMDfeud,				// Family Feud (U) [!] [no comment]
+	&BurnDrvMDg_f1euro,			// F1 (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_f1wc,			// F1 - World Championship Edition (Europe)
+	&BurnDrvMDg_f1wcb,			// F1 - World Championship Edition (Europe) (Beta)
+	&BurnDrvMDg_f1circ,			// F1 Circus MD (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_faeryt,			// Faery Tale Adventure, The (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_family,			// Family Feud (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvFancywld,			// Fancy World - Earth of Crisis
 	&BurnDrvFantasia,			// Fantasia
 #if defined FBA_DEBUG
-	&BurnDrvMDfante,			// Fantasia (E) [!] [no comment]
-	&BurnDrvMDfant,				// Fantasia (JU) (REV01) [!] [no comment]
-	&BurnDrvMDfant00,			// Fantasia (U) (REV00) [!] [no comment]
+	&BurnDrvMDg_fantas,			// Fantasia (U) (REV00) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_fanta2,			// Fantasia (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_fanta1,			// Fantasia (World) (Rev A) [no comment, NOT WORKING]
 #endif
 	&BurnDrvFantsia2,			// Fantasia II (Explicit)
-	&BurnDrvFntsia2a,			// Fantasia II (Less Explicit)
+	&BurnDrvFantsia2a,			// Fantasia II (Less Explicit)
 #if defined FBA_DEBUG
-	&BurnDrvMDfanda,			// Fantastic Dizzy (UE) (M5) [a1] [no comment]
-	&BurnDrvMDfand,				// Fantastic Dizzy (UE) (M5) [c][!] [no comment]
+	&BurnDrvMDg_fantdz,			// Fantastic Dizzy (UE) (M5) [a1] [no comment, NOT WORKING]
+	&BurnDrvMDg_fantd1,			// Fantastic Dizzy (USA, Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
 #endif
 	&BurnDrvFantsy95,			// Fantasy '95
-	&BurnDrvFantzon1,			// Fantasy Zone (set 1, unprotected)
-	&BurnDrvFantzone,			// Fantasy Zone (set 2, unprotected)
+	&BurnDrvFantzonep,			// Fantasy Zone (317-5000)
+	&BurnDrvFantzone,			// Fantasy Zone (Rev A, unprotected)
+	&BurnDrvFantzone1,			// Fantasy Zone (unprotected)
+	&BurnDrvFantzn2x,			// Fantasy Zone 2 (System 16C version, PS2 data file)
+	&BurnDrvFantznta,			// Fantasy Zone Time Attack (System 16B, PS2 data file)
+	&BurnDrvFantazia,			// Fantazia (bootleg?)
+	&BurnDrvkabukikl,			// Far East of Eden - Kabuki Klash / Tengai Makyou - Shin Den
+	&BurnDrvFarmer,				// Farmers Rebellion
+	&BurnDrvMDg_fastes,			// Fastest 1 (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDfas1,				// Fastest 1 (J) [!] [no comment]
-	&BurnDrvMDfatfue,			// Fatal Fury (E) [no comment]
-	&BurnDrvMDfaf,				// Fatal Fury (U) [!] [no comment]
+	&BurnDrvMDg_fatalf,			// Fatal Fury (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_fatal1,			// Fatal Fury (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvFatFury1,			// Fatal Fury - king of fighters\0Garou Denetsu - shukumei no tatakai
+	&BurnDrvfatfury1,			// Fatal Fury - King of Fighters / Garou Densetsu - shukumei no tatakai
 #if defined FBA_DEBUG
-	&BurnDrvMDfaf2,				// Fatal Fury 2 (U) [c][!] [no comment]
+	&BurnDrvMDg_fatal2,			// Fatal Fury 2 (USA, Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvFatfury2,			// Fatal Fury 2\0Garou Densetsu 2 - arata-naru tatakai
-	&BurnDrvFatfury3,			// Fatal Fury 3 - road to the final victory\0Garou Densetsu 3
-	&BurnDrvFatfursp,			// Fatal Fury Special (set 1)\0Garou Densetsu Special
-	&BurnDrvFatfursa,			// Fatal Fury Special (set 2)\0Garou Densetsu Special
+	&BurnDrvfatfury2,			// Fatal Fury 2 / Garou Densetsu 2 - arata-naru tatakai
+	&BurnDrvfatfury3,			// Fatal Fury 3 - Road to the Final Victory / Garou Densetsu 3 - haruka-naru tatakai
+	&BurnDrvfatfursp,			// Fatal Fury Special / Garou Densetsu Special (set 1)
+	&BurnDrvfatfurspa,			// Fatal Fury Special / Garou Densetsu Special (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDfatl,				// Fatal Labyrinth (JU) [!] [no comment]
-	&BurnDrvMDfatr,				// Fatal Rewind (UE) [!] [no comment]
-	&BurnDrvMDfatm,				// Fatman (J) [c][!] [no comment]
-	&BurnDrvMDferias,			// Ferias Frustradas do Pica-Pau (B) [!] [no comment]
-	&BurnDrvMDfergpb,			// Ferrari Grand Prix Challenge (Beta) [no comment]
-	&BurnDrvMDfrgp,				// Ferrari Grand Prix Challenge (U) [!] [no comment]
-	&BurnDrvMDfever,			// Fever Pitch Soccer (E) (M5) [!] [no comment]
+	&BurnDrvMDg_fatlbx,			// Fatal Labirynth (GNKO) (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_fatlb,			// Fatal Labyrinth (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_fatalr,			// Fatal Rewind (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_fatman,			// Fatman (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_fengku,			// Feng Kuang Tao Hua Yuan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_fengsh,			// Feng Shen Ying Jie Chuan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_ferias,			// Ferias Frustradas do Pica-Pau (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_ferrb,			// Ferrari Grand Prix Challenge (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_ferr,			// Ferrari Grand Prix Challenge (Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_ferru,			// Ferrari Grand Prix Challenge (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_feverp,			// Fever Pitch Soccer (Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
 #endif
-	&BurnDrvFeverSOS,			// Fever SOS (International ver. Fri Sep 25 1998)
+	&BurnDrvFeverSOS,			// Fever SOS (International, ver. 98/09/25)
 #if defined FBA_DEBUG
-	&BurnDrvMDfido,				// Fido Dido (Prototype) [no comment]
+	&BurnDrvMDg_fidodi,			// Fido Dido (USA) (Proto) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDfifa,				// FIFA International Soccer (UE) (M4) [!]
-	&BurnDrvMDfi95,				// FIFA Soccer 95 (UE) [!]
-	&BurnDrvMDfi96,				// FIFA Soccer 96 (UE) (M6) [!]
+	&BurnDrvMDg_fi98,			// FIFA 98 - Road to World Cup (Europe) (En,Fr,Es,It,Sv)
+	&BurnDrvMDg_fifa,			// FIFA International Soccer (USA, Europe) (En,Fr,De,Es)
+	&BurnDrvMDg_fi2k,			// FIFA Soccer 2000 Gold Edition (Unl) (M6) [!]
 #if defined FBA_DEBUG
-	&BurnDrvMDfi97,				// FIFA Soccer 97 Gold Edition (UE) (M6) [!] [no comment]
-	&BurnDrvMDf98,				// FIFA Soccer 98 - Road to the World Cup (E) (M5) [!] [no comment]
+	&BurnDrvMDg_fi95k,			// FIFA Soccer 95 (Korea) (En,Fr,De,Es) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDfi99r,			// FIFA Soccer 99 (R) [!]
-	&BurnDrvFightfev,			// Fight Fever (set 1)\0Wang Jung Wang
-	&BurnDrvFightfeva,			// Fight Fever (set 2)\0Wang Jung Wang
-	&BurnDrvFswords,			// Fighters Swords (bootleg)
+	&BurnDrvMDg_fi95,			// FIFA Soccer 95 (USA, Europe) (En,Fr,De,Es)
+	&BurnDrvMDg_fi96,			// FIFA Soccer 96 (USA, Europe) (En,Fr,De,Es,It,Sv)
+	&BurnDrvMDg_fi97,			// FIFA Soccer 97 (USA, Europe) (En,Fr,De,Es,It,Sv)
+	&BurnDrvMDg_fi97_realdump,	// FIFA Soccer 97 (USA, Europe) (En,Fr,De,Es,It,Sv) (proper dump)
+	&BurnDrvMDg_fi99,			// FIFA Soccer 99 (R) [!]
+	&BurnDrvfightfev,			// Fight Fever (set 1)
+	&BurnDrvfightfeva,			// Fight Fever (set 2)
+	&BurnDrvfswords,			// Fighters Swords (Korean release of Samurai Shodown III)
+	&BurnDrvFghtbskt,			// Fighting Basketball
 #if defined FBA_DEBUG
-	&BurnDrvMDfghmsj,			// Fighting Masters (J) [!] [no comment]
-	&BurnDrvMDfmas,				// Fighting Masters (U) [!] [no comment]
-	&BurnDrvMDfblo,				// Final Blow (J) [c][!] [no comment]
+	&BurnDrvMDg_fightj,			// Fighting Masters (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_fghtm,			// Fighting Masters (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvFinalbj,			// Final Blow (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_finalb,			// Final Blow (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvFinalbu,			// Final Blow (US)
+	&BurnDrvFinalb,				// Final Blow (World)
+	&BurnDrvCpsFfightj1,		// Final Fight (900112 Japan)
 	&BurnDrvCpsFfightua,		// Final Fight (900112 USA)
-	&BurnDrvCpsFfightj1,		// Final Fight (900305 Japan)
+	&BurnDrvCpsFfightj2,		// Final Fight (900305 Japan)
 	&BurnDrvCpsFfightub,		// Final Fight (900613 USA)
 	&BurnDrvCpsFfightj,			// Final Fight (Japan)
-	&BurnDrvCpsFfightu,			// Final Fight (USA)
+	&BurnDrvCpsFfightu,			// Final Fight (USA, set 1)
+	&BurnDrvCpsFfightu1,		// Final Fight (USA, set 2)
 	&BurnDrvCpsFfight,			// Final Fight (World)
+	&BurnDrvFstarfrcj,			// Final Star Force (Japan)
 	&BurnDrvFstarfrc,			// Final Star Force (US)
 	&BurnDrvFinalttr,			// Final Tetris
+	&BurnDrvFirehawk,			// Fire Hawk
 #if defined FBA_DEBUG
-	&BurnDrvMDfzon,				// Final Zone (JU) [!] [no comment]
-	&BurnDrvMDmust,				// Fire Mustang (J) [c][!] [no comment]
-	&BurnDrvMDfpro,				// Fire Pro Wrestling Gaiden (J) [c][!] [no comment]
-	&BurnDrvMDfshrke,			// Fire Shark (E) [!] [no comment]
-	&BurnDrvMDfshk,				// Fire Shark (U) [!] [no comment]
-	&BurnDrvMDfshrku,			// Fire Shark (U) [a1][!] [no comment]
+	&BurnDrvMDg_firemu,			// Fire Mustang (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_firesh,			// Fire Shark (Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvFireshrkd,			// Fire Shark (Korea, set 1, easier)
+	&BurnDrvFireshrkdh,			// Fire Shark (Korea, set 2, harder)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_fires1,			// Fire Shark (U) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_fires2,			// Fire Shark (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvFireshrk,			// Fire Shark
 	&BurnDrvFpointbj,			// Flash Point (Japan, bootleg)
 	&BurnDrvFpoint1,			// Flash Point (set 1, Japan, FD1094 317-0127A)
 	&BurnDrvFpoint,				// Flash Point (set 2, Japan, FD1094 317-0127A)
 	&BurnDrvFpointbl,			// Flash Point (World, bootleg)
-	&BurnDrvMDfbcke,			// Flashback - The Quest for Identity (E) [!]
-	&BurnDrvMDfbckj,			// Flashback - The Quest for Identity (J) [!]
-	&BurnDrvMDfbak,				// Flashback - The Quest for Identity (U) [!]
-	&BurnDrvMDfbckua,			// Flashback - The Quest for Identity (U) [a1][!]
+#if defined FBA_DEBUG
+	&BurnDrvMDg_flashb,			// Flashback (Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_flash1,			// Flashback (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_flash3,			// Flashback - The Quest for Identity (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_flash2,			// Flashback - The Quest for Identity (USA) (Alt) [no comment, NOT WORKING]
+#endif
 	&BurnDrvFlashgal,			// Flashgal (set 1)
-	&BurnDrvFlashgla,			// Flashgal (set 2)
-#if defined FBA_DEBUG
-	&BurnDrvMDfdma,				// Flavio's DMA Test (PD) [no comment]
-#endif
+	&BurnDrvFlashgala,			// Flashgal (set 2)
 	&BurnDrvFlicky,				// Flicky (128k Version, System 2, 315-5051)
-	&BurnDrvFlicks2,			// Flicky (128k Version, System 2, not encrypted)
+	&BurnDrvFlickys2,			// Flicky (128k Version, System 2, not encrypted)
 	&BurnDrvFlickyo,			// Flicky (64k Version, System 1, 315-5051, set 1)
-	&BurnDrvFlicks1,			// Flicky (64k Version, System 1, 315-5051, set 2)
+	&BurnDrvFlickys1,			// Flicky (64k Version, System 1, 315-5051, set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDflic,				// Flicky (UE) [!] [no comment]
-	&BurnDrvMDflinte,			// Flintstone [no comment]
-	&BurnDrvMDflintj,			// Flintstone [no comment]
-	&BurnDrvMDflin,				// Flintstone [no comment]
+	&BurnDrvMDg_flicky,			// Flicky (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_flintj,			// Flintstone (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_flint,			// Flintstones, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_flintu,			// Flintstones, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_fluxeu,			// Flux (Europe) (Requires MegaCD) (Program) [no comment, NOT WORKING]
 #endif
-	&BurnDrvFbfrenzy,			// Football Frenzy
+	&BurnDrvFootchmp,			// Football Champ (World)
+	&BurnDrvfbfrenzy,			// Football Frenzy
 #if defined FBA_DEBUG
-	&BurnDrvMDfore,				// Foreman For Real (W) [!] [no comment]
+	&BurnDrvMDg_forema,			// Foreman for Real (World) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsForgottn,		// Forgotten Worlds (US)
+	&BurnDrvCpsForgottnua,		// Forgotten Worlds (US, B-Board 88618B-?)
+	&BurnDrvCpsForgottnu,		// Forgotten Worlds (US, B-Board 88621B-2)
+	&BurnDrvCpsForgottn,		// Forgotten Worlds (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDfw00,				// Forgotten Worlds (W) (REV00) [!] [no comment]
-	&BurnDrvMDfw,				// Forgotten Worlds (W) (REV01) [!] [no comment]
-	&BurnDrvMDftbhb,			// Frank Thomas Big Hurt Baseball (UE) [!] [no comment]
+	&BurnDrvMDg_forgo1,			// Forgotten Worlds (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_forgot,			// Forgotten Worlds (World) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_formul,			// Formula One (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_frankt,			// Frank Thomas Big Hurt Baseball (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvfreeze,				// Freeze
+	&BurnDrvFrogf,				// Frog (Falcon bootleg)
+	&BurnDrvFrogg,				// Frog (Galaxian hardware)
+	&BurnDrvFroggers,			// Frog
+	&BurnDrvCpsCps1frog,		// Frog Feast (CPS-1)
+	&BurnDrvngfrog,				// Frog Feast (Neo Geo)
+	&BurnDrvPgmfrog,			// Frog Feast (PGM)
+	&BurnDrvFrogger,			// Frogger
+	&BurnDrvFroggermc,			// Frogger (Moon Cresta hardware)
+	&BurnDrvFroggers1,			// Frogger (Sega set 1)
+	&BurnDrvFroggers2,			// Frogger (Sega set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDfrog,				// Frogger (U) [!] [no comment]
-	&BurnDrvMDfcr,				// Fun Car Rally (Unl) [no comment]
-	&BurnDrvMDfunnge,			// Fun-N-Games (E) [no comment]
-	&BurnDrvMDfung,				// Fun-N-Games (U) [c][!] [no comment]
+	&BurnDrvMDg_frogge,			// Frogger (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_fromtv,			// From TV Animation Slam Dunk - Kyougou Makkou Taiketsu! (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvFullthrl,			// Full Throttle (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_funnga,			// Fun 'N' Games (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_funng1,			// Fun 'N' Games (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_funcar,			// Fun Car Rally (USA) (Proto) [no comment, NOT WORKING]
 #endif
 	&BurnDrvfunkybee,			// Funky Bee
 	&BurnDrvfunkbeeb,			// Funky Bee (bootleg, harder)
+	&BurnDrvfnkyfish,			// Funky Fish
+	&BurnDrvFunybubl,			// Funny Bubble
+	&BurnDrvFunybubc,			// Funny Bubble (Comad version)
 #if defined FBA_DEBUG
-	&BurnDrvMDfushig,			// Fushigi no Umi no Nadia (J) [c][!] [no comment]
+	&BurnDrvMDg_funnyw,			// Funny World & Balloon Boy (USA) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_fushig,			// Fushigi no Umi no Nadia (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDfut98,			// Futbol Argentino 98 - Pasion de Multitudes (Unl)
+	&BurnDrvMDg_futbol,			// Futbol Argentino 98 - Pasion de Multitudes (Unl)
 #if defined FBA_DEBUG
-	&BurnDrvMDglocb,			// G-LOC Air Battle (Beta) [no comment]
+	&BurnDrvMDg_fzsenk,			// FZ Senki Axis ~ Final Zone (Japan, USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGloc,				// G-LOC Air Battle (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDgloc,				// G-LOC Air Battle (W) [c][!] [no comment]
+	&BurnDrvMDg_gloc,			// G-LOC Air Battle (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_glocb,			// G-LOC Air Battle (World) (Beta) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGlocr360,			// G-LOC R360
 #if defined FBA_DEBUG
-	&BurnDrvMDgtwi,				// Gadget Twin [no comment]
+	&BurnDrvMDg_gadget,			// Gadget Twins (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGaia,				// Gaia Crusaders
 #if defined FBA_DEBUG
-	&BurnDrvMDgaia,				// Gaiares (JU) [!] [no comment]
-	&BurnDrvMDggrouj,			// Gain Ground (J) [!] [no comment]
-	&BurnDrvMDgain,				// Gain Ground (UE) [c][!] [no comment]
+	&BurnDrvMDg_gaiare,			// Gaiares (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_gaing1,			// Gain Ground (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_gaingr,			// Gain Ground (World) (Alt) [no comment, NOT WORKING]
 #endif
-	&BurnDrvGalaxyfg,			// Galaxy Fight - universal warriors
+	&BurnDrvGalagamf,			// Galaga (Midway set 1 with fast shoot hack)
+	&BurnDrvGalagamw,			// Galaga (Midway set 1)
+	&BurnDrvGalagamk,			// Galaga (Midway set 2)
+	&BurnDrvGalaga,				// Galaga (Namco rev. B)
+	&BurnDrvGalagao,			// Galaga (Namco)
+	&BurnDrvGalaxbsf,			// Galaxian (bootleg)
+	&BurnDrvGalaxianm,			// Galaxian (Midway set 1)
+	&BurnDrvGalaxianmo,			// Galaxian (Midway set 2)
+	&BurnDrvGalaxian,			// Galaxian (Namco set 1)
+	&BurnDrvGalaxiana,			// Galaxian (Namco set 2)
+	&BurnDrvGalaxiant,			// Galaxian (Taito)
+	&BurnDrvGalap4,				// Galaxian Part 4 (hack)
+	&BurnDrvGalapx,				// Galaxian Part X (moonaln hack)
+	&BurnDrvTstgalx,			// Galaxian Test ROM
+	&BurnDrvGalturbo,			// Galaxian Turbo (superg hack)
+	&BurnDrvgalaxyfg,			// Galaxy Fight - Universal Warriors
 	&BurnDrvGforce2,			// Galaxy Force 2
 	&BurnDrvGforce2j,			// Galaxy Force 2 (Japan)
+	&BurnDrvGforce2ja,			// Galaxy Force 2 (Japan, Rev A)
 #if defined FBA_DEBUG
-	&BurnDrvMDglf200,			// Galaxy Force II (W) (REV00) [no comment]
-	&BurnDrvMDgf2,				// Galaxy Force II (W) (REV01) [!] [no comment]
+	&BurnDrvMDg_galax1,			// Galaxy Force II (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_galaxy,			// Galaxy Force II (World) (Rev B) [no comment, NOT WORKING]
 #endif
+	&BurnDrvGallag,				// Gallag
+	&BurnDrvGallop,				// Gallop - Armed police Unit (Japan)
+	&BurnDrvGalmedes,			// Galmedes (Japan)
 	&BurnDrvGalhustl,			// Gals Hustler
 	&BurnDrvGalpanic,			// Gals Panic (Unprotected)
 #if defined FBA_DEBUG
-	&BurnDrvMDgamblr,			// Gambler Jiko Chuushinha - Katayama Masayuki no Mahjong Doujou (J) [!] [no comment]
-	&BurnDrvMDgameno,			// Game no Kanzume Otokuyou (J) [!] [no comment]
+	&BurnDrvMDg_gamble,			// Gambler Jiko Chuushinha - Katayama Masayuki no Mahjong Doujou (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_gamege,			// Game Genie (USA, Europe) (Program) [no comment, NOT WORKING]
+	&BurnDrvMDg_gameg1,			// Game Genie (USA, Europe) (Rev A) (Program) [no comment, NOT WORKING]
+	&BurnDrvMDg_gameno,			// Game no Kandume Otokuyou (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_gameto,			// Game Toshokan (Japan) (Rev A) (Program) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGinkun,				// Ganbare Ginkun
-	&BurnDrvGanryu,				// Ganryu\0Musashi Ganryuki
+	&BurnDrvGangonta,			// Ganbare! Gonta!! 2 / Party Time: Gonta the Diver II (Japan Release)
+	&BurnDrvGbusters,			// Gang Busters (set 1)
+	&BurnDrvGbustera,			// Gang Busters (set 2)
+	&BurnDrvganryu,				// Ganryu / Musashi Ganryuki
+//	&BurnDrvganryun,			// Ganryu / Musashi Ganryuki (decrypted C) [no comment]
 	&BurnDrvGardia,				// Gardia (317-0006)
 #if defined FBA_DEBUG
-	&BurnDrvMDgarf,				// Garfield - Caught in the Act (UE) [!] [no comment]
-	&BurnDrvMDgarg,				// Gargoyles (U) [!] [no comment]
+	&BurnDrvGardiab,			// Gardia (317-0007?, bootleg) [no comment, NOT WORKING]
+	&BurnDrvMDg_garfie,			// Garfield - Caught in the Act (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_gargoy,			// Gargoyles (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvGaroubl,			// Garou - mark of the wolves (bootleg)
-	&BurnDrvGaroup,				// Garou - mark of the wolves (prototype)
-	&BurnDrvGarou,				// Garou - mark of the wolves (set 1)
-	&BurnDrvGarouo,				// Garou - mark of the wolves (set 2)
+	&BurnDrvGarogun,			// Garogun Seroyang (Korea)
+	&BurnDrvgaroubl,			// Garou - Mark of the Wolves (bootleg)
+//	&BurnDrvgaroun,				// Garou - Mark of the Wolves (decrypted C) [no comment]
+	&BurnDrvgaroup,				// Garou - Mark of the Wolves (prototype)
+	&BurnDrvgarou,				// Garou - Mark of the Wolves (set 1)
+	&BurnDrvgarouo,				// Garou - Mark of the Wolves (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDgarou,			// Garou Densetsu - Shukumei no Tatakai (J) [!] [no comment]
-	&BurnDrvMDgarou2,			// Garou Densetsu 2 - Arata-naru Tatakai (J) [c][!] [no comment]
-	&BurnDrvMDgaunt,			// Gauntlet (J) [!] [no comment]
-	&BurnDrvMDgau4,				// Gauntlet 4 (UE) (Aug 1993) [!] [no comment]
-	&BurnDrvMDgaun4a,			// Gauntlet 4 (UE) (Sep 1993) [no comment]
-	&BurnDrvMDgemfi,			// GemFire (U) [!] [no comment]
-	&BurnDrvMDgenc,				// General Chaos (UE) [!] [no comment]
-	&BurnDrvMDglos,				// Generations Lost (UE) [!] [no comment]
-	&BurnDrvMDgeng,				// Genghis Khan II - Clan of the Gray Wolf (U) [!] [no comment]
+	&BurnDrvMDg_garoud,			// Garou Densetsu - Shukumei no Tatakai (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_garou2,			// Garou Densetsu 2 - Aratanaru Tatakai (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvGaruka,				// Garuka (Japan ver. W)
+	&BurnDrvGaryoret,			// Garyo Retsuden (Japan)
+	&BurnDrvGatedom1,			// Gate of Doom (US revision 1)
+	&BurnDrvGatedoom,			// Gate of Doom (US revision 4)
+	&BurnDrvGauntlet2pg1,		// Gauntlet (2 Players, German, rev 1)
+	&BurnDrvGauntlet2pg,		// Gauntlet (2 Players, German, rev 4)
+	&BurnDrvGauntlet2pj2,		// Gauntlet (2 Players, Japanese rev 2)
+	&BurnDrvGauntlet2pj,		// Gauntlet (2 Players, Japanese, rev 5)
+	&BurnDrvGauntlet2pr3,		// Gauntlet (2 Players, rev 3)
+	&BurnDrvGauntlet2p,			// Gauntlet (2 Players, rev 6)
+	&BurnDrvGauntletg,			// Gauntlet (German, rev 10)
+	&BurnDrvGauntletgr3,		// Gauntlet (German, rev 3)
+	&BurnDrvGauntletgr6,		// Gauntlet (German, rev 6)
+	&BurnDrvGauntletgr8,		// Gauntlet (German, rev 8)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_gauntj,			// Gauntlet (Japan) (En,Ja) [no comment, NOT WORKING]
+#endif
+	&BurnDrvGauntletj12,		// Gauntlet (Japanese, rev 12)
+	&BurnDrvGauntletj,			// Gauntlet (Japanese, rev 13)
+	&BurnDrvGauntletr1,			// Gauntlet (rev 1)
+	&BurnDrvGauntlet,			// Gauntlet (rev 14)
+	&BurnDrvGauntletr2,			// Gauntlet (rev 2)
+	&BurnDrvGauntletr4,			// Gauntlet (rev 4)
+	&BurnDrvGauntletr5,			// Gauntlet (rev 5)
+	&BurnDrvGauntletr7,			// Gauntlet (rev 7)
+	&BurnDrvGauntletr9,			// Gauntlet (rev 9)
+	&BurnDrvGauntlets,			// Gauntlet (Spanish, rev 15)
+	&BurnDrvGaunt2,				// Gauntlet II
+	&BurnDrvGaunt22pg,			// Gauntlet II (2 Players, German)
+	&BurnDrvGaunt22p1,			// Gauntlet II (2 Players, rev 1)
+	&BurnDrvGaunt22p,			// Gauntlet II (2 Players, rev 2)
+	&BurnDrvGaunt2g,			// Gauntlet II (German)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_gaunto,			// Gauntlet IV (USA, Europe) (En,Ja) (August 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_gaunt,			// Gauntlet IV (USA, Europe) (En,Ja) (September 1993) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_gemfir,			// Gemfire (USA)
+	&BurnDrvGemini,				// Gemini Wing
+#if defined FBA_DEBUG
+	&BurnDrvMDg_genera,			// General Chaos (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_gener1,			// General Chaos Daikonsen (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_genelo,			// Generations Lost (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_genghi,			// Genghis Khan II - Clan of the Gray Wolf (USA)
+	&BurnDrvGenix,				// Genix Family
 	&BurnDrvGensitou,			// Genshi-Tou 1930's (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDgfkobe,			// George Foreman's KO Boxing (E) [!] [no comment]
-	&BurnDrvMDgfko,				// George Foreman's KO Boxing (U) [!] [no comment]
+	&BurnDrvMDg_george,			// George Foreman's KO Boxing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_georg1,			// George Foreman's KO Boxing (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvGetStarB,			// Get Star (bootleg, set 1)
-	&BurnDrvGetStarBa,			// Get Star (bootleg, set 2)
-	&BurnDrvGpilots,			// Ghost Pilots (set 1)
-	&BurnDrvGpilotsh,			// Ghost Pilots (set 2)
+	&BurnDrvGeostorm,			// Geostorm (Japan)
+	&BurnDrvGetStarb1,			// Get Star (bootleg, set 1)
+	&BurnDrvGetStarb2,			// Get Star (bootleg, set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDgbus00,			// Ghostbusters (W) (REV00) [!] [no comment]
-	&BurnDrvMDgbus,				// Ghostbusters (W) (REV01) [!] [no comment]
+	&BurnDrvghostbi,			// Ghost Busters (Intro demo) [no comment]
 #endif
-	&BurnDrvghostlop,			// Ghostlop
+	&BurnDrvgpilots,			// Ghost Pilots (set 1)
+	&BurnDrvgpilotsh,			// Ghost Pilots (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDgng01,			// Ghouls 'N Ghosts (UE) (REV01) [!] [no comment]
-	&BurnDrvMDgng,				// Ghouls 'N Ghosts (UE) (REV02) [!] [no comment]
+	&BurnDrvMDg_ghost1,			// Ghostbusters (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_ghostb,			// Ghostbusters (World) (v1.1) [no comment, NOT WORKING]
+#endif
+	&BurnDrvghostlop,			// Ghostlop (prototype)
+	&BurnDrvGmgalax,			// Ghostmuncher Galaxian (bootleg)
+	&BurnDrvGngbl,				// Ghosts'n Goblins (bootleg with Cross)
+	&BurnDrvGngblita,			// Ghosts'n Goblins (Italian bootleg, harder)
+	&BurnDrvGngt,				// Ghosts'n Goblins (US)
+	&BurnDrvGngc,				// Ghosts'n Goblins (World Revision C)
+	&BurnDrvGng,				// Ghosts'n Goblins (World? set 1)
+	&BurnDrvGnga,				// Ghosts'n Goblins (World? set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ghoul1,			// Ghouls 'n Ghosts (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_ghouls,			// Ghouls 'n Ghosts (USA, Europe) (Rev A) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsGhoulsu,			// Ghouls'n Ghosts (US)
 	&BurnDrvCpsGhouls,			// Ghouls'n Ghosts (World)
-	&BurnDrvCpsGwinga,			// Giga Wing (990222 Asia)
+	&BurnDrvCpsGigawinga,		// Giga Wing (990222 Asia)
+	&BurnDrvCpsGigawingb,		// Giga Wing (990222 Brazil)
+	&BurnDrvCpsGigawingh,		// Giga Wing (990222 Hispanic)
+	&BurnDrvCpsGigawingd,		// Giga Wing (990222 USA Phoenix Edition)
 	&BurnDrvCpsGigawing,		// Giga Wing (990222 USA)
-	&BurnDrvCpsGwingj,			// Giga Wing (990223 Japan)
+	&BurnDrvCpsGigawingjd,		// Giga Wing (990223 Japan Phoenix Edition)
+	&BurnDrvCpsGigawingj,		// Giga Wing (990223 Japan)
+	&BurnDrvGigandes,			// Gigandes
+	&BurnDrvGigandesj,			// Gigandes (Japan)
+	&BurnDrvGinganin,			// Ginga NinkyouDen (set 1)
+	&BurnDrvGinganina,			// Ginga NinkyouDen (set 2)
+	&BurnDrvGteikoku,			// Gingateikoku No Gyakushu
+	&BurnDrvGteikokb,			// Gingateikoku No Gyakushu (bootleg set 1)
+	&BurnDrvGteikob2,			// Gingateikoku No Gyakushu (bootleg set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDgley,				// Gley Lancer (J) [no comment]
+	&BurnDrvMDg_global,			// Global Gladiators (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvGoalx3,				// Goal! Goal! Goal!
+	&BurnDrvgoalx3,				// Goal! Goal! Goal!
 #if defined FBA_DEBUG
-	&BurnDrvMDgodsb,			// Gods (Beta) [no comment]
-	&BurnDrvMDgodse,			// Gods (E) [!] [no comment]
-	&BurnDrvMDgodsj,			// Gods (J) [!] [no comment]
-	&BurnDrvMDgods,				// Gods (U) [!] [no comment]
+	&BurnDrvMDg_gods,			// Gods (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_godsj,			// Gods (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_godsu,			// Gods (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_godsub,			// Gods (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_golden,			// Golden 10-in-1 (bad dump) [no comment, NOT WORKING]
+	&BurnDrvMDg_golde1,			// Golden 10-in-1 (Unl) [!] [no comment, NOT WORKING]
 #endif
-	&BurnDrvGoldnax1,			// Golden Axe (set 1, World, FD1094 317-0110)
-	&BurnDrvGoldnax2,			// Golden Axe (set 2, US, 8751 317-0112)
-	&BurnDrvGoldnax3,			// Golden Axe (set 3, World, FD1094 317-0120)
-	&BurnDrvGoldnaxj,			// Golden Axe (set 4, Japan, FD1094 317-0121)
-	&BurnDrvGoldnaxu,			// Golden Axe (set 5, US, FD1094 317-0122)
+	&BurnDrvGoldnaxe1,			// Golden Axe (set 1, World, FD1094 317-0110)
+	&BurnDrvGoldnaxe2,			// Golden Axe (set 2, US, 8751 317-0112)
+	&BurnDrvGoldnaxe3,			// Golden Axe (set 3, World, FD1094 317-0120)
+	&BurnDrvGoldnaxej,			// Golden Axe (set 4, Japan, FD1094 317-0121)
+	&BurnDrvGoldnaxeu,			// Golden Axe (set 5, US, FD1094 317-0122)
 	&BurnDrvGoldnaxe,			// Golden Axe (set 6, US, 8751 317-123A)
-	&BurnDrvMDgax00,			// Golden Axe (W) (REV00) [!]
-	&BurnDrvMDgax,				// Golden Axe (W) (REV01) [!]
+	&BurnDrvMDg_gaxea,			// Golden Axe (World)
+	&BurnDrvMDg_gaxe,			// Golden Axe (World) (v1.1)
+	&BurnDrvMDg_gaxe2,			// Golden Axe II (World)
+	&BurnDrvMDg_gaxe2b,			// Golden Axe II (World) (Beta)
+	&BurnDrvMDg_gaxe3,			// Golden Axe III (Japan)
+	&BurnDrvImsorryj,			// Gonbee no I'm Sorry (315-5110, Japan)
+	&BurnDrvGondo,				// Gondomania (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDgax2b,			// Golden Axe II (Beta) [no comment]
-	&BurnDrvMDgax2,				// Golden Axe II (W) [!] [no comment]
-	&BurnDrvMDgax3,				// Golden Axe III (J) [!] [no comment]
-	&BurnDrvMDgoof,				// Goofy's Hysterical History Tour (U) [!] [no comment]
+	&BurnDrvMDg_goofys,			// Goofy's Hysterical History Tour (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvgorkans,			// Gorkans
-	&BurnDrvPowerins,			// Gouketsuji Ichizoku (Japan)
-	&BurnDrvGprider1,			// GP Rider (set 1, US, FD1094 317-0162)
+	&BurnDrvGotcha,				// Got-cha Mini Game Festival
+	&BurnDrvPlegends,			// Gouketsuji Gaiden Legends (USA, ver. 95/06/20)
+	&BurnDrvPlegendsj,			// Gouketsuji Gaiden Saikyou Densetsu (Japan, ver. 95/06/20)
+	&BurnDrvPowerinj,			// Gouketsuji Ichizoku (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDgran00,			// Granada (JU) (REV00) [!] [no comment]
-	&BurnDrvMDgran,				// Granada (JU) (REV01) [!] [no comment]
-	&BurnDrvMDgste,				// Grand Slam Tennis (E) [!] [no comment]
-	&BurnDrvMDgstenj,			// Grand Slam Tennis (J) [!] [no comment]
+	&BurnDrvMDg_gouket,			// Gouketsuji Ichizoku (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPwrinst2j,			// Gouketsuji Ichizoku 2 (Japan, ver. 94/04/08)
+	&BurnDrvGprider1,			// GP Rider (set 1, US, FD1094 317-0162)
+	&BurnDrvGprider,			// GP Rider (set 2, World, FD1094 317-0163)
+	&BurnDrvGradius2,			// Gradius II - GOFER no Yabou (Japan New ver.)
+	&BurnDrvGradius2a,			// Gradius II - GOFER no Yabou (Japan Old ver.)
+	&BurnDrvGradius2b,			// Gradius II - GOFER no Yabou (Japan Older ver.)
+	&BurnDrvGrdius3a,			// Gradius III (Asia)
+	&BurnDrvGradius3,			// Gradius III (Japan)
+	&BurnDrvGrdius3e,			// Gradius III (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_grana1,			// Granada (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_granad,			// Granada (Japan, USA) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_grands,			// GrandSlam - The Tennis Tournament '92 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_grand1,			// GrandSlam - The Tennis Tournament (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGtmr2u,				// Great 1000 Miles Rally 2 USA (95/05/18)
 	&BurnDrvGtmre,				// Great 1000 Miles Rally: Evolution Model!!! (94/09/06)
 	&BurnDrvGtmrusa,			// Great 1000 Miles Rally: U.S.A Version! (94/09/06)
 #if defined FBA_DEBUG
-	&BurnDrvMDgcm,				// Great Circus Myster [no comment]
+	&BurnDrvMDg_greatc,			// Great Circus Mystery - Mickey to Minnie Magical Adventure 2 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_great1,			// Great Circus Mystery Starring Mickey & Minnie, The (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsGreatMahouDaiJ,	// Great Mahou Daisakusen (000121 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDgws,				// Great Waldo Searc [no comment]
-	&BurnDrvMDghwj,				// Greatest Heavyweights of the Ring (J) [c][!] [no comment]
-	&BurnDrvMDghwor,			// Greatest Heavyweights of the Ring (U) [!] [no comment]
-	&BurnDrvMDgdog,				// Greendog - The Beached Surfer Dude (UE) [!] [no comment]
+	&BurnDrvMDg_greatw,			// Great Waldo Search, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_ghw,			// Greatest Heavyweights (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_ghwj,			// Greatest Heavyweights (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_ghwu,			// Greatest Heavyweights (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvGberet,				// Green Beret
+	&BurnDrvGberetb,			// Green Beret (bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_greend,			// Greendog - The Beached Surfer Dude! (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGrindStormerA,		// Grind Stormer (older set)
 #if defined FBA_DEBUG
-	&BurnDrvMDgrin,				// GRIND Stormer (U) [!] [no comment]
+	&BurnDrvMDg_grinds,			// Grind Stormer (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGrindStormer,		// Grind Stormer
+	&BurnDrvGrowlu,				// Growl (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDgrwl,				// Growl (U) [!] [no comment]
+	&BurnDrvMDg_growlu,			// Growl (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvGrowl,				// Growl (World)
+	&BurnDrvGryzor,				// Gryzor (Set 1)
+	&BurnDrvGryzora,			// Gryzor (Set 2)
+	&BurnDrvGrdnstrm,			// Guardian Storm
 	&BurnDrvGrdians,			// Guardians\0Denjin Makai II
-	&BurnDrvgunsmokj,			// Gun. Smoke (Japan)
-	&BurnDrvgunsmoku,			// Gun. Smoke (US set 1)
-	&BurnDrvgunsmoka,			// Gun. Smoke (US set 2)
-	&BurnDrvgunsmoke,			// Gun. Smoke (World)
+	&BurnDrvGumbo,				// Gumbo
+	&BurnDrvGunfront,			// Gun & Frontier (World)
+	&BurnDrvGunfrontj,			// Gun Frontier (Japan)
+	&BurnDrvGunhohki,			// Gun Hohki (Japan)
+	&BurnDrvGunsmokj,			// Gun. Smoke (Japan)
+	&BurnDrvGunsmoku,			// Gun. Smoke (US set 1)
+	&BurnDrvGunsmoka,			// Gun. Smoke (US set 2)
+	&BurnDrvGunsmoke,			// Gun. Smoke (World)
+	&BurnDrvGnbarich,			// Gunbarich
 	&BurnDrvGunbirdj,			// Gunbird (Japan)
 	&BurnDrvGunbirdk,			// Gunbird (Korea)
 	&BurnDrvGunbird,			// Gunbird (World)
+	&BurnDrvGunbird2,			// Gunbird 2
+	&BurnDrvGundhara,			// Gundhara
+	&BurnDrvGunforcej,			// Gunforce - Battle Fire Engulfed Terror Island (Japan)
+	&BurnDrvGunforceu,			// Gunforce - Battle Fire Engulfed Terror Island (US)
+	&BurnDrvGunforce,			// Gunforce - Battle Fire Engulfed Terror Island (World)
+	&BurnDrvGunforc2,			// Gunforce 2 (US)
+	&BurnDrvGunnail,			// GunNail (28th May. 1992)
 #if defined FBA_DEBUG
-	&BurnDrvMDgshi,				// Gunship (E) [c][!] [no comment]
-	&BurnDrvMDgshe,				// Gunstar Heroes (E) [!] [no comment]
-	&BurnDrvMDgshj,				// Gunstar Heroes (J) [!]] [no comment]
-	&BurnDrvMDgshsam,			// Gunstar Heroes (Sample) (J) [!] [no comment]
-	&BurnDrvMDgsh,				// Gunstar Heroes (U) [!] [no comment]
+	&BurnDrvMDg_gunshi,			// Gunship (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvGururin,			// Gururin
-	&BurnDrvGuwange,			// Guwange (Japan, 1999 6/24 master ver.)
+	&BurnDrvMDg_gunsta,			// Gunstar Heroes (Europe)
+	&BurnDrvMDg_gunst2,			// Gunstar Heroes (Japan)
+	&BurnDrvMDg_gunst1,			// Gunstar Heroes (Japan) (Sample)
+	&BurnDrvMDg_gunst3,			// Gunstar Heroes (USA)
+	&BurnDrvgururin,			// Gururin
 #if defined FBA_DEBUG
-	&BurnDrvMDgyno,				// Gynoug (E) [!] [no comment]
-	&BurnDrvMDgynoge,			// Gynoug (E) [!] [no comment]
+	&BurnDrvGussun,				// Gussun Oyoyo (Japan) [Unemulated CPU functions, NOT WORKING]
 #endif
-	&BurnDrvGyrodinc,			// Gyrodine
-	&BurnDrvGyrodine,			// Gyrodine (Taito Corporation license)
+	&BurnDrvGuwange,			// Guwange (Japan, master ver. 99/06/24)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_gynoug,			// Gynoug (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_gynou1,			// Gynoug (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvGyrodine,			// Gyrodine
+	&BurnDrvGyrodinet,			// Gyrodine (Taito Corporation license)
+	&BurnDrvGyrussb,			// Gyruss (bootleg)
+	&BurnDrvGyrussce,			// Gyruss (Centuri)
+	&BurnDrvGyruss,				// Gyruss (Konami)
+	&BurnDrvHachamf,			// Hacha Mecha Fighter (19th Sep. 1991)
+	&BurnDrvHharryu,			// Hammerin' Harry (US)
+	&BurnDrvHharry,				// Hammerin' Harry (World)
 	&BurnDrvHangon1,			// Hang-On
 	&BurnDrvHangon,				// Hang-On (rev A)
 	&BurnDrvhangly,				// Hangly-Man (set 1)
 	&BurnDrvhangly2,			// Hangly-Man (set 2)
 	&BurnDrvhangly3,			// Hangly-Man (set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDhard,				// Hard Drivin' (W) [!] [no comment]
-	&BurnDrvMDhb94,				// HardBall '94 (UE) [!] [no comment]
-	&BurnDrvMDhb,				// HardBall '95 (U) [!] [no comment]
-	&BurnDrvMDhb95,				// HardBall '95 (U) [!] [no comment]
-	&BurnDrvMDhb3,				// HardBall III (U) [!] [no comment]
+	&BurnDrvMDg_harddr,			// Hard Drivin' (World) [no comment, NOT WORKING]
 #endif
-	&BurnDrvHtchctch,			// Hatch Catch
+	&BurnDrvHpuncher,			// Hard Puncher (Japan)
+	&BurnDrvMDg_hard94,			// HardBall '94 (USA, Europe)
+	&BurnDrvMDg_hard95,			// HardBall '95 (USA)
+	&BurnDrvMDg_hard3,			// HardBall III (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDhaun,				// Haunting Starring Polterguy (UE) [!] [no comment]
-	&BurnDrvMDhoso,				// Head-On Soccer (U) (M5) [!] [no comment]
-	&BurnDrvMDhnov,				// Heavy Nova (U) [!] [no comment]
-	&BurnDrvMDhuni,				// Heavy Unit (J) [!] [no comment]
+	&BurnDrvMDg_hardb,			// HardBall! (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHasamu,				// Hasamu (Japan)
+	&BurnDrvHthero,				// Hat Trick Hero (Japan)
+	&BurnDrvHtchctch,			// Hatch Catch
+	&BurnDrvHcastleo,			// Haunted Castle (ver. K)
+	&BurnDrvHcastle,			// Haunted Castle (ver. M)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_haunti,			// Haunting Starring Polterguy (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHedpanic,			// Head Panic (ver. 0117, 17/01/2000)
+	&BurnDrvHedpanif,			// Head Panic (ver. 0315, 15/03/2000)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_headon,			// Head-On Soccer (USA) [no comment, NOT WORKING]
+	&BurnDrvHbarrel,			// Heavy Barrel (US) [no comment]
+	&BurnDrvMDg_heavyn,			// Heavy Nova (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_heavyu,			// Heavy Unit - Mega Drive Special (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvHwchamp,			// Heavyweight Champ
+	&BurnDrvHwchampj,			// Heavyweight Champ (Japan, FD1094 317-0046)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_heitao,			// Hei Tao 2 - Super Big 2 (China) (Unl) [no comment, NOT WORKING]
+#endif
 	&BurnDrvHellfir1,			// Hellfire (1P Ver.)
+	&BurnDrvHellfir3,			// Hellfire (1P Ver., alt)
 	&BurnDrvHellfire,			// Hellfire (2P Ver.)
 	&BurnDrvHellfir2,			// Hellfire (2P Ver., first edition)
 #if defined FBA_DEBUG
-	&BurnDrvMDhelfie,			// Hellfire (E) [no comment]
-	&BurnDrvMDhelfij,			// Hellfire (J) [!] [no comment]
-	&BurnDrvMDhell,				// Hellfire (U) [!] [no comment]
-	&BurnDrvMDherzoj,			// Herzog Zwei (J) [!] [no comment]
-	&BurnDrvMDherz,				// Herzog Zwei (UE) [!] [no comment]
-	&BurnDrvMDhssoc,			// High School Soccer - Kunio Kun (J) [!] [no comment]
-	&BurnDrvMDhsh,				// High Seas Havoc (U) [!] [no comment]
-	&BurnDrvMDhice,				// Hit The Ice (U) [c][!] [no comment]
-	&BurnDrvMDhokuto,			// Hokuto no Ken (J) [!] [no comment]
-	&BurnDrvMDhomeab,			// Home Alone (Beta) [no comment]
-	&BurnDrvMDhome,				// Home Alone (U) [!] [no comment]
-	&BurnDrvMDhom2,				// Home Alone 2 - Lost in New York (U) [!] [no comment]
+	&BurnDrvMDg_hellfi,			// Hellfire (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_hellf1,			// Hellfire (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_hellf2,			// Hellfire (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_hercul,			// Hercules (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_herc2,			// Hercules 2 (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_herzj,			// Herzog Zwei (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_herz,			// Herzog Zwei (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHeuksun,			// Heuk Sun Baek Sa (Korea)
+	&BurnDrvHexpoola,			// Hex Pool (Senko)
+	&BurnDrvHexpool,			// Hex Pool (Shinkai)
+	&BurnDrvHexa,				// Hexa
+	&BurnDrvHexion,				// Hexion (Japan ver. JAB)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_highse,			// High Seas Havoc (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBuraiken,			// Hissatsu Buraiken (Japan)
+	&BurnDrvHiticej,			// Hit the Ice (Japan)
+	&BurnDrvHitice,				// Hit the Ice (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_hitthe,			// Hit the Ice (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_hokuto,			// Hokuto no Ken - Shin Seikimatsu Kyuuseishu Densetsu (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_homeab,			// Home Alone (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_homea,			// Home Alone (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_homea2,			// Home Alone 2 - Lost in New York (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvHoneydol,			// Honey Dolls
 #if defined FBA_DEBUG
-	&BurnDrvMDdodg,				// Honoo no Toukyuuji Dodge Danpei (J) [!] [no comment]
-	&BurnDrvHookj,				// Hook (Japan) [Preliminary driver]
-	&BurnDrvMDhook,				// Hook (U) [c][!] [no comment]
-	&BurnDrvHooku,				// Hook (US) [Preliminary driver]
-	&BurnDrvHook,				// Hook (World) [Preliminary driver]
-	&BurnDrvMDhuma,				// Human [no comment]
-	&BurnDrvMDhurr,				// Hurricanes (E) [!] [no comment]
-	&BurnDrvMDhybrid,			// Hybrid Fron [no comment]
-	&BurnDrvMDhybrip,			// Hybrid Fron [no comment]
-	&BurnDrvMDhyokk,			// Hyokkori Hyoutanjima (J) [c][!] [no comment]
-	&BurnDrvMDhdunkb,			// Hyper Dunk - The Playoff Edition (Beta) [no comment]
-	&BurnDrvMDhydu,				// Hyper Dunk - The Playoff Edition (E) [!] [no comment]
-	&BurnDrvMDhdunkj,			// Hyper Dunk - The Playoff Edition (J) [!] [no comment]
-	&BurnDrvMDhymar,			// Hyper Marbles (SN) (J) [!] [no comment]
+	&BurnDrvMDg_honoon,			// Honoo no Toukyuuji Dodge Danpei (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHookj,				// Hook (Japan)
+	&BurnDrvHooku,				// Hook (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_hookus,			// Hook (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHook,				// Hook (World)
+	&BurnDrvHorizon,			// Horizon
+	&BurnDrvHotbubl,			// Hot Bubble
+	&BurnDrvHotshock,			// Hot Shocker
+	&BurnDrvHotshockb,			// Hot Shocker (bootleg)
+	&BurnDrvhotdogst,			// Hotdog Storm - The First Supersonics (International)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_huamul,			// Hua Mu Lan - Mulan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_huanle,			// Huan Le Tao Qi Shu - Smart Mouse (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_humans,			// Humans, The (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvHunchbkg,			// Hunchback (Galaxian hardware)
+	&BurnDrvHunchbks,			// Hunchback (Scramble hardware)
+	&BurnDrvHncholms,			// Hunchback Olympic (Scramble hardware)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_hurric,			// Hurricanes (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_hybri,			// Hybrid Front, The (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_hybrib,			// Hybrid Front, The (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_hyokko,			// Hyokkori Hyoutanjima - Daitouryou wo Mezase! (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_hyperd,			// Hyper Dunk (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_hyper2,			// Hyper Dunk - The Playoff Edition (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_hyper1,			// Hyper Dunk - The Playoff Edition (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_hypem,			// Hyper Marbles (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_hypema,			// Hyper Marbles (SN) (GNKO) (J) [!] [no comment, NOT WORKING]
 #endif
 	&BurnDrvHyperpac,			// Hyper Pacman
-	&BurnDrvHyperpcb,			// Hyper Pacman (bootleg)
+	&BurnDrvHyperpacb,			// Hyper Pacman (bootleg)
+	&BurnDrvHypsptsp,			// Hyper Sports Special (Japan)
 	&BurnDrvCpsHsf2j,			// Hyper Street Fighter 2: The Anniversary Edition (031222 Japan)
-	&BurnDrvCpsHsf2,			// Hyper Street Fighter 2: The Anniversary Edition (040202 Asia)
-#if defined FBA_DEBUG
-	&BurnDrvMDmicdo,			// I Love Mickey & Donald - Fushigi na Magic Box (J) [no comment]
-	&BurnDrvMDmickey,			// I Love Mickey Mouse - Fushigi no Oshiro Dai Bouken (J) [!] [no comment]
-	&BurnDrvMDmick,				// I Love Mickey Mouse - Fushigi no Oshiro Dai Bouken (J) [!] [no comment]
-	&BurnDrvMDichir,			// Ichidant R (J) [!] [no comment]
-#endif
+	&BurnDrvCpsHsf2d,			// Hyper Street Fighter 2: The Anniversary Edition (040202 Asia Phoenix Edition)
+	&BurnDrvCpsHsf2a,			// Hyper Street Fighter 2: The Anniversary Edition (040202 Asia)
+	&BurnDrvCpsHsf2,			// Hyper Street Fighter 2: The Anniversary Edition (040202 USA)
+	&BurnDrvImsorry,			// I'm Sorry (315-5110, US)
+	&BurnDrvfr2ch,				// Idol Mahjong - final romance 2 (CD to MVS Conversion)
 	&BurnDrvIgmo,				// IGMO
+	&BurnDrvikari3,				// Ikari III - The Rescue (8-Way Joystick)
+	&BurnDrvikari3u,			// Ikari III - The Rescue (US, Rotary Joystick)
 #if defined FBA_DEBUG
-	&BurnDrvMDimgi,				// IMG International Tour Tennis (UE) [!] [no comment]
-	&BurnDrvMDimmorj,			// Immorta [no comment]
-	&BurnDrvMDimmo,				// Immorta [no comment]
-	&BurnDrvInthuntu,			// In The Hunt (US) [Preliminary driver]
-	&BurnDrvInthunt,			// In The Hunt (World) [Preliminary driver]
-	&BurnDrvMDicdb,				// Incredible Crash Dummie [no comment]
-	&BurnDrvMDicd,				// Incredible Crash Dummie [no comment]
-	&BurnDrvMDhulk,				// Incredible Hul [no comment]
-	&BurnDrvMDindlce,			// Indiana Jones and the Last Crusade (E) [c][!] [no comment]
-	&BurnDrvMDindl,				// Indiana Jones and the Last Crusade (U) [c][!] [no comment]
-	&BurnDrvMDinsxj,			// Insector X (J) [!] [no comment]
-	&BurnDrvMDinsx,				// Insector X (U) [!] [no comment]
-	&BurnDrvMDintr,				// International Rugby (E) [c][!] [no comment]
-	&BurnDrvMDiss,				// International Superstar Soccer Deluxe (E) [!] [no comment]
-	&BurnDrvMDishi,				// Ishido - The Way of the Stones (U) [c][!] [no comment]
-	&BurnDrvMDicftd,			// It Came From The Desert (Beta) [no comment]
-	&BurnDrvMDitch,				// Itchy and Scratchy Gam [no comment]
-	&BurnDrvMDizzy,				// Izzy's Quest for the Olympic Rings (UE) [!] [no comment]
-	&BurnDrvMDjlcs,				// J. League Champion Soccer (J) [!] [no comment, NOT WORKING]
-	&BurnDrvMDjlps00,			// J. League Pro Striker (J) (REV00) [c][!] [no comment]
-	&BurnDrvMDjlpp,				// J. League Pro Striker - Perfect Edition (J) [c][!] [no comment]
-	&BurnDrvMDjlp2,				// J. League Pro Striker 2 (J) [!] [no comment]
-	&BurnDrvMDjlp,				// J. League Pro Striker 2 (J) [!] [no comment]
-	&BurnDrvMDjlpf,				// J. League Pro Striker Final Stage (J) [c][!] [no comment]
-	&BurnDrvMDjnpg,				// Jack Nicklaus' Power Challenge Golf (UE) [!] [no comment]
+	&BurnDrvMDg_ikazus,			// Ikazuse! Koi no Doki Doki Penguin Land MD (Japan) (SegaNet) [no comment, NOT WORKING]
 #endif
+	&BurnDrvIkki,				// Ikki (Japan)
+	&BurnDrvImgfighto,			// Image Fight (Japan)
+	&BurnDrvImgfight,			// Image Fight (Japan, revision A)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_imgint,			// IMG International Tour Tennis (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_immort,			// Immortal, The (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvInthuntu,			// In The Hunt (US)
+	&BurnDrvInthunt,			// In The Hunt (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ictdb,			// Incredible Crash Dummies, The (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_ictd,			// Incredible Crash Dummies, The (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_inhulk,			// Incredible Hulk, The (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_indian,			// Indiana Jones and the Last Crusade (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_india1,			// Indiana Jones and the Last Crusade (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_indy,			// Indiana Jones' Greatest Adventures (Release Candidate) [no comment, NOT WORKING]
+	&BurnDrvMDg_insecj,			// Insector X (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_insec,			// Insector X (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvInsectx,			// Insector X (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_inst,			// Instruments of Chaos Starring Young Indiana Jones (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_instb,			// Instruments of Chaos Starring Young Indiana Jones (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_intern,			// International Rugby (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_inter1,			// International Superstar Soccer Deluxe (Europe) [no comment, NOT WORKING]
+	&BurnDrvInttoote,			// International Toote (Germany) [no comment, NOT WORKING]
+	&BurnDrvInttootea,			// International Toote II (World?) [no comment, NOT WORKING]
+	&BurnDrvMDg_iraqwa,			// Iraq War 2003 (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvironclad,			// Ironclad (Prototype)
+	&BurnDrvironclado,			// Ironclad (Prototype, older)
+	&BurnDrvIsgsm,				// ISG Selection Master Type 2006 System BIOS
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ishido,			// Ishido - The Way of Stones (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_itcame,			// It Came from the Desert (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_itchya,			// Itchy and Scratchy Game, The (USA) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_izzysq,			// Izzy's Quest for the Olympic Rings (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvJjsquawk,			// J. J. Squawkers
+	&BurnDrvJjsquawkb,			// J. J. Squawkers (bootleg)
+	&BurnDrvMDg_jl,				// J. League Champion Soccer (Japan)
+	&BurnDrvMDg_jl_ps,			// J. League Pro Striker (Japan) (v1.0)
+	&BurnDrvMDg_jl_psa,			// J. League Pro Striker (Japan) (v1.3)
+	&BurnDrvMDg_jl_ps2,			// J. League Pro Striker 2 (Japan)
+	&BurnDrvMDg_jl_fs,			// J. League Pro Striker Final Stage (Japan)
+	&BurnDrvMDg_jl_pf,			// J. League Pro Striker Perfect (Japan)
+	&BurnDrvMDg_jackni,			// Jack Nicklaus' Power Challenge Golf (USA, Europe)
 	&BurnDrvjack,				// Jack the Giantkiller (set 1)
 	&BurnDrvjack2,				// Jack the Giantkiller (set 2)
 	&BurnDrvjack3,				// Jack the Giantkiller (set 3)
-	&BurnDrvMDbond,				// James Bond 007 - The Duel (UE) [!]
-	&BurnDrvMDjbondw,			// James Bond 007 - The Duel (W)
 #if defined FBA_DEBUG
-	&BurnDrvMDjbdb,				// James Buster Douglas Knock Out Boxing (UE) [c][!] [no comment]
+	&BurnDrvMDg_jamesb,			// James 'Buster' Douglas Knockout Boxing (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_jb007,			// James Bond 007 - The Duel (Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_jb007a,			// James Bond 007 - The Duel (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jamesp,			// James Pond - Underwater Agent (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_james3,			// James Pond 3 - Operation Starfish (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDjp3,				// James Pond 3 - Operation Starfish (UE) [!]
-	&BurnDrvMDjp2j,				// James Pond II - Codename RoboCod (J) [!]
-	&BurnDrvMDjp2,				// James Pond II - Codename RoboCod (UE) [!]
+	&BurnDrvMDg_jroboj,			// James Pond II - Codename Robocod (Japan, Korea)
+	&BurnDrvMDg_jrobo,			// James Pond II - Codename Robocod (USA, Europe)
+	&BurnDrvMDg_jp2_realdump,	// James Pond II - Codename Robocod (USA, Europe) (proper dump)
 #if defined FBA_DEBUG
-	&BurnDrvMDjamm,				// Jammit (U) [!] [no comment]
-	&BurnDrvMDjano,				// Janou Touryumon (J) [!] [no comment]
-	&BurnDrvMDjanout,			// Janou Touryumon (J) [a1][!] [no comment]
-	&BurnDrvMDjant,				// Jantei Monogatari (J) [!] [no comment]
-	&BurnDrvMDjely,				// Jelly Boy (Beta) [no comment]
-	&BurnDrvMDjcte,				// Jennifer Capriati Tennis (U) [!] [no comment]
-	&BurnDrvMDjeop,				// Jeopardy! (U) [c][!] [no comment]
-	&BurnDrvMDjeod,				// Jeopardy! Deluxe (U) [c][!] [no comment]
-	&BurnDrvMDjeos,				// Jeopardy! Sports Edition (U) [!] [no comment]
-	&BurnDrvMDjgpf,				// Jerry Glanville's Pigskin Footbrawl (U) [!] [no comment]
-	&BurnDrvMDjewlj,			// Jewel Master (J) [c][!] [no comment]
-	&BurnDrvMDjewl,				// Jewel Master (UE) [!] [no comment]
-	&BurnDrvMDjimp,				// Jim Power - The Arcade Game (Beta) [no comment]
-	&BurnDrvMDjwws,				// Jimmy White's Whirlwind Snooker (E) [c][!] [no comment]
+	&BurnDrvMDg_jammit,			// Jammit (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvJockeygp,			// Jockey Grand Prix
+	&BurnDrvMDg_janout,			// Janou Touryumon (J) [!]
+	&BurnDrvMDg_janou1,			// Janou Touryuumon (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDjmac,				// Joe & Mac Caveman Ninja (U) [!] [no comment]
-	&BurnDrvMDjmof,				// Joe Montana Football (JU) [!] [no comment]
+	&BurnDrvMDg_jantei,			// Jantei Monogatari (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_jashin,			// Jashin Draxos (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_jellyb,			// Jelly Boy (Europe) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_jennif,			// Jennifer Capriati Tennis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jeopar,			// Jeopardy! (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jeopa1,			// Jeopardy! Deluxe (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jeopa2,			// Jeopardy! Sports Edition (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jerryg,			// Jerry Glanville's Pigskin Footbrawl (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jwlmsj,			// Jewel Master (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_jwlms,			// Jewel Master (USA, Europe) (Rev A) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDjmons2,			// Joe Montana Sports Talk Football 2 (W) (REV00) [!]
+	&BurnDrvJigkmgri,			// Jigoku Meguri (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDjms,				// Joe Montana Sports Talk Football 2 (W) (REV01) [!] [no comment]
+	&BurnDrvMDg_jimpow,			// Jim Power - The Arcade Game (USA) (Proto) [b] [no comment, NOT WORKING]
+	&BurnDrvMDg_jimmyw,			// Jimmy White's Whirlwind Snooker (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_jiujim,			// Jiu Ji Ma Jiang II - Ye Yan Bian (China) (Unl) [no comment, NOT WORKING]
+//	&BurnDrvjckygpnd,			// Jockey Grand Prix (decrypted C) [no comment]
 #endif
-	&BurnDrvMDjms2,				// Joe Montana Sports Talk Football 2 (W) (REV01) [!]
-	&BurnDrvMDma92,				// John Madden Football '92 (UE) [!]
+	&BurnDrvjockeygp,			// Jockey Grand Prix (set 1)
+	&BurnDrvjockeygpa,			// Jockey Grand Prix (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDma93,				// John Madden Football '93 (UE) [c][!] [no comment]
-	&BurnDrvMDma3c,				// John Madden Football '93 - Championship Edition (U) [!] [no comment]
+	&BurnDrvMDg_joemac,			// Joe & Mac (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDmadj,				// John Madden Football (J) [!]
-	&BurnDrvMDma,				// John Madden Football (UE) [!]
+	&BurnDrvJoemacra,			// Joe & Mac Returns (World, Version 1.0, 1994.05.19)
+	&BurnDrvJoemacr,			// Joe & Mac Returns (World, Version 1.1, 1994.05.27)
 #if defined FBA_DEBUG
-	&BurnDrvMDma94,				// John Madden NFL 94 (UE) [c][!] [no comment]
+	&BurnDrvMDg_joemon,			// Joe Montana Football (World) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_joem2a,			// Joe Montana II Sports Talk Football (World)
+	&BurnDrvMDg_joem2,			// Joe Montana II Sports Talk Football (World) (Rev A)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ma92,			// John Madden Football '92 (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_ma93,			// John Madden Football '93 (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_ma93ce,			// John Madden Football '93 - Championship Edition (USA)
+	&BurnDrvMDg_ma,				// John Madden Football (USA, Europe)
+	&BurnDrvMDg_maj,			// John Madden Football - Pro Football (Japan)
 	&BurnDrvjoinem,				// Joinem
-	&BurnDrvJojobane,			// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Euro, 990913, NO CD)
-	&BurnDrvJojoba,				// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Japan, 990913) [no comment, NOT WORKING]
-	&BurnDrvJojoban,			// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Japan, 990913, NO CD)
-	&BurnDrvJojon,				// JoJo's Venture / JoJo no Kimyouna Bouken (Asia 981202, NO CD)
-	&BurnDrvJojoaltn,			// JoJo's Venture / JoJo no Kimyouna Bouken (Asia 990108, NO CD)
-	&BurnDrvJojo,				// JoJo's Venture / JoJo no Kimyouna Bouken (Japan 981202) [no comment, NOT WORKING]
+	&BurnDrvJojobane,			// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Euro 990913, NO CD)
+	&BurnDrvJojoba,				// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Japan 990913)
+	&BurnDrvJojoban,			// JoJo's Bizarre Adventure: Heritage for the Future / JoJo no Kimyouna Bouken: Miraie no Isan (Japan 990913, NO CD)
+	&BurnDrvJojoan,				// JoJo's Venture / JoJo no Kimyouna Bouken (Asia 981202, NO CD)
+	&BurnDrvJojon,				// JoJo's Venture / JoJo no Kimyouna Bouken (Asia 990108, NO CD)
+	&BurnDrvJojoaj,				// JoJo's Venture / JoJo no Kimyouna Bouken (Japan 981202)
+	&BurnDrvJojoj,				// JoJo's Venture / JoJo no Kimyouna Bouken (Japan 990108)
+	&BurnDrvJojoa,				// JoJo's Venture / JoJo no Kimyouna Bouken (USA 981202)
+	&BurnDrvJojo,				// JoJo's Venture / JoJo no Kimyouna Bouken (USA 990108)
+	&BurnDrvltorb1,				// Jonas Indiana and the Lost Temple of RA (20050717)
 #if defined FBA_DEBUG
-	&BurnDrvJojoalt,			// JoJo's Venture / JoJo no Kimyouna Bouken (Japan 990108) [no comment, NOT WORKING]
-	&BurnDrvMDjb11j,			// Jordan vs Bird - Super One-on-One (J) [!] [no comment]
-	&BurnDrvMDjb1100,			// Jordan vs Bird - Super One-on-One (UE) (REV00) [!] [no comment]
-	&BurnDrvMDjb11,				// Jordan vs Bird - Super One-on-One (UE) (REV01) [!] [no comment]
-	&BurnDrvMDstr2,				// Journey From Darkness - Strider Returns (U) [c][!] [no comment]
+	&BurnDrvMDg_jorda1,			// Jordan Vs Bird (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_jordan,			// Jordan Vs Bird (USA, Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_jorda2,			// Jordan Vs Bird - One on One (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_joshua,			// Joshua & The Battle of Jericho (USA) (Unl) [no comment, NOT WORKING]
 #endif
 	&BurnDrvjoyman,				// Joyman
 #if defined FBA_DEBUG
-	&BurnDrvMDjdrdb,			// Judge Dredd - The Movie (Beta) [no comment]
-	&BurnDrvMDjdrdba,			// Judge Dredd - The Movie (Beta) [a1] [no comment]
-	&BurnDrvMDjdre,				// Judge Dredd - The Movie (W) [!] [no comment]
-	&BurnDrvMDjuju,				// JuJu Densetsu (J) [!] [no comment]
+	&BurnDrvMDg_judgeb,			// Judge Dredd (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_judgea,			// Judge Dredd (USA) (Beta) (Alt) [no comment, NOT WORKING]
+	&BurnDrvMDg_judge,			// Judge Dredd (World) [no comment, NOT WORKING]
 #endif
+	&BurnDrvJuju,				// JuJu Densetsu (Japan)
+	&BurnDrvJujub,				// JuJu Densetsu (Japan, bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_jujud1,			// JuJu Densetsu ~ Toki - Going Ape Spit (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_jujude,			// JuJu Densetsu ~ Toki - Going Ape Spit (World) (Rev A) [no comment, NOT WORKING]
+#endif
+	&BurnDrvJumpbug,			// Jump Bug
+	&BurnDrvJumpbugb,			// Jump Bug (bootleg)
 	&BurnDrvJumpkids,			// Jump Kids
 	&BurnDrvjumpshot,			// Jump Shot
-	&BurnDrvjumpshtp,			// Jump Shot Engineering Sample
+	&BurnDrvjumpshotp,			// Jump Shot Engineering Sample
+	&BurnDrvJumping,			// Jumping
+	&BurnDrvJpopnics,			// Jumping Pop (Nics, Korean bootleg of Plump Pop)
 	&BurnDrvJumppop,			// Jumping Pop
 #if defined FBA_DEBUG
-	&BurnDrvMDjunc,				// Junction (JU) [!] [no comment]
-	&BurnDrvMDjbok,				// Jungle Boo [no comment]
-	&BurnDrvMDjbooke,			// Jungle Boo [no comment]
-	&BurnDrvMDjstrkb,			// Jungle Strike (Beta) [no comment]
-	&BurnDrvMDjstrj,			// Jungle Strike (J) [!] [no comment]
-	&BurnDrvMDjstr,				// Jungle Strike (UE) [!] [no comment]
-	&BurnDrvMDjunkb,			// Junkers High (Beta) [no comment]
-	&BurnDrvMDjparkb,			// Jurassic Park (Beta) [no comment]
-	&BurnDrvMDjparke,			// Jurassic Park (E) [!] [no comment]
-	&BurnDrvMDjparkj,			// Jurassic Park (J) [!] [no comment]
-	&BurnDrvMDjpar,				// Jurassic Park (U) [!] [no comment]
-	&BurnDrvMDjpra,				// Jurassic Park - Rampage Edition (UE) [!] [no comment]
-	&BurnDrvMDjpa2,				// Jurassic Park 2 - The Lost World (U) [!] [no comment]
-	&BurnDrvMDjltf,				// Justice League Task Force (W) [!] [no comment]
-	&BurnDrvMDjuuo00,			// Juu-Ou-Ki (J) (REV00) [c][!] [no comment, NOT WORKING]
-	&BurnDrvMDjuuo01,			// Juu-Ou-Ki (J) (REV01) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_juncti,			// Junction (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_jungle,			// Jungle Book, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_jungl1,			// Jungle Book, The (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvAltbeaj3,			// Juuouki (set 3, Japan, FD1094 317-0068)
-	&BurnDrvAltbeasj,			// Juuouki (set 6, Japan, 8751 317-0077)
+	&BurnDrvMDg_jstria,			// Jungle Strike (USA) (Beta)
+	&BurnDrvMDg_jstrik,			// Jungle Strike (USA, Europe)
+	&BurnDrvMDg_jstrib,			// Jungle Strike - Uketsugareta Kyouki (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvJungler,			// Jungler [no comment]
+	&BurnDrvMDg_junker,			// Junker's High (Japan) (Beta) [b] [no comment, NOT WORKING]
+	&BurnDrvMDg_jurass,			// Jurassic Park (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_juras1,			// Jurassic Park (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_juras3,			// Jurassic Park (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_juras2,			// Jurassic Park (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpa,			// Jurassic Park - Rampage Edition (Prototype - Jul 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpb,			// Jurassic Park - Rampage Edition (Prototype - Jul 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpc,			// Jurassic Park - Rampage Edition (Prototype - Jul 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpd,			// Jurassic Park - Rampage Edition (Prototype - Jul 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpe,			// Jurassic Park - Rampage Edition (Prototype - Jul 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpf,			// Jurassic Park - Rampage Edition (Prototype - Jul 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpg,			// Jurassic Park - Rampage Edition (Prototype - Jun 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmph,			// Jurassic Park - Rampage Edition (Prototype - Jun 22, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmpi,			// Jurassic Park - Rampage Edition (Prototype - Jun 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_jprmp,			// Jurassic Park - Rampage Edition (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_justic,			// Justice League Task Force (World) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_juuou1,			// Juuouki (Japan)
+	&BurnDrvMDg_juuouk,			// Juuouki (Japan) (v1.1)
+	&BurnDrvAltbeastj3,			// Juuouki (set 3, Japan, FD1094 317-0068)
+	&BurnDrvAltbeastj,			// Juuouki (set 6, Japan, 8751 317-0077)
 	&BurnDrvCpsJyangoku,		// Jyangokushi  -Haoh no Saihai- (990527 Japan)
-	&BurnDrvJanshin,			// Jyanshin Densetsu - quest of jongmaster
+	&BurnDrvjanshin,			// Jyanshin Densetsu - Quest of Jongmaster
 #if defined FBA_DEBUG
-	&BurnDrvMDkageki,			// Ka-Ge-Ki (J) [!] [no comment]
-	&BurnDrvMDkgk,				// Ka-Ge-Ki - Fists of Steel (U) [!] [no comment]
+	&BurnDrvMDg_kagekj,			// Ka-Ge-Ki (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_kagek,			// Ka-Ge-Ki - Fists of Steel (USA) [no comment, NOT WORKING]
+	&BurnDrvKabukizj,			// Kabuki-Z (Japan) [Bad Graphics & Sound]
+	&BurnDrvKabukiz,			// Kabuki-Z (World) [Bad Graphics & Sound]
 #endif
-	&BurnDrvKabukiKl,			// Kabuki Klash - far east of eden\0tengai makyou - Shinden
-#if defined FBA_DEBUG
-	&BurnDrvKaiteids,			// Kaitei Daisensou (Japan) [Preliminary driver]
-#endif
+	&BurnDrvKagekih,			// Kageki (hack)
+	&BurnDrvKagekij,			// Kageki (Japan)
+	&BurnDrvKageki,				// Kageki (US)
+	&BurnDrvYanchamr,			// Kaiketsu Yanchamaru (Japan)
+	&BurnDrvKaiteids,			// Kaitei Daisensou (Japan)
+	&BurnDrvKamakazi3,			// Kamakazi III (superg hack)
+	&BurnDrvkangaroo,			// Kangaroo
+	&BurnDrvkangaroa,			// Kangaroo (Atari)
+	&BurnDrvkangarob,			// Kangaroo (bootleg)
 	&BurnDrvKaratblj,			// Karate Blazers (Japan)
 	&BurnDrvKaratblu,			// Karate Blazers (US)
 	&BurnDrvKaratblz,			// Karate Blazers (World?)
-	&BurnDrvKarnovR,			// Karnov's Revenge\0Fighter's History Dynamite
+	&BurnDrvKarianx,			// Karian Cross (Rev. 1.0)
+	&BurnDrvKarnovj,			// Karnov (Japan)
+	&BurnDrvKarnov,				// Karnov (US)
+	&BurnDrvkarnovr,			// Karnov's Revenge / Fighter's History Dynamite
 #if defined FBA_DEBUG
-	&BurnDrvMDkawab,			// Kawasaki Superbike Challenge (Beta) [no comment]
-	&BurnDrvMDkawa,				// Kawasaki Superbike Challenge (UE) [!] [no comment]
+	&BurnDrvMDg_kawab,			// Kawasaki Superbike Challenge (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_kawa,			// Kawasaki Superbike Challenge (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDkbox,				// Kick Boxing, The (J) [!]
+	&BurnDrvKengo,				// Ken-Go
+	&BurnDrvKeroppi,			// Kero Kero Keroppi no Issyoni Asobou (Japan)
+	&BurnDrvKetb,				// Ketsui Kizuna Jigoku Tachi (Original?, Japan)
+	&BurnDrvKeta,				// Ketsui Kizuna Jigoku Tachi (Revision 1?, Japan)
+	&BurnDrvKet,				// Ketsui Kizuna Jigoku Tachi (Revision 2?, Japan)
+	&BurnDrvMDg_kickbo,			// Kick Boxing, The (Japan, Korea)
 #if defined FBA_DEBUG
-	&BurnDrvMDko3,				// Kick Off 3 - European Challenge (E) [!] [no comment]
-	&BurnDrvMDkidc,				// Kid Chameleon (UE) [!] [no comment]
-	&BurnDrvMDkgs,				// Killing Game Sho [no comment]
-	&BurnDrvMDkgsr,				// Killing Game Sho [no comment]
-	&BurnDrvMDkingcj,			// King Colossus (J) [!] [no comment]
+	&BurnDrvMDg_kickof,			// Kick Off 3 - European Challenge (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvKog,				// King of Gladiator (bootleg)
+	&BurnDrvKikcubicb,			// Kickle Cubele
 #if defined FBA_DEBUG
-	&BurnDrvMDkotme,			// King of the Monsters (E) [!] [no comment]
+	&BurnDrvMDg_kidcha,			// Kid Chameleon (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvKotm,				// King of the Monsters (set 1)
-	&BurnDrvKotmh,				// King of the Monsters (set 2)
+	&BurnDrvKidnikiu,			// Kid Niki - Radical Ninja (US)
+	&BurnDrvKidniki,			// Kid Niki - Radical Ninja (World)
+	&BurnDrvMDg_kidouk,			// Kidou Keisatsu Patlabor - 98-Shiki Kidou Seyo! (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDktm,				// King of the Monsters (U) [!] [no comment]
-	&BurnDrvMDktm2,				// King of the Monsters 2 (U) [!] [no comment]
+	&BurnDrvMDg_killin,			// Killing Game Show, The (J) [no comment, NOT WORKING]
+	&BurnDrvMDg_killi1,			// Killing Game Show, The (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvKotm2,				// King of the Monsters 2 - the next thing
+	&BurnDrvKingballj,			// King & Balloon (Japan)
+	&BurnDrvKingball,			// King & Balloon (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDksalmj,			// King Salmon - The Big Catch (J) [c][!] [no comment]
-	&BurnDrvMDksal,				// King Salmon - The Big Catch (U) [c][!] [no comment]
-	&BurnDrvMDkbou,				// King's Bounty (UE) [!] [no comment]
+	&BurnDrvMDg_kof98,			// King of Fighters '98, The (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_kof98a,			// King of Fighters '98, The (Unl) [p1][!] [no comment, NOT WORKING]
+#endif
+	&BurnDrvkog,				// King of Gladiator (The King of Fighters '97 bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_kotm,			// King of the Monsters (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvkotm,				// King of the Monsters (set 1)
+	&BurnDrvkotmh,				// King of the Monsters (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_kotmu,			// King of the Monsters (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_kotm2,			// King of the Monsters 2 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvkotm2,				// King of the Monsters 2 - The Next Thing
+#if defined FBA_DEBUG
+	&BurnDrvMDg_kingsj,			// King Salmon (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_kings,			// King Salmon - The Big Catch (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_kingsb,			// King's Bounty - The Conqueror's Quest (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvKingdmGP,			// Kingdom Grandprix (World)
+	&BurnDrvMDg_kishid,			// Kishi Densetsu (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDkishi,			// Kishi Densetsu (J) [!] [no comment]
-	&BurnDrvMDkisssh,			// Kiss Shot (SN) (J) [no comment]
+	&BurnDrvMDg_kisssh,			// Kiss Shot (Japan) (SegaNet) [no comment, NOT WORKING]
 #endif
-	&BurnDrvKizuna,				// Kizuna Encounter - super tag battle\0Fu'un Super Tag Battle
+	&BurnDrvkizuna,				// Kizuna Encounter - Super Tag Battle / Fu'un Super Tag Battle
 #if defined FBA_DEBUG
-	&BurnDrvMDklaxj,			// Klax (J) [c][!] [no comment]
-	&BurnDrvMDklax,				// Klax (UE) [!] [no comment]
+	&BurnDrvMDg_klaxja,			// Klax (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_klaxus,			// Klax (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvCpsKnightsb2,		// Knights of the Round (911127 etc bootleg set 2) [Some sprite problems, NOT WORKING]
 #endif
+	&BurnDrvCpsKnightsh,		// Knights of the Round (911127 etc bootleg set 3)
+	&BurnDrvCpsKnghtsha,		// Knights of the Round (911127 etc hack)
 	&BurnDrvCpsKnights,			// Knights of the Round (911127 etc)
-	&BurnDrvCpsKnightsj,		// Knights of the Round (911127 Japan)
+	&BurnDrvCpsKnightsja,		// Knights of the Round (911127 Japan, B-Board 89625B-1)
+	&BurnDrvCpsKnightsj,		// Knights of the Round (911127 Japan, B-Board 91634B-2)
 	&BurnDrvCpsKnightsu,		// Knights of the Round (911127 USA)
-	&BurnDrvKovj,				// Knights of Valour - Sangoku Senki (V100, Japanese Board)
+	&BurnDrvKov100,				// Knights of Valour - Sangoku Senki (V100, Japan)
 	&BurnDrvKov115,				// Knights of Valour - Sangoku Senki (V115)
 	&BurnDrvKov,				// Knights of Valour - Sangoku Senki (V117)
-#if defined FBA_DEBUG
-	&BurnDrvKov2106,			// Knights of Valour 2 (V106) [Needs second CPU emulated (ARM7), NOT WORKING]
-	&BurnDrvKov2,				// Knights of Valour 2 [Needs second CPU emulated (ARM7), NOT WORKING]
-	&BurnDrvKov2p,				// Knights of Valour 2 Plus - Nine Dragons (VM204XX) [Needs second CPU emulated (ARM7), NOT WORKING]
-#endif
+	&BurnDrvKov2100,			// Knights of Valour 2 (V100, 100, 100, Hong Kong)
+	&BurnDrvKov2102,			// Knights of Valour 2 (V102, 101, 100, Hong Kong)
+	&BurnDrvKov2103,			// Knights of Valour 2 (V103, 101, 100, Hong Kong)
+	&BurnDrvKov2106,			// Knights of Valour 2 (V106, 102, 100 Hong Kong)
+	&BurnDrvKov2,				// Knights of Valour 2 (V107, 102, 100, Hong Kong)
+	&BurnDrvKov2p,				// Knights of Valour 2 Plus - Nine Dragons (VM204XX)
+	&BurnDrvKov2p205,			// Knights of Valour 2 Plus - Nine Dragons (VM205XX, China)
 	&BurnDrvKovplusa,			// Knights of Valour Plus - Sangoku Senki Plus (V119 alt)
 	&BurnDrvKovplus,			// Knights of Valour Plus - Sangoku Senki Plus (V119)
+	&BurnDrvKovsh103,			// Knights of Valour Superheroes\0Sangoku Senki Superheroes (V103)
+	&BurnDrvKovsh,				// Knights of Valour Superheroes\0Sangoku Senki Superheroes (V104, China)
 #if defined FBA_DEBUG
-	&BurnDrvKovsh,				// Knights of Valour Superheroes\0Sangoku Senki Superheroes (V322) [no comment, NOT WORKING]
+	&BurnDrvkovassg,			// Knights of Valour: Ao Shi San Guo / Sangoku Senki: Ao Shi San Guo (ver. 315CN) [no comment, NOT WORKING]
+	&BurnDrvkovshxas,			// Knights of Valour: Aoshi Sanguo / Sangoku Senki: Aoshi Sanguo (ver. 202CN) [Incomplete dump, NOT WORKING]
+	&BurnDrvkovlsjba,			// Knights of Valour: Luan Shi Jie Ba / Sangoku Senki: Luan Shi Jie Ba (alt ver. 200CN) [no comment, NOT WORKING]
+	&BurnDrvkovlsjb,			// Knights of Valour: Luan Shi Jie Ba / Sangoku Senki: Luan Shi Jie Ba (ver. 200CN) [no comment, NOT WORKING]
+	&BurnDrvkovlsqh,			// Knights of Valour: Luan Shi Quan Huang / Sangoku Senki: Luan Shi Quan Huang (ver. 200CN) [no comment, NOT WORKING]
+	&BurnDrvkovlsqh2,			// Knights of Valour: Luan Shi Quan Huang 2 / Sangoku Senki: Luan Shi Quan Huang 2 (ver. 200CN) [no comment, NOT WORKING]
 #endif
+	&BurnDrvkovqhsgs,			// Knights of Valour: Quan Huang San Guo Special / Sangoku Senki: Quan Huang San Guo Special (ver. 303CN)
+#if defined FBA_DEBUG
+	&BurnDrvKovsgqyz,			// Knights of Valour: SanGuo QunYingZhuan / Sangoku Senki: SanGuo QunYingZhuan (set 1) [no comment, NOT WORKING]
+	&BurnDrvKovsgqyza,			// Knights of Valour: SanGuo QunYingZhuan / Sangoku Senki: SanGuo QunYingZhuan (set 2) [no comment, NOT WORKING]
+#endif
+	&BurnDrvKnockout,			// Knock Out!!
+	&BurnDrvKbash2,				// Knuckle Bash 2 (bootleg)
 	&BurnDrvKBash,				// Knuckle Bash
+	&BurnDrvMDg_knuckl,			// Knuckles in Sonic 2 (Prototype 0524 - May 27, 1994, 10.46)
+	&BurnDrvEto,				// Kokontouzai Eto Monogatari (Japan)
+	&BurnDrvKonami88,			// Konami '88
+	&BurnDrvKorokoro,			// Koro Koro Quest (Japan)
 	&BurnDrvkorosuke,			// Korosuke Roller
 	&BurnDrvMyangel,			// Kosodate Quiz My Angel (Japan)
 	&BurnDrvMyangel2,			// Kosodate Quiz My Angel 2 (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDkout,				// Koutetsu Teikoku (J) [!] [no comment]
-	&BurnDrvMDksfh00,			// Krusty's Super Funhouse (UE) (REV00) [!] [no comment]
-	&BurnDrvMDksfh,				// Krusty's Super Funhouse (UE) (REV01) [!] [no comment]
-	&BurnDrvMDkujaku,			// Kujaku Ou 2 (J) [!] [no comment]
-	&BurnDrvMDkuuga,			// Kuuga - Operation Vapor Trail (J) [!] [no comment]
-	&BurnDrvMDkyuuk,			// Kyuukyou Tiger (J) [!] [no comment]
-	&BurnDrvMDkyuuky,			// Kyuukyou Tiger (J) [!] [no comment]
-	&BurnDrvMDlabyd,			// Labyrinth of Death (SN) (J) [!] [no comment]
-	&BurnDrvMDlvsc,				// Lakers vs Celtics and the NBA Playoffs (UE) [!] [no comment]
-	&BurnDrvMDlandsj,			// Landstalker - Koutei no Zaihou (J) [!] [no comment]
-	&BurnDrvMDlandsb,			// Landstalker - The Treasures of King Nole (Beta) [no comment]
-	&BurnDrvMDlandse,			// Landstalker - The Treasures of King Nole (E) [!] [no comment]
-	&BurnDrvMDlandsf,			// Landstalker - The Treasures of King Nole (F) [no comment]
-	&BurnDrvMDlandsg,			// Landstalker - The Treasures of King Nole (G) [!] [no comment]
-	&BurnDrvMDland,				// Landstalker - The Treasures of King Nole (U) [!] [no comment]
-	&BurnDrvMDlangr,			// Langrisser (J) [!] [no comment]
-	&BurnDrvMDlngr2a,			// Langrisser II (J) (REV00) [!] [no comment]
-	&BurnDrvMDlng201,			// Langrisser II (J) (REV01) [no comment]
-	&BurnDrvMDlngr2c,			// Langrisser II (J) (REV02) [!] [no comment]
+	&BurnDrvMDg_koutet,			// Koutetsu Teikoku (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvlans2004,			// Lansquenet 2004 (bootleg)
+	&BurnDrvStrahl,				// Koutetsu Yousai Strahl (Japan set 1)
+	&BurnDrvStrahla,			// Koutetsu Yousai Strahl (Japan set 2)
+	&BurnDrvKozure,				// Kozure Ookami (Japan)
+	&BurnDrvKrzybowl,			// Krazy Bowl
+#if defined FBA_DEBUG
+	&BurnDrvMDg_krust1,			// Krusty's Super Fun House (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_krusty,			// Krusty's Super Fun House (USA, Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_kujaku,			// Kujaku Ou 2 - Geneijou (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvKungfum,			// Kung-Fu Master
+	&BurnDrvKungfub,			// Kung-Fu Master (bootleg set 1)
+	&BurnDrvKungfub2,			// Kung-Fu Master (bootleg set 2)
+	&BurnDrvKungfumd,			// Kung-Fu Master (Data East)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_kuugao,			// Kuuga - Operation Code 'Vapor Trail' (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_kyuuka,			// Kyuukai Douchuuki (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_kyuuky,			// Kyuukyoku Tiger (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_laruss,			// La Russa Baseball 95 (USA, Australia)
+	&BurnDrvLadybug,			// Lady Bug
+	&BurnDrvLadybugg,			// Lady Bug (bootleg on Galaxian hardware)
+	&BurnDrvLadybugb,			// Lady Bug (bootleg set 1)
+	&BurnDrvLadybgb2,			// Lady Bug (bootleg set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_lakers,			// Lakers versus Celtics and the NBA Playoffs (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_lands1,			// Landstalker (USA)
+	&BurnDrvMDg_landst,			// Landstalker (USA) (Beta)
+	&BurnDrvMDg_lands2,			// Landstalker - Die Schatze von Konig Nolo (Germany)
+	&BurnDrvMDg_lands3,			// Landstalker - Koutei no Zaihou (Japan)
+	&BurnDrvMDg_lands4,			// Landstalker - Le Tresor du Roi Nole (France)
+	&BurnDrvMDg_lands5,			// Landstalker - The Treasures of King Nole (Europe)
+	&BurnDrvMDg_langri,			// Langrisser (Japan)
+	&BurnDrvMDg_lang2b,			// Langrisser II (Japan)
+	&BurnDrvMDg_lang2a,			// Langrisser II (Japan) (v1.1)
+	&BurnDrvMDg_lang2,			// Langrisser II (Japan) (v1.2)
+	&BurnDrvlans2004,			// Lansquenet 2004 (Shock Troopers - 2nd Squad bootleg)
+	&BurnDrvLvgirl94,			// Las Vegas Girl (Girl '94)
 	&BurnDrvLghostu,			// Laser Ghost (set 1, US, 317-0165)
 	&BurnDrvLghost,				// Laser Ghost (set 2, World, 317-0166)
 #if defined FBA_DEBUG
-	&BurnDrvMDlast,				// Last Action Hero (U) [!] [no comment]
-	&BurnDrvMDlbat,				// Last Battle (UE) [!] [no comment]
+	&BurnDrvMDg_lastac,			// Last Action Hero (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lastba,			// Last Battle (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvLstduelb,			// Last Duel (bootleg)
-	&BurnDrvLastduel,			// Last Duel (US set 1)
-	&BurnDrvLstduela,			// Last Duel (US set 2)
-	&BurnDrvLresort,			// Last Resort
+	&BurnDrvlastblad,			// Last Blade / Bakumatsu Roman - Gekka no Kenshi, The (set 1)
+	&BurnDrvlastbladh,			// Last Blade / Bakumatsu Roman - Gekka no Kenshi, The (set 2)
+	&BurnDrvlastbld2,			// Last Blade 2 / Bakumatsu Roman - Dai Ni Maku Gekka no Kenshi, The
+	&BurnDrvLsstduelb,			// Last Duel (bootleg)
+	&BurnDrvLastduelj,			// Last Duel (Japan)
+	&BurnDrvLastduel,			// Last Duel (US New Ver.)
+	&BurnDrvLastduelo,			// Last Duel (US Old Ver.)
+	&BurnDrvlhcdb,				// Last Hope CD Beta (Neo CD conversion)
+	&BurnDrvLastmsnj,			// Last Mission (Japan)
+	&BurnDrvLastmsno,			// Last Mission (US revision 5)
+	&BurnDrvLastmisn,			// Last Mission (US revision 6)
+	&BurnDrvlresort,			// Last Resort
+	&BurnDrvKyustrkr,			// Last Striker / Kyuukyoku no Striker
 #if defined FBA_DEBUG
-	&BurnDrvMDlawn,				// Lawnmower Ma [no comment]
+	&BurnDrvMDg_lawnmo,			// Lawnmower Man, The (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvLbowling,			// League Bowling
+	&BurnDrvlbowling,			// League Bowling
 	&BurnDrvMadgearu,			// Led Storm (US)
 	&BurnDrvLedstrm2,			// Led Storm Rally 2011 (US)
 	&BurnDrvLegend,				// Legend
 #if defined FBA_DEBUG
-	&BurnDrvMDlgal,				// Legend of Galaha [no comment]
+	&BurnDrvMDg_legend,			// Legend of Galahad, The (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvLegendos,			// Legend of Success Joe\0Ashitano Joe Densetsu
+	&BurnDrvLoht,				// Legend of Hero Tonma
+	&BurnDrvLohtb,				// Legend of Hero Tonma (bootleg, set 1)
+	&BurnDrvLohtb2,				// Legend of Hero Tonma (bootleg, set 2)
+	&BurnDrvLohtj,				// Legend of Hero Tonma (Japan)
+	&BurnDrvlegendos,			// Legend of Success Joe / Ashitano Joe Densetsu
+	&BurnDrvLwingsb,			// Legendary Wings (bootleg)
+	&BurnDrvLwings,				// Legendary Wings (US set 1)
+	&BurnDrvLwings2,			// Legendary Wings (US set 2)
+	&BurnDrvMDg_legen1,			// Legende de Thor, La (France)
 #if defined FBA_DEBUG
-	&BurnDrvMDleme,				// Lemmings (E) [!] [no comment]
-	&BurnDrvMDlem00,			// Lemmings (JU) (REV00) [!] [no comment]
-	&BurnDrvMDlem,				// Lemmings (JU) (REV01) [!] [no comment]
-	&BurnDrvMDlem2e,			// Lemmings 2 - The Tribes (E) [!] [no comment]
-	&BurnDrvMDlem2,				// Lemmings 2 - The Tribes (U) [!] [no comment]
-	&BurnDrvMDlenfe,			// Lethal Enforcers (E) [!] [no comment]
-	&BurnDrvMDlenfj,			// Lethal Enforcers (J) [!] [no comment]
-	&BurnDrvMDlen,				// Lethal Enforcers (U) [!] [no comment]
-	&BurnDrvMDlth2j,			// Lethal Enforcers II - Gun Fighters (E) [!] [no comment]
-	&BurnDrvMDlen2,				// Lethal Enforcers II - Gun Fighters (U) [!] [no comment]
-	&BurnDrvMDlhxj,				// LHX Attack Chopper (J) [!] [no comment]
-	&BurnDrvMDlhx,				// LHX Attack Chopper (UE) [!] [no comment]
-	&BurnDrvMDlibrty,			// Liberty or Death (U) [!] [no comment]
-	&BurnDrvMDlicrue,			// Light Crusader (E) (M4) [!] [no comment]
-	&BurnDrvMDlicruj,			// Light Crusader (J) [!] [no comment]
-	&BurnDrvMDlicruk,			// Light Crusader (K) [!] [no comment]
-	&BurnDrvMDligh,				// Lightening Force - Quest for the Darkstar (U) [c][!] [no comment]
-	&BurnDrvMDlighfr,			// Lightening Force - Quest for the Darkstar (U) [c][!] [no comment]
+	&BurnDrvMDg_lems,			// Lemmings (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lemsb,			// Lemmings (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_lemsa,			// Lemmings (Japan, USA) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_lems2,			// Lemmings 2 - The Tribes (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lems2a,			// Lemmings 2 - The Tribes (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvShangnle,			// Limited Edition Hang-On
+	&BurnDrvCrshrace,			// Lethal Crash Race (set 1)
+	&BurnDrvCrshrace2,			// Lethal Crash Race (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_le,				// Lethal Enforcers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lej,			// Lethal Enforcers (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_leu,			// Lethal Enforcers (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_le2,			// Lethal Enforcers II - Gun Fighters (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_le2u,			// Lethal Enforcers II - Gun Fighters (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvLethalth,			// Lethal Thunder (World)
+	&BurnDrvLevers,				// Levers
+#if defined FBA_DEBUG
+	&BurnDrvMDg_lhxj,			// LHX Attack Chopper (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_lhx,			// LHX Attack Chopper (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_libert,			// Liberty or Death (USA)
+	&BurnDrvMDg_lightc,			// Light Crusader (Europe) (En,Fr,De,Es)
+	&BurnDrvMDg_light1,			// Light Crusader (Japan)
+	&BurnDrvMDg_light2,			// Light Crusader (Korea) (En,Ko)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_light3,			// Light Crusader (Prototype - Jun 08, 1995) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_light4,			// Light Crusader (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_lighte,			// Lightening Force - Quest for the Darkstar (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvLgtnfghta,			// Lightning Fighters (Asia)
+	&BurnDrvLgtnfghtu,			// Lightning Fighters (US)
+	&BurnDrvLgtnfght,			// Lightning Fighters (World)
+	&BurnDrvShangonle,			// Limited Edition Hang-On
 	&BurnDrvLoffirej,			// Line of Fire / Bakudan Yarou (Japan, FD1094 317-0134)
 	&BurnDrvLoffireu,			// Line of Fire / Bakudan Yarou (US, FD1094 317-0135)
 	&BurnDrvLoffire,			// Line of Fire / Bakudan Yarou (World, FD1094 317-0136)
 #if defined FBA_DEBUG
-	&BurnDrvMDlion,				// Lion Kin [no comment]
+	&BurnDrvMDg_lion3,			// Lion King 3 (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_lionk1,			// Lion King II, The (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_lionk2,			// Lion King II, The (Unl) [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_lionk,			// Lion King, The (World) [no comment, NOT WORKING]
 #endif
+	&BurnDrvLiquidku,			// Liquid Kids (US)
+	&BurnDrvLiquidk,			// Liquid Kids (World)
+	&BurnDrvLithero,			// Little Hero
+	&BurnDrvLivequiz,			// Live Quiz Show
 	&BurnDrvlizwiz,				// Lizard Wizard
 #if defined FBA_DEBUG
-	&BurnDrvMDlordmo,			// Lord Monarch (J) [!] [no comment]
-	&BurnDrvMDlostvb,			// Lost Viking [no comment]
-	&BurnDrvMDlost,				// Lost Viking [no comment]
-	&BurnDrvMDlostve,			// Lost Viking [no comment]
+	&BurnDrvMDg_lobous,			// Lobo (USA) (Proto) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsLostwrld,		// Lost Worlds (Japan)
+	&BurnDrvLdrun,				// Lode Runner (set 1)
+	&BurnDrvLdruna,				// Lode Runner (set 2)
+	&BurnDrvLdrun2,				// Lode Runner II - The Bungeling Strikes Back
+	&BurnDrvLdrun3j,			// Lode Runner III - Majin No Fukkatsu
+	&BurnDrvLdrun3,				// Lode Runner III - The Golden Labyrinth
+	&BurnDrvLdrun4,				// Lode Runner IV - Teikoku Karano Dasshutsu
+	&BurnDrvLogicpro,			// Logic Pro (Japan)
+	&BurnDrvLogicpr2,			// Logic Pro 2 (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDlotu2b,			// Lotus II RECS (Beta) [no comment]
-	&BurnDrvMDlot2,				// Lotus II RECS (UE) [!] [no comment]
-	&BurnDrvMDlot,				// Lotus Turbo Challenge (UE) [!] [no comment]
+	&BurnDrvMDg_longch,			// Long (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_lordmo,			// Lord Monarch - Tokoton Sentou Densetsu (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvLordgun,			// Lord of Gun (USA)
+	&BurnDrvLosttomb,			// Lost Tomb (Easy)
+	&BurnDrvLosttombh,			// Lost Tomb (Hard)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_lvik,			// Lost Vikings, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lvikb,			// Lost Vikings, The (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_lviku,			// Lost Vikings, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_lostwo,			// Lost World, The - Jurassic Park (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsLostwrldo,		// Lost Worlds (Japan Old ver.)
+	&BurnDrvCpsLostwrld,		// Lost Worlds (Japan)
+	&BurnDrvLotlot,				// Lot Lot
+#if defined FBA_DEBUG
+	&BurnDrvMDg_lot2b,			// Lotus II (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_lot2,			// Lotus II (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_lotus_realdump,	// Lotus Turbo Challenge (USA, Europe) (proper dump) [Gfx and Sound Problems]
+	&BurnDrvMDg_lotust,			// Lotus Turbo Challenge (USA, Europe) [Gfx and Sound Problems]
 #endif
 	&BurnDrvloverboy,			// Lover Boy
+	&BurnDrvLuctoday,			// Lucky Today
 #if defined FBA_DEBUG
-	&BurnDrvMDm1tank,			// M-1 Abrams Battle Tank (UE) (REV01) [!] [no comment]
-	&BurnDrvMDmush,				// M.U.S.H.A (U) [!] [no comment]
+	&BurnDrvMDg_m1abra,			// M-1 Abrams Battle Tank (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMiaj,				// M.I.A. - Missing in Action (Japan)
+	&BurnDrvMia2,				// M.I.A. - Missing in Action (ver. S)
+	&BurnDrvMia,				// M.I.A. - Missing in Action (ver. T)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_majian,			// Ma Jiang Qing Ren - Ji Ma Jiang Zhi (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_maqiao,			// Ma Qiao E Mo Ta - Devilish Mahjong Tower (China) (Unl) [no comment, NOT WORKING]
 #endif
 	&BurnDrvMadgearj,			// Mad Gear (Japan)
 	&BurnDrvMadgear,			// Mad Gear (US)
-#if defined FBA_DEBUG
-	&BurnDrvMDma95,				// Madden NFL 95 (UE) [!] [no comment]
-	&BurnDrvMDma96,				// Madden NFL 96 (UE) [!] [no comment]
-	&BurnDrvMDma97,				// Madden NFL 97 (UE) [!] [no comment]
-	&BurnDrvMDma98,				// Madden NFL 98 (U) [c][!] [no comment]
-	&BurnDrvMDmadou,			// Madou Monogatari I (J) [!] [no comment]
-#endif
+	&BurnDrvMadshark,			// Mad Shark
+	&BurnDrvMDg_madden,			// Madden NFL '94 (USA, Europe)
+	&BurnDrvMDg_mad95,			// Madden NFL 95 (USA, Europe)
+	&BurnDrvMDg_mad96,			// Madden NFL 96 (USA, Europe)
+	&BurnDrvMDg_mad97,			// Madden NFL 97 (USA, Europe)
+	&BurnDrvMDg_mad98,			// Madden NFL 98 (USA)
+	&BurnDrvMDg_madoum,			// Madou Monogatari I (Japan)
 	&BurnDrvmbrush,				// Magic Brush
+	&BurnDrvMagicbub,			// Magic Bubble
+	&BurnDrvMagicbuba,			// Magic Bubble (Adult version)
 #if defined FBA_DEBUG
-	&BurnDrvMDmsbu,				// Magic School Bu [no comment]
+	&BurnDrvMDg_msbpa,			// Magic School Bus, The (Prototype - Apr 11, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpb,			// Magic School Bus, The (Prototype - Apr 21, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpc,			// Magic School Bus, The (Prototype - Apr 25, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpd,			// Magic School Bus, The (Prototype - Apr 28, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpe,			// Magic School Bus, The (Prototype - Feb 02, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpf,			// Magic School Bus, The (Prototype - Feb 17, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpg,			// Magic School Bus, The (Prototype - Jan 12, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbph,			// Magic School Bus, The (Prototype - Mar 07, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpi,			// Magic School Bus, The (Prototype - Mar 14, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpj,			// Magic School Bus, The (Prototype - Mar 27, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpk,			// Magic School Bus, The (Prototype - Mar 31, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msbpl,			// Magic School Bus, The (Prototype - May 05, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_msb,			// Magic School Bus, The (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsMswordj,			// Magic Sword (23.06.1990 Japan)
+	&BurnDrvCpsMswordr1,		// Magic Sword - heroic fantasy (23.06.1990 other country)
 	&BurnDrvCpsMsword,			// Magic Sword - heroic fantasy (25.07.1990 other country)
 	&BurnDrvCpsMswordu,			// Magic Sword - heroic fantasy (25.07.1990 USA)
-	&BurnDrvCpsMswordr1,		// Magic Sword - heroic fantasy (90.06.23 other country)
-	&BurnDrvMgcrsytj,			// Magical Crystals (Japan, 92/01/13)
-	&BurnDrvMgcrsyto,			// Magical Crystals (World, 91/12/10)
+	&BurnDrvMcatadv,			// Magical Cat Adventure
+	&BurnDrvMcatadvj,			// Magical Cat Adventure (Japan)
+	&BurnDrvMgcrsytlj,			// Magical Crystals (Japan, 92/01/13)
+	&BurnDrvMgcrsytlo,			// Magical Crystals (World, 91/12/10)
 	&BurnDrvMgcrsytl,			// Magical Crystals (World, 92/01/10)
-	&BurnDrvMagDrop2,			// Magical Drop II
-	&BurnDrvMagDrop3,			// Magical Drop III
+	&BurnDrvMagdrop,			// Magical Drop (Japan, Version 1.1, 1995.06.21)
+	&BurnDrvmagdrop2,			// Magical Drop II
+	&BurnDrvmagdrop3,			// Magical Drop III
+	&BurnDrvMagdropp,			// Magical Drop Plus 1 (Japan, Version 2.1, 1995.09.12)
 #if defined FBA_DEBUG
-	&BurnDrvMDmhat,				// Magical Hat no Buttobi Turbo! Daibouken (J) [!] [no comment]
-	&BurnDrvMDtaru,				// Magical Taruruuto-Kun (J) [!] [no comment]
+	&BurnDrvMDg_mhat,			// Magical Hat no Buttobi Turbo! Daibouken (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_mtaru,			// Magical Taruruuto-kun (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMagLord,			// Magician Lord (set 1)
-	&BurnDrvMagLordh,			// Magician Lord (set 2)
+	&BurnDrvmaglord,			// Magician Lord (set 1)
+	&BurnDrvmaglordh,			// Magician Lord (set 2)
 	&BurnDrvttmahjng,			// Mahjong
 #if defined FBA_DEBUG
-	&BurnDrvMDmahcop,			// Mahjong Cop Ryuu - Shiro Ookami no Yabou (J) [!] [no comment]
+	&BurnDrvMDg_mahjon,			// Mahjong Cop Ryuu - Shiro Ookami no Yabou (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMahretsu,			// Mahjong Kyoretsuden - real mah-jong game
+	&BurnDrvMjgtaste,			// Mahjong G-Taste
+	&BurnDrvMgakuen,			// Mahjong Gakuen
+	&BurnDrvMgakuen2,			// Mahjong Gakuen 2 Gakuen-chou no Fukushuu
+	&BurnDrvmahretsu,			// Mahjong Kyoretsuden
+	&BurnDrvMjnquest,			// Mahjong Quest (Japan)
+	&BurnDrvMjnquestb,			// Mahjong Quest (No Nudity)
 	&BurnDrvMahouDai,			// Mahou Daisakusen (Japan)
+	&BurnDrvMstadium,			// Main Stadium (Japan ver. 4)
+	&BurnDrvMajest12,			// Majestic Twelve - The Space Invaders Part IV (Japan)
 	&BurnDrvMjleague,			// Major League
+	&BurnDrvMajtitlej,			// Major Title (Japan)
+	&BurnDrvMajtitle,			// Major Title (World)
+	&BurnDrvMajtitl2j,			// Major Title 2 (Japan)
+	&BurnDrvMajtitl2,			// Major Title 2 (World)
+	&BurnDrvMajuu,				// Majuu no Ohkoku
+	&BurnDrvMakaimuc,			// Makai-Mura (Japan revision C)
+	&BurnDrvMakaimug,			// Makai-Mura (Japan revision G)
+	&BurnDrvMakaimur,			// Makai-Mura (Japan)
 	&BurnDrvmaketrax,			// Make Trax (set 1)
 	&BurnDrvmaketrxb,			// Make Trax (set 2)
+	&BurnDrvMakyosen,			// Makyou Senshi (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDmhy,				// Mamono Hunter Yohko - Makai Kara no Tenkosei (J) [!] [no comment]
-	&BurnDrvMDmano,				// Man Overboard! - S.S. Lucifer (E) [c][!] [no comment]
-	&BurnDrvManiacsp,			// Maniac Square (prototype) [Missing GFXs]
-	&BurnDrvMDmaoure,			// Maou Renjishi (J) [c][!] [no comment]
-	&BurnDrvMDmmad,				// Marble Madness (UE) [!] [no comment]
-	&BurnDrvMDmamr,				// Mario Andretti Racing (UE) [!] [no comment]
-	&BurnDrvMDmlem,				// Mario Lemieux Hockey (UE) [!] [no comment]
-	&BurnDrvMDmmfb,				// Marko's Magic Football (Beta) (M4) [no comment]
-	&BurnDrvMDmmftbe,			// Marko's Magic Football (E) (M4) [!] [no comment]
-	&BurnDrvMDmmf,				// Marko's Magic Football (U) [!] [no comment]
+	&BurnDrvMDg_mamono,			// Mamono Hunter Youko - Dai 7 no Keishou (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_manove,			// Man Overboard! (Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMangchi,			// Mang-Chi
+	&BurnDrvManiacsp,			// Maniac Square (prototype)
+	&BurnDrvManybloc,			// Many Block
+#if defined FBA_DEBUG
+	&BurnDrvMDg_maoure,			// Maou Renjishi (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_marble,			// Marble Madness (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMarineb,			// Marine Boy
+	&BurnDrvMariner,			// Mariner
+#if defined FBA_DEBUG
+	&BurnDrvMDg_marioa,			// Mario Andretti Racing (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mariol,			// Mario Lemieux Hockey (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMarkham,			// Markham
+#if defined FBA_DEBUG
+	&BurnDrvMDg_marko,			// Marko's Magic Football (Europe) (En,Fr,De,Es) [no comment, NOT WORKING]
+	&BurnDrvMDg_markob,			// Marko's Magic Football (Europe) (En,Fr,De,Es) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_markou,			// Marko's Magic Football (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMars,				// Mars
 	&BurnDrvCpsMarsMatrixJ,		// Mars Matrix (000412 Japan)
+	&BurnDrvCpsMarsMatrixd,		// Mars Matrix (000412 USA Phoenix Edition)
 	&BurnDrvCpsMarsMatrix,		// Mars Matrix (000412 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDmarsue,			// Marsupilami (E) (M5) [!] [no comment]
-	&BurnDrvMDmars,				// Marsupilami (U) (M5) [!] [no comment]
-	&BurnDrvMartmast,			// Martial Masters (V104) [Needs second CPU emulated (ARM7), NOT WORKING]
-	&BurnDrvMDmarvj,			// Marvel Land (J) [!] [no comment]
-	&BurnDrvMDmarv,				// Marvel Land (U) [!] [no comment]
+	&BurnDrvMDg_marsup,			// Marsupilami (Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+	&BurnDrvMDg_marsu1,			// Marsupilami (USA) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+#endif
+	&BurnDrvmartmastc102,		// Martial Masters (V102, 101, 101, China)
+	&BurnDrvmartmastc,			// Martial Masters (V104, 102, 101, China)
+	&BurnDrvMartmast,			// Martial Masters (V104, 102, 102, USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mvlndj,			// Marvel Land (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_mvlnd,			// Marvel Land (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsMsha,			// Marvel Super Heroes (951024 Asia)
 	&BurnDrvCpsMsh,				// Marvel Super Heroes (951024 Euro)
 	&BurnDrvCpsMshjr1,			// Marvel Super Heroes (951024 Japan)
+	&BurnDrvCpsMshud,			// Marvel Super Heroes (951024 USA Phoenix Edition)
 	&BurnDrvCpsMshu,			// Marvel Super Heroes (951024 USA)
 	&BurnDrvCpsMshb,			// Marvel Super Heroes (951117 Brazil)
 	&BurnDrvCpsMshh,			// Marvel Super Heroes (951117 Hispanic)
@@ -5181,181 +8996,289 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvCpsMshvsf,			// Marvel Super Heroes vs Street Fighter (970625 Euro)
 	&BurnDrvCpsMshvsfh,			// Marvel Super Heroes vs Street Fighter (970625 Hispanic)
 	&BurnDrvCpsMshvsfj2,		// Marvel Super Heroes vs Street Fighter (970625 Japan)
+	&BurnDrvCpsMshvsfu1d,		// Marvel Super Heroes vs Street Fighter (970625 USA Phoenix Edition)
 	&BurnDrvCpsMshvsfu1,		// Marvel Super Heroes vs Street Fighter (970625 USA)
 	&BurnDrvCpsMshvsfj1,		// Marvel Super Heroes vs Street Fighter (970702 Japan)
 	&BurnDrvCpsMshvsfj,			// Marvel Super Heroes vs Street Fighter (970707 Japan)
 	&BurnDrvCpsMshvsfb,			// Marvel Super Heroes vs Street Fighter (970827 Brazil)
 	&BurnDrvCpsMshvsfu,			// Marvel Super Heroes vs Street Fighter (970827 USA)
+	&BurnDrvCpsMvscur1,			// Marvel vs Capcom - clash of super heroes (971222 USA)
 	&BurnDrvCpsMvscar1,			// Marvel vs Capcom - clash of super heroes (980112 Asia)
-	&BurnDrvCpsMvsc,			// Marvel vs Capcom - clash of super heroes (980112 Euro)
+	&BurnDrvCpsMvscr1,			// Marvel vs Capcom - clash of super heroes (980112 Euro)
 	&BurnDrvCpsMvscjr1,			// Marvel vs Capcom - clash of super heroes (980112 Japan)
 	&BurnDrvCpsMvsca,			// Marvel vs Capcom - clash of super heroes (980123 Asia)
 	&BurnDrvCpsMvscb,			// Marvel vs Capcom - clash of super heroes (980123 Brazil)
+	&BurnDrvCpsMvsc,			// Marvel vs Capcom - clash of super heroes (980123 Euro)
 	&BurnDrvCpsMvsch,			// Marvel vs Capcom - clash of super heroes (980123 Hispanic)
 	&BurnDrvCpsMvscj,			// Marvel vs Capcom - clash of super heroes (980123 Japan)
+	&BurnDrvCpsMvscud,			// Marvel vs Capcom - clash of super heroes (980123 USA Phoenix Edition)
 	&BurnDrvCpsMvscu,			// Marvel vs Capcom - clash of super heroes (980123 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDfran,				// Mary Shelley's Frankenstein (U) [!] [no comment]
-	&BurnDrvMDmomonj,			// Master of Monsters (J) [!] [no comment]
-	&BurnDrvMDmamo,				// Master of Monsters (U) [!] [no comment]
-	&BurnDrvMDmowe,				// Master of Weapon (J) [!] [no comment]
-	&BurnDrvMDmaten,			// Maten no Soumetsu / Maten Densetsu (J) [!] [no comment]
-	&BurnDrvMDmath,				// Math Blaster - Episode 1 (U) [!] [no comment]
-	&BurnDrvMDmazib,			// Mazin Saga (Beta) [no comment]
-	&BurnDrvMDmazij,			// Mazin Saga (J) [!] [no comment]
-	&BurnDrvMDmazi,				// Mazin Saga (U) [!] [no comment]
-	&BurnDrvMDmazie,			// Mazin Wars (E) [!] [no comment]
-	&BurnDrvMDmcdtlb,			// McDonald's Treasure Land Adventure (Beta) [no comment]
-	&BurnDrvMDmcdtle,			// McDonald's Treasure Land Adventure (E) [no comment]
-	&BurnDrvMDmcdtj,			// McDonald's Treasure Land Adventure (J) [!] [no comment]
-	&BurnDrvMDmtla,				// McDonald's Treasure Land Adventure (U) [!] [no comment]
-	&BurnDrvMDmedalc,			// Medal City (SN) (J) [no comment]
-	&BurnDrvMDmanser,			// Mega Anser (J) (REV01) [!] [no comment]
-	&BurnDrvMDmbmb,				// Mega Bomberman (UE) [!] [no comment]
-	&BurnDrvMDmbmba,			// Mega Bomberman (UE) [a1][!] [no comment]
-	&BurnDrvMDmb8p,				// Mega Bomberman - 8 Player Demo (Unl) [no comment]
-	&BurnDrvMDmg10i1,			// Mega Games 10 in 1 (EB) [!] [no comment]
-	&BurnDrvMDmg2e,				// Mega Games 2 (E) [!] [no comment]
-	&BurnDrvMDmg3e,				// Mega Games 3 (E) [!] [no comment]
-	&BurnDrvMDmg6v1e,			// Mega Games 6 (Vol 1) (E) [!] [no comment]
-	&BurnDrvMDmg6v2e,			// Mega Games 6 (Vol 2) (E) [!] [no comment]
-	&BurnDrvMDmg6v3e,			// Mega Games 6 (Vol 3) (E) [!] [no comment]
-	&BurnDrvMDmg1e,				// Mega Games I (E) [!] [no comment]
-	&BurnDrvMDmlo,				// Mega Lo Mania (E) (REV00) [c][!] [no comment]
-	&BurnDrvMDmlom01,			// Mega Lo Mania (E) (REV01) [no comment]
-	&BurnDrvMDmloj,				// Mega Lo Mania (J) [!] [no comment]
+	&BurnDrvMDg_marysh,			// Mary Shelley's Frankenstein (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsMegaman,			// Mega Man - the power battle (951006 Asia)
-	&BurnDrvCpsMmancp2u,		// Mega Man - The Power Battle (951006 USA, SAMPLE Version)
-	&BurnDrvCpsMegamn2a,		// Mega Man 2 - the power fighters (960708 Asia)
-	&BurnDrvCpsMegaman2,		// Mega Man 2 - the power fighters (960708 USA)
+	&BurnDrvKamenrid,			// Masked Riders Club Battle Race
+	&BurnDrvMDg_master,			// Master of Monsters (Japan)
+	&BurnDrvMDg_maste1,			// Master of Monsters (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDmegaq,			// Mega Q - The Party Quiz Game (J) [!] [no comment]
-	&BurnDrvMDmswive,			// Mega SWIV (E) [no comment]
-	&BurnDrvMDmswi,				// Mega SWIV (E) [no comment]
-	&BurnDrvMDmturre,			// Mega Turrican (E) [!] [no comment]
-	&BurnDrvMDmtur,				// Mega Turrican (U) [!] [no comment]
+	&BurnDrvMDg_mweap,			// Master of Weapon (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMasterwj,			// Master of Weapon (Japan)
+	&BurnDrvMasterwu,			// Master of Weapon (US)
+	&BurnDrvMasterw,			// Master of Weapon (World)
+	&BurnDrvMatchit2,			// Match It II
+	&BurnDrvMDg_matenn,			// Maten no Soumetsu (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mathbl,			// Math Blaster - Episode 1 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvmatrim,				// Matrimelee / Shin Gouketsuji Ichizoku Toukon
+	&BurnDrvmatrimbl,			// Matrimelee / Shin Gouketsuji Ichizoku Toukon (bootleg)
+//	&BurnDrvmatrimnd,			// Matrimelee / Shin Gouketsuji Ichizoku Toukon (decrypted C) [no comment]
+	&BurnDrvMofflott,			// Maze of Flott (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mazins,			// Mazin Saga (Asia) [no comment, NOT WORKING]
+	&BurnDrvMDg_mazin1,			// Mazin Saga (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_mazin2,			// Mazin Saga Mutant Fighter (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_mazinw,			// Mazin Wars (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvmazingerj,			// Mazinger Z (Japan, ver. 94/06/27)
+	&BurnDrvmazinger,			// Mazinger Z (World, ver. 94/06/27)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mcdona,			// McDonald's Treasure Land Adventure (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mcdon2,			// McDonald's Treasure Land Adventure (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_mcdon1,			// McDonald's Treasure Land Adventure (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_mcdon3,			// McDonald's Treasure Land Adventure (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_medalc,			// Medal City (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_megaan,			// Mega Anser (Japan) (Program) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMegablstj,			// Mega Blast (Japan)
+	&BurnDrvMegablstu,			// Mega Blast (US)
+	&BurnDrvMegablst,			// Mega Blast (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_megabo,			// Mega Bomberman (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megab1,			// Mega Bomberman (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_mbm8,			// Mega Bomberman - 8 Player Demo (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_megaga,			// Mega Games 10 (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag1,			// Mega Games 2 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag2,			// Mega Games 3 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag3,			// Mega Games 6 Vol. 1 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag4,			// Mega Games 6 Vol. 2 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag5,			// Mega Games 6 Vol. 3 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megag6,			// Mega Games I (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsMegamana,		// Mega Man - the power battle (951006 Asia)
+	&BurnDrvCpsMegaman,			// Mega Man - the power battle (951006 USA)
+	&BurnDrvCpsMmancp2u,		// Mega Man - The Power Battle (951006 USA, SAMPLE Version)
+	&BurnDrvMDg_megama,			// Mega Man - The Wily Wars (Europe)
+	&BurnDrvCpsMegaman2a,		// Mega Man 2 - the power fighters (960708 Asia)
+	&BurnDrvCpsMegamn2d,		// Mega Man 2 - the power fighters (960708 USA Phoenix Edition)
+	&BurnDrvCpsMegaman2,		// Mega Man 2 - the power fighters (960708 USA)
+	&BurnDrvCpsMegaman2h,		// Mega Man 2 - the power fighters (960712 Hispanic)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mswivb,			// Mega SWIV (E) [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_mswiv,			// Mega SWIV (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megatu,			// Mega Turrican (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megat1,			// Mega Turrican (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsMtwins,			// Mega Twins (chiki chiki boys 900619 etc)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_megal1,			// Mega-Lo-Mania (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_megalo,			// Mega-Lo-Mania (Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_megal2,			// Mega-Lo-Mania (France) [no comment, NOT WORKING]
+	&BurnDrvMDg_megal3,			// Mega-Lo-Mania (Japan) [no comment, NOT WORKING]
+#endif
 	&BurnDrvMegadon,			// Megadon
 #if defined FBA_DEBUG
-	&BurnDrvMDgen6pk,			// Megadrive 6-Pak (U) [!] [no comment]
-	&BurnDrvMDmegme,			// Megaman - The Wily Wars (E) [no comment]
-	&BurnDrvMDmegamd,			// MegaMind (SN) (J) [no comment]
-	&BurnDrvMDmegp,				// Megapanel (J) [c][!] [no comment]
-	&BurnDrvMDmtrx,				// MegaTraX (J) [c][!] [no comment]
+	&BurnDrvMDg_megami,			// MegaMind (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_megane,			// MegaNet (Brazil) (Program) [no comment, NOT WORKING]
+	&BurnDrvMDg_megapa,			// MegaPanel (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_megatr,			// MegaTrax (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvMeijinsn,			// Meijinsen
+	&BurnDrvKikcubic,			// Meikyu Jima (Japan)
+	&BurnDrvMeikyuh,			// Meikyuu Hunter G (Japan, set 1)
+	&BurnDrvMeikyuha,			// Meikyuu Hunter G (Japan, set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDmenace,			// Menacer 6-in-1 Game Pack (UE) [!] [no comment]
+	&BurnDrvMDg_menace,			// Menacer 6-Game Cartridge (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_menghu,			// Meng Huan Shui Guo Pan - 777 Casino (China) (Unl) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsMercs,			// Mercs (900302 etc)
-	&BurnDrvCpsMercsu,			// Mercs (900302 USA)
-	&BurnDrvCpsMercsua,			// Mercs (900608 USA)
+	&BurnDrvCpsMercsur1,		// Mercs (900302 USA)
+	&BurnDrvCpsMercsu,			// Mercs (900608 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDmerc,				// Mercs (W) [!] [no comment]
-	&BurnDrvMDmfang,			// Metal Fangs (J) [c][!] [no comment]
+	&BurnDrvMDg_mercs,			// Mercs ~ Senjou no Ookami II (World) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMetafox,			// Meta Fox
+	&BurnDrvMetalbj,			// Metal Black (Japan)
+	&BurnDrvMetalb,				// Metal Black (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_metalf,			// Metal Fangs (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvMetlsavr,			// Metal Saver
-	&BurnDrvMSlug,				// Metal Slug - super vehicle-001
-	&BurnDrvMSlug2,				// Metal Slug 2 - super vehicle-001/II
+	&BurnDrvmslug,				// Metal Slug - Super Vehicle-001
+	&BurnDrvmslug2,				// Metal Slug 2 - Super Vehicle-001/II
 	&BurnDrvmslug3,				// Metal Slug 3
-	&BurnDrvmslug3n,			// Metal Slug 3 (not encrypted)
-	&BurnDrvmslug4,				// Metal Slug 4
+	&BurnDrvmslug3h,			// Metal Slug 3 (not encrypted)
+//	&BurnDrvmslug3hd,			// Metal Slug 3 (not encrypted, decrpyted C) [no comment]
+//	&BurnDrvmslug4nd,			// Metal Slug 4 (decrypted C) [no comment]
+	&BurnDrvmslug4,				// Metal Slug 4 (set 1)
+	&BurnDrvmslug4h,			// Metal Slug 4 (set 2)
 	&BurnDrvms4plus,			// Metal Slug 4 Plus (bootleg)
 	&BurnDrvmslug5,				// Metal Slug 5
 	&BurnDrvmslug5h,			// Metal Slug 5 (AES Cart)
+	&BurnDrvmslug5b,			// Metal Slug 5 (bootleg)
+//	&BurnDrvmslug5nd,			// Metal Slug 5 (decrypted C) [no comment]
 	&BurnDrvms5pcb,				// Metal Slug 5 (JAMMA PCB)
+//	&BurnDrvms5pcbnd,			// Metal Slug 5 (JAMMA PCB, decrypted C) [no comment]
 	&BurnDrvms5plus,			// Metal Slug 5 Plus (bootleg)
-	&BurnDrvmslug3b6,			// Metal Slug 6
-	&BurnDrvMSlugX,				// Metal Slug X - super vehicle-001
+	&BurnDrvmslug3b6,			// Metal Slug 6 (Metal Slug 3 bootleg)
+	&BurnDrvmslugx,				// Metal Slug X - Super Vehicle-001
+	&BurnDrvmetmqstr,			// Metamoqester (International)
+	&BurnDrvMetrocrs,			// Metro-Cross (set 1)
+	&BurnDrvMetrocrsa,			// Metro-Cross (set 2)
 	&BurnDrvMWalkbl,			// Michael Jackson's Moonwalker (bootleg)
-	&BurnDrvMDmwlk00,			// Michael Jackson's Moonwalker (W) (REV00) [!]
-	&BurnDrvMDmjmw,				// Michael Jackson's Moonwalker (W) (REV01) [!]
+	&BurnDrvMDg_micha1,			// Michael Jackson's Moonwalker (World)
+	&BurnDrvMDg_michae,			// Michael Jackson's Moonwalker (World) (Rev A)
 #if defined FBA_DEBUG
-	&BurnDrvMDmicmab,			// Mick & Mack as the Global Gladiators (Beta) [no comment]
-	&BurnDrvMDmicmaj,			// Mick & Mack as the Global Gladiators (E) [!] [no comment]
-	&BurnDrvMDmicm,				// Mick & Mack as the Global Gladiators (E) [!] [no comment]
-	&BurnDrvMDmmanib,			// Mickey Mania - Timeless Adventures of Mickey Mouse (Beta) [no comment]
-	&BurnDrvMDmmanie,			// Mickey Mania - Timeless Adventures of Mickey Mouse (E) [!] [no comment]
-	&BurnDrvMDmmanij,			// Mickey Mania - Timeless Adventures of Mickey Mouse (J) [!] [no comment]
-	&BurnDrvMDmman,				// Mickey Mania - Timeless Adventures of Mickey Mouse (U) [!] [no comment]
-	&BurnDrvMDminnie,			// Mickey Mouse - Minnie's Magical Adventure 2 (J) [!] [no comment]
-	&BurnDrvMDmult,				// Mickey's Ultimate Challenge (U) [!] [no comment]
+	&BurnDrvMDg_mickm,			// Mick & Mack as the Global Gladiators (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_mickmb,			// Mick & Mack as the Global Gladiators (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_mickey,			// Mickey Mania - The Timeless Adventures of Mickey Mouse (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_micke1,			// Mickey Mania - The Timeless Adventures of Mickey Mouse (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_micke3,			// Mickey Mania - The Timeless Adventures of Mickey Mouse (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_micke2,			// Mickey Mania - The Timeless Adventures of Mickey Mouse (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_mickuc,			// Mickey's Ultimate Challenge (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDmicmc,			// Micro Machines (C)
-	&BurnDrvMDmica,				// Micro Machines (UE) [a1][c][!]
-	&BurnDrvMDmic,				// Micro Machines (UE) [c][!]
+	&BurnDrvMDg_micma,			// Micro Machines (C)
+	&BurnDrvMDg_micm,			// Micro Machines (USA, Europe)
+	&BurnDrvMDg_micmb,			// Micro Machines (USA, Europe) (Alt)
+	&BurnDrvMDg_micmc,			// Micro Machines (USA, Europe) (MDMM ACD3)
+	&BurnDrvMDg_micm2a,			// Micro Machines 2 - Turbo Tournament (Europe) (J-Cart)
+	&BurnDrvMDg_micm2,			// Micro Machines 2 - Turbo Tournament (Europe) (J-Cart) (Alt)
+	&BurnDrvMDg_mmm,			// Micro Machines Military (Europe) (J-Cart)
+	&BurnDrvMDg_mmma,			// Micro Machines Military - It's a Blast! (E) [x]
 #if defined FBA_DEBUG
-	&BurnDrvMDmicm96,			// Micro Machines - Turbo Tournament '96 (V1.1) (E) [no comment]
-	&BurnDrvMDmic9,				// Micro Machines - Turbo Tournament '96 (V1.1) (E) (J-Cart) [c][!] [no comment]
-	&BurnDrvMDmicm2e,			// Micro Machines 2 - Turbo Tournament (E) (J-Cart) [c][!] [no comment]
-	&BurnDrvMDmic2,				// Micro Machines 2 - Turbo Tournament (E) [c][!] [no comment]
-	&BurnDrvMDmimmx,			// Micro Machines Military - It's a Blast! (E) [x] [no comment]
-	&BurnDrvMDmidrej,			// Midnight Resistance (J) [!] [no comment]
-	&BurnDrvMDmidr,				// Midnight Resistance (U) [!] [no comment]
-	&BurnDrvMDmig29e,			// Mig-29 Fighter Pilot (E) [!] [no comment]
-	&BurnDrvMDm29,				// Mig-29 Fighter Pilot (U) [!] [no comment]
-	&BurnDrvMDmmg,				// Might and Magic - Gates to Another World (UE) (REV01) [!] [no comment]
-	&BurnDrvMDmima3b,			// Might and Magic III - Isles of Terra (Beta) [no comment]
-	&BurnDrvMDmmpre,			// Mighty Morphin Power Rangers (E) [!] [no comment]
-	&BurnDrvMDmmpr,				// Mighty Morphin Power Rangers (U) [!] [no comment]
-	&BurnDrvMDmmprme,			// Mighty Morphin Power Rangers - The Movie (E) [!] [no comment]
-	&BurnDrvMDmmpm,				// Mighty Morphin Power Rangers - The Movie (U) [!] [no comment]
+	&BurnDrvMDg_mic96a,			// Micro Machines Turbo Tournament 96 (Europe) (J-Cart) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsMPang,			// Mighty! Pang (001010 USA)
+	&BurnDrvMDg_mic96b,			// Micro Machines Turbo Tournament 96 (Europe) (v1.1) (J-Cart)
+	&BurnDrvMDg_mic96,			// Micro Machines Turbo Tournament 96 (V1.1) (E)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_midrsj,			// Midnight Resistance (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_midrs,			// Midnight Resistance (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_midway,			// Midway Presents Arcade's Greatest Hits (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mig2fi,			// Mig-29 Fighter Pilot (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mig2f1,			// Mig-29 Fighter Pilot (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_mig2f2,			// Mig-29 Fighter Pilot (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_mighta,			// Might and Magic - Gates to Another World (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mm3p,			// Might and Magic III - Isles of Terra (USA) (Proto) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMimonkey,			// Mighty Monkey
+	&BurnDrvMimonscr,			// Mighty Monkey (bootleg on Scramble hardware)
+	&BurnDrvMimonsco,			// Mighty Monkey (bootleg on Super Cobra hardware)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pr,				// Mighty Morphin Power Rangers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpa,			// Mighty Morphin Power Rangers (Prototype - Aug 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpb,			// Mighty Morphin Power Rangers (Prototype - Aug 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpc,			// Mighty Morphin Power Rangers (Prototype - Aug 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpd,			// Mighty Morphin Power Rangers (Prototype - Aug 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpe,			// Mighty Morphin Power Rangers (Prototype - Jul 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_prpf,			// Mighty Morphin Power Rangers (Prototype - Jul 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pru,			// Mighty Morphin Power Rangers (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtm,			// Mighty Morphin Power Rangers - The Movie (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtmpa,			// Mighty Morphin Power Rangers - The Movie (Prototype - Jul 13, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtmpb,			// Mighty Morphin Power Rangers - The Movie (Prototype - Jul 17, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtmpc,			// Mighty Morphin Power Rangers - The Movie (Prototype - Jul 22, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtmpd,			// Mighty Morphin Power Rangers - The Movie (Prototype - Jul 24, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_prtmu,			// Mighty Morphin Power Rangers - The Movie (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsMPangr1,			// Mighty! Pang (000925 Euro)
+	&BurnDrvCpsMPang,			// Mighty! Pang (001010 Euro)
+	&BurnDrvCpsMPangu,			// Mighty! Pang (001010 USA)
 	&BurnDrvCpsMPangj,			// Mighty! Pang (001011 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDmike,				// Mike Ditka Power Football (U) [!] [no comment]
-	&BurnDrvMDmdpfua,			// Mike Ditka Power Football (U) [a1][!] [no comment]
+	&BurnDrvMDg_miked1,			// Mike Ditka Power Football (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mikedi,			// Mike Ditka Power Football (USA, Europe) (Alt) [no comment, NOT WORKING]
 #endif
 	&BurnDrvGtmr2a,				// Mille Miglia 2: Great 1000 Miles Rally (95/04/04)
 	&BurnDrvGtmr2,				// Mille Miglia 2: Great 1000 Miles Rally (95/05/24)
 #if defined FBA_DEBUG
-	&BurnDrvMDminato,			// Minato no Toreijia (J) [!] [no comment]
+	&BurnDrvMDg_minato,			// Minato no Traysia (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMinefld,			// Minefield
 	&BurnDrvminivadr,			// Minivader
-	&BurnDrvMinasan,			// Minnasanno Okagesamadesu
+	&BurnDrvminasan,			// Minnasanno Okagesamadesu
 #if defined FBA_DEBUG
-	&BurnDrvMDmfpl,				// Minnesota Fats Pool Legend (U) [!] [no comment]
-	&BurnDrvMDmpiano,			// Miracle Piano Teaching System (U) [!] [no comment]
-	&BurnDrvMDmfli,				// Misadventures of Flin [no comment]
+	&BurnDrvMDg_minnes,			// Minnesota Fats - Pool Legend (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_miracl,			// Miracle Piano Teaching System (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMsbingo,			// Miss Bingo
 	&BurnDrvMissmw96,			// Miss Mister World '96 (Nude)
+	&BurnDrvMspuzzle,			// Miss Puzzle
+	&BurnDrvMspuzzlg,			// Miss Puzzle (Clone of Gumbo)
+	&BurnDrvMspuzzlen,			// Miss Puzzle (Nudes) [no comment, NOT WORKING]
 	&BurnDrvMissw96,			// Miss World '96 (Nude)
-#if defined FBA_DEBUG
-	&BurnDrvMia,				// Missing in Action (Version T) [no comment]
-#endif
 	&BurnDrvMrviking,			// Mister Viking (315-5041)
-	&BurnDrvMrvikngj,			// Mister Viking (315-5041, Japan)
+	&BurnDrvMrvikingj,			// Mister Viking (315-5041, Japan)
+	&BurnDrvQuiz18k,			// Miyasu Nonki no Quiz 18-Kin
+	&BurnDrvMizubaku,			// Mizubaku Daibouken (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDmlbb,				// MLBPA Baseball (U) [!] [no comment]
-	&BurnDrvMDmlbs,				// MLBPA Sports Talk Baseball (U) [!] [no comment]
+	&BurnDrvMDg_mk5mor,			// MK 5 - Mortal Combat - SubZero (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_mk5mo1,			// MK 5 - Mortal Combat - SubZero (Unl) [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_mlbpab,			// MLBPA Baseball (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvmole,				// Mole Attack
-	&BurnDrvMiexchng,			// Money Puzzle Exchanger\0Money Idol Exchanger
+	&BurnDrvMsgundam,			// Mobile Suit Gundam
+	&BurnDrvMsgundam1,			// Mobile Suit Gundam (Japan)
+	&BurnDrvGundamex,			// Mobile Suit Gundam EX Revue
+	&BurnDrvMogura,				// Mogura Desse
+	&BurnDrvMole,				// Mole Attack
+	&BurnDrvmiexchng,			// Money Puzzle Exchanger / Money Idol Exchanger
 #if defined FBA_DEBUG
-	&BurnDrvMDmonob,			// Monopoly (Beta) [no comment]
-	&BurnDrvMDmono,				// Monopoly (U) [c][!] [no comment]
-	&BurnDrvMDmonwr4,			// Monster World IV (J) [!] [no comment]
+	&BurnDrvMDg_mono,			// Monopoly (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_monob,			// Monopoly (USA) (Beta) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_monste,			// Monster World IV (Japan)
+	&BurnDrvMstworld,			// Monsters World
+	&BurnDrvMoonaln,			// Moon Alien
+	&BurnDrvMoonal2,			// Moon Alien Part 2
+	&BurnDrvMoonal2b,			// Moon Alien Part 2 (older version)
+	&BurnDrvMooncrsb,			// Moon Cresta (bootleg set 1)
+	&BurnDrvMooncrs2,			// Moon Cresta (bootleg set 2)
+	&BurnDrvMooncrs3,			// Moon Cresta (bootleg set 3)
+	&BurnDrvMooncrgx,			// Moon Cresta (Galaxian hardware)
+	&BurnDrvMooncrstg,			// Moon Cresta (Gremlin)
+	&BurnDrvMooncrstuk,			// Moon Cresta (Nichibutsu UK)
+	&BurnDrvMooncrstu,			// Moon Cresta (Nichibutsu USA, unencrypted)
+	&BurnDrvMooncrst,			// Moon Cresta (Nichibutsu)
+	&BurnDrvMooncrsto,			// Moon Cresta (Nichibutsu, old rev)
+	&BurnDrvMoonqsr,			// Moon Quasar
+	&BurnDrvMshuttlej2,			// Moon Shuttle (Japan set 2)
+	&BurnDrvMshuttlej,			// Moon Shuttle (Japan)
+	&BurnDrvMshuttle2,			// Moon Shuttle (US? set 2)
+	&BurnDrvMshuttle,			// Moon Shuttle (US?)
+	&BurnDrvMooncmw,			// Moon War (Moon Cresta bootleg)
+	&BurnDrvMoonwar,			// Moonwar
+	&BurnDrvMoonwara,			// Moonwar (older)
 	&BurnDrvMoremore,			// More More
 	&BurnDrvMoremorp,			// More More Plus
-#if defined FBA_DEBUG
-	&BurnDrvMDmk,				// Mortal Kombat (UE) (REV01) [c][!] [no comment]
-	&BurnDrvMDmk00,				// Mortal Kombat (W) (REV00) [!] [no comment]
-	&BurnDrvMDmk3e,				// Mortal Kombat 3 (E) [!] [no comment]
-	&BurnDrvMDmk3,				// Mortal Kombat 3 (U) [!] [no comment]
-	&BurnDrvMDmk2,				// Mortal Kombat II (W) [!] [no comment]
-#endif
+	&BurnDrvMDg_mka,			// Mortal Kombat (World)
+	&BurnDrvMDg_mk,				// Mortal Kombat (World) (v1.1)
+	&BurnDrvMDg_mk3,			// Mortal Kombat 3 (Europe)
+	&BurnDrvMDg_mk3a,			// Mortal Kombat 3 (USA)
+	&BurnDrvMDg_mk2,			// Mortal Kombat II (World)
 	&BurnDrvmrdo,				// Mr. Do!
 	&BurnDrvmrdofix,			// Mr. Do! (bugfixed)
 	&BurnDrvmrdoy,				// Mr. Do! (prototype)
 	&BurnDrvmrdot,				// Mr. Do! (Taito license)
 	&BurnDrvmrdu,				// Mr. Du!
+	&BurnDrvMrgoemon,			// Mr. Goemon (Japan)
+	&BurnDrvMrheli,				// Mr. HELI no Dai-Bouken
+	&BurnDrvMrkougar,			// Mr. Kougar
+	&BurnDrvMrkougb,			// Mr. Kougar (bootleg set 1)
+	&BurnDrvMrkougb2,			// Mr. Kougar (bootleg set 2)
+	&BurnDrvMrkougar2,			// Mr. Kougar (earlier)
 	&BurnDrvmrlo,				// Mr. Lo!
 #if defined FBA_DEBUG
-	&BurnDrvMDnutz,				// Mr. Nutz (E) [!] [no comment]
+	&BurnDrvMDg_mrnutz,			// Mr. Nutz (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvmrtnt,				// Mr. TNT
 	&BurnDrvmspacman,			// MS Pacman
@@ -5363,709 +9286,1218 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvmspacmat,			// Ms. Pac Attack
 	&BurnDrvmspacmbe,			// Ms. Pac-Man (bootleg, (encrypted))
 #if defined FBA_DEBUG
-	&BurnDrvMDmpac,				// Ms. Pac-Man (U) [!] [no comment]
+	&BurnDrvMDg_mspac1,			// Ms. Pac-Man (U) [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_mspacm,			// Ms. Pac-Man (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvmspacmnf,			// Ms. Pac-Man (with speedup hack)
 	&BurnDrvmspacpls,			// Ms. Pac-Man Plus
-	&BurnDrvmschamp,			// Ms. Pacman Champion Edition / Super Zola Pac Gal
+	&BurnDrvmschamps,			// Ms. Pacman Champion Edition / Super Zola Pac Gal
 	&BurnDrvrocktrv2,			// MTV Rock-N-Roll Trivia (Part 2)
+	&BurnDrvMugsmash,			// Mug Smashers
 #if defined FBA_DEBUG
-	&BurnDrvMDmahbb,			// Muhammad Ali Heavyweight Boxing (Beta) [no comment]
-	&BurnDrvMDmahbe,			// Muhammad Ali Heavyweight Boxing (E) [no comment]
-	&BurnDrvMDmahb,				// Muhammad Ali Heavyweight Boxing (U) [c][!] [no comment]
+	&BurnDrvMDg_mugens,			// Mugen Senshi Valis (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_muhamm,			// Muhammad Ali Heavyweight Boxing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_muham2,			// Muhammad Ali Heavyweight Boxing (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_muham1,			// Muhammad Ali Heavyweight Boxing (USA) (Beta) [no comment, NOT WORKING]
 #endif
 	&BurnDrvSemibase,			// MuHanSeungBu (SemiCom Baseball) (Korea)
+	&BurnDrvNmg5,				// Multi 5 / New Multi Game 5
+	&BurnDrvNmg5e,				// Multi 5 / New Multi Game 5 (earlier)
+	&BurnDrvMultchmk,			// Multi Champ (Korea)
+	&BurnDrvMultchmp,			// Multi Champ (World)
+	&BurnDrvMchampdx,			// Multi Champ Deluxe (ver. 0106, 06/01/2000)
+	&BurnDrvMchampda,			// Multi Champ Deluxe (ver. 1126, 26/11/1999)
 	&BurnDrvCpsMbomberj,		// Muscle Bomber - the body explosion (930713 Japan)
+//	&BurnDrvCpsMbombdje,		// Muscle Bomber Duo - heat up warriors (931206 Japan E) [no comment]
 	&BurnDrvCpsMbombrdj,		// Muscle Bomber Duo - heat up warriors (931206 Japan)
+//	&BurnDrvCpsMbombrda,		// Muscle Bomber Duo - ultimate team battle (931206 Asia) [no comment]
 	&BurnDrvCpsMbombrd,			// Muscle Bomber Duo - ultimate team battle (931206 etc)
+//	&BurnDrvCpsMbombrdh,		// Muscle Bomber Duo - ultimate team battle (931206 Hispanic) [no comment]
+//	&BurnDrvCpsMbombrdu,		// Muscle Bomber Duo - ultimate team battle (931206 USA) [no comment]
+	&BurnDrvMDg_musham,			// MUSHA - Metallic Uniframe Super Hybrid Armor (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_mushaa,			// Musha Aleste - Full Metal Fighter Ellinor (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDmushaj,			// Musha Aleste - Full Metal Fighter Ellinor (J) [!] [no comment]
-	&BurnDrvMDmutlfj,			// Mutant League Football (J) [!] [no comment]
-	&BurnDrvMDmlfoot,			// Mutant League Football (UE) [!] [no comment]
-	&BurnDrvMDmuth,				// Mutant League Hockey (UE) [!] [no comment]
+	&BurnDrvMDg_mutant,			// Mutant League Football (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_mutan1,			// Mutant League Football (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mlhock,			// Mutant League Hockey (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMutnat,				// Mutation Nation
+	&BurnDrvmutnat,				// Mutation Nation
 	&BurnDrvMvpj,				// MVP (set 1, Japan, FD1094 317-0142)
 	&BurnDrvMvp,				// MVP (set 2, US, FD1094 317-0143)
+	&BurnDrvMyherok,			// My Hero (Korea)
 	&BurnDrvMyhero,				// My Hero (US, not encrypted)
 	&BurnDrvmystston,			// Mysterious Stones - Dr. John's Adventure
 	&BurnDrvmyststno,			// Mysterious Stones - Dr. Kick in Adventure
 #if defined FBA_DEBUG
-	&BurnDrvMDmysd00,			// Mystic Defender (W) (REV00) [!] [no comment]
-	&BurnDrvMDmysd,				// Mystic Defender (W) (REV01) [!] [no comment]
-	&BurnDrvMDmysf,				// Mystical Fighter (U) [c][!] [no comment]
+	&BurnDrvMDg_mysti1,			// Mystic Defender (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_mystic,			// Mystic Defender (USA, Europe) (Rev A) [no comment, NOT WORKING]
 #endif
-	&BurnDrvNam1975,			// NAM - 1975
+	&BurnDrvMysticrib,			// Mystic Riders (bootleg?)
+	&BurnDrvMysticri,			// Mystic Riders (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_mysti2,			// Mystical Fighter (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_nakaji,			// Nakajima Satoru Kanshuu F1 Grand Prix (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_nakaj1,			// Nakajima Satoru Kanshuu F1 Hero MD (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nakaj2,			// Nakajima Satoru Kanshuu F1 Super License (Japan)
+	&BurnDrvnam1975,			// NAM-1975
 #if defined FBA_DEBUG
 	&BurnDrvNaname,				// Naname de Magic! [no comment]
+	&BurnDrvMDg_naomic,			// Naomichi Ozaki no Super Masters (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvNastar,				// Nastar (World)
+	&BurnDrvNastarw,			// Nastar Warrior (US)
 	&BurnDrvnmouse,				// Naughty Mouse (set 1)
 	&BurnDrvnmouseb,			// Naughty Mouse (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDna95,				// NBA Action '95 (UE) [!] [no comment]
-	&BurnDrvMDnact,				// NBA Action (U) [!] [no comment]
-	&BurnDrvMDnasc,				// NBA All-Star Challenge (UE) [!] [no comment]
-	&BurnDrvMDnbahte,			// NBA Hang Time (E) [!] [no comment]
-	&BurnDrvMDnbah,				// NBA Hang Time (U) [!] [no comment]
-	&BurnDrvMDnbajj,			// NBA Jam (J) [!] [no comment]
-	&BurnDrvMDnbaj00,			// NBA Jam (UE) (REV00) [!] [no comment]
-	&BurnDrvMDnjam,				// NBA Jam (UE) (REV01) [!] [no comment]
-	&BurnDrvMDnbajt0,			// NBA Jam Tournament Edition (W) (REV00) [!] [no comment]
-	&BurnDrvMDnjte,				// NBA Jam Tournament Edition (W) (REV01) [!] [no comment]
-	&BurnDrvMDnl95,				// NBA Live 95 (UE) [!] [no comment]
-	&BurnDrvMDnl96,				// NBA Live 96 (UE) [!] [no comment]
-	&BurnDrvMDnl97,				// NBA Live 97 (UE) [!] [no comment]
-	&BurnDrvMDnl98,				// NBA Live 98 (U) [!] [no comment]
-	&BurnDrvMDnpbb,				// NBA Playoff - Bulls vs Blazers (J) [!] [no comment]
-	&BurnDrvMDnpbl,				// NBA Pro Basketball - Bulls vs Lakers (J) [!] [no comment]
-	&BurnDrvMDnba9,				// NBA Showdown 94 (Beta) [no comment]
-	&BurnDrvMDnba94b,			// NBA Showdown 94 (Beta) [no comment]
-	&BurnDrvMDnbs9,				// NBA Showdown 94 (UE) [!] [no comment]
-	&BurnDrvMDnccf,				// NCAA College Football (U) [!] [no comment]
-	&BurnDrvMDncff,				// NCAA Final Four College Basketball (U) [!] [no comment]
+	&BurnDrvMDg_naa95a,			// NBA Action '95 (Prototype - Dec 02, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95b,			// NBA Action '95 (Prototype - Dec 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95c,			// NBA Action '95 (Prototype - Dec 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95d,			// NBA Action '95 (Prototype - Dec 22, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95e,			// NBA Action '95 (Prototype - Dec 24, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95f,			// NBA Action '95 (Prototype - Dec 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95g,			// NBA Action '95 (Prototype - Dec 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95h,			// NBA Action '95 (Prototype - Dec 31, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95i,			// NBA Action '95 (Prototype - Feb 01, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95j,			// NBA Action '95 (Prototype - Feb 1, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95k,			// NBA Action '95 (Prototype - Feb 2, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95l,			// NBA Action '95 (Prototype - Jan 03, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95m,			// NBA Action '95 (Prototype - Jan 08, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95n,			// NBA Action '95 (Prototype - Jan 12, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95o,			// NBA Action '95 (Prototype - Jan 15, 1995 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95p,			// NBA Action '95 (Prototype - Jan 21, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95q,			// NBA Action '95 (Prototype - Jan 22, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95r,			// NBA Action '95 (Prototype - Jan 24, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95s,			// NBA Action '95 (Prototype - Jan 27, 1995 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95t,			// NBA Action '95 (Prototype - Jan 27, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95u,			// NBA Action '95 (Prototype - Jan 28, 1995 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95v,			// NBA Action '95 (Prototype - Jan 28, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95w,			// NBA Action '95 (Prototype - Jan 30, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95x,			// NBA Action '95 (Prototype - Nov 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_naa95y,			// NBA Action '95 (Prototype - Nov 23, 1994 - A) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_naa95,			// NBA Action '95 Starring David Robinson (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nbaap1,			// NBA Action (Prototype - Jan 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbaap2,			// NBA Action (Prototype - Jan 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbaap3,			// NBA Action (Prototype - Jan 27, 1994) (broken - C08 missing) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nbaa,			// NBA Action (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nbaall,			// NBA All-Star Challenge (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbahan,			// NBA Hang Time (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbaha1,			// NBA Hang Time (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbajj,			// NBA Jam (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbaja,			// NBA Jam (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbaj,			// NBA Jam (USA, Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbajt,			// NBA Jam Tournament Edition (W) (REV01) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_nbajta,			// NBA Jam Tournament Edition (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_nbl95k,			// NBA Live 95 (Korea) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nbl95,			// NBA Live 95 (USA, Europe)
+	&BurnDrvMDg_nbal96,			// NBA Live 96 (USA, Europe)
+	&BurnDrvMDg_nbal97,			// NBA Live 97 (USA, Europe)
+	&BurnDrvMDg_nbal98,			// NBA Live 98 (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nbapla,			// NBA Playoff - Bulls vs Blazers (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_nbapl1,			// NBA Playoffs - Bulls Vs Blazers (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nbapro,			// NBA Pro Basketball '94 (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nbapr1,			// NBA Pro Basketball - Bulls Vs Lakers (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nbashb,			// NBA Showdown '94 (USA) (Beta)
+	&BurnDrvMDg_nbash,			// NBA Showdown '94 (USA, Europe)
+	&BurnDrvMDg_ncaafi,			// NCAA Final Four Basketball (USA)
+	&BurnDrvMDg_ncaafo,			// NCAA Football (USA)
+	&BurnDrvKuniokunb,			// Nekketsu Kouha Kunio-kun (Japan bootleg)
+	&BurnDrvKuniokun,			// Nekketsu Kouha Kunio-kun (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nekket,			// Nekketsu Koukou Dodgeball Bu - Soccer Hen MD (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsNemoj,			// Nemo (90 11 20 Japan)
 	&BurnDrvCpsNemo,			// Nemo (90 11 30 etc)
-	&BurnDrvNeobombe,			// Neo Bomberman
-	&BurnDrvNeodrift,			// Neo Drift Out - new technology
-	&BurnDrvNeoGeo,				// Neo Geo [BIOS only, NOT WORKING]
-	&BurnDrvNeomrdo,			// Neo Mr. Do!
-	&BurnDrvTurfmast,			// Neo Turf Masters\0Big Tournament Golf
-	&BurnDrvNeocup98,			// Neo-Geo Cup '98 - the road to the victory
+	&BurnDrvneo2500,			// Neo 2500 Demo
+	&BurnDrvneobombe,			// Neo Bomberman
+	&BurnDrvneodrift,			// Neo Drift Out - New Technology
+	&BurnDrvNeoGeo,				// Neo Geo MVS System [BIOS only, NOT WORKING]
+	&BurnDrvneomrdo,			// Neo Mr. Do!
+	&BurnDrvneonopon,			// Neo No Panepon (beta)
 #if defined FBA_DEBUG
-	&BurnDrvMDnew3dg,			// New 3D Golf Simulation Harukanaru Augusta (J) [!] [no comment]
+	&BurnDrvneoponga,			// Neo Pong (ver 1.0) [no comment, NOT WORKING]
 #endif
+	&BurnDrvneopong,			// Neo Pong (ver 1.1)
+	&BurnDrvsyscheck,			// Neo System Check (ver 1.0b)
+	&BurnDrvturfmast,			// Neo Turf Masters / Big Tournament Golf
+	&BurnDrvneocup98,			// Neo-Geo Cup '98 - The Road to the Victory
+	&BurnDrvMDg_new3dg,			// New 3D Golf Simulation Devil's Course (Japan)
+	&BurnDrvMDg_new3d1,			// New 3D Golf Simulation Harukanaru Augusta (Japan)
+	&BurnDrvMDg_new3d2,			// New 3D Golf Simulation Pebble Beach no Hatou (Japan)
+	&BurnDrvMDg_new3d3,			// New 3D Golf Simulation Waialae no Kiseki (Japan)
+	&BurnDrvNewapunk,			// New Atomic Punk - Global Quest (US)
 	&BurnDrvNewfant,			// New Fantasia
 	&BurnDrvnewpuckx,			// New Puck-X
 #if defined FBA_DEBUG
-	&BurnDrvMDtnzs,				// New Zealand Stor [no comment]
-	&BurnDrvMDnhir,				// Newman-Haas IndyCar Racing (W) [!] [no comment]
+	&BurnDrvNrallyx,			// New Rally X [no comment]
+#endif
+	&BurnDrvNewsin7,			// New Sinbad 7
+#if defined FBA_DEBUG
+	&BurnDrvMDg_newzea,			// New Zealand Story, The (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_newman,			// Newman Haas Indy Car Featuring Nigel Mansell (World) [no comment, NOT WORKING]
 #endif
 	&BurnDrvnewpuc2,			// Newpuc2
 	&BurnDrvnewpuc2b,			// Newpuc2b
 	&BurnDrvNews,				// News (set 1)
 	&BurnDrvNewsa,				// News (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDnfl5,				// NFL '95 (U) [!] [no comment]
-	&BurnDrvMDnfl8,				// NFL 98 (U) [!] [no comment]
-	&BurnDrvMDnfl94j,			// NFL Football '94 Starring Joe Montana (J) [!] [no comment]
-	&BurnDrvMDnfl4,				// NFL Football '94 Starring Joe Montana (U) [!] [no comment]
-	&BurnDrvMDnfpt,				// NFL Prime Time (U) [!] [no comment]
-	&BurnDrvMDnqc,				// NFL Quarterback Club 96 (UE) [!] [no comment]
-	&BurnDrvMDnqc6,				// NFL Quarterback Club 96 (UE) [!] [no comment]
-	&BurnDrvMDnh94,				// NHL 94 (UE) [!] [no comment]
-	&BurnDrvMDnh95,				// NHL 95 (UE) [!] [no comment]
-	&BurnDrvMDnh9e,				// NHL 95 Elitserien (E) [c][!] [no comment]
-	&BurnDrvMDnh96,				// NHL 96 (UE) [!] [no comment]
-	&BurnDrvMDnhl96e,			// NHL 96 Elitserien (E) [no comment]
-	&BurnDrvMDnh97,				// NHL 97 (UE) [!] [no comment]
-	&BurnDrvMDnh98,				// NHL 98 (U) [c][!] [no comment]
-	&BurnDrvMDnash,				// NHL All-Star Hockey '95 (U) [!] [no comment]
+	&BurnDrvMDg_nfl95a,			// NFL '95 (Prototype - Aug 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95b,			// NFL '95 (Prototype - Aug 05, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95c,			// NFL '95 (Prototype - Aug 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95d,			// NFL '95 (Prototype - Aug 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95e,			// NFL '95 (Prototype - Aug 12, 1994)_ [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95f,			// NFL '95 (Prototype - Aug 17, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95g,			// NFL '95 (Prototype - Aug 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95h,			// NFL '95 (Prototype - Aug 22, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95i,			// NFL '95 (Prototype - Aug 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95j,			// NFL '95 (Prototype - Aug 31, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95k,			// NFL '95 (Prototype - Sep 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95l,			// NFL '95 (Prototype - Sep 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95m,			// NFL '95 (Prototype - Sep 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95n,			// NFL '95 (Prototype - Sep 05, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95o,			// NFL '95 (Prototype - Sep 05, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95p,			// NFL '95 (Prototype - Sep 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95q,			// NFL '95 (Prototype - Sep 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95r,			// NFL '95 (Prototype - Sep 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95s,			// NFL '95 (Prototype - Sep 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95t,			// NFL '95 (Prototype - Sep 11, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_nfl95u,			// NFL '95 (Prototype - Sep 11, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDnhlh,				// NHL Hockey (U) [!]
+	&BurnDrvMDg_nfl95,			// NFL '95 (USA, Europe)
+	&BurnDrvMDg_nfl98,			// NFL 98 (USA)
+	&BurnDrvMDg_nfl94j,			// NFL Football '94 (Japan)
+	&BurnDrvMDg_nfl94,			// NFL Football '94 Starring Joe Montana (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDnhlp00,			// NHLPA Hockey '93 (UE) (REV00) [no comment]
-	&BurnDrvMDnhlp,				// NHLPA Hockey '93 (UE) (REV01) [!] [no comment]
-	&BurnDrvMDnigwce,			// Nigel Mansell's World Championship (E) [no comment]
-	&BurnDrvMDnigel,			// Nigel Mansell's World Championship (U) [!] [no comment]
+	&BurnDrvMDg_nflqua,			// NFL Quarterback Club (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_nflq96,			// NFL Quarterback Club 96 (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvNightstr,			// Night Striker (US)
+	&BurnDrvMDg_nflspo,			// NFL Sports Talk Football '93 Starring Joe Montana (USA, Europe)
+	&BurnDrvngem2k,				// NGEM2K (beta 2006-01-18)
+	&BurnDrvMDg_nhktai,			// NHK Taiga Drama - Taiheiki (Japan)
+	&BurnDrvMDg_nhl94,			// NHL '94 (USA, Europe)
+	&BurnDrvMDg_nh94_realdump,	// NHL '94 (USA, Europe) (proper dump)
+	&BurnDrvMDg_nhl95,			// NHL 95 (USA, Europe)
+	&BurnDrvMDg_nhl96,			// NHL 96 (USA, Europe)
+	&BurnDrvMDg_nhl97,			// NHL 97 (USA, Europe)
+	&BurnDrvMDg_nhl98,			// NHL 98 (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nhlasa,			// NHL All-Star Hockey '95 (Prototype - Dec 01, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasb,			// NHL All-Star Hockey '95 (Prototype - Dec 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasc,			// NHL All-Star Hockey '95 (Prototype - Dec 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasd,			// NHL All-Star Hockey '95 (Prototype - Nov 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlase,			// NHL All-Star Hockey '95 (Prototype - Nov 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasf,			// NHL All-Star Hockey '95 (Prototype - Nov 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasg,			// NHL All-Star Hockey '95 (Prototype - Nov 21, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlash,			// NHL All-Star Hockey '95 (Prototype - Nov 22, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasi,			// NHL All-Star Hockey '95 (Prototype - Nov 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasj,			// NHL All-Star Hockey '95 (Prototype - Nov 27, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlask,			// NHL All-Star Hockey '95 (Prototype - Nov 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasl,			// NHL All-Star Hockey '95 (Prototype - Nov 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasm,			// NHL All-Star Hockey '95 (Prototype - Oct 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasn,			// NHL All-Star Hockey '95 (Prototype - Oct 21, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlaso,			// NHL All-Star Hockey '95 (Prototype - Sep 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlasp,			// NHL All-Star Hockey '95 (Prototype - Sep 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlas,			// NHL All-Star Hockey '95 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nhlhoc,			// NHL Hockey (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nhlpa1,			// NHLPA Hockey 93 (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_nhlpah,			// NHLPA Hockey 93 (USA, Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_nigelm,			// Nigel Mansell's World Championship Racing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_nigel1,			// Nigel Mansell's World Championship Racing (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvNightstrj,			// Night Striker (Japan)
+	&BurnDrvNightstru,			// Night Striker (US)
+	&BurnDrvNightstr,			// Night Striker (World)
+	&BurnDrvCpsNwarra,			// Night Warriors - darkstalkers' revenge (950302 Asia)
 	&BurnDrvCpsNwarr,			// Night Warriors - darkstalkers' revenge (950316 Euro)
 	&BurnDrvCpsNwarrb,			// Night Warriors - darkstalkers' revenge (950403 Brazil)
 	&BurnDrvCpsNwarrh,			// Night Warriors - darkstalkers' revenge (950403 Hispanic)
+	&BurnDrvCpsNwarrud,			// Night Warriors - darkstalkers' revenge (950406 USA Phoenix Edition)
 	&BurnDrvCpsNwarru,			// Night Warriors - darkstalkers' revenge (950406 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDncir,				// Nightmare Circus (B) [!] [no comment]
-	&BurnDrvMDncircb,			// Nightmare Circus (Beta) [no comment]
+	&BurnDrvMDg_ncirc,			// Nightmare Circus (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_ncircb,			// Nightmare Circus (Brazil) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_ncircp,			// Nightmare Circus (Prototype) [no comment, NOT WORKING]
 #endif
-	&BurnDrvNitD,				// Nightmare in the Dark
-	&BurnDrvNitDbl,				// Nightmare in the Dark (bootleg)
+	&BurnDrvnitd,				// Nightmare in the Dark
+	&BurnDrvnitdbl,				// Nightmare in the Dark (bootleg)
+//	&BurnDrvnitdn,				// Nightmare in the Dark (decrypted C) [no comment]
 #if defined FBA_DEBUG
-	&BurnDrvMDnikkan,			// Nikkan Sports Pro Yakyuu Van (J) [!] [no comment]
-	&BurnDrvMDnbd,				// Ninja Burai Densetsu (J) [!] [no comment]
+	&BurnDrvMDg_nikkan,			// Nikkan Sports Pro Yakyuu Van (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvNCombat,			// Ninja Combat (set 1)
-	&BurnDrvNCombath,			// Ninja Combat (set 2)
-	&BurnDrvNCommand,			// Ninja Commando
+	&BurnDrvNinja,				// Ninja (315-5102)
+	&BurnDrvNbbatman,			// Ninja Baseball Batman (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDngaidb,			// Ninja Gaiden (Beta) [no comment]
+	&BurnDrvMDg_ninjab,			// Ninja Burai Densetsu (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvNinjaMas,			// Ninja Master's haoh ninpo cho
-	&BurnDrvNprincsu,			// Ninja Princess (64k Ver. not encrypted)
+	&BurnDrvncombat,			// Ninja Combat (set 1)
+	&BurnDrvncombath,			// Ninja Combat (set 2)
+	&BurnDrvncommand,			// Ninja Commando
 #if defined FBA_DEBUG
-	&BurnDrvMDnoes,				// No Escape (U) [!] [no comment]
+	&BurnDrvMDg_ninjag,			// Ninja Gaiden (Japan) (Proto) [b] [no comment, NOT WORKING]
 #endif
-	&BurnDrvNoboranb,			// Noboranka (Japan)
+	&BurnDrvGaiden,				// Ninja Gaiden (US)
+	&BurnDrvninjamas,			// Ninja Master's - haoh-ninpo-cho
+	&BurnDrvNprinces,			// Ninja Princess (315-5051, 64k Ver. bootleg?)
+	&BurnDrvNprincesb,			// Ninja Princess (315-5051?, 128k Ver. bootleg?)
+	&BurnDrvNprinceso,			// Ninja Princess (315-5098, 128k Ver.)
+	&BurnDrvNprincesu,			// Ninja Princess (64k Ver. not encrypted)
+	&BurnDrvRyukendn,			// Ninja Ryukenden (Japan, set 1)
+	&BurnDrvRyukenda,			// Ninja Ryukenden (Japan, set 2)
+	&BurnDrvNspirit,			// Ninja Spirit
 #if defined FBA_DEBUG
-	&BurnDrvMDnobbus,			// Nobunaga no Yabou - Bushou Fuuunsoku (J) [!] [no comment]
-	&BurnDrvMDnobzen,			// Nobunaga no Yabou - Zenkokuban (J) [!] [no comment]
-	&BurnDrvMDnoblor,			// Nobunaga no Yabou Haouden - Lord of Darkness (J) [!] [no comment]
-	&BurnDrvMDnobu,				// Nobunaga's Ambition (U) [!] [no comment]
-	&BurnDrvMDnorm,				// Normy's Beach Babe-O-Rama (UE) [!] [no comment]
+	&BurnDrvMDg_noesca,			// No Escape (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvNob,				// Noboranka (Japan) [no comment, NOT WORKING]
+	&BurnDrvNobb,				// Noboranka (Japan, bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_nobbus,			// Nobunaga no Yabou - Bushou Fuuunroku (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_nobhao,			// Nobunaga no Yabou - Haouden (Japan)
+	&BurnDrvMDg_nobzen,			// Nobunaga no Yabou - Zenkoku Ban (Japan)
+	&BurnDrvMDg_nobamb,			// Nobunaga's Ambition (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_normys,			// Normy's Beach Babe-O-Rama (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvNost,				// Nostradamus
+	&BurnDrvNostj,				// Nostradamus (Japan)
+	&BurnDrvNostk,				// Nostradamus (Korea)
+	&BurnDrvNouryoku,			// Nouryoku Koujou Iinkai
 	&BurnDrvOhmygod,			// Oh My God!
+	&BurnDrvOisipuzl,			// Oishii Puzzle Ha Irimasenka
 #if defined FBA_DEBUG
-	&BurnDrvMDolgole,			// Olympic Gold - Barcelona 92 (E) (M8) [c][!] [no comment]
-	&BurnDrvMDolgolj,			// Olympic Gold - Barcelona 92 (J) (M8) [c][!] [no comment]
-	&BurnDrvMDolgolu,			// Olympic Gold - Barcelona 92 (U) (M8) [a1][c][!] [no comment]
-	&BurnDrvMDogol,				// Olympic Gold - Barcelona 92 (U) (M8) [c][!] [no comment]
-	&BurnDrvMDolsg,				// Olympic Summer Games Atlanta 96 (UE) [!] [no comment]
-	&BurnDrvMDolwge,			// Olympic Winter Games - Lillehammer 94 (E) [c][!] [no comment]
-	&BurnDrvMDolwgj,			// Olympic Winter Games - Lillehammer 94 (J) [c][!] [no comment]
-	&BurnDrvMDolwg,				// Olympic Winter Games - Lillehammer 94 (U) [c][!] [no comment]
-	&BurnDrvMDonsl,				// Onslaught (U) [c][!] [no comment]
-	&BurnDrvMDoozee,			// Ooz [no comment]
-	&BurnDrvMDooze,				// Ooz [no comment]
+	&BurnDrvMDg_olympi,			// Olympic Gold (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_olymp1,			// Olympic Gold (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_olymp3,			// Olympic Gold (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_olymp2,			// Olympic Gold (USA) (Alt) [no comment, NOT WORKING]
+	&BurnDrvMDg_olsum,			// Olympic Summer Games (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvopwolfb,			// Operation Bear (bootleg)
+	&BurnDrvOmega,				// Omega
+	&BurnDrvOmni,				// Omni
 #if defined FBA_DEBUG
-	&BurnDrvMDopeu,				// Operation Europe - Path to Victory 1939-1945 (U) [!] [no comment]
+	&BurnDrvMDg_ondalj,			// On Dal Jang Goon (Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvragnagrd,			// Operation Ragnagard\0Shin-Oh-Ken
+	&BurnDrvnmaster,			// Oni - The Ninja Master (Japan)
+	&BurnDrvOnna34ro,			// Onna Sansirou - Typhoon Gal (set 1)
+	&BurnDrvOnna34ra,			// Onna Sansirou - Typhoon Gal (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvOpwolfu,			// Operation Wolf (US) [Protection C-Chip not emulated, NOT WORKING]
+	&BurnDrvMDg_onslau,			// Onslaught (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozepa,			// Ooze, The (E) (Prototype - Jul 28, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_ooze,			// Ooze, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozeju,			// Ooze, The (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozepb,			// Ooze, The (Prototype - Jun 15, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozepc,			// Ooze, The (Prototype - Jun 19, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozepd,			// Ooze, The (Prototype - Jun 29, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozepe,			// Ooze, The (Prototype - Jun 29, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozetf,			// Ooze, The (Prototype 104 - Jun 22, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_oozetg,			// Ooze, The (Prototype 112 - Jun 26, 1995) [no comment, NOT WORKING]
 #endif
-	&BurnDrvOrld105k,			// Oriental Legend (V105, Korean Board)
-	&BurnDrvOrld111c,			// Oriental Legend - Xi Yo Gi Shi Re Zuang (V111, Chinese Board)
-	&BurnDrvOrlegnde,			// Oriental Legend - Xi Yo Gi Shi Re Zuang (V112)
-	&BurnDrvOrlegndc,			// Oriental Legend - Xi Yo Gi Shi Re Zuang (V112, Chinese Board)
+	&BurnDrvOpwolfb,			// Operation Bear
+	&BurnDrvMDg_operat,			// Operation Europe - Path to Victory 1939-45 (USA)
+	&BurnDrvOthunderj,			// Operation Thunderbolt (Japan)
+	&BurnDrvOthunderu,			// Operation Thunderbolt (US)
+	&BurnDrvOthunderuo,			// Operation Thunderbolt (US, older)
+	&BurnDrvOthunder,			// Operation Thunderbolt (World)
+	&BurnDrvOpwolfj,			// Operation Wolf (Japan)
+	&BurnDrvOpwolfu,			// Operation Wolf (US)
+	&BurnDrvOpwolf,				// Operation Wolf (World, set 1)
+	&BurnDrvOpwolfa,			// Operation Wolf (World, set 2)
+	&BurnDrvOpwolf3u,			// Operation Wolf 3 (US)
+	&BurnDrvOpwolf3,			// Operation Wolf 3 (World)
+	&BurnDrvOrbitron,			// Orbitron
+	&BurnDrvOrbs,				// Orbs (10/7/94 prototype?)
+	&BurnDrvOrlegend105k,		// Oriental Legend (V105, Korea)
+	&BurnDrvOrlegend111c,		// Oriental Legend - Xi Yo Gi Shi Re Zuang (V111, China)
+	&BurnDrvOrlegend112ca,		// Oriental Legend - Xi Yo Gi Shi Re Zuang (V112 alt, China)
+	&BurnDrvOrlegend112e,		// Oriental Legend - Xi Yo Gi Shi Re Zuang (V112)
+	&BurnDrvOrlegend112c,		// Oriental Legend - Xi Yo Gi Shi Re Zuang (V112, China)
 	&BurnDrvOrlegend,			// Oriental Legend - Xi Yo Gi Shi Re Zuang (V126)
+	&BurnDrvOlds100a,			// Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100 alt)
+	&BurnDrvOlds100,			// Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100)
+	&BurnDrvoldsplus,			// Oriental Legend Special Plus / Xi You Shi E Zhuan Super Plus (ver. 205)
+	&BurnDrvOlds,				// Oriental Legend Super (V101, Korea)
+	&BurnDrvOsman,				// Osman (World)
 #if defined FBA_DEBUG
-	&BurnDrvOlds,				// Oriental Legend Special (V101, Korea) [no comment, NOT WORKING]
-	&BurnDrvOlds100a,			// Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100 alt) [no comment, NOT WORKING]
-	&BurnDrvOlds100,			// Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100) [no comment, NOT WORKING]
-	&BurnDrvMDosom,				// Osomatsu-kun - Hachamecha Gekijou (J) [c][!] [no comment]
-	&BurnDrvMDotti,				// Ottifant [no comment]
-	&BurnDrvMDottifb,			// Ottifant [no comment]
+	&BurnDrvMDg_osomat,			// Osomatsu-kun Hachamecha Gekijou (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_ottifa,			// Ottifants, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_ottif1,			// Ottifants, The (Germany) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_ootwb,			// Out of this World (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_ootw,			// Out of This World (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDootwb,			// Out of this World (Beta)
-	&BurnDrvMDootw,				// Out of this World (U) [!]
 	&BurnDrvOutrunb,			// Out Run (bootleg)
-	&BurnDrvOutrun1,			// Out Run (deluxe sitdown)
-	&BurnDrvOutrun2,			// Out Run (sitdown/upright, Rev A)
+	&BurnDrvOutrundx,			// Out Run (deluxe sitdown)
+	&BurnDrvOutruno,			// Out Run (sitdown/upright)
+	&BurnDrvOutrunra,			// Out Run (sitdown/upright, Rev A)
 	&BurnDrvOutrun,				// Out Run (sitdown/upright, Rev B)
 	&BurnDrvOutZone,			// Out Zone (set 1)
 	&BurnDrvOutZonea,			// Out Zone (set 2)
 	&BurnDrvOutZoneb,			// Out Zone (set 3, prototype?)
 	&BurnDrvOutZonec,			// Out Zone (set 4)
+	&BurnDrvOutZoned,			// Out Zone (set 5)
 #if defined FBA_DEBUG
-	&BurnDrvMDoutlnb,			// Outlander (Beta) [no comment]
-	&BurnDrvMDolan,				// Outlander (U) [!] [no comment]
-	&BurnDrvMDorunj,			// OutRun (J) [!] [no comment]
-	&BurnDrvMDg_2019b,			// OutRun 2019 (Beta) [no comment]
-	&BurnDrvMDg_2019e,			// OutRun 2019 (E) [!] [no comment]
-	&BurnDrvMDg_2019j,			// OutRun 2019 (J) [!] [no comment]
-	&BurnDrvMDor20,				// OutRun 2019 (U) [!] [no comment]
-	&BurnDrvMDorun,				// OutRunners (J) [!] [no comment]
-	&BurnDrvMDorunrj,			// OutRunners (J) [!] [no comment]
-	&BurnDrvMDorur,				// OutRunners (U) [!] [no comment]
+	&BurnDrvMDg_outlan,			// Outlander (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_outla1,			// Outlander (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_oruna,			// OutRun (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_orun,			// OutRun (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_o2019,			// OutRun 2019 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_o2019j,			// OutRun 2019 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_o2019u,			// OutRun 2019 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_o2019b,			// OutRun 2019 (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_orunrj,			// OutRunners (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_orunr,			// OutRunners (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvOvertop,			// OverTop
+	&BurnDrvovertop,			// Over Top
+	&BurnDrvOzon1,				// Ozon I
+	&BurnDrvPgemeni,			// P-GeMeni (060123)
+	&BurnDrvpow,				// P.O.W. - Prisoners of War (US version 1)
 #if defined FBA_DEBUG
-	&BurnDrvMDpto,				// P.T.O. Pacific Theater of Operations (U) [!] [no comment]
-	&BurnDrvMDpaca,				// Pac-Attack (U) [!] [no comment]
+	&BurnDrvMDg_pacatt,			// Pac-Attack (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvpacgal,				// Pac-Gal
+	&BurnDrvPacmanbl,			// Pac-Man (Galaxian hardware, set 1)
+	&BurnDrvPacmanbla,			// Pac-Man (Galaxian hardware, set 2)
 	&BurnDrvpacheart,			// Pac-Man (Hearts)
 	&BurnDrvpacman,				// Pac-Man (Midway)
 	&BurnDrvpacmod,				// Pac-Man (Midway, harder)
 	&BurnDrvpacmanf,			// Pac-Man (Midway, with speedup hack)
 #if defined FBA_DEBUG
-	&BurnDrvMDpac2,				// Pac-Man 2 - The New Adventures (U) [!] [no comment]
+	&BurnDrvMDg_pacman,			// Pac-Man 2 - The New Adventures (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvpacplus,			// Pac-Man Plus
 #if defined FBA_DEBUG
-	&BurnDrvMDpacm,				// Pac-Mania (U) [!] [no comment]
-	&BurnDrvMDpachin,			// Pachinko Canyon (J) [!] [no comment]
+	&BurnDrvMDg_pmania,			// Pac-Mania (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pachin,			// Pachinko Kuunyan (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_pacifi,			// Pacific Theater of Operations (USA)
 	&BurnDrvpaddle2,			// Paddle 2 (bootleg on Block hardware)
 #if defined FBA_DEBUG
-	&BurnDrvMDpadfi,			// Paddle Fighter (SN) (J) [!] [no comment]
-	&BurnDrvMDpageme,			// Pagemaste [no comment]
-	&BurnDrvMDpagemb,			// Pagemaste [no comment]
-	&BurnDrvMDpage,				// Pagemaste [no comment]
+	&BurnDrvMDg_paddle,			// Paddle Fighter (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_paddl1,			// Paddle Fighter (SN) (GNKO) (J) [!] [no comment, NOT WORKING]
+#endif
+	&BurnDrvsamsho4k,			// Pae Wang Jeon Seol / Legend of a Warrior (Korean censored Samurai Shodown IV)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pagema,			// Pagemaster, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pagem2,			// Pagemaster, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_pagem1,			// Pagemaster, The (USA) (Beta) [no comment, NOT WORKING]
 	&BurnDrvpaintrlr,			// Paint Roller [no comment]
 #endif
+	&BurnDrvPairlove,			// Pairs Love
+	&BurnDrvPangb,				// Pang (bootleg, set 1)
+	&BurnDrvPangbold,			// Pang (bootleg, set 2)
+	&BurnDrvPang,				// Pang (World)
 	&BurnDrvPangpang,			// Pang Pang
-	&BurnDrvCpsPang3,			// Pang! 3 (950511 Euro)
+	&BurnDrvCpsPang3n,			// Pang! 3 (950511 Euro)
 	&BurnDrvCpsPang3j,			// Pang! 3 (950511 Japan)
-	&BurnDrvPanicbom,			// Panic Bomber
+	&BurnDrvCpsPang3,			// Pang! 3 (950601 Euro)
+	&BurnDrvpanicbom,			// Panic Bomber
 #if defined FBA_DEBUG
-	&BurnDrvMDpano,				// Panorama Cotton (J) [c][!] [no comment]
-	&BurnDrvMDpboyj,			// Paperboy (J) [!] [no comment]
-	&BurnDrvMDpapb,				// Paperboy (UE) [!] [no comment]
-	&BurnDrvMDpap2,				// Paperboy II (U) [!] [no comment]
+	&BurnDrvMDg_panora,			// Panorama Cotton (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPaprazzi,			// Paparazzi
+#if defined FBA_DEBUG
+	&BurnDrvMDg_paperb,			// Paperboy (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_paper1,			// Paperboy (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_paper2,			// Paperboy 2 (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvParodisj,			// Parodius DA! (Japan)
+	&BurnDrvParodius,			// Parodius DA! (World, set 1)
+	&BurnDrvParodiusa,			// Parodius DA! (World, set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_partyq,			// Party Quiz Mega Q (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPrtytime,			// Party Time: Gonta the Diver II / Ganbare! Gonta!! 2 (World Release)
+	&BurnDrvPpchamp,			// Pasha Pasha Champ Mini Game Festival
+	&BurnDrvPass,				// Pass
+#if defined FBA_DEBUG
 	&BurnDrvPassshtb,			// Passing Shot (bootleg, 2 Players) [no comment]
 #endif
 	&BurnDrvPassshtj,			// Passing Shot (Japan, 4 Players, FD1094 317-0070)
-	&BurnDrvPshot16a,			// Passing Shot (Japan, 4 Players, System 16A, FD1094 317-0071)
+	&BurnDrvPasssht16a,			// Passing Shot (Japan, 4 Players, System 16A, FD1094 317-0071)
 	&BurnDrvPasssht,			// Passing Shot (World, 2 Players, FD1094 317-0080)
 	&BurnDrvPassshta,			// Passing Shot (World, 4 Players, FD1094 317-0074)
 #if defined FBA_DEBUG
-	&BurnDrvMDpatb,				// Pat Riley Basketball (U) [!] [no comment]
-	&BurnDrvMDpatlab,			// Patlabor (J) [c][!] [no comment]
-	&BurnDrvMDpblbee,			// Pebble Beach Golf Links (E) [no comment]
-	&BurnDrvMDpbgl,				// Pebble Beach Golf Links (U) [!] [no comment]
-	&BurnDrvMDpblbej,			// Pebble Beach no Hatou (J) [!] [no comment]
-	&BurnDrvMDpele,				// Pele! (UE) [!] [no comment]
-	&BurnDrvMDpelw,				// Pele's World Tournament Soccer (UE) [!] [no comment]
-	&BurnDrvMDpeng,				// Pengo (J) [!] [no comment]
+	&BurnDrvMDg_patril,			// Pat Riley Basketball (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_pebble,			// Pebble Beach Golf Links (Europe)
+	&BurnDrvMDg_pebbl1,			// Pebble Beach Golf Links (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_peleii,			// Pele II - World Tournament Soccer (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_peleus,			// Pele! (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvPenbros,			// Penguin Brothers (Japan)
 	&BurnDrvpkunwarj,			// Penguin-Kun Wars (Japan)
 	&BurnDrvpkunwar,			// Penguin-Kun Wars (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDpste03,			// Pete Sampras Tennis (E) (REV03) (J-Cart) [!] [no comment]
-	&BurnDrvMDps96,				// Pete Sampras Tennis 96 (E) [c][!] [no comment]
-	&BurnDrvMDpgae,				// PGA European Tour (UE) [!] [no comment]
-	&BurnDrvMDpg96,				// PGA Tour 96 (UE) [!] [no comment]
-	&BurnDrvMDpgat01,			// PGA Tour Golf (UE) (REV01) [!] [no comment]
-	&BurnDrvMDpga,				// PGA Tour Golf (UE) (REV02) [!] [no comment]
-	&BurnDrvMDpga2j,			// PGA Tour Golf II (J) [!] [no comment]
-	&BurnDrvMDpga200,			// PGA Tour Golf II (UE) (REV00) [c][!] [no comment]
-	&BurnDrvMDpga2,				// PGA Tour Golf II (UE) (REV01) [!] [no comment]
-	&BurnDrvMDpga3,				// PGA Tour Golf III (UE) [!] [no comment]
+	&BurnDrvMDg_pepeng,			// Pepenga Pengo (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPsoldier,			// Perfect Soldiers (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_petes2,			// Pete Sampras Tennis (USA, Europe) (J-Cart) [no comment, NOT WORKING]
+	&BurnDrvMDg_petesa,			// Pete Sampras Tennis (USA, Europe) (J-Cart) (MDST6636) [no comment, NOT WORKING]
+	&BurnDrvMDg_petes1,			// Pete Sampras Tennis (USA, Europe) (J-Cart) (MDSTEE 13) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPpan,				// Peter Pan (bootleg of Hook)
+	&BurnDrvMDg_pgaeur,			// PGA European Tour (USA, Europe)
+	&BurnDrvMDg_pga96,			// PGA Tour 96 (USA, Europe)
+	&BurnDrvMDg_pgaa,			// PGA Tour Golf (USA, Europe) (v1.1)
+	&BurnDrvMDg_pga,			// PGA Tour Golf (USA, Europe) (v1.2)
+	&BurnDrvMDg_pga2b,			// PGA Tour Golf II (Japan)
+	&BurnDrvMDg_pga2a,			// PGA Tour Golf II (USA, Europe)
+	&BurnDrvMDg_pga2,			// PGA Tour Golf II (USA, Europe) (v1.1)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pga3,			// PGA Tour Golf III (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvPgm,				// PGM (Polygame Master) System BIOS [BIOS only, NOT WORKING]
+	&BurnDrvMDg_pstr4j,			// Phantasy Star - Sennenki no Owari ni (Japan)
+	&BurnDrvMDg_pstr2a,			// Phantasy Star II (Brazil)
+	&BurnDrvMDg_pstr2b,			// Phantasy Star II (USA, Europe)
+	&BurnDrvMDg_pstr2,			// Phantasy Star II (USA, Europe) (Rev A)
 #if defined FBA_DEBUG
-	&BurnDrvMDpstr4j,			// Phantasy Star - The End of the Millenium (J) [!] [no comment]
-	&BurnDrvMDpst4,				// Phantasy Star - The End of the Millenium (U) [!] [no comment]
-	&BurnDrvMDphst2b,			// Phantasy Star II (B) (REV01) [!] [no comment]
-	&BurnDrvMDpstr2j,			// Phantasy Star II (J) [!] [no comment]
-	&BurnDrvMDpst201,			// Phantasy Star II (UE) (REV01) [no comment]
-	&BurnDrvMDpst,				// Phantasy Star II (UE) (REV02) [!] [no comment]
-	&BurnDrvMDpst2,				// Phantasy Star II (UE) (REV02) [!] [no comment]
-	&BurnDrvMDp2anne,			// Phantasy Star II - Anne's Adventure (SN) (J) [!] [no comment]
-	&BurnDrvMDp2huey,			// Phantasy Star II - Huey's Adventure (SN) (J) [!] [no comment]
-	&BurnDrvMDp2kind,			// Phantasy Star II - Kinds's Adventure (SN) (J) [!] [no comment]
-	&BurnDrvMDp2shil,			// Phantasy Star II - Shilka's Adventure (SN) (J) [!] [no comment]
-	&BurnDrvMDphst3b,			// Phantasy Star III - Generations of Doom (B) [!] [no comment]
-	&BurnDrvMDpst3,				// Phantasy Star III - Generations of Doom (UE) [!] [no comment]
-	&BurnDrvMDpstr3j,			// Phantasy Star III - Toki no Keishousha (J) [!] [no comment]
-	&BurnDrvMDg_2040e,			// Phantom 2040 (E) [!] [No sound]
-	&BurnDrvMDg_2040,			// Phantom 2040 (U) [!] [No sound]
-	&BurnDrvMDphelie,			// Phelios (E) [c][!] [no comment]
-	&BurnDrvMDphelij,			// Phelios (J) [c][!] [no comment]
-	&BurnDrvMDphel,				// Phelios (U) [c][!] [no comment]
+	&BurnDrvMDg_ps2aa,			// Phantasy Star II - Amia's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2ab,			// Phantasy Star II - Anne's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2ac,			// Phantasy Star II - Huey's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
 #endif
-	&BurnDrvPhotoy2k,			// Photo Y2K\0Real and Fake (V104)
+	&BurnDrvMDg_pstr2j,			// Phantasy Star II - Kaerazaru Toki no Owari ni (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDpinkb,			// Pink Goes to Hollywood (Beta) [no comment]
-	&BurnDrvMDpink,				// Pink Goes to Hollywood (U) [!] [no comment]
-	&BurnDrvMDpinnoe,			// Pinocchio (E) [no comment]
-	&BurnDrvMDpino,				// Pinocchio (U) [!] [no comment]
+	&BurnDrvMDg_ps2ad,			// Phantasy Star II - Kinds's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2ae,			// Phantasy Star II - Nei's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2af,			// Phantasy Star II - Rudger's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2ag,			// Phantasy Star II - Shilka's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_ps2ah,			// Phantasy Star II - Yushis's Adventure (Japan) (SegaNet) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_pstr3,			// Phantasy Star III - Generations of Doom (Brazil)
+	&BurnDrvMDg_pstr3a,			// Phantasy Star III - Generations of Doom (USA, Europe)
+	&BurnDrvMDg_pstr3b,			// Phantasy Star III - Toki no Keishousha (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pstr4a,			// Phantasy Star IV (Prototype - Aug 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pstr4b,			// Phantasy Star IV (Prototype - Jun 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pstr4c,			// Phantasy Star IV (Prototype - May 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pstr4d,			// Phantasy Star IV (Prototype - Nov 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pstr4e,			// Phantasy Star IV (Prototype - Oct 27, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_pstr4,			// Phantasy Star IV (USA)
+	&BurnDrvMDg_phanto,			// Phantom 2040 (Europe)
+	&BurnDrvMDg_phan22,			// Phantom 2040 (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_phelio,			// Phelios (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pheli1,			// Phelios (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_pheli2,			// Phelios (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPhoenxp2,			// Phoenix Part 2
+#if defined FBA_DEBUG
+	&BurnDrvPy2k2,				// Photo Y2K 2 [no comment, NOT WORKING]
+#endif
+	&BurnDrvPhotoy2k104,		// Photo Y2K\0Real and Fake (V104)
+	&BurnDrvPhotoy2k,			// Photo Y2K\0Real and Fake (V105)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pink,			// Pink Goes to Hollywood (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_pinkb,			// Pink Goes to Hollywood (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_pinocc,			// Pinocchio (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pinoc1,			// Pinocchio (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvpiranha,			// Piranha
 	&BurnDrvpiranhah,			// Piranha (hack)
 	&BurnDrvpiranhao,			// Piranha (older)
+	&BurnDrvhigemaru,			// Pirate Ship Higemaru
+	&BurnDrvPirates,			// Pirates
 #if defined FBA_DEBUG
-	&BurnDrvMDpirdwu,			// Pirates of Dark Wate [no comment]
-	&BurnDrvMDpidw,				// Pirates of Dark Wate [no comment]
-	&BurnDrvMDpgoldb,			// Pirates! Gold (Beta) [no comment]
-	&BurnDrvMDpirg,				// Pirates! Gold (U) [!] [no comment]
-	&BurnDrvMDpifia,			// Pit Fighter (UE) (Jun 1991) [!] [no comment]
-	&BurnDrvMDpifg,				// Pit Fighter (W) (Oct 1991) [!] [no comment]
-	&BurnDrvMDpitfe,			// Pitfall - The Mayan Adventure (E) [!] [no comment]
-	&BurnDrvMDpitf,				// Pitfall - The Mayan Adventure (U) [!] [no comment]
+	&BurnDrvMDg_pirate,			// Pirates of Dark Water, The (USA) (January 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pirat1,			// Pirates of Dark Water, The (USA, Europe) (May 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_pgold,			// Pirates! Gold (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_pgoldb,			// Pirates! Gold (USA) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPisces,				// Pisces
+	&BurnDrvPiscesb,			// Pisces (bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pitfi1,			// Pit-Fighter (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_pitfig,			// Pit-Fighter (World) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_pitfal,			// Pitfall - The Mayan Adventure (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pitfa1,			// Pitfall - The Mayan Adventure (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvPitfall2,			// Pitfall II (315-5093)
-	&BurnDrvPitfallu,			// Pitfall II (not encrypted)
-	&BurnDrvPgoal,				// Pleasure Goal - 5 on 5 mini soccer\0Futsal
+	&BurnDrvPitfall2a,			// Pitfall II (315-5093, Flicky Conversion)
+	&BurnDrvPitfall2u,			// Pitfall II (not encrypted)
+	&BurnDrvpgoal,				// Pleasure Goal / Futsal - 5 on 5 Mini Soccer
+	&BurnDrvPlumppop,			// Plump Pop (Japan)
 	&BurnDrvCpsPnickj,			// Pnickies (940608 Japan)
+//	&BurnDrvCpsPnicku,			// Pnickies (940608 USA) [no comment]
 #if defined FBA_DEBUG
-	&BurnDrvMDpocae,			// Pocahontas (E) [!] [no comment]
-	&BurnDrvMDpoca,				// Pocahontas (U) [!] [no comment]
+	&BurnDrvMDg_pocaho,			// Pocahontas (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_pocah1,			// Pocahontas (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvpnyaa,				// Pochi and Nyaa
+//	&BurnDrvpnyaand,			// Pochi and Nyaa (decrypted C) [no comment]
 	&BurnDrvCpsPfghtj,			// Pocket Fighter (970904 Japan)
+	&BurnDrvPktgaldx,			// Pocket Gal Deluxe (Euro v3.00)
+#if defined FBA_DEBUG
+	&BurnDrvPktgaldxb,			// Pocket Gal Deluxe (Euro v3.00, bootleg) [no comment]
+#endif
+	&BurnDrvPktgaldxj,			// Pocket Gal Deluxe (Japan v3.00)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_pocket,			// Pocket Monsters (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_pocke1,			// Pocket Monsters (Unl) [a1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_pocke2,			// Pocket Monsters 2 (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_pokemo,			// Pokemon Crazy Drummer (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_pokem1,			// Pokemon Stadium (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPkladies,			// Poker Ladies
+	&BurnDrvPkladiesla,			// Poker Ladies (Leprechaun ver. 401)
+	&BurnDrvPkladiesl,			// Poker Ladies (Leprechaun ver. 510)
+	&BurnDrvpoknight,			// Poker Night
+	&BurnDrvPompingw,			// Pomping World (Japan)
 	&BurnDrvponpoko,			// Ponpoko
 	&BurnDrvponpokov,			// Ponpoko (Venture Line)
-	&BurnDrvpootan,				// Pootan
-	&BurnDrvpooyan,				// Pooyan
-	&BurnDrvpooyans,			// Pooyan (Stern)
-	&BurnDrvPopbounc,			// Pop 'n Bounce\0Gapporin
+	&BurnDrvPootan,				// Pootan
+	&BurnDrvPooyan,				// Pooyan
+	&BurnDrvPooyans,			// Pooyan (Stern)
+	&BurnDrvpopbounc,			// Pop 'n Bounce / Gapporin
+	&BurnDrvPopspops,			// Pop's Pop's
+	&BurnDrvpopeyeman,			// Popeye-Man
 #if defined FBA_DEBUG
-	&BurnDrvMDpopue,			// Populous (E) [!] [no comment]
-	&BurnDrvMDpopuj,			// Populous (J) [!] [no comment]
-	&BurnDrvMDpopu,				// Populous (U) [!] [no comment]
-	&BurnDrvMDpop2,				// Populous II - Two Tribes (E) [!] [no comment]
-	&BurnDrvMDpath,				// Power Athlete (J) [!] [no comment]
+	&BurnDrvMDg_populo,			// Populous (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_popul1,			// Populous (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_popul2,			// Populous (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPorky,				// Porky
+	&BurnDrvPorter,				// Port Man (bootleg on Moon Cresta hardware)
+	&BurnDrvPoundforj,			// Pound for Pound (Japan)
+	&BurnDrvPoundforu,			// Pound for Pound (US)
+	&BurnDrvPoundfor,			// Pound for Pound (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_powera,			// Power Athlete (Japan, Korea) [no comment, NOT WORKING]
 #endif
 	&BurnDrvPdriftj,			// Power Drift (Japan)
 	&BurnDrvPdrifta,			// Power Drift (World)
 	&BurnDrvPdrifte,			// Power Drift (World, Earlier)
 	&BurnDrvPdrift,				// Power Drift (World, Rev A)
 #if defined FBA_DEBUG
-	&BurnDrvMDpdri,				// Power Drive (E) (M5) [!] [no comment]
-	&BurnDrvMDpins,				// Power Instinct (J) [!] [no comment]
+	&BurnDrvMDg_powerd,			// Power Drive (Europe) (En,Fr,De,Es,Pt) [no comment, NOT WORKING]
 #endif
+	&BurnDrvPowerins,			// Power Instinct (USA)
 	&BurnDrvPowerina,			// Power Instinct (USA, bootleg set 1)
 	&BurnDrvPowerinb,			// Power Instinct (USA, bootleg set 2)
+	&BurnDrvPwrinst2,			// Power Instinct 2 (USA, ver. 94/04/08)
 #if defined FBA_DEBUG
-	&BurnDrvMDpmonj,			// Power Monger (J) [!] [no comment]
-	&BurnDrvMDpmon,				// Power Monger (UE) [!] [no comment]
+	&BurnDrvMDg_pmongj,			// Power Monger (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_pmong,			// Power Monger (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvPspikes2,			// Power Spikes II
+	&BurnDrvpspikes2,			// Power Spikes II
+	&BurnDrvPwheelsj,			// Power Wheels (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDpwbl,				// Powerball (U) [c][!] [no comment]
+	&BurnDrvMDg_powerb,			// Powerball (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsPgearr1,			// Powered Gear - strategic variant armor equipment (940916 Japan)
 	&BurnDrvCpsPgear,			// Powered Gear - strategic variant armor equipment (941024 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDpre2,				// Predator 2 (UE) [!] [no comment]
+	&BurnDrvMDg_predat,			// Predator 2 (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvpreisle2,			// Prehistoric Isle 2
+//	&BurnDrvpreisl2n,			// Prehistoric Isle 2 (decrypted C) [no comment]
+	&BurnDrvPrehislk,			// Prehistoric Isle in 1930 (Korea)
 	&BurnDrvPrehislu,			// Prehistoric Isle in 1930 (US)
 	&BurnDrvPrehisle,			// Prehistoric Isle in 1930 (World)
+	&BurnDrvMDg_premie,			// Premier Manager (Europe)
+	&BurnDrvMDg_prem97,			// Premier Manager 97 (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDpman,				// Premier Manager (E) [!] [no comment]
-	&BurnDrvMDpm97,				// Premier Manager 97 (E) [!] [no comment]
+	&BurnDrvMDg_pretty,			// Pretty Girl Mahjongg (Ch) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSailorMoon,			// Pretty Soldier Sailor Moon (version 95/03/22)
-	&BurnDrvSailorMoonB,		// Pretty Soldier Sailor Moon (version 95/03/22B)
+	&BurnDrvSailorMoonO,		// Pretty Soldier Sailor Moon (ver. 95/03/22, Europe)
+	&BurnDrvSailorMoonOh,		// Pretty Soldier Sailor Moon (ver. 95/03/22, Hong Kong)
+	&BurnDrvSailorMoonOj,		// Pretty Soldier Sailor Moon (ver. 95/03/22, Japan)
+	&BurnDrvSailorMoonOk,		// Pretty Soldier Sailor Moon (ver. 95/03/22, Korea)
+	&BurnDrvSailorMoonOt,		// Pretty Soldier Sailor Moon (ver. 95/03/22, Taiwan)
+	&BurnDrvSailorMoonOu,		// Pretty Soldier Sailor Moon (ver. 95/03/22, USA)
+	&BurnDrvSailorMoon,			// Pretty Soldier Sailor Moon (ver. 95/03/22B, Europe)
+	&BurnDrvSailorMoonh,		// Pretty Soldier Sailor Moon (ver. 95/03/22B, Hong Kong)
+	&BurnDrvSailorMoonj,		// Pretty Soldier Sailor Moon (ver. 95/03/22B, Japan)
+	&BurnDrvSailorMoonk,		// Pretty Soldier Sailor Moon (ver. 95/03/22B, Korea)
+	&BurnDrvSailorMoont,		// Pretty Soldier Sailor Moon (ver. 95/03/22B, Taiwan)
+	&BurnDrvSailorMoonu,		// Pretty Soldier Sailor Moon (ver. 95/03/22B, USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDprim,				// Primal Rage (UE) [!] [no comment]
-	&BurnDrvMDpersb1,			// Prince of Persia (Beta 1) [no comment]
-	&BurnDrvMDpersb2,			// Prince of Persia (Beta 2) [no comment]
-	&BurnDrvMDperse,			// Prince of Persia (E) [no comment]
-	&BurnDrvMDprin,				// Prince of Persia (U) [!] [no comment]
-	&BurnDrvMDprinc2,			// Prince of Persia 2 (Prototype) [no comment]
+	&BurnDrvMDg_primal,			// Primal Rage (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDprho,				// Pro Hockey (J) [!]
+	&BurnDrvMDg_primet,			// Prime Time NFL Starring Deion Sanders (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDprqu,				// Pro Quarterback (U) [c][!] [no comment]
-	&BurnDrvMDprobot,			// Probotector (E) [!] [no comment]
+	&BurnDrvMDg_prinp,			// Prince of Persia (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_prinp2,			// Prince of Persia (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_prinp1,			// Prince of Persia (Europe) (Beta) (Earlier) [no comment, NOT WORKING]
+	&BurnDrvMDg_prinp3,			// Prince of Persia (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_prin2,			// Prince of Persia 2 - The Shadow and the Flame (Europe) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_proact,			// Pro Action Replay (Europe) (Program) [no comment, NOT WORKING]
+	&BurnDrvMDg_proa2,			// Pro Action Replay 2 (Europe) (Alt) (Program) [no comment, NOT WORKING]
+	&BurnDrvMDg_proa2a,			// Pro Action Replay 2 (Europe) (Program) [no comment, NOT WORKING]
 #endif
+	&BurnDrvKiwame,				// Pro Mahjong Kiwame
+#if defined FBA_DEBUG
+	&BurnDrvMDg_proqua,			// Pro Quarterback (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_proyak,			// Pro Yakyuu Super League '91 (Japan)
+	&BurnDrvMDg_probot,			// Probotector (Europe)
 	&BurnDrvCpsProgeara,		// Progear (010117 Asia)
 	&BurnDrvCpsProgear,			// Progear (010117 USA)
+	&BurnDrvCpsProgearjd,		// Progear No Arashi (010117 Japan Phoenix Edition)
 	&BurnDrvCpsProgearj,		// Progear No Arashi (010117 Japan)
+	&BurnDrvCpsProgearjbl,		// Progear No Arashi (010117 Japan, decrypted set)
+	&BurnDrvCpsProgearud,		// Progear(010117 USA Phoenix Edition)
 #if defined FBA_DEBUG
-	&BurnDrvMDpsyobl,			// Psy-O-Blade Moving Adventure (J) [!] [no comment]
-	&BurnDrvMDppin,				// Psycho Pinball (E) (Oct 1994) (M5) [c][!] [no comment]
-	&BurnDrvMDppina,			// Psycho Pinball (E) (Sep 1994) (M5) [c][!] [no comment]
+	&BurnDrvMDg_psyobl,			// Psy-O-Blade (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_psycho,			// Psycho Pinball (Europe) (En,Fr,De,Es,It) (October 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_psych1,			// Psycho Pinball (Europe) (En,Fr,De,Es,It) (September 1994) [no comment, NOT WORKING]
 #endif
+	&BurnDrvOscarj1,			// Psycho-Nics Oscar (Japan revision 1)
+	&BurnDrvOscarj2,			// Psycho-Nics Oscar (Japan revision 2)
+	&BurnDrvOscaru,				// Psycho-Nics Oscar (US)
+	&BurnDrvOscar,				// Psycho-Nics Oscar (World revision 0)
 	&BurnDrvpuckmanh,			// Puckman (Falcom?)
 	&BurnDrvpuckmanf,			// PuckMan (Japan set 1 with speedup hack)
 	&BurnDrvpuckman,			// PuckMan (Japan set 1, Probably Bootleg)
 	&BurnDrvpuckmana,			// PuckMan (Japan set 2)
 	&BurnDrvpuckmod,			// PuckMan (Japan set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDpuggsb,			// Puggsy (Beta) [no comment]
-	&BurnDrvMDpuggse,			// Puggsy (E) [!] [no comment]
-	&BurnDrvMDpugg,				// Puggsy (U) [!] [no comment]
-	&BurnDrvMDpuls,				// Pulseman (J) [c][!] [no comment]
+	&BurnDrvMDg_puggsb,			// Puggsy (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_puggs,			// Puggsy (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_puggsu,			// Puggsy (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvPulstar,			// Pulstar
+	&BurnDrvPulirulaj,			// PuLiRuLa (Japan)
+	&BurnDrvPulirula,			// PuLiRuLa (World)
+	&BurnDrvMDg_pulsem,			// Pulseman (Japan)
+	&BurnDrvpulstar,			// Pulstar
 #if defined FBA_DEBUG
-	&BurnDrvMDpuni,				// Punishe [no comment]
-	&BurnDrvMDpunise,			// Punishe [no comment]
-	&BurnDrvMDputter,			// Putter Golf (SN) (J) [!] [no comment]
-	&BurnDrvMDpuyo,				// Puyo Puyo (J) [!] [no comment]
-	&BurnDrvMDpuy200,			// Puyo Puyo Tsu (J) (REV00) [!] [no comment]
-	&BurnDrvMDpuy2,				// Puyo Puyo Tsu (J) (REV01) [!] [no comment]
+	&BurnDrvMDg_punish,			// Punisher, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_punis1,			// Punisher, The (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPunkshotj,			// Punk Shot (Japan 2 Players)
+	&BurnDrvPunkshot2,			// Punk Shot (US 2 Players)
+	&BurnDrvPunkshot,			// Punk Shot (US 4 Players)
+	&BurnDrvPushmans,			// Pushman (American Sammy license)
+	&BurnDrvPushman,			// Pushman (Korea, set 1)
+	&BurnDrvPushmana,			// Pushman (Korea, set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_putter,			// Putter Golf (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_putte1,			// Putter Golf (SN) (GNKO) (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_puyopu,			// Puyo Puyo (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_puyo2a,			// Puyo Puyo 2 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_puyo2,			// Puyo Puyo 2 (Japan) (v1.1) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsPzloop2j,		// Puzz Loop 2 (010205 Japan)
 	&BurnDrvCpsPzloop2,			// Puzz Loop 2 (010302 Euro)
-	&BurnDrvPbobblen,			// Puzzle Bobble (set 1)\0Bust-A-Move
-	&BurnDrvPbobblna,			// Puzzle Bobble (set 2)\0Bust-A-Move
-	&BurnDrvPbobbl2n,			// Puzzle Bobble 2\0Bust-A-Move Again
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ichir,			// Puzzle & Action - Ichidanto-R (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tantr,			// Puzzle & Action - Tanto-R (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvPbobble,			// Puzzle Bobble (Japan, B-System)
+	&BurnDrvpbobblenb,			// Puzzle Bobble / Bust-A-Move (Neo-Geo) (bootleg)
+	&BurnDrvpbobblen,			// Puzzle Bobble / Bust-A-Move (Neo-Geo) (set 1)
+	&BurnDrvpbobbl2n,			// Puzzle Bobble 2 / Bust-A-Move Again (Neo-Geo)
+	&BurnDrvPzlbreak,			// Puzzle Break
+	&BurnDrvPclubys,			// Puzzle Club (Yun Sung, set 1)
+	&BurnDrvPclubysa,			// Puzzle Club (Yun Sung, set 2)
 	&BurnDrvPzlbowl,			// Puzzle De Bowling (Japan)
-	&BurnDrvPuzzledp,			// Puzzle De Pon
-	&BurnDrvPuzzldpr,			// Puzzle De Pon R
+	&BurnDrvpuzzledp,			// Puzzle De Pon!
+	&BurnDrvpuzzldpr,			// Puzzle De Pon! R!
 	&BurnDrvFourin1boot,		// Puzzle King
 	&BurnDrvPuzlstar,			// Puzzle Star (V100MG)
-	&BurnDrvUoPoko,				// Puzzle Uo Poko (International)
-	&BurnDrvJoyjoy,				// Puzzled\0Joy Joy Kid
+	&BurnDrvUoPoko,				// Puzzle Uo Poko (International, ver. 98/02/06)
+	&BurnDrvUoPokoj,			// Puzzle Uo Poko (Japan, ver. 98/02/06)
+	&BurnDrvjoyjoy,				// Puzzled / Joy Joy Kid
 #if defined FBA_DEBUG
-	&BurnDrvPuzzli2,			// Puzzli 2 Super (V200) [no comment, NOT WORKING]
-	&BurnDrvMDpymag,			// Pyramid Magic (SN) (J) [!] [no comment]
-	&BurnDrvMDpymag2,			// Pyramid Magic II (SN) (J) [!] [no comment]
-	&BurnDrvMDpymag3,			// Pyramid Magic III (SN) (J) [!] [no comment]
-	&BurnDrvMDpymags,			// Pyramid Magic Special (SN) (J) [!] [no comment]
-	&BurnDrvMDquac00,			// Quack Shot Starring Donald Duck (W) (REV00) [!] [no comment]
-	&BurnDrvMDquac,				// Quack Shot Starring Donald Duck (W) (REV01) [!] [no comment]
-	&BurnDrvMDquac01,			// Quack Shot Starring Donald Duck (W) (REV01) [a1][c][!] [no comment]
-	&BurnDrvMDquad,				// Quad Challenge (U) [c][!] [no comment]
+	&BurnDrvMDg_pyrami,			// Pyramid Magic (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_pyram1,			// Pyramid Magic (SN) (GNKO) (J) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_pyram2,			// Pyramid Magic II (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_pyram3,			// Pyramid Magic III (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_pyram4,			// Pyramid Magic Special (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_quack2,			// QuackShot Starring Donald Duck ~ QuackShot - Guruzia Ou no Hihou (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_quacks,			// QuackShot Starring Donald Duck ~ QuackShot - Guruzia Ou no Hihou (World) (REV01) [a1][c][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_quack1,			// QuackShot Starring Donald Duck ~ QuackShot - Guruzia Ou no Hihou (World) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_quadch,			// Quad Challenge (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvQuartet1,			// Quartet (8751 315-5194)
+	&BurnDrvQuarteta,			// Quartet (8751 315-5194)
 	&BurnDrvQuartet,			// Quartet (Rev A, 8751 317-unknown)
-	&BurnDrvQuart21,			// Quartet 2 (8751 317-0010)
-	&BurnDrvQuart2,				// Quartet 2 (unprotected)
+	&BurnDrvQuartet2,			// Quartet 2 (8751 317-0010)
+	&BurnDrvQuartet2a,			// Quartet 2 (unprotected)
+	&BurnDrvQuarth,				// Quarth (Japan)
 	&BurnDrvCpsQadj,			// Quiz & Dragons (940921 Japan)
 	&BurnDrvCpsQad,				// Quiz & Dragons (capcom quiz game 920701 USA)
-	&BurnDrvQuizdais,			// Quiz Daisousa Sen - the last count down
-	&BurnDrvQuizkof,			// Quiz King of Fighters
-	&BurnDrvQuizdai2,			// Quiz Meintantei Neo Geo - quiz daisousa sen part 2
+	&BurnDrvQzchikyu,			// Quiz Chikyu Bouei Gun (Japan)
+	&BurnDrvQcrayon,			// Quiz Crayon Shinchan (Japan)
+	&BurnDrvquizdais,			// Quiz Daisousa Sen - The Last Count Down
+	&BurnDrvquizdaisk,			// Quiz Daisousa Sen - The Last Count Down (Korea)
+	&BurnDrvQuizf1,				// Quiz F1 1-2 Finish (Japan)
+	&BurnDrvQgakumon,			// Quiz Gakumon no Susume (Japan ver. JA1 Type H)
+	&BurnDrvQuizhq,				// Quiz H.Q. (Japan)
+	&BurnDrvQjinsei,			// Quiz Jinsei Gekijoh (Japan)
+	&BurnDrvquizkof,			// Quiz King of Fighters
+	&BurnDrvquizkofk,			// Quiz King of Fighters (Korea)
+	&BurnDrvQzkklogy,			// Quiz Kokology
+	&BurnDrvQzkklgy2,			// Quiz Kokology 2
+	&BurnDrvquizdai2,			// Quiz Meitantei Neo & Geo - Quiz Daisousa Sen part 2
 	&BurnDrvCpsQndream,			// Quiz Nanairo Dreams - nijiirochou no kiseki (nanairo dreams 960826 Japan)
 	&BurnDrvQuizo,				// Quiz Olympic
-	&BurnDrvCpsQtono2,			// Quiz Tonosama no Yabou 2 Zenkoku-ban (tonosama 2 950123 Japan)
+	&BurnDrvQzquest,			// Quiz Quest - Hime to Yuusha no Monogatari (Japan)
+	&BurnDrvQsangoku,			// Quiz Sangokushi (Japan)
+	&BurnDrvQzshowby,			// Quiz Sekai wa SHOW by shobai (Japan)
+	&BurnDrvQtono1,				// Quiz Tonosama no Yabou (Japan)
+	&BurnDrvCpsQtono2j,			// Quiz Tonosama no Yabou 2 Zenkoku-ban (tonosama 2 950123 Japan)
+	&BurnDrvQtorimon,			// Quiz Torimonochou (Japan)
+	&BurnDrvRtypejp,			// R-Type (Japan prototype)
+	&BurnDrvRtypej,				// R-Type (Japan)
+	&BurnDrvRtypeu,				// R-Type (US)
+	&BurnDrvRtypeb,				// R-Type (World bootleg)
+	&BurnDrvRtype,				// R-Type (World)
+	&BurnDrvRtype2,				// R-Type II
+	&BurnDrvRtype2j,			// R-Type II (Japan)
+	&BurnDrvRtype2jc,			// R-Type II (Japan, revision C)
+	&BurnDrvRtypelej,			// R-Type Leo (Japan)
+	&BurnDrvRtypeleo,			// R-Type Leo (World)
 #if defined FBA_DEBUG
-	&BurnDrvRtypelej,			// R-Type Leo (Japan) [Preliminary driver, NOT WORKING]
-	&BurnDrvRtypeleo,			// R-Type Leo (World) [Preliminary driver, NOT WORKING]
-	&BurnDrvMDrace,				// Race Drivin' (U) [!] [no comment]
+	&BurnDrvMDg_rbi93,			// R.B.I. Baseball '93 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_rbi94,			// R.B.I. Baseball '94 (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_rbi4,			// R.B.I. Baseball 3 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_rbi4b,			// R.B.I. Baseball 4 (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_rbi4j,			// R.B.I. Baseball 4 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_rbi4u,			// R.B.I. Baseball 4 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_racedr,			// Race Drivin' (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvRachero,			// Racing Hero (FD1094 317-0144)
+	&BurnDrvRacknrol,			// Rack + Roll
+	&BurnDrvMDradicasf,			// Radica: Street Fighter Pack (Street Fighter 2' Special Champion Edition, Ghouls and Ghosts) (EURO)
+	&BurnDrvMDradicav1,			// Radica: Volume 1 (Sonic the Hedgehog, Altered Beast, Golden Axe, Dr. Robotnik's Mean Bean Machine, Kid Chameleon, Flicky) (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDdicasf,			// Radica: Street Fighter Pack (Street Fighter 2' Special Champion Editio [no comment]
-	&BurnDrvMDdicav1,			// Radica: Volume 1 (Sonic the Hedgeho [no comment]
-	&BurnDrvMDrrexe,			// Radical Rex (E) [no comment]
-	&BurnDrvMDradr,				// Radical Rex (U) [!] [no comment]
+	&BurnDrvMDg_radica,			// Radical Rex (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_radic1,			// Radical Rex (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvRaflesia,			// Rafflesia (315-5162)
 	&BurnDrvrotd,				// Rage of the Dragons
-#if defined FBA_DEBUG
-	&BurnDrvMDragna,			// Ragnacenty (J) [!] [no comment]
-#endif
+//	&BurnDrvrotdnd,				// Rage of the Dragons (decrypted C) [no comment]
+	&BurnDrvMDg_ragnac,			// Ragnacenty (Korea)
+	&BurnDrvragnagrd,			// Ragnagard / Shin-Oh-Ken
 	&BurnDrvRaiden,				// Raiden
 	&BurnDrvRaidena,			// Raiden (Alternate Hardware)
 	&BurnDrvRaidenk,			// Raiden (Korea)
 	&BurnDrvRaident,			// Raiden (Taiwan)
 #if defined FBA_DEBUG
-	&BurnDrvMDraid,				// Raiden Trad (JU) [!] [no comment]
+	&BurnDrvMDg_raiden,			// Raiden Densetsu ~ Raiden Trad (Japan, USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvRchase,				// Rail Chase (Japan)
-	&BurnDrvrainbowe,			// Rainbow Islands (Extra)
-	&BurnDrvrainbow,			// Rainbow Islands (new version)
-	&BurnDrvrainbowo,			// Rainbow Islands (old version)
+	&BurnDrvRaiga,				// Raiga - Strato Fighter (Japan)
+	&BurnDrvStratof,			// Raiga - Strato Fighter (US)
+	&BurnDrvRchasej,			// Rail Chase (Japan)
+	&BurnDrvRchase,				// Rail Chase (World)
+	&BurnDrvRainbowe,			// Rainbow Islands (Extra)
+	&BurnDrvRainbow,			// Rainbow Islands (new version)
+	&BurnDrvRainbowo,			// Rainbow Islands (old version)
 #if defined FBA_DEBUG
-	&BurnDrvMDrain,				// Rainbow Islands - The Story of Bubble Bobble 2 (J) [c][!] [no comment]
-	&BurnDrvMDram300,			// Rambo III (W) (REV00) [!] [no comment]
-	&BurnDrvMDram3,				// Rambo III (W) (REV01) [!] [no comment]
-	&BurnDrvMDramp,				// Rampart (U) [!] [no comment]
-	&BurnDrvMDranxe,			// Ranger-X (E) [!] [no comment]
-	&BurnDrvMDranx,				// Ranger-X (U) [!] [no comment]
-	&BurnDrvMDransei,			// Ransei no Hasha (J) [!] [no comment]
+	&BurnDrvMDg_rainbo,			// Rainbow Islands Extra (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvrastanu,			// Rastan (US set 1)
-	&BurnDrvrastanu2,			// Rastan (US set 2)
-	&BurnDrvrastan,				// Rastan (World)
-	&BurnDrvrastsag1,			// Rastan Saga (Japan rev 1)
-	&BurnDrvrastsaga,			// Rastan Saga (Japan)
+	&BurnDrvRallybik,			// Rally Bike / Dash Yarou
 #if defined FBA_DEBUG
-	&BurnDrvMDrastj,			// Rastan Saga II (J) [!] [no comment]
-	&BurnDrvMDrast,				// Rastan Saga II (U) [!] [no comment]
-	&BurnDrvMDrb3,				// RBI Baseball 3 (U) [c][!] [no comment]
-	&BurnDrvMDrbi4b,			// RBI Baseball 4 (Beta) [no comment]
-	&BurnDrvMDrb4,				// RBI Baseball 4 (U) [!] [no comment]
-	&BurnDrvMDrb93,				// RBI Baseball 93 (U) [!] [no comment]
-	&BurnDrvMDrb94,				// RBI Baseball 94 (UE) [!] [no comment]
+	&BurnDrvRallyxa,			// Rally X [no comment]
+	&BurnDrvRallyx,				// Rally X (32k Ver.?)) [no comment]
+	&BurnDrvRallyxm,			// Rally X (Midway) [no comment]
 #endif
-	&BurnDrvRaf102j,			// Real and Fake\0Photo Y2K (V102, Japanese Board)
-	&BurnDrvrbff1,				// Real Bout Fatal Fury - Real Bout Garou Densetsu
-	&BurnDrvrbff1a,				// Real Bout Fatal Fury - Real Bout Garou Densetsu (bug fix revision)
-	&BurnDrvrbff2k,				// Real Bout Fatal Fury 2 - the newcomers (Korean Release)\0Real Bout Garou Densetsu - the newcomers
-	&BurnDrvrbff2,				// Real Bout Fatal Fury 2 - the newcomers (set 1)\0Real Bout Garou Densetsu - the newcomers
-	&BurnDrvrbff2h,				// Real Bout Fatal Fury 2 - the newcomers (set 2)\0Real Bout Garou Densetsu - the newcomers
-	&BurnDrvrbffspec,			// Real Bout Fatal Fury Special\0Real Bout Special
-	&BurnDrvRedearth,			// Red Earth (Euro 961121) [no comment, NOT WORKING]
-	&BurnDrvRedeartn,			// Red Earth (Euro 961121, NO CD)
+	&BurnDrvRambo3,				// Rambo III (Europe)
+	&BurnDrvRambo3p,			// Rambo III (Europe, Proti?)
+	&BurnDrvRambo3u,			// Rambo III (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDredz,				// Red Zone (UE) [!] [no comment]
+	&BurnDrvMDg_rambo1,			// Rambo III (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_ramboi,			// Rambo III (World) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_rampj,			// Rampart (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_ramp,			// Rampart (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_ranger,			// Ranger-X (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_range1,			// Ranger-X (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_ransei,			// Ransei no Hasha (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRaphero,			// Rapid Hero
+	&BurnDrvRastanu,			// Rastan (US set 1)
+	&BurnDrvRastanu2,			// Rastan (US set 2)
+	&BurnDrvRastan,				// Rastan (World)
+	&BurnDrvRastsaga1,			// Rastan Saga (Japan Rev 1)
+	&BurnDrvRastsaga,			// Rastan Saga (Japan)
+	&BurnDrvRastsag2,			// Rastan Saga 2 (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_rastj,			// Rastan Saga II (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_rast,			// Rastan Saga II (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvphotoy2k102,		// Real and Fake\0Photo Y2K (V102, Japan)
+	&BurnDrvrbff1,				// Real Bout Fatal Fury / Real Bout Garou Densetsu
+	&BurnDrvrbff1a,				// Real Bout Fatal Fury / Real Bout Garou Densetsu (bug fix revision)
+	&BurnDrvrbff2k,				// Real Bout Fatal Fury 2 - The Newcomers (Korean release)
+	&BurnDrvrbff2,				// Real Bout Fatal Fury 2 - The Newcomers / Real Bout Garou Densetsu 2 - the newcomers (set 1)
+	&BurnDrvrbff2h,				// Real Bout Fatal Fury 2 - The Newcomers / Real Bout Garou Densetsu 2 - the newcomers (set 2)
+	&BurnDrvrbffspec,			// Real Bout Fatal Fury Special / Real Bout Garou Densetsu Special
+	&BurnDrvrbffspeck,			// Real Bout Fatal Fury Special / Real Bout Garou Densetsu Special (Korea)
+	&BurnDrvRedeartha,			// Red Earth / War-Zard (Euro 961023)
+	&BurnDrvRedeartna,			// Red Earth / War-Zard (Euro 961023, NO CD)
+	&BurnDrvRedearth,			// Red Earth / War-Zard (Euro 961121)
+	&BurnDrvRedeartn,			// Red Earth / War-Zard (Euro 961121, NO CD)
+	&BurnDrvRedhawke,			// Red Hawk (Excellent Co., Ltd)
+	&BurnDrvRedhawki,			// Red Hawk (Italy)
+	&BurnDrvRedhawk,			// Red Hawk (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_redzon,			// Red Zone (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvReguluso,			// Regulus (315-5033)
 	&BurnDrvRegulus,			// Regulus (315-5033, rev. A)
 	&BurnDrvRegulusu,			// Regulus (not encrypted)
 #if defined FBA_DEBUG
-	&BurnDrvMDrenstb,			// Ren and Stimpy Sho [no comment]
-	&BurnDrvMDrenste,			// Ren and Stimpy Sho [no comment]
-	&BurnDrvMDrens,				// Ren and Stimpy Sho [no comment]
-	&BurnDrvMDrenthe,			// Rent A Hero (J) [!] [no comment]
+	&BurnDrvMDg_rensti,			// Ren & Stimpy Show Presents Stimpy's Invention, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_renst2,			// Ren & Stimpy Show Presents Stimpy's Invention, The (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_renst1,			// Ren & Stimpy Show Presents Stimpy's Invention, The (USA) (Beta) [no comment, NOT WORKING]
 #endif
+	&BurnDrvRenegade,			// Renegade (US)
+	&BurnDrvMDg_rentah,			// Rent a Hero (Japan)
 	&BurnDrvRepulse,			// Repulse
+	&BurnDrvRescue,				// Rescue
 #if defined FBA_DEBUG
-	&BurnDrvMDresq,				// Resq (Beta) [no comment]
-	&BurnDrvMDrshi00,			// Revenge of Shinob [no comment]
-	&BurnDrvMDrshi02,			// Revenge of Shinob [no comment]
-	&BurnDrvMDrevs,				// Revenge of Shinob [no comment]
-	&BurnDrvMDrshi01,			// Revenge of Shinob [no comment]
-	&BurnDrvRevenger,			// Revenger [Bad dump, NOT WORKING]
-	&BurnDrvMDrevx,				// Revolution X (UE) [!] [no comment]
-	&BurnDrvMDrsbt,				// Richard Scarry's Busytown (U) [!] [no comment]
-	&BurnDrvMDriddle,			// Riddle Wired (SN) (J) [no comment]
+	&BurnDrvMDg_resqeu,			// Resq (Europe) (Proto) [no comment, NOT WORKING]
 #endif
-	&BurnDrvRidhero,			// Riding Hero (set 1)
-	&BurnDrvRidheroh,			// Riding Hero (set 2)
+	&BurnDrvRetofinv,			// Return of the Invaders
+	&BurnDrvRetofin1,			// Return of the Invaders (bootleg set 1)
+	&BurnDrvRetofin2,			// Return of the Invaders (bootleg set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_reven2,			// Revenge of Shinobi, The (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_reveng,			// Revenge of Shinobi, The (USA, Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_reven1,			// Revenge of Shinobi, The (USA, Europe) (Rev B) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRevenger,			// Revenger [Bad dump, NOT WORKING]
+#if defined FBA_DEBUG
+	&BurnDrvMDg_revolu,			// Revolution X (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRezon,				// Rezon
+	&BurnDrvRezont,				// Rezon (Taito)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_rsbtpa,			// Richard Scarry's Busytown (Prototype - Aug 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpb,			// Richard Scarry's Busytown (Prototype - Aug 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpc,			// Richard Scarry's Busytown (Prototype - Aug 16, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpd,			// Richard Scarry's Busytown (Prototype - Aug 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpe,			// Richard Scarry's Busytown (Prototype - Aug 25, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpf,			// Richard Scarry's Busytown (Prototype - Aug 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbtpg,			// Richard Scarry's Busytown (Prototype - Jul 21, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rsbt,			// Richard Scarry's BusyTown (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_riddle,			// Riddle Wired (Japan) (SegaNet) [no comment, NOT WORKING]
+#endif
+	&BurnDrvridhero,			// Riding Hero (set 1)
+	&BurnDrvridheroh,			// Riding Hero (set 2)
+	&BurnDrvRingohja,			// Ring no Ohja (Japan 2 Players ver. N)
+	&BurnDrvCpsRingdesta,		// Ring of Destruction - slammasters II (940831 Asia)
+	&BurnDrvCpsRingdstd,		// Ring of Destruction - slammasters II (940902 Euro Phoenix Edition)
 	&BurnDrvCpsRingdest,		// Ring of Destruction - slammasters II (940902 Euro)
 #if defined FBA_DEBUG
-	&BurnDrvMDrop,				// Rings of Power (UE) [!] [no comment]
+	&BurnDrvMDg_ringso,			// Rings of Power (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvRiot,				// Riot
 	&BurnDrvRiotcity,			// Riot City (Japan)
+	&BurnDrvMDg_riseof,			// Rise of the Robots (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDrise,				// Rise of the Robots (E) [!] [no comment]
-	&BurnDrvMDrisk,				// Risk (U) [!] [no comment]
-	&BurnDrvMDrwoo,				// Risky Woods (UE) [!] [no comment]
-	&BurnDrvMDrist00,			// Ristar (UE) (REV00) [no comment]
-	&BurnDrvMDrist,				// Ristar (UE) [!] [no comment]
-	&BurnDrvMDristj,			// Ristar - The Shooting Star (J) [!] [no comment]
-	&BurnDrvMDroadbj,			// Road Blasters (J) [!] [no comment]
-	&BurnDrvMDrbls,				// Road Blasters (U) [!] [no comment]
-	&BurnDrvMDrrsh,				// Road Rash (UE) [c][!] [no comment]
-	&BurnDrvMDrrs3,				// Road Rash 3 (UE) [!] [no comment]
-	&BurnDrvMDrrsh2j,			// Road Rash II (J) [!] [no comment]
-	&BurnDrvMDrrs2,				// Road Rash II (UE) (REV00) [!] [no comment]
-	&BurnDrvMDrrsh22,			// Road Rash II (UE) (REV02) [c][!] [no comment]
+	&BurnDrvMDg_rise_realdump,	// Rise of the Robots (Europe) (proper dump) [no comment, NOT WORKING]
+	&BurnDrvMDg_riskus,			// Risk (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_riskyw,			// Risky Woods (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_ristpa,			// Ristar (Prototype - Aug 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_ristpb,			// Ristar (Prototype - Aug 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_ristpc,			// Ristar (Prototype - Jul 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_ristpd,			// Ristar (Prototype - Jul 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_risto,			// Ristar (USA, Europe) (August 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_rist,			// Ristar (USA, Europe) (September 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_ristj,			// Ristar - The Shooting Star (Japan, Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvRoboarmy,			// Robo Army (set 1)
+	&BurnDrvMDg_roadra,			// Road Rash (USA, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvrobocopb,			// Robocop (World bootleg) [no comment]
-	&BurnDrvrobocop,			// Robocop (World revision 4) [no comment]
-	&BurnDrvMDrobo3,			// Robocop 3 (UE) [!] [no comment]
-	&BurnDrvMDrobtb1,			// Robocop Versus The Terminator (Beta 1) [no comment]
-	&BurnDrvMDrobtb2,			// Robocop Versus The Terminator (Beta 2) [no comment]
-	&BurnDrvMDrobte,			// Robocop Versus The Terminator (E) [no comment]
-	&BurnDrvMDrobt,				// Robocop Versus The Terminator (U) [!] [no comment]
-	&BurnDrvMDrobobt,			// Robot Battler (SN) (J) [no comment]
-	&BurnDrvMDrobw,				// Robot Wreckage (Beta) [no comment]
-	&BurnDrvMDrobwrb,			// Robot Wreckage (Beta) [no comment]
+	&BurnDrvMDg_rrsh3a,			// Road Rash 3 (USA) (Alpha) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_rrsh3,			// Road Rash 3 (USA, Europe)
+	&BurnDrvMDg_rrsh2,			// Road Rash II (Japan)
+	&BurnDrvMDg_rrsh2b,			// Road Rash II (USA, Europe)
+	&BurnDrvMDg_rrsh2a,			// Road Rash II (USA, Europe) (v1.2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_roadbj,			// RoadBlasters (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_roadb,			// RoadBlasters (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvroboarmy,			// Robo Army
+#if defined FBA_DEBUG
+	&BurnDrvrobocopi,			// Robocop (Intro demo) [no comment]
+	&BurnDrvRobocopb,			// Robocop (World bootleg) [no comment]
+	&BurnDrvMDg_roboco,			// RoboCop 3 (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_robtea,			// Robocop Versus The Terminator (Beta 1) [no comment, NOT WORKING]
+	&BurnDrvMDg_robte,			// RoboCop versus The Terminator (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_robteb,			// RoboCop versus The Terminator (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_robtec,			// RoboCop versus The Terminator (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_robotb,			// Robot Battler (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_robotw,			// Robot Wreckage (USA) (Proto) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRockclim,			// Rock Climber
 	&BurnDrvrockduck,			// Rock Duck (prototype?)
 #if defined FBA_DEBUG
-	&BurnDrvMDrnrre,			// Rock n' Roll Racing (E) [!] [no comment]
-	&BurnDrvMDrrr,				// Rock n' Roll Racing (U) [!] [no comment]
-	&BurnDrvMDrkadve,			// Rocket Knight Adventures (E) [!] [no comment]
-	&BurnDrvMDrkadvj,			// Rocket Knight Adventures (J) [!] [no comment]
-	&BurnDrvMDrkni,				// Rocket Knight Adventures (U) [!] [no comment]
+	&BurnDrvMDg_rocknr,			// Rock n' Roll Racing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_rockn1,			// Rock n' Roll Racing (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_rocket,			// Rocket Knight Adventures (Europe)
+	&BurnDrvMDg_rocke1,			// Rocket Knight Adventures (Japan)
+	&BurnDrvMDg_rocke2,			// Rocket Knight Adventures (USA)
 	&BurnDrvCpsRockmanj,		// Rockman - the power battle (950922 Japan)
-	&BurnDrvCpsRckman2j,		// Rockman 2 - the power fighters (960708 Japan)
+	&BurnDrvCpsRockman2j,		// Rockman 2 - the power fighters (960708 Japan)
+	&BurnDrvMDg_rockm1,			// Rockman Mega World (Japan)
+	&BurnDrvMDg_rockma,			// Rockman Mega World (Japan) (Alt)
 #if defined FBA_DEBUG
-	&BurnDrvMDrmmw,				// Rockman Megaworld (J) [!] [no comment]
-	&BurnDrvMDrkmnja,			// Rockman Megaworld (J) [a1][!] [no comment]
+	&BurnDrvMDg_rmx3,			// Rockman X3 (Unl) [!] [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsRmancp2j,		// Rockman: The Power Battle (950922 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDrcvm,				// Roger Clemens' MVP Baseball (U) [!] [no comment]
-	&BurnDrvMDrthn2e,			// Rolling Thunder 2 (E) [c][!] [no comment]
-	&BurnDrvMDrthn2j,			// Rolling Thunder 2 (J) [c][!] [no comment]
-	&BurnDrvMDrth2,				// Rolling Thunder 2 (U) [c][!] [no comment]
-	&BurnDrvMDrth3,				// Rolling Thunder 3 (U) [c][!] [no comment]
-	&BurnDrvMDrolo,				// Rolo to the Rescue (UE) [!] [no comment]
-	&BurnDrvMDr3k2,				// Romance of the Three Kingdoms II (U) [!] [no comment]
-	&BurnDrvMDr3k3,				// Romance of the Three Kingdoms III (U) [!] [no comment]
-	&BurnDrvMDron98b,			// Ronaldinho 98 (B) [c][!] [no comment]
+	&BurnDrvMDg_rogerc,			// Roger Clements MVP Baseball (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRollergj,			// Rollergames (Japan)
+	&BurnDrvRollerg,			// Rollergames (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_rth2,			// Rolling Thunder 2 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_rth2j,			// Rolling Thunder 2 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_rth2u,			// Rolling Thunder 2 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_rth3,			// Rolling Thunder 3 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_roloto,			// Rolo to the Rescue (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_r3k2,			// Romance of the Three Kingdoms II (USA)
+	&BurnDrvMDg_r3k3,			// Romance of the Three Kingdoms III - Dragon of Destiny (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ronald,			// Ronaldinho 98 (B) [c][!] [no comment, NOT WORKING]
 #endif
 	&BurnDrvroute16,			// Route 16
 	&BurnDrvroute16b,			// Route 16 (bootleg)
 	&BurnDrvroute16a,			// Route 16 (set 2)
 	&BurnDrvroutex,				// Route X (bootleg)
 #if defined FBA_DEBUG
-	&BurnDrvMDroybld,			// Royal Blood (J) [!] [no comment]
-	&BurnDrvMDrw93,				// Rugby World Cup 1995 (UE) (M3) [!] [no comment]
-	&BurnDrvMDrunark,			// Runark (J) [!] [no comment]
+	&BurnDrvRascot2,			// Royal Ascot 2 [no comment]
 #endif
-	&BurnDrvRyukyu,				// RyuKyu (Japan, FD1094 317-5023)
-	&BurnDrvMDryuuko,			// Ryuuko no Ken (J) [!]
-	&BurnDrvSrdmissn,			// S.R.D. Mission
+	&BurnDrvMDg_royalb,			// Royal Blood (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsagia,			// Sagaia (U) [c][!] [no comment]
-	&BurnDrvMDsswoj,			// Saint Sword (J) [c][!] [no comment]
-	&BurnDrvMDsswo,				// Saint Sword (U) [c][!] [no comment]
-	&BurnDrvMDsamex3,			// Same! Same! Same! (J) [!] [no comment]
+	&BurnDrvMDg_rugbyw,			// Rugby World Cup 1995 (USA, Europe) (En,Fr,It) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRunark,				// Runark (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_runark,			// Runark (Japan, Korea) [no comment, NOT WORKING]
+#endif
+	&BurnDrvRushcrsh,			// Rush & Crash (Japan)
+	&BurnDrvRushatck,			// Rush'n Attack (US)
+	&BurnDrvRygar,				// Rygar (US set 1)
+	&BurnDrvRygar2,				// Rygar (US set 2)
+	&BurnDrvRygar3,				// Rygar (US set 3, old version)
+	&BurnDrvRyujin,				// Ryu Jin (Japan)
+	&BurnDrvRyukyu,				// RyuKyu (Japan, FD1094 317-5023)
+	&BurnDrvMDg_ryuuko,			// Ryuuko no Ken (Japan)
+	&BurnDrvSpyu,				// S.P.Y. - Special Project Y (US ver. M)
+	&BurnDrvSpy,				// S.P.Y. - Special Project Y (World ver. N)
+	&BurnDrvSrdmissn,			// S.R.D. Mission
+	&BurnDrvSsmissin,			// S.S. Mission
+#if defined FBA_DEBUG
+	&BurnDrvSvg,				// S.V.G. - Spectral vs Generation (V200, China) [Incomplete Dump, NOT WORKING]
+#endif
+	&BurnDrvSabotenb,			// Saboten Bombers (set 1)
+	&BurnDrvSabotenba,			// Saboten Bombers (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sagaia,			// Sagaia (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvNspiritj,			// Saigo no Nindou (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sswrdj,			// Saint Sword (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_sswrd,			// Saint Sword (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSamesame,			// Same! Same! Same! (2 player alternating ver.)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_samesa,			// Same! Same! Same! (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSamesame2,			// Same! Same! Same!
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sampra,			// Sampras Tennis 96 (Europe) (J-Cart) [no comment, NOT WORKING]
 #endif
 	&BurnDrvSamuraiA,			// Samurai Aces (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDsamshe,			// Samurai Shodown (E) [c][!] [no comment]
-	&BurnDrvMDsams,				// Samurai Shodown (U) [!] [no comment]
+	&BurnDrvMDg_samura,			// Samurai Shodown (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_samur1,			// Samurai Shodown (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSamSho,				// Samurai Shodown - Samurai Spirits (set 1)
-	&BurnDrvSamShoh,			// Samurai Shodown - Samurai Spirits (set 2)
-	&BurnDrvSamSho2,			// Samurai Shodown II\0Shin Samurai Spirits - Haohmaru jigokuhen
-	&BurnDrvSamSho3,			// Samurai Shodown III (set 1)\0Samurai Spirits - Zankurou musouken
-	&BurnDrvSamSho3a,			// Samurai Shodown III (set 2)\0Samurai Spirits - Zankurou musouken\0Fighters Swords
-	&BurnDrvSamSho4,			// Samurai Shodown IV - Amakusa's revenge\0Samurai Spirits - Amakusa kourin
-	&BurnDrvsamsho5b,			// Samurai Shodown V (bootleg)\0Samurai Spirits Zero
-	&BurnDrvsamsho5,			// Samurai Shodown V (set 1)\0Samurai Spirits Zero
-	&BurnDrvsamsho5h,			// Samurai Shodown V (set 2)\0Samurai Spirits Zero
-	&BurnDrvsamsh5sp,			// Samurai Shodown V Special (set 1, uncensored)\0Samurai Spirits Zero Special
-	&BurnDrvsamsh5sh,			// Samurai Shodown V Special (set 2, censored)\0Samurai Spirits Zero Special
-	&BurnDrvsamsh5sn,			// Samurai Shodown V Special (set 3, less censored)\0Samurai Spirits Zero Special
+	&BurnDrvsamsho,				// Samurai Shodown / Samurai Spirits (set 1)
+	&BurnDrvsamshoh,			// Samurai Shodown / Samurai Spirits (set 2)
+	&BurnDrvsamsho2,			// Samurai Shodown II / Shin Samurai Spirits - Haohmaru jigokuhen
+	&BurnDrvsamsho3,			// Samurai Shodown III / Samurai Spirits - Zankurou Musouken (set 1)
+	&BurnDrvsamsho3h,			// Samurai Shodown III / Samurai Spirits - Zankurou Musouken (set 2)
+	&BurnDrvsamsho4,			// Samurai Shodown IV - Amakusa's Revenge / Samurai Spirits - Amakusa Kourin
+	&BurnDrvsamsho5b,			// Samurai Shodown V / Samurai Spirits Zero (bootleg)
+//	&BurnDrvsamsh5nd,			// Samurai Shodown V / Samurai Spirits Zero (decrypted C) [no comment]
+	&BurnDrvsamsho5,			// Samurai Shodown V / Samurai Spirits Zero (set 1)
+	&BurnDrvsamsho5h,			// Samurai Shodown V / Samurai Spirits Zero (set 2)
+//	&BurnDrvss5shnd,			// Samurai Shodown V Special / Samurai Spirits Zero Special (decrypted C) [no comment]
+	&BurnDrvsamsh5sp,			// Samurai Shodown V Special / Samurai Spirits Zero Special (set 1, uncensored)
+	&BurnDrvsamsh5sph,			// Samurai Shodown V Special / Samurai Spirits Zero Special (set 2, censored)
+	&BurnDrvsamsh5spn,			// Samurai Shodown V Special / Samurai Spirits Zero Special (set 3, less censored)
 #if defined FBA_DEBUG
-	&BurnDrvMDsamspi,			// Samurai Spirits (J) [!] [no comment]
+	&BurnDrvMDg_samur2,			// Samurai Spirits (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_sanguo,			// San Guo Zhi Lie Zhuan - Luan Shi Qun Ying (China)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sangu1,			// San Guo Zhi V (China) (Unl) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsWofa,			// Sangokushi II (921005 Asia)
+	&BurnDrvCpsWofah,			// Sangokushi II (921005 Asia, bootleg set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDsango2,			// Sangokushi II (J) [!] [no comment]
-	&BurnDrvMDsango3,			// Sangokushi III (J) [!] [no comment]
-	&BurnDrvMDsanret,			// Sangokushi Retsuden (Ch) [no comment]
-	&BurnDrvMDsangor,			// Sangokushi Retsuden - Ransei no Eiyuu Tachi (J) [!] [no comment]
-	&BurnDrvMDsnsme,			// Saturday Night Slam Masters (E) [no comment]
+	&BurnDrvCpsWofaha,			// Sangokushi II (921005 Asia, bootleg) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_sangok,			// Sangokushi II (Japan)
+	&BurnDrvCpsWofhfh,			// Sangokushi II: Huo Fenghuang (Chinese bootleg)
+	&BurnDrvCpsWof3js,			// Sangokushi II: San Jian Sheng (Chinese bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvCpsWof3sj,			// Sangokushi II: San Sheng Jian (Chinese bootleg set 1) [no comment, NOT WORKING]
+	&BurnDrvCpsWof3sja,			// Sangokushi II: San Sheng Jian (Chinese bootleg set 2) [no comment, NOT WORKING]
+	&BurnDrvCpsWofh,			// Sangokushi II: Sanguo Yingxiong Zhuan (Chinese bootleg set 1) [no comment, NOT WORKING]
+	&BurnDrvCpsWofha,			// Sangokushi II: Sanguo Yingxiong Zhuan (Chinese bootleg set 2) [no comment, NOT WORKING]
+	&BurnDrvCpsWofsj,			// Sangokushi II: Sheng Jian Sanguo (Chinese bootleg set 1) [no comment, NOT WORKING]
+	&BurnDrvCpsWofsja,			// Sangokushi II: Sheng Jian Sanguo (Chinese bootleg set 2) [no comment, NOT WORKING]
+	&BurnDrvCpsWofsjb,			// Sangokushi II: Sheng Jian Sanguo (Chinese bootleg set 3) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_sango1,			// Sangokushi III (Japan)
+	&BurnDrvMDg_sango2,			// Sangokushi Retsuden - Ransei no Eiyuutachi (Japan)
+	&BurnDrvSsanchan,			// Sanrin San Chan (Japan)
+	&BurnDrvsercharj,			// SAR - Search And Rescue (Japan)
+	&BurnDrvsercharu,			// SAR - Search And Rescue (US)
+	&BurnDrvsearchar,			// SAR - Search And Rescue (World)
+//	&BurnDrvCpsSlammasa,		// Saturday Night Slam Masters (Slam Masters 930301 Asia) [no comment]
 	&BurnDrvCpsSlammast,		// Saturday Night Slam Masters (Slam Masters 930713 etc)
-	&BurnDrvCpsSlammasu,		// Saturday Night Slam Masters (slam masters 930713 USA)
+//	&BurnDrvCpsSlammash,		// Saturday Night Slam Masters (Slam Masters 930713 Hispanic) [no comment]
+	&BurnDrvCpsSlammastu,		// Saturday Night Slam Masters (slam masters 930713 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDsnsm,				// Saturday Night Slam Masters (U) [!] [no comment]
+	&BurnDrvMDg_saturd,			// Saturday Night Slammasters (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_satur1,			// Saturday Night Slammasters (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSavagere,			// Savage Reign\0Fu'un Mokushiroku - kakutou sousei
+	&BurnDrvSaturnzi,			// Saturn
+	&BurnDrvsamsho2k,			// Saulabi Spirits / Jin Saulabi Tu Hon (Korean release of Samurai Shodown II)
+	&BurnDrvSavgbees,			// Savage Bees
+	&BurnDrvsavagere,			// Savage Reign / Fu'un Mokushiroku - kakutou sousei
 #if defined FBA_DEBUG
-	&BurnDrvMDscob,				// Scooby Doo Mystery (U) [!] [no comment]
-	&BurnDrvMDscrabb,			// Scrabble (Beta) [no comment]
+	&BurnDrvMDg_scooby,			// Scooby Doo Mystery (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvScotrsht,			// Scooter Shooter
+	&BurnDrvScorpionmc,			// Scorpion (Moon Cresta hardware)
+	&BurnDrvScorpion,			// Scorpion (set 1)
+	&BurnDrvScorpiona,			// Scorpion (set 2)
+	&BurnDrvScorpionb,			// Scorpion (set 3)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_scrabb,			// Scrabble (Europe) (Proto) [no comment, NOT WORKING]
+#endif
+	&BurnDrvScramble,			// Scramble
+	&BurnDrvScramblb,			// Scramble (bootleg on Galaxian hardware)
+	&BurnDrvScramb2,			// Scramble (bootleg)
+	&BurnDrvScramblebb,			// Scramble (bootleg?)
+	&BurnDrvScramblebf,			// Scramble (Karateko, French bootleg)
+	&BurnDrvScrambles,			// Scramble (Stern)
 	&BurnDrvscregg,				// Scrambled Egg
 	&BurnDrvSdfight,			// SD Fighters (Korea)
+	&BurnDrvNeobattl,			// SD Gundam Neo Battling (Japan)
+	&BurnDrvSdgndmps,			// SD Gundam Psycho Salamander no Kyoui
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sdvali,			// SD Valis (Japan) [no comment, NOT WORKING]
+#endif
 	&BurnDrvSdibl,				// SDI - Strategic Defense Initiative (bootleg)
-	&BurnDrvSdi,				// SDI - Strategic Defense Initiative (Europe, System 16A, FD1089B 317-0027)
+	&BurnDrvSdi,				// SDI - Strategic Defense Initiative (Japan, old, System 16A, FD1089B 317-0027)
 	&BurnDrvSdib,				// SDI - Strategic Defense Initiative (System 16B, FD1089A 317-0028)
 #if defined FBA_DEBUG
-	&BurnDrvMDseaqe,			// SeaQuest DSV (E) [no comment]
-	&BurnDrvMDseaq,				// SeaQuest DSV (U) [!] [no comment]
+	&BurnDrvMDg_seaque,			// SeaQuest DSV (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_seaqu1,			// SeaQuest DSV (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDg_2sam,			// Second Samurai, The (E)
-	&BurnDrvSeganinj,			// Sega Ninja (315-5102)
-	&BurnDrvSeganinu,			// Sega Ninja (not encrypted)
+	&BurnDrvSearchey,			// Search Eye
+	&BurnDrvSearchp2,			// Search Eye Plus V2.0
+	&BurnDrvMDg_second,			// Second Samurai (Europe)
+	&BurnDrvSectionz,			// Section Z (set 1)
+	&BurnDrvSctionza,			// Section Z (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDsegsp1,			// Sega Sports 1 (Wimbledo [no comment]
-	&BurnDrvMDstop5b,			// Sega Top 5 (B) [!] [no comment]
+	&BurnDrvMDg_segach,			// Sega Channel (USA) (Program) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSengoku,			// Sengoku (set 1)\0Sengoku Denshou
-	&BurnDrvSengokh,			// Sengoku (set 2)\0Sengoku Denshou
-	&BurnDrvSengoku2,			// Sengoku 2\0Sengoku Denshou 2
-	&BurnDrvSengoku3,			// Sengoku 3\0Sengoku Denshou 2001
+	&BurnDrvSeganinj,			// Sega Ninja (315-5102)
+	&BurnDrvSeganinju,			// Sega Ninja (not encrypted)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_segasp,			// Sega Sports 1 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_segato,			// Sega Top Five (Brazil) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSscandal,			// Seishun Scandal (315-5132, Japan)
+	&BurnDrvSelfeena,			// Sel Feena
+	&BurnDrvGrdnstrmk,			// Sen Jin - Guardian Storm (Korea)
+	&BurnDrvsengoku,			// Sengoku / Sengoku Denshou (set 1)
+	&BurnDrvsengokuh,			// Sengoku / Sengoku Denshou (set 2)
+	&BurnDrvsengoku2,			// Sengoku 2 / Sengoku Denshou 2
+	&BurnDrvsengoku3,			// Sengoku 3
+//	&BurnDrvsngoku3n,			// Sengoku 3 (decrypted C) [no comment]
 	&BurnDrvSngkAce,			// Sengoku Ace (Japan)
 	&BurnDrvCpsMercsj,			// Senjo no Ookami II (Ookami 2 900302 Japan)
+	&BurnDrvCommandj,			// Senjou no Ookami
 #if defined FBA_DEBUG
-	&BurnDrvMDsensib,			// Sensible Soccer (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_sensib,			// Sensible Soccer (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDsen,				// Sensible Soccer (E) (M4) [!]
-	&BurnDrvMDseni,				// Sensible Soccer - International Edition (E) (M4) [!]
+	&BurnDrvMDg_sensi,			// Sensible Soccer (Europe) (En,Fr,De,It)
+	&BurnDrvMDg_sensii,			// Sensible Soccer - International Edition (Europe) (En,Fr,De,It)
 #if defined FBA_DEBUG
-	&BurnDrvMDsscc,				// Sesame Street Counting Cafe (U) [!] [no comment]
-	&BurnDrvMDsbls,				// Shadow Blasters (U) [c][!] [no comment]
-	&BurnDrvShdancbl,			// Shadow Dancer (bootleg) [Incomplete Sound, NOT WORKING]
+	&BurnDrvMDg_sesame,			// Sesame Street Counting Cafe (USA) [no comment, NOT WORKING]
+	&BurnDrvSetaroul,			// Seta / Visco Roulette? [no comment, NOT WORKING]
 #endif
-	&BurnDrvShdance1,			// Shadow Dancer (set 1)
-	&BurnDrvShdancej,			// Shadow Dancer (set 2, Japan)
+	&BurnDrvSfx,				// SF-X
+	&BurnDrvShackled,			// Shackled (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_shadow,			// Shadow Blasters (USA) [no comment, NOT WORKING]
+	&BurnDrvShdancbl,			// Shadow Dancer (bootleg) [no comment, NOT WORKING]
+#endif
+	&BurnDrvShdancer1,			// Shadow Dancer (set 1)
+	&BurnDrvShdancerj,			// Shadow Dancer (set 2, Japan)
 	&BurnDrvShdancer,			// Shadow Dancer (set 3, US)
 #if defined FBA_DEBUG
-	&BurnDrvMDsdan,				// Shadow Dancer - The Secret of Shinobi (W) [c][!] [no comment]
+	&BurnDrvMDg_shdanc,			// Shadow Dancer - The Secret of Shinobi (World) [no comment, NOT WORKING]
 #endif
-	&BurnDrvShadfrcj,			// Shadow Force (Japan Version 2)
+	&BurnDrvShadfrcjv2,			// Shadow Force (Japan Version 2)
+	&BurnDrvShadfrcj,			// Shadow Force (Japan Version 3)
 	&BurnDrvShadfrce,			// Shadow Force (US Version 2)
+	&BurnDrvbeast,				// Shadow of the Beast (Neo Geo demo)
 #if defined FBA_DEBUG
-	&BurnDrvMDshbeaj,			// Shadow of the Beast (J) [!] [no comment]
-	&BurnDrvMDsbea,				// Shadow of the Beast (UE) [!] [no comment]
-	&BurnDrvMDsbe2,				// Shadow of the Beast 2 (UE) [!] [no comment]
-	&BurnDrvMDshrunj,			// Shadowrun (J) [!] [no comment]
-	&BurnDrvMDsrun,				// Shadowrun (U) [!] [no comment]
-	&BurnDrvMDswcr,				// Shane Warne Cricket (E) [c][!] [no comment]
-	&BurnDrvMDshan2b,			// Shanghai 2 - Dragon's Eye (Beta) [no comment]
-	&BurnDrvMDs2de,				// Shanghai 2 - Dragon's Eye (U) [!] [no comment]
-	&BurnDrvMDshaq,				// Shaq Fu (UE) [!] [no comment]
-	&BurnDrvMDshikin,			// Shi Kin Joh (J) [!] [no comment]
-	&BurnDrvMDshinch,			// Shin Changsegi - Ragnacenty (K) [!] [no comment]
-	&BurnDrvMDshi,				// Shin Changsegi - Ragnacenty (K) [!] [no comment]
+	&BurnDrvMDg_beast,			// Shadow of the Beast (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_beastj,			// Shadow of the Beast - Mashou no Okite (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_beast2,			// Shadow of the Beast II (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvmatrim,				// Shin gouketsuzi ichizoku - Toukon\0Matrimelee
+	&BurnDrvShadoww,			// Shadow Warriors (World, set 1)
+	&BurnDrvShadowwa,			// Shadow Warriors (World, set 2)
+	&BurnDrvMDg_shdwrj,			// Shadowrun (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDshdrkj,			// Shining and the Darkness (J) [!] [no comment]
-	&BurnDrvMDsfrcbt,			// Shining Force (Beta) [no comment]
-	&BurnDrvMDshf1,				// Shining Force (U) [!] [no comment]
-	&BurnDrvMDshfrcj,			// Shining Force - The Legacy of Great Intention (J) [!] [no comment]
-	&BurnDrvMDshfr2e,			// Shining Force II (E) [!] [no comment]
-	&BurnDrvMDshf2,				// Shining Force II (U) [!] [no comment]
-	&BurnDrvMDshfr2j,			// Shining Force II - Inishie no Fuuin (J) [!] [no comment]
-	&BurnDrvMDshdrkb,			// Shining in the Darkness (B) [!] [no comment]
-	&BurnDrvMDsitd,				// Shining in the Darkness (UE) [!] [no comment]
+	&BurnDrvMDg_shdwra,			// Shadowrun (Prototype - Dec 28, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_shdwrb,			// Shadowrun (Prototype - Dec 31, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_shdwrc,			// Shadowrun (Prototype - Jan 25, 1994 - C) [no comment, NOT WORKING]
+	&BurnDrvMDg_shdwrd,			// Shadowrun (Prototype - Jan 25, 1994) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_shdwr,			// Shadowrun (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_shanew,			// Shane Warne Cricket (Australia) [no comment, NOT WORKING]
+	&BurnDrvMDg_shai2b,			// Shanghai II - Dragon's Eye (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_shai2,			// Shanghai II - Dragon's Eye (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_shai2a,			// Shanghai II - Dragon's Eye (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_shaqfu,			// Shaq Fu (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_shijie,			// Shi Jie Zhi Bang Zheng Ba Zhan - World Pro Baseball 94 (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_shinom,			// Shi no Meikyuu - Labyrinth of Death (Japan) (SegaNet) [no comment, NOT WORKING]
+	&BurnDrvMDg_shijou,			// Shijou Saidai no Soukoban (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_shikin,			// Shikinjoh (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_shinso,			// Shin Souseiki Ragnacenty (Japan)
+	&BurnDrvMDg_shinin,			// Shining and the Darkness (Japan)
+	&BurnDrvMDg_shnf,			// Shining Force (USA)
+	&BurnDrvMDg_shnfa,			// Shining Force (USA) (Beta)
+	&BurnDrvMDg_shnfb,			// Shining Force - Kamigami no Isan (Japan)
+	&BurnDrvMDg_shf2,			// Shining Force II (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_shf2pa,			// Shining Force II (Prototype - Apr 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_shf2pb,			// Shining Force II (Prototype - Jun 07, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_shf2u,			// Shining Force II (USA)
+	&BurnDrvMDg_shf2j,			// Shining Force II - Koe no Fuuin (Japan)
+	&BurnDrvMDg_sitdb,			// Shining in the Darkness (Brazil)
+	&BurnDrvMDg_sitd,			// Shining in the Darkness (USA, Europe)
+	&BurnDrvShinoblb,			// Shinobi (beta bootleg, System 16A)
 	&BurnDrvShinobi1,			// Shinobi (set 1, System 16A, FD1094 317-0050)
 	&BurnDrvShinobi2,			// Shinobi (set 2, System 16B, FD1094 317-0049)
 	&BurnDrvShinobi3,			// Shinobi (set 3, System 16B, MC-8123B 317-0054)
@@ -6073,377 +10505,650 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvShinobi5,			// Shinobi (set 5, System 16B, unprotected)
 	&BurnDrvShinobi,			// Shinobi (set 6, System 16A, unprotected)
 	&BurnDrvShinobls,			// Shinobi (Star bootleg, System 16A)
+	&BurnDrvShinfz,				// Shinobi / FZ-2006 (Korean System 16 bootleg) (ISG Selection Master Type 2006)
+	&BurnDrvMDg_shin3,			// Shinobi III - Return of the Ninja Master (Europe)
+	&BurnDrvMDg_shin3u,			// Shinobi III - Return of the Ninja Master (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDshin3e,			// Shinobi III - Return of the Ninja Master (E) [c][!] [no comment]
-	&BurnDrvMDshi3,				// Shinobi III - Return of the Ninja Master (U) [!] [no comment]
+	&BurnDrvMDg_shipun,			// Ship (Unreleased) [no comment, NOT WORKING]
 #endif
 	&BurnDrvShippuMD,			// Shippu Mahou Daisakusen - kingdom grandprix (Japan)
+	&BurnDrvShisen2,			// Shisensho II
 #if defined FBA_DEBUG
-	&BurnDrvMDshiten,			// Shiten Myooh (J) [c][!] [no comment]
+	&BurnDrvMDg_shiten,			// Shiten Myouou (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvshocktro,			// Shock Troopers (set 1)
-	&BurnDrvShocktra,			// Shock Troopers (set 2)
-	&BurnDrvshocktr2,			// Shock Troopers - 2nd squad
-#if defined FBA_DEBUG
-	&BurnDrvMDshogi,			// Shogi no Hoshi (J) [!] [no comment]
-#endif
+	&BurnDrvshocktroa,			// Shock Troopers (set 2)
+	&BurnDrvshocktr2,			// Shock Troopers - 2nd Squad
+	&BurnDrvShocking,			// Shocking
 	&BurnDrvshootbul,			// Shoot the Bull
 #if defined FBA_DEBUG
-	&BurnDrvMDshov,				// Shove It! - The Warehouse Game (U) [!] [no comment]
-	&BurnDrvMDshowd,			// Show do Milhao (B) [!] [no comment]
-	&BurnDrvMDshowd2,			// Show do Milhao Volume 2 (B) [!] [no comment]
-	&BurnDrvMDshwd2a,			// Show do Milhao Volume 2 (B) [a1][!] [no comment]
-	&BurnDrvMDshura,			// Shura no Mon (J) [!] [no comment]
-	&BurnDrvMDsidepe,			// Side Pocket (E) [!] [no comment]
-	&BurnDrvMDside,				// Side Pocket (JU) [!] [no comment]
+	&BurnDrvMDg_shougi,			// Shougi no Hoshi (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_shovei,			// Shove It! ...The Warehouse Game (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_sdm,			// Show do Milhao (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_sdm2a,			// Show do Milhao Volume 2 (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_sdm2,			// Show do Milhao Volume 2 (Brazil) (Alt) [no comment, NOT WORKING]
+	&BurnDrvMDg_shuihu,			// Shui Hu - Feng Yun Zhuan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_shuih1,			// Shui Hu Zhuan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_shuran,			// Shura no Mon (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_sidepo,			// Side Pocket (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_sidep1,			// Side Pocket (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_sidep2,			// Side Pocket (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDbart00,			// Simpsons, The - Bart vs The Space Mutants (UE) (REV00) [!]
-	&BurnDrvMDbart,				// Simpsons, The - Bart vs The Space Mutants (UE) (REV01) [!]
+	&BurnDrvSilentdj,			// Silent Dragon (Japan)
+	&BurnDrvSilentdu,			// Silent Dragon (US)
+	&BurnDrvSilentd,			// Silent Dragon (World)
+	&BurnDrvSilkworm,			// Silk Worm
+	&BurnDrvSilkwrmj,			// Silk Worm (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDbtnm,				// Simpsons, The - Bart's Nightmare (UE) (REV02) [!] [No sound]
-	&BurnDrvMDskrewe,			// Skeleton Krew (E) [no comment]
-	&BurnDrvMDkrew,				// Skeleton Krew (U) [!] [no comment]
-	&BurnDrvMDskit,				// Skitchin' (UE) [!] [no comment]
+	&BurnDrvMDg_simps1,			// Simpsons, The - Bart Vs The Space Mutants (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_simpso,			// Simpsons, The - Bart Vs The Space Mutants (USA, Europe) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_simpbn,			// Simpsons, The - Bart's Nightmare (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvSkelagon,			// Skelagon [Bad Dump, NOT WORKING]
+	&BurnDrvMDg_skelet,			// Skeleton Krew (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_skele1,			// Skeleton Krew (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_skitch,			// Skitchin (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSkybase,			// Sky Base
+	&BurnDrvSkyfox,				// Sky Fox
+	&BurnDrvSkykidd,			// Sky Kid (CUS60 version)
+	&BurnDrvSkykid,				// Sky Kid (new version)
+	&BurnDrvSkykido,			// Sky Kid (old version)
+	&BurnDrvSkykids,			// Sky Kid (Sipem)
 	&BurnDrvskylancr,			// Sky Lancer
 	&BurnDrvskylance,			// Sky Lancer (Esco Trading Co license)
+	&BurnDrvSkyraidr,			// Sky Raiders
+	&BurnDrvSkysmash,			// Sky Smasher
 	&BurnDrvSkywolf,			// Sky Wolf (set 1)
 	&BurnDrvSkywolf2,			// Sky Wolf (set 2)
+	&BurnDrvSkywolf3,			// Sky Wolf (set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDsdnk,				// Slam Dunk - Shikyou Gekitotsu! (J) [!] [no comment]
+	&BurnDrvMDg_slamsh,			// Slam - Shaq vs. the Legends (Prototype) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSlapFghtr,			// Slap Fight (bootleg)
-	&BurnDrvSlapBtUK,			// Slap Fight (English bootleg)
+	&BurnDrvSlapBtJP,			// Slap Fight (bootleg set 1)
+	&BurnDrvSlapBtUK,			// Slap Fight (bootleg set 2)
+	&BurnDrvSlapFghtr,			// Slap Fight (bootleg set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDslapf,			// Slap Fight (J) [c][!] [no comment]
+	&BurnDrvSlapFigh,			// Slap Fight (Japan set 1) [Protection MCU not emulated, NOT WORKING]
+	&BurnDrvMDg_slapfi,			// Slap Fight MD (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSlapBtJP,			// Slap Fight (Japan bootleg)
-	&BurnDrvSlapFigh,			// Slap Fight (set 1) [Protection MCU not emulated, NOT WORKING]
+	&BurnDrvSlapshot,			// Slap Shot (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsspo,				// Slaughter Sport (U) [c][!] [no comment]
-	&BurnDrvMDsmf,				// Smurf [no comment]
-	&BurnDrvMDsmf2,				// Smurfs  [no comment]
-	&BurnDrvMDsrr,				// Snake Rattle 'n' Roll (E) [c][!] [no comment]
-	&BurnDrvMDsnow,				// Snow Bros. - Nick & Tom (J) [c][!] [no comment]
+	&BurnDrvMDg_slaugh,			// Slaughter Sport (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_slimew,			// Slime World (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_smf2,			// Smurfs Travel the World, The (Europe) (En,Fr,De,Es) [no comment, NOT WORKING]
+	&BurnDrvMDg_smurfs,			// Smurfs, The (Europe) (En,Fr,De,Es,It) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_snaker,			// Snake Rattle n' Roll (Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSnapjack,			// Snap Jack
+	&BurnDrvSnapper,			// Snapper (Korea)
+	&BurnDrvsvc,				// SNK vs. CAPCOM SVC CHAOS
+	&BurnDrvsvcboot,			// SNK vs. CAPCOM SVC CHAOS (bootleg)
+//	&BurnDrvsvcnd,				// SNK vs. CAPCOM SVC CHAOS (decrypted C) [no comment]
+	&BurnDrvsvcpcb,				// SNK vs. CAPCOM SVC CHAOS (JAMMA PCB, set 1)
+//	&BurnDrvsvcpcbnd,			// SNK vs. CAPCOM SVC CHAOS (JAMMA PCB, set 1, decrypted C) [no comment]
+	&BurnDrvsvcpcba,			// SNK vs. CAPCOM SVC CHAOS (JAMMA PCB, set 2)
+	&BurnDrvsvcplus,			// SNK vs. CAPCOM SVC CHAOS Plus (bootleg set 1)
+	&BurnDrvsvcplusa,			// SNK vs. CAPCOM SVC CHAOS Plus (bootleg set 2)
+	&BurnDrvsvcsplus,			// SNK vs. CAPCOM SVC CHAOS Super Plus (bootleg)
+	&BurnDrvSnowbrod,			// Snow Bros. - Nick & Tom (Dooyong license)
 	&BurnDrvSnowbroj,			// Snow Bros. - Nick & Tom (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_snowbr,			// Snow Bros. - Nick & Tom (Japan) [no comment, NOT WORKING]
+#endif
 	&BurnDrvSnowbros,			// Snow Bros. - Nick & Tom (set 1)
 	&BurnDrvSnowbroa,			// Snow Bros. - Nick & Tom (set 2)
 	&BurnDrvSnowbrob,			// Snow Bros. - Nick & Tom (set 3)
 	&BurnDrvSnowbroc,			// Snow Bros. - Nick & Tom (set 4)
 	&BurnDrvSnowbro2,			// Snow Bros. 2 - with new elves
 	&BurnDrvSnowbro3,			// Snow Brothers 3 - Magical Adventure
-	&BurnDrvSocbrawl,			// Soccer Brawl (set 1)
-	&BurnDrvSocbrala,			// Soccer Brawl (set 2)
+	&BurnDrvsocbrawla,			// Soccer Brawl (set 1)
+	&BurnDrvsocbrawlh,			// Soccer Brawl (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDsock,				// Socket (U) [!] [no comment]
-	&BurnDrvMDsokoba,			// Sokoban (J) [!] [no comment]
-	&BurnDrvMDsold,				// Soldiers of Fortune (U) [c][!] [no comment]
-	&BurnDrvMDsoldf,			// Soldiers of Fortune (U) [c][!] [no comment]
-	&BurnDrvMDsoleib,			// Soleil (Beta) [no comment]
-	&BurnDrvMDsole,				// Soleil (E) [!] [no comment]
-	&BurnDrvMDsoleif,			// Soleil (F) [!] [no comment]
-	&BurnDrvMDsoleig,			// Soleil (G) [!] [no comment]
-	&BurnDrvMDsoleis,			// Soleil (S) [no comment]
+	&BurnDrvMDg_socket,			// Socket (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSokonuke,			// Sokonuke Taisen Game (Japan)
+	&BurnDrvSoldivid,			// Sol Divide - The Sword Of Darkness
+#if defined FBA_DEBUG
+	&BurnDrvMDg_soldea,			// Sol-Deace (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_soldie,			// Soldiers of Fortune (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_soleil,			// Soleil (Europe)
+	&BurnDrvMDg_solei1,			// Soleil (France)
+	&BurnDrvMDg_solei2,			// Soleil (Germany)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_solei3,			// Soleil (Japan) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_solei4,			// Soleil (Spain)
+	&BurnDrvSolfigtr,			// Solitary Fighter (World)
 	&BurnDrvSolomonj,			// Solomon's Key (Japan)
 	&BurnDrvSolomon,			// Solomon's Key (US)
 	&BurnDrvSonofphx,			// Son of Phoenix
-	&BurnDrvMDs3d,				// Sonic 3D Blast (UE) [!]
-	&BurnDrvMDsoncrk,			// Sonic and Crackers (Beta)
-	&BurnDrvMDsks1,				// Sonic and Knuckles & Sonic 1 (W) [!]
-	&BurnDrvMDsks2,				// Sonic and Knuckles & Sonic 2 (W) [!]
-	&BurnDrvMDsks3,				// Sonic and Knuckles & Sonic 3 (W) [!]
-	&BurnDrvMDsnkn,				// Sonic and Knuckles (W) [!]
+	&BurnDrvSonson,				// Son Son
+	&BurnDrvSonsonj,			// Son Son (Japan)
+	&BurnDrvMDg_ska,			// Sonic & Knuckles (Prototype 0525 - May 25, 1994, 15.28)
+	&BurnDrvMDg_skb,			// Sonic & Knuckles (Prototype 0606 - Jun 06, 1994, 10.02)
+	&BurnDrvMDg_skc,			// Sonic & Knuckles (Prototype 0608 - Jun 08, 1994, 05.03)
+	&BurnDrvMDg_skd,			// Sonic & Knuckles (Prototype 0610 - Jun 10, 1994, 07.49)
+	&BurnDrvMDg_ske,			// Sonic & Knuckles (Prototype 0612 - Jun 12, 1994, 18.27)
+	&BurnDrvMDg_skf,			// Sonic & Knuckles (Prototype 0618 - Jun 18, 1994, 09.15)
+	&BurnDrvMDg_skg,			// Sonic & Knuckles (Prototype 0619 - Jun 19, 1994, 08.18)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_skh,			// Sonic & Knuckles (S2K chip) (Prototype 0606 - Jun 05, 1994, 22.25) [no comment, NOT WORKING]
+	&BurnDrvMDg_ski,			// Sonic & Knuckles (S2K chip) (Prototype 0608 - Jun 08, 1994, 03.35) [no comment, NOT WORKING]
+	&BurnDrvMDg_skj,			// Sonic & Knuckles (S2K chip) (Prototype 0610 - Jun 10, 1994, 03.11) [no comment, NOT WORKING]
+	&BurnDrvMDg_skk,			// Sonic & Knuckles (S2K chip) (Prototype 0612 - Jun 12, 1994, 18.18) [no comment, NOT WORKING]
+	&BurnDrvMDg_skl,			// Sonic & Knuckles (S2K chip) (Prototype 0618 - Jun 18, 1994, 9.07) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_sk,				// Sonic & Knuckles (World)
+	&BurnDrvMDg_sks1,			// Sonic & Knuckles + Sonic the Hedgehog (World)
+	&BurnDrvMDg_sks2,			// Sonic & Knuckles + Sonic the Hedgehog 2 (World)
+	&BurnDrvMDg_sks3,			// Sonic & Knuckles + Sonic the Hedgehog 3 (World)
+	&BurnDrvMDg_son3c,			// Sonic 3C (Prototype 0408 - Apr 08, 1994, 17.29)
+	&BurnDrvMDg_son3ca,			// Sonic 3C (Prototype 0517 - May 17, 1994, 17.08)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_s3da,			// Sonic 3D Blast (Prototype 73 - Jul 03, 1996, 13.58) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3db,			// Sonic 3D Blast (Prototype 814 - Aug 15, 1996, 07.55) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3dc,			// Sonic 3D Blast (Prototype 819 - Aug 19, 1996, 19.49) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3dd,			// Sonic 3D Blast (Prototype 825 - Aug 26, 1996, 15.46) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3de,			// Sonic 3D Blast (Prototype 830 - Aug 31, 1996, 08.19) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3df,			// Sonic 3D Blast (Prototype 831 - Sep 03, 1996, 10.07) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3dg,			// Sonic 3D Blast (Prototype 94 - Sep 04, 1996, 12.01) [no comment, NOT WORKING]
+	&BurnDrvMDg_s3dh,			// Sonic 3D Blast (USA) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_s3d,			// Sonic 3D Blast ~ Sonic 3D Flickies' Island (USA, Europe)
+	&BurnDrvSbm,				// Sonic Blast Man (Japan)
 	&BurnDrvSonicbom,			// Sonic Boom (FD1094 317-0053)
+	&BurnDrvMDg_comp,			// Sonic Compilation (Europe)
+	&BurnDrvMDg_compa,			// Sonic Compilation (USA, Europe) (v1.1)
+	&BurnDrvMDg_scrack,			// Sonic Crackers (Japan) (Proto)
+	&BurnDrvMDg_sonice,			// Sonic Eraser (Japan) (SegaNet)
 #if defined FBA_DEBUG
-	&BurnDrvMDsoncle,			// Sonic Classics (Compilation) (E) (REV00) [!] [no comment, NOT WORKING]
-	&BurnDrvMDsonclu,			// Sonic Classics (Compilation) (UE) (REV01) [!] [Bad sound]
-	&BurnDrvMDserase,			// Sonic Eraser (SN) (J) [!] [no comment]
-	&BurnDrvMDsonsb,			// Sonic Spinball (Beta) [No sound in-game]
-	&BurnDrvMDsonse,			// Sonic Spinball (E) [!] [No sound in-game]
-	&BurnDrvMDsonsj,			// Sonic Spinball (J) [!] [No sound in-game]
-	&BurnDrvMDsspa,				// Sonic Spinball (U) (alt music) [!] [No sound in-game]
-	&BurnDrvMDsons,				// Sonic Spinball (U) [!] [No sound in-game]
+	&BurnDrvMDg_sonicj,			// Sonic Jam 6 (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_sonij2,			// Sonic Jam 6 (Unl) [p1][!] [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDsoni00,			// Sonic The Hedgehog (W) (REV00) [!]
-	&BurnDrvMDsoni,				// Sonic The Hedgehog (W) (REV01) [!]
-#if defined FBA_DEBUG
-	&BurnDrvMDsoni2p,			// Sonic The Hedgehog 2 (Prototype) [!] [no comment]
-#endif
-	&BurnDrvMDson200,			// Sonic The Hedgehog 2 (W) (REV00) [!]
-	&BurnDrvMDson2,				// Sonic The Hedgehog 2 (W) (REV01) [!]
-	&BurnDrvMDson2a,			// Sonic The Hedgehog 2 (W) (REVSC02)
-	&BurnDrvMDson3e,			// Sonic The Hedgehog 3 (E) [!]
-	&BurnDrvMDson3j,			// Sonic The Hedgehog 3 (J) [!]
-	&BurnDrvMDson3,				// Sonic The Hedgehog 3 (U) [!]
+	&BurnDrvMDg_sspin,			// Sonic Spinball (Europe)
+	&BurnDrvMDg_sspina,			// Sonic Spinball (Japan)
+	&BurnDrvMDg_sspind,			// Sonic Spinball (USA)
+	&BurnDrvMDg_sspinb,			// Sonic Spinball (USA) (Alt)
+	&BurnDrvMDg_sspinc,			// Sonic Spinball (USA) (Beta)
+	&BurnDrvMDg_sonica,			// Sonic the Hedgehog (Japan, Korea)
+	&BurnDrvMDg_sonic,			// Sonic the Hedgehog (USA, Europe)
+	&BurnDrvMDg_sonicb,			// Sonic The Hedgehog (W) (REV00) [p5][!]
+	&BurnDrvMDg_soni2b,			// Sonic The Hedgehog 2 (Beta 4 - Sep 18, 1992, 16.26)
+	&BurnDrvMDg_soni2c,			// Sonic The Hedgehog 2 (Beta 5 - Sep 21, 1992, 12.06)
+	&BurnDrvMDg_soni2d,			// Sonic The Hedgehog 2 (Beta 6 - Sep 22, 1992, 18.47)
+	&BurnDrvMDg_soni2e,			// Sonic The Hedgehog 2 (Beta 6 - Sep 22, 1992, 19.42)
+	&BurnDrvMDg_soni2f,			// Sonic The Hedgehog 2 (Beta 7 - Sep 24, 1992, 09.26)
+	&BurnDrvMDg_soni2g,			// Sonic The Hedgehog 2 (Beta 8 - Sep 24, 1992, 19.27)
+	&BurnDrvMDg_soni2h,			// Sonic The Hedgehog 2 (Prototype) [!]
+	&BurnDrvMDg_soni2i,			// Sonic The Hedgehog 2 (W) (REV01a) [!]
+	&BurnDrvMDg_soni2j,			// Sonic The Hedgehog 2 (W) (REVSC02)
+	&BurnDrvMDg_soni2a,			// Sonic the Hedgehog 2 (World)
+	&BurnDrvMDg_soni2k,			// Sonic the Hedgehog 2 (World) (Beta)
+	&BurnDrvMDg_soni2,			// Sonic the Hedgehog 2 (World) (Rev A)
+	&BurnDrvMDg_soni3a,			// Sonic The Hedgehog 3 (Argentinian Pirate)
+	&BurnDrvMDg_soni3b,			// Sonic the Hedgehog 3 (Europe)
+	&BurnDrvMDg_soni3c,			// Sonic the Hedgehog 3 (Japan, Korea)
+	&BurnDrvMDg_soni3,			// Sonic the Hedgehog 3 (USA)
 	&BurnDrvSonicwi,			// Sonic Wings (Japan)
-#if defined FBA_DEBUG
-	&BurnDrvMDsorkin,			// Sorcer Kingdom (J) [c][!] [no comment]
-#endif
+	&BurnDrvMDg_sorcer,			// Sorcer Kingdom (Japan)
 	&BurnDrvSStriker,			// Sorcer Striker (World)
 	&BurnDrvSStrikrA,			// Sorcer Striker (World, alt)
+	&BurnDrvMDg_skinga,			// Sorcerer's Kingdom (USA)
+	&BurnDrvMDg_sking,			// Sorcerer's Kingdom (USA) (v1.1)
+	&BurnDrvMDg_sorcn,			// Sorcerian (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsork00,			// Sorcerer's Kingdom (U) (REV00) [no comment]
-	&BurnDrvMDsorckd,			// Sorcerer's Kingdom (U) (REV01) [!] [no comment]
-	&BurnDrvMDsorcer,			// Sorcerian (J) [!] [no comment]
+	&BurnDrvMDg_soulbl,			// Soul Blade (Unl) [!] [no comment, NOT WORKING]
 #endif
+	&BurnDrvSpacbatt,			// Space Battle (bootleg set 1)
+	&BurnDrvSpacbat2,			// Space Battle (bootleg set 2)
+	&BurnDrvSbsgomo,			// Space Battle Ship Gomorrah
+	&BurnDrvSbombera,			// Space Bomber
+	&BurnDrvSbomber,			// Space Bomber (ver. B)
+	&BurnDrvSpcdrag,			// Space Dragon (Moon Cresta bootleg, set 1)
+	&BurnDrvSpcdraga,			// Space Dragon (Moon Cresta bootleg, set 2)
 	&BurnDrvspacecho,			// Space Echo (bootleg)
-#if defined FBA_DEBUG
-	&BurnDrvMDsfbob,			// Space Funky B.O.B. (J) [!] [no comment]
-#endif
+	&BurnDrvSpacempr,			// Space Empire (bootleg)
+	&BurnDrvMDg_spacef,			// Space Funky B.O.B. (Japan)
 	&BurnDrvSpacegun,			// Space Gun (World)
-	&BurnDrvSharrir1,			// Space Harrier (8751 315-5163)
+	&BurnDrvSharrier1,			// Space Harrier (8751 315-5163)
 	&BurnDrvSharrier,			// Space Harrier (Rev A, 8751 315-5163A)
 #if defined FBA_DEBUG
-	&BurnDrvMDshar2j,			// Space Harrier II (J) [!] [no comment]
-	&BurnDrvMDshar,				// Space Harrier II (UE) [!] [no comment]
-	&BurnDrvMDsi90,				// Space Invaders 90 (J) [c][!] [no comment]
-	&BurnDrvMDsi91,				// Space Invaders 91 (U) [c][!] [no comment]
-	&BurnDrvMDsparke,			// Sparkster (E) [!] [no comment]
-	&BurnDrvMDsparkj,			// Sparkster (J) [!] [no comment]
-	&BurnDrvMDsprk,				// Sparkster (U) [!] [no comment]
+	&BurnDrvMDg_sharrj,			// Space Harrier II (Japan) (Launch Cart) [no comment, NOT WORKING]
+	&BurnDrvMDg_sharr,			// Space Harrier II (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_si90,			// Space Invaders 90 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_si91,			// Space Invaders 91 (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSpacedxo,			// Space Invaders DX (Japan, v2.0)
+	&BurnDrvSpacedxj,			// Space Invaders DX (Japan, v2.1)
+	&BurnDrvSpacedx,			// Space Invaders DX (US, v2.1)
+	&BurnDrvGalap1,				// Space Invaders Galactica (galaxiaj hack)
+	&BurnDrvSinvasnb,			// Space Invasion (bootleg)
+	&BurnDrvSinvasn,			// Space Invasion (Europe)
+	&BurnDrvSpcpostn,			// Space Position (Japan)
+	&BurnDrvSraider,			// Space Raider
+	&BurnDrvSpctbird,			// Space Thunderbird
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sparks,			// Sparkster (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_spark1,			// Sparkster (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_spark2,			// Sparkster - Rocket Knight Adventures 2 (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSpartanx,			// Spartan X (Japan)
+	&BurnDrvSpatter,			// Spatter
 	&BurnDrvspeakres,			// Speak & Rescue
 	&BurnDrvScij,				// Special Criminal Investigation (Japan)
+	&BurnDrvScinegro,			// Special Criminal Investigation (Negro bootleg)
 	&BurnDrvSciu,				// Special Criminal Investigation (US)
 	&BurnDrvSci,				// Special Criminal Investigation (World set 1)
 	&BurnDrvScia,				// Special Criminal Investigation (World set 2)
+	&BurnDrvSpec2k,				// Spectrum 2000 (Euro)
+	&BurnDrvSpdcoin,			// Speed Coin (prototype)
+	&BurnDrvSpeedspn,			// Speed Spin
 #if defined FBA_DEBUG
-	&BurnDrvMDsbal2e,			// Speed Ball 2 - Brutal Deluxe (E) [!] [no comment]
-	&BurnDrvMDspb2,				// Speed Ball 2 - Brutal Deluxe (U) [c][!] [no comment]
-	&BurnDrvMDs_asb1,			// Spider-Man - The Animated Series (Beta 1) [no comment]
-	&BurnDrvMDs_asb2,			// Spider-Man - The Animated Series (Beta 2) [no comment]
-	&BurnDrvMDs_as,				// Spider-Man - The Animated Series (W) [!] [no comment]
-	&BurnDrvMDs_mc,				// Spider-Man and Venom - Maximum Carnage (W) [!] [no comment]
-	&BurnDrvMDs_sa,				// Spider-Man and Venom - Separation Anxiety (U) [!] [no comment]
-	&BurnDrvMDs_ar,				// Spider-Man and X-Men - Arcade's Revenge (UE) [!] [no comment]
-	&BurnDrvMDs_kp,				// Spider-Man vs The Kingpin (W) [!] [no comment]
+	&BurnDrvMDg_speedb,			// Speedball 2 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_speed1,			// Speedball 2 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_speed2,			// Speedball 2 - Brutal Deluxe (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvspinmast,			// Spin Master\0Miracle Adventure
+	&BurnDrvSpelunkr,			// Spelunker
+	&BurnDrvSpelunkrj,			// Spelunker (Japan)
+	&BurnDrvSpelunk2,			// Spelunker II
+#if defined FBA_DEBUG
+	&BurnDrvMDg_spidmb,			// Spider-Man (USA) (Acclaim) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_spidma,			// Spider-Man (USA) (Acclaim) (Beta) (Earlier) [no comment, NOT WORKING]
+	&BurnDrvMDg_spidm,			// Spider-Man (USA, Europe) (Acclaim) [no comment, NOT WORKING]
+	&BurnDrvMDg_sp_mc,			// Spider-Man and Venom - Maximum Carnage (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_sp_sa,			// Spider-Man and Venom - Separation Anxiety (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_sp_xm,			// Spider-Man and X-Men - Arcade's Revenge (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_sp_kp,			// Spider-Man vs. the Kingpin (World) (Sega) [no comment, NOT WORKING]
+#endif
+	&BurnDrvspinmast,			// Spin Master / Miracle Adventure
 	&BurnDrvSpinlbrj,			// Spinal Breakers (Japan)
 	&BurnDrvSpinlbru,			// Spinal Breakers (US)
 	&BurnDrvSpinlbrk,			// Spinal Breakers (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDspir,				// Spirou (E) [!] [no comment]
-	&BurnDrvMDshou2e,			// Splatterhouse 2 (E) [c][!] [no comment]
-	&BurnDrvMDsho,				// Splatterhouse 2 (E) [c][!] [no comment]
-	&BurnDrvMDspl2,				// Splatterhouse 2 (U) [c][!] [no comment]
-	&BurnDrvMDspl3,				// Splatterhouse 3 (U) [c][!] [no comment]
-	&BurnDrvMDsho3ja,			// Splatterhouse Part 3 (J) [a1] [no comment]
-	&BurnDrvMDshou3j,			// Splatterhouse Part 3 (J) [c][!] [no comment]
-	&BurnDrvMDsptgb,			// Sport Games (B) [c][!] [no comment]
-	&BurnDrvMDspot2e,			// Spot Goes to Hollywood (E) [!] [no comment]
-	&BurnDrvMDspo2,				// Spot Goes to Hollywood (U) (REV01) [!] [no comment]
+	&BurnDrvMDg_spirit,			// Spiritual Warfare (USA) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_spirou,			// Spirou (Europe) (En,Fr,De,Es) [no comment, NOT WORKING]
+	&BurnDrvMDg_splatt,			// Splatterhouse 2 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_splata,			// Splatterhouse 2 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_splh3,			// Splatterhouse 3 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_splatb,			// Splatterhouse Part 2 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_splh3a,			// Splatterhouse Part 3 (J) [a1] [no comment, NOT WORKING]
+	&BurnDrvMDg_splh3b,			// Splatterhouse Part 3 (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_sportg,			// Sport Games (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_sports,			// Sports Talk Baseball (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_spotgo,			// Spot Goes to Hollywood (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_spotg1,			// Spot Goes to Hollywood (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvStakwin,			// Stakes Winner
-	&BurnDrvStakwin2,			// Stakes Winner 2
+	&BurnDrvSpringer,			// Springer
+	&BurnDrvSquash,				// Squash (Ver. 1.0)
 #if defined FBA_DEBUG
-	&BurnDrvMDscon,				// Star Control (U) [c][!] [no comment]
-	&BurnDrvMDstarcj,			// Star Cruiser (J) [!] [no comment]
+	&BurnDrvMDg_squirr,			// Squirrel King (China) (Unl) [no comment, NOT WORKING]
 #endif
+	&BurnDrvStagger1,			// Stagger I (Japan)
+	&BurnDrvstakwin,			// Stakes Winner / Stakes Winner - GI kinzen seihae no michi
+	&BurnDrvstakwin2,			// Stakes Winner 2
+#if defined FBA_DEBUG
+	&BurnDrvMDg_starco,			// Star Control (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_starcr,			// Star Cruiser (Japan)
+	&BurnDrvStarfght,			// Star Fighter
 	&BurnDrvStarjack,			// Star Jacker (Sega)
-	&BurnDrvStarjacs,			// Star Jacker (Stern)
+	&BurnDrvStarjacks,			// Star Jacker (Stern)
 #if defined FBA_DEBUG
-	&BurnDrvMDstds9e,			// Star Trek - Deep Space 9 - Crossroads of Time (E) [no comment]
-	&BurnDrvMDstd9,				// Star Trek - Deep Space 9 - Crossroads of Time (U) [!] [no comment]
-	&BurnDrvMDstng00,			// Star Trek - The Next Generation (U) (REV00) [!] [no comment]
-	&BurnDrvMDstng,				// Star Trek - The Next Generation (U) (REV01) [!] [no comment]
-	&BurnDrvMDstrf00,			// Starflight (UE) (REV00) [!] [no comment]
-	&BurnDrvMDsfli,				// Starflight (UE) (REV01) [!] [no comment]
-	&BurnDrvMDsgatb,			// Stargate (Beta) [no comment]
-	&BurnDrvMDsgat,				// Stargate (UE) [!] [Bad sound]
-	&BurnDrvMDsempb,			// Steel Empir [no comment]
-	&BurnDrvMDsemp,				// Steel Empir [no comment]
-	&BurnDrvMDstalj,			// Steel Talons (J) [!] [no comment]
-	&BurnDrvMDstalon,			// Steel Talons (UE) [!] [no comment]
-	&BurnDrvMDslordj,			// Stormlord (J) [!] [no comment]
-	&BurnDrvMDstol,				// Stormlord (U) [!] [no comment]
+	&BurnDrvMDg_stds9,			// Star Trek - Deep Space Nine - Crossroads of Time (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_stds9u,			// Star Trek - Deep Space Nine - Crossroads of Time (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttngb,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Dec 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttngc,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Dec 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttngd,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Jan 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttnge,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Jan 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttngf,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Jan 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sttngg,			// Star Trek - The Next Generation - Echoes from the Past (Prototype - Jan 25, 1994) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDsthorb,			// Story of Thor, The - A Successor of The Light (Beta)
-	&BurnDrvMDsthor,			// Story of Thor, The - A Successor of The Light (E) [!]
-	&BurnDrvMDsthorf,			// Story of Thor, The - A Successor of The Light (F)
-	&BurnDrvMDsthorg,			// Story of Thor, The - A Successor of The Light (G)
-	&BurnDrvMDsthorj,			// Story of Thor, The - A Successor of The Light (J) [!]
-	&BurnDrvMDsthork,			// Story of Thor, The - A Successor of The Light (K)
-	&BurnDrvMDsthors,			// Story of Thor, The - A Successor of The Light (S)
+	&BurnDrvMDg_sttnga,			// Star Trek - The Next Generation - Echoes from the Past (USA)
+	&BurnDrvMDg_sttng,			// Star Trek - The Next Generation - Echoes from the Past (USA) (v1.1)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_starf1,			// Starflight (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_starfl,			// Starflight (USA, Europe) (v1.1) [no comment, NOT WORKING]
+	&BurnDrvMDg_stargb,			// Stargate (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_starg,			// Stargate (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_steele,			// Steel Empire (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_stalnj,			// Steel Talons (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_stalnb,			// Steel Talons (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_staln,			// Steel Talons (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvStera,				// Steraranger (Moon Cresta bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_slordj,			// Stormlord (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_slord,			// Stormlord (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_storyo,			// Story of Thor, The (Europe)
+	&BurnDrvMDg_story1,			// Story of Thor, The (Germany)
+	&BurnDrvMDg_story2,			// Story of Thor, The (Japan) (Beta) [b]
+	&BurnDrvMDg_story3,			// Story of Thor, The (Korea)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_story4,			// Story of Thor, The (Prototype - Nov 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_story5,			// Story of Thor, The (Prototype - Oct 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_story6,			// Story of Thor, The (Prototype - Oct 17, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_story7,			// Story of Thor, The (Spain)
+	&BurnDrvMDg_story8,			// Story of Thor, The - Hikari o Tsugumono (Japan)
+	&BurnDrvStrfbomb,			// Strafe Bomb
+	&BurnDrvStratgyx,			// Strategy X
+	&BurnDrvStratgys,			// Strategy X (Stern)
 	&BurnDrvstratvox,			// Stratovox
 	&BurnDrvstratvob,			// Stratovox (bootleg)
-	&BurnDrvCpsSfach,			// Street Fighter Alpha (950727 CPS Changer)
+	&BurnDrvStreakng,			// Streaking (set 1)
+	&BurnDrvStreaknga,			// Streaking (set 2)
+	&BurnDrvsfjp,				// Street Fighter (Japan)
+	&BurnDrvsfp,				// Street Fighter (Prototype)
+	&BurnDrvsfu,				// Street Fighter (US set 1)
+	&BurnDrvsfua,				// Street Fighter (US set 2)
+	&BurnDrvsf,					// Street Fighter (World)
+	&BurnDrvCpsSfach,			// Street Fighter Alpha (CPS Changer, 950727 Publicity US)
 	&BurnDrvCpsSfar3,			// Street Fighter Alpha - warriors' dreams (950605 Euro)
 	&BurnDrvCpsSfar2,			// Street Fighter Alpha - warriors' dreams (950627 Euro)
 	&BurnDrvCpsSfau,			// Street Fighter Alpha - warriors' dreams (950627 USA)
 	&BurnDrvCpsSfar1,			// Street Fighter Alpha - warriors' dreams (950718 Euro)
+	&BurnDrvCpsSfad,			// Street Fighter Alpha - warriors' dreams (950727 Euro Phoenix Edition)
 	&BurnDrvCpsSfa,				// Street Fighter Alpha - warriors' dreams (950727 Euro)
-	&BurnDrvCpsSfa2,			// Street Fighter Alpha 2 (960306 USA)
+	&BurnDrvCpsSfa2,			// Street Fighter Alpha 2 (960229 Euro)
+	&BurnDrvCpsSfa2ur1,			// Street Fighter Alpha 2 (960306 USA)
+	&BurnDrvCpsSfa2u,			// Street Fighter Alpha 2 (960430 USA)
 	&BurnDrvCpsSfa3b,			// Street Fighter Alpha 3 (980629 Brazil)
+	&BurnDrvCpsSfa3hr1,			// Street Fighter Alpha 3 (980629 Hispanic)
 	&BurnDrvCpsSfa3ur1,			// Street Fighter Alpha 3 (980629 USA)
 	&BurnDrvCpsSfa3,			// Street Fighter Alpha 3 (980904 Euro)
+	&BurnDrvCpsSfa3h,			// Street Fighter Alpha 3 (980904 Hispanic)
+	&BurnDrvCpsSfa3ud,			// Street Fighter Alpha 3 (980904 USA Phoenix Edition)
 	&BurnDrvCpsSfa3u,			// Street Fighter Alpha 3 (980904 USA)
 	&BurnDrvCpsSf2ua,			// Street Fighter II - the world warrior (910206 USA)
 	&BurnDrvCpsSf2eb,			// Street Fighter II - the world warrior (910214 etc)
+	&BurnDrvCpsSf2ebbl,			// Street Fighter II - the world warrior (910214 etc, TAB Austria bootleg)
 	&BurnDrvCpsSf2ja,			// Street Fighter II - the world warrior (910214 Japan)
 	&BurnDrvCpsSf2ub,			// Street Fighter II - the world warrior (910214 USA)
+	&BurnDrvCpsSf2ee,			// Street Fighter II - the world warrior (910228 etc)
 	&BurnDrvCpsSf2ue,			// Street Fighter II - the world warrior (910228 USA)
 	&BurnDrvCpsSf2jc,			// Street Fighter II - the world warrior (910306 Japan)
+	&BurnDrvCpsSf2uc,			// Street Fighter II - the world warrior (910306 USA)
 	&BurnDrvCpsSf2ud,			// Street Fighter II - the world warrior (910318 USA)
 	&BurnDrvCpsSf2uf,			// Street Fighter II - the world warrior (910411 USA)
 	&BurnDrvCpsSf2,				// Street Fighter II - the world warrior (910522 etc)
 	&BurnDrvCpsSf2ui,			// Street Fighter II - the world warrior (910522 USA)
 	&BurnDrvCpsSf2uk,			// Street Fighter II - the world warrior (911101 USA)
 	&BurnDrvCpsSf2j,			// Street Fighter II - the world warrior (911210 Japan)
-	&BurnDrvCpsSf2accp2,		// Street Fighter II' - champion edition (Hack - Accelerator Pt.II)
-	&BurnDrvCpsKouryu,			// Street Fighter II' - champion edition (Hack - kouryu)
-	&BurnDrvCpsSf2m2,			// Street Fighter II' - champion edition (Hack - M-2)
-	&BurnDrvCpsSf2m4,			// Street Fighter II' - champion edition (Hack - M-4)
-	&BurnDrvCpsSf2m5,			// Street Fighter II' - champion edition (Hack - M-5)
-	&BurnDrvCpsSf2m6,			// Street Fighter II' - champion edition (Hack - M-6)
-	&BurnDrvCpsSf2m7,			// Street Fighter II' - champion edition (Hack - M-7)
-	&BurnDrvCpsSf2rb,			// Street Fighter II' - champion edition (Hack - Rainbow set 1)
-	&BurnDrvCpsSf2rb2,			// Street Fighter II' - champion edition (Hack - Rainbow set 2)
-	&BurnDrvCpsSf2red,			// Street Fighter II' - champion edition (Hack - Red Wave)
-	&BurnDrvCpsSf2v004,			// Street Fighter II' - champion edition (Hack - V004)
-	&BurnDrvCpsSf2yyc,			// Street Fighter II' - champion edition (Hack - YYC)
-	&BurnDrvCpsSf2ce,			// Street Fighter II' - champion edition (street fighter 2' 920313 etc)
+#if defined FBA_DEBUG
+	&BurnDrvCpsSf2b,			// Street Fighter II - the world warrior (bootleg) [Resets itself, NOT WORKING]
+#endif
+	&BurnDrvCpsSf2qp1,			// Street Fighter II - the world warrior (bootleg, Quicken Pt-I)
+	&BurnDrvCpsSf2thndr,		// Street Fighter II - the world warrior (bootleg, Thunder Edition)
+#if defined FBA_DEBUG
+	&BurnDrvCpsSf2th,			// Street Fighter II' - (Turbo Hack) [Resets itself, NOT WORKING]
+#endif
+	&BurnDrvCpsSf2accp2,		// Street Fighter II' - champion edition (bootleg, Accelerator Pt.II)
+	&BurnDrvCpsSf2acc,			// Street Fighter II' - champion edition (bootleg, Accelerator!)
+//	&BurnDrvCpsSf2cebr,			// Street Fighter II' - champion edition (bootleg, Brazil) [no comment]
+	&BurnDrvCpsSf2dkot2,		// Street Fighter II' - champion edition (bootleg, Double K.O. Turbo II)
+//	&BurnDrvCpsSf2ceh,			// Street Fighter II' - champion edition (bootleg, Hispanic) [no comment]
+#if defined FBA_DEBUG
+	&BurnDrvCpsSf2m1,			// Street Fighter II' - champion edition (bootleg, M1) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsSf2m10,			// Street Fighter II' - champion edition (bootleg, M10)
+	&BurnDrvCpsSf2m11,			// Street Fighter II' - champion edition (bootleg, M11)
+	&BurnDrvCpsSf2m12,			// Street Fighter II' - champion edition (bootleg, M12)
+	&BurnDrvCpsSf2m13,			// Street Fighter II' - champion edition (bootleg, M13)
+	&BurnDrvCpsSf2m2,			// Street Fighter II' - champion edition (bootleg, M2)
+	&BurnDrvCpsSf2m3,			// Street Fighter II' - champion edition (bootleg, M3)
+	&BurnDrvCpsSf2m4,			// Street Fighter II' - champion edition (bootleg, M4)
+	&BurnDrvCpsSf2m5,			// Street Fighter II' - champion edition (bootleg, M5)
+	&BurnDrvCpsSf2m6,			// Street Fighter II' - champion edition (bootleg, M6)
+	&BurnDrvCpsSf2m7,			// Street Fighter II' - champion edition (bootleg, M7)
+	&BurnDrvCpsSf2m8,			// Street Fighter II' - champion edition (bootleg, M8)
+	&BurnDrvCpsSf2m9,			// Street Fighter II' - champion edition (bootleg, M9)
+	&BurnDrvCpsSf2rb,			// Street Fighter II' - champion edition (bootleg, Rainbow set 1)
+	&BurnDrvCpsSf2rb2,			// Street Fighter II' - champion edition (bootleg, Rainbow set 2)
+	&BurnDrvCpsSf2rb3,			// Street Fighter II' - champion edition (bootleg, Rainbow set 3)
+	&BurnDrvCpsSf2red,			// Street Fighter II' - champion edition (bootleg, Red Wave)
+	&BurnDrvCpsSf2tlona,		// Street Fighter II' - champion edition (bootleg, Slay the Dragon set 1)
+	&BurnDrvCpsSf2tlonb,		// Street Fighter II' - champion edition (bootleg, Slay the Dragon set 2)
+	&BurnDrvCpsSf2v004,			// Street Fighter II' - champion edition (bootleg, V004)
+	&BurnDrvCpsSf2yyc,			// Street Fighter II' - champion edition (bootleg, YYC)
+	&BurnDrvCpsKouryu,			// Street Fighter II' - champion edition (Chinese bootleg, Xiang Long)
+//	&BurnDrvCpsSf2ce13,			// Street Fighter II' - champion edition (identical to sf2m13) [no comment, NOT WORKING]
+//	&BurnDrvCpsSf2turyu,		// Street Fighter II' - champion edition (identical to sf2tlona) [no comment]
+//	&BurnDrvCpsSf2tlonc,		// Street Fighter II' - champion edition (identical to sf2tlona) [no comment]
+//	&BurnDrvCpsSf2tury2,		// Street Fighter II' - champion edition (identical to sf2tlonb) [no comment]
+	&BurnDrvCpsSf2ceea,			// Street Fighter II' - champion edition (street fighter 2' 920313 etc)
 	&BurnDrvCpsSf2ceua,			// Street Fighter II' - champion edition (street fighter 2' 920313 USA)
+	&BurnDrvCpsSf2ce,			// Street Fighter II' - champion edition (street fighter 2' 920513 etc)
 	&BurnDrvCpsSf2cej,			// Street Fighter II' - champion edition (street fighter 2' 920513 Japan)
 	&BurnDrvCpsSf2ceub,			// Street Fighter II' - champion edition (street fighter 2' 920513 USA)
 	&BurnDrvCpsSf2ceuc,			// Street Fighter II' - champion edition (street fighter 2' 920803 USA)
 	&BurnDrvCpsSf2hf,			// Street Fighter II' - hyper fighting (street fighter 2' T 921209 ETC)
-	&BurnDrvCpsSf2t,			// Street Fighter II' - hyper fighting (street fighter 2' T 921209 USA)
+	&BurnDrvCpsSf2hfu,			// Street Fighter II' - hyper fighting (street fighter 2' T 921209 USA)
+	&BurnDrvMDg_sf2,			// Street Fighter II' - Special Champion Edition (Europe)
+	&BurnDrvMDg_sf2u,			// Street Fighter II' - Special Champion Edition (USA)
+	&BurnDrvMDg_sf2p,			// Street Fighter II' Plus (Japan, Asia)
 #if defined FBA_DEBUG
-	&BurnDrvMDsf2e,				// Street Fighter II' - Special Champion Edition (E) [!] [no comment]
-	&BurnDrvMDsf2c,				// Street Fighter II' - Special Champion Edition (U) [!] [no comment]
-	&BurnDrvMDsf2j,				// Street Fighter II' Plus - Champion Edition (J) [!] [no comment]
-	&BurnDrvMDsf2b,				// Street Fighter II' Turbo (Beta) [no comment]
+	&BurnDrvMDg_sf2tb,			// Street Fighter II' Turbo (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsSf2tj,			// Street Fighter II' Turbo - hyper fighting (street fighter 2' T 921209 Japan)
+	&BurnDrvCpsSf2hfj,			// Street Fighter II' Turbo - hyper fighting (street fighter 2' T 921209 Japan)
 	&BurnDrvSfiii2n,			// Street Fighter III 2nd Impact: Giant Attack (Asia 970930, NO CD)
-	&BurnDrvSfiii2,				// Street Fighter III 2nd Impact: Giant Attack (Japan 970930) [no comment, NOT WORKING]
-#if defined FBA_DEBUG
-	&BurnDrvSfiii2u,			// Street Fighter III 2nd Impact: Giant Attack (USA 970930) [no comment, NOT WORKING]
-#endif
-	&BurnDrvSfiii3n,			// Street Fighter III 3rd Strike: Fight for the Future (Japan 990512, NO CD)
-	&BurnDrvSfiii3an,			// Street Fighter III 3rd Strike: Fight for the Future (Japan 990608, NO CD)
-	&BurnDrvSfiii3,				// Street Fighter III 3rd Strike: Fight for the Future (USA 990512) [no comment, NOT WORKING]
-#if defined FBA_DEBUG
-	&BurnDrvSfiii3a,			// Street Fighter III 3rd Strike: Fight for the Future (USA 990608) [no comment, NOT WORKING]
-#endif
+	&BurnDrvSfiii2j,			// Street Fighter III 2nd Impact: Giant Attack (Japan 970930)
+	&BurnDrvSfiii2,				// Street Fighter III 2nd Impact: Giant Attack (USA 970930)
+	&BurnDrvSfiii3an,			// Street Fighter III 3rd Strike: Fight for the Future (Japan 990512, NO CD)
+	&BurnDrvSfiii3n,			// Street Fighter III 3rd Strike: Fight for the Future (Japan 990608, NO CD)
+	&BurnDrvSfiii3a,			// Street Fighter III 3rd Strike: Fight for the Future (USA 990512)
+	&BurnDrvSfiii3,				// Street Fighter III 3rd Strike: Fight for the Future (USA 990608)
 	&BurnDrvSfiiin,				// Street Fighter III: New Generation (Asia 970204, NO CD)
-	&BurnDrvSfiii,				// Street Fighter III: New Generation (Japan 970204) [no comment, NOT WORKING]
-#if defined FBA_DEBUG
-	&BurnDrvSfiiiu,				// Street Fighter III: New Generation (USA 970204) [no comment, NOT WORKING]
-#endif
+	&BurnDrvSfiiih,				// Street Fighter III: New Generation (Hispanic 970204)
+	&BurnDrvSfiiij,				// Street Fighter III: New Generation (Japan 970204)
+	&BurnDrvSfiii,				// Street Fighter III: New Generation (USA 970204)
 	&BurnDrvCpsSfzjr2,			// Street Fighter Zero (950605 Japan)
 	&BurnDrvCpsSfza,			// Street Fighter Zero (950627 Asia)
-	&BurnDrvCpsSfzh,			// Street Fighter Zero (950627 Hispanic)
+	&BurnDrvCpsSfzhr1,			// Street Fighter Zero (950627 Hispanic)
 	&BurnDrvCpsSfzjr1,			// Street Fighter Zero (950627 Japan)
+	&BurnDrvCpsSfzh,			// Street Fighter Zero (950718 Hispanic)
 	&BurnDrvCpsSfzbr1,			// Street Fighter Zero (950727 Brazil)
 	&BurnDrvCpsSfzj,			// Street Fighter Zero (950727 Japan)
-	&BurnDrvCpsSfzch,			// Street Fighter Zero (951020 CPS Changer)
 	&BurnDrvCpsSfzb,			// Street Fighter Zero (951109 Brazil)
+	&BurnDrvCpsSfzbch,			// Street Fighter Zero (CPS Changer, 950727 Brazil)
+	&BurnDrvCpsSfzech,			// Street Fighter Zero (CPS Changer, 950727 Euro)
+	&BurnDrvCpsSfzhch,			// Street Fighter Zero (CPS Changer, 950727 Hispanic)
+	&BurnDrvCpsSfzach,			// Street Fighter Zero (CPS Changer, 950925 Asia)
+	&BurnDrvCpsSfzch,			// Street Fighter Zero (CPS Changer, 951020 Japan)
+	&BurnDrvCpsSfz2ad,			// Street Fighter Zero 2 (960227 Asia Phoenix Edition)
 	&BurnDrvCpsSfz2a,			// Street Fighter Zero 2 (960227 Asia)
+	&BurnDrvCpsSfz2jd,			// Street Fighter Zero 2 (960227 Japan Phoenix Edition)
 	&BurnDrvCpsSfz2j,			// Street Fighter Zero 2 (960227 Japan)
 	&BurnDrvCpsSfz2n,			// Street Fighter Zero 2 (960229 Oceania)
 	&BurnDrvCpsSfz2br1,			// Street Fighter Zero 2 (960304 Brazil)
 	&BurnDrvCpsSfz2h,			// Street Fighter Zero 2 (960304 Hispanic)
 	&BurnDrvCpsSfz2b,			// Street Fighter Zero 2 (960531 Brazil)
-	&BurnDrvCpsSfz2aj,			// Street Fighter Zero 2 Alpha (960805 Japan)
-	&BurnDrvCpsSfz2ab,			// Street Fighter Zero 2 Alpha (960813 Brazil)
-	&BurnDrvCpsSfz2ah,			// Street Fighter Zero 2 Alpha (960813 Hispanic)
-	&BurnDrvCpsSfz2aa,			// Street Fighter Zero 2 Alpha (960826 Asia)
+	&BurnDrvCpsSfz2alj,			// Street Fighter Zero 2 Alpha (960805 Japan)
+	&BurnDrvCpsSfz2alb,			// Street Fighter Zero 2 Alpha (960813 Brazil)
+	&BurnDrvCpsSfz2alh,			// Street Fighter Zero 2 Alpha (960813 Hispanic)
+	&BurnDrvCpsSfz2ald,			// Street Fighter Zero 2 Alpha (960826 Asia Phoenix Edition)
+	&BurnDrvCpsSfz2al,			// Street Fighter Zero 2 Alpha (960826 Asia)
+	&BurnDrvCpsSfz3jr2d,		// Street Fighter Zero 3 (980629 Japan Phoenix Edition)
 	&BurnDrvCpsSfz3jr2,			// Street Fighter Zero 3 (980629 Japan)
 	&BurnDrvCpsSfz3ar1,			// Street Fighter Zero 3 (980701 Asia)
 	&BurnDrvCpsSfz3jr1,			// Street Fighter Zero 3 (980727 Japan)
 	&BurnDrvCpsSfz3a,			// Street Fighter Zero 3 (980904 Asia)
 	&BurnDrvCpsSfz3j,			// Street Fighter Zero 3 (980904 Japan)
-	&BurnDrvStrHoop,			// Street Hoop\0Street Slam\0Dunk Dream
+	&BurnDrvstrhoop,			// Street Hoop / Street Slam / Dunk Dream
 #if defined FBA_DEBUG
-	&BurnDrvMDstra,				// Street Racer (E) [c][!] [no comment]
-	&BurnDrvMDssma,				// Street Smart (JU) [!] [no comment]
+	&BurnDrvMDg_sracer,			// Street Racer (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDsor00,			// Streets of Rage (W) (REV00) [!]
-	&BurnDrvMDsor,				// Streets of Rage (W) (REV01) [!]
-	&BurnDrvMDsor2je,			// Streets of Rage 2 (JE) [!]
-	&BurnDrvMDsor2,				// Streets of Rage 2 (U) [!]
-	&BurnDrvMDsor3e,			// Streets of Rage 3 (E) (Apr 1994) [!]
-	&BurnDrvMDsor3ea,			// Streets of Rage 3 (E) (May 1994) [!]
-	&BurnDrvMDsor3,				// Streets of Rage 3 (U) [!]
-	&BurnDrvCpsStrider,			// Strider (US set 1)
-	&BurnDrvCpsStridrua,		// Strider (US set 2)
-	&BurnDrvCpsStriderj,		// Strider Hiryu (Japan set 1)
-	&BurnDrvCpsStridrja,		// Strider Hiryu (Japan set 2)
+	&BurnDrvstreetsj,			// Street Smart (Japan version 1)
 #if defined FBA_DEBUG
-	&BurnDrvMDstridj,			// Strider Hiryuu (J) [!] [no comment]
-	&BurnDrvMDstrid2,			// Strider II (E) [c][!] [no comment]
-	&BurnDrvMDstri,				// Strider II (E) [c][!] [no comment]
+	&BurnDrvMDg_ssmart,			// Street Smart (Japan, USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvstreets1,			// Street Smart (US version 1)
+	&BurnDrvstreetsm,			// Street Smart (US version 2)
+	&BurnDrvstreetsw,			// Street Smart (World version 1)
+	&BurnDrvCpsFfightjh,		// Street Smart / Final Fight (Japan, hack)
+	&BurnDrvMDg_sor2,			// Streets of Rage 2 (USA)
+	&BurnDrvMDg_sor3a,			// Streets of Rage 3 (Asia)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sor3pa,			// Streets of Rage 3 (E) (Prototype - Apr 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pb,			// Streets of Rage 3 (E) (Prototype - Apr 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pc,			// Streets of Rage 3 (E) (Prototype - Apr 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pd,			// Streets of Rage 3 (E) (Prototype - Apr 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pe,			// Streets of Rage 3 (E) (Prototype - Apr 25, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_sor3,			// Streets of Rage 3 (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sor3pf,			// Streets of Rage 3 (Prototype - Apr 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pg,			// Streets of Rage 3 (Prototype - Apr 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3ph,			// Streets of Rage 3 (Prototype - Apr 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pi,			// Streets of Rage 3 (Prototype - Apr 11, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pj,			// Streets of Rage 3 (Prototype - Apr 12, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pk,			// Streets of Rage 3 (Prototype - Apr 13, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pl,			// Streets of Rage 3 (Prototype - Mar 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pm,			// Streets of Rage 3 (Prototype - Mar 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3pn,			// Streets of Rage 3 (Prototype - Mar 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_sor3po,			// Streets of Rage 3 (Prototype - Mar 28, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_sor3u,			// Streets of Rage 3 (USA)
+	&BurnDrvMDg_sora,			// Streets of Rage ~ Bare Knuckle - Ikari no Tetsuken (World)
+	&BurnDrvMDg_sor,			// Streets of Rage ~ Bare Knuckle - Ikari no Tetsuken (World) (Rev A)
+	&BurnDrvCpsStrider,			// Strider (US set 1)
+	&BurnDrvCpsStriderua,		// Strider (US set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_stride,			// Strider (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsStriderjr,		// Strider Hiryu (Japan Resale Ver.)
+	&BurnDrvCpsStriderj,		// Strider Hiryu (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_strid1,			// Strider Hiryuu (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_stri2,			// Strider II (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_stri2u,			// Strider Returns - Journey from Darkness (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvStrkfgtr,			// Strike Fighter (Japan)
+	&BurnDrvStg,				// Strike Gunner S.T.G
 #if defined FBA_DEBUG
-	&BurnDrvMDstrikb,			// Striker (Beta) [no comment]
-	&BurnDrvMDstrk,				// Striker (E) (M5) [!] [no comment]
+	&BurnDrvMDg_strkrb,			// Striker (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_strkr,			// Striker (Europe) [Gfx Problems]
 #endif
 	&BurnDrvS1945,				// Strikers 1945
 	&BurnDrvS1945a,				// Strikers 1945 (Alt)
 	&BurnDrvS1945j,				// Strikers 1945 (Japan)
 	&BurnDrvS1945jn,			// Strikers 1945 (Japan, unprotected)
 	&BurnDrvS1945k,				// Strikers 1945 (Korea)
-	&BurnDrvs1945p,				// Strikers 1945 plus
+	&BurnDrvS1945ii,			// Strikers 1945 II
+	&BurnDrvS1945iii,			// Strikers 1945 III (World) / Strikers 1999 (Japan)
+	&BurnDrvs1945p,				// Strikers 1945 Plus
+//	&BurnDrvs1945pn,			// Strikers 1945 Plus (decrypted C) [no comment]
+	&BurnDrvStrongx,			// Strong X
 #if defined FBA_DEBUG
-	&BurnDrvMDsubtb1,			// Sub-Terrania (Beta 1) [no comment]
-	&BurnDrvMDsubtb2,			// Sub-Terrania (Beta 2) [no comment]
-	&BurnDrvMDsubte,			// Sub-Terrania (E) [!] [no comment]
-	&BurnDrvMDsubtj,			// Sub-Terrania (J) [!] [no comment]
-	&BurnDrvMDsubt,				// Sub-Terrania (U) [!] [no comment]
+	&BurnDrvMDg_subt,			// SubTerrania (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_subtj,			// SubTerrania (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_subtp,			// SubTerrania (Prototype - Feb 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_subtu,			// SubTerrania (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_subtub,			// SubTerrania (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_subtua,			// SubTerrania (USA) (Beta) (Earlier) [no comment, NOT WORKING]
 #endif
+	&BurnDrvScessjoe,			// Success Joe (World)
 	&BurnDrvSjryuko1,			// Sukeban Jansi Ryuko (set 1, System 16A, FD1089B 317-5021)
 	&BurnDrvSjryuko,			// Sukeban Jansi Ryuko (set 2, System 16B, FD1089B 317-5021)
 #if defined FBA_DEBUG
-	&BurnDrvMDsumc,				// Summer Challenge (U) [!] [no comment]
-	&BurnDrvMDssride,			// Sunset Riders (E) [!] [no comment]
-	&BurnDrvMDssri,				// Sunset Riders (U) [!] [no comment]
-	&BurnDrvMDsair,				// Super Airwolf (J) [!] [no comment]
-	&BurnDrvMDg_2020j,			// Super Baseball 2020 (J) [!] [no comment, NOT WORKING]
-	&BurnDrvMDsbt,				// Super Battle Tank - War in the Gulf (U) [!] [no comment]
-	&BurnDrvMDsbat,				// Super Battleship (U) [!] [no comment]
+	&BurnDrvMDg_summer,			// Summer Challenge (USA, Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSunaq,				// SunA Quiz 6000 Academy (940620-6)
+	&BurnDrvSsridersabd,		// Sunset Riders (2 Players ver. ABD)
+	&BurnDrvSsridersebc,		// Sunset Riders (2 Players ver. EBC)
+	&BurnDrvSsridersebd,		// Sunset Riders (2 Players ver. EBD)
+	&BurnDrvSsridersjbd,		// Sunset Riders (2 Players ver. JBD)
+	&BurnDrvSsridersubc,		// Sunset Riders (2 Players ver. UBC)
+	&BurnDrvSsridersadd,		// Sunset Riders (4 Players ver. ADD)
+	&BurnDrvSsriderseaa,		// Sunset Riders (4 Players ver. EAA)
+	&BurnDrvSsriders,			// Sunset Riders (4 Players ver. EAC)
+	&BurnDrvSsridersuac,		// Sunset Riders (4 Players ver. UAC)
+	&BurnDrvSsridersuda,		// Sunset Riders (4 Players ver. UDA)
+#if defined FBA_DEBUG
+	&BurnDrvSsridersb,			// Sunset Riders (bootleg 4 Players ver. ADD) [no comment, NOT WORKING]
+	&BurnDrvMDg_sunset,			// Sunset Riders (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_sunse1,			// Sunset Riders (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_s15in1,			// Super 15-in-1 [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_s19in1,			// Super 19-in-1 [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_supera,			// Super Airwolf (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSuperbar,			// Super Bar
+	&BurnDrvMDg_sb2020,			// Super Baseball 2020 (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sbs,			// Super Battleship (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_sbt,			// Super Battletank - War in the Gulf (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSboblboa,			// Super Bobble Bobble (set 1)
+	&BurnDrvSboblbob,			// Super Bobble Bobble (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_supbub,			// Super Bubble Bobble (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSbbros,				// Super Buster Bros. (US 901001)
 	&BurnDrvsucasino,			// Super Casino
 #if defined FBA_DEBUG
-	&BurnDrvMDsupdai,			// Super Daisenryaku (J) (REV00) [!] [no comment]
+	&BurnDrvSuperchs,			// Super Chase - Criminal Termintation (US) [no comment]
 #endif
-	&BurnDrvSdodgeb,			// Super Dodge Ball\0Kunio no Nekketsu Toukyuu Densetsu
+	&BurnDrvScobra,				// Super Cobra
+	&BurnDrvScobrab,			// Super Cobra (bootleg)
+	&BurnDrvScobrase,			// Super Cobra (Sega)
+	&BurnDrvScobras,			// Super Cobra (Stern)
+	&BurnDrvScontra,			// Super Contra
+	&BurnDrvScontraj,			// Super Contra (Japan)
+	&BurnDrvMDg_superd,			// Super Daisenryaku (Japan)
+	&BurnDrvsdodgeb,			// Super Dodge Ball / Kunio no Nekketsu Toukyuu Densetsu
 #if defined FBA_DEBUG
-	&BurnDrvMDsfz,				// Super Fantasy Zone (E) [!] [no comment]
-	&BurnDrvMDsfze,				// Super Fantasy Zone (E) [!] [no comment]
+	&BurnDrvMDg_sdk99,			// Super Donkey Kong 99 (Unl) (Protected) [no comment, NOT WORKING]
+	&BurnDrvMDg_sdk99a,			// Super Donkey Kong 99 (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_sfz,			// Super Fantasy Zone (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_sfzj,			// Super Fantasy Zone (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSuperg,				// Super Galaxians (galaxiaj hack)
 	&BurnDrvCpsSgemfa,			// Super Gem Fighter Mini Mix (970904 Asia)
 	&BurnDrvCpsSgemfh,			// Super Gem Fighter Mini Mix (970904 Hispanic)
+	&BurnDrvCpsSgemfd,			// Super Gem Fighter Mini Mix (970904 USA Phoenix Edition)
 	&BurnDrvCpsSgemf,			// Super Gem Fighter Mini Mix (970904 USA)
 	&BurnDrvSuprglob,			// Super Glob
 	&BurnDrvsprglobp,			// Super Glob (Pac-Man hardware)
 	&BurnDrvsprglbpg,			// Super Glob (Pac-Man hardware) German
 #if defined FBA_DEBUG
-	&BurnDrvShangupb,			// Super Hang-On (Hang-On upgrade, bootleg) [no comment]
+	&BurnDrvSupergx,			// Super GX [Bad Dump, NOT WORKING]
+	&BurnDrvMDg_superh,			// Super H.Q. (Japan) [no comment, NOT WORKING]
+	&BurnDrvShangonrb,			// Super Hang-On (bootleg) [no comment, NOT WORKING]
+	&BurnDrvShangonro,			// Super Hang-On (Japan, FD1094 317-0038) [no comment, NOT WORKING]
 #endif
 	&BurnDrvShangon2,			// Super Hang-On (mini ride-on, Rev A, FD1089B 317-0034)
 	&BurnDrvShangon3,			// Super Hang-On (sitdown/upright, FD1089B 317-0034)
 	&BurnDrvShangon,			// Super Hang-On (sitdown/upright, unprotected)
 #if defined FBA_DEBUG
-	&BurnDrvMDsho00,			// Super Hang-On (W) (REV00) [!] [no comment]
-	&BurnDrvMDsuphq,			// Super HQ (J) [!] [no comment]
-	&BurnDrvMDshyde,			// Super Hydlide (E) [!] [no comment]
-	&BurnDrvMDshydj,			// Super Hydlide (J) [c][!] [no comment]
-	&BurnDrvMDshyd,				// Super Hydlide (U) [!] [no comment]
-	&BurnDrvMDskik,				// Super Kick Off (E) [c][!] [no comment]
-	&BurnDrvMDsl,				// Super League (E) [no comment]
-	&BurnDrvMDsleage,			// Super League (E) [no comment]
+	&BurnDrvMDg_shanga,			// Super Hang-On (World) (En,Ja) [no comment, NOT WORKING]
+	&BurnDrvMDg_shang,			// Super Hang-On (World) (En,Ja) (Rev A) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSuprheli,			// Super Heli (Super Cobra bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_shi,			// Super High Impact (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_suphy,			// Super Hydlide (Europe)
+	&BurnDrvMDg_suphyj,			// Super Hydlide (Japan)
+	&BurnDrvMDg_suphyu,			// Super Hydlide (USA)
+	&BurnDrvMDg_superk,			// Super Kick Off (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_skk99,			// Super King Kong 99 (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_suplg,			// Super League (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvSuprleag,			// Super League (FD1094 317-0045)
 #if defined FBA_DEBUG
-	&BurnDrvMDsl91,				// Super League 91 (J) [!] [no comment]
-	&BurnDrvMDsmas,				// Super Masters Golf (J) [!] [no comment]
+	&BurnDrvMDg_suplgj,			// Super League (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_superm,			// Super Mario 2 1998 (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_supe16,			// Super Mario Bros. (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_supe17,			// Super Mario World (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_supe18,			// Super Mario World (Unl) [p1][!] [no comment, NOT WORKING]
 #endif
+	&BurnDrvMarukin,			// Super Marukin-Ban (Japan 901017)
 	&BurnDrvSupmodel,			// Super Model
+	&BurnDrvMDg_smgpj,			// Super Monaco GP (Japan) (En,Ja)
+	&BurnDrvMDg_smgpb,			// Super Monaco GP (Japan, Europe) (En,Ja)
+	&BurnDrvMDg_smgpa,			// Super Monaco GP (Japan, Europe) (En,Ja) (Rev A)
 	&BurnDrvSmgpja,				// Super Monaco GP (set 1, Japan, Rev A, FD1094 317-0124a)
 	&BurnDrvSmgpj,				// Super Monaco GP (set 2, Japan, Rev B, FD1094 317-0124a)
 	&BurnDrvSmgpu3,				// Super Monaco GP (set 3, US, FD1094 317-0125a)
@@ -6453,402 +11158,683 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvSmgp5,				// Super Monaco GP (set 7, World, 'Air Drive Cabinet', FD1094 317-0126)
 	&BurnDrvSmgp6,				// Super Monaco GP (set 8, World, Rev A, FD1094 317-0126a)
 	&BurnDrvSmgp,				// Super Monaco GP (set 9, World, Rev B, 'Twin', FD1094 317-0126a)
-#if defined FBA_DEBUG
-	&BurnDrvMDsmgp03,			// Super Monaco Grand Prix (U) (M2) (REV03) [!] [no comment]
-	&BurnDrvMDsmgp00,			// Super Monaco Grand Prix (W) (M2) (REV00) [!] [no comment]
-	&BurnDrvMDsmgp01,			// Super Monaco Grand Prix (W) (M2) (REV01) [!] [no comment]
-	&BurnDrvMDsmgp,				// Super Monaco Grand Prix (W) (M2) (REV02) [!] [no comment]
-#endif
+	&BurnDrvMDg_smgp,			// Super Monaco GP (USA) (En,Ja)
+	&BurnDrvSmooncrs,			// Super Moon Cresta
 	&BurnDrvCpsSmbombr1,		// Super Muscle Bomber - the international blowout (940808 Japan)
 	&BurnDrvCpsSmbomb,			// Super Muscle Bomber - the international blowout (940831 Japan)
-#if defined FBA_DEBUG
-	&BurnDrvMDsoff,				// Super Off Road (U) [!] [no comment]
-#endif
+	&BurnDrvMDg_supero,			// Super Off Road (USA, Europe)
+	&BurnDrvSpangj,				// Super Pang (Japan 901023)
+	&BurnDrvSpang,				// Super Pang (World 900914)
 	&BurnDrvCpsSpf2ta,			// Super Puzzle Fighter II Turbo (Super Puzzle Fighter 2 Turbo 960529 Asia)
+	&BurnDrvCpsSpf2th,			// Super Puzzle Fighter II Turbo (Super Puzzle Fighter 2 Turbo 960531 Hispanic)
+	&BurnDrvCpsSpf2td,			// Super Puzzle Fighter II Turbo (Super Puzzle Fighter 2 Turbo 960620 USA Phoenix Edition)
 	&BurnDrvCpsSpf2t,			// Super Puzzle Fighter II Turbo (Super Puzzle Fighter 2 Turbo 960620 USA)
+	&BurnDrvCpsSpf2xjd,			// Super Puzzle Fighter II X (Super Puzzle Fighter 2 X 960531 Japan Phoenix Edition)
 	&BurnDrvCpsSpf2xj,			// Super Puzzle Fighter II X (Super Puzzle Fighter 2 X 960531 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsrba,				// Super Real Basketball (E) [c][!] [no comment]
-	&BurnDrvMDsrealj,			// Super Real Basketball (J) [c][!] [no comment]
-	&BurnDrvMDsshi2b,			// Super Shinobi I [no comment]
-	&BurnDrvMDsshin2,			// Super Shinobi I [no comment]
+	&BurnDrvMDg_srb,			// Super Real Basketball (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_srbj,			// Super Real Basketball (Japan, Korea) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSsideki2,			// Super Sidekicks 2 - the world championship\0Tokuten Ou 2 - real fight football
-	&BurnDrvSsideki3,			// Super Sidekicks 3 - the next glory\0Tokuten Ou 3 - eikoue no michi
-	&BurnDrvSsideki,			// Super Sidekicks\0Tokuten Ou
+	&BurnDrvSrdarwnj,			// Super Real Darwin (Japan)
+	&BurnDrvSrdarwin,			// Super Real Darwin (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDskid,				// Super Skidmarks (E) (J-Cart) [!] [no comment]
-	&BurnDrvMDskida,			// Super Skidmarks (E) [a1] [no comment]
-	&BurnDrvMDsstv,				// Super Smash TV (UE) [!] [no comment]
+	&BurnDrvMDg_sups2b,			// Super Shinobi II, The (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_sups2a,			// Super Shinobi II, The (Japan) (Beta) (Earlier) [no comment, NOT WORKING]
+	&BurnDrvMDg_sups2,			// Super Shinobi II, The (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_supshi,			// Super Shinobi, The (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvssideki,			// Super Sidekicks / Tokuten Ou
+	&BurnDrvssideki2,			// Super Sidekicks 2 - The World Championship / Tokuten Ou 2 - real fight football
+	&BurnDrvssideki3,			// Super Sidekicks 3 - The Next Glory / Tokuten Ou 3 - eikoue no michi
+#if defined FBA_DEBUG
+	&BurnDrvMDg_sskidb,			// Super Skidmarks (Europe) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_sskid,			// Super Skidmarks (Europe) (J-Cart) [no comment, NOT WORKING]
+	&BurnDrvMDg_sstv,			// Super Smash TV (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvSsi,				// Super Space Invaders '91 (World)
+	&BurnDrvMacross,			// Super Spacefortress Macross / Chou-Jikuu Yousai Macross
+	&BurnDrvMacross2,			// Super Spacefortress Macross II / Chou-Jikuu Yousai Macross II
+	&BurnDrvSstarcrs,			// Super Star Crest
+	&BurnDrvMDg_ssf2,			// Super Street Fighter II - The New Challengers (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ssf2j,			// Super Street Fighter II - The New Challengers (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsSsf2jr2,			// Super Street Fighter II - the new challengers (super street fighter 2 930910 Japan)
 	&BurnDrvCpsSsf2,			// Super Street Fighter II - the new challengers (super street fighter 2 930911 etc)
+	&BurnDrvCpsSsf2h,			// Super Street Fighter II - the new challengers (super street fighter 2 930911 Hispanic)
 	&BurnDrvCpsSsf2jr1,			// Super Street Fighter II - the new challengers (super street fighter 2 930911 Japan)
+	&BurnDrvCpsSsf2ud,			// Super Street Fighter II - the new challengers (super street fighter 2 930911 USA Phoenix Edition)
 	&BurnDrvCpsSsf2u,			// Super Street Fighter II - the new challengers (super street fighter 2 930911 USA)
 	&BurnDrvCpsSsf2ar1,			// Super Street Fighter II - the new challengers (super street fighter 2 930914 Asia)
 	&BurnDrvCpsSsf2a,			// Super Street Fighter II - the new challengers (super street fighter 2 931005 Asia)
 	&BurnDrvCpsSsf2j,			// Super Street Fighter II - the new challengers (super street fighter 2 931005 Japan)
+	&BurnDrvMDg_ssf2u,			// Super Street Fighter II - The New Challengers (USA)
 	&BurnDrvCpsSsf2tbr1,		// Super Street Fighter II - the tournament battle (930911 etc)
 	&BurnDrvCpsSsf2tbj,			// Super Street Fighter II - the tournament battle (930911 Japan)
+	&BurnDrvCpsSsf2tbd,			// Super Street Fighter II - the tournament battle (931119 etc Phoenix Edition)
 	&BurnDrvCpsSsf2tb,			// Super Street Fighter II - the tournament battle (931119 etc)
 	&BurnDrvCpsSsf2ta,			// Super Street Fighter II Turbo (super street fighter 2 X 940223 Asia)
 	&BurnDrvCpsSsf2t,			// Super Street Fighter II Turbo (super street fighter 2 X 940223 etc)
 	&BurnDrvCpsSsf2tur1,		// Super Street Fighter II Turbo (super street fighter 2 X 940223 USA)
 	&BurnDrvCpsSsf2tu,			// Super Street Fighter II Turbo (super street fighter 2 X 940323 USA)
+	&BurnDrvCpsSsf2xjd,			// Super Street Fighter II X - grand master challenge (super street fighter 2 X 940223 Japan Phoenix Edition)
 	&BurnDrvCpsSsf2xj,			// Super Street Fighter II X - grand master challenge (super street fighter 2 X 940223 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDstb00,			// Super Thunder Blade (W) (REV00) [!] [no comment]
-	&BurnDrvMDstb,				// Super Thunder Blade (W) (REV01) [!] [no comment]
+	&BurnDrvMDg_stbj,			// Super Thunder Blade (Japan) (Launch Cart) [no comment, NOT WORKING]
+	&BurnDrvMDg_stb,			// Super Thunder Blade (World) [no comment, NOT WORKING]
 #endif
 	&BurnDrvSuprtrio,			// Super Trio
 	&BurnDrvstriv,				// Super Triv
 #if defined FBA_DEBUG
-	&BurnDrvMDsvolx,			// Super Volleyball (J) [x] [no comment]
-	&BurnDrvMDsvolua,			// Super Volleyball (U) [a1][!] [no comment]
-	&BurnDrvMDsvol,				// Super Volleyball (U) [c][!] [no comment]
+	&BurnDrvMDg_svbjx,			// Super Volley Ball (J) [x] [no comment, NOT WORKING]
+	&BurnDrvMDg_svbj,			// Super Volley Ball (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_svbjy,			// Super Volley Ball (U) [c][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_svb,			// Super Volley Ball (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvSsoldier,			// Superior Soldiers (US)
 	&BurnDrvSuperman,			// Superman
+	&BurnDrvSupermanj,			// Superman (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDsupmnb,			// Superman (Beta) [no comment]
-	&BurnDrvMDsupmne,			// Superman (E) [!] [no comment]
+	&BurnDrvMDg_spman,			// Superman (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_spmanb,			// Superman (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_spmane,			// Superman - The Man of Steel (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_surgin,			// Surging Aura (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvSuprmanj,			// Superman (Japan)
-#if defined FBA_DEBUG
-	&BurnDrvMDsupm,				// Superman (U) [!] [no comment]
-	&BurnDrvMDsurgin,			// Surging Aura (J) [!] [no comment]
-#endif
-	&BurnDrvsvcpcb,				// SvC Chaos - SNK vs Capcom (JAMMA PCB, set 1)
-	&BurnDrvsvcpcba,			// SvC Chaos - SNK vs Capcom (JAMMA PCB, set 2)
-	&BurnDrvsvc,				// SvC Chaos - SNK vs Capcom (MVS)
-	&BurnDrvsvcboot,			// SvC Chaos - SNK vs Capcom (MVS, bootleg)
-	&BurnDrvsvcplus,			// SvC Chaos - SNK vs Capcom Plus (bootleg, set 1)
-	&BurnDrvsvcplusa,			// SvC Chaos - SNK vs Capcom Plus (bootleg, set 2)
-	&BurnDrvsvcsplus,			// SvC Chaos - SNK vs Capcom Super Plus (bootleg)
+	&BurnDrvSuratka,			// Surprise Attack (Asia ver. L)
+	&BurnDrvSuratkj,			// Surprise Attack (Japan ver. M)
+	&BurnDrvSuratk,				// Surprise Attack (World ver. K)
+	&BurnDrvSwarm,				// Swarm (bootleg?)
 	&BurnDrvSwat,				// SWAT (315-5048)
+	&BurnDrvSwatpolc,			// SWAT Police
 #if defined FBA_DEBUG
-	&BurnDrvMDswsoj,			// Sword of Sodan (J) [!] [no comment]
-	&BurnDrvMDswso,				// Sword of Sodan (UE) [!] [no comment]
-	&BurnDrvMDswvej,			// Sword of Vermilion (J) [c][!] [no comment]
-	&BurnDrvMDswve,				// Sword of Vermilion (UE) [!] [no comment]
-	&BurnDrvMDsydval,			// Syd of Valis (U) [!] [no comment]
-	&BurnDrvMDsylvb,			// Sylvester & Tweety in Cagey Capers (Beta) [no comment]
-	&BurnDrvMDsylv,				// Sylvester & Tweety in Cagey Capers (UE) [!] [no comment]
-	&BurnDrvMDsynd,				// Syndicate (UE) [!] [no comment]
+	&BurnDrvMDg_swordo,			// Sword of Sodan (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_sword1,			// Sword of Sodan (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMOSyougi,			// Syougi No Tatsujin - master of syougi
+	&BurnDrvMDg_swdv,			// Sword of Vermilion (USA, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDt2arcb,			// T2 - The Arcade Game (Beta) [no comment]
-	&BurnDrvMDt2ar,				// T2 - The Arcade Game (UE) (REV01) [!] [no comment]
-	&BurnDrvMDtaiga,			// Taiga Drama Taiheiki (J) [!] [no comment]
-	&BurnDrvMDtaikou,			// Taikou Risshiden (J) [!] [no comment]
-	&BurnDrvMDtale,				// Tale Spin (UE) [!] [no comment]
-	&BurnDrvMDtalmit,			// Talmit's Adventure (E) [!] [no comment]
-	&BurnDrvMDtanr,				// Tanto R (J) [!] [no comment]
-	&BurnDrvMDtarg,				// Target Earth (U) [!] [no comment]
-	&BurnDrvMDtfhxj,			// Task Force Harrier EX (J) [!] [no comment]
-	&BurnDrvMDtfh,				// Task Force Harrier EX (U) [!] [no comment]
+	&BurnDrvMDg_sydofv,			// Syd of Valis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_sylves,			// Sylvester & Tweety in Cagey Capers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_sylve1,			// Sylvester and Tweety in Cagey Capers (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_syndic,			// Syndicate (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDtazm,				// Taz-Mania (W) [!]
+	&BurnDrvmosyougi,			// Syougi No Tatsujin - Master of Syougi
 #if defined FBA_DEBUG
-	&BurnDrvMDtusa,				// Team USA Basketball (UE) [c][!] [no comment]
-	&BurnDrvMDtcls,				// Techno Clash (UE) [!] [no comment]
-	&BurnDrvMDtc,				// Techno Clash (UE) [!] [no comment]
-	&BurnDrvMDtcop,				// Technocop (U) [!] [no comment]
-	&BurnDrvMDtcupx,			// Tecmo Cup (J) [x] [no comment]
-	&BurnDrvMDtsb,				// Tecmo Super Baseball (U) [!] [no comment]
-	&BurnDrvMDtsbwlj,			// Tecmo Super Bowl (J) [!] [no comment]
-	&BurnDrvMDtsbw,				// Tecmo Super Bowl (U) (Oct 1993) [!] [no comment]
-	&BurnDrvMDtsbwlu,			// Tecmo Super Bowl (U) (Sep 1993) [!] [no comment]
-	&BurnDrvMDtsbw2j,			// Tecmo Super Bowl II SE (J) [!] [no comment]
-	&BurnDrvMDtbw2,				// Tecmo Super Bowl II SE (U) [!] [no comment]
-	&BurnDrvMDtbw3,				// Tecmo Super Bowl III Final Edition (U) [!] [no comment]
-	&BurnDrvMDtsnbaj,			// Tecmo Super NBA Basketball (J) [!] [no comment]
-	&BurnDrvMDtsnb,				// Tecmo Super NBA Basketball (U) [!] [no comment]
-	&BurnDrvMDtw92,				// Tecmo World Cup '92 (J) [!] [no comment]
-	&BurnDrvMDtw93,				// Tecmo World Cup '93 (U) [!] [no comment]
+	&BurnDrvMDg_t2term,			// T2 - Terminator 2 - Judgment Day (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_t2agj,			// T2 - The Arcade Game (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_t2agb,			// T2 - The Arcade Game (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_t2ag,			// T2 - The Arcade Game (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_taikou,			// Taikou Risshiden (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_taiwan,			// Taiwan Daheng (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_talesp,			// TaleSpin (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_talmit,			// Talmit's Adventure (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvTws96,				// Tecmo World Soccer '96
+	&BurnDrvTangtang,			// Tang Tang (ver. 0526, 26/05/2000)
+	&BurnDrvTaotaido,			// Tao Taido (set 1)
+	&BurnDrvTaotaidoa,			// Tao Taido (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDteddy,			// Teddy Boy Blues (SN) (J) [no comment]
+	&BurnDrvMDg_target,			// Target Earth (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTharrier,			// Task Force Harrier
+	&BurnDrvTharrierj,			// Task Force Harrier (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tfhj,			// Task Force Harrier EX (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tfh,			// Task Force Harrier EX (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTrojanj,			// Tatakai no Banka (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tatsuj,			// Tatsujin ~ Truxton (World) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_tazem,			// Taz in Escape from Mars (Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tazema,			// Taz in Escape from Mars (Prototype - Apr 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemb,			// Taz in Escape from Mars (Prototype - Jun 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemc,			// Taz in Escape from Mars (Prototype - Jun 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemd,			// Taz in Escape from Mars (Prototype - Jun 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazeme,			// Taz in Escape from Mars (Prototype - Jun 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemf,			// Taz in Escape from Mars (Prototype - Jun 18, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemg,			// Taz in Escape from Mars (Prototype - Jun 20, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemh,			// Taz in Escape from Mars (Prototype - Mar 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemi,			// Taz in Escape from Mars (Prototype - May 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemj,			// Taz in Escape from Mars (Prototype - May 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tazemk,			// Taz in Escape from Mars (Prototype - May 23, 1994) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_tazemu,			// Taz in Escape from Mars (USA)
+	&BurnDrvMDg_tazman,			// Taz-Mania (World)
+	&BurnDrvTazzmang,			// Tazz-Mania (Galaxian hardware)
+	&BurnDrvTazmania,			// Tazz-Mania (set 1)
+	&BurnDrvTazmani2,			// Tazz-Mania (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tc2000,			// TC 2000 (Unl) (Argentina) [no comment, NOT WORKING]
+	&BurnDrvMDg_teamus,			// Team USA Basketball (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_techno,			// Techno Clash (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_tcop,			// Technocop (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_tecmoc,			// Tecmo Cup (J) [p1][!] [no comment, NOT WORKING]
+	&BurnDrvMDg_tecmo1,			// Tecmo Cup (Japan) (Proto) [b] [no comment, NOT WORKING]
+#endif
+	&BurnDrvTknight,			// Tecmo Knight
+	&BurnDrvMDg_tecmos,			// Tecmo Super Baseball (USA)
+	&BurnDrvMDg_tsbj,			// Tecmo Super Bowl (Japan)
+	&BurnDrvMDg_tsb,			// Tecmo Super Bowl (USA) (October 1993)
+	&BurnDrvMDg_tsbo,			// Tecmo Super Bowl (USA) (September 1993)
+	&BurnDrvMDg_tsb2j,			// Tecmo Super Bowl II - Special Edition (Japan)
+	&BurnDrvMDg_tsb2,			// Tecmo Super Bowl II - Special Edition (USA)
+	&BurnDrvMDg_tsb3,			// Tecmo Super Bowl III - Final Edition (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tsh,			// Tecmo Super Hockey (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_tsbbj,			// Tecmo Super NBA Basketball (Japan)
+	&BurnDrvMDg_tsbb,			// Tecmo Super NBA Basketball (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tecmow,			// Tecmo World Cup '92 (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tecm11,			// Tecmo World Cup (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvtws96,				// Tecmo World Soccer '96
+#if defined FBA_DEBUG
+	&BurnDrvMDg_teddyb,			// Teddy Boy Blues (Japan) (SegaNet) [no comment, NOT WORKING]
 #endif
 	&BurnDrvTeddybb,			// TeddyBoy Blues (315-5115, New Ver.)
 	&BurnDrvTeddybbo,			// TeddyBoy Blues (315-5115, Old Ver.)
+	&BurnDrvTmht2p,				// Teenage Mutant Hero Turtles (UK 2 Players, set 1)
+	&BurnDrvTmht2pa,			// Teenage Mutant Hero Turtles (UK 2 Players, set 2)
+	&BurnDrvTmht,				// Teenage Mutant Hero Turtles (UK 4 Players, set 1)
+	&BurnDrvTmhta,				// Teenage Mutant Hero Turtles (UK 4 Players, set 2)
+	&BurnDrvMDg_tmhsh,			// Teenage Mutant Hero Turtles - The Hyperstone Heist (Europe)
 #if defined FBA_DEBUG
-	&BurnDrvTmht2p,				// Teenage Mutant Hero Turtles (UK 2 Players, set 1) [Preliminary driver]
-	&BurnDrvTmht2pa,			// Teenage Mutant Hero Turtles (UK 2 Players, set 2) [Preliminary driver]
-	&BurnDrvTmht,				// Teenage Mutant Hero Turtles (UK 4 Players) [Preliminary driver]
-	&BurnDrvMDtmhte,			// Teenage Mutant Hero Turtles - The Hyperstone Heist (E) [no comment]
-	&BurnDrvMDtmhtte,			// Teenage Mutant Hero Turtles - Tournament Fighters (E) [no comment]
-	&BurnDrvTmnt2pj,			// Teenage Mutant Ninja Turtles (Japan 2 Players) [Preliminary driver]
-	&BurnDrvTmntj,				// Teenage Mutant Ninja Turtles (Japan 4 Players)  [Preliminary driver]
-	&BurnDrvTmnt2po,			// Teenage Mutant Ninja Turtles (Oceania 2 Players) [Preliminary driver]
-	&BurnDrvTmntu,				// Teenage Mutant Ninja Turtles (US 4 Players, set 1) [Preliminary driver]
-	&BurnDrvTmntua,				// Teenage Mutant Ninja Turtles (US 4 Players, set 2) [Preliminary driver]
-	&BurnDrvTmnt,				// Teenage Mutant Ninja Turtles (World 4 Players) [Preliminary driver]
-	&BurnDrvMDtmntj,			// Teenage Mutant Ninja Turtles - Return of the Shredder (J) [!] [no comment]
-	&BurnDrvMDturt,				// Teenage Mutant Ninja Turtles - The Hyperstone Heist (U) [!] [no comment]
-	&BurnDrvMDtmnttj,			// Teenage Mutant Ninja Turtles - Tournament Fighters (J) [!] [no comment]
-	&BurnDrvMDtutf,				// Teenage Mutant Ninja Turtles - Tournament Fighters (U) [c][!] [no comment]
-	&BurnDrvMDteitok,			// Teitoku no Ketsudan (J) [c][!] [no comment]
+	&BurnDrvMDg_tmtf,			// Teenage Mutant Hero Turtles - Tournament Fighters (Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvTmht22pe,			// Teenage Mutant Hero Turtles - Turtles in Time (2 Players ver. EBA)
+#if defined FBA_DEBUG
+	&BurnDrvtmnti,				// Teenage Mutant Ninja Turtles (Intro demo) [no comment]
+#endif
+	&BurnDrvTmht2pj,			// Teenage Mutant Ninja Turtles (Japan 2 Players)
+	&BurnDrvTmntj,				// Teenage Mutant Ninja Turtles (Japan 4 Players)
+	&BurnDrvTmht2po,			// Teenage Mutant Ninja Turtles (Oceania 2 Players)
+	&BurnDrvTmntu,				// Teenage Mutant Ninja Turtles (US 4 Players, set 1)
+	&BurnDrvTmntua,				// Teenage Mutant Ninja Turtles (US 4 Players, set 2)
+	&BurnDrvTmnt,				// Teenage Mutant Ninja Turtles (World 4 Players)
+	&BurnDrvMDg_tmhshj,			// Teenage Mutant Ninja Turtles - Return of the Shredder (Japan)
+	&BurnDrvMDg_tmhshu,			// Teenage Mutant Ninja Turtles - The Hyperstone Heist (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tmtfj,			// Teenage Mutant Ninja Turtles - Tournament Fighters (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tmtfu,			// Teenage Mutant Ninja Turtles - Tournament Fighters (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTmnt22pu,			// Teenage Mutant Ninja Turtles - Turtles in Time (2 Players ver. UDA)
+	&BurnDrvTmnt2a,				// Teenage Mutant Ninja Turtles - Turtles in Time (4 Players ver. ADA)
+	&BurnDrvTmnt2,				// Teenage Mutant Ninja Turtles - Turtles in Time (4 Players ver. UAA)
+	&BurnDrvMDg_teitok,			// Teitoku no Ketsudan (Japan)
 	&BurnDrvTekiPaki,			// Teki Paki
 #if defined FBA_DEBUG
-	&BurnDrvMDtelmj,			// Tel Tel Mahjong (J) [c][!] [no comment]
-	&BurnDrvMDtelstd,			// Tel Tel Stadium (J) [!] [no comment]
-	&BurnDrvMDtelerb,			// Telebradesco Residencia (B) [!] [no comment]
+	&BurnDrvMDg_tk3sp,			// Tekken 3 Special (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_telmah,			// Tel-Tel Mahjong (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsDwj,				// Tenchi wo Kurau (Japan)
-	&BurnDrvCpsWofj,			// Tenchi wo Kurau II - Sekiheki no Tatakai (921031 Japan)
-	&BurnDrvTengai,				// Tengai\0Sengoku Blade - sengoku ace episode II
+	&BurnDrvMDg_telsta,			// Tel-Tel Stadium (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDterm,				// Terminato [no comment]
-	&BurnDrvMDterme,			// Terminato [no comment]
-	&BurnDrvMDter2,				// Terminator 2 - Judgment Day (UE) [!] [no comment]
-	&BurnDrvMDtd2,				// Test Drive II - The Duel (U) [!] [no comment]
+	&BurnDrvMDg_telebr,			// Telebradesco Residencia (Brazil) [no comment, NOT WORKING]
+#endif
+	&BurnDrvCpsDwjr,			// Tenchi wo Kurau (Japan Resale Ver.)
+	&BurnDrvCpsDwj,				// Tenchi wo Kurau (Japan)
+	&BurnDrvCpsWofjh,			// Tenchi wo Kurau II - Sekiheki no Tatakai (921031 Japan bootleg)
+	&BurnDrvCpsWofj,			// Tenchi wo Kurau II - Sekiheki no Tatakai (921031 Japan)
+	&BurnDrvCpsWofch,			// Tenchi wo Kurau II - Sekiheki no Tatakai (CPS Changer, 921031 Japan)
+	&BurnDrvTengai,				// Tengai (world)
+	&BurnDrvTengaij,			// Tengai\0Sengoku Blade - sengoku ace episode II
+#if defined FBA_DEBUG
+	&BurnDrvMDg_termin,			// Terminator, The (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_termi1,			// Terminator, The (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTerrafb,			// Terra Force (bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvTerrafjb,			// Terra Force (Japan bootleg with additional Z80) [imperfect graphics, NOT WORKING]
+#endif
+	&BurnDrvTerrafu,			// Terra Force (US)
+	&BurnDrvTerraf,				// Terra Force
+#if defined FBA_DEBUG
+	&BurnDrvMDg_testdr,			// Test Drive II - The Duel (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvTetrisbl,			// Tetris (bootleg)
+	&BurnDrvtetrsark,			// Tetris (D.R. Korea)
 #if defined FBA_DEBUG
-	&BurnDrvtetrsark,			// Tetris (D.R. Korea) [Wrong colors]
-	&BurnDrvMDtetr,				// Tetris (J) [!] [no comment]
+	&BurnDrvMDg_tetris,			// Tetris (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvTetrista,			// Tetris (Japan, B-System, YM2203)
+	&BurnDrvTetrist,			// Tetris (Japan, B-System, YM2610)
 	&BurnDrvTetris1,			// Tetris (set 1, Japan, System 16B, FD1094 317-0091)
 	&BurnDrvTetris2,			// Tetris (set 2, Japan, System 16B, FD1094 317-0092)
 	&BurnDrvTetris3,			// Tetris (set 3, Japan, System 16A, FD1094 317-0093a)
 	&BurnDrvTetris,				// Tetris (set 4, Japan, System 16A, FD1094 317-0093)
+	&BurnDrvTetrbx,				// Tetris / Bloxeed (Korean System 16 bootleg) (ISG Selection Master Type 2006)
+	&BurnDrvTgm2,				// Tetris the Absolute The Grand Master 2
+	&BurnDrvTgm2p,				// Tetris the Absolute The Grand Master 2 Plus
 	&BurnDrvmrflea,				// The Amazing Adventures of Mr. F. Lea
+	&BurnDrvAnteateruk,			// The Anteater (UK)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_redclf,			// The Battle of Red Cliffs - Romance of the Three Kingdoms (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvBattroad,			// The Battle-Road
 	&BurnDrvBerlwall,			// The Berlin Wall
-	&BurnDrvBerlwalt,			// The Berlin Wall (bootleg ?)
-	&BurnDrvCtribeb,			// The Combatribes (bootleg)
+	&BurnDrvBerlwallt,			// The Berlin Wall (bootleg ?)
+	&BurnDrvBilliard,			// The Billiards
+	&BurnDrvCtribeb,			// The Combatribes (bootleg set 1)
+	&BurnDrvCtribeb2,			// The Combatribes (bootleg set 2)
+	&BurnDrvCtribej,			// The Combatribes (Japan)
 	&BurnDrvCtribe,				// The Combatribes (US)
 	&BurnDrvCtribe1,			// The Combatribes (US) - Set 1?
+	&BurnDrvDealer,				// The Dealer
+	&BurnDrvDbldyn,				// The Double Dynamites (Japan)
+	&BurnDrvDbldynf,			// The Double Dynamites (US)
+	&BurnDrvTheend,				// The End
+	&BurnDrvTheends,			// The End (Stern)
+	&BurnDrvFlstory,			// The FairyLand Story
+	&BurnDrvFlstoryj,			// The FairyLand Story (Japan)
+	&BurnDrvFroundl,			// The Final Round (ver. L)
+	&BurnDrvFround,				// The Final Round (ver. M)
 #if defined FBA_DEBUG
-	&BurnDrvDealer,				// The Dealer [Bad dump, NOT WORKING]
-	&BurnDrvTheglad,			// The Gladiator\0Shen Jian (V100) [Needs second CPU emulated (ARM7), NOT WORKING]
+	&BurnDrvTheglad,			// The Gladiator\0Shen Jian (V100) [Incomplete Dump, NOT WORKING]
+	&BurnDrvThegladpcb,			// The Gladiator\0Shen Jian (V100, Japan, Single PCB Version) [Incomplete Dump, NOT WORKING]
+	&BurnDrvTheglad101,			// The Gladiator\0Shen Jian (V101, Taiwan) [Incomplete Dump, NOT WORKING]
 #endif
 	&BurnDrvTheglob,			// The Glob
 	&BurnDrvTheglob2,			// The Glob (earlier)
 	&BurnDrvtheglobp,			// The Glob (Pac-Man hardware)
 	&BurnDrvTheglob3,			// The Glob (set 3)
-	&BurnDrvIrrmaze,			// The Irritating Maze\0Ultra Denryu Iraira Bou
-	&BurnDrvKillbld,			// The Killing Blade (V104) [Not working, NOT WORKING]
-	&BurnDrvKillbldt,			// The Killing Blade (V109, Chinese Board)
-	&BurnDrvCpsKod,				// The King of Dragons (910711 etc)
-	&BurnDrvCpsKodj,			// The King of Dragons (Japan 910805)
-	&BurnDrvCpsKodu,			// The King of Dragons (US 910910)
+	&BurnDrvSkingame,			// The Irem Skins Game (US set 1)
+	&BurnDrvSkingame2,			// The Irem Skins Game (US set 2)
+	&BurnDrvirrmaze,			// The Irritating Maze / Ultra Denryu Iraira Bou
+	&BurnDrvKillbld104,			// The Killing Blade (V104)
+	&BurnDrvKillbld,			// The Killing Blade (V109, China)
 #if defined FBA_DEBUG
-	&BurnDrvCpsKodb,			// The King of Dragons [No Sprites, NOT WORKING]
+	&BurnDrvKillbldp,			// The Killing Blade Plus (V300) [no comment, NOT WORKING]
 #endif
-	&BurnDrvKof94,				// The King of Fighters '94
-	&BurnDrvKof95,				// The King of Fighters '95 (set 1)
-	&BurnDrvKof95a,				// The King of Fighters '95 (set 2)
-	&BurnDrvKof96,				// The King of Fighters '96 (set 1)
-	&BurnDrvKof96h,				// The King of Fighters '96 (set 2)
-	&BurnDrvKof97,				// The King of Fighters '97 (set 1)
-	&BurnDrvKof97a,				// The King of Fighters '97 (set 2)
-	&BurnDrvKof97p,				// The King of Fighters '97 Plus (bootleg)
-	&BurnDrvKof98k,				// The King of Fighters '98 - the slugfest (korean release)\0King of Fighters '98 - dream match never ends
-	&BurnDrvKof98n,				// The King of Fighters '98 - the slugfest (not encrypted)\0King of Fighters '98 - dream match never ends
-	&BurnDrvKof98,				// The King of Fighters '98 - the slugfest\0King of Fighters '98 - dream match never ends
-//	&BurnDrvKof98a,				// The King of Fighters '98 - the slugfest\0King of Fighters '98 - dream match never ends [Alternate version]
-	&BurnDrvkof99e,				// The King of Fighters '99 - millennium battle (earlier)
-	&BurnDrvkof99n,				// The King of Fighters '99 - millennium battle (not encrypted)
-	&BurnDrvkof99p,				// The King of Fighters '99 - millennium battle (prototype)
-	&BurnDrvkof99,				// The King of Fighters '99 - millennium battle (set 1)
-	&BurnDrvkof99a,				// The King of Fighters '99 - millennium battle (set 2)
-	&BurnDrvkof10th,			// The King of Fighters 10th Anniversary (bootleg)
-	&BurnDrvkf2k5uni,			// The King of Fighters 10th Anniversary 2005 Unique (bootleg)
-	&BurnDrvkf10thep,			// The King of Fighters 10th Anniversary Extra Plus (bootleg)
+	&BurnDrvCpsKodr1,			// The King of Dragons (910711 etc)
+	&BurnDrvCpsKod,				// The King of Dragons (910805 etc)
+#if defined FBA_DEBUG
+	&BurnDrvCpsKodb,			// The King of Dragons (bootleg set 1) [No Sprites, NOT WORKING]
+#endif
+	&BurnDrvCpsKodh,			// The King of Dragons (bootleg set 2)
+	&BurnDrvCpsKodja,			// The King of Dragons (Japan 910805, B-Board 89625B-1)
+	&BurnDrvCpsKodj,			// The King of Dragons (Japan 910805, B-Board 90629B-3)
+	&BurnDrvCpsKodu,			// The King of Dragons (US 910910)
+	&BurnDrvkof94,				// The King of Fighters '94
+	&BurnDrvkof95,				// The King of Fighters '95 (set 1)
+	&BurnDrvkof95h,				// The King of Fighters '95 (set 2)
+	&BurnDrvkof96ae,			// The King of Fighters '96 (Anniversary Edition, EGHT hack)
+	&BurnDrvkof96ep,			// The King of Fighters '96 (bootleg / hack)
+	&BurnDrvkof96cn,			// The King of Fighters '96 (Chinese Edition ver 1.0, hack)
+	&BurnDrvkof96,				// The King of Fighters '96 (set 1)
+	&BurnDrvkof96h,				// The King of Fighters '96 (set 2)
+	&BurnDrvkof97cn,			// The King of Fighters '97 (10th Anniversary Chinese Edition, EGHT hack)
+	&BurnDrvkof97k,				// The King of Fighters '97 (Korean release)
+	&BurnDrvkof97,				// The King of Fighters '97 (set 1)
+	&BurnDrvkof97h,				// The King of Fighters '97 (set 2)
+	&BurnDrvkof97xt,			// The King of Fighters '97 - Final Battle (hack)
+	&BurnDrvkof97pls,			// The King of Fighters '97 Plus (bootleg)
+	&BurnDrvkof97pla,			// The King of Fighters '97 Plus 2003 (bootleg / hack)
+	&BurnDrvkof98ae,			// The King of Fighters '98 (Anniversary Edition, EGHT hack)
+	&BurnDrvkof98,				// The King of Fighters '98 - The Slugfest / King of Fighters '98 - dream match never ends
+	&BurnDrvkof98h,				// The King of Fighters '98 - The Slugfest / King of Fighters '98 - dream match never ends (AES cart)
+	&BurnDrvkof98k,				// The King of Fighters '98 - The Slugfest / King of Fighters '98 - dream match never ends (Korean board, set 1)
+	&BurnDrvkof98ka,			// The King of Fighters '98 - The Slugfest / King of Fighters '98 - dream match never ends (Korean board, set 2)
+//	&BurnDrvkof99nd,			// The King of Fighters '99 - Millennium Battle (decrypted C) [no comment]
+	&BurnDrvkof99e,				// The King of Fighters '99 - Millennium Battle (earlier)
+	&BurnDrvkof99k,				// The King of Fighters '99 - Millennium Battle (Korean release)
+	&BurnDrvkof99p,				// The King of Fighters '99 - Millennium Battle (prototype)
+	&BurnDrvkof99,				// The King of Fighters '99 - Millennium Battle (set 1)
+	&BurnDrvkof99h,				// The King of Fighters '99 - Millennium Battle (set 2)
+	&BurnDrvkof10th,			// The King of Fighters 10th Anniversary (The King of Fighters 2002 bootleg)
+	&BurnDrvkf2k5uni,			// The King of Fighters 10th Anniversary 2005 Unique (The King of Fighters 2002 bootleg)
+	&BurnDrvkf10thep,			// The King of Fighters 10th Anniversary Extra Plus (The King of Fighters 2002 bootleg)
 	&BurnDrvkof2000,			// The King of Fighters 2000
+//	&BurnDrvkof2knd,			// The King of Fighters 2000 (non encrypted P, decrypted C) [no comment]
 	&BurnDrvkof2000n,			// The King of Fighters 2000 (not encrypted)
+//	&BurnDrvkof2k1nd,			// The King of Fighters 2001 (decrypted C) [no comment]
 	&BurnDrvkof2001,			// The King of Fighters 2001 (set 1)
 	&BurnDrvkof2001h,			// The King of Fighters 2001 (set 2)
-	&BurnDrvkof2002,			// The King of Fighters 2002 - challenge to ultimate battle
+	&BurnDrvkf2k1pls,			// The King of Fighters 2001 Plus (set 1, bootleg / hack)
+	&BurnDrvkf2k1pa,			// The King of Fighters 2001 Plus (set 2, bootleg / hack)
+	&BurnDrvkof2002,			// The King of Fighters 2002
+	&BurnDrvkof2002b,			// The King of Fighters 2002 (bootleg)
+//	&BurnDrvkof2k2nd,			// The King of Fighters 2002 (decrypted C) [no comment]
+	&BurnDrvkf2k2ps2,			// The King of Fighters 2002 (PlayStation 2 ver 0.4, EGHT hack)
 	&BurnDrvkf2k2mp,			// The King of Fighters 2002 Magic Plus (bootleg)
 	&BurnDrvkf2k2mp2,			// The King of Fighters 2002 Magic Plus II (bootleg)
-	&BurnDrvkf2k2pls,			// The King of Fighters 2002 Plus (bootleg, set 1)
-	&BurnDrvkf2k2pla,			// The King of Fighters 2002 Plus (bootleg, set 2)
-	&BurnDrvkf2k3bl,			// The King of Fighters 2003 (bootleg, set 1)
-	&BurnDrvkf2k3bla,			// The King of Fighters 2003 (bootleg, set 2)
+	&BurnDrvkf2k2pls,			// The King of Fighters 2002 Plus (bootleg set 1)
+	&BurnDrvkf2k2pla,			// The King of Fighters 2002 Plus (bootleg set 2)
+	&BurnDrvkf2k2plb,			// The King of Fighters 2002 Plus (bootleg set 3)
+	&BurnDrvkf2k2plc,			// The King of Fighters 2002 Super (bootleg)
+	&BurnDrvkf2k3bl,			// The King of Fighters 2003 (bootleg set 1)
+	&BurnDrvkf2k3bla,			// The King of Fighters 2003 (bootleg set 2)
+//	&BurnDrvkof2k3nd,			// The King of Fighters 2003 (decrypted C) [no comment]
 	&BurnDrvkf2k3pcb,			// The King of Fighters 2003 (Japan, JAMMA PCB)
-	&BurnDrvkof2003,			// The King of Fighters 2003 (MVS)
-	&BurnDrvkf2k3pl,			// The King of Fighters 2004 Plus / Hero (bootleg)
-	&BurnDrvkf2k3upl,			// The King of Fighters 2004 Ultra Plus (bootleg)
-	&BurnDrvkof2k4se,			// The King of Fighters Special Edition 2004 (bootleg)
-	&BurnDrvlastblad,			// The Last Blade (set 1)\0Bakumatsu Roman Gekka No Kenshi
-	&BurnDrvlastbldh,			// The Last Blade (set 2)\0Bakumatsu Roman Gekka No Kenshi
-	&BurnDrvlastbld2,			// The Last Blade 2\0Bakumatsu Roman Dai Ni Maku - Gekka No Kenshi
-	&BurnDrvlastsold,			// The Last Soldier
+//	&BurnDrvk2k3pcbd,			// The King of Fighters 2003 (Japan, JAMMA PCB, decrypted C) [no comment]
+	&BurnDrvkof2003h,			// The King of Fighters 2003 (set 2, AES cart)
+	&BurnDrvkof2003,			// The King of Fighters 2003 (World / US, MVS)
+	&BurnDrvkf2k3pl,			// The King of Fighters 2004 Plus / Hero (The King of Fighters 2003 bootleg)
+	&BurnDrvkf2k3upl,			// The King of Fighters 2004 Ultra Plus (The King of Fighters 2003 bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_thekin,			// The King of Fighters 99 (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvkof2k4se,			// The King of Fighters Special Edition 2004 (The King of Fighters 2002 bootleg)
+	&BurnDrvkf2k4pls,			// The King of Fighters Special Edition 2004 Plus (The King of Fighters 2002 bootleg)
+	&BurnDrvlastsold,			// The Last Soldier (Korean release of The Last Blade)
+	&BurnDrvLkage,				// The Legend of Kage
+	&BurnDrvLkageb,				// The Legend of Kage (bootleg set 1)
+	&BurnDrvLkageb2,			// The Legend of Kage (bootleg set 2)
+	&BurnDrvLkageb3,			// The Legend of Kage (bootleg set 3)
+	&BurnDrvLkageo,				// The Legend of Kage (older)
+	&BurnDrvLkageoo,			// The Legend of Kage (oldest)
+	&BurnDrvSilkroad,			// The Legend of Silkroad
+	&BurnDrvMainevt2p,			// The Main Event (2 Players ver. X)
+	&BurnDrvMainevto,			// The Main Event (4 Players ver. F)
+	&BurnDrvMainevt,			// The Main Event (4 Players ver. Y)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_flinke,			// The Misadventures of Flink (Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvtnzsj,				// The NewZealand Story (Japan, new version, newer PCB)
+	&BurnDrvTnzsjo,				// The NewZealand Story (Japan, old version) (older PCB)
 	&BurnDrvtnzs,				// The NewZealand Story (World, newer)
+	&BurnDrvTnzso,				// The NewZealand Story (World, old version) (older PCB)
+	&BurnDrvTnzsop,				// The NewZealand Story (World, prototype?) (older PCB)
+	&BurnDrvNinjakj,			// The Ninja Kids (Japan)
+	&BurnDrvNinjaku,			// The Ninja Kids (US)
+	&BurnDrvNinjak,				// The Ninja Kids (World)
+	&BurnDrvNinjawj,			// The Ninja Warriors (Japan)
+	&BurnDrvNinjaw,				// The Ninja Warriors (World)
+	&BurnDrvThepitm,			// The Pit (bootleg on Moon Quasar hardware)
 	&BurnDrvCpsPunisher,		// The Punisher (930422 etc)
-	&BurnDrvCpsPunishrj,		// The Punisher (930422 Japan)
-	&BurnDrvCpsPunishru,		// The Punisher (930422 USA)
-	&BurnDrvSuperspy,			// The Super Spy
-	&BurnDrvSsideki4,			// The Ultimate 11 - SNK football championship\0Tokuten Ou - honoo no libero
+	&BurnDrvCpsPunisherj,		// The Punisher (930422 Japan)
+	&BurnDrvCpsPunisheru,		// The Punisher (930422 USA)
+#if defined FBA_DEBUG
+	&BurnDrvCpsPunipic,			// The Punisher (bootleg with PIC16c57, set 1) [no comment, NOT WORKING]
+	&BurnDrvCpsPunipic2,		// The Punisher (bootleg with PIC16c57, set 2) [no comment, NOT WORKING]
+	&BurnDrvCpsPunipic3,		// The Punisher (bootleg with PIC16c57, set 3) [no comment, NOT WORKING]
+#endif
+	&BurnDrvGhostb,				// The Real Ghostbusters (US 2 Players, revision 2)
+	&BurnDrvGhostb3,			// The Real Ghostbusters (US 3 Players)
+	&BurnDrvSimpsons2pa,		// The Simpsons (2 Players Asia)
+	&BurnDrvSimpsons2pj,		// The Simpsons (2 Players Japan)
+	&BurnDrvSimpsons2p,			// The Simpsons (2 Players World, set 1)
+	&BurnDrvSimpsons2p2,		// The Simpsons (2 Players World, set 2)
+	&BurnDrvSimpsons,			// The Simpsons (4 Players World, set 1)
+	&BurnDrvSimpsons4pa,		// The Simpsons (4 Players World, set 2)
+	&BurnDrvSrumbler,			// The Speed Rumbler (set 1)
+	&BurnDrvSrumblr2,			// The Speed Rumbler (set 2)
+	&BurnDrvsuperspy,			// The Super Spy
+	&BurnDrvThetogyu,			// The Togyu (315-5065, Japan)
 	&BurnDrvWintbob,			// The Winter Bobble (bootleg)
 #if defined FBA_DEBUG
-	&BurnDrvMDtprk,				// Theme Park (UE) [!] [no comment]
-	&BurnDrvMDttnk,				// Thomas the Tank Engine & Friends (U) [c][!] [no comment]
+	&BurnDrvMDg_themep,			// Theme Park (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_thomas,			// Thomas the Tank Engine & Friends (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvTRally,				// Thrash Rally
+	&BurnDrvtrally,				// Thrash Rally
+	&BurnDrvCps3wondersh,		// Three Wonders (bootleg)
 	&BurnDrvCps3wonders,		// Three Wonders (wonder 3 910520 etc)
-	&BurnDrvCps3wonderu,		// Three Wonders (wonder 3 910520 USA)
-	&BurnDrvThndrbd1,			// Thunder Blade (deluxe/standing, unprotected)
+	&BurnDrvCps3wondersu,		// Three Wonders (wonder 3 910520 USA)
+	&BurnDrvThunderl,			// Thunder & Lightning
+	&BurnDrvThndrbld1,			// Thunder Blade (deluxe/standing, unprotected)
 	&BurnDrvThndrbld,			// Thunder Blade (upright, FD1094 317-0056)
+	&BurnDrvThndblst,			// Thunder Blaster (Japan)
+	&BurnDrvThunderxj,			// Thunder Cross (Japan)
+	&BurnDrvThunderx,			// Thunder Cross (set 1)
+	&BurnDrvThunderxa,			// Thunder Cross (set 2)
+	&BurnDrvThunderxb,			// Thunder Cross (set 3)
+	&BurnDrvThndrx2a,			// Thunder Cross II (Asia)
+	&BurnDrvThndrx2j,			// Thunder Cross II (Japan)
+	&BurnDrvThndrx2,			// Thunder Cross II (World)
+	&BurnDrvTdragon1,			// Thunder Dragon (4th Jun. 1991)
+	&BurnDrvTdragon,			// Thunder Dragon (9th Jan. 1992)
+	&BurnDrvTdragonb,			// Thunder Dragon (bootleg)
+	&BurnDrvTdragon2a,			// Thunder Dragon 2 (1st Oct. 1993)
+	&BurnDrvTdragon2,			// Thunder Dragon 2 (9th Nov. 1993)
 #if defined FBA_DEBUG
-	&BurnDrvMDtf2,				// Thunder Force II (U) [!] [no comment]
-	&BurnDrvMDtf2md,			// Thunder Force II MD (J) [!] [no comment]
-	&BurnDrvMDtf3,				// Thunder Force III (JU) [!] [no comment]
-	&BurnDrvMDtf4e,				// Thunder Force IV (E) [c][!] [no comment]
-	&BurnDrvMDtf4,				// Thunder Force IV (J) [!] [no comment]
-	&BurnDrvMDtfoxj,			// Thunder Fox (J) [c][!] [no comment]
-	&BurnDrvMDtfox,				// Thunder Fox (U) [c][!] [no comment]
+	&BurnDrvMDg_tfii,			// Thunder Force II (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_tfiij,			// Thunder Force II MD (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvTheroes,			// Thunder Heroes
+	&BurnDrvMDg_tfiii,			// Thunder Force III (Japan, USA)
+	&BurnDrvMDg_tfiv,			// Thunder Force IV (Europe)
+	&BurnDrvMDg_tfivj,			// Thunder Force IV (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDtick,				// Tic [no comment]
+	&BurnDrvMDg_tfoxj,			// Thunder Fox (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvThundfoxj,			// Thunder Fox (Japan)
+	&BurnDrvThundfoxu,			// Thunder Fox (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tfox,			// Thunder Fox (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvThundfox,			// Thunder Fox (World)
+	&BurnDrvTheroes,			// Thunder Heroes
+	&BurnDrvThoop,				// Thunder Hoop (Ver. 1)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tpwres,			// Thunder Pro Wrestling Retsuden (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTndrcade,			// Thundercade / Twin Formation
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tickth,			// Tick, The (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvTigerHB1,			// Tiger Heli (bootleg, set 1)
 	&BurnDrvTigerHB2,			// Tiger Heli (bootleg, set 2)
-	&BurnDrvTigerH,				// Tiger Heli (US) [Protection MCU not emulated, NOT WORKING]
+	&BurnDrvTigerHB3,			// Tiger Heli (bootleg, set 3)
+	&BurnDrvTigerhJ,			// Tiger Heli (Japan)
+	&BurnDrvTigerH,				// Tiger Heli (US)
+	&BurnDrvTigerodb,			// Tiger Road (US bootleg)
+	&BurnDrvTigeroad,			// Tiger Road (US)
 #if defined FBA_DEBUG
-	&BurnDrvMDtdom1,			// Time Dominator 1st (J) [!] [no comment]
-	&BurnDrvMDtkille,			// Time Killers (E) [!] [no comment]
-	&BurnDrvMDtkil,				// Time Killers (U) [!] [no comment]
+	&BurnDrvMDg_timedo,			// Time Dominator 1st (Japan, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_timeki,			// Time Killers (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_timek1,			// Time Killers (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvTimesca1,			// Time Scanner (set 1, System 16A, FD1089B 317-0024)
+	&BurnDrvTimescan1,			// Time Scanner (set 1, System 16A, FD1089B 317-0024)
 	&BurnDrvTimescan,			// Time Scanner (set 2, System 16B)
 #if defined FBA_DEBUG
-	&BurnDrvMDtinh,				// Tinhead (U) [!] [no comment]
-	&BurnDrvMDtint,				// Tintin Au Tibet (E) (M6) [!] [no comment]
-	&BurnDrvMDttadae,			// Tiny Toon Adventures - Acme All-Stars (E) [no comment]
-	&BurnDrvMDttaa,				// Tiny Toon Adventures - Acme All-Stars (U) [!] [no comment]
-	&BurnDrvMDttabe,			// Tiny Toon Adventures - Buster's Hidden Treasure (E) [!] [no comment]
-	&BurnDrvMDtta,				// Tiny Toon Adventures - Buster's Hidden Treasure (U) [!] [no comment]
-	&BurnDrvMDtnnb,				// TNN Bass Tournament of Champions (U) (REV01) [!] [no comment]
-	&BurnDrvMDtnno,				// TNN Outdoors Bass Tournament '96 (U) [!] [no comment]
-	&BurnDrvMDtoddj,			// Todd's Adventures in Slime World (J) [!] [no comment]
-	&BurnDrvMDtodd,				// Todd's Adventures in Slime World (U) [!] [no comment]
+	&BurnDrvMDg_tinhea,			// TinHead (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_tintin,			// Tintin au Tibet (Europe) (En,Fr,De,Es,Nl,Sv) [no comment, NOT WORKING]
+	&BurnDrvMDg_tinyk,			// Tiny Toon Adventures (Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_tacme,			// Tiny Toon Adventures - Acme All-Stars (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_tacmeu,			// Tiny Toon Adventures - Acme All-Stars (USA, Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_tiny,			// Tiny Toon Adventures - Buster's Hidden Treasure (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_tinyu,			// Tiny Toon Adventures - Buster's Hidden Treasure (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDtje00,			// Toejam & Earl (U) (REV00) [!]
-	&BurnDrvMDtje,				// Toejam & Earl (U) (REV00) [!]
+	&BurnDrvMDg_tnnbas,			// TNN Bass Tournament of Champions (USA)
+	&BurnDrvMDg_tnnout,			// TNN Outdoors Bass Tournament '96 (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDtje2e,			// Toejam & Earl in Panic on Funkotron (E) [!] [no comment]
-	&BurnDrvMDtje2g,			// Toejam & Earl in Panic on Funkotron (G) [!] [no comment]
-	&BurnDrvMDtje2j,			// Toejam & Earl in Panic on Funkotron (J) [!] [no comment]
-	&BurnDrvMDtje2,				// Toejam & Earl in Panic on Funkotron (U) [!] [no comment]
-	&BurnDrvMDtoki,				// Toki - Going Ape Spit (UE) [c][!] [no comment]
-	&BurnDrvMDtajua,			// Tom and Jerry - Frantic Antics (U) (1993) [!] [no comment]
-	&BurnDrvMDtomj,				// Tom and Jerry - Frantic Antics (U) (1994) [!] [no comment]
-	&BurnDrvMDtlbb,				// Tommy Lasorda Baseball (U) [!] [no comment]
-	&BurnDrvMDtrbb,				// Tony La Russa Baseball (U) [!] [no comment]
-	&BurnDrvMDtr95,				// Tony La Russa Baseball 95 (U) [!] [no comment]
-	&BurnDrvMDtg2,				// Top Gear 2 (U) [!] [no comment]
+	&BurnDrvTjumpman,			// Tobikose! Jumpman [Coin input not working?, NOT WORKING]
+	&BurnDrvMDg_toddsa,			// Todd's Adventures in Slime World (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvtophntr,			// Top Hunter - Roddy & Cathy (set 1)
-	&BurnDrvtophunta,			// Top Hunter - Roddy & Cathy (set 2)
-	&BurnDrvTpgolf,				// Top Player's Golf
+	&BurnDrvMDg_toeja1,			// Toe Jam & Earl (World)
+	&BurnDrvMDg_toejam,			// Toe Jam & Earl (World) (Rev A)
 #if defined FBA_DEBUG
-	&BurnDrvMDtpglf2,			// Top Pro Golf 2 (J) [!] [no comment]
-	&BurnDrvMDtpglf,			// Top Pro Golf 2 (J) [!] [no comment]
+	&BurnDrvMDg_tje2g,			// Toe Jam & Earl in Panic auf Funkotron (Germany) [no comment, NOT WORKING]
+	&BurnDrvMDg_tje2,			// Toe Jam & Earl in Panic on Funkotron (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_tje2j,			// Toe Jam & Earl in Panic on Funkotron (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tje2u,			// Toe Jam & Earl in Panic on Funkotron (USA) [no comment, NOT WORKING]
+	&BurnDrvTokib,				// Toki (bootleg) [no comment]
 #endif
+	&BurnDrvTokiu,				// Toki (US)
+	&BurnDrvToki,				// Toki (World set 1)
+	&BurnDrvTokia,				// Toki (World set 2)
+	&BurnDrvTokiob,				// Tokio / Scramble Formation (bootleg)
+	&BurnDrvTokio,				// Tokio / Scramble Formation (newer) [no comment, NOT WORKING]
+#if defined FBA_DEBUG
+	&BurnDrvTokioo,				// Tokio / Scramble Formation (older) [no comment, NOT WORKING]
+	&BurnDrvTokiou,				// Tokio / Scramble Formation (US) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTndrcadej,			// Tokusyu Butai U.A.G. (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tomand,			// Tom and Jerry - Frantic Antics (USA) (1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_toman1,			// Tom and Jerry - Frantic Antics (USA) (1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_tommyl,			// Tommy Lasorda Baseball (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_tonyla,			// Tony La Russa Baseball (USA, Australia) [Gfx Problems]
+	&BurnDrvMDg_topfig,			// Top Fighter 2000 MK VIII (Unl) [!] [no comment, NOT WORKING]
+	&BurnDrvMDg_topgea,			// Top Gear 2 (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvtophuntr,			// Top Hunter - Roddy & Cathy (set 1)
+	&BurnDrvtophuntrh,			// Top Hunter - Roddy & Cathy (set 2)
+	&BurnDrvtpgolf,				// Top Player's Golf
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tpglf,			// Top Pro Golf (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_tpglf2,			// Top Pro Golf 2 (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvtopsecrt,			// Top Secret (Japan)
+	&BurnDrvTopspeedu,			// Top Speed (US)
+	&BurnDrvTopspeed,			// Top Speed (World)
 	&BurnDrvToppyrap,			// Toppy & Rappy
+	&BurnDrvToramich,			// Tora-he no Michi (Japan)
 	&BurnDrvToryumon,			// Toryumon
 #if defined FBA_DEBUG
-	&BurnDrvMDtotf,				// Total Football (E) [!] [no comment]
+	&BurnDrvMDg_totalf,			// Total Football (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvTturfu,				// Tough Turf (set 1, US, 8751 317-0099)
 	&BurnDrvTturf,				// Tough Turf (set 2, Japan, 8751 317-0104)
 #if defined FBA_DEBUG
-	&BurnDrvMDtoug,				// Toughman Contest (UE) [!] [no comment]
-	&BurnDrvarkatour,			// Tournament Arkanoid (US) [Unsupported MCU, NOT WORKING]
-	&BurnDrvMDtoxi,				// Toxic Crusaders (U) [!] [no comment]
-	&BurnDrvMDtoyste,			// Toy Story (E) [!] [no comment]
-	&BurnDrvMDtoys,				// Toy Story (E) [!] [no comment]
-	&BurnDrvMDtoy,				// Toy Story (U) [!] [no comment]
-	&BurnDrvMDtter,				// Trampoline Terror! (U) [!] [no comment]
-	&BurnDrvMDtraysi,			// Traysia (U) [!] [no comment]
+	&BurnDrvMDg_toughm,			// Toughman Contest (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_tougio,			// Tougiou King Colossus (Japan)
+	&BurnDrvTkdenshoa,			// Toukidenshou - Angel Eyes (VER. 960427)
+	&BurnDrvTkdensho,			// Toukidenshou - Angel Eyes (VER. 960614)
+	&BurnDrvarkatour,			// Tournament Arkanoid (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_toxicc,			// Toxic Crusaders (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_toysto,			// Toy Story (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_toyst1,			// Toy Story (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_toysus,			// Toys (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_trampo,			// Trampoline Terror! (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_traysi,			// Traysia (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvtreahunt,			// Treasure Hunt (bootleg?)
 	&BurnDrvtripool,			// Tri-Pool (Casino Tech)
 	&BurnDrvtripoola,			// Tri-Pool (Costal Games)
+	&BurnDrvTrigon,				// Trigon (Japan)
+	&BurnDrvTdpgal,				// Triple Draw Poker
+	&BurnDrvTriplfun,			// Triple Fun
 #if defined FBA_DEBUG
-	&BurnDrvMDtp96,				// Triple Play '96 (U) [c][!] [no comment]
-	&BurnDrvMDtpgola,			// Triple Play Gold (U) [a1] [no comment]
-	&BurnDrvMDtpgo,				// Triple Play Gold (U) [c][!] [no comment]
-	&BurnDrvMDtsh,				// Trouble Shooter (U) [!] [no comment]
+	&BurnDrvMDg_triple,			// Triple Play '96 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_tpgld,			// Triple Play Gold (U) [a1] [no comment, NOT WORKING]
+	&BurnDrvMDg_tpglda,			// Triple Play Gold (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDtsht,				// Trouble Shooter (U) [!]
+	&BurnDrvTriplep,			// Triple Punch
+	&BurnDrvTrojanr,			// Trojan (Romstar)
+	&BurnDrvTrojan,				// Trojan (US)
+	&BurnDrvTrophyh,			// Trophy Hunting - Bear & Moose V1.0
 #if defined FBA_DEBUG
-	&BurnDrvMDtanf,				// Troy Aikman NFL Football (U) [!] [no comment]
-	&BurnDrvMDtrue,				// True Lies (W) [!] [no comment]
-	&BurnDrvMDtrux,				// Truxton (W) [!] [no comment]
+	&BurnDrvMDg_troubl,			// Trouble Shooter (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_troyai,			// Troy Aikman NFL Football (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_truc96,			// Truco '96 (Argentina) [no comment, NOT WORKING]
+	&BurnDrvMDg_trueli,			// True Lies (World) [no comment, NOT WORKING]
 #endif
 	&BurnDrvTruxton2,			// Truxton II\0Tatsujin Oh
 	&BurnDrvTruxton,			// Truxton\0Tatsujin
 	&BurnDrvTumbleb,			// Tumble Pop (bootleg set 1)
 	&BurnDrvTumbleb2,			// Tumble Pop (bootleg set 2)
-	&BurnDrvTurbofrc,			// Turbo Force
-	&BurnDrvToutrun,			// Turbo Out Run (Out Run upgrade, FD1094 317-0118)
-	&BurnDrvToutrun2,			// Turbo Out Run (upright, FD1094 317-unknown)
 #if defined FBA_DEBUG
-	&BurnDrvMDtout,				// Turbo Outrun (JE) [c][!] [no comment]
-	&BurnDrvMDturma,			// Turma da Monica na Terra Dos Monstros (B) [!] [no comment]
-	&BurnDrvMDturr,				// Turrican (U) [c][!] [no comment]
+	&BurnDrvMDg_tunshi,			// Tun Shi Tian Di III (China) (Simple Chinese) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_tunsh1,			// Tun Shi Tian Di III (China) (Unl) [no comment, NOT WORKING]
 #endif
+	&BurnDrvTurbofrc,			// Turbo Force
+#if defined FBA_DEBUG
+	&BurnDrvToutrun2,			// Turbo Out Run (cockpit, FD1094 317-unknown) [no comment, NOT WORKING]
+#endif
+	&BurnDrvToutrun1,			// Turbo Out Run (deluxe cockpit, FD1094 317-0109)
+	&BurnDrvToutrun,			// Turbo Out Run (Out Run upgrade, FD1094 317-0118)
+	&BurnDrvToutrun3,			// Turbo Out Run (upright, FD1094 317-unknown)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_turboo,			// Turbo OutRun (Japan, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTurkhunt,			// Turkey Hunting USA V1.0
+#if defined FBA_DEBUG
+	&BurnDrvMDg_turmad,			// Turma da Monica na Terra dos Monstros (Brazil) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTurpin,				// Turpin
+	&BurnDrvTurpins,			// Turpin (bootleg on Scramble hardware)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_turric,			// Turrican (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvTurtles,			// Turtles
+	&BurnDrvTwinactn,			// Twin Action
 	&BurnDrvTwinadvk,			// Twin Adventure (Korea)
 	&BurnDrvTwinadv,			// Twin Adventure (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDtwic,				// Twin Cobra (U) [!] [no comment]
-	&BurnDrvMDtwih,				// Twin Hawk (JE) [!] [no comment]
+	&BurnDrvMDg_twinco,			// Twin Cobra (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvtwinhwku,			// Twin Hawk (US)
-	&BurnDrvtwinhawk,			// Twin Hawk (World)
+	&BurnDrvTwineagl,			// Twin Eagle - Revenge Joe's Brother
+	&BurnDrvTwinhawku,			// Twin Hawk (US)
+	&BurnDrvTwinhawk,			// Twin Hawk (World)
 	&BurnDrvTwinkle,			// Twinkle
+	&BurnDrvtwinspri,			// Twinkle Star Sprites
 #if defined FBA_DEBUG
-	&BurnDrvMDtwintl,			// Twinkle Tale (J) [!] [no comment]
+	&BurnDrvMDg_twinkl,			// Twinkle Tale (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_twiste,			// Twisted Flipper (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvTwinSpri,			// Twinklestar Sprites
+	&BurnDrvMDg_twocru,			// Two Crude Dudes (Europe)
+	&BurnDrvMDg_twocr1,			// Two Crude Dudes (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDtwisf,			// Twisted Flipper (Beta) [no comment]
-	&BurnDrvMDcrudee,			// Two Crude Dudes (E) [Bad sound]
-	&BurnDrvMDg_2cd,			// Two Crude Dudes (U) [!] [Bad sound]
-	&BurnDrvMDtyra,				// Tyrants - Fight Through Time (U) [!] [no comment]
+	&BurnDrvMDg_twotri,			// Two Tribes - Populous II (Europe) [no comment, NOT WORKING]
 #endif
+	&BurnDrvTyphoon,			// Typhoon
+#if defined FBA_DEBUG
+	&BurnDrvMDg_tyrant,			// Tyrants - Fight through Time (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvEarthjkr,			// U.N. Defense Force: Earth Joker
 	&BurnDrvCpsUnsquad,			// U.N. Squadron (US)
+	&BurnDrvUsclssic,			// U.S. Classic
 	&BurnDrvCpsCawingj,			// U.S. Navy (901012 Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDgomo,				// Uchu Senkan Gomora (J) [c][!] [no comment]
+	&BurnDrvMDg_uchuus,			// Uchuu Senkan Gomora (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvssideki4,			// Ultimate 11 - The SNK Football Championship / Tokuten Ou - Honoo no Libero, The
 	&BurnDrvCpsUecology,		// Ultimate Ecology (931203 Japan)
+	&BurnDrvMDg_umk3,			// Ultimate Mortal Kombat 3 (Europe)
+	&BurnDrvMDg_umk3a,			// Ultimate Mortal Kombat 3 (USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDumk3e,			// Ultimate Mortal Kombat 3 (E) [!] [no comment]
-	&BurnDrvMDumk3,				// Ultimate Mortal Kombat 3 (U) [!] [no comment]
-	&BurnDrvMDuqix,				// Ultimate Qix (U) [!] [no comment]
-	&BurnDrvMDusoc,				// Ultimate Soccer (E) [!] [no comment]
-	&BurnDrvMDuman,				// Ultraman (J) [!] [no comment]
-	&BurnDrvMDuw,				// Uncharted Waters (U) [!] [no comment]
-	&BurnDrvMDuwnh,				// Uncharted Waters - New Horizons (U) [!] [no comment]
-	&BurnDrvMDuded,				// Undead Line (J) [!] [no comment]
-	&BurnDrvMDunis,				// Universal Soldier (U) [!] [no comment]
-	&BurnDrvMDur95,				// Unnecessary Roughness 95 (U) [!] [no comment]
+	&BurnDrvMDg_uqix,			// Ultimate Qix (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_usoccr,			// Ultimate Soccer (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvUoPokoj,			// Uo Poko (Japan, ver. 1998 Feb 06)
+	&BurnDrvUballoon,			// Ultra Balloon
+	&BurnDrvUtoukond,			// Ultra Toukon Densetsu (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_ultram,			// Ultraman (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvUltraman,			// Ultraman (Japan)
+	&BurnDrvUmanclub,			// Ultraman Club - Tatakae! Ultraman Kyoudai!!
+#if defined FBA_DEBUG
+	&BurnDrvMDg_unchw,			// Uncharted Waters (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_unchw2,			// Uncharted Waters - New Horizons (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_undead,			// Undead Line (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvUccopsar,			// Undercover Cops (Alpha Renewal Version)
+	&BurnDrvUccopsj,			// Undercover Cops (Japan)
+	&BurnDrvUccopsu,			// Undercover Cops (US)
+	&BurnDrvUccops,				// Undercover Cops (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_univer,			// Universal Soldier (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvUniwars,			// UniWar S
+#if defined FBA_DEBUG
+	&BurnDrvMDg_unknow,			// Unknown Chinese Game 1 (Ch) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_unnece,			// Unnecessary Roughness 95 (USA)
 	&BurnDrvUpndown,			// Up'n Down (315-5030)
 	&BurnDrvUpndownu,			// Up'n Down (not encrypted)
 #if defined FBA_DEBUG
-	&BurnDrvMDustr,				// Urban Strike (UE) [!] [no comment]
-	&BurnDrvMDuzuke,			// Uzu Keobukseon (K) [!] [no comment]
-	&BurnDrvMDv5,				// V-Five (J) [!] [no comment]
+	&BurnDrvMDg_urbans,			// Urban Strike (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMustangs,			// US AAF Mustang (25th May. 1990 / Seoul Trading)
+	&BurnDrvMustang,			// US AAF Mustang (25th May. 1990)
+	&BurnDrvMustangb,			// US AAF Mustang (bootleg)
+	&BurnDrvMustangb2,			// US AAF Mustang (TAB Austria bootleg)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_uzukeo,			// Uzu Keobukseon (Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_vvjapa,			// V-Five (Japan) [no comment, NOT WORKING]
 #endif
 	&BurnDrvVFive,				// V-Five (Japan)
-	&BurnDrvVliner,				// V-Liner (set 1)
-	&BurnDrvVlinero,			// V-Liner (set 2)
+	&BurnDrvvliner,				// V-Liner (set 1)
+	&BurnDrvvlinero,			// V-Liner (set 2)
 #if defined FBA_DEBUG
-	&BurnDrvMDvalj,				// Valis (J) [!] [no comment]
-	&BurnDrvMDvali,				// Valis (U) [!] [no comment]
-	&BurnDrvMDval3j,			// Valis III (J) [!] [no comment]
-	&BurnDrvMDval3,				// Valis III (U) [!] [no comment]
-	&BurnDrvMDvalsdj,			// Valis SD (J) [!] [no comment]
+	&BurnDrvMDg_valisu,			// Valis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_val3j,			// Valis III (Japan) (Rev A) [no comment, NOT WORKING]
+	&BurnDrvMDg_val3,			// Valis III (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsVampjr1,			// Vampire - the night warriors (940630 Japan)
 	&BurnDrvCpsVampj,			// Vampire - the night warriors (940705 Japan)
@@ -6856,113 +11842,209 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvCpsVhuntjr2,		// Vampire Hunter - darkstalkers' revenge (950302 Japan)
 	&BurnDrvCpsVhuntjr1,		// Vampire Hunter - darkstalkers' revenge (950307 Japan)
 	&BurnDrvCpsVhuntj,			// Vampire Hunter - darkstalkers' revenge (950316 Japan)
+	&BurnDrvCpsVhunt2d,			// Vampire Hunter 2 - darkstalkers revenge (970913 Japan Phoenix Edition)
 	&BurnDrvCpsVhunt2r1,		// Vampire Hunter 2 - darkstalkers revenge (970913 Japan)
 	&BurnDrvCpsVhunt2,			// Vampire Hunter 2 - darkstalkers revenge (970929 Japan)
-#if defined FBA_DEBUG
-	&BurnDrvMDvamkil,			// Vampire Killer (J) [!] [no comment]
-#endif
 	&BurnDrvCpsVsava,			// Vampire Savior - the lord of vampire (970519 Asia)
+	&BurnDrvCpsVsavd,			// Vampire Savior - the lord of vampire (970519 Euro Phoenix Edition)
 	&BurnDrvCpsVsav,			// Vampire Savior - the lord of vampire (970519 Euro)
 	&BurnDrvCpsVsavh,			// Vampire Savior - the lord of vampire (970519 Hispanic)
 	&BurnDrvCpsVsavj,			// Vampire Savior - the lord of vampire (970519 Japan)
 	&BurnDrvCpsVsavu,			// Vampire Savior - the lord of vampire (970519 USA)
+	&BurnDrvCpsVsav2d,			// Vampire Savior 2 - the lord of vampire (970913 Japan Phoenix Edition)
 	&BurnDrvCpsVsav2,			// Vampire Savior 2 - the lord of vampire (970913 Japan)
 	&BurnDrvvanvan,				// Van-Van Car
 	&BurnDrvvanvank,			// Van-Van Car (Karateco)
 	&BurnDrvvanvanb,			// Van-Van Car (set 3)
+	&BurnDrvVandykeb,			// Vandyke (bootleg with PIC16c57)
+	&BurnDrvVandykejal,			// Vandyke (Jaleco, Set 1)
+	&BurnDrvVandykejal2,		// Vandyke (Jaleco, Set 2)
+	&BurnDrvVandyke,			// Vandyke (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDvapt,				// Vapor Trail (U) [!] [no comment]
+	&BurnDrvMDg_vaport,			// Vapor Trail (USA) [no comment, NOT WORKING]
 #endif
+	&BurnDrvVmetaln,			// Varia Metal (New Ways Trading Co.)
+	&BurnDrvVmetal,				// Varia Metal
 	&BurnDrvCpsVarthr1,			// Varth - operation thunderstorm (920612 etc)
 	&BurnDrvCpsVarthu,			// Varth - operation thunderstorm (920612 USA)
 	&BurnDrvCpsVarth,			// Varth - operation thunderstorm (920714 etc)
 	&BurnDrvCpsVarthj,			// Varth - operation thunderstorm (920714 Japan)
+	&BurnDrvMDg_vmana,			// Vectorman (Beta)
+	&BurnDrvMDg_vmanb,			// Vectorman (Prototype - Jul 24, 1995)
+	&BurnDrvMDg_vmanc,			// Vectorman (USA) (Beta)
+	&BurnDrvMDg_vman,			// Vectorman (USA, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDvectb,			// Vectorman (Beta) [no comment]
-	&BurnDrvMDvectp,			// Vectorman (UE) (Prototype) [!] [no comment]
-	&BurnDrvMDvect,				// Vectorman (UE) [!] [no comment]
-	&BurnDrvMDvect2p,			// Vectorman 2 (U) (Prototype) [!] [no comment]
-	&BurnDrvMDvec2,				// Vectorman 2 (U) [!] [no comment]
-	&BurnDrvMDverytx,			// Verytex (J) [c][!] [no comment]
+	&BurnDrvMDg_vman2b,			// Vectorman 2 (Prototype - Aug 15, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2c,			// Vectorman 2 (Prototype - Aug 16, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2d,			// Vectorman 2 (Prototype - Aug 19, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2e,			// Vectorman 2 (Prototype - Aug 26, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2f,			// Vectorman 2 (Prototype - Aug 27, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2,			// Vectorman 2 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_vman2a,			// Vectorman 2 (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvViewpoin,			// Viewpoint
+	&BurnDrvVendetta2pd,		// Vendetta (Asia 2 Players ver. D)
+	&BurnDrvVendetta2pu,		// Vendetta (Asia 2 Players ver. U)
+	&BurnDrvVendetta2p,			// Vendetta (World 2 Players ver. W)
+	&BurnDrvVendettar,			// Vendetta (World 4 Players ver. R)
+	&BurnDrvVendetta,			// Vendetta (World 4 Players ver. T)
+	&BurnDrvVenus,				// Venus
+	&BurnDrvMDg_vermil,			// Vermilion (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDviewpb,			// Viewpoint (Beta) [no comment]
-	&BurnDrvMDview,				// Viewpoint (U) [!] [no comment]
-	&BurnDrvMDvf2,				// Virtua Fighter 2 (UE) [!] [no comment]
-	&BurnDrvMDvirrae,			// Virtua Racing (E) [!] [no comment]
-	&BurnDrvMDvirrea,			// Virtua Racing (E) [a1] [no comment]
-	&BurnDrvMDvirraj,			// Virtua Racing (J) [!] [no comment]
-	&BurnDrvMDvirr,				// Virtua Racing (U) [!] [no comment]
-	&BurnDrvMDvbar,				// Virtual Bart (W) [!] [no comment]
-	&BurnDrvMDvpin,				// Virtual Pinball (UE) [!] [no comment]
-	&BurnDrvMDvix357,			// Vixen 357 (J) [!] [no comment]
-	&BurnDrvMDvolf,				// Volfied (J) [!] [no comment]
+	&BurnDrvMDg_veryte,			// Verytex (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvgowcaizr,			// Voltage Fighter - Gowcaizer\0Choujin Gakuen Gowcaizer
+	&BurnDrvVictnine,			// Victorious Nine
+	&BurnDrvHustler,			// Video Hustler
+	&BurnDrvHustlerb,			// Video Hustler (bootleg)
+	&BurnDrvVpool,				// Video Pool (bootleg on Moon Cresta hardware)
+	&BurnDrvviewpoin,			// Viewpoint
 #if defined FBA_DEBUG
-	&BurnDrvMDvrtr,				// VR Troopers (UE) [!] [no comment]
-	&BurnDrvMDwacrac,			// Wacky Races (Beta) [no comment]
-	&BurnDrvMDwack,				// Wacky Worlds (U) [!] [no comment]
-	&BurnDrvMDwaiala,			// Waialae no Kiseki (J) [!] [no comment]
+	&BurnDrvMDg_viewp,			// Viewpoint (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_viewpb,			// Viewpoint (USA) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvVigilantj,			// Vigilante (Japan)
+	&BurnDrvVigilantu,			// Vigilante (US)
+	&BurnDrvVigilant,			// Vigilante (World, set 1)
+	&BurnDrvVigilant1,			// Vigilante (World, set 2)
+	&BurnDrvVimanan,			// Vimana (Nova Apparate GMBH & Co)
+	&BurnDrvVimana1,			// Vimana (old set)
+	&BurnDrvVimana,				// Vimana
+	&BurnDrvRedhawkb,			// Vince (Redhawk bootleg)
+	&BurnDrvViofightj,			// Violence Fight (Japan)
+	&BurnDrvViofightu,			// Violence Fight (US)
+	&BurnDrvViofight,			// Violence Fight (World)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_vf2a,			// Virtua Fighter 2 (Korea) [no comment, NOT WORKING]
+	&BurnDrvMDg_vf2b,			// Virtua Fighter 2 (Prototype - Aug 19, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vf2c,			// Virtua Fighter 2 (Prototype - Aug 30, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vf2d,			// Virtua Fighter 2 (Prototype - Sep 13, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vf2e,			// Virtua Fighter 2 (Prototype - Sep 20, 1996) [no comment, NOT WORKING]
+	&BurnDrvMDg_vf2f,			// Virtua Fighter 2 (Prototype - Sep 27, 1996) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_vf2,			// Virtua Fighter 2 (USA, Europe)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_vf2tek,			// Virtua Fighter 2 vs Tekken 2 (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_vra,			// Virtua Racing (E) [a1] [no comment, NOT WORKING]
+	&BurnDrvMDg_vr,				// Virtua Racing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_vrj,			// Virtua Racing (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_vru,			// Virtua Racing (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_vbart,			// Virtual Bart (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_virtpb,			// Virtual Pinball (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_vixenj,			// Vixen 357 (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_volfie,			// Volfied (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvVolfiedjo,			// Volfied (Japan)
+	&BurnDrvVolfiedj,			// Volfied (Japan, revision 1)
+	&BurnDrvVolfiedu,			// Volfied (US, revision 1)
+	&BurnDrvVolfied,			// Volfied (World, revision 1)
+	&BurnDrvgowcaizr,			// Voltage Fighter - Gowcaizer / Choujin Gakuen Gowcaizer
+#if defined FBA_DEBUG
+	&BurnDrvMDg_vrtroo,			// VR Troopers (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvVulcan,				// Vulcan Venture (New)
+	&BurnDrvVulcana,			// Vulcan Venture (Old)
+	&BurnDrvVulcanb,			// Vulcan Venture (Oldest)
+	&BurnDrvvulgusj,			// Vulgus (Japan?)
+	&BurnDrvvulgus,				// Vulgus (set 1)
+	&BurnDrvvulgusa,			// Vulgus (set 2)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wackyr,			// Wacky Races (USA) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwa,			// Wacky Worlds (Prototype - Aug 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwb,			// Wacky Worlds (Prototype - Aug 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwc,			// Wacky Worlds (Prototype - Aug 19, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_ww,				// Wacky Worlds Creativity Studio (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvMj4simai,			// Wakakusamonogatari Mahjong Yonshimai (Japan)
-	&BurnDrvWakuwak7,			// Waku Waku 7
-	&BurnDrvwallc,				// Wall Crash (set 1)
-	&BurnDrvwallca,				// Wall Crash (set 2)
+	&BurnDrvwakuwak7,			// Waku Waku 7
+	&BurnDrvWallc,				// Wall Crash (set 1)
+	&BurnDrvWallca,				// Wall Crash (set 2)
 	&BurnDrvWwallyja,			// Wally wo Sagase! (rev A, Japan, FD1094 317-0197A)
 	&BurnDrvWwallyj,			// Wally wo Sagase! (rev B, Japan, FD1094 317-0197B)
 #if defined FBA_DEBUG
-	&BurnDrvMDwani,				// Wani Wani World (J) [c][!] [no comment]
-	&BurnDrvWarzard,			// War-Zard (Japan 961121) [no comment, NOT WORKING]
-	&BurnDrvMDward,				// Wardner (U) [!] [no comment]
-	&BurnDrvMDwardj,			// Wardner no Mori Special (J) [!] [no comment]
-	&BurnDrvMDwarlob,			// Warlock (Beta) [no comment]
-	&BurnDrvMDwloc,				// Warlock (UE) [!] [no comment]
-	&BurnDrvMDwarps,			// Warpspeed (U) [!] [no comment]
-	&BurnDrvMDwrom,				// Warrior of Rome (U) [!] [no comment]
-	&BurnDrvMDwrom2,			// Warrior of Rome II (U) [c][!] [no comment]
+	&BurnDrvMDg_waniwa,			// Wani Wani World (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvWrofaero,			// War of Aero - Project MEIOU
+	&BurnDrvWarofbug,			// War of the Bugs or Monsterous Manouvers in a Mushroom Maze
+#if defined FBA_DEBUG
+	&BurnDrvWarofbugg,			// War of the Bugs or Monsterous Manouvers in a Mushroom Maze (German) [no comment]
+#endif
+	&BurnDrvWarzarda,			// War-Zard / Red Earth (Japan 961023)
+	&BurnDrvWarzard,			// War-Zard / Red Earth (Japan 961121)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wardne,			// Wardner (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wardn1,			// Wardner no Mori Special (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_warlkb,			// Warlock (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_warlk,			// Warlock (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_warpsp,			// Warpspeed (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvWarriorb,			// Warrior Blade - Rastan Saga Episode III (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_warrio,			// Warrior of Rome (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_warri1,			// Warrior of Rome II (USA)
 	&BurnDrvCpsWof,				// Warriors of Fate (921002 etc)
 	&BurnDrvCpsWofu,			// Warriors of Fate (921031 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDwars,				// Warsong (U) [!] [no comment]
+	&BurnDrvCpsWofb,			// Warriors of Fate (bootleg) [no comment, NOT WORKING]
+//	&BurnDrvCpsWoffr,			// Warriors of Fate (French Translation) [no comment]
 #endif
+	&BurnDrvMDg_warson,			// Warsong (USA)
 	&BurnDrvWmatch,				// Water Match (315-5064)
 #if defined FBA_DEBUG
-	&BurnDrvMDwatrb,			// Waterworld (Beta) [no comment]
-	&BurnDrvMDwgas,				// Wayne Gretzsky NHLPA All-Stars (UE) [!] [no comment]
-	&BurnDrvMDwayn,				// Wayne's World (U) [c][!] [no comment]
-	&BurnDrvMDwbdt,				// We're Back! - A Dinosaur's Tale (U) [!] [no comment]
-	&BurnDrvMDweap,				// Weaponlord (U) [!] [no comment]
-	&BurnDrvMDwfor,				// Wheel of Fortune (U) [!] [no comment]
-	&BurnDrvMDwwics,			// Where in the World is Carmen Sandiego (B) (M2) [!] [no comment]
-	&BurnDrvMDwwcse,			// Where in the World is Carmen Sandiego (E) (M5) [no comment]
-	&BurnDrvMDwtics,			// Where in Time is Carmen Sandiego (B) [!] [no comment]
-	&BurnDrvMDwticsa,			// Where in Time is Carmen Sandiego (UE) (M5) [!] [no comment]
-	&BurnDrvMDwhipj,			// Whip Rush 2222 AD (J) [!] [no comment]
-	&BurnDrvMDwhip,				// Whip Rush 2222 AD (U) [!] [no comment]
-	&BurnDrvMDwild,				// Wild Snake (U) (Prototype) [!] [no comment]
-	&BurnDrvMDwaghe,			// Williams Arcade's Greatest Hits (E) [no comment]
-	&BurnDrvMDwagh,				// Williams Arcade's Greatest Hits (U) [!] [no comment]
+	&BurnDrvMDg_waterw,			// Waterworld (Europe) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_wayneg,			// Wayne Gretzky and the NHLPA All-Stars (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_waynes,			// Wayne's World (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_weapon,			// Weaponlord (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvCpsWillowje,		// Willow (Japan, English)
+	&BurnDrvWelltrisj,			// Welltris - Alexey Pajitnov's (Japan, 2 players)
+	&BurnDrvWelltris,			// Welltris - Alexey Pajitnov's (World?, 2 players)
+#if defined FBA_DEBUG
+	&BurnDrvWeststry,			// West Story (bootleg of Blood Bros.) [no comment, NOT WORKING]
+	&BurnDrvMDg_whacac,			// Whac-a-Critter (USA) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheelo,			// Wheel of Fortune (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwlrdb,			// Where in the World Is Carmen Sandiego (Brazil) (Es,Pt) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwlrd,			// Where in the World Is Carmen Sandiego (USA, Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+	&BurnDrvMDg_wtimeb,			// Where in Time Is Carmen Sandiego (Brazil) (Es,Pt) [no comment, NOT WORKING]
+	&BurnDrvMDg_wtime,			// Where in Time Is Carmen Sandiego (USA, Europe) (En,Fr,De,Es,It) [no comment, NOT WORKING]
+	&BurnDrvMDg_whipru,			// Whip Rush (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_whipr1,			// Whip Rush - Wakusei Voltegas no Nazo (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvWiggie,				// Wiggie Waggie
+	&BurnDrvWildfang,			// Wild Fang / Tecmo Knight
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wildsn,			// Wild Snake (USA) (Proto) [no comment, NOT WORKING]
+	&BurnDrvMDg_willia,			// Williams Arcade's Greatest Hits (USA) [no comment, NOT WORKING]
+#endif
 	&BurnDrvCpsWillowj,			// Willow (Japan, Japanese)
+	&BurnDrvCpsWillowo,			// Willow (US old ver.)
 	&BurnDrvCpsWillow,			// Willow (US)
+	&BurnDrvWilytowr,			// Wily Tower
 #if defined FBA_DEBUG
-	&BurnDrvMDwimbe,			// Wimbledon Championship Tennis (E) [!] [no comment]
-	&BurnDrvMDwimbp,			// Wimbledon Championship Tennis (U) (Prototype) [!] [no comment]
-	&BurnDrvMDwimb,				// Wimbledon Championship Tennis (U) [!] [no comment]
+	&BurnDrvMDg_wimble,			// Wimbledon Championship Tennis (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wimbl1,			// Wimbledon Championship Tennis (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_wimbl3,			// Wimbledon Championship Tennis (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wimbl2,			// Wimbledon Championship Tennis (USA) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWJammers,			// Windjammers - flying disc game\0Flying Power Disc
+	&BurnDrvwjammers,			// Windjammers / Flying Power Disc
+	&BurnDrvWschampa,			// Wing Shooting Championship V1.01
+	&BurnDrvWschamp,			// Wing Shooting Championship V2.00
 #if defined FBA_DEBUG
-	&BurnDrvMDwinwor,			// Wings of Wor (U) [!] [no comment]
-	&BurnDrvMDwchalb,			// Winter Challenge (Beta) [no comment]
-	&BurnDrvMDwinc,				// Winter Challenge (UE) [!] [no comment]
-	&BurnDrvMDwizlie,			// Wiz 'n' Liz - The Frantic Wabbit Wescue (E) [!] [no comment]
-	&BurnDrvMDwizl,				// Wiz 'n' Liz - The Frantic Wabbit Wescue (U) [!] [no comment]
-	&BurnDrvMDwolf,				// Wolf Child (U) [c][!] [no comment]
-	&BurnDrvMDwolv,				// Wolverine Adamantium Rage (UE) [!] [no comment]
+	&BurnDrvMDg_wingso,			// Wings of Wor (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wintcb,			// Winter Challenge (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_wintca,			// Winter Challenge (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wintc,			// Winter Challenge (USA, Europe) (Rev 1) [no comment, NOT WORKING]
+	&BurnDrvMDg_winto,			// Winter Olympic Games (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wintoe,			// Winter Olympics (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wintoj,			// Winter Olympics (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvWits,				// Wit's (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wiznli,			// Wiz'n'Liz (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wiznl1,			// Wiz'n'Liz - The Frantic Wabbit Wescue (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wizard,			// Wizard of the Immortal (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_wolfch,			// Wolfchild (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wolver,			// Wolverine - Adamantium Rage (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsWonder3,			// Wonder 3 (910520 Japan)
 	&BurnDrvWboyu,				// Wonder Boy (not encrypted)
@@ -6975,158 +12057,326 @@ static struct BurnDriver* pDriver[] = {
 	&BurnDrvWbdeluxe,			// Wonder Boy Deluxe
 #if defined FBA_DEBUG
 	&BurnDrvWb3bbl,				// Wonder Boy III - Monster Lair (bootleg) [no comment]
-	&BurnDrvMDwb3,				// Wonder Boy III - Monster Lair (JE) [c][!] [no comment]
+	&BurnDrvMDg_wonder,			// Wonder Boy III - Monster Lair (Japan, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvWb31,				// Wonder Boy III - Monster Lair (set 1, System 16A, FD1094 317-0084)
 	&BurnDrvWb32,				// Wonder Boy III - Monster Lair (set 2, Japan, System 16B, FD1094 317-0085)
 	&BurnDrvWb33,				// Wonder Boy III - Monster Lair (set 3, World, System 16B, FD1094 317-0089)
 	&BurnDrvWb34,				// Wonder Boy III - Monster Lair (set 4, Japan, System 16B, FD1094 317-0087)
 	&BurnDrvWb3,				// Wonder Boy III - Monster Lair (set 5, World, System 16B, 8751 317-0098)
+	&BurnDrvMDg_wbmw,			// Wonder Boy in Monster World (USA, Europe)
 #if defined FBA_DEBUG
-	&BurnDrvMDwbmw,				// Wonder Boy in Monster World (UE) [!] [no comment]
-	&BurnDrvMDwboy5,			// Wonder Boy V - Monster World III (J) [!] [no comment]
+	&BurnDrvMDg_wboy5,			// Wonder Boy V - Monster World III (Japan, Korea) [no comment, NOT WORKING]
 #endif
+	&BurnDrvWondl96,			// Wonder League '96 (Korea)
 	&BurnDrvWlstar,				// Wonder League Star - Sok-Magicball Fighting (Korea)
 #if defined FBA_DEBUG
-	&BurnDrvMDwonlib,			// Wonder Library (J) [!] [no comment]
+	&BurnDrvMDg_wondli,			// Wonder Library (Japan) (Program) [no comment, NOT WORKING]
 #endif
-	&BurnDrvwoodpek,			// Woodpecker (set 1)
+	&BurnDrvWndrplnt,			// Wonder Planet (Japan)
+	&BurnDrvWondstck,			// Wonder Stick
+	&BurnDrvwoodpeck,			// Woodpecker (set 1)
 #if defined FBA_DEBUG
 	&BurnDrvwoodpeka,			// Woodpecker (set 2) [no comment, NOT WORKING]
-	&BurnDrvMDwcs00,			// World Championship Soccer (JU) (REV00) [!] [no comment]
-	&BurnDrvMDwcs02,			// World Championship Soccer (JU) (REV02) [no comment]
-	&BurnDrvMDwcs,				// World Championship Soccer (JU) (REV03) [!] [no comment]
-	&BurnDrvMDwcs2b,			// World Championship Soccer II (Beta) [no comment]
-	&BurnDrvMDwcs2,				// World Championship Soccer II (U) [!] [no comment]
-	&BurnDrvMDwclbx,			// World Class Leaderboard Golf (E) [x] [no comment]
-	&BurnDrvMDwcl,				// World Class Leaderboard Golf (U) [c][!] [no comment]
+	&BurnDrvMDg_wcs2a,			// World Championship Soccer II (Prototype - Feb 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2b,			// World Championship Soccer II (Prototype - Mar 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2c,			// World Championship Soccer II (Prototype - Mar 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2d,			// World Championship Soccer II (Prototype - Mar 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2e,			// World Championship Soccer II (Prototype - Mar 24, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2f,			// World Championship Soccer II (Prototype - Mar 25, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2g,			// World Championship Soccer II (Prototype - Mar 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2h,			// World Championship Soccer II (Prototype - Mar 27, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2i,			// World Championship Soccer II (Prototype - Mar 29, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2j,			// World Championship Soccer II (Prototype - Mar 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2k,			// World Championship Soccer II (Prototype - Mar 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2l,			// World Championship Soccer II (Prototype - May 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2m,			// World Championship Soccer II (Prototype G - Feb 22, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2n,			// World Championship Soccer II (Prototype J - Feb 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2o,			// World Championship Soccer II (Prototype N - Mar 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2p,			// World Championship Soccer II (Prototype O - Mar 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2q,			// World Championship Soccer II (Prototype P - Mar 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2r,			// World Championship Soccer II (Prototype R - Mar 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2s,			// World Championship Soccer II (Prototype U - Mar 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2t,			// World Championship Soccer II (Prototype Y - Mar 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2,			// World Championship Soccer II (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs2u,			// World Championship Soccer II (USA) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcl,			// World Class Leaderboard Golf (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcla,			// World Class Leaderboard Golf (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWc90,				// World Cup '90 (set 1)
-	&BurnDrvWc90a,				// World Cup '90 (set 2)
+	&BurnDrvWc90b2,				// World Cup '90 (bootleg)
+	&BurnDrvWc90a,				// World Cup '90 (Euro set 1)
+	&BurnDrvWc90b,				// World Cup '90 (Euro set 2)
 	&BurnDrvWc90t,				// World Cup '90 (trackball)
+	&BurnDrvWc90,				// World Cup '90 (World)
 #if defined FBA_DEBUG
-	&BurnDrvMDwc90,				// World Cup Italia 90 (E) [!] [no comment]
-	&BurnDrvMDwc94,				// World Cup USA 94 (UE) [!] [no comment]
-	&BurnDrvMDwheroj,			// World Heroes (J) [!] [no comment]
+	&BurnDrvMDg_wc90,			// World Cup Italia '90 (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcsb,			// World Cup Soccer ~ World Championship Soccer (Japan, USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcs,			// World Cup Soccer ~ World Championship Soccer (Japan, USA) (Rev B) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcsa,			// World Cup Soccer ~ World Championship Soccer (Japan, USA) (v1.2) [no comment, NOT WORKING]
+	&BurnDrvMDg_wcup94,			// World Cup USA 94 (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherob,			// World Heroes (E) (Prototype - Mar 31, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroc,			// World Heroes (E) (Prototype - Mar 31, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherod,			// World Heroes (J) (Prototype - Apr 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroe,			// World Heroes (J) (Prototype - Apr 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherof,			// World Heroes (J) (Prototype - Apr 20, 1994 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherog,			// World Heroes (J) (Prototype - Apr 20, 1994) (broken - C05 missing) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroh,			// World Heroes (J) (Prototype - Mar 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroa,			// World Heroes (Japan) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWH1,				// World Heroes (set 1)
-	&BurnDrvWH1h,				// World Heroes (set 2)
-	&BurnDrvWH1ha,				// World Heroes (set 3)
+	&BurnDrvwh1,				// World Heroes (set 1)
+	&BurnDrvwh1h,				// World Heroes (set 2)
+	&BurnDrvwh1ha,				// World Heroes (set 3)
 #if defined FBA_DEBUG
-	&BurnDrvMDwher,				// World Heroes (U) [!] [no comment]
+	&BurnDrvMDg_wheroi,			// World Heroes (U) (Prototype - Feb 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroj,			// World Heroes (U) (Prototype - Feb 24, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherok,			// World Heroes (U) (Prototype - Mar 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherol,			// World Heroes (U) (Prototype - Mar 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherom,			// World Heroes (U) (Prototype - Mar 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheron,			// World Heroes (U) (Prototype - Mar 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroo,			// World Heroes (U) (Prototype - Mar 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherop,			// World Heroes (U) (Prototype - Mar 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheroq,			// World Heroes (U) (Prototype - Mar 22, 1994) (broken - C07 missing) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheror,			// World Heroes (U) (Prototype - Mar 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wheros,			// World Heroes (U) (Prototype - Mar 24, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wherot,			// World Heroes (U) (Prototype - Mar 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_whero,			// World Heroes (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWH2,				// World Heroes 2
-	&BurnDrvWH2J,				// World Heroes 2 Jet (set 1)
-	&BurnDrvWH2Jh,				// World Heroes 2 Jet (set 2)
-	&BurnDrvWHP,				// World Heroes Perfect
+	&BurnDrvwh2,				// World Heroes 2
+	&BurnDrvwh2j,				// World Heroes 2 Jet (set 1)
+	&BurnDrvwhp,				// World Heroes Perfect
 #if defined FBA_DEBUG
-	&BurnDrvMDwillb,			// World of Illusion Starring Mickey Mouse & Donald Duck (Beta) [no comment]
-	&BurnDrvMDwille,			// World of Illusion Starring Mickey Mouse & Donald Duck (E) [!] [no comment]
-	&BurnDrvMDwill,				// World of Illusion Starring Mickey Mouse & Donald Duck (U) [!] [no comment]
-	&BurnDrvMDws95,				// World Series Baseball '95 (U) [!] [no comment]
-	&BurnDrvMDws96,				// World Series Baseball '96 (U) [!] [no comment]
-	&BurnDrvMDws98,				// World Series Baseball '98 (U) [!] [no comment]
-	&BurnDrvMDwsb,				// World Series Baseball (U) [!] [no comment]
+	&BurnDrvMDg_wolj,			// World of Illusion - Fushigi na Magic Box (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_woljb,			// World of Illusion - Fushigi na Magic Box (Japan) (Beta) [no comment, NOT WORKING]
 #endif
-	&BurnDrvMDwts,				// World Trophy Soccer (U) [!]
+	&BurnDrvMDg_wol,			// World of Illusion Starring Mickey Mouse and Donald Duck (Europe)
+	&BurnDrvMDg_wolu,			// World of Illusion Starring Mickey Mouse and Donald Duck (USA, Korea)
 #if defined FBA_DEBUG
-	&BurnDrvMDwormp,			// Worms (E) (Prototype) [c][!] [no comment]
-	&BurnDrvMDworm,				// Worms (E) [!] [no comment]
-	&BurnDrvMDwwarb,			// Wrestle War (Beta) [no comment]
-	&BurnDrvMDwwar,				// Wrestle War (JE) [c][!] [no comment]
+	&BurnDrvMDg_wsb95a,			// World Series Baseball '95 (Prototype - Dec 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95b,			// World Series Baseball '95 (Prototype - Dec 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95c,			// World Series Baseball '95 (Prototype - Dec 28, 1994 - SB) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95d,			// World Series Baseball '95 (Prototype - Feb 02, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95e,			// World Series Baseball '95 (Prototype - Feb 03, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95f,			// World Series Baseball '95 (Prototype - Feb 07, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95g,			// World Series Baseball '95 (Prototype - Feb 09, 1995 - B) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95h,			// World Series Baseball '95 (Prototype - Feb 09, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95i,			// World Series Baseball '95 (Prototype - Feb 11, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95j,			// World Series Baseball '95 (Prototype - Feb 12, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95k,			// World Series Baseball '95 (Prototype - Feb 13, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95l,			// World Series Baseball '95 (Prototype - Feb 14, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95m,			// World Series Baseball '95 (Prototype - Jan 01, 1995 - TST) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95n,			// World Series Baseball '95 (Prototype - Jan 03, 1995 - TST) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95o,			// World Series Baseball '95 (Prototype - Jan 05, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95p,			// World Series Baseball '95 (Prototype - Jan 09, 1995 - TST) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95q,			// World Series Baseball '95 (Prototype - Jan 10, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95r,			// World Series Baseball '95 (Prototype - Jan 14, 1995 - RM) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95s,			// World Series Baseball '95 (Prototype - Jan 16, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95t,			// World Series Baseball '95 (Prototype - Jan 18, 1995 - RM) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95u,			// World Series Baseball '95 (Prototype - Jan 20, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95v,			// World Series Baseball '95 (Prototype - Jan 25, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95w,			// World Series Baseball '95 (Prototype - Jan 30, 1995) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb95,			// World Series Baseball '95 (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb96,			// World Series Baseball '96 (USA) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWrestwa1,			// Wrestle War (set 1, Japan, FD1094 317-0090)
-	&BurnDrvWrestwa2,			// Wrestle War (set 2, World, FD1094 317-0102)
+	&BurnDrvMDg_wsb98,			// World Series Baseball '98 (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wsba,			// World Series Baseball (Prototype - Dec 22, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbb,			// World Series Baseball (Prototype - Dec 26, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbc,			// World Series Baseball (Prototype - Dec 29, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbd,			// World Series Baseball (Prototype - Feb 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbe,			// World Series Baseball (Prototype - Jan 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbf,			// World Series Baseball (Prototype - Jan 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbg,			// World Series Baseball (Prototype - Jan 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbh,			// World Series Baseball (Prototype - Mar 04, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbi,			// World Series Baseball (Prototype - May 27, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsbj,			// World Series Baseball (Prototype - Oct 01, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_wsb,			// World Series Baseball (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvMDg_worldt,			// World Trophy Soccer (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_worms,			// Worms (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_wormsb,			// Worms (Europe) (Beta) [no comment, NOT WORKING]
+#endif
+	&BurnDrvWownfant,			// WOW New Fantasia
+#if defined FBA_DEBUG
+	&BurnDrvMDg_wreswb,			// Wrestle War (Japan) (Beta) [no comment, NOT WORKING]
+	&BurnDrvMDg_wresw,			// Wrestle War (Japan, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvWrestwar1,			// Wrestle War (set 1, Japan, FD1094 317-0090)
+	&BurnDrvWrestwar2,			// Wrestle War (set 2, World, FD1094 317-0102)
 	&BurnDrvWrestwar,			// Wrestle War (set 3, World, 8751 317-0103)
 #if defined FBA_DEBUG
-	&BurnDrvMDwresbl,			// Wrestleball (J) [c][!] [no comment]
-	&BurnDrvMDwfra,				// WWF RAW (W) [!] [no comment]
-	&BurnDrvMDwfrr,				// WWF Royal Rumble (W) [!] [no comment]
-	&BurnDrvMDwfsw,				// WWF Super Wrestlemania (UE) [!] [no comment]
+	&BurnDrvMDg_wball,			// Wrestleball (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_wukong,			// Wu Kong Wai Zhuan (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwfraw,			// WWF Raw (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwfroy,			// WWF Royal Rumble (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwfsup,			// WWF Super WrestleMania (USA, Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvWwfwfstj,			// WWF WrestleFest (Japan)
-	&BurnDrvWwfwfstb,			// WWF WrestleFest (US bootleg)
+	&BurnDrvWwfsstar,			// WWF Superstars (Europe)
+	&BurnDrvWwfsstarj,			// WWF Superstars (Japan) [no comment, NOT WORKING]
+	&BurnDrvWwfsstaru,			// WWF Superstars (US)
+	&BurnDrvWwfsstara,			// WWF Superstars (US, Newer)
+	&BurnDrvWwfwfestj,			// WWF WrestleFest (Japan)
+	&BurnDrvWwfwfestb,			// WWF WrestleFest (US bootleg)
 	&BurnDrvWwfwfest,			// WWF WrestleFest (US set 1)
-	&BurnDrvWwfwfsta,			// WWF WrestleFest (US Tecmo)
+	&BurnDrvWwfwfesta,			// WWF WrestleFest (US Tecmo)
 #if defined FBA_DEBUG
-	&BurnDrvMDwfwaal,			// WWF Wrestlemania Arcade (Alpha) [!] [no comment]
-	&BurnDrvMDwmar,				// WWF Wrestlemania Arcade (U) [!] [no comment]
-	&BurnDrvMDxdaze,			// X Dazedly Ray (J) [!] [no comment]
-	&BurnDrvMDxmene,			// X-Men (E) [!] [no comment]
-	&BurnDrvMDxmen,				// X-Men (U) [!] [no comment]
+	&BurnDrvMDg_wwfaga,			// WWF WrestleMania - The Arcade Game (USA) (Alpha) [no comment, NOT WORKING]
+	&BurnDrvMDg_wwfag,			// WWF WrestleMania - The Arcade Game (USA, Europe) [no comment, NOT WORKING]
+#endif
+	&BurnDrvXmultiplm72,		// X Multiply (Japan, M72)
+	&BurnDrvXmultipl,			// X Multiply (World, M81)
+	&BurnDrvXmen2pa,			// X-Men (2 Players ver AAA)
+	&BurnDrvXmen2pe,			// X-Men (2 Players ver EAA)
+	&BurnDrvXmen2pj,			// X-Men (2 Players ver JAA)
+	&BurnDrvXmene,				// X-Men (4 Players ver EBA)
+	&BurnDrvXmenj,				// X-Men (4 Players ver JBA)
+	&BurnDrvXmen,				// X-Men (4 Players ver UBB)
+#if defined FBA_DEBUG
+	&BurnDrvXmen6p,				// X-Men (6 Players ver ECB) [no comment, NOT WORKING]
+	&BurnDrvXmen6pu,			// X-Men (6 Players ver UCB) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen,			// X-Men (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmenus,			// X-Men (USA) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsXmcotajr,		// X-Men - children of the atom (941208 Japan, rent version)
-	&BurnDrvCpsXmcotaa,			// X-Men - children of the atom (941217 Asia)
-	&BurnDrvCpsXmcotaj2,		// X-Men - children of the atom (941217 Japan)
-	&BurnDrvCpsXmcotaj1,		// X-Men - children of the atom (941219 Japan)
-	&BurnDrvCpsXmcotaj,			// X-Men - children of the atom (941222 Japan)
+	&BurnDrvCpsXmcotaar1,		// X-Men - children of the atom (941217 Asia)
+	&BurnDrvCpsXmcotaj3,		// X-Men - children of the atom (941217 Japan)
+	&BurnDrvCpsXmcotaj2,		// X-Men - children of the atom (941219 Japan)
+	&BurnDrvCpsXmcotaj1,		// X-Men - children of the atom (941222 Japan)
+	&BurnDrvCpsXmcotaa,			// X-Men - children of the atom (950105 Asia)
+	&BurnDrvCpsXmcotad,			// X-Men - children of the atom (950105 Euro Phoenix Edition)
 	&BurnDrvCpsXmcota,			// X-Men - children of the atom (950105 Euro)
+	&BurnDrvCpsXmcotahr1,		// X-Men - children of the atom (950105 Hispanic)
+	&BurnDrvCpsXmcotaj,			// X-Men - children of the atom (950105 Japan)
 	&BurnDrvCpsXmcotau,			// X-Men - children of the atom (950105 USA)
 	&BurnDrvCpsXmcotah,			// X-Men - children of the atom (950331 Hispanic)
 #if defined FBA_DEBUG
-	&BurnDrvMDxme2,				// X-Men 2 - Clone Wars (UE) [!] [no comment]
+	&BurnDrvMDg_xmen2a,			// X-Men 2 - Clone Wars (Prototype - Dec 02, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2b,			// X-Men 2 - Clone Wars (Prototype - Dec 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2c,			// X-Men 2 - Clone Wars (Prototype - Dec 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2d,			// X-Men 2 - Clone Wars (Prototype - Dec 07, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2e,			// X-Men 2 - Clone Wars (Prototype - Dec 08, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2f,			// X-Men 2 - Clone Wars (Prototype - Dec 09, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2g,			// X-Men 2 - Clone Wars (Prototype - Dec 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2h,			// X-Men 2 - Clone Wars (Prototype - Dec 11, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2i,			// X-Men 2 - Clone Wars (Prototype - Dec 11, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2j,			// X-Men 2 - Clone Wars (Prototype - Dec 14, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2k,			// X-Men 2 - Clone Wars (Prototype - Dec 15, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2l,			// X-Men 2 - Clone Wars (Prototype - Dec 16, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2m,			// X-Men 2 - Clone Wars (Prototype - May 06, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2n,			// X-Men 2 - Clone Wars (Prototype - May 10, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2o,			// X-Men 2 - Clone Wars (Prototype - Nov 17, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2p,			// X-Men 2 - Clone Wars (Prototype - Nov 23, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2q,			// X-Men 2 - Clone Wars (Prototype - Nov 28, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2r,			// X-Men 2 - Clone Wars (Prototype - Nov 30, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2s,			// X-Men 2 - Clone Wars (Prototype - Oct 18, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_xmen2,			// X-Men 2 - Clone Wars (USA, Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvCpsXmvsfjr2,		// X-Men vs Street Fighter (960909 Japan)
+	&BurnDrvCpsXmvsfar2,		// X-Men vs Street Fighter (960910 Asia)
 	&BurnDrvCpsXmvsfr1,			// X-Men vs Street Fighter (960910 Euro)
 	&BurnDrvCpsXmvsfjr1,		// X-Men vs Street Fighter (960910 Japan)
 	&BurnDrvCpsXmvsfar1,		// X-Men vs Street Fighter (960919 Asia)
 	&BurnDrvCpsXmvsf,			// X-Men vs Street Fighter (961004 Euro)
 	&BurnDrvCpsXmvsfh,			// X-Men vs Street Fighter (961004 Hispanic)
 	&BurnDrvCpsXmvsfj,			// X-Men vs Street Fighter (961004 Japan)
+	&BurnDrvCpsXmvsfu1d,		// X-Men vs Street Fighter (961004 USA Phoenix Edition)
 	&BurnDrvCpsXmvsfur1,		// X-Men vs Street Fighter (961004 USA)
 	&BurnDrvCpsXmvsfa,			// X-Men vs Street Fighter (961023 Asia)
 	&BurnDrvCpsXmvsfb,			// X-Men vs Street Fighter (961023 Brazil)
 	&BurnDrvCpsXmvsfu,			// X-Men vs Street Fighter (961023 USA)
 #if defined FBA_DEBUG
-	&BurnDrvMDxper,				// X-perts (U) [!] [no comment]
-	&BurnDrvMDxen2,				// Xenon 2 - Megablast (E) [c][!] [no comment]
+	&BurnDrvMDg_xpertp,			// X-perts (Prototype) [no comment, NOT WORKING]
+	&BurnDrvMDg_xpert,			// X-Perts (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_xdrxda,			// XDR - X-Dazedly-Ray (Japan) [no comment, NOT WORKING]
+	&BurnDrvMDg_xenonm,			// Xenon 2 Megablast (Europe) [no comment, NOT WORKING]
 #endif
 	&BurnDrvThreein1semi,		// XESS - The New Revolution (SemiCom 3-in-1)
 #if defined FBA_DEBUG
-	&BurnDrvMDxzr,				// XZR (J) [!] [no comment]
+	&BurnDrvMDg_xiaomo,			// Xiao Monv - Magic Girl (China) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_xinqig,			// Xin Qi Gai Wang Zi (China) (Alt) (Unl) [no comment, NOT WORKING]
+	&BurnDrvMDg_xinqi1,			// Xin Qi Gai Wang Zi (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvXorworld,			// Xor World (prototype)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_yasech,			// Ya Se Chuan Shuo (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvLeaguemn,			// Yakyuu Kakutou League-Man (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_yangji,			// Yang Jia Jiang - Yang Warrior Family (China) (Unl) [no comment, NOT WORKING]
 #endif
 	&BurnDrvyankeedo,			// Yankee DO!
+	&BurnDrvYesnoj,				// Yes/No Sinri Tokimeki Chart
 #if defined FBA_DEBUG
-	&BurnDrvMDyogi,				// Yogi Bear's Cartoon Capers (E) [!] [no comment]
-	&BurnDrvMDyindyb,			// Young Indiana Jones - Instrument of Chaos (Beta) [no comment]
-	&BurnDrvMDyidy,				// Young Indiana Jones - Instrument of Chaos (U) [!] [no comment]
-	&BurnDrvMDyindcb,			// Young Indiana Jones Chronicles (Beta) [no comment]
-	&BurnDrvMDys3j,				// Ys III - Wanderers from Ys (J) [!] [no comment]
-	&BurnDrvMDys3,				// Ys III - Wanderers from Ys (U) [!] [no comment]
-	&BurnDrvMDyuyu,				// Yuu Yuu Hakusho - Makyou Toitsusen (J) [!] [no comment]
-	&BurnDrvMDyuyub,			// Yuu Yuu Hakusho - Sunset Fighters (B) [!] [no comment]
-	&BurnDrvMDyuyuga,			// Yuu Yuu Hakusho Gaiden (J) [!] [no comment]
-	&BurnDrvMDzanya,			// Zan - Yasha Enbukyoku / Zan Yasha Enbuden (J) [!] [no comment]
-	&BurnDrvMDzany,				// Zany Golf (UE) (REV00) [c][!] [no comment]
-	&BurnDrvMDzany01,			// Zany Golf (UE) (REV01)) [no comment]
+	&BurnDrvMDg_yogibe,			// Yogi Bear's Cartoon Capers (Europe) [no comment, NOT WORKING]
 #endif
-	&BurnDrvZedblade,			// Zed Blade\0Operation Ragnarok
+	&BurnDrvYoujyudn,			// Youjyuden (Japan)
 #if defined FBA_DEBUG
-	&BurnDrvMDztkse,			// Zero the Kamikaze Squirrel (E) [!] [no comment]
-	&BurnDrvMDztks,				// Zero the Kamikaze Squirrel (U) [!] [no comment]
-	&BurnDrvMDg_0tol,			// Zero Tolerance (UE) [!] [No sound in-game]
+	&BurnDrvMDg_yindyh,			// Young Indiana Jones - Instrument of Chaos (Prototype - Dec 28, 1993) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindyb,			// Young Indiana Jones - Instrument of Chaos (Prototype - Dec 28, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindya,			// Young Indiana Jones - Instrument of Chaos (Prototype - Dec 29, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindyc,			// Young Indiana Jones - Instrument of Chaos (Prototype - Jan 01, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindyd,			// Young Indiana Jones - Instrument of Chaos (Prototype - Jan 03, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindye,			// Young Indiana Jones - Instrument of Chaos (Prototype - Jan 26, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindyf,			// Young Indiana Jones - Instrument of Chaos (Prototype - Jan 27, 1994) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindyg,			// Young Indiana Jones - Instrument of Chaos (Prototype - Sep 23, 1994 - A) [no comment, NOT WORKING]
+	&BurnDrvMDg_yindy,			// Young Indiana Jones Chronicles, The (USA) (Proto) [no comment, NOT WORKING]
 #endif
+	&BurnDrvMDg_yswand,			// Ys - Wanderers from Ys (Japan)
+	&BurnDrvMDg_ysiiiu,			// Ys III (USA)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_yuusf,			// Yuu Yuu Hakusho - Makyou Toitsusen (Japan) [Gfx and Sound Problems]
+	&BurnDrvMDg_yuusfb,			// Yuu Yuu Hakusho - Sunset Fighters (Brazil) [no comment, NOT WORKING]
+	&BurnDrvMDg_yuugai,			// Yuu Yuu Hakusho Gaiden (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvYuyugogo,			// Yuuyu no Quiz de GO!GO! (Japan)
+	&BurnDrvMDg_zanyas,			// Zan Yasha Enbukyoku (Japan)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_zanyg1,			// Zany Golf (USA, Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zanygo,			// Zany Golf (USA, Europe) (v1.1) [no comment, NOT WORKING]
+#endif
+	&BurnDrvzedblade,			// Zed Blade / Operation Ragnarok
+	&BurnDrvZeropnt,			// Zero Point (set 1)
+	&BurnDrvZeropnta,			// Zero Point (set 2)
+	&BurnDrvZeropnt2,			// Zero Point 2
+#if defined FBA_DEBUG
+	&BurnDrvMDg_zeroth,			// Zero the Kamikaze Squirrel (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zerot1,			// Zero the Kamikaze Squirrel (USA) [no comment, NOT WORKING]
+#endif
+	&BurnDrvZerotime,			// Zero Time
+	&BurnDrvMDg_zeroto,			// Zero Tolerance (USA, Europe)
 	&BurnDrvZerowing,			// Zero Wing
 	&BurnDrvZerowng2,			// Zero Wing (2 player simultaneous ver.)
 #if defined FBA_DEBUG
-	&BurnDrvMDzwin,				// Zero Wing (E) [c][!] [no comment]
-	&BurnDrvMDzwingj,			// Zero Wing (J) [no comment]
+	&BurnDrvMDg_zerowi,			// Zero Wing (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zerow1,			// Zero Wing (Japan) [no comment, NOT WORKING]
 #endif
+	&BurnDrvZerozone,			// Zero Zone
 	&BurnDrvDrgw2c,				// Zhong Guo Long II (V100C, China)
-	&BurnDrvzintrckb,			// Zintrick (hack / bootleg)\0Oshidashi Zentri
+#if defined FBA_DEBUG
+	&BurnDrvMDg_zhuogu,			// Zhuo Gui Da Shi - Ghost Hunter (China) (Unl) [no comment, NOT WORKING]
+#endif
+	&BurnDrvZigzag,				// Zig Zag (Galaxian hardware, set 1)
+	&BurnDrvZigzag2,			// Zig Zag (Galaxian hardware, set 2)
+	&BurnDrvZingzip,			// Zing Zing Zip
+	&BurnDrvzintrckb,			// Zintrick / Oshidashi Zentrix (hack / bootleg)
+	&BurnDrvzintrkcd,			// Zintrick / Oshidashi Zentrix (Neo CD conversion)
 #if defined FBA_DEBUG
 	&BurnDrvZipzap,				// Zip & Zap [Imperfect GFXs, No Sound]
-	&BurnDrvMDzombhb,			// Zombie High (U) (Prototype) [no comment]
-	&BurnDrvMDzombe,			// Zombies (E) [!] [no comment]
-	&BurnDrvMDzomb,				// Zombies Ate My Neighbors (U) [c][!] [no comment]
-	&BurnDrvMDzoole,			// Zool (E) [!] [no comment]
-	&BurnDrvMDzool,				// Zool (U) [!] [no comment]
-	&BurnDrvMDzoom,				// Zoom! (JU) [!] [no comment]
-	&BurnDrvMDzoope,			// Zoop (E) [!] [no comment]
-	&BurnDrvMDzoop,				// Zoop (U) [!] [no comment]
-	&BurnDrvMDzouzou,			// Zou! Zou! Zou! Rescue Daisenryaku (J) [!] [no comment]
+	&BurnDrvMDg_zhs,			// Zombie High (USA) (Proto) [no comment, NOT WORKING]
 #endif
-	&BurnDrvZupapa,				// Zupapa!
+	&BurnDrvZombraid,			// Zombie Raid (US)
+#if defined FBA_DEBUG
+	&BurnDrvMDg_zomb,			// Zombies (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zombu,			// Zombies Ate My Neighbors (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_zool,			// Zool - Ninja of the 'Nth' Dimension (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zoolu,			// Zool - Ninja of the 'Nth' Dimension (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_zoom,			// Zoom! (World) [no comment, NOT WORKING]
+	&BurnDrvMDg_zoop,			// Zoop (Europe) [no comment, NOT WORKING]
+	&BurnDrvMDg_zoopus,			// Zoop (USA) [no comment, NOT WORKING]
+	&BurnDrvMDg_zouzou,			// Zou! Zou! Zou! Rescue Daisakusen (Japan) [no comment, NOT WORKING]
+#endif
+	&BurnDrvzupapa,				// Zupapa!
+//	&BurnDrvzupapan,			// Zupapa! (decrypted C) [no comment]
 	&BurnDrvzzyzzyxx,			// Zzyzzyxx (set 1)
 	&BurnDrvzzyzzyx2,			// Zzyzzyxx (set 2)
 };

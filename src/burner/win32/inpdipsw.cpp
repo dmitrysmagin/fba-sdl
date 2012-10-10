@@ -237,6 +237,10 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (!kNetGame && bAutoPause) {
 			bRunPause = 1;
 		}
+		
+		WndInMid(hDlg, hScrnWnd);
+		SetFocus(hDlg);											// Enable Esc=close
+		
 		return TRUE;
 	}
 
@@ -350,15 +354,7 @@ int InpDIPSWCreate()
 
 	bOK = false;
 
-	DestroyWindow(hInpDIPSWDlg);							// Make sure exitted
-
-	hInpDIPSWDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, DialogProc);
-	if (hInpDIPSWDlg == NULL) {
-		return 1;
-	}
-
-	WndInMid(hInpDIPSWDlg, hScrnWnd);
-	ShowWindow(hInpDIPSWDlg, SW_NORMAL);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, DialogProc);
 
 	return 0;
 }

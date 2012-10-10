@@ -37,8 +37,8 @@ static struct BurnRomInfo truxtonRomDesc[] = {
 	{ "b65_13.bpr",   0x000020, 0xa1e17492, BRF_SND },			 // 12 ???
 };
 
-STD_ROM_PICK(truxton);
-STD_ROM_FN(truxton);
+STD_ROM_PICK(truxton)
+STD_ROM_FN(truxton)
 
 static struct BurnInputInfo truxtonInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -68,7 +68,7 @@ static struct BurnInputInfo truxtonInputList[] = {
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
 };
 
-STDINPUTINFO(truxton);
+STDINPUTINFO(truxton)
 
 static struct BurnDIPInfo truxtonDIPList[] = {
 	// Defaults
@@ -145,7 +145,7 @@ static struct BurnDIPInfo truxtonDIPList[] = {
     {0x14,	0x01, 0x07,	0x06, "World/Taito America"},
 };
 
-STDDIPINFO(truxton);
+STDDIPINFO(truxton)
 
 static int __fastcall DrvResetCallback()
 {
@@ -538,7 +538,7 @@ static int DrvInit()
 	ToaPalInit();
 
 	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
-	BurnTimerAttachZet(28000000 / 8);
+	BurnTimerAttachZetYM3812(28000000 / 8);
 
 	bDrawScreen = true;
 
@@ -564,7 +564,7 @@ static int DrvExit()
 
 static int DrvDraw()
 {
-	ToaClearScreen();
+	ToaClearScreen(0);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -654,7 +654,7 @@ static int DrvFrame()
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
-	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
@@ -671,11 +671,11 @@ static int DrvFrame()
 }
 
 struct BurnDriver BurnDrvTruxton = {
-	"truxton", NULL, NULL, "1988",
+	"truxton", NULL, NULL, NULL, "1988",
 	"Truxton\0Tatsujin\0", NULL, "[Toaplan] Taito Corporation", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING,
-	NULL, truxtonRomInfo, truxtonRomName, truxtonInputInfo, truxtonDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, truxtonRomInfo, truxtonRomName, NULL, NULL, truxtonInputInfo, truxtonDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &ToaRecalcPalette, 0x400,
 	240, 320, 3, 4
 };

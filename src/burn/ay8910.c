@@ -700,6 +700,20 @@ int AY8910InitYM(int chip, int clock, int sample_rate,
 	return val;
 }
 
+// Useful for YM2203, etc games needing read/write ports
+int AY8910SetPorts(int chip, read8_handler portAread, read8_handler portBread,
+		write8_handler portAwrite, write8_handler portBwrite)
+{
+	struct AY8910 *PSG = &AYPSG[chip];
+
+	PSG->PortAread = portAread;
+	PSG->PortBread = portBread;
+	PSG->PortAwrite = portAwrite;
+	PSG->PortBwrite = portBwrite;
+
+	return 0;
+}
+
 int AY8910Scan(int nAction, int* pnMin)
 {
 	struct BurnArea ba;

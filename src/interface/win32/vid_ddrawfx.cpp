@@ -3,6 +3,9 @@
 // #include "vid_directx_support.h"
 #include "vid_softfx.h"
 
+#include <InitGuid.h>
+#define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
+
 static IDirectDraw7* BlitFXDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* BlitFXPrim = NULL;		// Primary surface
 static IDirectDrawSurface7* BlitFXBack = NULL;		// Back buffer surface
@@ -27,6 +30,7 @@ static int PrimClear()
 	if (BlitFXBack == NULL) {
 		return 0;
 	}
+
 	VidSClearSurface(BlitFXBack, 0, NULL);			// Clear 2nd page
 	BlitFXPrim->Flip(NULL, DDFLIP_WAIT);			// wait till the flip actually occurs
 	VidSClearSurface(BlitFXBack, 0, NULL);			// Clear 3rd page
@@ -69,9 +73,9 @@ static int BlitFXMakeSurf()
 
 	nDirectAccess = 0;
 	if (nUseSys == 0 && nUseBlitter != 0) {
-		nDirectAccess = (nVidBlitterOpt[nVidSelect] >> 9) & 1 ^ 1;
+		nDirectAccess = ((nVidBlitterOpt[nVidSelect] >> 9) & 1) ^ 1;
 	}
-
+	
 	pddsBlitFX[0] = NULL;
 	pddsBlitFX[1] = NULL;
 
@@ -187,10 +191,10 @@ static int BlitFXInit()
 	RECT rect = { 0, 0, 0, 0 };
 	GetClientScreenRect(hVidWnd, &rect);
 	if (!nVidFullscreen) {
-		rect.top += nMenuHeight;
+		rect.top += 0 /*nMenuHeight*/;
 	}
 
-	if (nUseBlitter >= 7 && nUseBlitter <= 9) {
+	if (nUseBlitter >= FILTER_SUPEREAGLE && nUseBlitter <= FILTER_SUPER_2XSAI) {
 		nVidImageDepth = 16;								// Use 565 format
 	} else {
 		nVidImageDepth = VidSGetSurfaceDepth(BlitFXPrim);	// Use color depth of primary surface
@@ -242,7 +246,7 @@ static int Init()
 		return 1;
 	}
 
-	hVidWnd = hScrnWnd;								// Use Screen window for video
+	hVidWnd = nVidFullscreen ? hScrnWnd : hVideoWindow;								// Use Screen window for video
 
 	nUseBlitter = nVidBlitterOpt[nVidSelect] & 0xFF;
 
@@ -329,7 +333,7 @@ static int Init()
 
 	// Initialize the buffer surfaces
 	BlitFXInit();
-
+	
 	if (VidSoftFXInit(nUseBlitter, nRotateGame)) {
 		if (VidSoftFXInit(0, nRotateGame)) {
 			Exit();
@@ -454,7 +458,7 @@ static int Paint(int bValidate)
 
 	GetClientScreenRect(hVidWnd, &Dest);
 	if (!nVidFullscreen) {
-		Dest.top += nMenuHeight;
+		Dest.top += 0 /*nMenuHeight*/;
 	}
 
 	if (bVidArcaderes && nVidFullscreen) {
@@ -482,6 +486,8 @@ static int Paint(int bValidate)
 	// Display OSD text message
 	VidSDisplayOSD(pddsBlitFX[nUseSys], &rect, 0);
 
+	if (bVidVSync && !nVidFullscreen) { BlitFXDD->WaitForVerticalBlank(DDWAITVB_BLOCKEND, NULL); }
+
 	if (BlitFXBack != NULL) {
 		// Triple bufferring
 		if (BlitFXBack->Blt(&Dest, pddsBlitFX[nUseSys], NULL, DDBLT_WAIT, NULL) < 0) {
@@ -494,6 +500,22 @@ static int Paint(int bValidate)
 			return 1;
 		}
 	}
+
+	
+
+/*
+	DWORD lpdwScanLine;	
+	RECT window;
+	GetWindowRect(hVidWnd, &window);
+
+	while(1) {
+		BlitFXDD->GetScanLine(&lpdwScanLine);
+		if (lpdwScanLine >= (unsigned int)window.bottom) {
+			break;
+		}
+		//Sleep(1);
+	}
+*/
 
 	if (bValidate & 1) {
 		// Validate the rectangle we just drew
@@ -516,8 +538,8 @@ static int GetSettings(InterfaceInfo* pInfo)
 	} else {
 		IntInfoAddStringModule(pInfo, _T("Using Blt() to transfer the image"));
 	}
-
-	_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nUseBlitter), nSize);
+	
+	_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%ix zoom)"), VidSoftFXGetEffect(nUseBlitter), nSize);
 	IntInfoAddStringModule(pInfo, szString);
 
 	if (nUseSys) {

@@ -1,8 +1,6 @@
 // FB Alpha Bank Panic Driver Module
 // Based on MAME driver by Nicola Salmoria
 
-// Missing emulation of 3x sn76496 at 2578000hz
-
 #include "tiles_generic.h"
 #include "sn76496.h"
 
@@ -35,7 +33,7 @@ static struct BurnInputInfo bankpInputList[] = {
 	{"Dip 1"        , BIT_DIPSWITCH, &DrvDips,      "dip"      },
 };
 
-STDINPUTINFO(bankp);
+STDINPUTINFO(bankp)
 
 static struct BurnInputInfo combhInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
@@ -61,7 +59,7 @@ static struct BurnInputInfo combhInputList[] = {
 
 };
 
-STDINPUTINFO(combh);
+STDINPUTINFO(combh)
 
 static struct BurnDIPInfo bankpDIPList[]=
 {
@@ -99,7 +97,7 @@ static struct BurnDIPInfo bankpDIPList[]=
 	{0x10, 0x01, 0x80, 0x00, "Cocktail"    		  },
 };
 
-STDDIPINFO(bankp);
+STDDIPINFO(bankp)
 
 static struct BurnDIPInfo combhDIPList[]=
 {
@@ -133,7 +131,7 @@ static struct BurnDIPInfo combhDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "90 Units"    		  },
 };
 
-STDDIPINFO(combh);
+STDDIPINFO(combh)
 
 unsigned char __fastcall bankp_in(unsigned short address)
 {
@@ -372,7 +370,7 @@ static int DrvExit()
 }
 
 
-static inline void bankp_plot_pixel(int x, int y, int color, unsigned char src, int transp)
+static void bankp_plot_pixel(int x, int y, int color, unsigned char src, int transp)
 {
 	if (x > 223 || x < 0 || y > 223 || y < 0) return;
 
@@ -549,7 +547,7 @@ static struct BurnRomInfo bankpRomDesc[] = {
 	{ "epr-6168.5h",       0x2000, 0x05f3a867, 3 | BRF_GRA },	       // 10
 	{ "epr-6167.5i",       0x2000, 0x3fa337e1, 3 | BRF_GRA },	       // 11
 
-	{ "pr-6177.8a",        0x0020, 0xeb70c5ae, 4 | BRF_GRA },	       // 12 Palette
+	{ "pr-6177.8a",        0x0020, 0xeb70c5ae, 4 | BRF_GRA },	       // 12 (unsigned int*)Palette
 	{ "pr-6178.6f",        0x0100, 0x0acca001, 4 | BRF_GRA },	       // 13 Charset #1 lut
 	{ "pr-6179.5a",        0x0100, 0xe53bafdb, 4 | BRF_GRA },	       // 14 Charset #2 lut
 
@@ -557,17 +555,17 @@ static struct BurnRomInfo bankpRomDesc[] = {
 	{ "315-5073.pal16l4",  0x0001, 0x00000000, 0 | BRF_OPT | BRF_NODUMP }, // 16 read protected
 };
 
-STD_ROM_PICK(bankp);
-STD_ROM_FN(bankp);
+STD_ROM_PICK(bankp)
+STD_ROM_FN(bankp)
 
 struct BurnDriver BurnDrvbankp = {
-	"bankp", NULL, NULL, "1984",
-	"Bank Panic\0", "No Sound", "[Sanritsu] Sega", "Misc",
+	"bankp", NULL, NULL, NULL, "1984",
+	"Bank Panic\0", NULL, "[Sanritsu] Sega", "Misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
-	NULL, bankpRomInfo, bankpRomName, bankpInputInfo, bankpDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	224, 224, 3, 4
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, bankpRomInfo, bankpRomName, NULL, NULL, bankpInputInfo, bankpDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x100,
+	224, 224, 4, 3
 };
 
 // Combat Hawk
@@ -588,7 +586,7 @@ static struct BurnRomInfo combhRomDesc[] = {
 	{ "epr-10911.5h",      0x2000, 0x565d9e6d, 3 | BRF_GRA },	       // 10
 	{ "epr-10912.5i",      0x2000, 0xcbe22738, 3 | BRF_GRA },	       // 11
 
-	{ "pr-10900.8a",       0x0020, 0xf95fcd66, 4 | BRF_GRA },	       // 12 Palette
+	{ "pr-10900.8a",       0x0020, 0xf95fcd66, 4 | BRF_GRA },	       // 12 (unsigned int*)Palette
 	{ "pr-10901.6f",       0x0100, 0x6fd981c8, 4 | BRF_GRA },	       // 13 Charset #1 lut
 	{ "pr-10902.5a",       0x0100, 0x84d6bded, 4 | BRF_GRA },	       // 14 Charset #2 lut
 
@@ -596,16 +594,16 @@ static struct BurnRomInfo combhRomDesc[] = {
 	{ "315-5073.pal16l4",  0x0001, 0x00000000, 0 | BRF_OPT | BRF_NODUMP }, // 16 read protected
 };
 
-STD_ROM_PICK(combh);
-STD_ROM_FN(combh);
+STD_ROM_PICK(combh)
+STD_ROM_FN(combh)
 
 struct BurnDriver BurnDrvcombh = {
-	"combh", NULL, NULL, "1987",
-	"Combat Hawk\0", "No Sound", "Sega / Sanritsu", "Misc",
+	"combh", NULL, NULL, NULL, "1987",
+	"Combat Hawk\0", NULL, "Sega / Sanritsu", "Misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, combhRomInfo, combhRomName, combhInputInfo, combhDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, combhRomInfo, combhRomName, NULL, NULL, combhInputInfo, combhDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, NULL, 0x100,
 	224, 224, 3, 4
 };
 

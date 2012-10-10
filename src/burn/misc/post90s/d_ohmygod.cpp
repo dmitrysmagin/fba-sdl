@@ -57,7 +57,7 @@ static struct BurnInputInfo OhmygodInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH, OhmygodDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Ohmygod);
+STDINPUTINFO(Ohmygod)
 
 inline void OhmygodClearOpposites(unsigned short* nJoystickInputs)
 {
@@ -156,7 +156,7 @@ static struct BurnDIPInfo OhmygodDIPList[]=
 	{0x12, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Ohmygod);
+STDDIPINFO(Ohmygod)
 
 static struct BurnDIPInfo NanameDIPList[]=
 {
@@ -229,7 +229,7 @@ static struct BurnDIPInfo NanameDIPList[]=
 	{0x12, 0x01, 0x80, 0x00, "On"                     },
 };
 
-STDDIPINFO(Naname);
+STDDIPINFO(Naname)
 
 static struct BurnRomInfo OhmygodRomDesc[] = {
 	{ "omg-p.114",    0x080000, 0x48fa40ca, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -241,8 +241,8 @@ static struct BurnRomInfo OhmygodRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ohmygod);
-STD_ROM_FN(Ohmygod);
+STD_ROM_PICK(Ohmygod)
+STD_ROM_FN(Ohmygod)
 
 static struct BurnRomInfo NanameRomDesc[] = {
 	{ "036-prg.114",  0x080000, 0x3b7362f7, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -254,8 +254,8 @@ static struct BurnRomInfo NanameRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Naname);
-STD_ROM_FN(Naname);
+STD_ROM_PICK(Naname)
+STD_ROM_FN(Naname)
 
 int OhmygodDoReset()
 {
@@ -676,21 +676,21 @@ static int OhmygodScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvOhmygod = {
-	"ohmygod", NULL, NULL, "1993",
+	"ohmygod", NULL, NULL, NULL, "1993",
 	"Oh My God!\0", NULL, "Atlus", "Miscellaneous",
 	L"Oh my God! (Japan)\0Oh my god! \u30AA\u30FC\u30DE\u30A4\u30AC\u30A1\u30FC\uFF01\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, OhmygodRomInfo, OhmygodRomName, OhmygodInputInfo, OhmygodDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, OhmygodRomInfo, OhmygodRomName, NULL, NULL, OhmygodInputInfo, OhmygodDIPInfo,
 	OhmygodInit, OhmygodExit, OhmygodFrame, NULL, OhmygodScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };
 
 struct BurnDriverD BurnDrvNaname = {
-	"naname", NULL, NULL, "1994",
+	"naname", NULL, NULL, NULL, "1994",
 	"Naname de Magic!\0", NULL, "Atlus", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, NanameRomInfo, NanameRomName, OhmygodInputInfo, NanameDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, NanameRomInfo, NanameRomName, NULL, NULL, OhmygodInputInfo, NanameDIPInfo,
 	OhmygodInit, OhmygodExit, OhmygodFrame, NULL, OhmygodScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x800, 320, 240, 4, 3
 };

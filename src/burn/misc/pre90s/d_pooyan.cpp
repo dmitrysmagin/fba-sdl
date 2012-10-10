@@ -23,98 +23,114 @@ static unsigned char soundlatch;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 Start"  ,    BIT_DIGITAL  , DrvJoy1 + 3,	"p1 start" },
-	{"P1 Up"      ,   BIT_DIGITAL  , DrvJoy2 + 2, 	"p1 up"    },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p1 down", },
+	{"P1 Start"     , BIT_DIGITAL  , DrvJoy1 + 3,	"p1 start" },
+	{"P1 Up"        , BIT_DIGITAL  , DrvJoy2 + 2, "p1 up"    },
+	{"P1 Down"      ,	BIT_DIGITAL  , DrvJoy2 + 3, "p1 down"  },
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 4,	"p1 fire 1"},
 
 	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy1 + 1,	"p2 coin"  },
-	{"P2 Start"  ,    BIT_DIGITAL  , DrvJoy1 + 4,	"p2 start" },
-	{"P2 Up"      ,   BIT_DIGITAL  , DrvJoy3 + 2, 	"p2 up"    },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy3 + 3,   "p2 down", },
+	{"P2 Start"     , BIT_DIGITAL  , DrvJoy1 + 4,	"p2 start" },
+	{"P2 Up"        , BIT_DIGITAL  , DrvJoy3 + 2, "p2 up"    },
+	{"P2 Down"      ,	BIT_DIGITAL  , DrvJoy3 + 3, "p2 down"  },
 	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 fire 1"},
 
-	{"Service",	  BIT_DIGITAL  , DrvJoy1 + 2,	"diag"    },
+	{"Service"      ,	BIT_DIGITAL  , DrvJoy1 + 2,	"service"  },
 
-	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
-	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
-	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
+	{"Reset"        ,	BIT_DIGITAL  , &DrvReset  ,	"reset"    },
+	{"Dip 1"        ,	BIT_DIPSWITCH, DrvDips + 0,	"dip"	     },
+	{"Dip 2"        ,	BIT_DIPSWITCH, DrvDips + 1,	"dip"	     },
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
 	// Default Values
-	{0x0c, 0xff, 0xff, 0xff, NULL                     },
+	{0x0c, 0xff, 0xff, 0xff, NULL },
 
-	{0   , 0xfe, 0   , 16   ,"Coin A"                 },
-	{0x0c, 0x01, 0x0f, 0x02, "4C 1C"    		  },
-	{0x0c, 0x01, 0x0f, 0x05, "3C 1C"    		  },
-	{0x0c, 0x01, 0x0f, 0x08, "2C 1C"    		  },
-	{0x0c, 0x01, 0x0f, 0x04, "3C 2C"    		  },
-	{0x0c, 0x01, 0x0f, 0x01, "4C 3C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0f, "1C 1C"    		  },
-	{0x0c, 0x01, 0x0f, 0x03, "3C 4C"    		  },
-	{0x0c, 0x01, 0x0f, 0x07, "2C 3C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0e, "1C 2C"    		  },
-	{0x0c, 0x01, 0x0f, 0x06, "2C 5C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0d, "1C 3C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0c, "1C 4C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0b, "1C 5C"    		  },
-	{0x0c, 0x01, 0x0f, 0x0a, "1C 6C"    		  },
-	{0x0c, 0x01, 0x0f, 0x09, "1C 7C"    		  },
+	{0   , 0xfe, 0   , 16  , "Coin A" },
+	{0x0c, 0x01, 0x0f, 0x02, "4 Coins 1 Credit"  },
+	{0x0c, 0x01, 0x0f, 0x05, "3 Coins 1 Credit"  },
+	{0x0c, 0x01, 0x0f, 0x08, "2 Coins 1 Credit"  },
+	{0x0c, 0x01, 0x0f, 0x04, "3 Coins 2 Credits" },
+	{0x0c, 0x01, 0x0f, 0x01, "4 Coins 3 Credits" },
+	{0x0c, 0x01, 0x0f, 0x0f, "1 Coin 1 Credit"   },
+	{0x0c, 0x01, 0x0f, 0x03, "3 Coins 4 Credits" },
+	{0x0c, 0x01, 0x0f, 0x07, "2 Coins 3 Credits" },
+	{0x0c, 0x01, 0x0f, 0x0e, "1 Coin 2 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x06, "2 Coins 5 Credits" },
+	{0x0c, 0x01, 0x0f, 0x0d, "1 Coin 3 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x0c, "1 Coin 4 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x0b, "1 Coin 5 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x0a, "1 Coin 6 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x09, "1 Coin 7 Credits"  },
+	{0x0c, 0x01, 0x0f, 0x00, "Free Play"   	     },
 
-	{0   , 0xfe, 0   , 16  , "Coin B"    		  },
-	{0x0c, 0x01, 0xf0, 0x20, "4C 1C"    		  },
-	{0x0c, 0x01, 0xf0, 0x50, "3C 1C"    		  },
-	{0x0c, 0x01, 0xf0, 0x80, "2C 1C"    		  },
-	{0x0c, 0x01, 0xf0, 0x40, "3C 2C"    		  },
-	{0x0c, 0x01, 0xf0, 0x10, "4C 3C"    		  },
-	{0x0c, 0x01, 0xf0, 0xf0, "1C 1C"    		  },
-	{0x0c, 0x01, 0xf0, 0x30, "3C 4C"    		  },
-	{0x0c, 0x01, 0xf0, 0x70, "2C 3C"    		  },
-	{0x0c, 0x01, 0xf0, 0xe0, "1C 2C"    		  },
-	{0x0c, 0x01, 0xf0, 0x60, "2C 5C"    		  },
-	{0x0c, 0x01, 0xf0, 0xd0, "1C 3C"    		  },
-	{0x0c, 0x01, 0xf0, 0xc0, "1C 4C"    		  },
-	{0x0c, 0x01, 0xf0, 0xb0, "1C 5C"    		  },
-	{0x0c, 0x01, 0xf0, 0xa0, "1C 6C"    		  },
-	{0x0c, 0x01, 0xf0, 0x90, "1C 7C"    		  },
+	{0   , 0xfe, 0   , 15  , "Coin B" },
+	{0x0c, 0x82, 0xf0, 0x20, "4 Coins 1 Credit"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x50, "3 Coins 1 Credit"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x80, "2 Coins 1 Credit"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x40, "3 Coins 2 Credits" },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x10, "4 Coins 3 Credits" },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xf0, "1 Coin 1 Credit"   },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x30, "3 Coins 4 Credits" },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x70, "2 Coins 3 Credits" },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xe0, "1 Coin 2 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x60, "2 Coins 5 Credits" },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xd0, "1 Coin 3 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xc0, "1 Coin 4 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xb0, "1 Coin 5 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0xa0, "1 Coin 6 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
+	{0x0c, 0x82, 0xf0, 0x90, "1 Coin 7 Credits"  },
+	{0x0c, 0x00, 0x0f, 0x00, NULL },
 
 	// Default Values
-	{0x0d, 0xff, 0xff, 0xff, NULL                     },
+	{0x0d, 0xff, 0xff, 0x7b, NULL },
 
-	{0   , 0xfe, 0   , 4   , "Lives"                  },
-	{0x0d, 0x01, 0x03, 0x03, "3"             	  },
-	{0x0d, 0x01, 0x03, 0x02, "4"       		  },
-	{0x0d, 0x01, 0x03, 0x01, "5"             	  },
-	{0x0d, 0x01, 0x03, 0x00, "256"       		  },
+	{0   , 0xfe, 0   , 4   , "Lives" },
+	{0x0d, 0x01, 0x03, 0x03, "3"   },
+	{0x0d, 0x01, 0x03, 0x02, "4"   },
+	{0x0d, 0x01, 0x03, 0x01, "5"   },
+	{0x0d, 0x01, 0x03, 0x00, "256" },
 
-	{0   , 0xfe, 0   , 2   , "Cabinet"                },
-	{0x0d, 0x01, 0x04, 0x00, "Upright"     		  },
-	{0x0d, 0x01, 0x04, 0x04, "Cocktail"    		  },
+	{0   , 0xfe, 0   , 2   , "Cabinet" },
+	{0x0d, 0x01, 0x04, 0x00, "Upright"  },
+	{0x0d, 0x01, 0x04, 0x04, "Cocktail" },
 
-	{0   , 0xfe, 0   , 2   , "Bonus Life"	          },
-	{0x0d, 0x01, 0x08, 0x08, "50K 80K+"    		  },
-	{0x0d, 0x01, 0x08, 0x00, "30K 70K+"		  },
+	{0   , 0xfe, 0   , 2   , "Bonus Life"	},
+	{0x0d, 0x01, 0x08, 0x08, "50K 80K+" },
+	{0x0d, 0x01, 0x08, 0x00, "30K 70K+"	},
 
-	{0   , 0xfe, 0   , 8   , "Difficulty"             },
-	{0x0d, 0x01, 0x70, 0x70, "1 (Easy)"    		  },
-	{0x0d, 0x01, 0x70, 0x60, "2"    		  },
-	{0x0d, 0x01, 0x70, 0x50, "3"    		  },
-	{0x0d, 0x01, 0x70, 0x40, "4"    		  },
-	{0x0d, 0x01, 0x70, 0x30, "5"    		  },
-	{0x0d, 0x01, 0x70, 0x20, "6"    		  },
-	{0x0d, 0x01, 0x70, 0x10, "7"    		  },
-	{0x0d, 0x01, 0x70, 0x00, "8 (Hard)"    		  },
+	{0   , 0xfe, 0   , 8   , "Difficulty" },
+	{0x0d, 0x01, 0x70, 0x70, "1 (Easy)" },
+	{0x0d, 0x01, 0x70, 0x60, "2"    		},
+	{0x0d, 0x01, 0x70, 0x50, "3"    		},
+	{0x0d, 0x01, 0x70, 0x40, "4"    		},
+	{0x0d, 0x01, 0x70, 0x30, "5"    		},
+	{0x0d, 0x01, 0x70, 0x20, "6"    		},
+	{0x0d, 0x01, 0x70, 0x10, "7"    		},
+	{0x0d, 0x01, 0x70, 0x00, "8 (Hard)" },
 
-	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
-	{0x0d, 0x01, 0x80, 0x80, "Off"     		  },
-	{0x0d, 0x01, 0x80, 0x00, "On"    		  },
+	{0   , 0xfe, 0   , 2   , "Demo Sounds" },
+	{0x0d, 0x01, 0x80, 0x80, "Off" },
+	{0x0d, 0x01, 0x80, 0x00, "On"  },
 };
 
-STDDIPINFO(Drv);
+STDDIPINFO(Drv)
 
 unsigned char __fastcall pooyan_cpu0_read(unsigned short address)
 {
@@ -675,16 +691,16 @@ static struct BurnRomInfo pooyanRomDesc[] = {
 	{ "pooyan.pr2",   0x0100, 0x82748c0b, 5 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(pooyan);
-STD_ROM_FN(pooyan);
+STD_ROM_PICK(pooyan)
+STD_ROM_FN(pooyan)
 
-struct BurnDriver BurnDrvpooyan = {
-	"pooyan", NULL, NULL, "1982",
-	"Pooyan\0", NULL, "Konami", "misc",
+struct BurnDriver BurnDrvPooyan = {
+	"pooyan", NULL, NULL, NULL, "1982",
+	"Pooyan\0", NULL, "Konami", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, pooyanRomInfo, pooyanRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPalette,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, pooyanRomInfo, pooyanRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPalette, 0x200,
 	224, 256, 3, 4
 };
 
@@ -711,16 +727,16 @@ static struct BurnRomInfo pooyansRomDesc[] = {
 	{ "pooyan.pr2",   0x0100, 0x82748c0b, 5 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(pooyans);
-STD_ROM_FN(pooyans);
+STD_ROM_PICK(pooyans)
+STD_ROM_FN(pooyans)
 
-struct BurnDriver BurnDrvpooyans = {
-	"pooyans", "pooyan", NULL, "1982",
-	"Pooyan (Stern)\0", NULL, "[Konami] (Stern license)", "misc",
+struct BurnDriver BurnDrvPooyans = {
+	"pooyans", "pooyan", NULL, NULL, "1982",
+	"Pooyan (Stern)\0", NULL, "[Konami] (Stern license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, pooyansRomInfo, pooyansRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, pooyansRomInfo, pooyansRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPalette, 0x200,
 	224, 256, 3, 4
 };
 
@@ -747,16 +763,16 @@ static struct BurnRomInfo pootanRomDesc[] = {
 	{ "pooyan.pr2",   0x0100, 0x82748c0b, 5 | BRF_GRA },	       // 12
 };
 
-STD_ROM_PICK(pootan);
-STD_ROM_FN(pootan);
+STD_ROM_PICK(pootan)
+STD_ROM_FN(pootan)
 
-struct BurnDriver BurnDrvpootan = {
-	"pootan", "pooyan", NULL, "1982",
-	"Pootan\0", NULL, "bootleg", "misc",
+struct BurnDriver BurnDrvPootan = {
+	"pootan", "pooyan", NULL, NULL, "1982",
+	"Pootan\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S,
-	NULL, pootanRomInfo, pootanRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, pootanRomInfo, pootanRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvRecalcPalette, 0x200,
 	224, 256, 3, 4
 };
 

@@ -82,12 +82,15 @@ static BOOL CALLBACK DialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
   {
 	  hSFactdlg=hDlg;
 	  SFactdInit();
+	  SFactdUpdate();
+	  WndInMid(hDlg, hScrnWnd);
       SetFocus(hDlg); // Enable Esc=close
 	  return 0;
   }
   if (Msg==WM_CLOSE)
   {
-	  DestroyWindow(hSFactdlg);
+	  //DestroyWindow(hSFactdlg);
+	  EndDialog(hDlg, 0);
 	  return 0;
   }
   if (Msg==WM_DESTROY) { SFactdExit(); return 0; }
@@ -188,10 +191,11 @@ int SFactdCreate()
 	bOldPause = bRunPause;
 	bRunPause = 1;
 	AudBlankSound();
-	hSFactdlg=FBACreateDialog(hAppInst,MAKEINTRESOURCE(IDD_CAPTURE),hScrnWnd,DialogProc);
-	if (hSFactdlg==NULL) return 1;
-	WndInMid(hSFactdlg,hScrnWnd);
-	ShowWindow(hSFactdlg,SW_NORMAL);
-	SFactdUpdate();
+//	hSFactdlg=FBACreateDialog(hAppInst,MAKEINTRESOURCE(IDD_CAPTURE),hScrnWnd,DialogProc);
+//	if (hSFactdlg==NULL) return 1;
+//	WndInMid(hSFactdlg,hScrnWnd);
+//	ShowWindow(hSFactdlg,SW_NORMAL);
+//	SFactdUpdate();
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CAPTURE), hScrnWnd, DialogProc);
 	return 0;
 }

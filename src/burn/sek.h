@@ -5,7 +5,10 @@
  #define __fastcall
 #endif
 
-#define EMU_A68K								// Use A68K Assembler 68000 emulator
+#if defined BUILD_A68K
+ #define EMU_A68K								// Use A68K Assembler 68000 emulator
+#endif
+
 #define EMU_M68K								// Use Musashi 68000 emulator
 
 #define SEK_MAX	(4)								// Maximum number of CPUs supported
@@ -51,7 +54,6 @@
 
  extern "C" unsigned char* OP_ROM;
  extern "C" unsigned char* OP_RAM;
- extern "C" int m68k_ICount;
 
  void __fastcall AsekChangePc(unsigned int pc);
 #endif
@@ -59,6 +61,7 @@
 #ifdef EMU_M68K
  extern "C" int nSekM68KContextSize[SEK_MAX];
  extern "C" char* SekM68KContext[SEK_MAX];
+ extern "C" int m68k_ICount;
 #endif
 
 typedef unsigned char (__fastcall *pSekReadByteHandler)(unsigned int a);
@@ -128,6 +131,7 @@ void SekSetCyclesScanline(int nCycles);
 
 void SekClose();
 void SekOpen(const int i);
+int SekGetActive();
 
 #define SEK_IRQSTATUS_NONE (0x0000)
 #define SEK_IRQSTATUS_AUTO (0x2000)
@@ -149,12 +153,20 @@ inline static int SekIdle(int nCycles)
 
 inline static int SekSegmentCycles()
 {
+#ifdef EMU_M68K
 	return nSekCyclesDone + nSekCyclesToDo - m68k_ICount;
+#else
+	return nSekCyclesDone + nSekCyclesToDo;
+#endif
 }
 
 inline static int SekTotalCycles()
 {
+#ifdef EMU_M68K
 	return nSekCyclesTotal + nSekCyclesToDo - m68k_ICount;
+#else
+	return nSekCyclesTotal + nSekCyclesToDo;
+#endif
 }
 
 inline static int SekCurrentScanline()

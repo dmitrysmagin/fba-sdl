@@ -12,8 +12,6 @@ static int nActiveCPU = 0;	// which m6502 cpu is active?
 static struct M6502 m6502_active_cpu_regs[MAX_CPU];
 static struct M6502 *m6502_regs = &m6502_active_cpu_regs[0];
 
-#define nTotalCycles	m6502_regs->nTotalCycles
-
 void m6502Reset()
 {
 	Reset6502(m6502_regs);
@@ -26,6 +24,9 @@ void m6502Init(int num)
 
 	memset (m6502_active_cpu_regs, 0, sizeof(M6502) * MAX_CPU);
 
+	for (int i = 0; i < num; i++) {
+		CpuCheatRegister(0x0003, i);
+	}
 }
 
 void m6502Exit()
@@ -46,6 +47,11 @@ void m6502Close()
 {
 	m6502_regs = NULL;
 	nActiveCPU = -1;
+}
+
+int m6502GetActive()
+{
+	return nActiveCPU;
 }
 
 void m6502SetIRQ(int vector)
@@ -175,6 +181,20 @@ void m6502_set_reg(int reg, int data)
 	}
 }
 
+int m6502TotalCycles()
+{
+	return (int)m6502_regs->nTotalCycles;
+}
+
+void m6502NewFrame()
+{
+	struct M6502 *tregs;
+
+	for (int i = 0; i < MAX_CPU; i++) {
+		tregs = &m6502_active_cpu_regs[i];
+		tregs->nTotalCycles = 0;
+	}
+}
 
 int m6502Scan(int nAction)
 {
@@ -192,7 +212,7 @@ int m6502Scan(int nAction)
 		SCAN_VAR(m6502_regs->P);
 		SCAN_VAR(m6502_regs->S);
 		SCAN_VAR(m6502_regs->PC);
-		SCAN_VAR(nTotalCycles);
+		SCAN_VAR(m6502_regs->nTotalCycles);
 	}
 	
 	return 0;
@@ -215,6 +235,25 @@ unsigned char Rd6502(unsigned short address)
 
 	return 0;
 }
+
+// data
+unsigned char OpArg6502(unsigned short address)
+{
+	unsigned char * pr = m6502_regs->MemMap[ address >> 8 ];
+
+	// check memory map
+	if (pr != NULL) {
+		return pr[ address & 0xff ];
+	}
+
+	// check read handler
+	if (m6502_regs->m6502_read != NULL) {
+		return m6502_regs->m6502_read(address);
+	}
+
+	return 0;
+}
+
 
 // opcodes
 unsigned char Op6502(unsigned short address)
@@ -258,4 +297,85 @@ byte Patch6502(register byte Op,register M6502 */*R*/)
 	bprintf(PRINT_NORMAL, _T("Patch6502: %x:\n"),Op);
 
 	return 0;
+}
+
+// data
+unsigned char m6502_read_byte(unsigned short address)
+{
+	unsigned char * pr = m6502_regs->MemMap[ address >> 8 ];
+
+	// check memory map
+	if (pr != NULL) {
+		return pr[ address & 0xff ];
+	}
+
+	// check read handler
+	if (m6502_regs->m6502_read != NULL) {
+		return m6502_regs->m6502_read(address);
+	}
+
+	return 0;
+}
+
+// opcodes
+unsigned char m6502_fetch_byte(unsigned short address)
+{
+	unsigned char * pr = m6502_regs->MemMap[0x200 | (address >> 8) ];
+
+	// check memory map
+	if (pr != NULL) {
+		return pr[ address & 0xff ];
+	}
+
+	// check fetch handler
+	if (m6502_regs->m6502_fetch != NULL) {
+		return m6502_regs->m6502_fetch(address);
+	}
+
+	// check read handler
+	return m6502_read_byte(address);
+}
+
+// write
+void m6502_write_byte(unsigned short address, unsigned char data)
+{
+	unsigned char * pr = m6502_regs->MemMap[0x100 | (address >> 8) ];
+
+	// check memory map
+	if (pr != NULL) {
+		pr[ address & 0xff ] = data;
+		return;
+	}
+
+	// check write handler
+	if (m6502_regs->m6502_write != NULL) {
+		m6502_regs->m6502_write(address, data);
+		return;
+	}
+}
+
+void m6502_write_rom(unsigned short address, unsigned char data)
+{
+	unsigned char * pr = m6502_regs->MemMap[0x000 | (address >> 8) ];
+	unsigned char * pw = m6502_regs->MemMap[0x100 | (address >> 8) ];
+	unsigned char * pf = m6502_regs->MemMap[0x200 | (address >> 8) ];
+
+	// check memory map
+	if (pr != NULL) {
+		pr[ address & 0xff ] = data;
+	}
+
+	if (pw != NULL) {
+		pw[ address & 0xff ] = data;
+	}
+
+	if (pf != NULL) {
+		pf[ address & 0xff ] = data;
+	}
+
+	// check write handler
+	if (m6502_regs->m6502_write != NULL) {
+		m6502_regs->m6502_write(address, data);
+		return;
+	}
 }

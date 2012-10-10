@@ -133,6 +133,7 @@ word Run6502(register M6502 *R);
 void Wr6502(register word Addr,register byte Value);
 byte Rd6502(register word Addr);
 byte Op6502(register word Addr);
+byte OpArg6502(register word Addr);
 
 /** Debug6502() **********************************************/
 /** This function should exist if DEBUG is #defined. When   **/

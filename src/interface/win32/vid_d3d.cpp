@@ -4,6 +4,7 @@
 
 #include "burner.h"
 // #include "vid_directx_support.h"
+#include <InitGuid.h>
 #include "vid_softfx.h"
 
 // #define ENABLE_PROFILING FBA_DEBUG
@@ -994,7 +995,7 @@ static int vidAllocSurfaces()
 	nPreScaleTextureHeight = GetTextureSize(nGameImageHeight * nPreScaleZoom);
 
 	// 2xSaI etc. needs an extra line below the image
-	if (nPreScaleEffect >= 4 && nPreScaleEffect <= 6 && nGameImageHeight == nTextureHeight) {
+	if (nPreScaleEffect >= FILTER_SUPEREAGLE && nPreScaleEffect <= FILTER_SUPER_2XSAI && nGameImageHeight == nTextureHeight) {
 		nTextureHeight <<= 1;
 	}
 
@@ -1048,6 +1049,8 @@ static int vidClear()
 		return 1;
 	}
 
+	//if(bVidVSync && !nVidFullscreen) { pDD->WaitForVerticalBlank(DDWAITVB_BLOCKEND, NULL); }
+
 	if (nVidFullscreen) {
 		VidSClearSurface(pPrimarySurf, 0, NULL);			// Clear front buffer
 		if (bUsePageflip) {
@@ -1087,9 +1090,9 @@ static int vidInitBuffers(bool bTriple)
 			ddcaps.dwSize = sizeof(ddcaps);
 
 			pDD->GetCaps(&ddcaps, NULL);
-			if (ddcaps.dwCaps2 & DDCAPS2_FLIPNOVSYNC) {
+			//if (ddcaps.dwCaps2 & DDCAPS2_FLIPNOVSYNC) {
 				bUsePageflip = true;
-			}
+			//}
 		}
 	}
 
@@ -1100,14 +1103,10 @@ static int vidInitBuffers(bool bTriple)
 		// Allocate a complex surface that supports page flipping.
 		ddsd.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
 		ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
-		if (bTriple) {
-			ddsd.dwBackBufferCount = 2;
-		} else {
-			ddsd.dwBackBufferCount = 1;
-		}
+		ddsd.dwBackBufferCount = bVidTripleBuffer ? 2 : 1;
 	} else {
 		ddsd.dwFlags = DDSD_CAPS;
-		ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_VIDEOMEMORY;
+		ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_VIDEOMEMORY | DDSCAPS_3DDEVICE;
 	}
 
 	if (FAILED(pDD->CreateSurface(&ddsd, &pPrimarySurf, NULL))) {
@@ -1150,8 +1149,10 @@ static int vidInitBuffers(bool bTriple)
 }
 
 static GUID MyGuid;
-static int nWantDriver, nCurrentDriver;
+static int nWantDriver;
 
+#if 1 && defined(PRINT_DEBUG_INFO)
+static int nCurrentDriver;
 #ifdef UNICODE
 static BOOL PASCAL MyEnumDisplayDrivers(GUID FAR* pGuid, LPWSTR pszDesc, LPWSTR /*pszName*/, LPVOID /*pContext*/, HMONITOR hMonitor)
 #else
@@ -1181,13 +1182,16 @@ static BOOL PASCAL MyEnumDisplayDrivers(GUID FAR* pGuid, LPSTR pszDesc, LPSTR /*
 
 	return DDENUMRET_OK;
 }
+#endif
 
+#if 0
 static HRESULT CALLBACK MyEnumDevicesCallback(LPSTR lpDeviceDescription, LPSTR /*lpDeviceName*/, LPD3DDEVICEDESC7, LPVOID)
 {
 	dprintf(_T("    %s\n"), lpDeviceDescription);
 
 	return DDENUMRET_OK;
 }
+#endif
 
 static int vidInit()
 {
@@ -1199,7 +1203,7 @@ static int vidInit()
 
 	bUseTriplebuffer = false;
 
-	hVidWnd = hScrnWnd;								// Use Screen window for video
+	hVidWnd = nVidFullscreen ? hScrnWnd : hVideoWindow;								// Use Screen window for video
 
 	nWantDriver = 0;
 #if 1 && defined(PRINT_DEBUG_INFO)
@@ -1260,7 +1264,7 @@ static int vidInit()
 		nPreScale = 3;
 
 		if (nVidBlitterOpt[nVidSelect] & 0x02000000) {
-			nPreScaleEffect = (unsigned int)nVidBlitterOpt[nVidSelect] >> 28;
+			nPreScaleEffect = (unsigned long long)(nVidBlitterOpt[nVidSelect] >> 32);
 			nPreScaleZoom = VidSoftFXGetZoom(nPreScaleEffect);
 		} else {
 			if (bVidScanlines) {
@@ -1368,7 +1372,7 @@ static int vidInit()
 
 			GetClientScreenRect(hVidWnd, &rect);
 			if (!nVidFullscreen) {
-				rect.top += nMenuHeight;
+				rect.top += 0 /*nMenuHeight*/;
 			}
 			VidImageSize(&rect, nGameWidth, nGameHeight);
 
@@ -1701,7 +1705,7 @@ static int vidRenderImageA()
 	GetClientScreenRect(hVidWnd, &Dest);
 
 	if (nVidFullscreen == 0) {
-		Dest.top += nMenuHeight;
+		Dest.top += 0 /*nMenuHeight*/;
 	}
 
 	if (bVidArcaderes && nVidFullscreen) {
@@ -2277,7 +2281,7 @@ int vidPaint(int bValidate)
 
 	if (!bUsePageflip) {
 		GetClientScreenRect(hVidWnd, &rect);
-		rect.top += nMenuHeight;
+		rect.top += 0 /*nMenuHeight*/;
 
 		vidScale(&rect, nGameWidth, nGameHeight);
 
@@ -2294,6 +2298,8 @@ int vidPaint(int bValidate)
 	// Display OSD text message
 	VidSDisplayOSD(pBackbuffer, &Render, 0);
 
+	if(bVidVSync && !nVidFullscreen) { pDD->WaitForVerticalBlank(DDWAITVB_BLOCKEND, NULL); }
+
 	// Display final image
 	if (bUsePageflip) {
 		if (bUseTriplebuffer) {
@@ -2306,6 +2312,7 @@ int vidPaint(int bValidate)
 			}
 		}
 	} else {
+
 		if (nVidFullscreen) {
 			if (FAILED(pPrimarySurf->BltFast(Dest.left, Dest.top, pBackbuffer, &Dest, DDBLTFAST_WAIT))) {
 				return 1;
@@ -2318,6 +2325,8 @@ int vidPaint(int bValidate)
 					return 1;
 				}
 			}
+			//if(bVidVSync && !nVidFullscreen) { pDD->WaitForVerticalBlank(DDWAITVB_BLOCKEND, NULL); }
+			
 		}
 
 		if (bValidate & 1) {
@@ -2353,9 +2362,9 @@ static int vidGetSettings(InterfaceInfo* pInfo)
 		TCHAR szString[MAX_PATH] = _T("");
 
 		if (nPreScaleEffect) {
-			_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
+			_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%ix zoom)"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
 		} else {
-			_sntprintf(szString, MAX_PATH, _T("Prescaling using 3D hardware (%i× zoom)"), nPreScaleZoom);
+			_sntprintf(szString, MAX_PATH, _T("Prescaling using 3D hardware (%ix zoom)"), nPreScaleZoom);
 		}
 		IntInfoAddStringModule(pInfo, szString);
 	}

@@ -1,8 +1,20 @@
 // Burner Config file module
 #include "burner.h"
+
+#ifdef _UNICODE
+ #include <locale.h>
+#endif
+
 int nIniVersion = 0;
 
 struct VidPresetData VidPreset[4] = {
+	{ 400, 300},
+	{ 640, 480},
+	{ 1024, 768},
+	{ 1280, 960},
+};
+
+struct VidPresetDataVer VidPresetVer[4] = {
 	{ 400, 300},
 	{ 640, 480},
 	{ 1024, 768},
@@ -21,6 +33,10 @@ int ConfigAppLoad()
 	TCHAR szConfig[MAX_PATH];
 	TCHAR szLine[1024];
 	FILE* h;
+	
+#ifdef _UNICODE
+	setlocale(LC_ALL, "");
+#endif
 
 	CreateConfigName(szConfig);
 
@@ -40,6 +56,8 @@ int ConfigAppLoad()
 
 #define VAR(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x));			\
   if (szValue) x = _tcstol(szValue, NULL, 0); }
+#define VAR64(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x));			\
+  if (szValue) x = (long long)_tcstod(szValue, NULL); }
 #define FLT(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x));			\
   if (szValue) x = _tcstod(szValue, NULL); }
 #define STR(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x) _T(" "));	\
@@ -51,14 +69,27 @@ int ConfigAppLoad()
 		VAR(bBurnUseASMCPUEmulation);
 
 		// Video
-		VAR(nVidWidth); VAR(nVidHeight); VAR(nVidDepth); VAR(nVidRefresh);
-		VAR(bVidArcaderes);
+		VAR(nVidDepth); VAR(nVidRefresh);
 		VAR(nVidRotationAdjust);
+
+		// horizontal oriented
+		VAR(nVidHorWidth); VAR(nVidHorHeight);
+		VAR(bVidArcaderesHor);
 		VAR(VidPreset[0].nWidth); VAR(VidPreset[0].nHeight);
 		VAR(VidPreset[1].nWidth); VAR(VidPreset[1].nHeight);
 		VAR(VidPreset[2].nWidth); VAR(VidPreset[2].nHeight);
 		VAR(VidPreset[3].nWidth); VAR(VidPreset[3].nHeight);
-		VAR(nScreenSize);
+		VAR(nScreenSizeHor);
+
+		// vertical oriented
+		VAR(nVidVerWidth); VAR(nVidVerHeight);
+		VAR(bVidArcaderesVer);
+		VAR(VidPresetVer[0].nWidth); VAR(VidPresetVer[0].nHeight);
+		VAR(VidPresetVer[1].nWidth); VAR(VidPresetVer[1].nHeight);
+		VAR(VidPresetVer[2].nWidth); VAR(VidPresetVer[2].nHeight);
+		VAR(VidPresetVer[3].nWidth); VAR(VidPresetVer[3].nHeight);
+		VAR(nScreenSizeVer);
+
 		VAR(nWindowSize);
 		VAR(nWindowPosX); VAR(nWindowPosY);
 		VAR(bDoGamma);
@@ -67,12 +98,16 @@ int ConfigAppLoad()
 		FLT(nGamma);
 		VAR(bVidFullStretch);
 		VAR(bVidCorrectAspect);
+		
+		VAR(bVidAutoSwitchFull);
 
 		VAR(bVidTripleBuffer);
 		VAR(bVidVSync);
+		VAR(bVidDWMCore);
 
 		VAR(bVidScanlines);
 		VAR(nVidScanIntensity);
+		VAR(bMonitorAutoCheck);
 		VAR(nVidScrnAspectX);
 		VAR(nVidScrnAspectY);
 		VAR(bForce60Hz);
@@ -83,7 +118,7 @@ int ConfigAppLoad()
 
 		VAR(nVidSelect);
 		VAR(nVidBlitterOpt[0]);
-		VAR(nVidBlitterOpt[1]);
+		VAR64(nVidBlitterOpt[1]);
 		VAR(nVidBlitterOpt[2]);
 		VAR(nVidBlitterOpt[3]);
 
@@ -107,14 +142,18 @@ int ConfigAppLoad()
 		FLT(dVidCubicC);
 
 		// Sound
-		VAR(nAudSampleRate);
+		VAR(nAudSelect);
 		VAR(nAudSegCount);
-		VAR(nAudDSPModule);
 		VAR(nInterpolation);
 		VAR(nFMInterpolation);
+		VAR(nAudSampleRate[0]);
+		VAR(nAudDSPModule[0]);
+		VAR(nAudSampleRate[1]);
+		VAR(nAudDSPModule[1]);
 
 		// Other
 		STR(szLocalisationTemplate);
+		STR(szGamelistLocalisationTemplate);
 
 		VAR(nVidSDisplayStatus);
 		VAR(nMinChatFontSize);
@@ -131,6 +170,9 @@ int ConfigAppLoad()
 		VAR(bSaveInputs);
 
 		VAR(nLoadMenuShowX);
+		VAR(nLoadMenuBoardTypeFilter);
+		VAR(nLoadMenuGenreFilter);
+		VAR(nLoadMenuFamilyFilter);
 
 		STR(szAppRomPaths[0]);
 		STR(szAppRomPaths[1]);
@@ -140,6 +182,53 @@ int ConfigAppLoad()
 		STR(szAppRomPaths[5]);
 		STR(szAppRomPaths[6]);
 		STR(szAppRomPaths[7]);
+		
+		STR(szAppPreviewsPath);
+		STR(szAppTitlesPath);
+		STR(szAppSelectPath);
+		STR(szAppVersusPath);
+		STR(szAppHowtoPath);
+		STR(szAppScoresPath);
+		STR(szAppBossesPath);
+		STR(szAppGameoverPath);
+		STR(szAppFlyersPath);
+		STR(szAppMarqueesPath);
+		STR(szAppControlsPath);
+		STR(szAppCabinetsPath);
+		STR(szAppPCBsPath);
+		STR(szAppCheatsPath);
+		STR(szAppHistoryPath);
+		STR(szAppListsPath);
+		STR(szAppDatListsPath);
+		STR(szAppIpsPath);
+		STR(szAppIconsPath);
+		STR(szAppArchivesPath);
+		STR(szAppHiscorePath);
+		STR(szAppSamplesPath);
+
+		VAR(nMenuUITheme);
+		
+		VAR(bNoChangeNumLock);
+		
+		VAR(bSaveCRoms);
+		
+		VAR(EnableHiscores);
+		
+		VAR(nSelectedLanguage);
+
+		VAR(bEnableIcons);
+		VAR(nIconsSize);
+
+		STR(szPrevGames[0]);
+		STR(szPrevGames[1]);
+		STR(szPrevGames[2]);
+		STR(szPrevGames[3]);
+		STR(szPrevGames[4]);
+		STR(szPrevGames[5]);
+		STR(szPrevGames[6]);
+		STR(szPrevGames[7]);
+		STR(szPrevGames[8]);
+		STR(szPrevGames[9]);
 
 		// Default Controls
 		VAR(nPlayerDefaultControls[0]);
@@ -154,6 +243,7 @@ int ConfigAppLoad()
 #undef STR
 #undef FLT
 #undef VAR
+#undef VAR64
 	}
 
 	fclose(h);
@@ -169,6 +259,10 @@ int ConfigAppSave()
 	if (bCmdOptUsed) {
 		return 1;
 	}
+	
+#ifdef _UNICODE
+	setlocale(LC_ALL, "");
+#endif
 
 	CreateConfigName(szConfig);
 
@@ -182,6 +276,7 @@ int ConfigAppSave()
 	_ftprintf(h, _T("// ") _T(APP_TITLE) _T(" will restore default settings when this file is deleted\n"));
 
 #define VAR(x) _ftprintf(h, _T(#x) _T(" %d\n"),  x)
+#define VAR64(x) _ftprintf(h, _T(#x) _T(" %lf\n"),  (float)x)
 #define FLT(x) _ftprintf(h, _T(#x) _T(" %lf\n"), x)
 #define STR(x) _ftprintf(h, _T(#x) _T(" %s\n"),  x)
 
@@ -198,21 +293,38 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- Video ------------------------------------------------------------------\n"));
 
-	_ftprintf(h, _T("\n// The display mode to use for fullscreen\n"));
-	VAR(nVidWidth); VAR(nVidHeight); VAR(nVidDepth);
-	_ftprintf(h, _T("\n// Specify the refresh rate, 0 = default (changing this will not work with many video cards)\n"));
-	VAR(nVidRefresh);
-	_ftprintf(h, _T("\n// If non-zero, use the same fullscreen resolution as the original arcade game\n"));
-	VAR(bVidArcaderes);
-	_ftprintf(h, _T("\n// If non-zero, do not rotate the graphics for vertical games\n"));
-	VAR(nVidRotationAdjust);
-	_ftprintf(h, _T("\n// The preset resolutions appearing in the menu\n"));
+	// Horizontal oriented
+	_ftprintf(h, _T("\n// (Horizontal Oriented) The display mode to use for fullscreen\n"));
+	VAR(nVidHorWidth); VAR(nVidHorHeight);	
+	_ftprintf(h, _T("\n// (Horizontal Oriented) If non-zero, use the same fullscreen resolution as the original arcade game\n"));
+	VAR(bVidArcaderesHor);
+	_ftprintf(h, _T("\n// (Horizontal Oriented) The preset resolutions appearing in the menu\n"));
 	VAR(VidPreset[0].nWidth); VAR(VidPreset[0].nHeight);
 	VAR(VidPreset[1].nWidth); VAR(VidPreset[1].nHeight);
 	VAR(VidPreset[2].nWidth); VAR(VidPreset[2].nHeight);
 	VAR(VidPreset[3].nWidth); VAR(VidPreset[3].nHeight);
-	_ftprintf(h, _T("\n// Full-screen size (0 = use display mode variables)\n"));
-	VAR(nScreenSize);
+	_ftprintf(h, _T("\n// (Horizontal Oriented) Full-screen size (0 = use display mode variables)\n"));
+	VAR(nScreenSizeHor);
+
+	// Vertical oriented
+	_ftprintf(h, _T("\n// (Vertical Oriented) The display mode to use for fullscreen\n"));
+	VAR(nVidVerWidth); VAR(nVidVerHeight);
+	_ftprintf(h, _T("\n// (Vertical Oriented) If non-zero, use the same fullscreen resolution as the original arcade game\n"));
+	VAR(bVidArcaderesVer);
+	_ftprintf(h, _T("\n// (Vertical Oriented) The preset resolutions appearing in the menu\n"));
+	VAR(VidPresetVer[0].nWidth); VAR(VidPresetVer[0].nHeight);
+	VAR(VidPresetVer[1].nWidth); VAR(VidPresetVer[1].nHeight);
+	VAR(VidPresetVer[2].nWidth); VAR(VidPresetVer[2].nHeight);
+	VAR(VidPresetVer[3].nWidth); VAR(VidPresetVer[3].nHeight);
+	_ftprintf(h, _T("\n// (Vertical Oriented) Full-screen size (0 = use display mode variables)\n"));
+	VAR(nScreenSizeVer);
+
+	_ftprintf(h, _T("\n// Full-screen bit depth\n"));
+	VAR(nVidDepth);
+	_ftprintf(h, _T("\n// Specify the refresh rate, 0 = default (changing this will not work with many video cards)\n"));
+	VAR(nVidRefresh);
+	_ftprintf(h, _T("\n// If non-zero, do not rotate the graphics for vertical games\n"));
+	VAR(nVidRotationAdjust);
 	_ftprintf(h, _T("\n// Initial window size (0 = autosize)\n"));
 	VAR(nWindowSize);
 	_ftprintf(h, _T("\n// Window position\n"));
@@ -225,6 +337,8 @@ int ConfigAppSave()
 	VAR(bHardwareGammaOnly);
 	_ftprintf(h, _T("\n// Gamma to correct with\n"));
 	FLT(nGamma);
+	_ftprintf(h, _T("\n// If non-zero, auto-switch to fullscreen after loading game\n"));
+	VAR(bVidAutoSwitchFull);
 	_ftprintf(h, _T("\n// If non-zero, allow stretching of the image to any size\n"));
 	VAR(bVidFullStretch);
 	_ftprintf(h, _T("\n// If non-zero, stretch the image to the largest size preserving aspect ratio\n"));
@@ -233,6 +347,8 @@ int ConfigAppSave()
 	VAR(bVidTripleBuffer);
 	_ftprintf(h, _T("\n// If non-zero, try to synchronise blits with the display\n"));
 	VAR(bVidVSync);
+	_ftprintf(h, _T("\n// If non-zero, try to enable custom DWM parameters on Windows 7, this fixes frame stuttering problems.\n"));
+	VAR(bVidDWMCore);
 	_ftprintf(h, _T("\n// Transfer method:  0 = blit from system memory / use driver/DirectX texture management;\n"));
 	_ftprintf(h, _T("//                   1 = copy to a video memory surface, then use bltfast();\n"));
 	_ftprintf(h, _T("//                  -1 = autodetect for DirectDraw, equals 1 for Direct3D\n"));
@@ -247,9 +363,11 @@ int ConfigAppSave()
 	VAR(nVidSelect);
 	_ftprintf(h, _T("\n// Options for the blitter modules\n"));
 	VAR(nVidBlitterOpt[0]);
-	VAR(nVidBlitterOpt[1]);
+	VAR64(nVidBlitterOpt[1]);
 	VAR(nVidBlitterOpt[2]);
 	VAR(nVidBlitterOpt[3]);
+	_ftprintf(h, _T("\n// If non-zero, attempt to auto-detect the monitor aspect ratio\n"));
+	VAR(bMonitorAutoCheck);
 	_ftprintf(h, _T("\n// The aspect ratio of the monitor\n"));
 	VAR(nVidScrnAspectX);
 	VAR(nVidScrnAspectY);
@@ -293,23 +411,35 @@ int ConfigAppSave()
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- Sound ------------------------------------------------------------------\n"));
-
-	_ftprintf(h, _T("\n// Sample rate\n"));
-	VAR(nAudSampleRate);
+	_ftprintf(h, _T("\n// The selected audio plugin\n"));
+	VAR(nAudSelect);
 	_ftprintf(h, _T("\n// Number of frames in sound buffer (= sound lag)\n"));
 	VAR(nAudSegCount);
-	_ftprintf(h, _T("\n// DSP module to use for sound enhancement: 0 = none, 1 = low-pass filter\n"));
-	VAR(nAudDSPModule);
 	_ftprintf(h, _T("\n// The order of PCM/ADPCM interpolation\n"));
 	VAR(nInterpolation);
 	_ftprintf(h, _T("\n// The order of FM interpolation\n"));
 	VAR(nFMInterpolation);
+	_ftprintf(h, _T("\n"));
+	_ftprintf(h, _T("// --- DirectSound plugin settings --------------------------------------------\n"));
+	_ftprintf(h, _T("\n// Sample rate\n"));
+	VAR(nAudSampleRate[0]);
+	_ftprintf(h, _T("\n// DSP module to use for sound enhancement: 0 = none, 1 = low-pass filter\n"));
+	VAR(nAudDSPModule[0]);
+	_ftprintf(h, _T("\n"));
+	_ftprintf(h, _T("// --- XAudio2 plugin settings ------------------------------------------------\n"));
+	_ftprintf(h, _T("\n// Sample rate\n"));
+	VAR(nAudSampleRate[1]);
+	_ftprintf(h, _T("\n// DSP module to use for sound enhancement: 0 = none, 1 = low-pass filter, 2 = reverb\n"));
+	VAR(nAudDSPModule[1]);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- UI ---------------------------------------------------------------------\n"));
 
 	_ftprintf(h, _T("\n// Filename of the active UI translation template\n"));
 	STR(szLocalisationTemplate);
+	
+	_ftprintf(h, _T("\n// Filename of the active game list translation template\n"));
+	STR(szGamelistLocalisationTemplate);
 
 	_ftprintf(h, _T("\n// 1 = display pause/record/replay/kaillera icons in the upper right corner of the display\n"));
 	VAR(nVidSDisplayStatus);
@@ -338,6 +468,15 @@ int ConfigAppSave()
 	_ftprintf(h, _T("// --- Load Game Dialog -------------------------------------------------------\n"));
 	_ftprintf(h, _T("\n// Load game dialog options\n"));
 	VAR(nLoadMenuShowX);
+	
+	_ftprintf(h, _T("\n// Load game dialog board type filter options\n"));
+	VAR(nLoadMenuBoardTypeFilter);
+	
+	_ftprintf(h, _T("\n// Load game dialog genre filter options\n"));
+	VAR(nLoadMenuGenreFilter);
+	
+	_ftprintf(h, _T("\n// Load game dialog family filter options\n"));
+	VAR(nLoadMenuFamilyFilter);
 
 	_ftprintf(h, _T("\n// The paths to search for rom zips (include trailing backslash)\n"));
 	STR(szAppRomPaths[0]);
@@ -348,10 +487,67 @@ int ConfigAppSave()
 	STR(szAppRomPaths[5]);
 	STR(szAppRomPaths[6]);
 	STR(szAppRomPaths[7]);
+	
+	_ftprintf(h, _T("\n// The paths to search for support files (include trailing backslash)\n"));
+	STR(szAppPreviewsPath);
+	STR(szAppTitlesPath);
+	STR(szAppSelectPath);
+	STR(szAppVersusPath);
+	STR(szAppHowtoPath);
+	STR(szAppScoresPath);
+	STR(szAppBossesPath);
+	STR(szAppGameoverPath);
+	STR(szAppFlyersPath);
+	STR(szAppMarqueesPath);
+	STR(szAppControlsPath);
+	STR(szAppCabinetsPath);
+	STR(szAppPCBsPath);
+	STR(szAppCheatsPath);
+	STR(szAppHistoryPath);
+	STR(szAppListsPath);
+	STR(szAppDatListsPath);
+	STR(szAppIpsPath);
+	STR(szAppIconsPath);
+	STR(szAppArchivesPath);
+	STR(szAppHiscorePath);
+	STR(szAppSamplesPath);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- miscellaneous ---------------------------------------------------------\n"));
 
+	_ftprintf(h, _T("\n// If non-zero, use an image menu theme.\n"));
+	VAR(nMenuUITheme);
+	
+	_ftprintf(h, _T("\n// If non-zero, don't change the status of the Num Lock key.\n"));
+	VAR(bNoChangeNumLock);
+	
+	_ftprintf(h, _T("\n// If non-zero, write the decrypted Neo-Geo 'C' roms to disc.\n"));
+	VAR(bSaveCRoms);
+	
+	_ftprintf(h, _T("\n// If non-zero, enable high score saving support.\n"));
+	VAR(EnableHiscores);
+	
+	_ftprintf(h, _T("\n// The language index to use for the IPS Patch Manager dialog.\n"));
+	VAR(nSelectedLanguage);
+
+	_ftprintf(h, _T("\n// If non-zero, display drivers icons.\n"));
+	VAR(bEnableIcons);
+
+	_ftprintf(h, _T("\n// Specify icons display size, 0 = 16x16 , 1 = 24x24, 2 = 32x32.\n"));
+	VAR(nIconsSize);
+
+	_ftprintf(h, _T("\n// Previous games list.\n"));
+	STR(szPrevGames[0]);
+	STR(szPrevGames[1]);
+	STR(szPrevGames[2]);
+	STR(szPrevGames[3]);
+	STR(szPrevGames[4]);
+	STR(szPrevGames[5]);
+	STR(szPrevGames[6]);
+	STR(szPrevGames[7]);
+	STR(szPrevGames[8]);
+	STR(szPrevGames[9]);
+	
 	_ftprintf(h, _T("\n// Player default controls, number is the index of the configuration in the input dialog\n"));
 	VAR(nPlayerDefaultControls[0]);
 	STR(szPlayerDefaultIni[0]);

@@ -10,10 +10,6 @@
 #include "tchar.h"
 #include "burn.h"
 
-#ifndef MAX_PATH
- #define MAX_PATH (260)
-#endif
-
 // ---------------------------------------------------------------------------
 // CPU emulation interfaces
 
@@ -23,6 +19,13 @@
 // zet.cpp
 #include "zet.h"
 
+typedef union
+{
+	struct { UINT8 l,h,h2,h3; } b;
+	struct { UINT16 l,h; } w;
+	UINT32 d;
+} PAIR;
+
 // ---------------------------------------------------------------------------
 // Driver information
 
@@ -30,6 +33,7 @@ struct BurnDriver {
 	char* szShortName;			// The filename of the zip file (without extension)
 	char* szParent;				// The filename of the parent (without extension, NULL if not applicable)
 	char* szBoardROM;			// The filename of the board ROMs (without extension, NULL if not applicable)
+	char* szSampleName;			// The filename of the samples zip file (without extension, NULL if not applicable)
 	char* szDate;
 
 	// szFullNameA, szCommentA, szManufacturerA and szSystemA should always contain valid info
@@ -40,13 +44,18 @@ struct BurnDriver {
 	int flags;			// See burn.h
 	int players;		// Max number of players a game supports (so we can remove single player games from netplay)
 	int hardware;		// Which type of hardware the game runs on
+	int genre;
+	int family;
 	int (*GetZipName)(char** pszName, unsigned int i);				// Function to get possible zip names
 	int (*GetRomInfo)(struct BurnRomInfo* pri,unsigned int i);		// Function to get the length and crc of each rom
 	int (*GetRomName)(char** pszName, unsigned int i, int nAka);	// Function to get the possible names for each rom
+	int (*GetSampleInfo)(struct BurnSampleInfo* pri,unsigned int i);		// Function to get the sample flags
+	int (*GetSampleName)(char** pszName, unsigned int i, int nAka);	// Function to get the possible names for each sample
 	int (*GetInputInfo)(struct BurnInputInfo* pii, unsigned int i);	// Function to get the input info for the game
 	int (*GetDIPInfo)(struct BurnDIPInfo* pdi, unsigned int i);		// Function to get the input info for the game
 	int (*Init)(); int (*Exit)(); int (*Frame)(); int (*Redraw)(); int (*AreaScan)(int nAction, int* pnMin);
-	unsigned char* pRecalcPal;										// Set to 1 if the palette needs to be fully re-calculated
+	int JukeboxFlags; int (*JukeboxInit)(); int (*JukeboxExit)(); int (*JukeboxFrame)();
+	unsigned char* pRecalcPal; unsigned int nPaletteEntries;										// Set to 1 if the palette needs to be fully re-calculated
 	int nWidth, nHeight; int nXAspect, nYAspect;					// Screen width, height, x/y aspect
 };
 
@@ -95,3 +104,14 @@ inline static void PutPix(UINT8* pPix, UINT32 c)
 		}
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Setting up cpus for cheats
+
+void CpuCheatRegister(int type, int num);
+
+// burn_memory.cpp
+void BurnInitMemoryManager();
+unsigned char *BurnMalloc(int size);
+void BurnFree(void *ptr);
+void BurnExitMemoryManager();

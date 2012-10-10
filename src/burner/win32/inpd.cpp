@@ -582,6 +582,44 @@ static int InitAnalogOptions(int nGi, int nPci)
 	return 0;
 }
 
+static void SaveHardwarePreset()
+{
+	TCHAR *szDefaultCpsFile = _T("config\\presets\\cps.ini");
+	TCHAR *szDefaultNeogeoFile = _T("config\\presets\\neogeo.ini");
+	TCHAR *szDefaultPgmFile = _T("config\\presets\\pgm.ini");
+	TCHAR *szFileName = _T("config\\presets\\preset.ini");
+	TCHAR *szHardwareString = _T("Generic hardware");
+	
+	int nHardwareFlag = (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK);
+
+	if (nHardwareFlag == HARDWARE_CAPCOM_CPS1 || nHardwareFlag == HARDWARE_CAPCOM_CPS1_QSOUND || nHardwareFlag == HARDWARE_CAPCOM_CPS1_GENERIC || nHardwareFlag == HARDWARE_CAPCOM_CPSCHANGER || nHardwareFlag == HARDWARE_CAPCOM_CPS2 || nHardwareFlag == HARDWARE_CAPCOM_CPS3) {
+		szFileName = szDefaultCpsFile;
+		szHardwareString = _T("CPS-1/CPS-2/CPS-3 hardware");
+	}
+	
+	if (nHardwareFlag == HARDWARE_SNK_NEOGEO) {
+		szFileName = szDefaultNeogeoFile;
+		szHardwareString = _T("Neo-Geo hardware");
+	}
+	
+	if (nHardwareFlag == HARDWARE_IGS_PGM) {
+		szFileName = szDefaultPgmFile;
+		szHardwareString = _T("PGM hardware");
+	}
+	
+	FILE *fp = _tfopen(szFileName, _T("wt"));
+	if (fp) {
+		_ftprintf(fp, _T(APP_TITLE) _T(" - Hardware Default Preset\n\n"));
+		_ftprintf(fp, _T("%s\n\n"), szHardwareString);
+		_ftprintf(fp, _T("version 0x%06X\n\n"), nBurnVer);
+		GameInpWrite(fp);
+		fclose(fp);
+	}
+	
+	FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_PRESET_SAVED), szFileName);
+	FBAPopupDisplay(PUF_TYPE_INFO);
+}
+
 int UsePreset(bool bMakeDefault)
 {
 	int nGi, nPci, nAnalog = 0;
@@ -654,7 +692,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (!kNetGame && bAutoPause) {
 			bRunPause = 1;
 		}
-
+		
 		return TRUE;
 	}
 
@@ -686,6 +724,11 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 			NewMacroButton();
 
+			return 0;
+		}
+		
+		if (Id == IDC_INPD_SAVE_AS_PRESET && Notify == BN_CLICKED) {
+			SaveHardwarePreset();
 			return 0;
 		}
 
@@ -855,6 +898,7 @@ int InpdCreate()
 
 	WndInMid(hInpdDlg, hScrnWnd);
 	ShowWindow(hInpdDlg, SW_NORMAL);
+	
 	return 0;
 }
 

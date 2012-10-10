@@ -103,7 +103,7 @@ int SetBurnHighCol(int nDepth)
 			VidHighCol = HighCol24;
 		}
 	}
-	if (bDrvOkay && !(BurnDrvGetFlags() & BDF_16BIT_ONLY) || nDepth <= 16) {
+	if ((bDrvOkay && !(BurnDrvGetFlags() & BDF_16BIT_ONLY)) || nDepth <= 16) {
 		BurnHighCol = VidHighCol;
 	}
 
@@ -127,32 +127,199 @@ char* DecorateGameName(unsigned int nBurnDrv)
 	const char* s6 = "";
 	const char* s7 = "";
 	const char* s8 = "";
+	const char* s9 = "";
+	const char* s10 = "";
+	const char* s11 = "";
+	const char* s12 = "";
+	const char* s13 = "";
+	const char* s14 = "";
 
 	s1 = BurnDrvGetTextA(DRV_FULLNAME);
-	if (BurnDrvGetFlags() & BDF_PROTOTYPE || BurnDrvGetFlags() & BDF_BOOTLEG || BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+	if ((BurnDrvGetFlags() & BDF_DEMO) || (BurnDrvGetFlags() & BDF_HACK) || (BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
 		s2 = " [";
-		if (BurnDrvGetFlags() & BDF_PROTOTYPE) {
-			s3 = "Prototype";
-			if (BurnDrvGetFlags() & BDF_BOOTLEG || BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+		if (BurnDrvGetFlags() & BDF_DEMO) {
+			s3 = "Demo";
+			if ((BurnDrvGetFlags() & BDF_HACK) || (BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
 				s4 = ", ";
 			}
 		}
-		if (BurnDrvGetFlags() & BDF_BOOTLEG) {
-			s5 = "Bootleg";
-			if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+		if (BurnDrvGetFlags() & BDF_HACK) {
+			s5 = "Hack";
+			if ((BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
 				s6 = ", ";
 			}
 		}
-		if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
-			s7 = BurnDrvGetTextA(DRV_COMMENT);
+		if (BurnDrvGetFlags() & BDF_HOMEBREW) {
+			s7 = "Homebrew";
+			if ((BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s8 = ", ";
+			}
 		}
-		s8 = "]";
+		if (BurnDrvGetFlags() & BDF_PROTOTYPE) {
+			s9 = "Prototype";
+			if ((BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s10 = ", ";
+			}
+		}		
+		if (BurnDrvGetFlags() & BDF_BOOTLEG) {
+			s11 = "Bootleg";
+			if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+				s12 = ", ";
+			}
+		}
+		if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+			s13 = BurnDrvGetTextA(DRV_COMMENT);
+		}
+		s14 = "]";
 	}
 
-	sprintf(szDecoratedName, "%s%s%s%s%s%s%s%s", s1, s2, s3, s4, s5, s6, s7, s8);
+	sprintf(szDecoratedName, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14);
 
 	nBurnDrvSelect = nOldBurnDrv;
 	return szDecoratedName;
+}
+
+TCHAR* DecorateGenreInfo()
+{
+	int nGenre = BurnDrvGetGenreFlags();
+	int nFamily = BurnDrvGetFamilyFlags();
+	
+	static TCHAR szDecoratedGenre[256];
+	TCHAR szFamily[256];
+	
+	_stprintf(szDecoratedGenre, _T(""));
+	_stprintf(szFamily, _T(""));
+	
+	if (nGenre) {
+		if (nGenre & GBF_HORSHOOT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_HORSHOOT, true));
+		}
+		
+		if (nGenre & GBF_VERSHOOT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_VERSHOOT, true));
+		}
+		
+		if (nGenre & GBF_SCRFIGHT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_SCRFIGHT, true));
+		}
+		
+		if (nGenre & GBF_VSFIGHT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_VSFIGHT, true));
+		}
+		
+		if (nGenre & GBF_BIOS) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_BIOS, true));
+		}
+		
+		if (nGenre & GBF_BREAKOUT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_BREAKOUT, true));
+		}
+		
+		if (nGenre & GBF_CASINO) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_CASINO, true));
+		}
+		
+		if (nGenre & GBF_BALLPADDLE) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_BALLPADDLE, true));
+		}
+		
+		if (nGenre & GBF_MAZE) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_MAZE, true));
+		}
+		
+		if (nGenre & GBF_MINIGAMES) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_MINIGAMES, true));
+		}
+		
+		if (nGenre & GBF_PINBALL) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_PINBALL, true));
+		}
+		
+		if (nGenre & GBF_PLATFORM) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_PLATFORM, true));
+		}
+		
+		if (nGenre & GBF_PUZZLE) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_PUZZLE, true));
+		}
+		
+		if (nGenre & GBF_QUIZ) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_QUIZ, true));
+		}
+		
+		if (nGenre & GBF_SPORTSMISC) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_SPORTSMISC, true));
+		}
+		
+		if (nGenre & GBF_SPORTSFOOTBALL) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_SPORTSFOOTBALL, true));
+		}
+		
+		if (nGenre & GBF_MISC) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_MISC, true));
+		}
+		
+		if (nGenre & GBF_MAHJONG) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_MAHJONG, true));
+		}
+		
+		if (nGenre & GBF_RACING) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_RACING, true));
+		}
+		
+		if (nGenre & GBF_SHOOT) {
+			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_SHOOT, true));
+		}
+		
+		szDecoratedGenre[_tcslen(szDecoratedGenre) - 2] = _T('\0');
+	}
+	
+	if (nFamily) {
+		_stprintf(szFamily, _T(" ("));
+		
+		if (nFamily & FBF_MSLUG) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_MSLUG, true));
+		}
+		
+		if (nFamily & FBF_SF) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_SF, true));
+		}
+		
+		if (nFamily & FBF_KOF) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_KOF, true));
+		}
+		
+		if (nFamily & FBF_DSTLK) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_DSTLK, true));
+		}
+		
+		if (nFamily & FBF_FATFURY) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_FATFURY, true));
+		}
+		
+		if (nFamily & FBF_SAMSHO) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_SAMSHO, true));
+		}
+		
+		if (nFamily & FBF_19XX) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_19XX, true));
+		}
+		
+		if (nFamily & FBF_SONICWI) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_SONICWI, true));
+		}
+		
+		if (nFamily & FBF_PWRINST) {
+			_stprintf(szFamily, _T("%s%s, "), szFamily, FBALoadStringEx(hAppInst, IDS_FAMILY_PWRINST, true));
+		}		
+		
+		szFamily[_tcslen(szFamily) - 2] = _T(')');
+		szFamily[_tcslen(szFamily) - 1] = _T('\0');
+	}
+	
+	_stprintf(szDecoratedGenre, _T("%s%s"), szDecoratedGenre, szFamily);
+	
+	return szDecoratedGenre;
 }
 
 // ---------------------------------------------------------------------------

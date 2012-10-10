@@ -1,6 +1,8 @@
-extern void DACUpdate(short* Buffer, int Length);
-extern void DACWrite(UINT8 Data);
-extern void DACInit(int Clock);
-extern void DACReset();
-extern void DACExit();
-extern int DACScan(int nAction,int *pnMin);
+void DACUpdate(short* Buffer, int Length);
+void DACWrite(UINT8 Data);
+void DACSignedWrite(UINT8 Data);
+void DACInit(int Clock, int bAdd);
+void DACSetVolShift(int nShift);
+void DACReset();
+void DACExit();
+int DACScan(int nAction,int *pnMin);

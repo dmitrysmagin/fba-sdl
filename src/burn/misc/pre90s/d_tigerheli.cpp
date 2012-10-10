@@ -1,7 +1,7 @@
 // Tiger Heli, Get Star / Guardian, & Slap Fight
 
 #include "burnint.h"
-
+#include "taito_m68705.h"
 #include "driver.h"
 extern "C" {
  #include "ay8910.h"
@@ -50,7 +50,7 @@ static struct BurnInputInfo tigerhInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	tigerhInput + 3,	"dip"},
 };
 
-STDINPUTINFO(tigerh);
+STDINPUTINFO(tigerh)
 
 static struct BurnInputInfo gtstarbaInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	tigerhInpMisc + 6,	"p1 coin"},
@@ -77,7 +77,7 @@ static struct BurnInputInfo gtstarbaInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	tigerhInput + 3,	"dip"},
 };
 
-STDINPUTINFO(gtstarba);
+STDINPUTINFO(gtstarba)
 
 static struct BurnDIPInfo tigerhDIPList[] = {
 	// Defaults
@@ -126,7 +126,7 @@ static struct BurnDIPInfo tigerhDIPList[] = {
 	{0x12,	0x01, 0x03,	0x03, "2"},
 };
 
-STDDIPINFO(tigerh);
+STDDIPINFO(tigerh)
 
 static struct BurnDIPInfo getstarDIPList[] = {
 	// Defaults
@@ -195,8 +195,8 @@ static struct BurnDIPInfo gtstarbaHeroesDIPList[] =
 	{0x12,	0x01, 0x03,	0x01, "5"},
 };
 
-STDDIPINFOEXT(getstar, getstar, getstarHeroes);
-STDDIPINFOEXT(gtstarba, getstar, gtstarbaHeroes);
+STDDIPINFOEXT(getstar, getstar, getstarHeroes)
+STDDIPINFOEXT(gtstarba, getstar, gtstarbaHeroes)
 
 static struct BurnDIPInfo slapfighDIPList[] = {
 	// Defaults
@@ -248,16 +248,16 @@ static struct BurnDIPInfo slapfighDIPList[] = {
 	{0x12,	0x01, 0x02,	0x02, "DIP-switch display"},
 };
 
-STDDIPINFO(slapfigh);
+STDDIPINFO(slapfigh)
 
 // ---------------------------------------------------------------------------
 
 static unsigned char *Mem, *MemEnd, *RamStart, *RamEnd;
 
-static unsigned char *Rom01, *Rom02;
+static unsigned char *Rom01, *Rom02, *Rom03;
 static unsigned char *TigerHeliTileROM, *TigerHeliSpriteROM, *TigerHeliTextROM;
 
-static unsigned char *Ram01, *RamShared;
+static unsigned char *Ram01, *RamShared, *Ram03;
 static unsigned char *TigerHeliTileRAM, *TigerHeliSpriteRAM, *TigerHeliSpriteBuf, *TigerHeliTextRAM;
 
 static unsigned char* TigerHeliPaletteROM;
@@ -266,11 +266,14 @@ static unsigned int* TigerHeliPalette;
 static short* pFMBuffer;
 static short* pAY8910Buffer[6];
 
+static int use_mcu = 0;
+
 static int MemIndex()
 {
 	unsigned char* Next; Next = Mem;
 	Rom01				= Next; Next += 0x012000;		// Z80 main program
 	Rom02				= Next; Next += 0x002000;		// Z80 sound program
+	Rom03				= Next; Next += 0x000800;		// m68705 mcu program
 	TigerHeliTextROM	= Next; Next += 0x010000;
 	TigerHeliSpriteROM	= Next; Next += 0x040000;
 	TigerHeliTileROM	= Next; Next += 0x040000;
@@ -281,6 +284,7 @@ static int MemIndex()
 	TigerHeliSpriteRAM	= Next; Next += 0x000800;
 	TigerHeliSpriteBuf	= Next; Next += 0x000800;
 	TigerHeliTileRAM	= Next; Next += 0x001000;
+	Ram03			= Next; Next += 0x000080;
 	RamEnd				= Next;
 	pFMBuffer			= (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
 	TigerHeliPaletteROM	= Next; Next += 0x000300;
@@ -551,11 +555,11 @@ static void TigerHeliTileRender()
 	pTileRow -= (nTigerHeliTileYPos & 7) * 280;
 
 	for (int y = 2; y < 33; y++, nTileYPos += 8, pTileRow += (280 << 3)) {
-		pTileRAM = TigerHeliTileRAM + ((y + (nTigerHeliTileYPos >> 3) << 6) & 0x07C0);
+		pTileRAM = TigerHeliTileRAM + (((y + (nTigerHeliTileYPos >> 3)) << 6) & 0x07C0);
 		pTile = pTileRow;
 		nTileXPos = nXPos;
 		for (int x = 1; x < 37; x++, nTileXPos += 8, pTile += 8) {
-			int x2 = (x + (nTigerHeliTileXPos >> 3) & 0x3F);
+			int x2 = (x + ((nTigerHeliTileXPos >> 3) & 0x3F));
 			nTileNumber = pTileRAM[x2] | (pTileRAM[0x0800 + x2] << 8);
 			nTilePalette = nTileNumber >> 12;
 			nTileNumber &= nTigerHeliTileMask;
@@ -700,15 +704,30 @@ static void TigerHeliBufferSprites()
 
 // ---------------------------------------------------------------------------
 
+
+static inline void sync_mcu()
+{
+	int cycles = (ZetTotalCycles() / 2) - m6805TotalCycles();
+	if (cycles > 0) {
+	//	bprintf (0, _T("mcu %d\n"), cycles);
+		m6805Run(cycles);
+	}
+}
+
 unsigned char __fastcall tigerhReadCPU0(unsigned short a)
 {
 	if (a >= 0xc800 && a <= 0xcfff) {
-		if (ZetPc(0) == 0x6d34) return 0xff;
+		if (ZetPc(-1) == 0x6d34) return 0xff;
 		return RamShared[a - 0xc800];
 	}
 	
 	switch (a) {
 		case 0xE803: {
+			if (use_mcu) {
+				sync_mcu();
+				return standard_taito_mcu_read();
+			}
+
 			unsigned char nProtectSequence[3] = { 0, 1, (0 + 5) ^ 0x56 };
 
 			//if (nProtectIndex == 3) {
@@ -730,6 +749,23 @@ unsigned char __fastcall tigerhReadCPU0(unsigned short a)
 	return 0;
 }
 
+unsigned char __fastcall tigerhReadCPU0_tigerhb1(unsigned short a)
+{
+	if (a >= 0xc800 && a <= 0xcfff) {
+		if (ZetPc(-1) == 0x6d34) return 0xff;
+		return RamShared[a - 0xc800];
+	}
+	
+	switch (a) {
+		case 0xE803: {
+			return 0x83;
+		}
+	}
+	
+	return 0;
+}
+
+
 void __fastcall tigerhWriteCPU0(unsigned short a, unsigned char d)
 {
 	switch (a) {
@@ -742,6 +778,17 @@ void __fastcall tigerhWriteCPU0(unsigned short a, unsigned char d)
 		case 0xE802:
 			nTigerHeliTileYPosLo = d;
 			break;
+
+		case 0xe803: 
+			if (use_mcu) {
+				sync_mcu();
+				from_main = d;
+				main_sent = 1;
+				mcu_sent = 0;
+				m68705SetIrqLine(0, 1 /*ASSERT_LINE*/);
+			}
+			break;
+
 //		default:
 //			bprintf(PRINT_NORMAL, "Attempt by CPU0 to write address %04X -> %02X.\n", a, d);
 	}
@@ -770,6 +817,7 @@ unsigned char __fastcall tigerhInCPU0(unsigned short a)
 
 	switch (a) {
 		case 0x00: {
+
 			unsigned char nStatusSequence[3] = { 0xC7, 0x55, 0x00 };
 
 			//if (nStatusIndex == 3) {
@@ -782,6 +830,14 @@ unsigned char __fastcall tigerhInCPU0(unsigned short a)
 			unsigned char nStatus = nStatusSequence[nStatusIndex];
 			nStatusIndex++;
 			if (nStatusIndex > 2) nStatusIndex = 0;
+
+			if (use_mcu) {
+				sync_mcu();
+				nStatus &= 0xf9;
+				if (!main_sent) nStatus |= 0x02;
+				if (!mcu_sent) nStatus |= 0x04;
+			}
+
 			return nStatus;
 			
 		}
@@ -799,10 +855,10 @@ unsigned char __fastcall tigerhInCPU0_gtstarba(unsigned short a)
 
 	switch (a) {
 		case 0x00: {
-			if (ZetPc(0) == 0x6d1e)	return 0;
-			if (ZetPc(0) == 0x6d24)	return 6;
-			if (ZetPc(0) == 0x6d2c)	return 2;
-			if (ZetPc(0) == 0x6d34)	return 4;
+			if (ZetPc(-1) == 0x6d1e)	return 0;
+			if (ZetPc(-1) == 0x6d24)	return 6;
+			if (ZetPc(-1) == 0x6d2c)	return 2;
+			if (ZetPc(-1) == 0x6d34)	return 4;
 			return 0;
 		}
 
@@ -962,13 +1018,34 @@ static unsigned char tigerhReadPort3(unsigned int)
 	return ~tigerhInput[3];
 }
 
+//----------------------------------------------------------------------------
+
+void tigerh_m68705_portA_write(unsigned char *data)
+{
+	from_mcu = *data;
+	mcu_sent = 1;
+}
+
+void tigerh_m68705_portC_read()
+{
+	portC_in = 0;
+	if (!main_sent) portC_in |= 0x01;
+	if (  mcu_sent) portC_in |= 0x02;
+}
+
+static m68705_interface tigerh_m68705_interface = {
+	tigerh_m68705_portA_write, standard_m68705_portB_out, NULL,
+	NULL, NULL, NULL,
+	NULL, NULL, tigerh_m68705_portC_read
+};
+
 // ---------------------------------------------------------------------------
 
 static int tigerhLoadROMs()
 {
 	int nRomOffset = 0;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtuk")) nRomOffset = 1;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfgtr")) nRomOffset = 2;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2")) nRomOffset = 1;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3")) nRomOffset = 2;
 
 	// Z80 main program
 	switch (nWhichGame) {
@@ -995,7 +1072,7 @@ static int tigerhLoadROMs()
 			}
 			break;
 		case 2:	{										// Slap Fight
-			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtuk")) {
+			if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2")) {
 				if (BurnLoadRom(Rom01 + 0x0000, 0, 1)) {
 					return 1;
 				}
@@ -1007,7 +1084,7 @@ static int tigerhLoadROMs()
 				}
 				break;
 			} else {
-				if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfgtr")) {
+				if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3")) {
 					if (BurnLoadRom(Rom01 + 0x0000, 0, 1)) {
 						return 1;
 					}
@@ -1218,6 +1295,19 @@ static int tigerhLoadROMs()
 		}
 	}
 
+	// MCU program
+	{
+
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "tigerh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhj") == 0) {
+			if (BurnLoadRom(Rom03, 17, 1)) {
+				return 1;
+			}
+
+			use_mcu = 1;
+		}
+
+	}
+
 	return 0;
 }
 
@@ -1230,6 +1320,11 @@ static int tigerhExit()
 	TigerHeliTileExit();
 
 	ZetExit();
+
+	if (use_mcu) {
+		use_mcu = 0;
+		m67805_taito_exit();
+	}
 
 	// Deallocate all used memory
 	free(Mem);
@@ -1255,6 +1350,10 @@ static void tigerhDoReset()
 	ZetReset();
 	ZetClose();
 
+	if (use_mcu) {
+		m67805_taito_reset();
+	}
+
 	return;
 }
 
@@ -1264,13 +1363,13 @@ static int tigerhInit()
 
 	nWhichGame = -1;
 
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "tigerh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb2") == 0) {
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "tigerh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhj") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb3") == 0) {
 		nWhichGame = 0;
 	}
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstar") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "getstarb") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarba") == 0) {
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstar") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb2") == 0) {
 		nWhichGame = 1;
 	}
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "slapfigh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtjp") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtuk") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfgtr") == 0) {
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "slapfigh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3") == 0) {
 		nWhichGame = 2;
 	}
 
@@ -1308,7 +1407,7 @@ static int tigerhInit()
 		ZetMapArea(0xC000, 0xC7FF, 2, Ram01);
 
 		// Shared RAM
-		if (strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarba")) {
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1")) {
 			ZetMapArea(0xC800, 0xCFFF, 0, RamShared);
 		}
 		ZetMapArea(0xC800, 0xCFFF, 1, RamShared);
@@ -1323,7 +1422,7 @@ static int tigerhInit()
 		ZetMapArea(0xE000, 0xE7FF, 1, TigerHeliSpriteRAM);
 		ZetMapArea(0xE000, 0xE7FF, 2, TigerHeliSpriteRAM);
 		
-		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtuk") || !strcmp(BurnDrvGetTextA(DRV_NAME), "slapfgtr")) {
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2") || !strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3")) {
 			ZetMapArea(0xec00, 0xeFFF, 0, Rom01 + 0x10c00);
 			ZetMapArea(0xec00, 0xeFFF, 2, Rom01 + 0x10c00);
 		}
@@ -1335,17 +1434,24 @@ static int tigerhInit()
 
 		ZetMemEnd();
 
-		ZetSetReadHandler(tigerhReadCPU0);
-		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapbtuk") || !strcmp(BurnDrvGetTextA(DRV_NAME), "slapfgtr")) {
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb1")) {
+			ZetSetReadHandler(tigerhReadCPU0_tigerhb1);
+		} else {
+			ZetSetReadHandler(tigerhReadCPU0);
+		}
+		
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2") || !strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3")) {
 			ZetSetWriteHandler(tigerhWriteCPU0_slapbtuk);
 		} else {
 			ZetSetWriteHandler(tigerhWriteCPU0);
 		}
-		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarba")) {
+		
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1")) {
 			ZetSetInHandler(tigerhInCPU0_gtstarba);
 		} else {
 			ZetSetInHandler(tigerhInCPU0);
 		}
+		
 		ZetSetOutHandler(tigerhOutCPU0);
 
 		ZetClose();
@@ -1370,6 +1476,10 @@ static int tigerhInit()
 		ZetSetOutHandler(tigerhOutCPU1);
 
 		ZetClose();
+
+		if (use_mcu) {
+			m67805_taito_init(Rom03, Ram03, &tigerh_m68705_interface);
+		}
 	}
 
 	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
@@ -1443,11 +1553,14 @@ static inline int CheckSleep(int)
 
 static int tigerhFrame()
 {
-	int nCyclesTotal[2], nCyclesDone[2];
+	int nCyclesTotal[3], nCyclesDone[3];
 
 	if (tigerhReset) {													// Reset machine
 		tigerhDoReset();
 	}
+
+	ZetNewFrame();
+	m6805NewFrame();
 
 	// Compile digital inputs
 	tigerhInput[0] = 0x00;
@@ -1479,7 +1592,8 @@ static int tigerhFrame()
 	}
 
 	nCyclesTotal[0] = nCyclesTotal[1] = 6000000 / 60;
-	nCyclesDone[0] = nCyclesDone[1] = 0;
+	nCyclesDone[0] = nCyclesDone[1] = nCyclesDone[2] = 0;
+	nCyclesTotal[2] = 3000000 / 60;
 
 	const int nVBlankCycles = 248 * 6000000 / 60 / 262;
 	const int nInterleave = 12;
@@ -1540,6 +1654,16 @@ static int tigerhFrame()
 		}
 
 		ZetClose();
+
+		if (use_mcu) {
+			m6805Open(0);
+			nCyclesSegment = (nCyclesTotal[2] * (i + 1)) / nInterleave;
+			nCyclesSegment -= m6805TotalCycles();
+			if (nCyclesSegment > 0) {
+				nCyclesDone[2] += m6805Run(nCyclesSegment);
+			}
+			m6805Close();
+		}
 
 		nCurrentCPU = 1;
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
@@ -1635,96 +1759,156 @@ static struct BurnRomInfo tigerhRomDesc[] = {
 	{ "1.4",          0x004000, 0xAAD04867, BRF_ESS | BRF_PRG }, //  1
 	{ "2.4",          0x004000, 0x4843F15C, BRF_ESS | BRF_PRG }, //  2
 
-	{ "a47_13.bin",   0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
-	{ "a47_12.bin",   0x004000, 0xC064ECDB, BRF_GRA },			 //  4
-	{ "a47_11.bin",   0x004000, 0x744FAE9B, BRF_GRA },			 //  5
-	{ "a47_10.bin",   0x004000, 0xE1CF844E, BRF_GRA },			 //  6
+	{ "a47_13.8j",    0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
+	{ "a47_12.6j",    0x004000, 0xC064ECDB, BRF_GRA },			 //  4
+	{ "a47_11.8h",    0x004000, 0x744FAE9B, BRF_GRA },			 //  5
+	{ "a47_10.6h",    0x004000, 0xE1CF844E, BRF_GRA },			 //  6
 
-	{ "a47_05.bin",   0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
-	{ "a47_04.bin",   0x002000, 0xCD59628E, BRF_GRA },			 //  8
+	{ "a47_05.6f",    0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
+	{ "a47_04.6g",    0x002000, 0xCD59628E, BRF_GRA },			 //  8
 
-	{ "a47_09.bin",   0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
-	{ "a47_08.bin",   0x004000, 0xE539AF2B, BRF_GRA },			 // 10
-	{ "a47_07.bin",   0x004000, 0x02FDD429, BRF_GRA },			 // 11
-	{ "a47_06.bin",   0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
+	{ "a47_09.4m",    0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
+	{ "a47_08.6m",    0x004000, 0xE539AF2B, BRF_GRA },			 // 10
+	{ "a47_07.6n",    0x004000, 0x02FDD429, BRF_GRA },			 // 11
+	{ "a47_06.6p",    0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
 
 	{ "82s129.12q",   0x000100, 0x2C69350D, BRF_GRA },			 // 13
 	{ "82s129.12m",   0x000100, 0x7142E972, BRF_GRA },			 // 14
 	{ "82s129.12n",   0x000100, 0x25F273F2, BRF_GRA },			 // 15
 
-	{ "a47_03.bin",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+	{ "a47_03.12d",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
 	
-	{ "a47_14.6a",    0x000800, 0x4042489F, BRF_GRA },
+	{ "a47_14.6a",    0x000800, 0x4042489F, BRF_ESS | BRF_PRG },		// 17 MCU
 
 	{ "pal16r4a.2e",  260,      0x00000000, BRF_NODUMP },
 };
 
 
-STD_ROM_PICK(tigerh);
-STD_ROM_FN(tigerh);
+STD_ROM_PICK(tigerh)
+STD_ROM_FN(tigerh)
 
-static struct BurnRomInfo tigerhb1RomDesc[] = {
-	{ "14",           0x004000, 0xCA59DD73, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "13",           0x004000, 0x38BD54DB, BRF_ESS | BRF_PRG }, //  1
-	{ "a47_02.bin",   0x004000, 0x633D324B, BRF_ESS | BRF_PRG }, //  2
+static struct BurnRomInfo tigerhjRomDesc[] = {
+	{ "a47_00.8p",    0x004000, 0xcbdbe3cc, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a47_01.8n",    0x004000, 0x65df2152, BRF_ESS | BRF_PRG }, //  1
+	{ "a47_02.8k",    0x004000, 0x633D324B, BRF_ESS | BRF_PRG }, //  2
 
-	{ "a47_13.bin",   0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
-	{ "a47_12.bin",   0x004000, 0xC064ECDB, BRF_GRA },			 //  4
-	{ "a47_11.bin",   0x004000, 0x744FAE9B, BRF_GRA },			 //  5
-	{ "a47_10.bin",   0x004000, 0xE1CF844E, BRF_GRA },			 //  6
+	{ "a47_13.8j",    0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
+	{ "a47_12.6j",    0x004000, 0xC064ECDB, BRF_GRA },			 //  4
+	{ "a47_11.8h",    0x004000, 0x744FAE9B, BRF_GRA },			 //  5
+	{ "a47_10.6h",    0x004000, 0xE1CF844E, BRF_GRA },			 //  6
 
-	{ "a47_05.bin",   0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
-	{ "a47_04.bin",   0x002000, 0xCD59628E, BRF_GRA },			 //  8
+	{ "a47_05.6f",    0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
+	{ "a47_04.6g",    0x002000, 0xCD59628E, BRF_GRA },			 //  8
 
-	{ "a47_09.bin",   0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
-	{ "a47_08.bin",   0x004000, 0xE539AF2B, BRF_GRA },			 // 10
-	{ "a47_07.bin",   0x004000, 0x02FDD429, BRF_GRA },			 // 11
-	{ "a47_06.bin",   0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
+	{ "a47_09.4m",    0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
+	{ "a47_08.6m",    0x004000, 0xE539AF2B, BRF_GRA },			 // 10
+	{ "a47_07.6n",    0x004000, 0x02FDD429, BRF_GRA },			 // 11
+	{ "a47_06.6p",    0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
 
 	{ "82s129.12q",   0x000100, 0x2C69350D, BRF_GRA },			 // 13
 	{ "82s129.12m",   0x000100, 0x7142E972, BRF_GRA },			 // 14
 	{ "82s129.12n",   0x000100, 0x25F273F2, BRF_GRA },			 // 15
 
-	{ "a47_03.bin",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+	{ "a47_03.12d",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+	
+	{ "a47_14.6a",    0x000800, 0x4042489F, BRF_ESS | BRF_PRG },		// 17 MCU
 };
 
 
-STD_ROM_PICK(tigerhb1);
-STD_ROM_FN(tigerhb1);
+STD_ROM_PICK(tigerhj)
+STD_ROM_FN(tigerhj)
+
+static struct BurnRomInfo tigerhb1RomDesc[] = {
+	{ "b0.5",         0x004000, 0x6ae7e13c, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a47_01.8n",    0x004000, 0x65df2152, BRF_ESS | BRF_PRG }, //  1
+	{ "a47_02.8k",    0x004000, 0x633D324B, BRF_ESS | BRF_PRG }, //  2
+
+	{ "a47_13.8j",    0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
+	{ "a47_12.6j",    0x004000, 0xC064ECDB, BRF_GRA },			 //  4
+	{ "a47_11.8h",    0x004000, 0x744FAE9B, BRF_GRA },			 //  5
+	{ "a47_10.6h",    0x004000, 0xE1CF844E, BRF_GRA },			 //  6
+
+	{ "a47_05.6f",    0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
+	{ "a47_04.6g",    0x002000, 0xCD59628E, BRF_GRA },			 //  8
+
+	{ "a47_09.4m",    0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
+	{ "a47_08.6m",    0x004000, 0xE539AF2B, BRF_GRA },			 // 10
+	{ "a47_07.6n",    0x004000, 0x02FDD429, BRF_GRA },			 // 11
+	{ "a47_06.6p",    0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
+
+	{ "82s129.12q",   0x000100, 0x2C69350D, BRF_GRA },			 // 13
+	{ "82s129.12m",   0x000100, 0x7142E972, BRF_GRA },			 // 14
+	{ "82s129.12n",   0x000100, 0x25F273F2, BRF_GRA },			 // 15
+
+	{ "a47_03.12d",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+};
+
+
+STD_ROM_PICK(tigerhb1)
+STD_ROM_FN(tigerhb1)
 
 static struct BurnRomInfo tigerhb2RomDesc[] = {
 	{ "rom00_09.bin", 0x004000, 0xef738c68, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "a47_01.bin",   0x004000, 0x65df2152, BRF_ESS | BRF_PRG }, //  1
+	{ "a47_01.8n",    0x004000, 0x65df2152, BRF_ESS | BRF_PRG }, //  1
 	{ "rom02_07.bin", 0x004000, 0x36e250b9, BRF_ESS | BRF_PRG }, //  2
 
-	{ "a47_13.bin",   0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
-	{ "a47_12.bin",   0x004000, 0xC064ECDB, BRF_GRA },			 //  4
-	{ "a47_11.bin",   0x004000, 0x744FAE9B, BRF_GRA },			 //  5
-	{ "a47_10.bin",   0x004000, 0xE1CF844E, BRF_GRA },			 //  6
+	{ "a47_13.8j",    0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
+	{ "a47_12.6j",    0x004000, 0xC064ECDB, BRF_GRA },			 //  4
+	{ "a47_11.8h",    0x004000, 0x744FAE9B, BRF_GRA },			 //  5
+	{ "a47_10.6h",    0x004000, 0xE1CF844E, BRF_GRA },			 //  6
 
-	{ "a47_05.bin",   0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
-	{ "a47_04.bin",   0x002000, 0xCD59628E, BRF_GRA },			 //  8
+	{ "a47_05.6f",    0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
+	{ "a47_04.6g",    0x002000, 0xCD59628E, BRF_GRA },			 //  8
 
-	{ "a47_09.bin",   0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
-	{ "a47_08.bin",   0x004000, 0xE539AF2B, BRF_GRA },			 // 10
-	{ "a47_07.bin",   0x004000, 0x02FDD429, BRF_GRA },			 // 11
-	{ "a47_06.bin",   0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
+	{ "a47_09.4m",    0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
+	{ "a47_08.6m",    0x004000, 0xE539AF2B, BRF_GRA },			 // 10
+	{ "a47_07.6n",    0x004000, 0x02FDD429, BRF_GRA },			 // 11
+	{ "a47_06.6p",    0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
 
 	{ "82s129.12q",   0x000100, 0x2C69350D, BRF_GRA },			 // 13
 	{ "82s129.12m",   0x000100, 0x7142E972, BRF_GRA },			 // 14
 	{ "82s129.12n",   0x000100, 0x25F273F2, BRF_GRA },			 // 15
 
-	{ "a47_03.bin",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+	{ "a47_03.12d",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
 };
 
 
-STD_ROM_PICK(tigerhb2);
-STD_ROM_FN(tigerhb2);
+STD_ROM_PICK(tigerhb2)
+STD_ROM_FN(tigerhb2)
+
+static struct BurnRomInfo tigerhb3RomDesc[] = {
+	{ "14",           0x004000, 0xCA59DD73, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "13",           0x004000, 0x38BD54DB, BRF_ESS | BRF_PRG }, //  1
+	{ "a47_02.8k",    0x004000, 0x633D324B, BRF_ESS | BRF_PRG }, //  2
+
+	{ "a47_13.8j",    0x004000, 0x739A7E7E, BRF_GRA },			 //  3 Sprite data
+	{ "a47_12.6j",    0x004000, 0xC064ECDB, BRF_GRA },			 //  4
+	{ "a47_11.8h",    0x004000, 0x744FAE9B, BRF_GRA },			 //  5
+	{ "a47_10.6h",    0x004000, 0xE1CF844E, BRF_GRA },			 //  6
+
+	{ "a47_05.6f",    0x002000, 0xC5325B49, BRF_GRA },			 //  7 Text layer
+	{ "a47_04.6g",    0x002000, 0xCD59628E, BRF_GRA },			 //  8
+
+	{ "a47_09.4m",    0x004000, 0x31FAE8A8, BRF_GRA },			 //  9 Background layer
+	{ "a47_08.6m",    0x004000, 0xE539AF2B, BRF_GRA },			 // 10
+	{ "a47_07.6n",    0x004000, 0x02FDD429, BRF_GRA },			 // 11
+	{ "a47_06.6p",    0x004000, 0x11FBCC8C, BRF_GRA },			 // 12
+
+	{ "82s129.12q",   0x000100, 0x2C69350D, BRF_GRA },			 // 13
+	{ "82s129.12m",   0x000100, 0x7142E972, BRF_GRA },			 // 14
+	{ "82s129.12n",   0x000100, 0x25F273F2, BRF_GRA },			 // 15
+
+	{ "a47_03.12d",   0x002000, 0xD105260F, BRF_ESS | BRF_PRG }, // 16
+};
+
+
+STD_ROM_PICK(tigerhb3)
+STD_ROM_FN(tigerhb3)
 
 static struct BurnRomInfo getstarRomDesc[] = {
-	{ "rom0",         0x004000, 0x6A8BDC6C, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "rom1",         0x004000, 0xEBE8DB3C, BRF_ESS | BRF_PRG }, //  1
-	{ "rom2",         0x008000, 0x343E8415, BRF_ESS | BRF_PRG }, //  2
+	{ "a68_00-1",     0x004000, 0x6A8BDC6C, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a68_01-1",     0x004000, 0xEBE8DB3C, BRF_ESS | BRF_PRG }, //  1
+	{ "a68_02-1",     0x008000, 0x343E8415, BRF_ESS | BRF_PRG }, //  2
 
 	{ "a68-13",       0x008000, 0x643FB282, BRF_GRA },			 //  3 Sprite data
 	{ "a68-12",       0x008000, 0x11F74E32, BRF_GRA },			 //  4
@@ -1745,14 +1929,14 @@ static struct BurnRomInfo getstarRomDesc[] = {
 
 	{ "a68-03",       0x002000, 0x18DAA44C, BRF_ESS | BRF_PRG }, // 16
 
-	{ "68705.bin",    0x000800, 0x00000000, BRF_NODUMP | BRF_ESS | BRF_PRG }, // 17 MCU ROM
+	{ "a68_14",       0x000800, 0x00000000, BRF_NODUMP | BRF_ESS | BRF_PRG }, // 17 MCU ROM
 };
 
 
-STD_ROM_PICK(getstar);
-STD_ROM_FN(getstar);
+STD_ROM_PICK(getstar)
+STD_ROM_FN(getstar)
 
-static struct BurnRomInfo getstarbRomDesc[] = {
+static struct BurnRomInfo gtstarb2RomDesc[] = {
 	{ "gs_14.rom",    0x004000, 0x1A57A920, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 	{ "gs_13.rom",    0x004000, 0x805F8E77, BRF_ESS | BRF_PRG }, //  1
 	{ "a68_02.bin",   0x008000, 0x3567DA17, BRF_ESS | BRF_PRG }, //  2
@@ -1778,10 +1962,10 @@ static struct BurnRomInfo getstarbRomDesc[] = {
 };
 
 
-STD_ROM_PICK(getstarb);
-STD_ROM_FN(getstarb);
+STD_ROM_PICK(gtstarb2)
+STD_ROM_FN(gtstarb2)
 
-static struct BurnRomInfo gtstarbaRomDesc[] = {
+static struct BurnRomInfo gtstarb1RomDesc[] = {
 	{ "gs_rb_1.bin",  0x004000, 0x9afad7e0, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 	{ "gs_rb_2.bin",  0x004000, 0x5feb0a60, BRF_ESS | BRF_PRG }, //  1
 	{ "gs_rb_3.bin",  0x008000, 0xe3cfb1ba, BRF_ESS | BRF_PRG }, //  2
@@ -1807,38 +1991,68 @@ static struct BurnRomInfo gtstarbaRomDesc[] = {
 };
 
 
-STD_ROM_PICK(gtstarba);
-STD_ROM_FN(gtstarba);
+STD_ROM_PICK(gtstarb1)
+STD_ROM_FN(gtstarb1)
 
-static struct BurnRomInfo slapfighRomDesc[] = {
-	{ "sf_r19.bin",   0x008000, 0x674C0E0F, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "sf_rh.bin",    0x008000, 0x3C42E4A7, BRF_ESS | BRF_PRG }, //  1
+static struct BurnRomInfo alconRomDesc[] = {
+	{ "a77_00-1.8p",  0x008000, 0x2ba82d60, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a77_01-1.8n",  0x008000, 0x18bb2f12, BRF_ESS | BRF_PRG }, //  1
 
-	{ "sf_r03.bin",   0x008000, 0x8545D397, BRF_GRA },			 //  2 Sprite data
-	{ "sf_r01.bin",   0x008000, 0xB1B7B925, BRF_GRA },			 //  3
-	{ "sf_r04.bin",   0x008000, 0x422D946B, BRF_GRA },			 //  4
-	{ "sf_r02.bin",   0x008000, 0x587113AE, BRF_GRA },			 //  5
+	{ "a77_12.8j",    0x008000, 0x8545d397, BRF_GRA },			 //  2 Sprite data
+	{ "a77_11.7j",    0x008000, 0xb1b7b925, BRF_GRA },			 //  3
+	{ "a77_10.8h",    0x008000, 0x422d946b, BRF_GRA },			 //  4
+	{ "a77_09.7h",    0x008000, 0x587113ae, BRF_GRA },			 //  5
 
-	{ "sf_r11.bin",   0x002000, 0x2AC7B943, BRF_GRA },			 //  6 Text layer
-	{ "sf_r10.bin",   0x002000, 0x33CADC93, BRF_GRA },			 //  7
+	{ "a77_04-1.6f",  0x002000, 0x31003483, BRF_GRA },			 //  6 Text layer
+	{ "a77_03-1.6g",  0x002000, 0x404152c0, BRF_GRA },			 //  7
 
-	{ "sf_r06.bin",   0x008000, 0xB6358305, BRF_GRA },			 //  8 Background layer
-	{ "sf_r09.bin",   0x008000, 0xE92D9D60, BRF_GRA },			 //  9
-	{ "sf_r08.bin",   0x008000, 0x5FAEEEA3, BRF_GRA },			 // 10
-	{ "sf_r07.bin",   0x008000, 0x974E2EA9, BRF_GRA },			 // 11
+	{ "a77_08.6k",    0x008000, 0xB6358305, BRF_GRA },			 //  8 Background layer
+	{ "a77_07.6m",    0x008000, 0xE92D9D60, BRF_GRA },			 //  9
+	{ "a77_06.6n",    0x008000, 0x5FAEEEA3, BRF_GRA },			 // 10
+	{ "a77_05.6p",    0x008000, 0x974E2EA9, BRF_GRA },			 // 11
 
-	{ "sf_col21.bin", 0x000100, 0xA0EFAF99, BRF_GRA },			 // 12
-	{ "sf_col20.bin", 0x000100, 0xA56D57E5, BRF_GRA },			 // 13
-	{ "sf_col19.bin", 0x000100, 0x5CBF9FBF, BRF_GRA },			 // 14
+	{ "21_82s129.12q",0x000100, 0xA0EFAF99, BRF_GRA },			 // 12
+	{ "20_82s129.12m",0x000100, 0xA56D57E5, BRF_GRA },			 // 13
+	{ "19_82s129.12n",0x000100, 0x5CBF9FBF, BRF_GRA },			 // 14
 
-	{ "sf_r05.bin",   0x002000, 0x87F4705A, BRF_ESS | BRF_PRG }, // 15
+	{ "a77_02.12d",   0x002000, 0x87F4705A, BRF_ESS | BRF_PRG }, // 15
 
-	{ "68705.bin",    0x000800, 0x00000000, BRF_NODUMP | BRF_ESS | BRF_PRG }, // 16 MCU ROM
+	{ "a77_13.6a",    0x000800, 0xa70c81d9, BRF_ESS | BRF_PRG }, // 16 MCU ROM
 };
 
 
-STD_ROM_PICK(slapfigh);
-STD_ROM_FN(slapfigh);
+STD_ROM_PICK(alcon)
+STD_ROM_FN(alcon)
+
+static struct BurnRomInfo slapfighRomDesc[] = {
+	{ "a77_00.8p",    0x008000, 0x674C0E0F, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a77_01.8n",    0x008000, 0x3C42E4A7, BRF_ESS | BRF_PRG }, //  1
+
+	{ "a77_12.8j",    0x008000, 0x8545d397, BRF_GRA },			 //  2 Sprite data
+	{ "a77_11.7j",    0x008000, 0xb1b7b925, BRF_GRA },			 //  3
+	{ "a77_10.8h",    0x008000, 0x422d946b, BRF_GRA },			 //  4
+	{ "a77_09.7h",    0x008000, 0x587113ae, BRF_GRA },			 //  5
+
+	{ "a77_04.6f",    0x002000, 0x2AC7B943, BRF_GRA },			 //  6 Text layer
+	{ "a77_03.6g",    0x002000, 0x33CADC93, BRF_GRA },			 //  7
+
+	{ "a77_08.6k",    0x008000, 0xB6358305, BRF_GRA },			 //  8 Background layer
+	{ "a77_07.6m",    0x008000, 0xE92D9D60, BRF_GRA },			 //  9
+	{ "a77_06.6n",    0x008000, 0x5FAEEEA3, BRF_GRA },			 // 10
+	{ "a77_05.6p",    0x008000, 0x974E2EA9, BRF_GRA },			 // 11
+
+	{ "21_82s129.12q",0x000100, 0xA0EFAF99, BRF_GRA },			 // 12
+	{ "20_82s129.12m",0x000100, 0xA56D57E5, BRF_GRA },			 // 13
+	{ "19_82s129.12n",0x000100, 0x5CBF9FBF, BRF_GRA },			 // 14
+
+	{ "a77_02.12d",   0x002000, 0x87F4705A, BRF_ESS | BRF_PRG }, // 15
+
+	{ "a77_13.6a",    0x000800, 0xa70c81d9, BRF_ESS | BRF_PRG }, // 16 MCU ROM
+};
+
+
+STD_ROM_PICK(slapfigh)
+STD_ROM_FN(slapfigh)
 
 static struct BurnRomInfo slapbtjpRomDesc[] = {
 	{ "sf_r19jb.bin", 0x008000, 0x9A7AC8B3, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -1865,8 +2079,8 @@ static struct BurnRomInfo slapbtjpRomDesc[] = {
 };
 
 
-STD_ROM_PICK(slapbtjp);
-STD_ROM_FN(slapbtjp);
+STD_ROM_PICK(slapbtjp)
+STD_ROM_FN(slapbtjp)
 
 static struct BurnRomInfo slapbtukRomDesc[] = {
 	{ "sf_r19eb.bin", 0x004000, 0x2efe47af, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -1894,8 +2108,8 @@ static struct BurnRomInfo slapbtukRomDesc[] = {
 };
 
 
-STD_ROM_PICK(slapbtuk);
-STD_ROM_FN(slapbtuk);
+STD_ROM_PICK(slapbtuk)
+STD_ROM_FN(slapbtuk)
 
 static struct BurnRomInfo slapfgtrRomDesc[] = {
 	{ "k1-10.u90",    0x004000, 0x2efe47af, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -1924,105 +2138,135 @@ static struct BurnRomInfo slapfgtrRomDesc[] = {
 };
 
 
-STD_ROM_PICK(slapfgtr);
-STD_ROM_FN(slapfgtr);
+STD_ROM_PICK(slapfgtr)
+STD_ROM_FN(slapfgtr)
 
 struct BurnDriver BurnDrvTigerH = {
-	"tigerh", NULL, NULL, "1985",
+	"tigerh", NULL, NULL, NULL, "1985",
 	"Tiger Heli (US)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, tigerhRomInfo, tigerhRomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, tigerhRomInfo, tigerhRomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
+	240, 280, 3, 4
+};
+
+struct BurnDriver BurnDrvTigerhJ = {
+	"tigerhj", "tigerh", NULL, NULL, "1985",
+	"Tiger Heli (Japan)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, tigerhjRomInfo, tigerhjRomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvTigerHB1 = {
-	"tigerhb1", "tigerh", NULL, "1985",
+	"tigerhb1", "tigerh", NULL, NULL, "1985",
 	"Tiger Heli (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, tigerhb1RomInfo, tigerhb1RomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, tigerhb1RomInfo, tigerhb1RomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvTigerHB2 = {
-	"tigerhb2", "tigerh", NULL, "1985",
+	"tigerhb2", "tigerh", NULL, NULL, "1985",
 	"Tiger Heli (bootleg, set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, tigerhb2RomInfo, tigerhb2RomName, tigerhInputInfo, tigerhDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, tigerhb2RomInfo, tigerhb2RomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
+	240, 280, 3, 4
+};
+
+struct BurnDriver BurnDrvTigerHB3 = {
+	"tigerhb3", "tigerh", NULL, NULL, "1985",
+	"Tiger Heli (bootleg, set 3)\0", NULL, "Taito", "Early Toaplan",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, tigerhb3RomInfo, tigerhb3RomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvGetStar = {
-	"getstar", NULL, NULL, "1986",
+	"getstar", NULL, NULL, NULL, "1986",
 	"Guardian\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_PRE90S,
-	NULL, getstarRomInfo, getstarRomName, tigerhInputInfo, getstarDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	NULL, getstarRomInfo, getstarRomName, NULL, NULL, tigerhInputInfo, getstarDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	280, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvGetStarB = {
-	"getstarb", "getstar", NULL, "1986",
-	"Get Star (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S,
-	NULL, getstarbRomInfo, getstarbRomName, tigerhInputInfo, getstarDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
-	280, 240, 4, 3
-};
-
-struct BurnDriver BurnDrvGetStarBa = {
-	"gtstarba", "getstar", NULL, "1986",
+struct BurnDriver BurnDrvGetStarb2 = {
+	"gtstarb2", "getstar", NULL, NULL, "1986",
 	"Get Star (bootleg, set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S,
-	NULL, gtstarbaRomInfo, gtstarbaRomName, gtstarbaInputInfo, gtstarbaDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	NULL, gtstarb2RomInfo, gtstarb2RomName, NULL, NULL, tigerhInputInfo, getstarDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	280, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvSlapFigh = {
-	"slapfigh", NULL, NULL, "1986",
-	"Slap Fight (set 1)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+struct BurnDriver BurnDrvGetStarb1 = {
+	"gtstarb1", "getstar", NULL, NULL, "1986",
+	"Get Star (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, slapfighRomInfo, slapfighRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	NULL, gtstarb1RomInfo, gtstarb1RomName, NULL, NULL, gtstarbaInputInfo, gtstarbaDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
+	280, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvAlcon = {
+	"alcon", NULL, NULL, NULL, "1986",
+	"Alcon (US)\0", "Protection MCU not emulated", "Taito America Corp.", "Early Toaplan",
+	NULL, NULL, NULL, NULL,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, alconRomInfo, alconRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
+	240, 280, 3, 4
+};
+
+struct BurnDriverD BurnDrvSlapFigh = {
+	"slapfigh", "alcon", NULL, NULL, "1986",
+	"Slap Fight (Japan set 1)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	NULL, NULL, NULL, NULL,
+	BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, slapfighRomInfo, slapfighRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvSlapBtJP = {
-	"slapbtjp", "slapfigh", NULL, "1986",
-	"Slap Fight (Japan bootleg)\0", NULL, "Taito", "Early Toaplan",
+	"slapfighb1", "alcon", NULL, NULL, "1986",
+	"Slap Fight (bootleg set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, slapbtjpRomInfo, slapbtjpRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, slapbtjpRomInfo, slapbtjpRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvSlapBtUK = {
-	"slapbtuk", "slapfigh", NULL, "1986",
-	"Slap Fight (English bootleg)\0", NULL, "Taito", "Early Toaplan",
+	"slapfighb2", "alcon", NULL, NULL, "1986",
+	"Slap Fight (bootleg set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, slapbtukRomInfo, slapbtukRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, slapbtukRomInfo, slapbtukRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
 struct BurnDriver BurnDrvSlapFghtr = {
-	"slapfgtr", "slapfigh", NULL, "1986",
-	"Slap Fight (bootleg)\0", NULL, "Taito", "Early Toaplan",
+	"slapfighb3", "alcon", NULL, NULL, "1986",
+	"Slap Fight (bootleg set 3)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, slapfgtrRomInfo, slapfgtrRomName, tigerhInputInfo, slapfighDIPInfo,
-	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, slapfgtrRomInfo, slapfgtrRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, 0, NULL, NULL, NULL, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };

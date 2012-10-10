@@ -1,4 +1,4 @@
-#define DIRECTDRAW_VERSION 7				// Use this DirectDraw version
+//#define DIRECTDRAW_VERSION 7				// Use this DirectDraw version
 #include <ddraw.h>
 #include "vid_support.h"
 

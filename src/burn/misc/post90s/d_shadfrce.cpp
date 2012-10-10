@@ -101,7 +101,7 @@ static struct BurnInputInfo shadfrceInputList[] = {
 	{"Dip D",		BIT_DIPSWITCH,	DrvInput + 7,	"dip"},
 };
 
-STDINPUTINFO(shadfrce);
+STDINPUTINFO(shadfrce)
 
 static struct BurnDIPInfo shadfrceDIPList[] = {
 
@@ -160,7 +160,7 @@ static struct BurnDIPInfo shadfrceDIPList[] = {
 
 };
 
-STDDIPINFO(shadfrce);
+STDDIPINFO(shadfrce)
 
 // Rom information
 static struct BurnRomInfo shadfrceRomDesc[] = {
@@ -186,18 +186,18 @@ static struct BurnRomInfo shadfrceRomDesc[] = {
 	{ "32j9-0.76",    0x080000, 0x16001e81, BRF_SND },				// PCM
 };
 
-STD_ROM_PICK(shadfrce);
-STD_ROM_FN(shadfrce);
+STD_ROM_PICK(shadfrce)
+STD_ROM_FN(shadfrce)
 
 static struct BurnRomInfo shadfrcjRomDesc[] = {
-	{ "32j12-01.ic34",0x040000, 0x38fdbe1d, BRF_ESS | BRF_PRG },	// 68000 code 
-	{ "32j13-01.ic26",0x040000, 0x6e1df6f1, BRF_ESS | BRF_PRG }, 
-	{ "32j14-01.ic33",0x040000, 0x89e3fb60, BRF_ESS | BRF_PRG }, 
-	{ "32j15-01.ic14",0x040000, 0x3dc3a84a, BRF_ESS | BRF_PRG }, 
+	{ "32a12-011.34", 0x040000, 0x0c041e08, BRF_ESS | BRF_PRG },	// 68000 code 
+	{ "32a13-010.26", 0x040000, 0x00985361, BRF_ESS | BRF_PRG }, 
+	{ "32a14-010.33", 0x040000, 0xea03ca25, BRF_ESS | BRF_PRG }, 
+	{ "32j15-01.14",  0x040000, 0x3dc3a84a, BRF_ESS | BRF_PRG }, 
 	
 	{ "32j10-0.42",   0x010000, 0x65daf475, BRF_ESS | BRF_PRG },	// Z80 code
 	
-	{ "32j11-0.ic55", 0x020000, 0x7252d993, BRF_GRA }, 				// gfx 1 chars
+	{ "32j11-0.55",   0x020000, 0x7252d993, BRF_GRA }, 				// gfx 1 chars
 	
 	{ "32j4-0.12", 	  0x200000, 0x1ebea5b6, BRF_GRA }, 				// gfx 2 sprite
 	{ "32j5-0.13",	  0x200000, 0x600026b5, BRF_GRA }, 
@@ -212,8 +212,34 @@ static struct BurnRomInfo shadfrcjRomDesc[] = {
 	{ "32j9-0.76",    0x080000, 0x16001e81, BRF_SND },				// PCM
 };
 
-STD_ROM_PICK(shadfrcj);
-STD_ROM_FN(shadfrcj);
+STD_ROM_PICK(shadfrcj)
+STD_ROM_FN(shadfrcj)
+
+static struct BurnRomInfo shadfrcjv2RomDesc[] = {
+	{ "32j12-01.34",  0x040000, 0x38fdbe1d, BRF_ESS | BRF_PRG },	// 68000 code 
+	{ "32j13-01.26",  0x040000, 0x6e1df6f1, BRF_ESS | BRF_PRG }, 
+	{ "32j14-01.33",  0x040000, 0x89e3fb60, BRF_ESS | BRF_PRG }, 
+	{ "32j15-01.14",  0x040000, 0x3dc3a84a, BRF_ESS | BRF_PRG }, 
+	
+	{ "32j10-0.42",   0x010000, 0x65daf475, BRF_ESS | BRF_PRG },	// Z80 code
+	
+	{ "32j11-0.55",   0x020000, 0x7252d993, BRF_GRA }, 				// gfx 1 chars
+	
+	{ "32j4-0.12", 	  0x200000, 0x1ebea5b6, BRF_GRA }, 				// gfx 2 sprite
+	{ "32j5-0.13",	  0x200000, 0x600026b5, BRF_GRA }, 
+	{ "32j6-0.24", 	  0x200000, 0x6cde8ebe, BRF_GRA }, 
+	{ "32j7-0.25",	  0x200000, 0xbcb37922, BRF_GRA }, 
+	{ "32j8-0.32",	  0x200000, 0x201bebf6, BRF_GRA }, 
+
+	{ "32j1-0.4",     0x100000, 0xf1cca740, BRF_GRA },				// gfx 3 bg
+	{ "32j2-0.5",     0x100000, 0x5fac3e01, BRF_GRA },			
+	{ "32j3-0.6",     0x100000, 0xd297925e, BRF_GRA },
+	
+	{ "32j9-0.76",    0x080000, 0x16001e81, BRF_SND },				// PCM
+};
+
+STD_ROM_PICK(shadfrcjv2)
+STD_ROM_FN(shadfrcjv2)
 
 static int MemIndex()
 {
@@ -450,11 +476,18 @@ static int loadDecodeGfx01()
 	{ 1, 0, 8*8+1, 8*8+0, 16*8+1, 16*8+0, 24*8+1, 24*8+0 },
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
 	32*8
-*/
-	unsigned char * tmp = (unsigned char *) malloc (0x20000);
-	unsigned char * pgfx = RomGfx01;
-	if (tmp == NULL) return 1;
-	BurnLoadRom(tmp,  5, 1);
+*/	
+	unsigned char *buf = NULL;
+	
+	if ((buf = (unsigned char*)malloc(0x20000)) == NULL) {
+	    return 1;
+    }	
+	
+	memset(buf, 0, 0x20000);
+	BurnLoadRom(buf,  5, 1);	
+	
+	unsigned char *tmp = buf;
+	unsigned char *pgfx = RomGfx01;
 	
 	for (int i=0; i<(0x20000/32); i++) {
 		for( int y=0;y<8;y++) {
@@ -474,7 +507,7 @@ static int loadDecodeGfx01()
 		tmp += 24;
 	}
 	
-	free(tmp);
+	free(buf);
 	return 0;
 }
 
@@ -488,21 +521,26 @@ static int loadDecodeGfx02()
 	{ 0,1,2,3,4,5,6,7,16*8+0,16*8+1,16*8+2,16*8+3,16*8+4,16*8+5,16*8+6,16*8+7 },
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8, 8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 },
 	16*16
-*/
-	unsigned char * tmp1 = (unsigned char *) malloc (0xA00000);
-	unsigned char * tmp2 = tmp1 + 0x200000;
-	unsigned char * tmp3 = tmp2 + 0x200000;
-	unsigned char * tmp4 = tmp3 + 0x200000;
-	unsigned char * tmp5 = tmp4 + 0x200000;
-	unsigned char * pgfx = RomGfx02;
+*/	
+	unsigned char *buf = NULL;
 	
-	if (tmp1 == NULL) return 1;
+	if ((buf = (unsigned char*)malloc(0xA00000)) == NULL) {
+	    return 1;
+    }	
+	memset(buf, 0, 0xA00000);	
 	
-	BurnLoadRom(tmp1,  6, 1);
-	BurnLoadRom(tmp2,  7, 1);
-	BurnLoadRom(tmp3,  8, 1);
-	BurnLoadRom(tmp4,  9, 1);
-	BurnLoadRom(tmp5, 10, 1);
+	BurnLoadRom(buf + 0x000000,  6, 1);
+	BurnLoadRom(buf + 0x200000,  7, 1);
+	BurnLoadRom(buf + 0x400000,  8, 1);
+	BurnLoadRom(buf + 0x600000,  9, 1);
+	BurnLoadRom(buf + 0x800000, 10, 1);
+	
+	unsigned char *tmp1 = buf;
+	unsigned char *tmp2 = tmp1 + 0x200000;
+	unsigned char *tmp3 = tmp2 + 0x200000;
+	unsigned char *tmp4 = tmp3 + 0x200000;
+	unsigned char *tmp5 = tmp4 + 0x200000;
+	unsigned char *pgfx = RomGfx02;
 
 //	TODO: be lazy to research how BurnProgresser work, so ...
 
@@ -541,7 +579,7 @@ static int loadDecodeGfx02()
 		tmp5 += 16;
 	}
 
-	free(tmp1);
+	free(buf);
 	return 0;
 }
 
@@ -556,16 +594,21 @@ static int loadDecodeGfx03()
 	{ 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16,9*16,10*16,11*16,12*16,13*16,14*16,15*16 },
 	64*8
 */	
-	unsigned char * tmp1 = (unsigned char *) malloc (0x300000);
-	unsigned char * tmp2 = tmp1 + 0x100000;
-	unsigned char * tmp3 = tmp2 + 0x100000;
-	unsigned char * pgfx = RomGfx03;
+	unsigned char *buf = NULL;
 	
-	if (tmp1 == NULL) return 1;
-
-	BurnLoadRom(tmp1, 11, 1);
-	BurnLoadRom(tmp2, 12, 1);
-	BurnLoadRom(tmp3, 13, 1);
+	if ((buf = (unsigned char*)malloc(0x300000)) == NULL) {
+	    return 1;
+    }	
+	memset(buf, 0, 0x300000);	
+	
+	BurnLoadRom(buf + 0x000000, 11, 1);
+	BurnLoadRom(buf + 0x100000, 12, 1);
+	BurnLoadRom(buf + 0x200000, 13, 1);
+	
+	unsigned char *tmp1 = buf;
+	unsigned char *tmp2 = tmp1 + 0x100000;
+	unsigned char *tmp3 = tmp2 + 0x100000;	
+	unsigned char *pgfx = RomGfx03;
 	
 	for (int i=0; i<(0x100000/64); i++) {
 		for( int y=0;y<16;y++) {
@@ -588,7 +631,7 @@ static int loadDecodeGfx03()
 		tmp3 += 32;
 	}
 	
-	free(tmp1);
+	free(buf);
 	
 	return 0;
 }
@@ -1529,21 +1572,31 @@ static int shadfrceScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvShadfrce = {
-	"shadfrce", NULL, NULL, "1993",
+	"shadfrce", NULL, NULL, NULL, "1993",
 	"Shadow Force (US Version 2)\0", NULL, "Technos Japan", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S,
-	NULL, shadfrceRomInfo, shadfrceRomName, shadfrceInputInfo, shadfrceDIPInfo,
-	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, shadfrceRomInfo, shadfrceRomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
+	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x8000,
 	320, 256, 4, 3
 };
 
 struct BurnDriver BurnDrvShadfrcj = {
-	"shadfrcj", "shadfrce", NULL, "1993",
+	"shadfrcej", "shadfrce", NULL, NULL, "1993",
+	"Shadow Force (Japan Version 3)\0", NULL, "Technos Japan", "misc",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, shadfrcjRomInfo, shadfrcjRomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
+	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x8000,
+	320, 256, 4, 3
+};
+
+struct BurnDriver BurnDrvShadfrcjv2 = {
+	"shadfrcejv2", "shadfrce", NULL, NULL, "1993",
 	"Shadow Force (Japan Version 2)\0", NULL, "Technos Japan", "misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, shadfrcjRomInfo, shadfrcjRomName, shadfrceInputInfo, shadfrceDIPInfo,
-	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	NULL, shadfrcjv2RomInfo, shadfrcjv2RomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
+	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, 0, NULL, NULL, NULL, &bRecalcPalette, 0x8000,
 	320, 256, 4, 3
 };

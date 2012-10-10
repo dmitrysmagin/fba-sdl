@@ -14,7 +14,7 @@
 #include "burner.h"
 
 #ifdef _MSC_VER
-  #include <winable.h>
+//  #include <winable.h>
  #ifdef _DEBUG
   #include <crtdbg.h>
  #endif
@@ -40,7 +40,10 @@ TCHAR szAppExeName[EXE_NAME_SIZE + 1];
 bool bCmdOptUsed = 0;
 bool bAlwaysProcessKeyboardInput = false;
 
+bool bNoChangeNumLock = 0;
 static bool bNumlockStatus;
+
+bool bMonitorAutoCheck = true;
 
 // Used for the load/save dialog in commdlg.h (savestates, input replay, wave logging)
 TCHAR szChoice[MAX_PATH] = _T("");
@@ -98,6 +101,76 @@ TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int /*nOutSize*
 }
 #endif
 
+CHAR *astring_from_utf8(const char *utf8string)
+{
+	WCHAR *wstring;
+	int char_count;
+	CHAR *result;
+
+	// convert MAME string (UTF-8) to UTF-16
+	char_count = MultiByteToWideChar(CP_UTF8, 0, utf8string, -1, NULL, 0);
+	wstring = (WCHAR *)malloc(char_count * sizeof(*wstring));
+	MultiByteToWideChar(CP_UTF8, 0, utf8string, -1, wstring, char_count);
+
+	// convert UTF-16 to "ANSI code page" string
+	char_count = WideCharToMultiByte(CP_ACP, 0, wstring, -1, NULL, 0, NULL, NULL);
+	result = (CHAR *)malloc(char_count * sizeof(*result));
+	if (result != NULL)
+		WideCharToMultiByte(CP_ACP, 0, wstring, -1, result, char_count, NULL, NULL);
+
+	free(wstring);
+	return result;
+}
+
+char *utf8_from_astring(const CHAR *astring)
+{
+	WCHAR *wstring;
+	int char_count;
+	CHAR *result;
+
+	// convert "ANSI code page" string to UTF-16
+	char_count = MultiByteToWideChar(CP_ACP, 0, astring, -1, NULL, 0);
+	wstring = (WCHAR *)malloc(char_count * sizeof(*wstring));
+	MultiByteToWideChar(CP_ACP, 0, astring, -1, wstring, char_count);
+
+	// convert UTF-16 to MAME string (UTF-8)
+	char_count = WideCharToMultiByte(CP_UTF8, 0, wstring, -1, NULL, 0, NULL, NULL);
+	result = (CHAR *)malloc(char_count * sizeof(*result));
+	if (result != NULL)
+		WideCharToMultiByte(CP_UTF8, 0, wstring, -1, result, char_count, NULL, NULL);
+
+	free(wstring);
+	return result;
+}
+
+WCHAR *wstring_from_utf8(const char *utf8string)
+{
+	int char_count;
+	WCHAR *result;
+
+	// convert MAME string (UTF-8) to UTF-16
+	char_count = MultiByteToWideChar(CP_UTF8, 0, utf8string, -1, NULL, 0);
+	result = (WCHAR *)malloc(char_count * sizeof(*result));
+	if (result != NULL)
+		MultiByteToWideChar(CP_UTF8, 0, utf8string, -1, result, char_count);
+
+	return result;
+}
+
+char *utf8_from_wstring(const WCHAR *wstring)
+{
+	int char_count;
+	char *result;
+
+	// convert UTF-16 to MAME string (UTF-8)
+	char_count = WideCharToMultiByte(CP_UTF8, 0, wstring, -1, NULL, 0, NULL, NULL);
+	result = (char *)malloc(char_count * sizeof(*result));
+	if (result != NULL)
+		WideCharToMultiByte(CP_UTF8, 0, wstring, -1, result, char_count, NULL, NULL);
+
+	return result;
+}
+
 #if defined (FBA_DEBUG)
  static TCHAR szConsoleBuffer[1024];
  static int nPrevConsoleStatus = -1;
@@ -107,10 +180,10 @@ TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int /*nOutSize*
  static bool bEchoLog = true; // false;
 #endif
 
+#if defined (FBA_DEBUG)
 // Debug printf to a file
 static int __cdecl AppDebugPrintf(int nStatus, TCHAR* pszFormat, ...)
 {
-#if defined (FBA_DEBUG)
 	va_list vaFormat;
 
 	va_start(vaFormat, pszFormat);
@@ -158,10 +231,10 @@ static int __cdecl AppDebugPrintf(int nStatus, TCHAR* pszFormat, ...)
 	nPrevConsoleStatus = nStatus;
 
 	va_end(vaFormat);
-#endif
 
 	return 0;
 }
+#endif
 
 int dprintf(TCHAR* pszFormat, ...)
 {
@@ -318,9 +391,81 @@ int OpenDebugLog()
 	return 0;
 }
 
+void MonitorAutoCheck()
+{
+	RECT rect;
+	int x, y;
+
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+
+	x = GetSystemMetrics(SM_CXSCREEN);
+	y = GetSystemMetrics(SM_CYSCREEN);
+
+	TCHAR szResXY[256] = _T("");
+	_stprintf(szResXY, _T("%dx%d"), x, y);
+
+	// Normal CRT (4:3) ( Verified at Wikipedia.Org )
+	if( !_tcscmp(szResXY, _T("320x240"))	|| 
+		!_tcscmp(szResXY, _T("512x384"))	||
+		!_tcscmp(szResXY, _T("640x480"))	|| 
+		!_tcscmp(szResXY, _T("800x600"))	||
+		!_tcscmp(szResXY, _T("832x624"))	||
+		!_tcscmp(szResXY, _T("1024x768"))	||
+		!_tcscmp(szResXY, _T("1120x832"))	|| 
+		!_tcscmp(szResXY, _T("1152x864"))	|| 
+		!_tcscmp(szResXY, _T("1280x960"))	||
+		!_tcscmp(szResXY, _T("1280x1024"))	|| 
+		!_tcscmp(szResXY, _T("1400x1050"))	||  
+		!_tcscmp(szResXY, _T("1600x1200"))	||
+		!_tcscmp(szResXY, _T("2048x1536"))	||
+		!_tcscmp(szResXY, _T("2800x2100"))	||
+		!_tcscmp(szResXY, _T("3200x2400"))	|| 
+		!_tcscmp(szResXY, _T("4096x3072"))	||
+		!_tcscmp(szResXY, _T("6400x4800")) ){
+		nVidScrnAspectX = 4; 
+		nVidScrnAspectY = 3;
+	}
+
+	// Normal LCD (5:4) ( Verified at Wikipedia.Org )
+	if( !_tcscmp(szResXY, _T("320x256"))	||
+		!_tcscmp(szResXY, _T("640x512"))	||
+		!_tcscmp(szResXY, _T("1280x1024"))	|| 
+		!_tcscmp(szResXY, _T("2560x2048"))	||
+		!_tcscmp(szResXY, _T("5120x4096")) ){
+		nVidScrnAspectX = 5; 
+		nVidScrnAspectY = 4;
+	}
+
+	// CRT Widescreen (16:9) ( Verified at Wikipedia.Org )
+	if( !_tcscmp(szResXY, _T("480x270"))  ||
+		!_tcscmp(szResXY, _T("1280x720")) ||
+		!_tcscmp(szResXY, _T("1360x768")) ||
+		!_tcscmp(szResXY, _T("1366x768")) ||
+		!_tcscmp(szResXY, _T("1920x1080"))) {
+		nVidScrnAspectX = 16; 
+		nVidScrnAspectY = 9;
+	}
+
+	// LCD Widescreen (16:10) ( Verified at Wikipedia.Org )
+	if(	!_tcscmp(szResXY, _T("320x200"))	|| 
+		!_tcscmp(szResXY, _T("1280x800"))	||
+		!_tcscmp(szResXY, _T("1440x900"))	|| 
+		!_tcscmp(szResXY, _T("1680x1050"))	||
+		!_tcscmp(szResXY, _T("1920x1200"))	||
+		!_tcscmp(szResXY, _T("2560x1600"))	||
+		!_tcscmp(szResXY, _T("3840x2400"))	||
+		!_tcscmp(szResXY, _T("5120x3200"))	||
+		!_tcscmp(szResXY, _T("7680x4800")) ){
+		nVidScrnAspectX = 16; 
+		nVidScrnAspectY = 10;
+	}
+}
+
 bool SetNumLock(bool bState)
 {
 	BYTE keyState[256];
+	
+	if (bNoChangeNumLock) return 0;
 
 	GetKeyboardState(keyState);
 	if ((bState && !(keyState[VK_NUMLOCK] & 1)) || (!bState && (keyState[VK_NUMLOCK] & 1))) {
@@ -332,9 +477,10 @@ bool SetNumLock(bool bState)
 	return keyState[VK_NUMLOCK] & 1;
 }
 
+#include <wininet.h>
+
 static int AppInit()
 {
-
 #if defined (_MSC_VER) && defined (_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_CHECK_ALWAYS_DF);			// Check for memory corruption
 	_CrtSetDbgFlag(_CRTDBG_DELAY_FREE_MEM_DF);			//
@@ -351,7 +497,7 @@ static int AppInit()
 
 	FBALocaliseInit(szLocalisationTemplate);
 
-//	kailleraInit();
+	if (bMonitorAutoCheck) MonitorAutoCheck();
 
 #if 1 || !defined (FBA_DEBUG)
 	// print a warning if we're running for the 1st time
@@ -375,6 +521,7 @@ static int AppInit()
 
 	// Init the Burn library
 	BurnLibInit();
+	BurnDoGameListLocalisation();
 
 	ComputeGammaLUT();
 
@@ -386,20 +533,34 @@ static int AppInit()
 	hAccel = LoadAccelerators(hAppInst, MAKEINTRESOURCE(IDR_ACCELERATOR));
 
 	// Build the ROM information
-	CreateROMInfo();
+	CreateROMInfo(NULL);
 	
 	// Write a clrmame dat file if we are verifying roms
 #if defined (ROM_VERIFY)
-	create_datfile(_T("fba.dat"), 0, 0);
+	create_datfile(_T("fba.dat"), 2, 0);	
 #endif
 
 	bNumlockStatus = SetNumLock(false);
+
+	ParseFavListDat();
+
+	if(bEnableIcons && !bIconsLoaded) {
+		// load driver icons
+		LoadDrvIcons();
+		bIconsLoaded = 1;
+	}
 
 	return 0;
 }
 
 static int AppExit()
 {
+	if(bIconsLoaded) {
+		// unload driver icons
+		UnloadDrvIcons();
+		bIconsLoaded = 0;
+	}
+
 	SetNumLock(bNumlockStatus);
 
 	DrvExit();						// Make sure any game driver is exitted
@@ -410,8 +571,6 @@ static int AppExit()
 #ifdef USE_SDL
 	SDL_Quit();
 #endif
-
-//	kailleraShutdown();
 
 	FBALocaliseExit();
 
@@ -495,18 +654,28 @@ int ProcessCmdLine()
 			write_datfile(0, 0, stdout);
 			return 1;
 		}
-	}
-	
-	if (_tcslen(szName)) {
+		
 		if (_tcscmp(szName, _T("-listinfowithmd")) == 0) {
 			write_datfile(0, 1, stdout);
 			return 1;
 		}
-	}
-	
-	if (_tcslen(szName)) {
+		
 		if (_tcscmp(szName, _T("-listinfomdonly")) == 0) {
 			write_datfile(0, 2, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listextrainfo")) == 0) {
+			int nWidth;
+			int nHeight;
+			int nAspectX;
+			int nAspectY;
+			for (i = 0; i < nBurnDrvCount; i++) {
+				nBurnDrvSelect = i;
+				BurnDrvGetVisibleSize(&nWidth, &nHeight);
+				BurnDrvGetAspect(&nAspectX, &nAspectY);
+				printf("%s\t%ix%i\t%i:%i\t0x%08X\t\"%s\"\t%i\t%i\t%x\t%x\t\"%s\"\n", BurnDrvGetTextA(DRV_NAME), nWidth, nHeight, nAspectX, nAspectY, BurnDrvGetHardwareCode(), BurnDrvGetTextA(DRV_SYSTEM), BurnDrvIsWorking(), BurnDrvGetMaxPlayers(), BurnDrvGetGenreFlags(), BurnDrvGetFamilyFlags(), BurnDrvGetTextA(DRV_COMMENT));
+			}			
 			return 1;
 		}
 	}
@@ -581,6 +750,11 @@ int ProcessCmdLine()
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
+	// Try to initiate DWMAPI.DLL on Windows 7
+	if(IsWindows7()) {
+		InitDWMAPI();
+	}
+
 	// Provide a custom exception handler
 	SetUnhandledExceptionFilter(ExceptionFilter);
 
@@ -589,14 +763,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	// Make version string
 	if (nBurnVer & 0xFF) {
 		// private version (alpha)
-		_stprintf(szAppBurnVer, _T("%x.%x.%x.%x"), nBurnVer >> 20, (nBurnVer >> 16) & 0x0F, (nBurnVer >> 8) & 0xFF, nBurnVer & 0xFF);
+		_stprintf(szAppBurnVer, _T("%x.%x.%x.%02x"), nBurnVer >> 20, (nBurnVer >> 16) & 0x0F, (nBurnVer >> 8) & 0xFF, nBurnVer & 0xFF);
 	} else {
 		// public version
 		_stprintf(szAppBurnVer, _T("%x.%x.%x"), nBurnVer >> 20, (nBurnVer >> 16) & 0x0F, (nBurnVer >> 8) & 0xFF);
 	}
-
+	
 #if !defined (DONT_DISPLAY_SPLASH)
-	SplashCreate();
+	if (lpCmdLine[0] == 0) SplashCreate();
 #endif
 
 	nAppShowCmd = nShowCmd;
@@ -604,19 +778,47 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	AppDirectory();								// Set current directory to be the applications directory
 
 	// Make sure there are roms and cfg subdirectories
-	CreateDirectory(_T("config"), NULL);
-	CreateDirectory(_T("config\\games"), NULL);
-	CreateDirectory(_T("config\\localisation"), NULL);
-	CreateDirectory(_T("config\\presets"), NULL);
-	CreateDirectory(_T("savestates"), NULL);
-	CreateDirectory(_T("cheats"), NULL);
-	CreateDirectory(_T("flyers"), NULL);
-	CreateDirectory(_T("previews"), NULL);
-	CreateDirectory(_T("recordings"), NULL);
-	CreateDirectory(_T("ROMs"), NULL);
-	CreateDirectory(_T("screenshots"), NULL);
-	CreateDirectory(_T("titles"), NULL);
+	TCHAR szDirs[32][MAX_PATH] = {
+		{_T("config")},
+		{_T("config\\games")},
+		{_T("config\\ips")},
+		{_T("config\\localisation")},
+		{_T("config\\presets")},
+		{_T("recordings")},
+		{_T("ROMs")},
+		{_T("savestates")},
+		{_T("screenshots")},
+		{_T("support\\")},
+		{_T("support\\previews\\")},
+		{_T("support\\titles\\")},
+		{_T("support\\select\\")},
+		{_T("support\\versus\\")},
+		{_T("support\\howto\\")},
+		{_T("support\\scores\\")},
+		{_T("support\\bosses\\")},
+		{_T("support\\gameover\\")},
+		{_T("support\\flyers\\")},
+		{_T("support\\marquees\\")},
+		{_T("support\\controls\\")},
+		{_T("support\\cabinets\\")},
+		{_T("support\\pcbs\\")},
+		{_T("support\\cheats\\")},
+		{_T("support\\lists\\")},
+		{_T("support\\lists\\lst\\")},
+		{_T("support\\lists\\dat\\")},
+		{_T("support\\ips\\")},
+		{_T("support\\icons\\")},
+		{_T("support\\archives\\")},
+		{_T("support\\hiscores\\")},
+		{_T("support\\samples\\")},
+	};
 
+	for(int x = 0; x < 32; x++) {
+		CreateDirectory(szDirs[x], NULL);
+	}
+
+	//
+	
 	{
 		INITCOMMONCONTROLSEX initCC = {
 			sizeof(INITCOMMONCONTROLSEX),
@@ -631,16 +833,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 
 	if (!(AppInit())) {							// Init the application
 		if (!(ProcessCmdLine())) {
-//			if (!bDrvOkay) {
-				MediaInit();
-//			}
+			MediaInit();
 
 			RunMessageLoop();					// Run the application message loop
 		}
 	}
 
 	AppExit();									// Exit the application
-
+	
 	ConfigAppSave();							// Save config for the application
 
 	return 0;

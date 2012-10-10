@@ -32,14 +32,14 @@
 /** This is system-dependent code put here to speed things  **/
 /** up. It has to stay inlined to be fast.                  **/
 /*************************************************************/
-#ifdef INES
-#define FAST_RDOP
-extern byte *Page[];
-INLINE byte Op6502(register word A)
-{
-  return(Page[A>>13][A&0x1FFF]);
-}
-#endif /* INES */
+//#ifdef INES
+//#define FAST_RDOP
+//extern byte *Page[];
+//INLINE byte Op6502(register word A)
+//{
+//  return(Page[A>>13][A&0x1FFF]);
+//}
+//#endif /* INES */
 
 #ifdef S60
 extern int Opt6502(M6502 *R);
@@ -49,30 +49,30 @@ extern int Opt6502(M6502 *R);
 /** With this #define not present, Rd6502() should perform  **/
 /** the functions of Op6502().                              **/
 /*************************************************************/
-#ifndef FAST_RDOP
-#define Op6502(A) Rd6502(A)
-#endif
+//#ifndef FAST_RDOP
+//#define Op6502(A) Rd6502(A)
+//#endif
 
 /** Addressing Methods ***************************************/
 /** These macros calculate and return effective addresses.  **/
 /*************************************************************/
 #define MC_Ab(Rg)	M_LDWORD(Rg)
-#define MC_Zp(Rg)       Rg.W=Op6502(R->PC.W++)
-#define MC_Zx(Rg)       Rg.W=(byte)(Op6502(R->PC.W++)+R->X)
-#define MC_Zy(Rg)       Rg.W=(byte)(Op6502(R->PC.W++)+R->Y)
+#define MC_Zp(Rg)       Rg.W=OpArg6502(R->PC.W++)
+#define MC_Zx(Rg)       Rg.W=(byte)(OpArg6502(R->PC.W++)+R->X)
+#define MC_Zy(Rg)       Rg.W=(byte)(OpArg6502(R->PC.W++)+R->Y)
 #define MC_Ax(Rg)	M_LDWORD(Rg);Rg.W+=R->X
 #define MC_Ay(Rg)	M_LDWORD(Rg);Rg.W+=R->Y
-#define MC_Ix(Rg)       K.W=(byte)(Op6502(R->PC.W++)+R->X); \
-			Rg.B.l=Op6502(K.W++);Rg.B.h=Op6502(K.W)
-#define MC_Iy(Rg)       K.W=Op6502(R->PC.W++); \
-			Rg.B.l=Op6502(K.W++);Rg.B.h=Op6502(K.W); \
+#define MC_Ix(Rg)       K.W=(byte)(OpArg6502(R->PC.W++)+R->X); \
+			Rg.B.l=OpArg6502(K.W++);Rg.B.h=OpArg6502(K.W)
+#define MC_Iy(Rg)       K.W=OpArg6502(R->PC.W++); \
+			Rg.B.l=OpArg6502(K.W++);Rg.B.h=OpArg6502(K.W); \
 			Rg.W+=R->Y
 
 /** Reading From Memory **************************************/
 /** These macros calculate address and read from it.        **/
 /*************************************************************/
 #define MR_Ab(Rg)	MC_Ab(J);Rg=Rd6502(J.W)
-#define MR_Im(Rg)	Rg=Op6502(R->PC.W++)
+#define MR_Im(Rg)	Rg=OpArg6502(R->PC.W++)
 #define	MR_Zp(Rg)	MC_Zp(J);Rg=Rd6502(J.W)
 #define MR_Zx(Rg)	MC_Zx(J);Rg=Rd6502(J.W)
 #define MR_Zy(Rg)	MC_Zy(J);Rg=Rd6502(J.W)
@@ -105,11 +105,11 @@ extern int Opt6502(M6502 *R);
 /** Calculating flags, stack, jumps, arithmetics, etc.      **/
 /*************************************************************/
 #define M_FL(Rg)	R->P=(R->P&~(Z_FLAG|N_FLAG))|ZNTable[Rg]
-#define M_LDWORD(Rg)	Rg.B.l=Op6502(R->PC.W++);Rg.B.h=Op6502(R->PC.W++)
+#define M_LDWORD(Rg)	Rg.B.l=OpArg6502(R->PC.W++);Rg.B.h=OpArg6502(R->PC.W++)
 
 #define M_PUSH(Rg)	Wr6502(0x0100|R->S,Rg);R->S--
-#define M_POP(Rg)	R->S++;Rg=Op6502(0x0100|R->S)
-#define M_JR		R->PC.W+=(offset)Op6502(R->PC.W)+1;R->ICount--
+#define M_POP(Rg)	R->S++;Rg=OpArg6502(0x0100|R->S)
+#define M_JR		R->PC.W+=(offset)OpArg6502(R->PC.W)+1;R->ICount--
 
 #ifdef NO_DECIMAL
 
@@ -233,7 +233,9 @@ int Exec6502(M6502 *R,int RunCycles)
 #endif
 
     I=Op6502(R->PC.W++);
+
     RunCycles-=Cycles[I];
+	R->nTotalCycles+=Cycles[I];
     switch(I)
     {
 #include "codes.h"

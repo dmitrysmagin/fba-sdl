@@ -1,11 +1,13 @@
 // TC0110PCR
 
 #include "burnint.h"
+#include "taito_ic.h"
 
-static unsigned char *TC0110PCRRam = NULL;
-static int TC0110PCRRamSize;
+#define MAX_TC0110PCR		3
+
+static unsigned char *TC0110PCRRam[MAX_TC0110PCR];
 unsigned int *TC0110PCRPalette = NULL;
-static int TC0110PCRAddr;
+static int TC0110PCRAddr[MAX_TC0110PCR];
 int TC0110PCRTotalColours;
 
 static inline unsigned char pal5bit(unsigned char bits)
@@ -14,55 +16,117 @@ static inline unsigned char pal5bit(unsigned char bits)
 	return (bits << 3) | (bits >> 2);
 }
 
-UINT16 TC0110PCRWordRead()
+static inline unsigned char pal4bit(unsigned char bits)
 {
-	UINT16 *PalRam = (UINT16*)TC0110PCRRam;
-	return PalRam[TC0110PCRAddr];
+	bits &= 0x0f;
+	return (bits << 4) | (bits);
 }
 
-void TC0110PCRStep1WordWrite(int Offset, UINT16 Data)
+UINT16 TC0110PCRWordRead(int Chip)
 {
+	UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
+	return PalRam[TC0110PCRAddr[Chip]];
+}
+
+void TC0110PCRWordWrite(int Chip, int Offset, UINT16 Data)
+{
+	int PaletteOffset = Chip * 0x1000;
+	
 	switch (Offset) {
 		case 0: {
-			TC0110PCRAddr = Data & 0xfff;
+			TC0110PCRAddr[Chip] = (Data >> 1) & 0xfff;
 			return;
 		}
-		
-		case 1: {
-			UINT16 *PalRam = (UINT16*)TC0110PCRRam;
+
+		case 1:	{
+			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
 			int r, g, b;
 			
-			PalRam[TC0110PCRAddr] = Data;
+			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
 			r = pal5bit(Data >>  0);
 			g = pal5bit(Data >>  5);
 			b = pal5bit(Data >> 10);
 			
-			TC0110PCRPalette[TC0110PCRAddr] = BurnHighCol(r, g, b, 0);
+			TC0110PCRPalette[TC0110PCRAddr[Chip] | PaletteOffset] = BurnHighCol(r, g, b, 0);
 			return;
 		}
 	}
 }
 
-void TC0110PCRStep1RBSwapWordWrite(int Offset, UINT16 Data)
+void TC0110PCRStep1WordWrite(int Chip, int Offset, UINT16 Data)
 {
+	int PaletteOffset = Chip * 0x1000;
+	
 	switch (Offset) {
 		case 0: {
-			TC0110PCRAddr = Data & 0xfff;
+			TC0110PCRAddr[Chip] = Data & 0xfff;
 			return;
 		}
 		
 		case 1: {
-			UINT16 *PalRam = (UINT16*)TC0110PCRRam;
+			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
 			int r, g, b;
 			
-			PalRam[TC0110PCRAddr] = Data;
+			PalRam[TC0110PCRAddr[Chip]] = Data;
+			
+			r = pal5bit(Data >>  0);
+			g = pal5bit(Data >>  5);
+			b = pal5bit(Data >> 10);
+			
+			TC0110PCRPalette[TC0110PCRAddr[Chip] | PaletteOffset] = BurnHighCol(r, g, b, 0);
+			return;
+		}
+	}
+}
+
+void TC0110PCRStep14rbgWordWrite(int Chip, int Offset, UINT16 Data)
+{
+	int PaletteOffset = Chip * 0x1000;
+	
+	switch (Offset) {
+		case 0: {
+			TC0110PCRAddr[Chip] = Data & 0xfff;
+			return;
+		}
+		
+		case 1: {
+			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
+			int r, g, b;
+			
+			PalRam[TC0110PCRAddr[Chip]] = Data;
+			
+			r = pal4bit(Data >>  0);
+			g = pal4bit(Data >>  4);
+			b = pal4bit(Data >>  8);
+			
+			TC0110PCRPalette[TC0110PCRAddr[Chip] | PaletteOffset] = BurnHighCol(r, g, b, 0);
+			return;
+		}
+	}
+}
+
+void TC0110PCRStep1RBSwapWordWrite(int Chip, int Offset, UINT16 Data)
+{
+	int PaletteOffset = Chip * 0x1000;
+	
+	switch (Offset) {
+		case 0: {
+			TC0110PCRAddr[Chip] = Data & 0xfff;
+			return;
+		}
+		
+		case 1: {
+			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
+			int r, g, b;
+			
+			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
 			r = pal5bit(Data >> 10);
 			g = pal5bit(Data >>  5);
 			b = pal5bit(Data >>  0);
 			
-			TC0110PCRPalette[TC0110PCRAddr] = BurnHighCol(r, g, b, 0);
+			TC0110PCRPalette[TC0110PCRAddr[Chip] | PaletteOffset] = BurnHighCol(r, g, b, 0);
 			return;
 		}
 	}
@@ -70,32 +134,36 @@ void TC0110PCRStep1RBSwapWordWrite(int Offset, UINT16 Data)
 
 void TC0110PCRReset()
 {
-	TC0110PCRAddr = 0;
+	TC0110PCRAddr[0] = 0;
 }
 
-void TC0110PCRInit(int nRamSize, int nNumColours)
+void TC0110PCRInit(int Num, int nNumColours)
 {
-	TC0110PCRRam = (unsigned char*)malloc(nRamSize);
-	memset(TC0110PCRRam, 0, nRamSize);
+	for (int i = 0; i < Num; i++) {
+		TC0110PCRRam[i] = (unsigned char*)malloc(0x4000);
+		memset(TC0110PCRRam[i], 0, 0x4000);
+	}
+	
 	TC0110PCRPalette = (unsigned int*)malloc(nNumColours * sizeof(unsigned int));
 	memset(TC0110PCRPalette, 0, nNumColours);
 	
 	TC0110PCRTotalColours = nNumColours;
-	TC0110PCRRamSize = nRamSize;
+	
+	TaitoIC_TC0110PCRInUse = 1;
 }
 
 void TC0110PCRExit()
 {
-	free(TC0110PCRRam);
-	TC0110PCRRam = NULL;
+	for (int i = 0; i < MAX_TC0110PCR; i++) {
+		free(TC0110PCRRam[i]);
+		TC0110PCRRam[i] = NULL;
+		TC0110PCRAddr[i] = 0;
+	}
 	
 	free(TC0110PCRPalette);
 	TC0110PCRPalette = NULL;
 	
-	TC0110PCRAddr = 0;
-	
 	TC0110PCRTotalColours = 0;
-	TC0110PCRRamSize = 0;
 }
 
 void TC0110PCRScan(int nAction)
@@ -104,8 +172,8 @@ void TC0110PCRScan(int nAction)
 	
 	if (nAction & ACB_MEMORY_RAM) {
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = TC0110PCRRam;
-		ba.nLen	  = TC0110PCRRamSize;
+		ba.Data	  = TC0110PCRRam[0];
+		ba.nLen	  = 0x4000;
 		ba.szName = "TC0110PCR Ram";
 		BurnAcb(&ba);
 		
@@ -117,6 +185,6 @@ void TC0110PCRScan(int nAction)
 	}
 	
 	if (nAction & ACB_DRIVER_DATA) {
-		SCAN_VAR(TC0110PCRAddr);
+		SCAN_VAR(TC0110PCRAddr[0]);
 	}
 }

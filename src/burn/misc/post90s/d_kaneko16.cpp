@@ -1,7 +1,7 @@
 #include "tiles_generic.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
-#include "eeprom_93cxx.h"
+#include "eeprom.h"
 #include "kanekotb.h"
 
 #include "driver.h"
@@ -165,7 +165,7 @@ static struct BurnInputInfo BerlwallInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, Kaneko16Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Berlwall);
+STDINPUTINFO(Berlwall)
 
 static struct BurnInputInfo BlazeonInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort0 + 7, "p1 coin"   },
@@ -195,7 +195,7 @@ static struct BurnInputInfo BlazeonInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, Kaneko16Dip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Blazeon);
+STDINPUTINFO(Blazeon)
 
 static struct BurnInputInfo BloodwarInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort2 + 2, "p1 coin"   },
@@ -227,7 +227,7 @@ static struct BurnInputInfo BloodwarInputList[] = {
 	{"Dip 1"             , BIT_DIPSWITCH, Kaneko16Dip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Bloodwar);
+STDINPUTINFO(Bloodwar)
 
 static struct BurnInputInfo BonkadvInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort2 + 2, "p1 coin"   },
@@ -256,7 +256,7 @@ static struct BurnInputInfo BonkadvInputList[] = {
 	{"Dip 1"             , BIT_DIPSWITCH, Kaneko16Dip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Bonkadv);
+STDINPUTINFO(Bonkadv)
 
 static struct BurnInputInfo ExplbrkrInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort2 + 2, "p1 coin"   },
@@ -283,7 +283,7 @@ static struct BurnInputInfo ExplbrkrInputList[] = {
 	{"Dip 1"             , BIT_DIPSWITCH, Kaneko16Dip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Explbrkr);
+STDINPUTINFO(Explbrkr)
 
 static struct BurnInputInfo GtmrInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort2 + 2, "p1 coin"   },
@@ -312,7 +312,7 @@ static struct BurnInputInfo GtmrInputList[] = {
 	{"Dip 1"             , BIT_DIPSWITCH, Kaneko16Dip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Gtmr);
+STDINPUTINFO(Gtmr)
 
 static struct BurnInputInfo MgcrystlInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Kaneko16InputPort2 + 2, "p1 coin"   },
@@ -341,7 +341,7 @@ static struct BurnInputInfo MgcrystlInputList[] = {
 	{"Dip 1"             , BIT_DIPSWITCH, Kaneko16Dip + 0       , "dip"       },
 };
 
-STDINPUTINFO(Mgcrystl);
+STDINPUTINFO(Mgcrystl)
 
 inline void Kaneko16ClearOpposites(unsigned char* nJoystickInputs)
 {
@@ -434,9 +434,9 @@ static struct BurnDIPInfo BerlwallDIPList[]=
 	{0x17, 0x01, 0x80, 0x00, "Testmode"                           },
 };
 
-STDDIPINFO(Berlwall);
+STDDIPINFO(Berlwall)
 
-static struct BurnDIPInfo BerlwaltDIPList[]=
+static struct BurnDIPInfo BerlwalltDIPList[]=
 {
 	// Default Values
 	{0x16, 0xff, 0xff, 0xff, NULL                                 },
@@ -495,7 +495,7 @@ static struct BurnDIPInfo BerlwaltDIPList[]=
 	{0x17, 0x01, 0x80, 0x00, "Testmode"                           },
 };
 
-STDDIPINFO(Berlwalt);
+STDDIPINFO(Berlwallt)
 
 static struct BurnDIPInfo BlazeonDIPList[]=
 {
@@ -562,7 +562,7 @@ static struct BurnDIPInfo BlazeonDIPList[]=
 	{0x15, 0x01, 0xf0, 0xf0, "1 Coin 1 Play"                      },
 };
 
-STDDIPINFO(Blazeon);
+STDDIPINFO(Blazeon)
 
 static struct BurnDIPInfo BloodwarDIPList[]=
 {
@@ -601,7 +601,7 @@ static struct BurnDIPInfo BloodwarDIPList[]=
 	{0x17, 0x01, 0x80, 0x80, "Continue coin"                      },
 };
 
-STDDIPINFO(Bloodwar);
+STDDIPINFO(Bloodwar)
 
 static struct BurnDIPInfo BonkadvDIPList[]=
 {
@@ -630,7 +630,7 @@ static struct BurnDIPInfo BonkadvDIPList[]=
 	{0x14, 0x01, 0x80, 0x80, "On"                                 },
 };
 
-STDDIPINFO(Bonkadv);
+STDDIPINFO(Bonkadv)
 
 static struct BurnDIPInfo ExplbrkrDIPList[]=
 {
@@ -643,7 +643,7 @@ static struct BurnDIPInfo ExplbrkrDIPList[]=
 	{0x12, 0x01, 0x02, 0x00, "On"                                 },
 };
 
-STDDIPINFO(Explbrkr);
+STDDIPINFO(Explbrkr)
 
 static struct BurnDIPInfo GtmrDIPList[]=
 {
@@ -680,7 +680,7 @@ static struct BurnDIPInfo GtmrDIPList[]=
 	{0x14, 0x01, 0xc0, 0xc0, "None"                               },
 };
 
-STDDIPINFO(Gtmr);
+STDDIPINFO(Gtmr)
 
 static struct BurnDIPInfo Gtmr2DIPList[]=
 {
@@ -714,7 +714,7 @@ static struct BurnDIPInfo Gtmr2DIPList[]=
 	{0x14, 0x01, 0x80, 0x80, "On"                                 },
 };
 
-STDDIPINFO(Gtmr2);
+STDDIPINFO(Gtmr2)
 
 static struct BurnDIPInfo MgcrystlDIPList[]=
 {
@@ -731,7 +731,7 @@ static struct BurnDIPInfo MgcrystlDIPList[]=
 	{0x14, 0x01, 0x02, 0x00, "On"                                 },
 };
 
-STDDIPINFO(Mgcrystl);
+STDDIPINFO(Mgcrystl)
 
 /*==============================================================================================
 ROM Descriptions
@@ -760,10 +760,10 @@ static struct BurnRomInfo BerlwallRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Berlwall);
-STD_ROM_FN(Berlwall);
+STD_ROM_PICK(Berlwall)
+STD_ROM_FN(Berlwall)
 
-static struct BurnRomInfo BerlwaltRomDesc[] = {
+static struct BurnRomInfo BerlwalltRomDesc[] = {
 	{ "bw100a",            0x020000, 0xe6bcb4eb, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "bw101a",            0x020000, 0x38056fb2, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
@@ -786,8 +786,8 @@ static struct BurnRomInfo BerlwaltRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Berlwalt);
-STD_ROM_FN(Berlwalt);
+STD_ROM_PICK(Berlwallt)
+STD_ROM_FN(Berlwallt)
 
 static struct BurnRomInfo BlazeonRomDesc[] = {
 	{ "bz_prg1.u80",       0x040000, 0x8409e31d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -802,47 +802,47 @@ static struct BurnRomInfo BlazeonRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Blazeon);
-STD_ROM_FN(Blazeon);
+STD_ROM_PICK(Blazeon)
+STD_ROM_FN(Blazeon)
 
 static struct BurnRomInfo BloodwarRomDesc[] = {
-	{ "pof3.514",          0x080000, 0x0c93da15, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "p1f3.513",          0x080000, 0x894ecbe5, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "ofp0f3.514",        0x080000, 0x0c93da15, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "ofp1f3.513",        0x080000, 0x894ecbe5, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
-	{ "dox3.124",          0x020000, 0x399f2005, BRF_PRG | BRF_OPT }, //  2	MCU Code
+	{ "ofd0x3.124",        0x020000, 0x399f2005, BRF_PRG | BRF_OPT }, //  2	MCU Code
 
-	{ "2000201.8",         0x200000, 0xbba63025, BRF_GRA },		  //  3	Sprites
-	{ "2010202.9",         0x200000, 0x4ffd9ddc, BRF_GRA },		  //  4	Sprites
-	{ "2020203.10",        0x200000, 0xfbcc5363, BRF_GRA },		  //  5	Sprites
-	{ "2030204.11",        0x200000, 0x8e818ce9, BRF_GRA },		  //  6	Sprites
-	{ "2040205.12",        0x200000, 0x70c4a76b, BRF_GRA },		  //  7	Sprites
-	{ "2050206.13",        0x200000, 0x80c667bb, BRF_GRA },		  //  8	Sprites
-	{ "2060207.14",        0x200000, 0xc2028c97, BRF_GRA },		  //  9	Sprites
-	{ "2070208.15",        0x200000, 0xb1f30c61, BRF_GRA },		  //  10 Sprites
-	{ "2080209.28",        0x200000, 0xa8f29545, BRF_GRA },		  //  11 Sprites
-	{ "209e0210.16",       0x100000, 0x93018468, BRF_GRA },		  //  12 Sprites
-	{ "20902011.17",       0x100000, 0x3fb226a1, BRF_GRA },		  //  13 Sprites
-	{ "210e0212.18",       0x100000, 0x80f3fa1b, BRF_GRA },		  //  14 Sprites
-	{ "21000213.19",       0x100000, 0x8ca3a3d6, BRF_GRA },		  //  15 Sprites
-	{ "211e0214.20",       0x100000, 0x8d3d96f7, BRF_GRA },		  //  16 Sprites
-	{ "21100215.21",       0x100000, 0x78268230, BRF_GRA },		  //  17 Sprites
-	{ "212e0216.22",       0x100000, 0x5a013d99, BRF_GRA },		  //  18 Sprites
-	{ "21200217.23",       0x100000, 0x84ed25bd, BRF_GRA },		  //  19 Sprites
-	{ "213e0218.24",       0x100000, 0x861bc5b1, BRF_GRA },		  //  20 Sprites
-	{ "21300219.25",       0x100000, 0xa79b8119, BRF_GRA },		  //  21 Sprites
-	{ "214e0220.26",       0x100000, 0x43c622de, BRF_GRA },		  //  22 Sprites
-	{ "21400221.27",       0x100000, 0xd10bf03c, BRF_GRA },		  //  23 Sprites
+	{ "of-200-0201.8",     0x200000, 0xbba63025, BRF_GRA },		  //  3	Sprites
+	{ "of-201-0202.9",     0x200000, 0x4ffd9ddc, BRF_GRA },		  //  4	Sprites
+	{ "of-202-0203.10",    0x200000, 0xfbcc5363, BRF_GRA },		  //  5	Sprites
+	{ "of-203-0204.11",    0x200000, 0x8e818ce9, BRF_GRA },		  //  6	Sprites
+	{ "of-204-0205.12",    0x200000, 0x70c4a76b, BRF_GRA },		  //  7	Sprites
+	{ "of-205-0206.13",    0x200000, 0x80c667bb, BRF_GRA },		  //  8	Sprites
+	{ "of-206-0207.14",    0x200000, 0xc2028c97, BRF_GRA },		  //  9	Sprites
+	{ "of-207-0208.15",    0x200000, 0xb1f30c61, BRF_GRA },		  //  10 Sprites
+	{ "of-208-0209.28",    0x200000, 0xa8f29545, BRF_GRA },		  //  11 Sprites
+	{ "of-209e-0210.16",   0x100000, 0x93018468, BRF_GRA },		  //  12 Sprites
+	{ "of-2090-2011.17",   0x100000, 0x3fb226a1, BRF_GRA },		  //  13 Sprites
+	{ "of-210e-0212.18",   0x100000, 0x80f3fa1b, BRF_GRA },		  //  14 Sprites
+	{ "of-2100-0213.19",   0x100000, 0x8ca3a3d6, BRF_GRA },		  //  15 Sprites
+	{ "of-211e-0214.20",   0x100000, 0x8d3d96f7, BRF_GRA },		  //  16 Sprites
+	{ "of-2110-0215.21",   0x100000, 0x78268230, BRF_GRA },		  //  17 Sprites
+	{ "of-212e-0216.22",   0x100000, 0x5a013d99, BRF_GRA },		  //  18 Sprites
+	{ "of-2120-0217.23",   0x100000, 0x84ed25bd, BRF_GRA },		  //  19 Sprites
+	{ "of-213e-0218.24",   0x100000, 0x861bc5b1, BRF_GRA },		  //  20 Sprites
+	{ "of-2130-0219.25",   0x100000, 0xa79b8119, BRF_GRA },		  //  21 Sprites
+	{ "of-214e-0220.26",   0x100000, 0x43c622de, BRF_GRA },		  //  22 Sprites
+	{ "of-2140-0221.27",   0x100000, 0xd10bf03c, BRF_GRA },		  //  23 Sprites
 	
-	{ "3000225.51",        0x100000, 0xfbc3c08a, BRF_GRA },		  //  24 Tiles
-	{ "3010226.55",        0x100000, 0xfcf215de, BRF_GRA },		  //  25 Tiles (Layers 2 & 3)
+	{ "of-300-0225.51",    0x100000, 0xfbc3c08a, BRF_GRA },		  //  24 Tiles
+	{ "of-301-0226.55",    0x100000, 0xfcf215de, BRF_GRA },		  //  25 Tiles (Layers 2 & 3)
 
-	{ "101f0223.101",      0x100000, 0x295f3c93, BRF_SND },		  //  26 Samples
-	{ "1000222.99",        0x100000, 0x42b12269, BRF_SND },		  //  27 Samples
+	{ "of-101-f-0223.101", 0x100000, 0x295f3c93, BRF_SND },		  //  26 Samples
+	{ "of-100-0222.99",    0x100000, 0x42b12269, BRF_SND },		  //  27 Samples
 };
 
 
-STD_ROM_PICK(Bloodwar);
-STD_ROM_FN(Bloodwar);
+STD_ROM_PICK(Bloodwar)
+STD_ROM_FN(Bloodwar)
 
 static struct BurnRomInfo BonkadvRomDesc[] = {
 	{ "prg.8",             0x080000, 0xaf2e60f8, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -866,8 +866,8 @@ static struct BurnRomInfo BonkadvRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Bonkadv);
-STD_ROM_FN(Bonkadv);
+STD_ROM_PICK(Bonkadv)
+STD_ROM_FN(Bonkadv)
 
 static struct BurnRomInfo ExplbrkrRomDesc[] = {
 	{ "ts100e.u18",        0x040000, 0xcc84a985, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -884,8 +884,8 @@ static struct BurnRomInfo ExplbrkrRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Explbrkr);
-STD_ROM_FN(Explbrkr);
+STD_ROM_PICK(Explbrkr)
+STD_ROM_FN(Explbrkr)
 
 static struct BurnRomInfo BakubrkrRomDesc[] = {
 	{ "ts100j.u18",        0x040000, 0x8cc0a4fd, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -902,8 +902,8 @@ static struct BurnRomInfo BakubrkrRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Bakubrkr);
-STD_ROM_FN(Bakubrkr);
+STD_ROM_PICK(Bakubrkr)
+STD_ROM_FN(Bakubrkr)
 
 static struct BurnRomInfo GtmrRomDesc[] = {
 	{ "u2.bin",            0x080000, 0x031799f7, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -924,8 +924,8 @@ static struct BurnRomInfo GtmrRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmr);
-STD_ROM_FN(Gtmr);
+STD_ROM_PICK(Gtmr)
+STD_ROM_FN(Gtmr)
 
 static struct BurnRomInfo GtmraRomDesc[] = {
 	{ "mmp0x2.u514.bin",   0x080000, 0xba4a77c8, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -946,14 +946,14 @@ static struct BurnRomInfo GtmraRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmra);
-STD_ROM_FN(Gtmra);
+STD_ROM_PICK(Gtmra)
+STD_ROM_FN(Gtmra)
 
 static struct BurnRomInfo GtmreRomDesc[] = {
 	{ "gmmu2.bin",         0x080000, 0x36dc4aa9, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "gmmu1.bin",         0x080000, 0x8653c144, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
-	{ "mcu_code.u12",      0x020000, 0x00000000, BRF_PRG | BRF_OPT | BRF_NODUMP }, //  2	MCU Code
+	{ "gtmrusa.u12",       0x020000, 0x2e1a06ff, BRF_PRG | BRF_OPT }, //  2	MCU Code
 
 	{ "gmmu27.bin",        0x200000, 0xc0ab3efc, BRF_GRA },		  //  3	Sprites
 	{ "gmmu28.bin",        0x200000, 0xcf6b23dc, BRF_GRA },	 	  //  4	Sprites
@@ -969,8 +969,8 @@ static struct BurnRomInfo GtmreRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmre);
-STD_ROM_FN(Gtmre);
+STD_ROM_PICK(Gtmre)
+STD_ROM_FN(Gtmre)
 
 static struct BurnRomInfo GtmrusaRomDesc[] = {
 	{ "gtmrusa.u2",        0x080000, 0x5be615c4, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -992,8 +992,8 @@ static struct BurnRomInfo GtmrusaRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmrusa);
-STD_ROM_FN(Gtmrusa);
+STD_ROM_PICK(Gtmrusa)
+STD_ROM_FN(Gtmrusa)
 
 static struct BurnRomInfo Gtmr2RomDesc[] = {
 	{ "m2p0x1a.u8",        0x080000, 0xc29039fb, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1017,8 +1017,8 @@ static struct BurnRomInfo Gtmr2RomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmr2);
-STD_ROM_FN(Gtmr2);
+STD_ROM_PICK(Gtmr2)
+STD_ROM_FN(Gtmr2)
 
 static struct BurnRomInfo Gtmr2aRomDesc[] = {
 	{ "m2p0x1.u8",         0x080000, 0x525f6618, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1042,8 +1042,8 @@ static struct BurnRomInfo Gtmr2aRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmr2a);
-STD_ROM_FN(Gtmr2a);
+STD_ROM_PICK(Gtmr2a)
+STD_ROM_FN(Gtmr2a)
 
 static struct BurnRomInfo Gtmr2uRomDesc[] = {
 	{ "m2p0a1.u8",         0x080000, 0x813e1d5e, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1067,8 +1067,8 @@ static struct BurnRomInfo Gtmr2uRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Gtmr2u);
-STD_ROM_FN(Gtmr2u);
+STD_ROM_PICK(Gtmr2u)
+STD_ROM_FN(Gtmr2u)
 
 static struct BurnRomInfo MgcrystlRomDesc[] = {
 	{ "mc100e02.u18",      0x020000, 0x246a1335, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -1085,10 +1085,10 @@ static struct BurnRomInfo MgcrystlRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Mgcrystl);
-STD_ROM_FN(Mgcrystl);
+STD_ROM_PICK(Mgcrystl)
+STD_ROM_FN(Mgcrystl)
 
-static struct BurnRomInfo MgcrystoRomDesc[] = {
+static struct BurnRomInfo MgcrystloRomDesc[] = {
 	{ "mc100h00.u18",      0x020000, 0xc7456ba7, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "mc101h00.u19",      0x040000, 0xea8f9300, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
@@ -1103,10 +1103,10 @@ static struct BurnRomInfo MgcrystoRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Mgcrysto);
-STD_ROM_FN(Mgcrysto);
+STD_ROM_PICK(Mgcrystlo)
+STD_ROM_FN(Mgcrystlo)
 
-static struct BurnRomInfo MgcrystjRomDesc[] = {
+static struct BurnRomInfo MgcrystljRomDesc[] = {
 	{ "mc100j02.u18",      0x020000, 0xafe5882d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "mc101j02.u19",      0x040000, 0x60da5492, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
@@ -1121,8 +1121,8 @@ static struct BurnRomInfo MgcrystjRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Mgcrystj);
-STD_ROM_FN(Mgcrystj);
+STD_ROM_PICK(Mgcrystlj)
+STD_ROM_FN(Mgcrystlj)
 
 /*==============================================================================================
 Graphics Decoding
@@ -2094,7 +2094,9 @@ void __fastcall BlazeonWriteByte(unsigned int a, unsigned char d)
 		
 		case 0xe00000: {
 			Kaneko16SoundLatch = d;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 		
@@ -2223,7 +2225,8 @@ void __fastcall ExplbrkrWriteByte(unsigned int a, unsigned char d)
 		case 0xd00000: return;
 		
 		case 0xd00001: {
-			EEPROMWrite(d & 0x01, 1, d & 0x02);
+			EEPROMWriteBit(d & 0x02);
+			EEPROMSetClockLine((d & 0x01) ? EEPROM_ASSERT_LINE : EEPROM_CLEAR_LINE );
 			return;
 		}
 		
@@ -2733,12 +2736,12 @@ Sound Chip Handlers
 
 static unsigned char Kaneko16EepromRead(unsigned int /*a*/)
 {
-	return EEPROMRead() & 1;
+	return EEPROMRead() & 0x01;
 }
 
 static void Kaneko16EepromReset(unsigned int /*a*/, unsigned int d)
 {
-	EEPROMWrite(0, d & 0x01, 0);
+	EEPROMSetCSLine((d & 0x01) ? EEPROM_CLEAR_LINE : EEPROM_ASSERT_LINE );
 }
 
 static unsigned char Kaneko16Dip0Read(unsigned int /*a*/)
@@ -2749,15 +2752,6 @@ static unsigned char Kaneko16Dip0Read(unsigned int /*a*/)
 static unsigned char Kaneko16Dip1Read(unsigned int /*a*/)
 {
 	return Kaneko16Dip[1];
-}
-
-void Kaneko16YM2151IrqHandler(int Irq)
-{
-	if (Irq) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
-	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
-	}
 }
 
 /*==============================================================================================
@@ -2995,6 +2989,7 @@ static int BlazeonInit()
 	
 	// Setup the Z80 emulation
 	ZetInit(1);
+	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, Kaneko16Z80Rom         );
 	ZetMapArea(0x0000, 0x7fff, 2, Kaneko16Z80Rom         );
 	ZetMapArea(0xc000, 0xdfff, 0, Kaneko16Z80Ram         );
@@ -3007,7 +3002,6 @@ static int BlazeonInit()
 	
 	// Setup the YM2151 emulation
 	BurnYM2151Init(4000000, 25.0);
-	BurnYM2151SetIrqHandler(&Kaneko16YM2151IrqHandler);
 	
 	Kaneko16FrameRender = BlazeonFrameRender;
 	
@@ -3257,7 +3251,7 @@ static int ExplbrkrInit()
 	MSM6295Init(0, (12000000 / 6) / 132, 100.0, 1);
 	
 	Kaneko16Eeprom = 1;
-	EEPROMInit(1024, 16);
+	EEPROMInit(&eeprom_interface_93C46);
 	
 	Kaneko16FrameRender = ExplbrkrFrameRender;
 	
@@ -3598,7 +3592,7 @@ static int MgcrystlInit()
 	MSM6295Init(0, (12000000 / 4) / 165, 100.0, 1);
 	
 	Kaneko16Eeprom = 1;
-	EEPROMInit(1024, 16);
+	EEPROMInit(&eeprom_interface_93C46);
 	
 	Kaneko16FrameRender = MgcrystlFrameRender;
 
@@ -3613,7 +3607,7 @@ int Kaneko16Exit()
 	SekExit();
 	MSM6295Exit(0);
 	MSM6295Exit(1);
-	EEPROMExit();
+	if (Kaneko16Eeprom) EEPROMExit();
 	ZetExit();
 	BurnYM2151Exit();
 	
@@ -4694,16 +4688,20 @@ int BlazeonFrame()
 		
 		// Run Z80
 		nCurrentCPU = 1;
+		ZetOpen(0);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		ZetClose();
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
 			int nSegmentLength = nBurnSoundLen / nInterleave;
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
@@ -4714,7 +4712,9 @@ int BlazeonFrame()
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 		}
 
 	}
@@ -4870,171 +4870,171 @@ Driver defs
 ===============================================================================================*/
 
 struct BurnDriver BurnDrvBerlwall = {
-	"berlwall", NULL, NULL, "1991",
+	"berlwall", NULL, NULL, NULL, "1991",
 	"The Berlin Wall\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, BerlwallRomInfo, BerlwallRomName, BerlwallInputInfo, BerlwallDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, BerlwallRomInfo, BerlwallRomName, NULL, NULL, BerlwallInputInfo, BerlwallDIPInfo,
 	BerlwallInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	&Kaneko16RecalcBg15Palette, 256, 224, 4, 3
+	0, NULL, NULL, NULL, &Kaneko16RecalcBg15Palette, 0x9000, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvBerlwalt = {
-	"berlwalt", "berlwall", NULL, "1991",
+struct BurnDriver BurnDrvBerlwallt = {
+	"berlwallt", "berlwall", NULL, NULL, "1991",
 	"The Berlin Wall (bootleg ?)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S,
-	NULL, BerlwaltRomInfo, BerlwaltRomName, BerlwallInputInfo, BerlwaltDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, BerlwalltRomInfo, BerlwalltRomName, NULL, NULL, BerlwallInputInfo, BerlwalltDIPInfo,
 	BerlwallInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	&Kaneko16RecalcBg15Palette, 256, 224, 4, 3
+	0, NULL, NULL, NULL, &Kaneko16RecalcBg15Palette, 0x9000, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvBlazeon = {
-	"blazeon", NULL, NULL, "1991",
+	"blazeon", NULL, NULL, NULL, "1991",
 	"Blaze On (Japan)\0", NULL, "Atlus", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, BlazeonRomInfo, BlazeonRomName, BlazeonInputInfo, BlazeonDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_HORSHOOT, 0,
+	NULL, BlazeonRomInfo, BlazeonRomName, NULL, NULL, BlazeonInputInfo, BlazeonDIPInfo,
 	BlazeonInit, Kaneko16Exit, BlazeonFrame, NULL, BlazeonScan,
-	NULL, 320, 232, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 320, 232, 4, 3
 };
 
 struct BurnDriver BurnDrvBloodwar = {
-	"bloodwar", NULL, NULL, "1994",
+	"bloodwar", NULL, NULL, NULL, "1994",
 	"Blood Warrior\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, BloodwarRomInfo, BloodwarRomName, BloodwarInputInfo, BloodwarDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_VSFIGHT, 0,
+	NULL, BloodwarRomInfo, BloodwarRomName, NULL, NULL, BloodwarInputInfo, BloodwarDIPInfo,
 	BloodwarInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvBonkadv = {
-	"bonkadv", NULL, NULL, "1994",
+	"bonkadv", NULL, NULL, NULL, "1994",
 	"B.C. Kid / Bonk's Adventure / Kyukyoku!! PC Genjin\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, BonkadvRomInfo, BonkadvRomName, BonkadvInputInfo, BonkadvDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, BonkadvRomInfo, BonkadvRomName, NULL, NULL, BonkadvInputInfo, BonkadvDIPInfo,
 	BonkadvInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvExplbrkr = {
-	"explbrkr", NULL, NULL, "1992",
+	"explbrkr", NULL, NULL, NULL, "1992",
 	"Explosive Breaker\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S,
-	NULL, ExplbrkrRomInfo, ExplbrkrRomName, ExplbrkrInputInfo, ExplbrkrDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KANEKO16, GBF_VERSHOOT, 0,
+	NULL, ExplbrkrRomInfo, ExplbrkrRomName, NULL, NULL, ExplbrkrInputInfo, ExplbrkrDIPInfo,
 	ExplbrkrInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x1000, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvBakubrkr = {
-	"bakubrkr", "explbrkr", NULL, "1992",
+	"bakubrkr", "explbrkr", NULL, NULL, "1992",
 	"Bakuretsu Breaker\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S,
-	NULL, BakubrkrRomInfo, BakubrkrRomName, ExplbrkrInputInfo, ExplbrkrDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KANEKO16, GBF_VERSHOOT, 0,
+	NULL, BakubrkrRomInfo, BakubrkrRomName, NULL, NULL, ExplbrkrInputInfo, ExplbrkrDIPInfo,
 	ExplbrkrInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x1000, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvGtmr = {
-	"gtmr", NULL, NULL, "1994",
+	"gtmr", NULL, NULL, NULL, "1994",
 	"1000 Miglia: Great 1000 Miles Rally (94/07/18)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, GtmrRomInfo, GtmrRomName, GtmrInputInfo, GtmrDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, GtmrRomInfo, GtmrRomName, NULL, NULL, GtmrInputInfo, GtmrDIPInfo,
 	GtmrInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmra = {
-	"gtmra", "gtmr", NULL, "1994",
+	"gtmra", "gtmr", NULL, NULL, "1994",
 	"1000 Miglia: Great 1000 Miles Rally (94/06/13)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, GtmraRomInfo, GtmraRomName, GtmrInputInfo, GtmrDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, GtmraRomInfo, GtmraRomName, NULL, NULL, GtmrInputInfo, GtmrDIPInfo,
 	GtmrInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmre = {
-	"gtmre", "gtmr", NULL, "1994",
+	"gtmre", "gtmr", NULL, NULL, "1994",
 	"Great 1000 Miles Rally: Evolution Model!!! (94/09/06)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, GtmreRomInfo, GtmreRomName, GtmrInputInfo, GtmrDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, GtmreRomInfo, GtmreRomName, NULL, NULL, GtmrInputInfo, GtmrDIPInfo,
 	GtmrevoInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmrusa = {
-	"gtmrusa", "gtmr", NULL, "1994",
+	"gtmrusa", "gtmr", NULL, NULL, "1994",
 	"Great 1000 Miles Rally: U.S.A Version! (94/09/06)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, GtmrusaRomInfo, GtmrusaRomName, GtmrInputInfo, GtmrDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, GtmrusaRomInfo, GtmrusaRomName, NULL, NULL, GtmrInputInfo, GtmrDIPInfo,
 	GtmrevoInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmr2 = {
-	"gtmr2", NULL, NULL, "1995",
+	"gtmr2", NULL, NULL, NULL, "1995",
 	"Mille Miglia 2: Great 1000 Miles Rally (95/05/24)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, Gtmr2RomInfo, Gtmr2RomName, GtmrInputInfo, Gtmr2DIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, Gtmr2RomInfo, Gtmr2RomName, NULL, NULL, GtmrInputInfo, Gtmr2DIPInfo,
 	Gtmr2Init, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmr2a = {
-	"gtmr2a", "gtmr2", NULL, "1995",
+	"gtmr2a", "gtmr2", NULL, NULL, "1995",
 	"Mille Miglia 2: Great 1000 Miles Rally (95/04/04)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, Gtmr2aRomInfo, Gtmr2aRomName, GtmrInputInfo, Gtmr2DIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, Gtmr2aRomInfo, Gtmr2aRomName, NULL, NULL, GtmrInputInfo, Gtmr2DIPInfo,
 	Gtmr2Init, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvGtmr2u = {
-	"gtmr2u", "gtmr2", NULL, "1995",
+	"gtmr2u", "gtmr2", NULL, NULL, "1995",
 	"Great 1000 Miles Rally 2 USA (95/05/18)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, Gtmr2uRomInfo, Gtmr2uRomName, GtmrInputInfo, Gtmr2DIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_RACING, 0,
+	NULL, Gtmr2uRomInfo, Gtmr2uRomName, NULL, NULL, GtmrInputInfo, Gtmr2DIPInfo,
 	Gtmr2uInit, Kaneko16Exit, GtmrFrame, NULL, GtmrScan,
-	NULL, 320, 240, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x10000, 320, 240, 4, 3
 };
 
 struct BurnDriver BurnDrvMgcrsytl = {
-	"mgcrystl", NULL, NULL, "1991",
+	"mgcrystl", NULL, NULL, NULL, "1991",
 	"Magical Crystals (World, 92/01/10)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, MgcrystlRomInfo, MgcrystlRomName, MgcrystlInputInfo, MgcrystlDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, MgcrystlRomInfo, MgcrystlRomName, NULL, NULL, MgcrystlInputInfo, MgcrystlDIPInfo,
 	MgcrystlInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvMgcrsyto = {
-	"mgcrysto", "mgcrystl", NULL, "1991",
+struct BurnDriver BurnDrvMgcrsytlo = {
+	"mgcrystlo", "mgcrystl", NULL, NULL, "1991",
 	"Magical Crystals (World, 91/12/10)\0", NULL, "Kaneko", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, MgcrystoRomInfo, MgcrystoRomName, MgcrystlInputInfo, MgcrystlDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, MgcrystloRomInfo, MgcrystloRomName, NULL, NULL, MgcrystlInputInfo, MgcrystlDIPInfo,
 	MgcrystlInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvMgcrsytj = {
-	"mgcrystj", "mgcrystl", NULL, "1991",
+struct BurnDriver BurnDrvMgcrsytlj = {
+	"mgcrystlj", "mgcrystl", NULL, NULL, "1991",
 	"Magical Crystals (Japan, 92/01/13)\0", NULL, "Kaneko (Atlus license)", "Kaneko 16-bit",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S,
-	NULL, MgcrystjRomInfo, MgcrystjRomName, MgcrystlInputInfo, MgcrystlDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KANEKO16, GBF_PLATFORM, 0,
+	NULL, MgcrystljRomInfo, MgcrystljRomName, NULL, NULL, MgcrystlInputInfo, MgcrystlDIPInfo,
 	MgcrystlInit, Kaneko16Exit, ExplbrkrFrame, NULL, ExplbrkrScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x1000, 256, 224, 4, 3
 };

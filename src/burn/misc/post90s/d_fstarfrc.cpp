@@ -69,7 +69,7 @@ static struct BurnInputInfo FstarfrcInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, FstarfrcDip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Fstarfrc);
+STDINPUTINFO(Fstarfrc)
 
 static struct BurnInputInfo RiotInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , FstarfrcInputPort0 + 14, "p1 coin"   },
@@ -98,7 +98,7 @@ static struct BurnInputInfo RiotInputList[] = {
 	{"Dip 2"             , BIT_DIPSWITCH, FstarfrcDip + 1        , "dip"       },
 };
 
-STDINPUTINFO(Riot);
+STDINPUTINFO(Riot)
 
 inline void FstarfrcMakeInputs()
 {
@@ -180,7 +180,7 @@ static struct BurnDIPInfo FstarfrcDIPList[]=
 	{0x12, 0x01, 0xc0, 0x00, "Every 500,000, Once at Highest Score"},
 };
 
-STDDIPINFO(Fstarfrc);
+STDDIPINFO(Fstarfrc)
 
 static struct BurnDIPInfo GinkunDIPList[]=
 {
@@ -227,7 +227,7 @@ static struct BurnDIPInfo GinkunDIPList[]=
 	{0x12, 0x01, 0x20, 0x20, "On"                     },
 };
 
-STDDIPINFO(Ginkun);
+STDDIPINFO(Ginkun)
 
 static struct BurnDIPInfo RiotDIPList[]=
 {
@@ -276,7 +276,7 @@ static struct BurnDIPInfo RiotDIPList[]=
 	{0x14, 0x01, 0x20, 0x20, "On"                     },
 };
 
-STDDIPINFO(Riot);
+STDDIPINFO(Riot)
 
 static struct BurnRomInfo FstarfrcRomDesc[] = {
 	{ "fstarf01.rom",  0x40000, 0x94c71de6, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -294,8 +294,28 @@ static struct BurnRomInfo FstarfrcRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Fstarfrc);
-STD_ROM_FN(Fstarfrc);
+STD_ROM_PICK(Fstarfrc)
+STD_ROM_FN(Fstarfrc)
+
+
+static struct BurnRomInfo FstarfrcjRomDesc[] = {
+	{ "1.bin",         0x40000, 0x1905d85d, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "2.bin",         0x40000, 0xde9cfc39, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+
+	{ "fstarf03.rom",  0x20000, 0x54375335, BRF_GRA },			 //  2
+	{ "fstarf05.rom",  0x80000, 0x77a281e7, BRF_GRA },			 //  3
+	{ "fstarf04.rom",  0x80000, 0x398a920d, BRF_GRA },			 //  4
+	{ "fstarf09.rom",  0x80000, 0xd51341d2, BRF_GRA },			 //  5
+	{ "fstarf06.rom",  0x80000, 0x07e40e87, BRF_GRA },			 //  6
+
+	{ "fstarf07.rom",  0x10000, 0xe0ad5de1, BRF_PRG | BRF_SND }, //  7	Z80 Program Code
+
+	{ "fstarf08.rom",  0x20000, 0xf0ad5693, BRF_SND },			 //  8	Samples
+};
+
+
+STD_ROM_PICK(Fstarfrcj)
+STD_ROM_FN(Fstarfrcj)
 
 static struct BurnRomInfo GinkunRomDesc[] = {
 	{ "ginkun01.i01",  0x40000, 0x98946fd5, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -313,8 +333,8 @@ static struct BurnRomInfo GinkunRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ginkun);
-STD_ROM_FN(Ginkun);
+STD_ROM_PICK(Ginkun)
+STD_ROM_FN(Ginkun)
 
 static struct BurnRomInfo RiotRomDesc[] = {
 	{ "1.ic1",  0x40000, 0x9ef4232e, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -332,8 +352,8 @@ static struct BurnRomInfo RiotRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Riot);
-STD_ROM_FN(Riot);
+STD_ROM_PICK(Riot)
+STD_ROM_FN(Riot)
 
 int FstarfrcDoReset()
 {
@@ -345,7 +365,9 @@ int FstarfrcDoReset()
 	SekReset();
 	SekClose();
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	MSM6295Reset(0);
 	BurnYM2151Reset();
@@ -356,9 +378,11 @@ int FstarfrcDoReset()
 void FstarfrcYM2151IrqHandler(int Irq)
 {
 	if (Irq) {
-		ZetRaiseIrq(1);
+		//ZetRaiseIrq(1);
+		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
 	} else {
-		ZetLowerIrq();
+		//ZetLowerIrq();
+		ZetSetIRQLine(0   , ZET_IRQSTATUS_NONE);
 	}
 }
 
@@ -387,7 +411,7 @@ unsigned char __fastcall FstarfrcReadByte(unsigned int a)
 		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
 		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
@@ -437,7 +461,9 @@ void __fastcall FstarfrcWriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0x150011: {
 			FstarfrcSoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -474,12 +500,13 @@ unsigned char __fastcall GinkunReadByte(unsigned int a)
 		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
 		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
 		}
-	}	
+	}
+	
 
 //	bprintf(PRINT_NORMAL, _T("Read Byte -> %06X\n"), a);
 
@@ -553,7 +580,9 @@ void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
 
 		case 0x150011: {
 			FstarfrcSoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -698,7 +727,7 @@ int FstarfrcInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "fstarfrc")) {
+	if (!strncmp(BurnDrvGetTextA(DRV_NAME), "fstarfrc", 8)) {
 	SekMapMemory(FstarfrcRom         , 0x000000, 0x07ffff, SM_ROM);
 	SekMapMemory(FstarfrcRam         , 0x100000, 0x103fff, SM_RAM);
 	SekMapMemory(FstarfrcCharRam     , 0x110000, 0x110fff, SM_RAM);
@@ -733,6 +762,7 @@ int FstarfrcInit()
 
 	// Setup the Z80 emulation
 	ZetInit(1);
+	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, FstarfrcZ80Rom         );
 	ZetMapArea(0x0000, 0xefff, 2, FstarfrcZ80Rom         );
 	ZetMapArea(0xf000, 0xfbff, 0, FstarfrcZ80Ram         );
@@ -744,6 +774,7 @@ int FstarfrcInit()
 	ZetMemEnd();
 	ZetSetReadHandler(FstarfrcZ80Read);
 	ZetSetWriteHandler(FstarfrcZ80Write);
+	ZetClose();
 
 	// Setup the YM2151 emulation
 	BurnYM2151Init(8000000 / 2, 50.0);
@@ -1069,8 +1100,12 @@ int FstarfrcCalcPalette()
 
 void GinkunRender()
 {
-	BurnTransferClear();
 	FstarfrcCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0x300;
+	}
+	
 	draw_sprites(3);
 	GinkunRenderBgLayer();
 	draw_sprites(2);
@@ -1083,8 +1118,12 @@ void GinkunRender()
 
 void FstarfrcRender()
 {
-	BurnTransferClear();
 	FstarfrcCalcPalette();
+	
+	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+		pTransDraw[i] = 0x300;
+	}
+	
 	draw_sprites(3);
 	FstarfrcRenderBgLayer();
 	draw_sprites(2);
@@ -1123,16 +1162,20 @@ int FstarfrcFrame()
 
 		// Run Z80
 		nCurrentCPU = 1;
+		ZetOpen(0);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		ZetClose();
 
 		if (pBurnSoundOut) {
 			int nSegmentLength = nBurnSoundLen / nInterleave;
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1147,7 +1190,9 @@ int FstarfrcFrame()
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 		}
 	}
@@ -1204,31 +1249,41 @@ static int FstarfrcScan(int nAction,int *pnMin)
 }
 
 struct BurnDriver BurnDrvFstarfrc = {
-	"fstarfrc", NULL, NULL, "1992",
+	"fstarfrc", NULL, NULL, NULL, "1992",
 	"Final Star Force (US)\0", NULL, "Tecmo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S,
-	NULL, FstarfrcRomInfo, FstarfrcRomName, FstarfrcInputInfo, FstarfrcDIPInfo,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, FstarfrcRomInfo, FstarfrcRomName, NULL, NULL, FstarfrcInputInfo, FstarfrcDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 224, 256, 3, 4
+	0, NULL, NULL, NULL, NULL, 0x2000, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvFstarfrcj = {
+	"fstarfrcj", "fstarfrc", NULL, NULL, "1992",
+	"Final Star Force (Japan)\0", NULL, "Tecmo", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	NULL, FstarfrcjRomInfo, FstarfrcjRomName, NULL, NULL, FstarfrcInputInfo, FstarfrcDIPInfo,
+	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
+	0, NULL, NULL, NULL, NULL, 0x2000, 224, 256, 3, 4
 };
 
 struct BurnDriver BurnDrvGinkun = {
-	"ginkun", NULL, NULL, "1995",
+	"ginkun", NULL, NULL, NULL, "1995",
 	"Ganbare Ginkun\0", "Imperfect GFX", "Tecmo", "Miscellaneous",
 	L"\u304C\u3093\u3070\u308C \u30AE\u30F3\u304F\u3093\0Ganbare Ginkun\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, GinkunRomInfo, GinkunRomName, FstarfrcInputInfo, GinkunDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_MINIGAMES, 0,
+	NULL, GinkunRomInfo, GinkunRomName, NULL, NULL, FstarfrcInputInfo, GinkunDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x2000, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvRiot = {
-	"riot", NULL, NULL, "1992",
+	"riot", NULL, NULL, NULL, "1992",
 	"Riot\0", NULL, "NMK", "Miscellaneous",
 	L"\u96F7\u8ECB\u6597 Riot\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S,
-	NULL, RiotRomInfo, RiotRomName, RiotInputInfo, RiotDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	NULL, RiotRomInfo, RiotRomName, NULL, NULL, RiotInputInfo, RiotDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
-	NULL, 256, 224, 4, 3
+	0, NULL, NULL, NULL, NULL, 0x2000, 256, 224, 4, 3
 };

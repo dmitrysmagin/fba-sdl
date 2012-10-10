@@ -3,6 +3,7 @@
 
 int Cps = 0;							// 1 = CPS1, 2 = CPS2, 3 = CPS Changer
 int Cps1Qs = 0;
+int Cps1Pic = 0;
 
 int nCPS68KClockspeed = 0;
 int nCpsCycles = 0;						// 68K Cycles per frame
@@ -75,6 +76,40 @@ static int LoadUp(unsigned char** pRom, int* pnRomLen, int nNum)
 	return 0;
 }
 
+static int LoadUpSplit(unsigned char** pRom, int* pnRomLen, int nNum)
+{
+	unsigned char *Rom;
+	struct BurnRomInfo ri;
+	unsigned int nRomSize[4], nTotalRomSize;
+	int i;
+
+	ri.nLen = 0;
+	for (i = 0; i < 4; i++) {
+		BurnDrvGetRomInfo(&ri, nNum + i);
+		nRomSize[i] = ri.nLen;
+	}
+	
+	nTotalRomSize = nRomSize[0] + nRomSize[1] + nRomSize[2] + nRomSize[3];
+	if (!nTotalRomSize) return 1;
+
+	Rom = (unsigned char*)malloc(nTotalRomSize);
+	if (Rom == NULL) return 1;
+	
+	int Offset = 0;
+	for (i = 0; i < 4; i++) {
+		if (i > 0) Offset += nRomSize[i - 1];
+		if (BurnLoadRom(Rom + Offset, nNum + i, 1)) {
+			free(Rom);
+			return 1;
+		}
+	}
+
+	*pRom = Rom;
+	*pnRomLen = nTotalRomSize;
+	
+	return 0;
+}
+
 // ----------------------------CPS1--------------------------------
 // Load 1 rom and interleave in the CPS style:
 // rom  : aa bb
@@ -110,51 +145,6 @@ static int CpsLoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 	return 0;
 }
 
-static int CpsLoadOneHack160(unsigned char *Tile, int nNum, int nWord, int nOffset)
-{
-	int i = 0;
-	unsigned char *Rom1 = NULL, *Rom2 = NULL;
-	int nRomLen1 = 0, nRomLen2 = 0;
-	unsigned char *pt = NULL, *pr = NULL;
-
-	LoadUp(&Rom1, &nRomLen1, nNum);
-	if (Rom1 == NULL) {
-		return 1;
-	}
-	LoadUp(&Rom2, &nRomLen2, nNum + 1);
-	if (Rom2 == NULL) {
-		return 1;
-	}
-
-	for (i = 0, pt = Tile, pr = Rom1 + (0x80000 * nOffset); i < 0x80000; pt += 8) {
-		unsigned int Pix;		// Eight pixels
-		unsigned char b;
-		b = *pr++; i++; Pix = SepTable[b];
-		if (nWord) {
-			b = *pr++; i++; Pix |= SepTable[b] << 1;
-		}
-
-		Pix <<= 0;
-		*((unsigned int *)pt) |= Pix;
-	}
-
-	for (i = 0, pt = Tile, pr = Rom2 + (0x80000 * nOffset); i < 0x80000; pt += 8) {
-		unsigned int Pix;		// Eight pixels
-		unsigned char b;
-		b = *pr++; i++; Pix = SepTable[b];
-		if (nWord) {
-			b = *pr++; i++; Pix |= SepTable[b] << 1;
-		}
-
-		Pix <<= 2;
-		*((unsigned int *)pt) |= Pix;
-	}
-
-	free(Rom2);
-	free(Rom1);
-	return 0;
-}
-
 static int CpsLoadOnePang(unsigned char *Tile,int nNum,int nWord,int nShift)
 {
 	int i=0;
@@ -184,6 +174,195 @@ static int CpsLoadOnePang(unsigned char *Tile,int nNum,int nWord,int nShift)
 	return 0;
 }
 
+static int CpsLoadOneHack160(unsigned char *Tile, int nNum, int nWord, int nOffset)
+{
+	int i = 0;
+	unsigned char *Rom1 = NULL, *Rom2 = NULL;
+	int nRomLen1 = 0, nRomLen2 = 0;
+	unsigned char *pt = NULL, *pr = NULL;
+
+	LoadUp(&Rom1, &nRomLen1, nNum);
+	if (Rom1 == NULL) {
+		return 1;
+	}
+	LoadUp(&Rom2, &nRomLen2, nNum + 1);
+	if (Rom2 == NULL) {
+		return 1;
+	}
+
+ 	for (i = 0, pt = Tile, pr = Rom1 + (0x80000 * nOffset); i < 0x80000; pt += 8) {
+		unsigned int Pix;		// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= 0;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	for (i = 0, pt = Tile, pr = Rom2 + (0x80000 * nOffset); i < 0x80000; pt += 8) {
+		unsigned int Pix;		// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= 2;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	free(Rom2);
+	free(Rom1);
+	return 0;
+}
+
+static int CpsLoadOneBootleg(unsigned char* Tile, int nNum, int nWord, int nShift)
+{
+	unsigned char *Rom = NULL; int nRomLen=0;
+	unsigned char *pt = NULL, *pr = NULL;
+	int i;
+
+	LoadUp(&Rom, &nRomLen, nNum);
+	if (Rom == NULL) {
+		return 1;
+	}
+	nRomLen &= ~1;								// make sure even
+
+	for (i = 0, pt = Tile, pr = Rom; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	for (i = 0, pt = Tile + 4, pr = Rom + 0x40000; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	free(Rom);
+	return 0;
+}
+
+static int CpsLoadOneBootlegType2(unsigned char* Tile, int nNum, int nWord, int nShift)
+{
+	unsigned char *Rom = NULL; int nRomLen=0;
+	unsigned char *pt = NULL, *pr = NULL;
+	int i;
+
+	LoadUp(&Rom, &nRomLen, nNum);
+	if (Rom == NULL) {
+		return 1;
+	}
+	nRomLen &= ~1;								// make sure even
+
+	for (i = 0, pt = Tile, pr = Rom; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	for (i = 0, pt = Tile + 4, pr = Rom + 0x40000; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+	
+	for (i = 0, pt = Tile + 0x200000, pr = Rom + 0x80000; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	for (i = 0, pt = Tile + 0x200004, pr = Rom + 0xc0000; i < 0x40000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	free(Rom);
+	return 0;
+}
+
+static int CpsLoadOneSf2ebbl(unsigned char* Tile, int nNum, int nWord, int nShift)
+{
+	unsigned char *Rom = NULL; int nRomLen=0;
+	unsigned char *pt = NULL, *pr = NULL;
+	int i;
+
+	LoadUp(&Rom, &nRomLen, nNum);
+	if (Rom == NULL) {
+		return 1;
+	}
+	nRomLen &= ~1;								// make sure even
+
+	for (i = 0, pt = Tile, pr = Rom; i < 0x10000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	for (i = 0, pt = Tile + 4, pr = Rom + 0x10000; i < 0x10000; pt += 8) {
+		unsigned int Pix;						// Eight pixels
+		unsigned char b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((unsigned int *)pt) |= Pix;
+	}
+
+	free(Rom);
+	return 0;
+}
+
 int CpsLoadTiles(unsigned char* Tile, int nStart)
 {
 	// left  side of 16x16 tiles
@@ -192,6 +371,42 @@ int CpsLoadTiles(unsigned char* Tile, int nStart)
 	// right side of 16x16 tiles
 	CpsLoadOne(Tile + 4, nStart + 2, 1, 0);
 	CpsLoadOne(Tile + 4, nStart + 3, 1, 2);
+	return 0;
+}
+
+int CpsLoadTilesByte(unsigned char* Tile, int nStart)
+{
+	CpsLoadOne(Tile,     nStart + 0, 0, 0);
+	CpsLoadOne(Tile,     nStart + 1, 0, 1);
+	CpsLoadOne(Tile,     nStart + 2, 0, 2);
+	CpsLoadOne(Tile,     nStart + 3, 0, 3);
+	CpsLoadOne(Tile + 4, nStart + 4, 0, 0);
+	CpsLoadOne(Tile + 4, nStart + 5, 0, 1);
+	CpsLoadOne(Tile + 4, nStart + 6, 0, 2);
+	CpsLoadOne(Tile + 4, nStart + 7, 0, 3);
+	return 0;
+}
+
+int CpsLoadTilesForgottnAlt(unsigned char* Tile, int nStart)
+{
+	CpsLoadOne(Tile + 0 + 0x000000, nStart +  0, 0, 0);
+	CpsLoadOne(Tile + 0 + 0x000000, nStart +  1, 0, 1);
+	CpsLoadOne(Tile + 0 + 0x000000, nStart +  2, 1, 2);
+	CpsLoadOne(Tile + 4 + 0x000000, nStart +  3, 1, 0);
+	CpsLoadOne(Tile + 4 + 0x000000, nStart +  4, 0, 2);
+	CpsLoadOne(Tile + 4 + 0x000000, nStart +  5, 0, 3);
+	CpsLoadOne(Tile + 0 + 0x100000, nStart +  6, 0, 0);
+	CpsLoadOne(Tile + 0 + 0x100000, nStart +  7, 0, 1);
+	CpsLoadOne(Tile + 4 + 0x100000, nStart +  8, 0, 2);
+	CpsLoadOne(Tile + 4 + 0x100000, nStart +  9, 0, 3);
+	CpsLoadOne(Tile + 0 + 0x200000, nStart + 10, 1, 0);
+	CpsLoadOne(Tile + 0 + 0x200000, nStart + 11, 0, 2);
+	CpsLoadOne(Tile + 0 + 0x200000, nStart + 12, 0, 3);
+	CpsLoadOne(Tile + 4 + 0x200000, nStart + 13, 1, 0);
+	CpsLoadOne(Tile + 4 + 0x200000, nStart + 14, 1, 2);
+	CpsLoadOne(Tile + 0 + 0x300000, nStart + 15, 0, 2);
+	CpsLoadOne(Tile + 0 + 0x300000, nStart + 16, 0, 3);
+	
 	return 0;
 }
 
@@ -211,19 +426,47 @@ int CpsLoadTilesHack160(unsigned char* Tile, int nStart)
 	CpsLoadOneHack160(Tile + 4 + 0x000000, nStart, 1, 1);
 	CpsLoadOneHack160(Tile + 0 + 0x200000, nStart, 1, 2);
 	CpsLoadOneHack160(Tile + 4 + 0x200000, nStart, 1, 3);
+	
 	return 0;
 }
 
-int CpsLoadTilesByte(unsigned char* Tile, int nStart)
+int CpsLoadTilesBootleg(unsigned char *Tile, int nStart)
 {
-	CpsLoadOne(Tile,     nStart + 0, 0, 0);
-	CpsLoadOne(Tile,     nStart + 1, 0, 1);
-	CpsLoadOne(Tile,     nStart + 2, 0, 2);
-	CpsLoadOne(Tile,     nStart + 3, 0, 3);
-	CpsLoadOne(Tile + 4, nStart + 4, 0, 0);
-	CpsLoadOne(Tile + 4, nStart + 5, 0, 1);
-	CpsLoadOne(Tile + 4, nStart + 6, 0, 2);
-	CpsLoadOne(Tile + 4, nStart + 7, 0, 3);
+	CpsLoadOneBootleg(Tile, nStart,     0, 0);
+	CpsLoadOneBootleg(Tile, nStart + 1, 0, 1);
+	CpsLoadOneBootleg(Tile, nStart + 2, 0, 2);
+	CpsLoadOneBootleg(Tile, nStart + 3, 0, 3);
+	
+	return 0;
+}
+
+int CpsLoadTilesCaptcomb(unsigned char *Tile, int nStart)
+{
+	CpsLoadOneBootlegType2(Tile, nStart,     0, 0);
+	CpsLoadOneBootlegType2(Tile, nStart + 1, 0, 1);
+	CpsLoadOneBootlegType2(Tile, nStart + 2, 0, 2);
+	CpsLoadOneBootlegType2(Tile, nStart + 3, 0, 3);
+	
+	return 0;
+}
+
+int CpsLoadTilesPunipic2(unsigned char *Tile, int nStart)
+{
+	CpsLoadOneHack160(Tile + 0 + 0x000000, nStart, 1, 0);
+	CpsLoadOneHack160(Tile + 0 + 0x200000, nStart, 1, 1);
+	CpsLoadOneHack160(Tile + 4 + 0x000000, nStart, 1, 2);
+	CpsLoadOneHack160(Tile + 4 + 0x200000, nStart, 1, 3);
+	
+	return 0;
+}
+
+int CpsLoadTilesSf2ebbl(unsigned char *Tile, int nStart)
+{
+	CpsLoadOneSf2ebbl(Tile, nStart + 0, 0, 0);
+	CpsLoadOneSf2ebbl(Tile, nStart + 1, 0, 2);
+	CpsLoadOneSf2ebbl(Tile, nStart + 2, 0, 1);
+	CpsLoadOneSf2ebbl(Tile, nStart + 3, 0, 3);
+	
 	return 0;
 }
 
@@ -246,7 +489,53 @@ int CpsLoadStars(unsigned char* pStar, int nStart)
 
 	free(pTemp[0]);
 	free(pTemp[1]);
+	
+	return 0;
+}
 
+int CpsLoadStarsByte(unsigned char* pStar, int nStart)
+{
+	unsigned char* pTemp[2] = { NULL, NULL};
+	int nLen;
+
+	for (int i = 0; i < 2; i++) {
+		if (LoadUp(&pTemp[i], &nLen, nStart + (i * 4))) {
+			free(pTemp[0]);
+			free(pTemp[1]);
+		}
+	}
+
+	for (int i = 0; i < 0x1000; i++) {
+		pStar[i] = pTemp[0][i];
+		pStar[0x01000 + i] = pTemp[1][i];
+	}
+
+	free(pTemp[0]);
+	free(pTemp[1]);	
+
+	return 0;
+}
+
+int CpsLoadStarsForgottnAlt(unsigned char* pStar, int nStart)
+{
+	unsigned char* pTemp[2] = { NULL, NULL};
+	int nLen;
+
+	for (int i = 0; i < 2; i++) {
+		if (LoadUp(&pTemp[i], &nLen, nStart + (i * 3))) {
+			free(pTemp[0]);
+			free(pTemp[1]);
+		}
+	}
+
+	for (int i = 0; i < 0x1000; i++) {
+		pStar[i] = pTemp[0][i << 1];
+		pStar[0x01000 + i] = pTemp[1][i << 1];
+	}
+
+	free(pTemp[0]);
+	free(pTemp[1]);
+	
 	return 0;
 }
 
@@ -327,6 +616,29 @@ static int Cps2LoadOne(unsigned char* Tile, int nNum, int nWord, int nShift)
 	return 0;
 }
 
+static int Cps2LoadSplit(unsigned char* Tile, int nNum, int nShift)
+{
+	unsigned char *Rom = NULL; int nRomLen = 0;
+	unsigned char *pt, *pr;
+
+	LoadUpSplit(&Rom, &nRomLen, nNum);
+	if (Rom == NULL) {
+		return 1;
+	}
+	
+	// Go through each section
+	pt = Tile; pr = Rom;
+	for (int b = 0; b < nRomLen >> 19; b++) {
+		Cps2Load100000(pt, pr,     nShift); pt += 0x100000;
+		Cps2Load100000(pt, pr + 2, nShift); pt += 0x100000;
+		pr += 0x80000;
+	}
+
+	free(Rom);
+
+	return 0;
+}
+
 int Cps2LoadTiles(unsigned char* Tile, int nStart)
 {
 	// left  side of 16x16 tiles
@@ -335,6 +647,18 @@ int Cps2LoadTiles(unsigned char* Tile, int nStart)
 	// right side of 16x16 tiles
 	Cps2LoadOne(Tile + 4, nStart + 2, 1, 0);
 	Cps2LoadOne(Tile + 4, nStart + 3, 1, 2);
+
+	return 0;
+}
+
+int Cps2LoadTilesSplit(unsigned char* Tile, int nStart)
+{
+	// left  side of 16x16 tiles
+	Cps2LoadSplit(Tile,     nStart +  0, 0);
+	Cps2LoadSplit(Tile,     nStart +  4, 2);
+	// right side of 16x16 tiles
+	Cps2LoadSplit(Tile + 4, nStart +  8, 0);
+	Cps2LoadSplit(Tile + 4, nStart + 12, 2);
 
 	return 0;
 }
@@ -464,9 +788,15 @@ static int CpsGetROMs(bool bLoad)
 		// Normal Graphics ROMs
 		if (ri.nType & BRF_GRA) {
 			if (bLoad) {
-				Cps2LoadTiles(CpsGfxLoad, i);
-				CpsGfxLoad += (nGfxMaxSize == ~0U ? ri.nLen : nGfxMaxSize) * 4;
-				i += 3;
+				if ((ri.nType & 15) == 6) {
+					Cps2LoadTilesSplit(CpsGfxLoad, i);
+					CpsGfxLoad += (nGfxMaxSize == ~0U ? ri.nLen : nGfxMaxSize) * 4;
+					i += 15;
+				} else {
+					Cps2LoadTiles(CpsGfxLoad, i);
+					CpsGfxLoad += (nGfxMaxSize == ~0U ? ri.nLen : nGfxMaxSize) * 4;
+					i += 3;
+				}
 			} else {
 				if (ri.nLen > nGfxMaxSize) {
 					nGfxMaxSize = ri.nLen;
@@ -477,7 +807,7 @@ static int CpsGetROMs(bool bLoad)
 				nCpsGfxLen += ri.nLen;
 				nGfxNum++;
 			}
-			continue;
+			continue;			
 		}
 
 		// QSound sample ROMs
@@ -501,7 +831,7 @@ static int CpsGetROMs(bool bLoad)
 #endif
 		cps2_decrypt_game_data();
 		
-		if (!nCpsCodeLen) return 1;
+//		if (!nCpsCodeLen) return 1;
 	} else {
 
 		if (nGfxMaxSize != ~0U) {
@@ -532,8 +862,14 @@ static int CpsGetROMs(bool bLoad)
 int CpsInit()
 {
 	int nMemLen, i;
-
-	BurnSetRefreshRate(59.633333);
+	
+	if (Cps == 1) {
+		BurnSetRefreshRate(59.61);
+	} else {
+		if (Cps == 2) {
+			BurnSetRefreshRate(59.633333);
+		}
+	}
 
 	if (!nCPS68KClockspeed) {
 		if (!(Cps & 1)) {
@@ -583,19 +919,21 @@ int CpsInit()
 		nCpsGfxScroll[1] = nCpsGfxScroll[2] = nCpsGfxScroll[3] = 0;
 	}
 
+#if 0
 	if (nCpsZRomLen>=5) {
 		// 77->cfff and rst 00 in case driver doesn't load
 		CpsZRom[0] = 0x3E; CpsZRom[1] = 0x77;
 		CpsZRom[2] = 0x32; CpsZRom[3] = 0xFF; CpsZRom[4] = 0xCF;
 		CpsZRom[5] = 0xc7;
 	}
+#endif
 
 	SepTableCalc();									  // Precalc the separate table
 
 	CpsReset = 0; Cpi01A = Cpi01C = Cpi01E = 0;		  // blank other inputs
 
 	// Use this as default - all CPS-2 games use it
-	SetCpsBId(NOBATTRY, 0);
+	SetCpsBId(CPS_B_21_DEF, 0);
 
 	return 0;
 }
@@ -627,7 +965,13 @@ int CpsExit()
 	nCpsLcReg = 0;
 	nCpsGfxScroll[1] = nCpsGfxScroll[2] = nCpsGfxScroll[3] = 0;
 	nCpsGfxMask = 0;
+	
+	Scroll1TileMask = 0;
+	Scroll2TileMask = 0;
+	Scroll3TileMask = 0;
 
+	if (CpsCode != (CpsRom + nCpsRomLen)) free(CpsCode);
+	
 	nCpsCodeLen = nCpsRomLen = nCpsGfxLen = nCpsZRomLen = nCpsQSamLen = nCpsAdLen = 0;
 	CpsCode = CpsRom = CpsZRom = CpsAd = CpsStar = NULL;
 	CpsQSam = NULL;

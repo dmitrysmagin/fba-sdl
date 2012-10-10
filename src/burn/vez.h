@@ -26,11 +26,19 @@ struct VezContext {
 
 extern struct VezContext * VezCurrentCPU;
 
+unsigned char cpu_readmem20(unsigned int a);
+void cpu_writemem20(unsigned int a, unsigned char d);
+
+extern int nVezCount;
+
 int VezInit(int nCount, unsigned int * typelist);
 void VezExit();
 void VezNewFrame();
-int VezOpen(int nCPU);
+void VezOpen(int nCPU);
 void VezClose();
+int VezGetActive();
+
+void VezSetDecode(unsigned char *decode); // set opcode decode
 
 int VezMemCallback(int nStart,int nEnd,int nMode);
 int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem);

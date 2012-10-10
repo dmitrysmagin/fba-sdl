@@ -48,7 +48,7 @@ void __fastcall QsndZWrite(unsigned short a, unsigned char d)
 	}
 	if (a == 0xd002) {
 		QscWrite(d, (QscCmd[0] << 8) | QscCmd[1]);
-//		bprintf(PRINT_NORMAL, "QSound command %02X %04X sent.\n", d, (QscCmd[0] << 8) | QscCmd[1]);
+//		bprintf(PRINT_NORMAL, _T("QSound command %02X %04X sent.\n"), d, (QscCmd[0] << 8) | QscCmd[1]);
 		return;
 	}
 	if (a == 0xd003) {

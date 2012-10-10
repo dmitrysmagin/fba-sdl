@@ -107,10 +107,11 @@ void nec_reset (void)
     }
 }
 
+/*
 static void nec_exit (void)
 {
 
-}
+}*/
 
 void nec_int(unsigned int wektor)
 {
@@ -130,7 +131,7 @@ void nec_int(unsigned int wektor)
 	}
 }
 
-static void nec_interrupt(int int_num, /*BOOLEAN*/ int md_flag)
+static void nec_interrupt(int int_num, /*BOOLEAN*/ int /*md_flag*/)
 {
     unsigned int dest_seg, dest_off;
 
@@ -185,6 +186,7 @@ static void nec_trap(void)
 	nec_interrupt(1,0);
 }
 
+#if 0
 static void external_int(void)
 {
 	if( I->pending_irq & NMI_IRQ )
@@ -199,6 +201,7 @@ static void external_int(void)
 		nec_interrupt(-1,0);
 	}
 }
+#endif
 
 /****************************************************************************/
 /*                             OPCODES                                      */

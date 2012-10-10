@@ -210,11 +210,11 @@ static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 
 		_stprintf(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN1, true), _T(APP_TITLE), szAppBurnVer);
 		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN2, true));
- #if VER_ALPHA > 0 && (VER_ALPHA < 90 || VER_BETA < 99)
+#if VER_ALPHA > 0 && (VER_ALPHA < 90 || VER_BETA < 99)
 		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN3A, true));
- #elif VER_BETA > 0 && VER_BETA < 99
+#elif VER_BETA > 0 && VER_BETA < 99
 		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN3B, true));
- #endif
+#endif
 
 		SendDlgItemMessage(hDlg, IDC_LICENSE, WM_SETTEXT, (WPARAM)0, (LPARAM)szWarningString);
 

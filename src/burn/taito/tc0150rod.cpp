@@ -1,6 +1,7 @@
 // TC0150ROD
 
 #include "tiles_generic.h"
+#include "taito_ic.h"
 
 unsigned char *TC0150RODRom = NULL;
 unsigned char *TC0150RODRam = NULL;
@@ -414,14 +415,21 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 	} while (y < nScreenHeight);
 }
 
-void TC0150RODInit(int nRomSize, int nRamSize, int xFlip)
+void TC0150RODReset()
+{
+
+}
+
+void TC0150RODInit(int nRomSize, int xFlip)
 {
 	TC0150RODRom = (unsigned char*)malloc(nRomSize);
 	memset(TC0150RODRom, 0, nRomSize);
-	TC0150RODRam = (unsigned char*)malloc(nRamSize);
-	memset(TC0150RODRam, 0, nRamSize);
+	TC0150RODRam = (unsigned char*)malloc(0x2000);
+	memset(TC0150RODRam, 0, 0x2000);
 	
 	TC0150RODFlipScreenX = xFlip;
+	
+	TaitoIC_TC0150RODInUse = 1;
 }
 
 void TC0150RODExit()

@@ -37,6 +37,8 @@ int ToaPalUpdate()
 {
 	unsigned short* ps = (unsigned short*)ToaPalSrc;
 	unsigned int* pd = ToaPalette;
+	
+	pBurnDrvPalette = ToaPalette;
 
 	for (int i = 0; i < nToaPalLen; i++) {
 		pd[i] = CalcCol(ps[i]);
@@ -48,6 +50,8 @@ int ToaPal2Update()
 {
 	unsigned short* ps = (unsigned short*)ToaPalSrc2;
 	unsigned int* pd = ToaPalette2;
+	
+//	pBurnDrvPalette = ToaPalette2;
 
 	for (int i = 0; i < nToaPalLen; i++) {
 		pd[i] = CalcCol(ps[i]);

@@ -1,5 +1,25 @@
 #include "burner.h"
 
+bool bIsWindowsXPorGreater = FALSE;
+
+// Detect if we are using Windows XP/Vista/7
+BOOL DetectWindowsVersion()
+{
+    OSVERSIONINFO osvi;
+    BOOL bIsWindowsXPorLater;
+
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+    GetVersionEx(&osvi);
+    
+	// osvi.dwMajorVersion returns the windows version: 5 = XP 6 = Vista/7
+    // osvi.dwMinorVersion returns the minor version, XP and 7 = 1, Vista = 0
+    bIsWindowsXPorLater = ((osvi.dwMajorVersion > 5) || ( (osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1)));
+    
+    return bIsWindowsXPorLater; 
+}
+
 // Set the current directory to be the application's directory
 int AppDirectory()
 {

@@ -1,8 +1,13 @@
 // Timers (for Yamaha FM cips and generic)
 #include "burnint.h"
 #include "timer.h"
+#include "m6809_intf.h"
+#include "hd6309_intf.h"
+#include "m6800_intf.h"
+#include "m6502_intf.h"
+#include "sh2.h"
 
-#define MAX_TIMER_VALUE ((1 << 31) - 65536)
+#define MAX_TIMER_VALUE ((1 << 30) - 65536)
 
 double dTime;									// Time elapsed since the emulated machine was started
 
@@ -126,12 +131,12 @@ void BurnTimerUpdateEnd()
 
 // ---------------------------------------------------------------------------
 // Callbacks for the sound cores
-
+/*
 static int BurnTimerExtraCallbackDummy()
 {
 	return 0;
 }
-
+*/
 void BurnOPLTimerCallback(int c, double period)
 {
 	pCPURunEnd();
@@ -301,6 +306,105 @@ int BurnTimerAttachZet(int nClockspeed)
 	pCPUTotalCycles = ZetTotalCycles;
 	pCPURun = ZetRun;
 	pCPURunEnd = ZetRunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachM6809(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = M6809TotalCycles;
+	pCPURun = M6809Run;
+	pCPURunEnd = M6809RunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachHD6309(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = HD6309TotalCycles;
+	pCPURun = HD6309Run;
+	pCPURunEnd = HD6309RunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachM6800(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = M6800TotalCycles;
+	pCPURun = M6800Run;
+	pCPURunEnd = M6800RunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachHD63701(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = M6800TotalCycles;
+	pCPURun = HD63701Run;
+	pCPURunEnd = HD63701RunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachM6803(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = M6800TotalCycles;
+	pCPURun = M6803Run;
+	pCPURunEnd = M6803RunEnd;
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+int BurnTimerAttachM6502(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = m6502TotalCycles;
+	pCPURun = m6502Run;
+	pCPURunEnd = M6800RunEnd; // doesn't do anything...
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+
+int BurnTimerAttachSh2(int nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = Sh2TotalCycles;
+	pCPURun = Sh2Run;
+	pCPURunEnd = Sh2StopRun;
 
 	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
 

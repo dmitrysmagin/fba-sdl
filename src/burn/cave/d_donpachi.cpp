@@ -53,7 +53,7 @@ static struct BurnInputInfo donpachiInputList[] = {
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
 };
 
-STDINPUTINFO(donpachi);
+STDINPUTINFO(donpachi)
 
 static void UpdateIRQStatus()
 {
@@ -97,7 +97,7 @@ unsigned char __fastcall donpachiReadByte(unsigned int sekAddress)
 		case 0xC00001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0xC00002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0xC00003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -138,7 +138,7 @@ unsigned short __fastcall donpachiReadWord(unsigned int sekAddress)
 		case 0xC00000:
 			return DrvInput[0] ^ 0xFFFF;
 		case 0xC00002:
-			return DrvInput[1] ^ 0xF7FF | (EEPROMRead() << 11);
+			return (DrvInput[1] ^ 0xF7FF) | (EEPROMRead() << 11);
 
 		default: {
 // 			bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
@@ -318,7 +318,7 @@ void __fastcall donpachiWriteWord(unsigned int sekAddress, unsigned short wordVa
 static int DrvExit()
 {
 	EEPROMExit();
-
+	
 	MSM6295Exit(1);
 	MSM6295Exit(0);
 
@@ -564,8 +564,15 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
+		if (nAction & ACB_WRITE) {
+
+		CaveRecalcPalette = 1;
+		}
+
 	return 0;
 }
+
+static const UINT8 default_eeprom[16] =	{0x00,0x0C,0xFF,0xFB,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 static int DrvInit()
 {
@@ -583,7 +590,8 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
 
 	// Load the roms into memory
 	if (LoadRoms()) {
@@ -612,7 +620,7 @@ static int DrvInit()
 		SekClose();
 	}
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(0, 0x0800000);
 	CaveTileInitLayer(0, 0x200000, 8, 0x4000);
@@ -655,13 +663,17 @@ static struct BurnRomInfo donpachiRomDesc[] = {
 
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
+	
+	{ "eeprom-donpachi.u10", 0x0080, 0x315fb546, BRF_OPT },
+	
+	{ "peel18cv8p-15.u18", 0x0155, 0x3f4787e9, BRF_OPT },
 };
 
 
-STD_ROM_PICK(donpachi);
-STD_ROM_FN(donpachi);
+STD_ROM_PICK(donpachi)
+STD_ROM_FN(donpachi)
 
-static struct BurnRomInfo donpachjRomDesc[] = {
+static struct BurnRomInfo donpachijRomDesc[] = {
 	{ "prg.u29",      0x080000, 0x6BE14AF6, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "atdp.u44",     0x200000, 0x7189E953, BRF_GRA },			 //  1 Sprite data
@@ -673,13 +685,15 @@ static struct BurnRomInfo donpachjRomDesc[] = {
 
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
+	
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(donpachj);
-STD_ROM_FN(donpachj);
+STD_ROM_PICK(donpachij)
+STD_ROM_FN(donpachij)
 
-static struct BurnRomInfo donpackrRomDesc[] = {
+static struct BurnRomInfo donpachikrRomDesc[] = {
 	{ "prgk.u26",     0x080000, 0xBBAF4C8B, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "atdp.u44",     0x200000, 0x7189E953, BRF_GRA },			 //  1 Sprite data
@@ -691,13 +705,15 @@ static struct BurnRomInfo donpackrRomDesc[] = {
 
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
+	
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(donpackr);
-STD_ROM_FN(donpackr);
+STD_ROM_PICK(donpachikr)
+STD_ROM_FN(donpachikr)
 
-static struct BurnRomInfo donpachkRomDesc[] = {
+static struct BurnRomInfo donpachihkRomDesc[] = {
 	{ "37.u29",       0x080000, 0x71f39f30, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "atdp.u44",     0x200000, 0x7189E953, BRF_GRA },			 //  1 Sprite data
@@ -709,49 +725,55 @@ static struct BurnRomInfo donpachkRomDesc[] = {
 
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
+	
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(donpachk);
-STD_ROM_FN(donpachk);
+STD_ROM_PICK(donpachihk)
+STD_ROM_FN(donpachihk)
 
 
 struct BurnDriver BurnDrvDonpachi = {
-	"donpachi", NULL, NULL, "1995",
-	"DonPachi (ver. 1.01 1995/05/11, U.S.A)\0", NULL, "Atlus / Cave", "Cave",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295,
-	NULL, donpachiRomInfo, donpachiRomName, donpachiInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"donpachi", NULL, NULL, NULL, "1995",
+	"DonPachi (USA, ver. 1.12, 95/05/2x)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u9996\u9818\u8702 DonPachi (USA, ver. 1.12, 95/05/2x)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295, GBF_VERSHOOT, 0,
+	NULL, donpachiRomInfo, donpachiRomName, NULL, NULL, donpachiInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
-struct BurnDriver BurnDrvDonpachj = {
-	"donpacjp", "donpachi", NULL, "1995",
-	"DonPachi (ver. 1.01 1995/05/11, Japan)\0", NULL, "Atlus / Cave", "Cave",
-	L"DonPachi (ver. 1.01 1995/05/11, Japan)\0\u9996\u9818\u8702 (ver. 1.01 1995/05/11, Japan)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295,
-	NULL, donpachjRomInfo, donpachjRomName, donpachiInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+struct BurnDriver BurnDrvDonpachij = {
+	"donpachij", "donpachi", NULL, NULL, "1995",
+	"DonPachi (Japan, ver. 1.01, 95/05/11)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u9996\u9818\u8702 DonPachi (Japan, ver. 1.01, 95/05/11)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295, GBF_VERSHOOT, 0,
+	NULL, donpachijRomInfo, donpachijRomName, NULL, NULL, donpachiInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
-struct BurnDriver BurnDrvDonpachkr = {
-	"donpackr", "donpachi", NULL, "1995",
-	"DonPachi (ver. 1.12 1995/05/2x, Korea)\0", NULL, "Atlus / Cave", "Cave",
-	L"DonPachi (ver. 1.01 1995/05/2x, Korea)\0\u9996\u9818\u8702 (ver. 1.01 1995/05/2x, Korea)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295,
-	NULL, donpackrRomInfo, donpackrRomName, donpachiInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+struct BurnDriver BurnDrvDonpachikr = {
+	"donpachikr", "donpachi", NULL, NULL, "1995",
+	"DonPachi (Korea, ver. 1.12, 95/05/2x)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u9996\u9818\u8702 DonPachi (Korea, ver. 1.12, 95/05/2x)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295, GBF_VERSHOOT, 0,
+	NULL, donpachikrRomInfo, donpachikrRomName, NULL, NULL, donpachiInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
-struct BurnDriver BurnDrvDonpachk = {
-	"donpachk", "donpachi", NULL, "1995",
-	"DonPachi (ver. 1.12 1995/05/2x, Hong Kong)\0", NULL, "Atlus / Cave", "Cave",
-	L"DonPachi (ver. 1.01 1995/05/2x, Hong Kong)\0\u9996\u9818\u8702 (ver. 1.01 1995/05/2x, Hong Kong)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295,
-	NULL, donpachkRomInfo, donpachkRomName, donpachiInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+struct BurnDriver BurnDrvDonpachihk = {
+	"donpachihk", "donpachi", NULL, NULL, "1995",
+	"DonPachi (Hong Kong, ver. 1.10, 95/05/17)\0", NULL, "Atlus / Cave", "Cave",
+	L"\u9996\u9818\u8702 DonPachi (Hong Kong, ver. 1.10, 95/05/17)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY | HARDWARE_CAVE_M6295, GBF_VERSHOOT, 0,
+	NULL, donpachihkRomInfo, donpachihkRomName, NULL, NULL, donpachiInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };

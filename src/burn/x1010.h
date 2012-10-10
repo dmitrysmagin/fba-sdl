@@ -33,8 +33,10 @@ extern unsigned char *X1010SNDROM;
 
 extern struct x1_010_info * x1_010_chip;
 
-extern void x1010_sound_bank_w(unsigned int offset, unsigned short data);
-extern void x1010_sound_update();
-extern void x1010_sound_init(unsigned int base_clock, int address);
-extern void x1010_scan(int nAction,int *pnMin);
-extern void x1010_exit();
+void x1010_sound_bank_w(unsigned int offset, unsigned short data);
+unsigned char x1010_sound_read(unsigned int offset);
+unsigned short x1010_sound_read_word(unsigned int offset);
+void x1010_sound_update();
+void x1010_sound_init(unsigned int base_clock, int address);
+void x1010_scan(int nAction,int *pnMin);
+void x1010_exit();

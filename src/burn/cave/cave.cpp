@@ -13,6 +13,7 @@ int CaveScanGraphics()
 	SCAN_VAR(nCaveTileBank);
 
 	SCAN_VAR(nCaveSpriteBank);
+	SCAN_VAR(nCaveSpriteBankDelay);
 
 	for (int i = 0; i < 4; i++) {
 		SCAN_VAR(CaveTileReg[i][0]);

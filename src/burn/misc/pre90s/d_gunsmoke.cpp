@@ -22,168 +22,121 @@ static unsigned char gunsmoke_scrollx[2], gunsmoke_scrolly;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 0, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 1, 	"p1 left"  },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy2 + 2,   "p1 down", },
-	{"P1 Up",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p1 up",   },
+	{"P1 start"     , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 0, "p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 1, "p1 left"  },
+	{"P1 Down"      ,	BIT_DIGITAL  , DrvJoy2 + 2, "p1 down"  },
+	{"P1 Up"        ,	BIT_DIGITAL  , DrvJoy2 + 3, "p1 up"    },
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 4,	"p1 fire 1"},
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy2 + 5,	"p1 fire 2"},
 	{"P1 Button 3"  , BIT_DIGITAL  , DrvJoy2 + 6,	"p1 fire 3"},
 
 	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy1 + 7,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy3 + 0, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy3 + 1, 	"p2 left"  },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy3 + 2,   "p2 down", },
-	{"P2 Up",	  BIT_DIGITAL,   DrvJoy3 + 3,   "p2 up",   },
+	{"P2 start"     , BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy3 + 0, "p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy3 + 1, "p2 left"  },
+	{"P2 Down"      ,	BIT_DIGITAL  , DrvJoy3 + 2, "p2 down"  },
+	{"P2 Up"        ,	BIT_DIGITAL  , DrvJoy3 + 3, "p2 up"    },
 	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 fire 1"},
 	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy3 + 5,	"p2 fire 2"},
 	{"P2 Button 3"  , BIT_DIGITAL  , DrvJoy3 + 6,	"p2 fire 3"},
 
-	{"Service",	  BIT_DIGITAL  , DrvJoy1 + 4,	"diag"     },
+	{"Service"      ,	BIT_DIGITAL  , DrvJoy1 + 4,	"service"  },
 
-	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
-	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
-	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
+	{"Reset"        ,	BIT_DIGITAL  , &DrvReset  ,	"reset"    },
+	{"Dip 1"        ,	BIT_DIPSWITCH, DrvDips + 0,	"dip"	     },
+	{"Dip 2"        ,	BIT_DIPSWITCH, DrvDips + 1,	"dip"	     },
 
 };
 
-STDINPUTINFO(Drv);
+STDINPUTINFO(Drv)
 
 static struct BurnDIPInfo DrvDIPList[]=
 {
 	// Default Values
-	{0x14, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xf7, NULL               },
 
-	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
-	{0x14, 0x01, 0x03, 0x01, "30k 80k 80k+"       	  },
+	{0   , 0xfe, 0   , 4   , "Bonus Life"       },
+	{0x14, 0x01, 0x03, 0x01, "30k 80k 80k+"     },
 	{0x14, 0x01, 0x03, 0x03, "30k 100k 100k+"	  },
 	{0x14, 0x01, 0x03, 0x00, "30k 100k 150k+"	  },
 	{0x14, 0x01, 0x03, 0x02, "30k 100k"    		  },
 
-	{0   , 0xfe, 0   , 2   , "Demo"                   },
-	{0x14, 0x01, 0x04, 0x00, "Off"     		  },
-	{0x14, 0x01, 0x04, 0x04, "On"    		  },
-
-	{0   , 0xfe, 0   , 2   , "Cabinet"                },
-	{0x14, 0x01, 0x08, 0x00, "Upright"     		  },
-	{0x14, 0x01, 0x08, 0x08, "Cocktail"    		  },
-
-	{0   , 0xfe, 0   , 4   , "Difficulty"             },
-	{0x14, 0x01, 0x30, 0x20, "Easy"     		  },
-	{0x14, 0x01, 0x30, 0x30, "Normal"    		  },
-	{0x14, 0x01, 0x30, 0x10, "Difficult"   		  },
-	{0x14, 0x01, 0x30, 0x00, "Very Difficult"	  },
-
-	{0   , 0xfe, 0   , 2   , "Freeze"                 },
-	{0x14, 0x01, 0x40, 0x40, "Off"     		  },
-	{0x14, 0x01, 0x40, 0x00, "On"    		  },
-
-	{0   , 0xfe, 0   , 2   , "Debug Mode"             },
-	{0x14, 0x01, 0x80, 0x80, "Off"     		  },
-	{0x14, 0x01, 0x80, 0x00, "On"    		  },
-
-	// Default Values
-	{0x15, 0xff, 0xff, 0xff, NULL                     },
-
-	{0   , 0xfe, 0   , 8  ,  "Coin B"                 },
-	{0x15, 0x01, 0x07, 0x00, "4C 1C" 	      	  },
-	{0x15, 0x01, 0x07, 0x01, "3C 1C"		  },
-	{0x15, 0x01, 0x07, 0x02, "2C 1C"		  },
-	{0x15, 0x01, 0x07, 0x07, "1C 1C"    		  },
-	{0x15, 0x01, 0x07, 0x06, "1C 2C" 	      	  },
-	{0x15, 0x01, 0x07, 0x05, "1C 3C"		  },
-	{0x15, 0x01, 0x07, 0x04, "1C 4C"		  },
-	{0x15, 0x01, 0x07, 0x03, "1C 5C"    		  },
-
-	{0   , 0xfe, 0   , 8  ,  "Coin A"                 },
-	{0x15, 0x01, 0x38, 0x00, "4C 1C" 	      	  },
-	{0x15, 0x01, 0x38, 0x08, "3C 1C"		  },
-	{0x15, 0x01, 0x38, 0x10, "2C 1C"		  },
-	{0x15, 0x01, 0x38, 0x38, "1C 1C"    		  },
-	{0x15, 0x01, 0x38, 0x30, "1C 2C" 	      	  },
-	{0x15, 0x01, 0x38, 0x28, "1C 3C"		  },
-	{0x15, 0x01, 0x38, 0x20, "1C 4C"		  },
-	{0x15, 0x01, 0x38, 0x18, "1C 5C"    		  },
-
-	{0   , 0xfe, 0   , 2   , "Allow Continue"         },
-	{0x15, 0x01, 0x40, 0x00, "No"    		  },
-	{0x15, 0x01, 0x40, 0x40, "Yes"     		  },
-
-	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
-	{0x15, 0x01, 0x80, 0x00, "Off"    		  },
-	{0x15, 0x01, 0x80, 0x80, "On"     		  },
+	{0   , 0xfe, 0   , 2   , "Demo"             },
+	{0x14, 0x01, 0x04, 0x00, "Off"     		      },
+	{0x14, 0x01, 0x04, 0x04, "On"    		        },
 };
-
-STDDIPINFO(Drv);
 
 static struct BurnDIPInfo gunsmokaDIPList[]=
 {
 	// Default Values
-	{0x14, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xf7, NULL               },
 
-	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
-	{0x14, 0x01, 0x03, 0x01, "30k 80k 80k+"       	  },
+	{0   , 0xfe, 0   , 4   , "Bonus Life"       },
+	{0x14, 0x01, 0x03, 0x01, "30k 80k 80k+"     },
 	{0x14, 0x01, 0x03, 0x03, "30k 100k 100k+"	  },
 	{0x14, 0x01, 0x03, 0x00, "30k 100k 150k+"	  },
 	{0x14, 0x01, 0x03, 0x02, "30k 100k"    		  },
 
-	{0   , 0xfe, 0   , 2   , "Lifes"                  },
-	{0x14, 0x01, 0x04, 0x04, "3"     		  },
-	{0x14, 0x01, 0x04, 0x00, "5"    		  },
+	{0   , 0xfe, 0   , 2   , "Lifes"            },
+	{0x14, 0x01, 0x04, 0x04, "3"     		        },
+	{0x14, 0x01, 0x04, 0x00, "5"    		        },
+};
 
-	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+static struct BurnDIPInfo gunsmokeDIPList[]=
+{
+	{0   , 0xfe, 0   , 2   , "Cabinet"          },
 	{0x14, 0x01, 0x08, 0x00, "Upright"     		  },
 	{0x14, 0x01, 0x08, 0x08, "Cocktail"    		  },
 
-	{0   , 0xfe, 0   , 4   , "Difficulty"             },
-	{0x14, 0x01, 0x30, 0x20, "Easy"     		  },
-	{0x14, 0x01, 0x30, 0x30, "Normal"    		  },
+	{0   , 0xfe, 0   , 4   , "Difficulty"       },
+	{0x14, 0x01, 0x30, 0x20, "Easy"     		    },
+	{0x14, 0x01, 0x30, 0x30, "Normal"    		    },
 	{0x14, 0x01, 0x30, 0x10, "Difficult"   		  },
 	{0x14, 0x01, 0x30, 0x00, "Very Difficult"	  },
 
-	{0   , 0xfe, 0   , 2   , "Freeze"                 },
-	{0x14, 0x01, 0x40, 0x40, "Off"     		  },
-	{0x14, 0x01, 0x40, 0x00, "On"    		  },
+	{0   , 0xfe, 0   , 2   , "Freeze"           },
+	{0x14, 0x01, 0x40, 0x40, "Off"     		      },
+	{0x14, 0x01, 0x40, 0x00, "On"    		        },
 
-	{0   , 0xfe, 0   , 2   , "Debug Mode"             },
-	{0x14, 0x01, 0x80, 0x80, "Off"     		  },
-	{0x14, 0x01, 0x80, 0x00, "On"    		  },
+	{0   , 0xfe, 0   , 2   , "Service Mode"     },
+	{0x14, 0x01, 0x80, 0x80, "Off"     		      },
+	{0x14, 0x01, 0x80, 0x00, "On"    		        },
 
 	// Default Values
-	{0x15, 0xff, 0xff, 0xff, NULL                     },
+	{0x15, 0xff, 0xff, 0xff, NULL               },
 
-	{0   , 0xfe, 0   , 8  ,  "Coin B"                 },
-	{0x15, 0x01, 0x07, 0x00, "4C 1C" 	      	  },
-	{0x15, 0x01, 0x07, 0x01, "3C 1C"		  },
-	{0x15, 0x01, 0x07, 0x02, "2C 1C"		  },
-	{0x15, 0x01, 0x07, 0x07, "1C 1C"    		  },
-	{0x15, 0x01, 0x07, 0x06, "1C 2C" 	      	  },
-	{0x15, 0x01, 0x07, 0x05, "1C 3C"		  },
-	{0x15, 0x01, 0x07, 0x04, "1C 4C"		  },
-	{0x15, 0x01, 0x07, 0x03, "1C 5C"    		  },
+	{0   , 0xfe, 0   , 8  ,  "Coin A"           },
+	{0x15, 0x01, 0x07, 0x00, "4 Coins 1 Credit" },
+	{0x15, 0x01, 0x07, 0x01, "3 Coins 1 Credit"	},
+	{0x15, 0x01, 0x07, 0x02, "2 Coins 1 Credit"	},
+	{0x15, 0x01, 0x07, 0x07, "1 Coin 1 Credit"  },
+	{0x15, 0x01, 0x07, 0x06, "1 Coin 2 Credits" },
+	{0x15, 0x01, 0x07, 0x05, "1 Coin 3 Credits"	},
+	{0x15, 0x01, 0x07, 0x04, "1 Coin 4 Credits"	},
+	{0x15, 0x01, 0x07, 0x03, "1 Coin 6 Credits" },
 
-	{0   , 0xfe, 0   , 8  ,  "Coin A"                 },
-	{0x15, 0x01, 0x38, 0x00, "4C 1C" 	      	  },
-	{0x15, 0x01, 0x38, 0x08, "3C 1C"		  },
-	{0x15, 0x01, 0x38, 0x10, "2C 1C"		  },
-	{0x15, 0x01, 0x38, 0x38, "1C 1C"    		  },
-	{0x15, 0x01, 0x38, 0x30, "1C 2C" 	      	  },
-	{0x15, 0x01, 0x38, 0x28, "1C 3C"		  },
-	{0x15, 0x01, 0x38, 0x20, "1C 4C"		  },
-	{0x15, 0x01, 0x38, 0x18, "1C 5C"    		  },
+	{0   , 0xfe, 0   , 8  ,  "Coin B"           },
+	{0x15, 0x01, 0x38, 0x00, "4 Coins 1 Credit" },
+	{0x15, 0x01, 0x38, 0x08, "3 Coins 1 Credit"	},
+	{0x15, 0x01, 0x38, 0x10, "2 Coins 1 Credit"	},
+	{0x15, 0x01, 0x38, 0x38, "1 Coin 1 Credit"  },
+	{0x15, 0x01, 0x38, 0x30, "1 Coin 2 Credits" },
+	{0x15, 0x01, 0x38, 0x28, "1 Coin 3 Credits"	},
+	{0x15, 0x01, 0x38, 0x20, "1 Coin 4 Credits"	},
+	{0x15, 0x01, 0x38, 0x18, "1 Coin 6 Credits" },
 
-	{0   , 0xfe, 0   , 2   , "Allow Continue"         },
-	{0x15, 0x01, 0x40, 0x00, "No"    		  },
-	{0x15, 0x01, 0x40, 0x40, "Yes"     		  },
+	{0   , 0xfe, 0   , 2   , "Allow Continue"   },
+	{0x15, 0x01, 0x40, 0x00, "No"    		        },
+	{0x15, 0x01, 0x40, 0x40, "Yes"     		      },
 
-	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
-	{0x15, 0x01, 0x80, 0x00, "Off"    		  },
-	{0x15, 0x01, 0x80, 0x80, "On"     		  },
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"      },
+	{0x15, 0x01, 0x80, 0x00, "Off"    		      },
+	{0x15, 0x01, 0x80, 0x80, "On"     		      },
 };
 
-STDDIPINFO(gunsmoka);
+STDDIPINFOEXT(Drv, Drv, gunsmoke)
+STDDIPINFOEXT(gunsmoka, gunsmoka, gunsmoke)
 
 
 static inline void gunsmoke_bankswitch(int nBank)
@@ -718,7 +671,7 @@ static int DrvFrame()
 
 	ZetNewFrame();
 
-	int nInterleave = 12;
+	int nInterleave = 25;
 	int nSoundBufferPos = 0;
 
 	int nCyclesSegment;
@@ -738,7 +691,8 @@ static int DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i == (nInterleave - 1)) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		if (i == 20) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+		if (i == 21) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 		ZetClose();
 
 		// Run Z80 #1
@@ -747,7 +701,10 @@ static int DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if ((i % 4) == 3) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
+		if (i == 5 || i == 10 || i == 15 || i == 20) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+ 		if (i == 6 || i == 11 || i == 16 || i == 21) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+	
 		ZetClose();
 		
 		// Render Sound Segment
@@ -864,16 +821,16 @@ static struct BurnRomInfo gunsmokeRomDesc[] = {
 	{ "01f_g-05.bin", 0x0100, 0x25c90c2a, 0 | BRF_OPT },	       // 31 Priority
 };
 
-STD_ROM_PICK(gunsmoke);
-STD_ROM_FN(gunsmoke);
+STD_ROM_PICK(gunsmoke)
+STD_ROM_FN(gunsmoke)
 
-struct BurnDriver BurnDrvgunsmoke = {
-	"gunsmoke", NULL, NULL, "1985",
-	"Gun. Smoke (World)\0", NULL, "Capcom", "misc",
+struct BurnDriver BurnDrvGunsmoke = {
+	"gunsmoke", NULL, NULL, NULL, "1985",
+	"Gun. Smoke (World)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, gunsmokeRomInfo, gunsmokeRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, gunsmokeRomInfo, gunsmokeRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
 };
 
@@ -922,16 +879,16 @@ static struct BurnRomInfo gunsmokjRomDesc[] = {
 	{ "01f_g-05.bin", 0x0100, 0x25c90c2a, 0 | BRF_OPT },	       // 31 Priority
 };
 
-STD_ROM_PICK(gunsmokj);
-STD_ROM_FN(gunsmokj);
+STD_ROM_PICK(gunsmokj)
+STD_ROM_FN(gunsmokj)
 
-struct BurnDriver BurnDrvgunsmokj = {
-	"gunsmokj", "gunsmoke", NULL, "1985",
-	"Gun. Smoke (Japan)\0", NULL, "Capcom", "misc",
+struct BurnDriver BurnDrvGunsmokj = {
+	"gunsmokej", "gunsmoke", NULL, NULL, "1985",
+	"Gun. Smoke (Japan)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, gunsmokjRomInfo, gunsmokjRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, gunsmokjRomInfo, gunsmokjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
 };
 
@@ -980,16 +937,16 @@ static struct BurnRomInfo gunsmokuRomDesc[] = {
 	{ "01f_g-05.bin", 0x0100, 0x25c90c2a, 0 | BRF_OPT },	       // 31 Priority
 };
 
-STD_ROM_PICK(gunsmoku);
-STD_ROM_FN(gunsmoku);
+STD_ROM_PICK(gunsmoku)
+STD_ROM_FN(gunsmoku)
 
-struct BurnDriver BurnDrvgunsmoku = {
-	"gunsmoku", "gunsmoke", NULL, "1985",
-	"Gun. Smoke (US set 1)\0", NULL, "Capcom (Romstar License)", "misc",
+struct BurnDriver BurnDrvGunsmoku = {
+	"gunsmokeu", "gunsmoke", NULL, NULL, "1985",
+	"Gun. Smoke (US set 1)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, gunsmokuRomInfo, gunsmokuRomName, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, gunsmokuRomInfo, gunsmokuRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
 };
 
@@ -1038,16 +995,16 @@ static struct BurnRomInfo gunsmokaRomDesc[] = {
 	{ "01f_g-05.bin", 0x0100, 0x25c90c2a, 0 | BRF_OPT },	       // 31 Priority
 };
 
-STD_ROM_PICK(gunsmoka);
-STD_ROM_FN(gunsmoka);
+STD_ROM_PICK(gunsmoka)
+STD_ROM_FN(gunsmoka)
 
-struct BurnDriver BurnDrvgunsmoka = {
-	"gunsmoka", "gunsmoke", NULL, "1986",
-	"Gun. Smoke (US set 2)\0", NULL, "Capcom (Romstar License)", "misc",
+struct BurnDriver BurnDrvGunsmoka = {
+	"gunsmokeua", "gunsmoke", NULL, NULL, "1986",
+	"Gun. Smoke (US set 2)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
-	NULL, gunsmokaRomInfo, gunsmokaRomName, DrvInputInfo, gunsmokaDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, gunsmokaRomInfo, gunsmokaRomName, NULL, NULL, DrvInputInfo, gunsmokaDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 0, NULL, NULL, NULL, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
 };
 

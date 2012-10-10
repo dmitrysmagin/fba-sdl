@@ -35,9 +35,9 @@ static void Cps1TileLine(int y,int sx)
 
     pst=FindTile(ix+x,iy+y);
     t=pst[0];
+    
+    if (Scroll2TileMask) t &= Scroll2TileMask;
 
-//	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
-//	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
    t = GfxRomBankMapper(GFXTYPE_SCROLL2, t);
    if (t == -1) continue;
    
@@ -122,9 +122,9 @@ static void Cps1TileLineRows(int y,struct CpsrLineInfo *pli)
 
     pst=FindTile(tx,iy+y);
     t=pst[0];
+    
+    if (Scroll2TileMask) t &= Scroll2TileMask;
 
-//	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
-//	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
     t = GfxRomBankMapper(GFXTYPE_SCROLL2, t);
     if (t == -1) continue;
     

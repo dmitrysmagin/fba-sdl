@@ -58,7 +58,7 @@ static struct BurnInputInfo espradeInputList[] = {
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 9,	"service"},
 };
 
-STDINPUTINFO(esprade);
+STDINPUTINFO(esprade)
 
 static void UpdateIRQStatus()
 {
@@ -100,7 +100,7 @@ unsigned char __fastcall espradeReadByte(unsigned int sekAddress)
 		case 0xD00001:
 			return (DrvInput[0] & 0xFF) ^ 0xFF;
 		case 0xD00002:
-			return (DrvInput[1] >> 8) ^ 0xF7 | (EEPROMRead() << 3);
+			return ((DrvInput[1] >> 8) ^ 0xF7) | (EEPROMRead() << 3);
 		case 0xD00003:
 			return (DrvInput[1] & 0xFF) ^ 0xFF;
 
@@ -140,7 +140,7 @@ unsigned short __fastcall espradeReadWord(unsigned int sekAddress)
 		case 0xD00000:
 			return DrvInput[0] ^ 0xFFFF;
 		case 0xD00002:
-			return DrvInput[1] ^ 0xF7FF | (EEPROMRead() << 11);
+			return (DrvInput[1] ^ 0xF7FF) | (EEPROMRead() << 11);
 
 		default: {
 // 			bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
@@ -522,8 +522,15 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
+		if (nAction & ACB_WRITE) {
+
+		CaveRecalcPalette = 1;
+		}
+
 	return 0;
 }
+
+static const UINT8 default_eeprom[16] =	{0x00,0x0C,0xFF,0xFB,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
 static int DrvInit()
 {
@@ -541,7 +548,8 @@ static int DrvInit()
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(1024, 16);										// EEPROM has 1024 bits, uses 16-bit words
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
 
 	// Load the roms into memory
 	if (LoadRoms()) {
@@ -574,7 +582,7 @@ static int DrvInit()
 		SekClose();
 	}
 
-	CavePalInit();
+	CavePalInit(0x8000);
 	CaveTileInit();
 	CaveSpriteInit(1, 0x1000000);
 	CaveTileInitLayer(0, 0x800000, 8, 0x4000);
@@ -613,95 +621,104 @@ static struct BurnRomInfo espradeRomDesc[] = {
 	{ "u42.int",      0x080000, 0x3B510A73, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 	{ "u41.int",      0x080000, 0x97C1B649, BRF_ESS | BRF_PRG }, //  1
 
-	{ "u63.bin",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
-	{ "u64.bin",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
-	{ "u65.bin",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
-	{ "u66.bin",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
+	{ "esp_u63.u63",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
+	{ "esp_u64.u64",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
+	{ "esp_u65.u65",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
+	{ "esp_u66.u66",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
 
-	{ "u54.bin",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
-	{ "u55.bin",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
-	{ "u52.bin",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
-	{ "u53.bin",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
-	{ "u51.bin",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
+	{ "esp_u54.u54",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
+	{ "esp_u55.u55",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
+	{ "esp_u52.u52",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
+	{ "esp_u53.u53",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
+	{ "esp_u51.u51",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
 
-	{ "u19.bin",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	{ "esp_u19.u19",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	
+	{ "eeprom-esprade.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(esprade);
-STD_ROM_FN(esprade);
+STD_ROM_PICK(esprade)
+STD_ROM_FN(esprade)
 
 static struct BurnRomInfo espradejRomDesc[] = {
-	{ "u42.bin",      0x080000, 0x75D03C42, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "u41.bin",      0x080000, 0x734B3EF0, BRF_ESS | BRF_PRG }, //  1
+	{ "u42_ver.2",    0x080000, 0x75D03C42, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "u41_ver.2",    0x080000, 0x734B3EF0, BRF_ESS | BRF_PRG }, //  1
 
-	{ "u63.bin",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
-	{ "u64.bin",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
-	{ "u65.bin",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
-	{ "u66.bin",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
+	{ "esp_u63.u63",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
+	{ "esp_u64.u64",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
+	{ "esp_u65.u65",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
+	{ "esp_u66.u66",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
 
-	{ "u54.bin",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
-	{ "u55.bin",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
-	{ "u52.bin",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
-	{ "u53.bin",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
-	{ "u51.bin",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
+	{ "esp_u54.u54",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
+	{ "esp_u55.u55",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
+	{ "esp_u52.u52",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
+	{ "esp_u53.u53",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
+	{ "esp_u51.u51",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
 
-	{ "u19.bin",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	{ "esp_u19.u19",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	
+	{ "eeprom-esprade.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(espradej);
-STD_ROM_FN(espradej);
+STD_ROM_PICK(espradej)
+STD_ROM_FN(espradej)
 
-static struct BurnRomInfo espradeoRomDesc[] = {
-	{ "u42.old",      0x080000, 0x0718C7E5, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
-	{ "u41.old",      0x080000, 0xDEF30539, BRF_ESS | BRF_PRG }, //  1
+static struct BurnRomInfo espradejoRomDesc[] = {
+	{ "u42.bin",      0x080000, 0x0718C7E5, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "u41.bin",      0x080000, 0xDEF30539, BRF_ESS | BRF_PRG }, //  1
 
-	{ "u63.bin",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
-	{ "u64.bin",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
-	{ "u65.bin",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
-	{ "u66.bin",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
+	{ "esp_u63.u63",      0x400000, 0x2F2FE92C, BRF_GRA },			 //  2 Sprite data
+	{ "esp_u64.u64",      0x400000, 0x491A3DA4, BRF_GRA },			 //  3
+	{ "esp_u65.u65",      0x400000, 0x06563EFE, BRF_GRA },			 //  4
+	{ "esp_u66.u66",      0x400000, 0x7BBE4CFC, BRF_GRA },			 //  5
 
-	{ "u54.bin",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
-	{ "u55.bin",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
-	{ "u52.bin",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
-	{ "u53.bin",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
-	{ "u51.bin",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
+	{ "esp_u54.u54",      0x400000, 0xE7CA6936, BRF_GRA },			 //  6 Layer 0 Tile data
+	{ "esp_u55.u55",      0x400000, 0xF53BD94F, BRF_GRA },			 //  7
+	{ "esp_u52.u52",      0x400000, 0xE7ABE7B4, BRF_GRA },			 //  8 Layer 1 Tile data
+	{ "esp_u53.u53",      0x400000, 0x51A0F391, BRF_GRA },			 //  9
+	{ "esp_u51.u51",      0x400000, 0x0B9B875C, BRF_GRA },			 // 10 Layer 2 Tile data
 
-	{ "u19.bin",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	{ "esp_u19.u19",      0x400000, 0xF54B1CAB, BRF_SND },			 // 11 YMZ280B (AD)PCM data
+	
+	{ "eeprom-esprade.bin", 0x0080, 0x315fb546, BRF_OPT },
 };
 
 
-STD_ROM_PICK(espradeo);
-STD_ROM_FN(espradeo);
+STD_ROM_PICK(espradejo)
+STD_ROM_FN(espradejo)
 
 struct BurnDriver BurnDrvEsprade = {
-	"esprade", NULL, NULL, "1998",
-	"ESP Ra.De. (1998 4/22 international ver.)\0", NULL, "Atlus / Cave", "Cave",
+	"esprade", NULL, NULL, NULL, "1998",
+	"ESP Ra.De. - A.D.2018 Tokyo (International, ver. 98/04/22)\0", NULL, "Atlus / Cave", "Cave",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, espradeRomInfo, espradeRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, espradeRomInfo, espradeRomName, NULL, NULL, espradeInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvEspradej = {
-	"espradej", "esprade", NULL, "1998",
-	"ESP Ra.De. (Japan, 1998 4/21 master ver.)\0", NULL, "Atlus / Cave", "Cave",
-	L"ESP Ra.De. (Japan, 1998 4/21 master ver.)\0\u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, 1998 4/21 master ver.)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, espradejRomInfo, espradejRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+	"espradej", "esprade", NULL, NULL, "1998",
+	"ESP Ra.De. (Japan, ver. 98/04/21)\0", NULL, "Atlus / Cave", "Cave",
+	L"ESP Ra.De. \u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, ver. 98/04/21)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, espradejRomInfo, espradejRomName, NULL, NULL, espradeInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
-struct BurnDriver BurnDrvEspradeo = {
-	"espradeo", "esprade", NULL, "1998",
-	"ESP Ra.De. (Japan, 1998 4/14 master ver.)\0", NULL, "Atlus / Cave", "Cave",
-	L"ESP Ra.De. (Japan, 1998 4/14 master ver.)\0\u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, 1998 4/14 master ver.)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
-	NULL, espradeoRomInfo, espradeoRomName, espradeInputInfo, NULL,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
-	240, 320, 3, 4
+struct BurnDriver BurnDrvEspradejo = {
+	"espradejo", "esprade", NULL, NULL, "1998",
+	"ESP Ra.De. (Japan, ver. 98/04/14)\0", NULL, "Atlus / Cave", "Cave",
+	L"ESP Ra.De. \u30A8\u30B9\u30D7\u30EC\u30A4\u30C9 (Japan, ver. 98/04/14)\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY, GBF_VERSHOOT, 0,
+	NULL, espradejoRomInfo, espradejoRomName, NULL, NULL, espradeInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	0, NULL, NULL, NULL,
+	&CaveRecalcPalette, 0x8000, 240, 320, 3, 4
 };
 
