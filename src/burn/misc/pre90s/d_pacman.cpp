@@ -1,17 +1,22 @@
 // FB Alpha Puckman module
 // Based on MAME driver by Nicola Salmoria and many others
-// Thanks to Mike Sweetser (X Pac) for the gfx decoding routine
 
 /*
 To do:
 
+Figure out why "Highscore" isn't shown on Pacman, etc
 Fix Shoot the Bull inputs
 Sound
-Verify dips, roms, inputs, etc
 
+1.1
+Fixed graphics glitches on left side of screen
+Adjusted default dips (3x lives & 1C 1C)
+Now uses generic tile decoding
+
+Thanks to LittleKaneda for the bug report :)
 */
 
-#include "burnint.h"
+#include "tiles_generic.h"
 #include "bitswap.h"
 #include "driver.h"
 extern "C" {
@@ -564,7 +569,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0xff, 0xc3, NULL                     },
+	{0x0e, 0xff, 0xff, 0xc9, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -614,7 +619,7 @@ static struct BurnDIPInfo mspacmanDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0xff, 0xe7, NULL                     },
+	{0x0e, 0xff, 0xff, 0xe9, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -660,7 +665,7 @@ static struct BurnDIPInfo mschampDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0xff, 0xc7, NULL                     },
+	{0x0e, 0xff, 0xff, 0xc9, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -709,7 +714,7 @@ static struct BurnDIPInfo maketraxDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0x3f, 0x33, NULL                     },
+	{0x0e, 0xff, 0x3f, 0x31, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -749,7 +754,7 @@ static struct BurnDIPInfo mbrushDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0x3f, 0x37, NULL                     },
+	{0x0e, 0xff, 0x3f, 0x39, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -832,7 +837,7 @@ static struct BurnDIPInfo ponpokoDIPList[]=
 	{0x13, 0xff, 0xff, 0x00, NULL                     },
 
 	// Default Values
-	{0x10, 0xff, 0xff, 0xe9, NULL                     },
+	{0x10, 0xff, 0xff, 0xd1, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
 	{0x10, 0x01, 0x03, 0x00, "10000"     		  },
@@ -957,7 +962,7 @@ STDDIPINFO(acitya);
 static struct BurnDIPInfo eyesDIPList[]=
 {
 	// Default Values
-	{0x10, 0xff, 0xff, 0xff, NULL                     },
+	{0x10, 0xff, 0xff, 0xfb, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x10, 0x01, 0x03, 0x01, "2C 1C"     		  },
@@ -995,7 +1000,7 @@ STDDIPINFO(eyes);
 static struct BurnDIPInfo mrtntDIPList[]=
 {
 	// Default Values
-	{0x10, 0xff, 0xff, 0xff, NULL                     },
+	{0x10, 0xff, 0xff, 0xfb, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x10, 0x01, 0x03, 0x01, "2C 1C"     		  },
@@ -1048,7 +1053,7 @@ static struct BurnDIPInfo alibabaDIPList[]=
 
 
 	// Default Values
-	{0x11, 0xff, 0xff, 0xd5, NULL                     },
+	{0x11, 0xff, 0xff, 0xdb, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x11, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -1167,7 +1172,7 @@ static struct BurnDIPInfo lizwizDIPList[]=
 	{0x10, 0xff, 0xff, 0xff, NULL                     },
 
 	// Default Values
-	{0x0e, 0xff, 0xff, 0xcd, NULL                     },
+	{0x0e, 0xff, 0xff, 0xc9, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -1197,7 +1202,7 @@ STDDIPINFO(lizwiz);
 static struct BurnDIPInfo vanvanDIPList[]=
 {
 	// Default Values
-	{0x0f, 0xff, 0xff, 0xea, NULL                     },
+	{0x0f, 0xff, 0xff, 0xda, NULL                     },
 
 	{0   , 0xfe, 0   , 2   , "Cabinet"	          },
 	{0x0f, 0x01, 0x01, 0x00, "Upright"     		  },
@@ -1253,7 +1258,7 @@ static struct BurnDIPInfo nmouseDIPList[]=
 
 
 	// Default Values
-	{0x0e, 0xff, 0xff, 0xc5, NULL                     },
+	{0x0e, 0xff, 0xff, 0xc9, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0e, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -1550,7 +1555,7 @@ static struct BurnDIPInfo korosukeDIPList[]=
 
 
 	// Default Values
-	{0x0f, 0xff, 0x3f, 0x33, NULL                     },
+	{0x0f, 0xff, 0x3f, 0x31, NULL                     },
 
 	{0   , 0xfe, 0   , 4   , "Coinage"                },
 	{0x0f, 0x01, 0x03, 0x03, "2C 1C"     		  },
@@ -1776,7 +1781,7 @@ void __fastcall pacman_write_byte(unsigned short a, unsigned char data)
 
 	if (vanvan && a == 0x5001) {
 		for (int i = 0; i < 256; i++) {
-			if (Prom[0x100 + i] == 0) { //Palette[i] == ((data & 1) ? 0 : 0xaaaaaa)) {
+			if (Prom[0x100 + i] == 0) {
 				Palette[i] = (data & 1) ? 0xaaaaaa : 0; // gray / black
 			}
 		}
@@ -1792,7 +1797,7 @@ void __fastcall pacman_write_byte(unsigned short a, unsigned char data)
 	switch (a)
 	{
 		case 0x5000:
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE); // fixes ms. pacman :)
+			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 			interrupt_enable = data;
 		break;
 
@@ -1977,64 +1982,20 @@ static void pacman_palette_init()
 }
 
 
-static void DecodeTiles(unsigned char *dst)
-{
-	for (int tile = 0; tile < 256; tile++)
-	{
-		unsigned char *src = Gfx + tile * 16;
-
-		for (int y = 7; y >= 0; y--)
-		{
-			dst[8*0 + y] = ((src[8] & 0x80) >> 6) | ((src[8] & 0x08) >> 3);
-			dst[8*1 + y] = ((src[8] & 0x40) >> 5) | ((src[8] & 0x04) >> 2);
-			dst[8*2 + y] = ((src[8] & 0x20) >> 4) | ((src[8] & 0x02) >> 1);
-			dst[8*3 + y] = ((src[8] & 0x10) >> 3) | ((src[8] & 0x01) >> 0);
-			dst[8*4 + y] = ((src[0] & 0x80) >> 6) | ((src[0] & 0x08) >> 3);
-			dst[8*5 + y] = ((src[0] & 0x40) >> 5) | ((src[0] & 0x04) >> 2);
-			dst[8*6 + y] = ((src[0] & 0x20) >> 4) | ((src[0] & 0x02) >> 1);
-			dst[8*7 + y] = ((src[0] & 0x10) >> 3) | ((src[0] & 0x01) >> 0);
-
-			src++;
-		}
-
-		dst += 64;
-	}
-}
-
-void DecodeSprites(unsigned char *dst)
-{
-	int tab[4] = { 8, 16, 24, 0 };
-
-	for (int sprite = 0; sprite < 64; sprite++)
-	{
-		unsigned char *src = Gfx + 0x1000 + sprite * 0x40;
-
-		for (int y = 15; y >= 0; y--)
-		{
-			if (src == &(Gfx[0x1000 + (sprite * 64) + 0x08]))
-				src = &(Gfx[0x1000 + (sprite * 64) + 0x20]);
-
-			for (int x = 0; x < 16; x++) {
-				dst[16 * x + y]  = (src[tab[x>>2]] & (0x80 >> (x & 3))) >> (6 - (x & 3));
-				dst[16 * x + y] |= (src[tab[x>>2]] & (0x08 >> (x & 3))) >> (3 - (x & 3));
-			}
-
-			src++;
-		}
-
-		dst += 0x100;
-	}
-}
-
 static void convert_gfx()
 {
-	unsigned char *tmp = (unsigned char*)malloc( 0x8000 );
+	static int PlaneOffsets[2]  = { 0, 4 };
+	static int XOffsets[16]     = { 312, 304, 296, 288, 280, 272, 264, 256, 56, 48, 40, 32, 24, 16, 8, 0 };
+	static int SpriYOffsets[16] = { 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195, 0, 1, 2, 3 };
+	static int CharYOffsets[8]  = { 64, 65, 66, 67, 0, 1, 2, 3 };
+
+	unsigned char *tmp = (unsigned char*)malloc( 0x2000 );
 	if (tmp)
 	{
-		DecodeTiles(tmp + 0x0000);
-		DecodeSprites(tmp + 0x4000);
-	
-		memcpy (Gfx, tmp, 0x8000);
+		memcpy (tmp, Gfx, 0x2000);
+
+		GfxDecode(0x100, 2,  8,  8, PlaneOffsets, XOffsets + 8, CharYOffsets, 0x080, tmp + 0x0000, Gfx + 0x0000);
+		GfxDecode(0x040, 2, 16, 16, PlaneOffsets, XOffsets + 0, SpriYOffsets, 0x200, tmp + 0x1000, Gfx + 0x4000);
 
 		free (tmp);
 	}
@@ -2084,7 +2045,7 @@ static int pacman_load()
 
 static int DrvInit()
 {
-	Mem = (unsigned char*)malloc( 0x20000 + 0x8000 + 0x8000 );
+	Mem = (unsigned char*)malloc( 0x20000 + 0x10000);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -2094,7 +2055,7 @@ static int DrvInit()
 	Rom  = Mem + 0x00000;
 	Gfx  = Mem + 0x20000;
 	Prom = Mem + 0x28000;
-	Palette = (int*)(Mem + 0x2c000);
+	Palette = (int*)(Mem + 0x28200);
 
 	if (pacman_load()) return 1;
 
@@ -2107,6 +2068,10 @@ static int DrvInit()
 
 	ZetInit(1);
 	ZetOpen(0);
+	ZetSetInHandler(pacman_in_port);
+	ZetSetOutHandler(pacman_out_port);
+	ZetSetReadHandler(pacman_read_byte);
+	ZetSetWriteHandler(pacman_write_byte);
 
 	ZetMapArea(0x0000, 0x2fff, 0, Rom + 0x0000);
 	ZetMapArea(0x0000, 0x2fff, 2, Rom + 0x0000);
@@ -2116,41 +2081,34 @@ static int DrvInit()
 		ZetMapArea(0x2000, 0x3fff, 2, Rom + 0x2000);
 	}
 
-	ZetMapArea(0x4000, 0x43ff, 0, Rom + 0x4000); // video ram
+	ZetMapArea(0x4000, 0x43ff, 0, Rom + 0x4000);
 	ZetMapArea(0x4000, 0x43ff, 1, Rom + 0x4000);
 	ZetMapArea(0x4000, 0x43ff, 2, Rom + 0x4000);
 
-	ZetMapArea(0x4400, 0x47ff, 0, Rom + 0x4400); // color ram
+	ZetMapArea(0x4400, 0x47ff, 0, Rom + 0x4400);
 	ZetMapArea(0x4400, 0x47ff, 1, Rom + 0x4400);
 	ZetMapArea(0x4400, 0x47ff, 2, Rom + 0x4400);
 
 	if (cannonbp || dremshpr || vanvan) {
-		ZetMapArea(0x4800, 0x4bff, 0, Rom + 0x4800); // extra ram
+		ZetMapArea(0x4800, 0x4bff, 0, Rom + 0x4800);
 		ZetMapArea(0x4800, 0x4bff, 1, Rom + 0x4800);
 		ZetMapArea(0x4800, 0x4bff, 2, Rom + 0x4800);
 	}
 
-	ZetMapArea(0x4c00, 0x4fff, 0, Rom + 0x4c00); // work & Sprite ram
+	ZetMapArea(0x4c00, 0x4fff, 0, Rom + 0x4c00);
 	ZetMapArea(0x4c00, 0x4fff, 1, Rom + 0x4c00);
 	ZetMapArea(0x4c00, 0x4fff, 2, Rom + 0x4c00);
 
-	// 0x5040 - 0x505f Sound Regs
-	// 0x5060 - 0x506f Sprite Ram 2
-
 	if (rocktrv2) {
-		ZetMapArea(0x6000, 0x7fff, 0, Rom + 0x8000); // rom bank
+		ZetMapArea(0x6000, 0x7fff, 0, Rom + 0x8000);
 		ZetMapArea(0x6000, 0x7fff, 2, Rom + 0x8000);
 	} else {
-		ZetMapArea(0x8000, 0xbfff, 0, Rom + 0x8000); // rom bank
+		ZetMapArea(0x8000, 0xbfff, 0, Rom + 0x8000);
 		ZetMapArea(0x8000, 0xbfff, 2, Rom + 0x8000);
 		if (alibaba) ZetMapArea(0x9000, 0x93ff, 1, Rom + 0x9000);
 	}
 
 	ZetMemEnd();
-	ZetSetInHandler(pacman_in_port);
-	ZetSetOutHandler(pacman_out_port);
-	ZetSetReadHandler(pacman_read_byte);
-	ZetSetWriteHandler(pacman_write_byte);
 	ZetClose();
 
 	if (dremshpr || crushs) {
@@ -2220,6 +2178,23 @@ static int DrvExit()
 // Drawing routines
 
 
+static inline void pac_putpix(int x, int y, int color, unsigned char src, int transp)
+{
+	int pos, pxl;
+
+	if (x > 223 || x < 0 || y > 287 || y < 0) return;
+
+	pxl = Palette[color | src];
+	if (pxl == Palette[0] && transp) return;
+
+	if (flipscreen)
+		pos = ((287 - y) * 224) + (223 - x);
+	else
+		pos = ((y * 224) + x);
+
+	PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+}
+
 static void DrawBackground(int priority)
 {
 	unsigned char *videoram = Rom + 0x4000;
@@ -2227,7 +2202,7 @@ static void DrawBackground(int priority)
 
 	for (int offs = 0x400 - 1; offs >= 0; offs-=1)
 	{
-		int num = (videoram[offs]) | (charbank << 8);
+		int num = (charbank << 8) | videoram[offs];
 		int color = ((colorram[offs] & 0x1f) | (colortablebank << 5) | (palettebank << 6 )) << 2;
 
 		unsigned char *src = Gfx + (num << 6);
@@ -2245,19 +2220,8 @@ static void DrawBackground(int priority)
 
 		for (int y = sy; y < sy + 8; y++)
 		{
-			if (y > 287 || y < 0) continue;
-
-			for (int x = sx; x < sx + 8; x++, src++)
-			{
-				if (x >= 224 || x < 0) continue;
-
-				int pxl = Palette[color | src[0]];
-				if (priority & pxl == Palette[0]) continue;
-
-				int pos = ((y * 224) + x);
-				if (flipscreen) pos = ((287 - y) * 224) + (223 - x);
-
-				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+			for (int x = sx; x < sx + 8; x++, src++) {
+				pac_putpix(x, y, color, *src, 0);
 			}
 		}	
 	}
@@ -2271,79 +2235,41 @@ static void DrawSprites()
 	// draw sprites
 	for (int offs = 0x10 - 2;offs >= 0;offs -= 2)
 	{
-		int color,sx,sy,flipx,flipy,num;
+		int color, sx, sy, flipx, flipy, num;
 
-		num = (((spriteram[offs] >> 2 ) | (spritebank << 6)) << 8);
-
-		sy = (spriteram_2[offs + 1] ^ 0xff) + 0x11;
-		sx = (spriteram_2[offs] ^ 0xff) - 0x10;
-
+		num   = ((spriteram[offs] >> 2 ) | (spritebank << 6)) << 8;
 		color = ((spriteram[offs + 1] & 0x1f ) | (colortablebank << 5) | (palettebank << 6 )) << 2;
 
-		flipy = spriteram[offs] & 1;
-		flipx = spriteram[offs] & 2;
+		sy    = (spriteram_2[offs + 1] ^ 0xff) + 0x11;
+		sx    = (spriteram_2[offs] ^ 0xff) - 0x10;
+		flipy =  spriteram[offs] & 1;
+		flipx =  spriteram[offs] & 2;
 
 		unsigned char *src = Gfx + 0x4000 + num;
 
 		if (flipy) {
 			for (int y = sy + 15; y >= sy; y--)
 			{
-				if (y > 287 || y < 0) continue;
-
 				if (flipx) {
 					for (int x = sx + 15; x >= sx; x--, src++) {
-						if (x >= 224 || x < 0) continue;
-
-						int pxl = Palette[color | *src];
-						if (pxl == Palette[0]) continue;
-
-						int pos = ((y * 224) + x);
-						if (flipscreen) pos = ((287 - y) * 224) + (223 - x);
-
-						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+						pac_putpix(x, y, color, *src, 1);
 					}
 				} else {
 					for (int x = sx; x < sx + 16; x++, src++) {
-						if (x > 224 || x < 0) continue;
-
-						int pxl = Palette[color | *src];
-						if (pxl == Palette[0]) continue;
-
-						int pos = ((y * 224) + x);
-						if (flipscreen) pos = ((287 - y) * 224) + (223 - x);
-
-						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+						pac_putpix(x, y, color, *src, 1);
 					}
 				}
 			}
 		} else {
 			for (int y = sy; y < sy + 16; y++)
 			{
-				if (y > 287 || y < 0) continue;
-
 				if (flipx) {
 					for (int x = sx + 15; x >= sx; x--, src++) {
-						if (x >= 224 || x < 0) continue;
-
-						int pxl = Palette[color | *src];
-						if (pxl == Palette[0]) continue;
-
-						int pos = ((y * 224) + x);
-						if (flipscreen) pos = ((287 - y) * 224) + (223 - x);
-
-						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+						pac_putpix(x, y, color, *src, 1);
 					}
 				} else {
 					for (int x = sx; x < sx + 16; x++, src++) {
-						if (x > 224 || x < 0) continue;
-
-						int pxl = Palette[color | *src];
-						if (pxl == Palette[0]) continue;
-
-						int pos = ((y * 224) + x);
-						if (flipscreen) pos = ((287 - y) * 224) + (223 - x);
-
-						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+						pac_putpix(x, y, color, *src, 1);
 					}
 				}
 			}
@@ -5089,10 +5015,10 @@ static unsigned char epos_hardware_decrypt_rom(unsigned short offset)
 static void theglobp_decrypt()
 {
 	for (int i = 0; i < 0x4000; i++) {
-		Rom[0x10000 + i] = BITSWAP08(Rom[i] ^ 0xfc, 3, 7, 0, 6, 4, 1, 2, 5); // type 8
-		Rom[0x14000 + i] = BITSWAP08(Rom[i] ^ 0xf6, 1, 7, 0, 3, 4, 6, 2, 5); // type 9
-		Rom[0x18000 + i] = BITSWAP08(Rom[i] ^ 0x7d, 3, 0, 4, 6, 7, 1, 2, 5); // type A
-		Rom[0x1c000 + i] = BITSWAP08(Rom[i] ^ 0x77, 1, 0, 4, 3, 7, 6, 2, 5); // type B
+		Rom[0x10000 + i] = BITSWAP08(Rom[i] ^ 0xfc, 3, 7, 0, 6, 4, 1, 2, 5);
+		Rom[0x14000 + i] = BITSWAP08(Rom[i] ^ 0xf6, 1, 7, 0, 3, 4, 6, 2, 5);
+		Rom[0x18000 + i] = BITSWAP08(Rom[i] ^ 0x7d, 3, 0, 4, 6, 7, 1, 2, 5);
+		Rom[0x1c000 + i] = BITSWAP08(Rom[i] ^ 0x77, 1, 0, 4, 3, 7, 6, 2, 5);
 	}
 }
 

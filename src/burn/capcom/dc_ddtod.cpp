@@ -154,6 +154,31 @@ static struct BurnRomInfo Ddtodur1RomDesc[] = {
 STD_ROM_PICK(Ddtodur1) STD_ROM_FN(Ddtodur1)
 
 static struct BurnRomInfo DdtodjRomDesc[] = {
+	{ "dadj.03c",      0x80000, 0x0b1b5798, 1 | BRF_ESS | BRF_PRG }, // 68000 code (encrypted)
+	{ "dadj.04c",      0x80000, 0xc6a2fbc8, 1 | BRF_ESS | BRF_PRG },
+	{ "dadj.05c",      0x80000, 0x189b15fe, 1 | BRF_ESS | BRF_PRG },
+	{ "dad.06a",       0x80000, 0x6225495a, 1 | BRF_ESS | BRF_PRG },
+	{ "dad.07a",       0x80000, 0xb3480ec3, 1 | BRF_ESS | BRF_PRG },
+
+	{ "dad.13m",      0x200000, 0xda3cb7d6, 3 | BRF_GRA },			 // 8
+	{ "dad.15m",      0x200000, 0x92b63172, 3 | BRF_GRA },
+	{ "dad.17m",      0x200000, 0xb98757f5, 3 | BRF_GRA },
+	{ "dad.19m",      0x200000, 0x8121ce46, 3 | BRF_GRA },
+	{ "dad.14m",      0x100000, 0x837e6f3f, 3 | BRF_GRA },
+	{ "dad.16m",      0x100000, 0xf0916bdb, 3 | BRF_GRA },
+	{ "dad.18m",      0x100000, 0xcef393ef, 3 | BRF_GRA },
+	{ "dad.20m",      0x100000, 0x8953fe9e, 3 | BRF_GRA },
+
+	{ "dad.01",       0x020000, 0x3f5e2424, 4 | BRF_ESS | BRF_PRG }, // 16
+
+	{ "dad.11m",      0x200000, 0x0c499b67, 5 | BRF_SND },
+	{ "dad.12m",      0x200000, 0x2f0b5a4e, 5 | BRF_SND },
+};
+
+
+STD_ROM_PICK(Ddtodj) STD_ROM_FN(Ddtodj)
+
+static struct BurnRomInfo Ddtodjr1RomDesc[] = {
 	{ "dadj.03b",      0x80000, 0x87606b85, 1 | BRF_ESS | BRF_PRG }, // 68000 code (encrypted)
 	{ "dadj.04b",      0x80000, 0x24d49575, 1 | BRF_ESS | BRF_PRG },
 	{ "dadj.05b",      0x80000, 0x56ce51f7, 1 | BRF_ESS | BRF_PRG },
@@ -176,9 +201,9 @@ static struct BurnRomInfo DdtodjRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ddtodj) STD_ROM_FN(Ddtodj)
+STD_ROM_PICK(Ddtodjr1) STD_ROM_FN(Ddtodjr1)
 
-static struct BurnRomInfo Ddtodjr1RomDesc[] = {
+static struct BurnRomInfo Ddtodjr2RomDesc[] = {
 	{ "dadj.03a",      0x80000, 0x711638dc, 1 | BRF_ESS | BRF_PRG }, // 68000 code (encrypted)
 	{ "dadj.04a",      0x80000, 0x4869639c, 1 | BRF_ESS | BRF_PRG },
 	{ "dadj.05a",      0x80000, 0x484c0efa, 1 | BRF_ESS | BRF_PRG },
@@ -201,7 +226,7 @@ static struct BurnRomInfo Ddtodjr1RomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ddtodjr1) STD_ROM_FN(Ddtodjr1)
+STD_ROM_PICK(Ddtodjr2) STD_ROM_FN(Ddtodjr2)
 
 static struct BurnRomInfo DdtodaRomDesc[] = {
 	{ "dada.03a",      0x80000, 0xfc6f2dd7, 1 | BRF_ESS | BRF_PRG }, // 68000 code (encrypted)
@@ -295,7 +320,7 @@ struct BurnDriver BurnDrvCpsDdtodur1 = {
 
 struct BurnDriver BurnDrvCpsDdtodj = {
 	"ddtodj", "ddtod", NULL, "1994",
-	"Dungeons & Dragons - tower of doom (940125 Japan)\0", NULL, "Capcom", "CPS2",
+	"Dungeons & Dragons - tower of doom (940412 Japan)\0", NULL, "Capcom", "CPS2",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS2,
 	NULL, DdtodjRomInfo, DdtodjRomName, DrvInputInfo, NULL,
@@ -305,10 +330,20 @@ struct BurnDriver BurnDrvCpsDdtodj = {
 
 struct BurnDriver BurnDrvCpsDdtodjr1 = {
 	"ddtodjr1", "ddtod", NULL, "1994",
-	"Dungeons & Dragons - tower of doom (940113 Japan)\0", NULL, "Capcom", "CPS2",
+	"Dungeons & Dragons - tower of doom (940125 Japan)\0", NULL, "Capcom", "CPS2",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS2,
 	NULL, Ddtodjr1RomInfo, Ddtodjr1RomName, DrvInputInfo, NULL,
+	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,384,224,4,3
+};
+
+struct BurnDriver BurnDrvCpsDdtodjr2 = {
+	"ddtodjr2", "ddtod", NULL, "1994",
+	"Dungeons & Dragons - tower of doom (940113 Japan)\0", NULL, "Capcom", "CPS2",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE,4,HARDWARE_CAPCOM_CPS2,
+	NULL, Ddtodjr2RomInfo, Ddtodjr2RomName, DrvInputInfo, NULL,
 	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
 };

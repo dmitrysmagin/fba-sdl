@@ -17,41 +17,24 @@ FB Alpha is an arcade emulator supporting the following hardware platforms;
 What's New?
 -----------
 
-v0.2.96.73
+v0.2.96.75
    This is still an alpha release!
 
    Note that, if compiled with GCC, you will need to use version 3.3.x, and
    the experimental DirectX 9 blitter is not built.
 
-Thanks go to the neosource forum regulars for a lot of this stuff. iq_132 has
-written many drivers for older games, and Oopsware has contributed some impressive
-drivers too. Captain CPS-X and KOF2112 have also tidied up some things. This list
-is from memory and some stuff is sure to be missing. Here's what's new anyway;
-
-- Added a generic tiles decoding routine and updated various drivers to use it
-- Added support for 32x32 tiles in the generic tile rendering module
-- Added support for multiple YM2203s to the YM2203 interface
-- Updated all sets to match MAME 0.123u1
-- Tidied up all source code to compile cleanly for all builds (unicode, non-unicode,
-  debug, non-debug)
-- Added support for M6502 CPU
-- Added support for SH-2 CPU
-- Added support for NEC V30 family CPU
-- Seperated misc drivers into "Misc (pre 90s)" and "Misc (post 90s)"
-- Moved some common sound cores into the burn folder
-- Added various clones and fixed some little issues in various games
-- Added driver for Madgear and Last Duel
-- Added driver for 1942
-- Added preliminary driver for 1943 and added support to the Zet interface to get the
-  BC register
-- Added Oopsware's CPS-3 driver
-- Added various drivers by iq_132
-- Cleaned up the drivers by iq_132 (seperated into Misc pre 90s category, corrected
-  aspect ratios, fixed rom-sets, etc.)
-- Added driver for seta2 hardware
-- Added preliminary driver for m92 hardware in debug builds
-- Added a d_parent module to put required parent drivers that don't have a specific
-  driver
+- Added driver for Double Dragon 3 / Combatribes
+- Added driver for WWF Wrestlemania
+- Added driver for Kyugo Z80-based hardware
+- Updated the pacman driver to the latest version released by iq_132
+- Added iq_132s Bank Panic driver
+- Added iq_132s Mr. Do driver
+- Added iq_132s Mysterious Stones driver
+- Added iq_132s The New Zealand Story driver
+- Added clone of Real Bout Fatal Fury to Neo-Geo driver
+- Added clone of Metal Slug 5 to Neo-Geo driver
+- Added clone of Dungeons & Dragons: tower of doom to the CPS-2 driver
+- Matched all sets to MAME 0.123u4
 
 System requirements
 -------------------

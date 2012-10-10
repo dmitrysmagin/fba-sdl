@@ -144,13 +144,13 @@ drvobj	=   	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwa
 		\
 		d_opwolf.o d_rainbow.o d_rastan.o d_superman.o d_twinhawk.o \
 		\
-		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bombjack.o d_dotrikun.o d_epos.o \
-		d_jack.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrflea.o d_pacman.o d_pkunwar.o \
-		d_prehisle.o d_quizo.o d_route16.o d_solomon.o d_sys1.o d_tigerheli.o d_tmnt.o d_wallc.o \
-		d_wc90.o \
+		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bankp.o d_bombjack.o d_dotrikun.o \
+		d_epos.o d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrdo.o \
+		d_mrflea.o d_mystston.o d_pacman.o d_pkunwar.o d_prehisle.o d_quizo.o d_route16.o \
+		d_solomon.o d_sys1.o d_tigerheli.o d_tmnt.o d_tnzs.o d_wallc.o d_wc90.o \
 		\
-		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_fstarfrc.o d_galpanic.o d_hyperpac.o d_kaneko16.o \
-		d_m92.o d_news.o d_ohmygod.o d_powerins.o d_seta2.o d_shadfrce.o \
+		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_ddragon3.o d_fstarfrc.o d_galpanic.o d_hyperpac.o \
+		d_kaneko16.o d_m92.o d_news.o d_ohmygod.o d_powerins.o d_seta2.o d_shadfrce.o d_wwfwfest.o \
 		\
 		d_parent.o
 	    
@@ -201,7 +201,6 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 		rain_chip.o taito_gfx.o vid_sysx.o vid_pc080sn.o vid_pc090oj.o snd_tc0140.o \
 		\
 		tiles_generic.o
-	   
 
 
 autobj += $(depobj) burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o 

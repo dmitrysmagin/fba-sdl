@@ -3284,7 +3284,7 @@ static struct BurnRomInfo aof2aRomDesc[] = {
 	{ "056-v2.bin",   0x200000, 0xb710e2f2, 5 | BRF_SND },			 // 12
 	{ "056-v3.bin",   0x100000, 0xd168c301, 5 | BRF_SND },			 // 13
 
-	{ "056-ep1.bin",  0x080000, 0x75D6301C, 1 | BRF_ESS | BRF_PRG }, // 14 68K code patch
+	{ "056-ep1.bin",  0x080000, 0x75D6301C, 0 | BRF_ESS | BRF_PRG }, // 14 68K code patch
 };
 
 STDROMPICKEXT(aof2a, aof2a, neogeo);
@@ -4956,7 +4956,7 @@ static struct BurnRomInfo mslug5RomDesc[] = {
 	{ "268-c8c.bin",   0x800000, 0x551d720e, 3 | BRF_GRA },			 //  9
 	
 	{ "268-m1_decrypted.bin",  0x010000, 0x3c0655a7, 4 | BRF_ESS | BRF_PRG }, //  8 Z80 code (decrypted)
-	{ "268-m1.bin",   0x010000, 0x4a5a6e0e, 0 | BRF_PRG | BRF_OPT }, //  8 Z80 code
+	{ "268-m1.bin",   0x080000, 0x4a5a6e0e, 0 | BRF_PRG | BRF_OPT }, //  8 Z80 code
 
 	{ "268-v1c.bin",   0x800000, 0xae31d60c, 5 | BRF_SND },			 //  9 Sound data
 	{ "268-v2c.bin",   0x800000, 0xc40613ed, 5 | BRF_SND },			 // 10
@@ -5034,6 +5034,39 @@ struct BurnDriver BurnDrvmslug5 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SNK_NEOGEO | HARDWARE_SNK_ENCRYPTED_B | HARDWARE_SNK_P32 | HARDWARE_SNK_PVC_PROT,
 	NULL, mslug5RomInfo, mslug5RomName, neogeoInputInfo, neogeoDIPInfo,
+	mslug5Init, NeoExit, NeoFrame, NeoRender, NeoScan, &NeoRecalcPalette,
+	nNeoScreenWidth, 224, 4, 3
+};
+
+static struct BurnRomInfo mslug5hRomDesc[] = {
+	{ "268-p1cr2.bin", 0x400000, 0x3636690a, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
+	{ "268-p2cr2.bin", 0x400000, 0x8dfc47a2, 1 | BRF_ESS | BRF_PRG }, //  1
+
+	{ "268-c1c.bin",   0x800000, 0xab7c389a, 3 | BRF_GRA },			 //  2 Sprite data
+	{ "268-c2c.bin",   0x800000, 0x3560881b, 3 | BRF_GRA },			 //  3
+	{ "268-c3c.bin",   0x800000, 0x3af955ea, 3 | BRF_GRA },			 //  4
+	{ "268-c4c.bin",   0x800000, 0xc329c373, 3 | BRF_GRA },			 //  5
+	{ "268-c5c.bin",   0x800000, 0x959c8177, 3 | BRF_GRA },			 //  6
+	{ "268-c6c.bin",   0x800000, 0x010a831b, 3 | BRF_GRA },			 //  7
+	{ "268-c7c.bin",   0x800000, 0x6d72a969, 3 | BRF_GRA },			 //  8
+	{ "268-c8c.bin",   0x800000, 0x551d720e, 3 | BRF_GRA },			 //  9
+	
+	{ "268-m1_decrypted.bin",  0x010000, 0x3c0655a7, 4 | BRF_ESS | BRF_PRG }, //  8 Z80 code (decrypted)
+	{ "268-m1h.bin",   0x080000, 0x4a5a6e0e, 0 | BRF_PRG | BRF_OPT }, //  8 Z80 code
+
+	{ "268-v1c.bin",   0x800000, 0xae31d60c, 5 | BRF_SND },			 //  9 Sound data
+	{ "268-v2c.bin",   0x800000, 0xc40613ed, 5 | BRF_SND },			 // 10
+};
+
+STDROMPICKEXT(mslug5h, mslug5h, neogeo);
+STD_ROM_FN(mslug5h);
+
+struct BurnDriver BurnDrvmslug5h = {
+	"mslug5h", "mslug5", "neogeo", "2003",
+	"Metal Slug 5 (AES Cart)\0", NULL, "SNK Playmore", "Neo Geo",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SNK_NEOGEO | HARDWARE_SNK_ENCRYPTED_B | HARDWARE_SNK_P32 | HARDWARE_SNK_PVC_PROT,
+	NULL, mslug5hRomInfo, mslug5hRomName, neogeoInputInfo, neogeoDIPInfo,
 	mslug5Init, NeoExit, NeoFrame, NeoRender, NeoScan, &NeoRecalcPalette,
 	nNeoScreenWidth, 224, 4, 3
 };
@@ -5450,6 +5483,55 @@ struct BurnDriver BurnDrvrbff1 = {
 	BDF_GAME_WORKING, 2, HARDWARE_SNK_NEOGEO | HARDWARE_SNK_SRAM,
 	NULL, rbff1RomInfo, rbff1RomName, neogeoInputInfo, neogeoDIPInfo,
 	NeoInit, NeoExit, NeoFrame, NeoRender, NeoScan, &NeoRecalcPalette,
+	nNeoScreenWidth, 224, 4, 3
+};
+
+static struct BurnRomInfo rbff1aRomDesc[] = {
+	{ "095-p1.bin",   0x100000, 0x63B4D8AE, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
+	{ "095-p2.bin",   0x200000, 0xCC15826E, 1 | BRF_ESS | BRF_PRG }, //  1
+	
+	{ "095-s1.bin",   0x020000, 0xB6BF5E08, 2 | BRF_GRA },			 //  2 Text layer tiles
+
+	{ "069-c1.bin",   0x400000, 0xE302F93C, 3 | BRF_GRA },			 //  3 Sprite data
+	{ "069-c2.bin",   0x400000, 0x1053A455, 3 | BRF_GRA },			 //  4
+	{ "069-c3.bin",   0x400000, 0x1C0FDE2F, 3 | BRF_GRA },			 //  5
+	{ "069-c4.bin",   0x400000, 0xA25FC3D0, 3 | BRF_GRA },			 //  6
+	{ "095-c5.bin",   0x400000, 0x8B9B65DF, 3 | BRF_GRA },			 //  7
+	{ "095-c6.bin",   0x400000, 0x3E164718, 3 | BRF_GRA },			 //  8
+	{ "095-c7.bin",   0x200000, 0xCA605E12, 3 | BRF_GRA },			 //  9
+	{ "095-c8.bin",   0x200000, 0x4E6BEB6C, 3 | BRF_GRA },			 // 10
+
+	{ "095-m1.bin",   0x020000, 0x653492A7, 4 | BRF_ESS | BRF_PRG }, // 11 Z80 code
+
+	{ "069-v1.bin",   0x400000, 0x2BDBD4DB, 5 | BRF_SND },			 // 12	Sound data
+	{ "069-v2.bin",   0x400000, 0xA698A487, 5 | BRF_SND },			 // 13
+	{ "095-v3.bin",   0x400000, 0x189D1C6C, 5 | BRF_SND },			 // 14
+	
+	{ "095-ep1.bin",  0x080000, 0xBE0060A3, 0 | BRF_ESS | BRF_PRG }, //  15 68K code
+};
+
+STDROMPICKEXT(rbff1a, rbff1a, neogeo);
+STD_ROM_FN(rbff1a);
+
+static void rbff1aCallback()
+{
+	BurnLoadRom(Neo68KROM, 15, 1);
+}
+
+static int rbff1aInit()
+{
+	pNeoInitCallback = rbff1aCallback;
+
+ 	return NeoInit();
+}
+
+struct BurnDriver BurnDrvrbff1a = {
+	"rbff1a", "rbff1", "neogeo", "1995",
+	"Real Bout Fatal Fury\0Real Bout Garou Densetsu (bug fix revision)\0", NULL, "SNK", "Neo Geo",
+	L"Real Bout Fatal Fury\0Real Bout \u9913\u72FC\u4F1D\u8AAC\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SNK_NEOGEO | HARDWARE_SNK_SRAM,
+	NULL, rbff1aRomInfo, rbff1aRomName, neogeoInputInfo, neogeoDIPInfo,
+	rbff1aInit, NeoExit, NeoFrame, NeoRender, NeoScan, &NeoRecalcPalette,
 	nNeoScreenWidth, 224, 4, 3
 };
 

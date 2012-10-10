@@ -1,5 +1,13 @@
 #include "burnint.h"
 
+#ifndef HARDWARE_CAPCOM_CPS3
+	#define HARDWARE_CAPCOM_CPS3		HARDWARE_MISC_MISC
+#endif
+
+#ifndef HARDWARE_CAPCOM_CPS3_NO_CD
+	#define HARDWARE_CAPCOM_CPS3_NO_CD	HARDWARE_CAPCOM_CPS3
+#endif
+
 extern unsigned char cps3_reset;
 extern unsigned char cps3_palette_change;
 

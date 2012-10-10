@@ -1,6 +1,6 @@
 This list contains all games supported by FB Alpha.
 
-1132 games supported in total; X = excluded from build; D = included in debug build only; NW = not working
+1174 games supported in total; X = excluded from build; D = included in debug build only; NW = not working
 
   name		  status  full name						  parent	  year	  company	  hardware	  remarks
 +---------------+-------+-------------------------------------------------------+---------------+-------+---------------+---------------+---------------------------------------+
@@ -17,6 +17,9 @@ This list contains all games supported by FB Alpha.
 | porky		| D NW	| "porky"						| 		| 1985	| Pac-man	| 		| Shinkai Inc. (Magic Eletronics Inc. li|
 | seganinj	| D NW	| "seganinj"						| 		| 1985	| System 1	| 		| Sega					|
 | wboy		| D NW	| "wboy"						| 		| 1986	| System 1	| 		| Sega (Escape License)			|
+| 99lstwar	|  	| '99: The Last War					| sonofphx	| 1985	| Proma		| Kyugo		| 					|
+| 99lstwra	|  	| '99: The Last War (alternate)				| sonofphx	| 1985	| Proma		| Kyugo		| 					|
+| 99lstwrk	|  	| '99: The Last War (Kyugo)				| sonofphx	| 1985	| Kyugo		| Kyugo		| 					|
 | 4play		| X	| * 4 player input test					| 		| ???	| SNK		| Neo Geo	| 4 player  input test cartridge	|
 | gtmra		|  	| 1000 Miglia: Great 1000 Miles Rally (94/06/13)	| gtmr		| 1994	| Kaneko	| Kaneko 16-bit	| 					|
 | gtmr		|  	| 1000 Miglia: Great 1000 Miles Rally (94/07/18)	| 		| 1994	| Kaneko	| Kaneko 16-bit	| 					|
@@ -54,6 +57,8 @@ This list contains all games supported by FB Alpha.
 | aburner2	|  	| After Burner II					| 		| 1987	| Sega		| X-Board	| 					|
 | aodk		|  	| Aggressors of Dark Kombat\0Tsuukai GANGAN Koushinkyoku| 		| 1994	| ADK / SNK	| Neo Geo	| 					|
 | agallet	|  	| Air Gallet						| 		| 1996	| BanPresto / Ga| Cave		| 					|
+| airwolf	|  	| Airwolf						| 		| 1987	| Kyugo		| Kyugo		| 					|
+| airwolfa	|  	| Airwolf (US)						| airwolf	| 1987	| Kyugo (UA Thea| Kyugo		| 					|
 | alexkid1	|  	| Alex Kidd: The Lost Stars (set 1, FD1089A 317-unknown)| alexkidd	| 1986	| Sega		| System 16A	| Incomplete Sound			|
 | alexkidd	|  	| Alex Kidd: The Lost Stars (set 2, unprotected)	| 		| 1986	| Sega		| System 16A	| Incomplete Sound			|
 | alibaba	|  	| Ali Baba and 40 Thieves				| 		| 1982	| Sega		| Pac-man	| 					|
@@ -111,6 +116,7 @@ This list contains all games supported by FB Alpha.
 | bakatono	|  	| Bakatonosama Mahjong Manyuki				| 		| 1991	| Monolith Corp.| Neo Geo	| 					|
 | bakubrkr	|  	| Bakuretsu Breaker					| explbrkr	| 1992	| Kaneko	| Kaneko 16-bit	| 					|
 | bangbead	|  	| Bang Bead						| 		| 2000	| Visco		| Neo Geo	| 					|
+| bankp		|  	| Bank Panic						| 		| 1984	| [Sanritsu] Seg| Misc		| No Sound				|
 | bstars2	|  	| Baseball Stars 2					| 		| 1992	| SNK		| Neo Geo	| 					|
 | bstars	|  	| Baseball Stars Professional				| 		| 1990	| SNK		| Neo Geo	| 					|
 | batsugun	|  	| Batsugun (set 1)					| 		| 1993	| Toaplan	| Dual Toaplan G| No sound (sound MCU not dumped)	|
@@ -152,6 +158,7 @@ This list contains all games supported by FB Alpha.
 | bullet	|  	| Bullet (FD1094 317-0041)				| 		| 1987	| Sega		| System 16B	| Incomplete Sound			|
 | burningf	|  	| Burning Fight (set 1)					| 		| 1991	| SNK		| Neo Geo	| 					|
 | burningh	|  	| Burning Fight (set 2)					| burningf	| 1991	| SNK		| Neo Geo	| 					|
+| buzzard	|  	| Buzzard						| gyrodine	| 1984	| Crux		| Kyugo		| 					|
 | dino		|  	| Cadillacs & Dinosaurs (930201 etc)			| 		| 1993	| Capcom	| CPS1 / QSound	| 					|
 | dinou		|  	| Cadillacs & Dinosaurs (930201 USA)			| dino		| 1993	| Capcom	| CPS1 / QSound	| 					|
 | dinoj		|  	| Cadillacs Kyouryuu-Shinseiki (Cadillacs 930201 Japan)	| dino		| 1993	| Capcom	| CPS1, QSound	| 					|
@@ -176,6 +183,7 @@ This list contains all games supported by FB Alpha.
 | drgw2j	| D NW	| Chuugokuryuu II (V100J, Japan)			| drgw2		| 1997	| IGS		| PGM		| Unemulated protection			|
 | cltchtrj	|  	| Clutch Hitter (set 1, Japan, FD1094 317-0175)		| cltchitr	| 1991	| Sega		| System 18	| Incomplete Sound			|
 | cltchitr	|  	| Clutch Hitter (set 2, US, FD1094 317-0176)		| 		| 1991	| Sega		| System 18	| Incomplete Sound			|
+| combh		|  	| Combat Hawk						| 		| 1987	| Sega / Sanrits| Misc		| No Sound				|
 | cookbib2	|  	| Cookie & Bibi 2					| 		| 1996	| SemiCom	| Kaneko Pandora| 					|
 | cookbib3	|  	| Cookie & Bibi 3					| 		| 1997	| SemiCom	| Kaneko Pandora| 					|
 | cottonj	|  	| Cotton (set 1, Japan, FD1094 317-0179a))		| cotton	| 1991	| Sega / Success| System 16B	| No Sound				|
@@ -224,6 +232,9 @@ This list contains all games supported by FB Alpha.
 | dotrikun	|  	| Dottori Kun (new version)				| 		| 1990	| Sega		| Test Hardware	| 					|
 | dotriku2	|  	| Dottori Kun (old version)				| dotrikun	| 1990	| Sega		| Test Hardware	| 					|
 | doubledr	|  	| Double Dragon						| 		| 1995	| Technos	| Neo Geo	| 					|
+| ddrago3b	|  	| Double Dragon 3 - The Rosetta Stone (bootleg)		| ddragon3	| 1990	| bootleg	| Miscellaneous	| 					|
+| ddrago3j	|  	| Double Dragon 3 - The Rosetta Stone (Japan)		| ddragon3	| 1990	| Technos	| Miscellaneous	| 					|
+| ddragon3	|  	| Double Dragon 3 - The Rosetta Stone (US)		| 		| 1990	| Technos	| Miscellaneous	| 					|
 | drgw3		| D NW	| Dragon World 3 (V100J)				| 		| 1998	| IGS		| PGM		| 					|
 | drgw3k	| D NW	| Dragon World 3 (V106, Korean Board)			| drgw3		| 1998	| IGS		| PGM		| 					|
 | drgw2		|   NW	| Dragon World II (V110X, Export)			| 		| 1997	| IGS		| PGM		| Unemulated protection			|
@@ -241,12 +252,13 @@ This list contains all games supported by FB Alpha.
 | ddsomu	|  	| Dungeons & Dragons - shadow over mystara (960619 USA)	| ddsom		| 1996	| Capcom	| CPS2		| 					|
 | ddtoda	|  	| Dungeons & Dragons - tower of doom (940113 Asia)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | ddtodr1	|  	| Dungeons & Dragons - tower of doom (940113 Euro)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
-| ddtodjr1	|  	| Dungeons & Dragons - tower of doom (940113 Japan)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
+| ddtodjr2	|  	| Dungeons & Dragons - tower of doom (940113 Japan)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | ddtodur1	|  	| Dungeons & Dragons - tower of doom (940113 USA)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | ddtodh	|  	| Dungeons & Dragons - tower of doom (940125 Hispanic)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
-| ddtodj	|  	| Dungeons & Dragons - tower of doom (940125 Japan)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
+| ddtodjr1	|  	| Dungeons & Dragons - tower of doom (940125 Japan)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | ddtodu	|  	| Dungeons & Dragons - tower of doom (940125 USA)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | ddtod		|  	| Dungeons & Dragons - tower of doom (940412 Euro)	| 		| 1994	| Capcom	| CPS2		| 					|
+| ddtodj	|  	| Dungeons & Dragons - tower of doom (940412 Japan)	| ddtod		| 1994	| Capcom	| CPS2		| 					|
 | dunkshot	|  	| Dunk Shot (FD1089 317-0022)				| 		| 1986	| Sega		| System 16B	| 					|
 | dduxbl	|  	| Dynamite Dux (bootleg)				| ddux		| 1989	| bootleg	| System 16B	| 					|
 | ddux1		|  	| Dynamite Dux (set 1, 8751 317-0095)			| ddux		| 1989	| Sega		| System 16B	| 					|
@@ -274,6 +286,7 @@ This list contains all games supported by FB Alpha.
 | eyes		|  	| Eyes (Digitrex Techstar)				| 		| 1982	| Digitrex Techs| Pac-man	| 					|
 | eyes2		|  	| Eyes (Techstar)					| eyes		| 1982	| Techstar (Rock| Pac-man	| 					|
 | eyeszac	|  	| Eyes (Zaccaria)					| eyes		| 1982	| Zaccaria / boo| Pac-man	| 					|
+| fx		|  	| F-X							| srdmissn	| 1986	| bootleg	| Kyugo		| 					|
 | fantasia	|  	| Fantasia						| 		| 1994	| Comad / New Ja| Miscellaneous	| 					|
 | fantsia2	|  	| Fantasia II (Explicit)				| 		| 1997	| Comad		| Miscellaneous	| 					|
 | fntsia2a	|  	| Fantasia II (Less Explicit)				| fantsia2	| 1997	| Comad		| Miscellaneous	| 					|
@@ -301,6 +314,8 @@ This list contains all games supported by FB Alpha.
 | fpoint1	|  	| Flash Point (set 1, Japan, FD1094 317-0127A)		| fpoint	| 1989	| Sega		| System 16B	| 					|
 | fpoint	|  	| Flash Point (set 2, Japan, FD1094 317-0127A)		| 		| 1989	| Sega		| System 16B	| 					|
 | fpointbl	|  	| Flash Point (World, bootleg)				| fpoint	| 1989	| bootleg	| System 16B	| 					|
+| flashgal	|  	| Flashgal (set 1)					| 		| 1985	| Sega		| Kyugo		| 					|
+| flashgla	|  	| Flashgal (set 2)					| flashgal	| 1985	| Sega		| Kyugo		| 					|
 | flicks2	| D	| Flicky (128k Version, System 2, not encrypted)	| flicky	| 1984	| Sega		| System 1	| 					|
 | fbfrenzy	|  	| Football Frenzy					| 		| 1992	| SNK		| Neo Geo	| 					|
 | forgottn	|  	| Forgotten Worlds (US)					| 		| 1988	| Capcom	| CPS1		| 					|
@@ -351,6 +366,8 @@ This list contains all games supported by FB Alpha.
 | gunbird	|  	| Gunbird (World)					| 		| 1994	| Psikyo	| Psikyo 68EC020| 					|
 | gururin	|  	| Gururin						| 		| 1994	| Face		| Neo Geo	| 					|
 | guwange	|  	| Guwange (Japan, 1999 6/24 master ver.)		| 		| 1999	| Atlus / Cave	| Cave		| 					|
+| gyrodinc	|  	| Gyrodine						| gyrodine	| 1984	| Crux		| Kyugo		| 					|
+| gyrodine	|  	| Gyrodine (Taito Corporation license)			| 		| 1984	| Crux (Taito Co| Kyugo		| 					|
 | hangon1	|  	| Hang-On						| hangon	| 1985	| Sega		| Hang-On	| 					|
 | hangon	|  	| Hang-On (rev A)					| 		| 1985	| Sega		| Hang-On	| 					|
 | hangly	|  	| Hangly-Man (set 1)					| puckman	| 1981	| hack		| Pac-man	| 					|
@@ -423,6 +440,7 @@ This list contains all games supported by FB Alpha.
 | lresort	|  	| Last Resort						| 		| 1992	| SNK		| Neo Geo	| 					|
 | lbowling	|  	| League Bowling					| 		| 1990	| SNK		| Neo Geo	| 					|
 | ledstorm	|  	| Led Storm (US)					| madgear	| 1988	| Capcom	| Miscellaneous	| 					|
+| legend	|  	| Legend						| 		| 1986	| Sega / Corelan| Kyugo		| 					|
 | legendos	|  	| Legend of Success Joe\0Ashitano Joe Densetsu		| 		| 1991	| SNK		| Neo Geo	| 					|
 | shangnle	|  	| Limited Edition Hang-On				| shangon	| 1991	| Sega		| Out Run	| 					|
 | loffirej	|  	| Line of Fire / Bakudan Yarou (Japan, FD1094 317-0134)	| loffire	| 1989	| Sega		| X-Board	| 					|
@@ -498,6 +516,7 @@ This list contains all games supported by FB Alpha.
 | mslug4	|  	| Metal Slug 4						| 		| 2002	| Playmore Corpo| Neo Geo	| 					|
 | ms4plus	|  	| Metal Slug 4 Plus (bootleg)				| mslug4	| 2002	| bootleg	| Neo Geo	| bootleg of \"Metal Slug 4\"		|
 | mslug5	|  	| Metal Slug 5						| 		| 2003	| SNK Playmore	| Neo Geo	| 					|
+| mslug5h	|  	| Metal Slug 5 (AES Cart)				| mslug5	| 2003	| SNK Playmore	| Neo Geo	| 					|
 | ms5pcb	|  	| Metal Slug 5 (JAMMA PCB)				| 		| 2003	| SNK Playmore	| Neo Geo	| 					|
 | ms5plus	|  	| Metal Slug 5 Plus (bootleg)				| mslug5	| 2003	| bootleg	| Neo Geo	| bootleg of \"Metal Slug 5\"		|
 | mslug3b6	|  	| Metal Slug 6						| mslug3	| 2000	| bootleg	| Neo Geo	| bootleg of \"Metal Slug 3\"		|
@@ -515,6 +534,12 @@ This list contains all games supported by FB Alpha.
 | miexchng	|  	| Money Puzzle Exchanger\0Money Idol Exchanger		| 		| 1997	| Face		| Neo Geo	| 					|
 | moremore	|  	| More More						| 		| 1999	| SemiCom / Exit| Kaneko Pandora| 					|
 | moremorp	|  	| More More Plus					| 		| 1999	| SemiCom / Exit| Kaneko Pandora| 					|
+| mrdo		|  	| Mr. Do!						| 		| 1982	| Universal	| misc		| 					|
+| mrdofix	|  	| Mr. Do! (bugfixed)					| mrdo		| 1982	| Universal (Tai| misc		| 					|
+| mrdoy		|  	| Mr. Do! (prototype)					| mrdo		| 1982	| Universal	| misc		| 					|
+| mrdot		|  	| Mr. Do! (Taito license)				| mrdo		| 1982	| Universal (Tai| misc		| 					|
+| mrdu		|  	| Mr. Du!						| mrdo		| 1982	| Bootleg	| misc		| 					|
+| mrlo		|  	| Mr. Lo!						| mrdo		| 1982	| Bootleg	| misc		| 					|
 | mrtnt		|  	| Mr. TNT						| 		| 1982	| Telko		| Pac-man	| 					|
 | mspacman	|  	| MS Pacman						| 		| 1980	| Namco		| Pac-man	| 					|
 | mspacmab	|  	| MS Pacman (bootleg)					| mspacman	| 1981	| Namco		| Pac-man	| 					|
@@ -531,6 +556,8 @@ This list contains all games supported by FB Alpha.
 | mvpj		|  	| MVP (set 1, Japan, FD1094 317-0142)			| mvp		| 1989	| Sega		| System 16B	| Incomplete Sound			|
 | mvp		|  	| MVP (set 2, US, FD1094 317-0143)			| 		| 1989	| Sega		| System 16B	| Incomplete Sound			|
 | myhero	| D	| My Hero (US, not encrypted)				| 		| 1985	| Sega		| System 1	| 					|
+| mystston	|  	| Mysterious Stones - Dr. John's Adventure		| 		| 1984	| Technos	| misc		| 					|
+| myststno	|  	| Mysterious Stones - Dr. Kick in Adventure		| mystston	| 1984	| Technos	| misc		| 					|
 | nam1975	|  	| NAM - 1975						| 		| 1990	| SNK		| Neo Geo	| 					|
 | naname	| D	| Naname de Magic!					| 		| 1994	| Atlus		| Miscellaneous	| 					|
 | nmouse	|  	| Naughty Mouse (set 1)					| 		| 1981	| Amenip (Palcom| Pac-man	| 					|
@@ -677,10 +704,12 @@ This list contains all games supported by FB Alpha.
 | rbff2h	|  	| Real Bout Fatal Fury 2 - the newcomers (set 2)\0Real B| rbff2		| 1998	| SNK		| Neo Geo	| 					|
 | rbffspec	|  	| Real Bout Fatal Fury Special\0Real Bout Special	| 		| 1996	| SNK		| Neo Geo	| 					|
 | rbff1		|  	| Real Bout Fatal Fury\0Real Bout Garou Densetsu	| 		| 1995	| SNK		| Neo Geo	| 					|
+| rbff1a	|  	| Real Bout Fatal Fury\0Real Bout Garou Densetsu (bug fi| rbff1		| 1995	| SNK		| Neo Geo	| 					|
 | redearth	|   NW	| Red Earth\0War-Zard (Euro 961121)			| 		| 1996	| Capcom	| CPS-3		| 					|
 | redeartn	|  	| Red Earth\0War-Zard (Euro 961121, NO CD)		| redearth	| 1996	| Capcom	| CPS-3		| 					|
 | regulus	| D NW	| Regulus (315-5033, New Ver.)				| 		| 1983	| Sega		| System 1	| 					|
 | regulusu	| D	| Regulus (not encrypted)				| regulus	| 1983	| Sega		| System 1	| 					|
+| repulse	|  	| Repulse						| sonofphx	| 1985	| Sega		| Kyugo		| 					|
 | revenger	| D NW	| Revenger						| 		| 1984	| Epos Corporati| EPOS Tristar	| Bad dump				|
 | ridhero	|  	| Riding Hero (set 1)					| 		| 1990	| SNK		| Neo Geo	| 					|
 | ridheroh	|  	| Riding Hero (set 2)					| ridhero	| 1990	| SNK		| Neo Geo	| 					|
@@ -699,6 +728,7 @@ This list contains all games supported by FB Alpha.
 | route16a	|  	| Route 16 (set 2)					| route16	| 1981	| Tehkan/Sun (Ce| Route 16	| 					|
 | routex	|  	| Route X (bootleg)					| route16	| 1981	| bootleg	| Route 16	| 					|
 | ryukyu	|  	| RyuKyu (Japan, FD1094 317-5023)			| 		| 1990	| Success / Sega| System 16B	| Incomplete Sound			|
+| srdmissn	|  	| S.R.D. Mission					| 		| 1986	| Taito Corporat| Kyugo		| 					|
 | samuraia	|  	| Samurai Aces (World)					| 		| 1993	| Psikyo / Banpr| Psikyo 68EC020| 					|
 | samsho2	|  	| Samurai Shodown II\0Shin Samurai Spirits - Haohmaru ji| 		| 1994	| SNK		| Neo Geo	| 					|
 | samsho3	|  	| Samurai Shodown III (set 1)\0Samurai Spirits - Zankuro| 		| 1995	| SNK		| Neo Geo	| 					|
@@ -743,6 +773,8 @@ This list contains all games supported by FB Alpha.
 | shocktra	|  	| Shock Troopers (set 2)				| shocktro	| 1997	| Saurus	| Neo Geo	| 					|
 | shocktr2	|  	| Shock Troopers - 2nd squad				| 		| 1998	| Saurus	| Neo Geo	| 					|
 | shootbul	|  	| Shoot the Bull					| 		| 1985	| Bally Midway	| Pac-man	| 					|
+| skywolf	|  	| Sky Wolf (set 1)					| airwolf	| 1987	| bootleg	| Kyugo		| 					|
+| skywolf2	|  	| Sky Wolf (set 2)					| airwolf	| 1987	| bootleg	| Kyugo		| 					|
 | slapfgtr	|  	| Slap Fight (bootleg)					| slapfigh	| 1986	| Taito		| Early Toaplan	| 					|
 | slapbtuk	|  	| Slap Fight (English bootleg)				| slapfigh	| 1986	| Taito		| Early Toaplan	| 					|
 | slapbtjp	|  	| Slap Fight (Japan bootleg)				| slapfigh	| 1986	| Taito		| Early Toaplan	| 					|
@@ -758,6 +790,7 @@ This list contains all games supported by FB Alpha.
 | socbrala	|  	| Soccer Brawl (set 2)					| socbrawl	| 1991	| SNK		| Neo Geo	| 					|
 | solomonj	|  	| Solomon's Key (Japan)					| solomon	| 1986	| Tecmo		| Miscellaneous	| 					|
 | solomon	|  	| Solomon's Key (US)					| 		| 1986	| Tecmo		| Miscellaneous	| 					|
+| sonofphx	|  	| Son of Phoenix					| 		| 1985	| Associated Ove| Kyugo		| 					|
 | sonicbom	|  	| Sonic Boom (FD1094 317-0053)				| 		| 1987	| Sega		| System 16B	| Incomplete Sound			|
 | sonicwi	|  	| Sonic Wings (Japan)					| aerofgt	| 1992	| Video System C| Video System	| 					|
 | sstriker	|  	| Sorcer Striker (World)				| mahoudai	| 1993	| Raizing	| Toaplan GP9001| 					|
@@ -945,6 +978,9 @@ This list contains all games supported by FB Alpha.
 | mrflea	|  	| The Amazing Adventures of Mr. F. Lea			| 		| 1982	| Pacific Novelt| misc		| 					|
 | berlwall	|  	| The Berlin Wall					| 		| 1991	| Kaneko	| Kaneko 16-bit	| 					|
 | berlwalt	|  	| The Berlin Wall (bootleg ?)				| berlwall	| 1991	| Kaneko	| Kaneko 16-bit	| 					|
+| ctribeb	|  	| The Combatribes (bootleg)				| ctribe	| 1990	| bootleg	| Miscellaneous	| 					|
+| ctribe	|  	| The Combatribes (US)					| 		| 1990	| Technos	| Miscellaneous	| 					|
+| ctribe1	|  	| The Combatribes (US) - Set 1?				| ctribe	| 1990	| Technos	| Miscellaneous	| 					|
 | dealer	| D NW	| The Dealer						| 		| 198?	| Epos Corporati| EPOS Tristar	| Bad dump				|
 | theglad	| D NW	| The Gladiator\0Shen Jian (V100)			| 		| 2001	| IGS		| PGM		| Needs second CPU emulated (ARM7)	|
 | theglob	|  	| The Glob						| suprglob	| 1983	| Epos Corporati| EPOS Tristar	| 					|
@@ -998,6 +1034,7 @@ This list contains all games supported by FB Alpha.
 | lastbldh	|  	| The Last Blade (set 2)\0Bakumatsu Roman Gekka No Kensh| lastblad	| 1997	| SNK		| Neo Geo	| 					|
 | lastbld2	|  	| The Last Blade 2\0Bakumatsu Roman Dai Ni Maku - Gekka | 		| 1998	| SNK		| Neo Geo	| 					|
 | lastsold	|  	| The Last Soldier					| lastblad	| 1997	| SNK		| Neo Geo	| Korean version of \"The Last Blade\"	|
+| tnzs		|  	| The NewZealand Story (World, newer)			| 		| 1988	| Taito Corporat| Misc		| 					|
 | punisher	|  	| The Punisher (930422 etc)				| 		| 1993	| Capcom	| CPS1 / QSound	| 					|
 | punishrj	|  	| The Punisher (930422 Japan)				| punisher	| 1993	| Capcom	| CPS1 / QSound	| 					|
 | punishru	|  	| The Punisher (930422 USA)				| punisher	| 1993	| Capcom	| CPS1 / QSound	| 					|
@@ -1107,6 +1144,10 @@ This list contains all games supported by FB Alpha.
 | wrestwa1	|  	| Wrestle War (set 1, Japan, FD1094 317-0090)		| wrestwar	| 1988	| Sega		| System 16B	| Incomplete Sound			|
 | wrestwa2	|  	| Wrestle War (set 2, World, FD1094 317-0102)		| wrestwar	| 1988	| Sega		| System 16B	| Incomplete Sound			|
 | wrestwar	|  	| Wrestle War (set 3, World, 8751 317-0103)		| 		| 1988	| Sega		| System 16B	| Incomplete Sound			|
+| wwfwfstj	|  	| WWF WrestleFest (Japan)				| wwfwfest	| 1991	| Technos Japan	| Miscellaneous	| 					|
+| wwfwfstb	|  	| WWF WrestleFest (US bootleg)				| wwfwfest	| 1991	| bootleg	| Miscellaneous	| 					|
+| wwfwfest	|  	| WWF WrestleFest (US set 1)				| 		| 1991	| Technos Japan	| Miscellaneous	| 					|
+| wwfwfsta	|  	| WWF WrestleFest (US Tecmo)				| wwfwfest	| 1991	| Technos Japan | Miscellaneous	| 					|
 | xmcotajr	|  	| X-Men - children of the atom (941208 Japan, rent versi| xmcota	| 1994	| Capcom	| CPS2		| 					|
 | xmcotaa	|  	| X-Men - children of the atom (941217 Asia)		| xmcota	| 1995	| Capcom	| CPS2		| 					|
 | xmcotaj2	|  	| X-Men - children of the atom (941217 Japan)		| xmcota	| 1994	| Capcom	| CPS2		| 					|
@@ -1127,6 +1168,7 @@ This list contains all games supported by FB Alpha.
 | xmvsfb	|  	| X-Men vs Street Fighter (961023 Brazil)		| xmvsf		| 1996	| Capcom	| CPS2		| 					|
 | xmvsfu	|  	| X-Men vs Street Fighter (961023 USA)			| xmvsf		| 1996	| Capcom	| CPS2		| 					|
 | 3in1semi	|  	| XESS - The New Revolution (SemiCom 3-in-1)		| 		| 1997	| SemiCom	| Kaneko Pandora| 					|
+| yankeedo	|  	| Yankee DO!						| mrdo		| 1982	| hack		| misc		| 					|
 | zedblade	|  	| Zed Blade\0Operation Ragnarok				| 		| 1994	| NMK		| Neo Geo	| 					|
 | zerowing	|  	| Zero Wing						| 		| 1989	| Toaplan	| Toaplan BCU-2 | 					|
 | zerowng2	|  	| Zero Wing (2 player simultaneous ver.)		| zerowing	| 1989	| [Toaplan] Will| Toaplan BCU-2 | 					|

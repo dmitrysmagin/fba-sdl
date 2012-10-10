@@ -5,7 +5,7 @@
 static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[3]        = {0, 0};
+static unsigned char DrvDip[3]        = {0, 0, 0};
 static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
 static unsigned char DrvReset         = 0;
 
@@ -298,8 +298,8 @@ static struct BurnRomInfo DrvRomDesc[] = {
 	{ "mg_m14.rom",    0x10000, 0x21e5424c, BRF_GRA },	     //  14
 	{ "mg_m10.rom",    0x10000, 0xb64afb54, BRF_GRA },	     //  15
 	
-	{ "ls-06",         0x20000, 0x88d39a5b, BRF_GRA },	     //  16	Samples
-	{ "ls-05",         0x20000, 0xb06e03b5, BRF_GRA },	     //  17
+	{ "ls-06",         0x20000, 0x88d39a5b, BRF_SND },	     //  16	Samples
+	{ "ls-05",         0x20000, 0xb06e03b5, BRF_SND },	     //  17
 	
 	{ "63s141.14k",    0x00100, 0x7f862e1e, BRF_GRA },	     //  18	PROM (Priority)
 };
@@ -330,8 +330,8 @@ static struct BurnRomInfo DrvjRomDesc[] = {
 	{ "mg_m14.rom",    0x10000, 0x21e5424c, BRF_GRA },	     //  14
 	{ "mg_m10.rom",    0x10000, 0xb64afb54, BRF_GRA },	     //  15
 	
-	{ "ls-06",         0x20000, 0x88d39a5b, BRF_GRA },	     //  16	Samples
-	{ "ls-05",         0x20000, 0xb06e03b5, BRF_GRA },	     //  17
+	{ "ls-06",         0x20000, 0x88d39a5b, BRF_SND },	     //  16	Samples
+	{ "ls-05",         0x20000, 0xb06e03b5, BRF_SND },	     //  17
 	
 	{ "63s141.14k",    0x00100, 0x7f862e1e, BRF_GRA },	     //  18	PROM (Priority)
 };
@@ -362,8 +362,8 @@ static struct BurnRomInfo DrvuRomDesc[] = {
 	{ "mg_m14.rom",    0x10000, 0x21e5424c, BRF_GRA },	     //  14
 	{ "10",            0x10000, 0x6db7ca64, BRF_GRA },	     //  15
 	
-	{ "ls-06",         0x20000, 0x88d39a5b, BRF_GRA },	     //  16	Samples
-	{ "ls-05",         0x20000, 0xb06e03b5, BRF_GRA },	     //  17
+	{ "ls-06",         0x20000, 0x88d39a5b, BRF_SND },	     //  16	Samples
+	{ "ls-05",         0x20000, 0xb06e03b5, BRF_SND },	     //  17
 	
 	{ "63s141.14k",    0x00100, 0x7f862e1e, BRF_GRA },	     //  18	PROM (Priority)
 };
@@ -585,7 +585,7 @@ unsigned char __fastcall Madgear68KReadByte(unsigned int a)
 		}
 	}
 	
-	return 0xff;
+	return 0;
 }
 
 void __fastcall Madgear68KWriteWord(unsigned int a, unsigned short d)
