@@ -2,9 +2,9 @@
 #include "rf5c68.h"
 #include "burn_sound.h"
 
-static unsigned int nSoundDelta;
-
 #define NUM_CHANNELS	(8)
+
+
 
 struct pcm_channel
 {
@@ -19,6 +19,7 @@ struct pcm_channel
 
 struct rf5c68pcm
 {
+	unsigned int		Clock;
 	struct pcm_channel	chan[NUM_CHANNELS];
 	unsigned char		cbank;
 	unsigned char		wbank;
@@ -59,7 +60,7 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 					if (sample == 0xff) break;
 				}
 				
-				chan->addr += (int)(chan->step * 1.18);
+				chan->addr += (chan->step * 1181) / 1000;
 				
 				if (sample & 0x80) {
 					sample &= 0x7f;
@@ -84,16 +85,8 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 		if (right[i] < -32768) right[i] = -32768;
 		right[i] = right[i] & ~0x3f;
 		
-		left[i] += pDest[0];
-		right[i] += pDest[1];
-		
-		if (left[i] > 32767) left[i] = 32767;
-		if (left[i] < -32768) left[i] = -32768;
-		if (right[i] > 32767) right[i] = 32767;
-		if (right[i] < -32768) right[i] = -32768;
-		
-		pDest[0] = left[i];
-		pDest[1] = right[i];
+		pDest[0] += left[i];
+		pDest[1] += right[i];
 		
 		pDest += 2;
 		i++;
@@ -109,7 +102,8 @@ void RF5C68PCMReset()
 void RF5C68PCMInit(int clock)
 {
 	chip = (struct rf5c68pcm*)malloc(sizeof(struct rf5c68pcm));
-	nSoundDelta = ((clock / 384) << 12) / nBurnSoundRate;
+	
+	chip->Clock = clock;
 		
 	left = (int*)malloc(nBurnSoundRate * sizeof(int));
 	right = (int*)malloc(nBurnSoundRate * sizeof(int));

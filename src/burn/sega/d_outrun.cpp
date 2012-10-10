@@ -775,7 +775,9 @@ void OutrunPPI0WritePortC(UINT8 data)
 	System16VideoEnable = data & 0x20;
 	
 	if (!(data & 0x01)) {
+		ZetOpen(0);
 		ZetReset();
+		ZetClose();
 	}
 }
 
@@ -862,7 +864,9 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 		
 		case 0xffff07: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -988,7 +992,9 @@ void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
 		
 		case 0x140021: {
 			if (!(d & 1)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 			return;
 			
@@ -996,9 +1002,10 @@ void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
 		
 		case 0xffff07: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
-			ZetRun(200);
-			nSystem16CyclesDone[2] += 200;
+			nSystem16CyclesDone[2] += ZetRun(200);
+			ZetClose();
 			return;
 		}
 	}
@@ -1070,7 +1077,28 @@ static int OutrunInit()
 	
 	System16HasGears = true;
 	
+	System16PCMDataSizePreAllocate = 0x60000;
+	
 	int nRet = System16Init();
+	
+	if (!nRet) {
+		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		memcpy(pTemp, System16PCMData, 0x30000);
+		memset(System16PCMData, 0, 0x60000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x08000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x18000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x28000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x38000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x40000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x48000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
+		memcpy(System16PCMData + 0x58000, pTemp + 0x28000, 0x8000);
+		free(pTemp);
+	}
 	
 	return nRet;
 }
@@ -1080,6 +1108,8 @@ static int OutrunbInit()
 	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
 	
 	System16HasGears = true;
+	
+	System16PCMDataSizePreAllocate = 0x60000;
 	
 	int nRet = System16Init();
 	
@@ -1116,8 +1146,20 @@ static int OutrunbInit()
 		/* Z80 code: swap bits 5,6 */
 		byte = System16Z80Rom;
 		length = System16Z80RomSize;
-		for (i = 0; i < length; i++)
+		for (i = 0; i < length; i++) {
 			byte[i] = BITSWAP08(byte[i], 7,5,6,4,3,2,1,0);
+		}
+			
+		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		memcpy(pTemp, System16PCMData, 0x30000);
+		memset(System16PCMData, 0, 0x60000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x40000, pTemp + 0x20000, 0x8000);
+		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
+		free(pTemp);
 	}
 	
 	return nRet;
@@ -1128,6 +1170,8 @@ static int ShangonInit()
 	System16ProcessAnalogControlsDo = ShangonProcessAnalogControls;
 	
 	Shangon = true;
+	
+	System16PCMDataSizePreAllocate = 0x40000;
 
 	int nRet = System16Init();
 	
@@ -1142,6 +1186,18 @@ static int ShangonInit()
 		System16RoadColorOffset1 = 0x7f6;
 		System16RoadColorOffset2 = 0x7c0;
 		System16RoadColorOffset3 = 0x7c0;
+		
+		unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+		memcpy(pTemp, System16PCMData, 0x20000);
+		memset(System16PCMData, 0, 0x40000);
+		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x08000, pTemp + 0x00000, 0x8000);
+		memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x18000, pTemp + 0x08000, 0x8000);
+		memcpy(System16PCMData + 0x20000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x28000, pTemp + 0x10000, 0x8000);
+		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
+		memcpy(System16PCMData + 0x38000, pTemp + 0x18000, 0x8000);
 	}
 	
 	return nRet;
@@ -1153,7 +1209,22 @@ static int Shangon2Init()
 	
 	FD1089_Decrypt = fd1089_decrypt_0034;
 	
+	System16PCMDataSizePreAllocate = 0x40000;
+	
 	int nRet = ShangonInit();
+	
+	return nRet;
+}
+
+static int ToutrunInit()
+{
+	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
+	
+	System16HasGears = true;
+	
+	System16PCMDataSizePreAllocate = 0x60000;
+	
+	int nRet = System16Init();
 	
 	return nRet;
 }
@@ -1248,7 +1319,7 @@ struct BurnDriver BurnDrvToutrun = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, ToutrunRomInfo, ToutrunRomName, ToutrunInputInfo, ToutrunDIPInfo,
-	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
+	ToutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };
 
@@ -1258,6 +1329,6 @@ struct BurnDriver BurnDrvToutrun2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, Toutrun2RomInfo, Toutrun2RomName, ToutrunInputInfo, Toutrun2DIPInfo,
-	OutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
+	ToutrunInit, System16Exit, OutrunFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };

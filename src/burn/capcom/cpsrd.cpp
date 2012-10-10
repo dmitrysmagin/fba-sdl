@@ -36,12 +36,15 @@ static void Cps1TileLine(int y,int sx)
     pst=FindTile(ix+x,iy+y);
     t=pst[0];
 
-	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
-	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
-
+//	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
+//	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
+   t = GfxRomBankMapper(GFXTYPE_SCROLL2, t);
+   if (t == -1) continue;
+   
     t<<=7; // Get real tile address
-    t+=nCpsGfxScroll[2]; // add on offset to scroll tiles
-	if (t==nKnowBlank) continue; // Don't draw: we know it's blank
+    t+=nCpsGfxScroll[2]; // add on offset to scroll tile
+    if (t==nKnowBlank) continue; // Don't draw: we know it's blank
+    
     a=pst[1];
 
     CpstSetPal(0x40 | (a&0x1f));
@@ -120,13 +123,15 @@ static void Cps1TileLineRows(int y,struct CpsrLineInfo *pli)
     pst=FindTile(tx,iy+y);
     t=pst[0];
 
-	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
-	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
-
+//	if(Mercs && t>=0x1e00 && t<0x5400)                   continue;
+//	if(t<StartScroll[SCROLL_2] || t>EndScroll[SCROLL_2]) continue;
+    t = GfxRomBankMapper(GFXTYPE_SCROLL2, t);
+    if (t == -1) continue;
+    
     t<<=7; // Get real tile address
     t+=nCpsGfxScroll[2]; // add on offset to scroll tiles
-
     if (t==nKnowBlank) continue; // Don't draw: we know it's blank
+
     a=pst[1];
 
     CpstSetPal(0x40 | (a&0x1f));

@@ -72,26 +72,8 @@ static int DrvInit()
   CpsLoadTiles(CpsGfx         , 3);
   CpsLoadTiles(CpsGfx+0x200000, 7);
 
-  nCpsLcReg=0x4a; // Layer control register is at 0x4a
-  CpsLayEn[1]=0x16;
-  CpsLayEn[2]=0x16;
-  CpsLayEn[3]=0x16;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x00;
-  CpsMProt[1]=0x00;
-  CpsMProt[2]=0x00;
-  CpsMProt[3]=0x00;
-
-  // Board ID improvments by KEV. 0x00,0x0000
-  CpsBID[0]=0x00;
-  CpsBID[1]=0x00;
-  CpsBID[2]=0x00;
-
-  MaskAddr[0]=0x4c;
-  MaskAddr[1]=0x4e;
-  MaskAddr[2]=0x40;
-  MaskAddr[3]=0x42;
+  SetCpsBId(QSOUND_2, 0);
+  SetGfxMapper(mapper_CD63B);
 
   nRet=BurnLoadRom(CpsZRom,11,1);
   dino_decode();

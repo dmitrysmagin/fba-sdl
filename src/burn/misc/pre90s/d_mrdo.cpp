@@ -2,6 +2,7 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
+#include "sn76496.h"
 
 static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Gfx2, *Prom;
 static unsigned char DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[2];
@@ -110,8 +111,11 @@ void __fastcall mrdo_write(unsigned short address, unsigned char data)
 			flipscreen = data & 1;
 		break;
 
-		case 0x9801: // SN76496_0_w
-		case 0x9802: // SN76496_1_w
+		case 0x9801: 
+			SN76496Write(0, data);
+		
+		case 0x9802:		
+			SN76496Write(1, data);
 		break;
 
 		case 0xf000:
@@ -298,7 +302,8 @@ static int DrvInit()
 
 	BurnSetRefreshRate(5000000.0/312/262);
 
-	// 2x SN76489 - 4000000hz
+	SN76489Init(0, 4000000, 0);
+	SN76489Init(1, 4000000, 1);
  
 	DrvDoReset();
 
@@ -308,6 +313,8 @@ static int DrvInit()
 static int DrvExit()
 {
 	ZetExit();
+	
+	SN76496Exit();
 
 	free (Mem);
 
@@ -459,6 +466,9 @@ static int DrvFrame()
 	if (pBurnDraw) {
 		DrvDraw();
 	}
+	
+	SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
+	SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 FB Alpha  - http://fba.emuunlim.com
-----------------------------------------
+-----------------------------------
 
 FB Alpha is an arcade emulator supporting the following hardware platforms;
 
@@ -17,24 +17,7 @@ FB Alpha is an arcade emulator supporting the following hardware platforms;
 What's New?
 -----------
 
-v0.2.96.75
-   This is still an alpha release!
-
-   Note that, if compiled with GCC, you will need to use version 3.3.x, and
-   the experimental DirectX 9 blitter is not built.
-
-- Added driver for Double Dragon 3 / Combatribes
-- Added driver for WWF Wrestlemania
-- Added driver for Kyugo Z80-based hardware
-- Updated the pacman driver to the latest version released by iq_132
-- Added iq_132s Bank Panic driver
-- Added iq_132s Mr. Do driver
-- Added iq_132s Mysterious Stones driver
-- Added iq_132s The New Zealand Story driver
-- Added clone of Real Bout Fatal Fury to Neo-Geo driver
-- Added clone of Metal Slug 5 to Neo-Geo driver
-- Added clone of Dungeons & Dragons: tower of doom to the CPS-2 driver
-- Matched all sets to MAME 0.123u4
+See the seperate whatsnew.txt file
 
 System requirements
 -------------------
@@ -136,9 +119,9 @@ fba awesome_sfzch_recording.fr -w
 
 fba vsav2 -a
 
-For front-ends, you can also do fba -listinfo which will output information
-about the supported games to stdout, and the ROM files they need in a MAME
-compatible format.
+For front-ends, you can also do fba -listinfo, -listinfowithmd, or
+-listinfomdonly which will output information about the supported games to
+stdout, and the ROM files they need in a MAME compatible format.
 
 
 Creating your own input presets

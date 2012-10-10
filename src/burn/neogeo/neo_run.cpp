@@ -2254,7 +2254,7 @@ int NeoInit()
 
 	nZ80Clockspeed = 4000000;
 
-	BurnYM2610Init(8000000, YM2610ADPCMAROM, &nYM2610ADPCMASize, YM2610ADPCMBROM, &nYM2610ADPCMBSize, &neogeoFMIRQHandler, neogeoSynchroniseStream, neogeoGetTime);
+	BurnYM2610Init(8000000, YM2610ADPCMAROM, &nYM2610ADPCMASize, YM2610ADPCMBROM, &nYM2610ADPCMBSize, &neogeoFMIRQHandler, neogeoSynchroniseStream, neogeoGetTime, 0);
 	BurnTimerAttachZet(nZ80Clockspeed);
 
 	NeoInitText();
@@ -2785,7 +2785,7 @@ int NeoFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	// Update the uPD4990 until the end of the frame
 	uPD4990AUpdate(SekTotalCycles() - nuPD4990ATicks);

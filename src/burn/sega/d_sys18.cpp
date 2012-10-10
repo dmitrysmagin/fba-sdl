@@ -1659,7 +1659,7 @@ unsigned short __fastcall System18ReadWord(unsigned int a)
 		return GenesisVDPRead((a - 0xc00000) >> 1);
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
 #endif
 
@@ -1676,7 +1676,7 @@ unsigned char __fastcall System18ReadByte(unsigned int a)
 		return io_chip_r((a - 0xe40000) >> 1);
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 
@@ -1697,7 +1697,7 @@ void __fastcall System18WriteWord(unsigned int a, unsigned short d)
 		}
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
 #endif
 }
@@ -1733,12 +1733,14 @@ void __fastcall System18WriteByte(unsigned int a, unsigned char d)
 	
 		case 0xfe0007: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
@@ -1749,7 +1751,7 @@ unsigned char __fastcall Astorm3ReadByte(unsigned int a)
 		return io_chip_r((a - 0xa00000) >> 1);
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 
@@ -1770,7 +1772,7 @@ void __fastcall Astorm3WriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
@@ -1878,7 +1880,9 @@ void __fastcall MwalkblWriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0xc40007: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 		
@@ -1896,7 +1900,7 @@ void __fastcall MwalkblWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
@@ -1921,7 +1925,7 @@ void __fastcall MwalkblWriteWord(unsigned int a, unsigned short d)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
 #endif
 }
@@ -1954,7 +1958,7 @@ unsigned char __fastcall ShdancblReadByte(unsigned int a)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 	
@@ -1966,7 +1970,9 @@ void __fastcall ShdancblWriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0xc40007: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetRaiseIrq(0);
+			ZetClose();
 			return;
 		}
 		
@@ -1985,7 +1991,7 @@ void __fastcall ShdancblWriteByte(unsigned int a, unsigned char d)
 
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }

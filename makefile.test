@@ -31,7 +31,7 @@ DEPEND = 1
 # Force recompilation of files that need it (i.e. use __TIME__, __DATE__, SPECIALBUILD).
 FORCE_UPDATE = 1
 
-# Use the __fastcall calling convention when interfacing with A68K/Musashi/Doze
+# Use the __fastcall calling convention when interfacing with A68K/Musashi
 #FASTCALL = 1
 
 # Compress executable with upx (the DEBUG option ignores this)
@@ -82,27 +82,30 @@ alldir	= burn \
 		burn/capcom \
 		burn/cave \
 		burn/cps3 \
-		burn/neogeo \
-		burn/pgm \
-		burn/sega \
-		burn/toaplan \
+		burn/megadrive \
 		burn/misc \
 		burn/misc/dec0 \
+		burn/misc/konami \
 		burn/misc/post90s \
 		burn/misc/pre90s \
 		burn/misc/psikyo \
 		burn/misc/taito_68k \
+		burn/neogeo \
+		burn/pgm \
+		burn/sega \
+		burn/taito \
+		burn/toaplan \
 		burner \
 		burner/sdl \
 		interface \
 		interface/sdl \
-		cpu/doze \
 		cpu/a68k \
-		cpu/m68k \
-		cpu/sh2 \
+		cpu/i8039 \
 		cpu/m6502 \
+		cpu/m68k \
 		cpu/nec \
-		kaillera/client \
+		cpu/sh2 \
+		cpu/z80 \
 		generated
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)generated -I/local/include -I/include/SDL
@@ -144,15 +147,23 @@ drvobj	=   	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwa
 		\
 		d_opwolf.o d_rainbow.o d_rastan.o d_superman.o d_twinhawk.o \
 		\
+		d_mia.o d_tmnt.o \
+		\
+		d_taitoz.o \
+		\
 		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bankp.o d_bombjack.o d_dotrikun.o \
-		d_epos.o d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrdo.o \
-		d_mrflea.o d_mystston.o d_pacman.o d_pkunwar.o d_prehisle.o d_quizo.o d_route16.o \
-		d_solomon.o d_sys1.o d_tigerheli.o d_tmnt.o d_tnzs.o d_wallc.o d_wc90.o \
+		d_epos.o d_funkybee.o d_gunsmoke.o d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o \
+		d_mole.o d_mrdo.o d_mrflea.o d_mystston.o d_pacman.o d_pkunwar.o d_pooyan.o d_prehisle.o \
+		d_quizo.o d_route16.o d_scregg.o d_solomon.o d_sys1.o d_tigerheli.o d_tnzs.o d_wallc.o \
+		d_wc90.o \
 		\
 		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_ddragon3.o d_fstarfrc.o d_galpanic.o d_hyperpac.o \
-		d_kaneko16.o d_m92.o d_news.o d_ohmygod.o d_powerins.o d_seta2.o d_shadfrce.o d_wwfwfest.o \
+		d_kaneko16.o d_m90.o d_m92.o d_news.o d_ohmygod.o d_powerins.o d_raiden.o d_seta2.o \
+		d_shadfrce.o d_tumbleb.o d_wwfwfest.o irem_cpu.o \
 		\
-		d_parent.o
+		d_parent.o \
+		\
+		d_megadrive.o
 	    
 depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o stringset.o \
 		\
@@ -169,16 +180,18 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 		\
 		burn.o load.o cheat.o burn_gun.o \
 		\
-		sek.o zet.o doze.o vez.o eeprom_93cxx.o \
+		sek.o zet.o vez.o eeprom_93cxx.o \
 		burn_sound.o burn_sound_c.o timer.o \
 		burn_ym2151.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o burn_ym2203.o burn_ym2612.o \
-		ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o ics2115.o msm5205.o msm6295.o rf5c68.o ymf278b.o ymz280b.o \
+		ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o \
+		dac.o ics2115.o msm5205.o msm6295.o rf5c68.o segapcm.o sn76496.o upd7759.o ymf278b.o ymz280b.o \
 		x1010.o \
-		sh2.o m6502.o nec.o \
+		\
+		i8039.o m6502.o m6502_intf.o nec.o sh2.o z80.o z80daisy.o \
 		\
 		cave.o cave_tile.o cave_sprite.o cave_palette.o \
 		\
-		cps.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
+		cps.o cps_config.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
 		cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o dc_input.o \
 		cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
 		kabuki.o \
@@ -189,18 +202,25 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 		\
 		pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
 		\
-		sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_pcm.o sys16_ppi.o genesis_vid.o \
+		sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_ppi.o genesis_vid.o \
+		\
 		toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
 		\
 		toa_bcu2.o toaplan1.o \
 		\
 		psikyo_tile.o psikyo_sprite.o psikyo_palette.o \
 		\
-		dec_misc.o dec_vid.o \
+		dec_aud.o dec_misc.o dec_vid.o \
 		\
 		rain_chip.o taito_gfx.o vid_sysx.o vid_pc080sn.o vid_pc090oj.o snd_tc0140.o \
 		\
-		tiles_generic.o
+		K052109.o tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
+		\
+		tc0110pcr.o tc0220ioc.o tc0150rod.o tc0140syt.o tc0100scn.o \
+		\
+		tiles_generic.o \
+		\
+		megadrive.o
 
 
 autobj += $(depobj) burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o 
@@ -208,7 +228,6 @@ autobj += $(depobj) burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x3
 autdep	= $(depobj:.o=.d)
 
 a68k.o	= $(objdir)cpu/a68k/a68k.o
-dozea.o	= $(objdir)cpu/doze/dozea.o
 
 #app_windres.rc = $(srcdir)generated/app_windres.rc
 #license.rc = $(srcdir)generated/license.rc
@@ -219,7 +238,7 @@ neo_sprite_func.h = $(srcdir)generated/neo_sprite_func.h
 cave_tile_func.h = $(srcdir)generated/cave_tile_func.h
 cave_sprite_func.h = $(srcdir)generated/cave_sprite_func.h
 
-allobj	= $(a68k.o) $(objdir)cpu/m68k/m68kcpu.o $(objdir)cpu/m68k/m68kopnz.o $(objdir)cpu/m68k/m68kopdm.o $(objdir)cpu/m68k/m68kopac.o $(objdir)cpu/m68k/m68kops.o $(dozea.o) \
+allobj	= $(a68k.o) $(objdir)cpu/m68k/m68kcpu.o $(objdir)cpu/m68k/m68kopnz.o $(objdir)cpu/m68k/m68kopdm.o $(objdir)cpu/m68k/m68kopac.o $(objdir)cpu/m68k/m68kops.o \
 	  $(foreach file,$(autobj:.o=.c), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
 		$(firstword $(subst .c,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
@@ -457,19 +476,6 @@ $(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m
 $(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
 	@$(CC) $(CFLAGS_CONSOLE) -s $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
-
-
-#
-#	Compile Z80 core
-#
-
-$(dozea.o):	dam.cpp dama.cpp damc.cpp dame.cpp damf.cpp damj.cpp damm.cpp damo.cpp damt.cpp dam.h
-	@echo Compiling Doze Z80 core sourcefiles...
-	@$(CXX) $(CFLAGS_CONSOLE) $(CXXFLAGS) -s $(filter %.cpp,$^) \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) $(@:.o=.asm)
-	@echo Assembling Z80 core...
-	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
 
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
 #

@@ -2539,7 +2539,7 @@ int HoneydolInit()
 	ZetSetWriteHandler(HoneydolZ80Write);
 	ZetClose();
 
-	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &HoneydolSynchroniseStream);
+	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &HoneydolSynchroniseStream, 0);
 	BurnTimerAttachZet(4000000);
 
 	// Setup the OKIM6295 emulation
@@ -2634,7 +2634,7 @@ int SnowbrosInit()
 	ZetSetOutHandler(SnowbrosZ80PortWrite);
 	ZetClose();
 
-	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &snowbrosSynchroniseStream);
+	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &snowbrosSynchroniseStream, 0);
 	BurnTimerAttachZet(6000000);
 
 	GenericTilesInit();
@@ -3324,6 +3324,7 @@ int HyperpacFrame()
 	int nSoundBufferPos = 0;
 
 	SekNewFrame();
+	ZetNewFrame();
 
 	SekOpen(0);
 	for (int i = 0; i < nInterleave; i++) {
@@ -3337,15 +3338,19 @@ int HyperpacFrame()
 
 		// Run Z80
 		nCurrentCPU = 1;
+		ZetOpen(0);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		ZetClose();
 
 		if (pBurnSoundOut) {
 			int nSegmentLength = nBurnSoundLen / nInterleave;
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -3363,7 +3368,9 @@ int HyperpacFrame()
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 		}
 	}
@@ -3538,7 +3545,7 @@ int HoneydolFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
@@ -3592,7 +3599,7 @@ int SnowbrosFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];

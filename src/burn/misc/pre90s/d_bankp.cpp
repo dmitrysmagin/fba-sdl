@@ -4,6 +4,7 @@
 // Missing emulation of 3x sn76496 at 2578000hz
 
 #include "tiles_generic.h"
+#include "sn76496.h"
 
 static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Prom;
 static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvReset, DrvDips;
@@ -180,9 +181,16 @@ void __fastcall bankp_out(unsigned short address, unsigned char data)
 {
 	switch (address & 0xff)
 	{
-		case 0x00: // SN76496_0_W
-		case 0x01: // SN76496_1_W
-		case 0x02: // SN76496_2_W
+		case 0x00: 
+			SN76496Write(0, data);
+		break;
+		
+		case 0x01:
+			SN76496Write(1, data);
+		break;
+		
+		case 0x02:
+			SN76496Write(2, data);
 		break;
 
 		case 0x05:
@@ -337,6 +345,10 @@ static int DrvInit()
 	ZetMapArea(0xf000, 0xffff, 1, Rom + 0xf000);
 	ZetMemEnd();
 	ZetClose();
+	
+	SN76489Init(0, 15468000 / 6, 0);
+	SN76489Init(1, 15468000 / 6, 1);
+	SN76489Init(2, 15468000 / 6, 1);
 
 	DrvDoReset();
 
@@ -346,6 +358,8 @@ static int DrvInit()
 static int DrvExit()
 {
 	ZetExit();
+	
+	SN76496Exit();
 
 	free (Mem);
 
@@ -478,6 +492,10 @@ static int DrvFrame()
 	ZetRun(2578000 / 60);
 	if (interrupt_enable) ZetNmi();
 	ZetClose();
+	
+	SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
+	SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
+	SN76496Update(2, pBurnSoundOut, nBurnSoundLen);
 
 	if (pBurnDraw) {
 		DrvDraw();

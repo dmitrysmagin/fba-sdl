@@ -1,12 +1,3 @@
-
-unsigned char	cpu_readport(unsigned char);
-void cpu_writeport(unsigned int,unsigned char);
-void cpu_writemem20(unsigned int,unsigned char);
-unsigned char cpu_readmem20(unsigned int);	
-
-#define cpu_readop cpu_readmem20	
-#define cpu_readop_arg cpu_readmem20	
-
 typedef enum { ES, CS, SS, DS } SREGS;
 typedef enum { AW, CW, DW, BW, SP, BP, IX, IY } WREGS;
 
@@ -23,6 +14,7 @@ typedef enum { AW, CW, DW, BW, SP, BP, IX, IY } WREGS;
 #endif
 
 typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
+
 /* parameter x = result, y = source 1, z = source 2 */
 
 #define SetTF(x)		(I->TF = (x))
@@ -32,12 +24,7 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 
 #define SetCFB(x)		(I->CarryVal = (x) & 0x100)
 #define SetCFW(x)		(I->CarryVal = (x) & 0x10000)
-
 #define SetAF(x,y,z)	(I->AuxVal = ((x) ^ ((y) ^ (z))) & 0x10)
-
-
-
-
 #define SetSF(x)		(I->SignVal = (x))
 #define SetZF(x)		(I->ZeroVal = (x))
 #define SetPF(x)		(I->ParityVal = (x))
@@ -75,24 +62,39 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 
 /************************************************************************/
 
+//#define CHANGE_PC change_pc((I->sregs[CS]<<4) + I->ip)
+#define CHANGE_PC 
+
+unsigned char cpu_readport(unsigned char);
+void cpu_writeport(unsigned int,unsigned char);
+
+void cpu_writemem20(unsigned int,unsigned char);
+unsigned char cpu_readmem20(unsigned int);
+unsigned char cpu_readmem20_op(unsigned int);
+unsigned char cpu_readmem20_arg(unsigned int);
+
+#define cpu_readop cpu_readmem20_op
+#define cpu_readop_arg cpu_readmem20_arg
+
 #define SegBase(Seg) (I->sregs[Seg] << 4)
 
 #define DefaultBase(Seg) ((I->seg_prefix && (Seg==DS || Seg==SS)) ? I->prefix_base : I->sregs[Seg] << 4)
 
-#define GetMemB(Seg,Off) (/*nec_ICount-=((Off)&1)?1:0,*/ (unsigned char)cpu_readmem20((DefaultBase(Seg)+(Off))))
-#define GetMemW(Seg,Off) (/*nec_ICount-=((Off)&1)?1:0,*/ (unsigned short) cpu_readmem20((DefaultBase(Seg)+(Off))) + (cpu_readmem20((DefaultBase(Seg)+((Off)+1)))<<8) )
+#define GetMemB(Seg,Off) ((unsigned char)cpu_readmem20((DefaultBase(Seg)+(Off))))
+#define GetMemW(Seg,Off) ((unsigned short)cpu_readmem20((DefaultBase(Seg)+(Off))) + (cpu_readmem20((DefaultBase(Seg)+((Off)+1)))<<8) )
 
-#define PutMemB(Seg,Off,x) { /*nec_ICount-=((Off)&1)?1:0*/; cpu_writemem20((DefaultBase(Seg)+(Off)),(x)); }
-#define PutMemW(Seg,Off,x) { /*nec_ICount-=((Off)&1)?1:0*/; PutMemB(Seg,Off,(x)&0xff); PutMemB(Seg,(Off)+1,(unsigned char)((x)>>8)); }
+#define PutMemB(Seg,Off,x) { cpu_writemem20((DefaultBase(Seg)+(Off)),(x)); }
+#define PutMemW(Seg,Off,x) { PutMemB(Seg,Off,(x)&0xff); PutMemB(Seg,(Off)+1,(unsigned char)((x)>>8)); }
 
-/* Todo:  Remove these later - plus readword could overflow */
-#define ReadByte(ea) (/*nec_ICount-=((ea)&1)?1:0,*/ (unsigned char)cpu_readmem20((ea)))
-#define ReadWord(ea) (/*nec_ICount-=((ea)&1)?1:0,*/ cpu_readmem20((ea))+(cpu_readmem20(((ea)+1))<<8))
-#define WriteByte(ea,val) { /*nec_ICount-=((ea)&1)?1:0*/; cpu_writemem20((ea),val); }
-#define WriteWord(ea,val) { /*nec_ICount-=((ea)&1)?1:0*/; cpu_writemem20((ea),(unsigned char)(val)); cpu_writemem20(((ea)+1),(val)>>8); }
+#define ReadByte(ea) ((unsigned char)cpu_readmem20((ea)))
+#define ReadWord(ea) (cpu_readmem20((ea))+(cpu_readmem20(((ea)+1))<<8))
+#define WriteByte(ea,val) {cpu_writemem20((ea),val); }
+#define WriteWord(ea,val) {cpu_writemem20((ea),(unsigned char)(val)); cpu_writemem20(((ea)+1),(val)>>8); }
 
 #define read_port(port) cpu_readport(port)
 #define write_port(port,val) cpu_writeport(port,val)
+
+
 
 #define FETCH (cpu_readop_arg((I->sregs[CS]<<4)+I->ip++))
 #define FETCHOP (cpu_readop((I->sregs[CS]<<4)+I->ip++))
@@ -105,33 +107,27 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 #define GetModRM unsigned int ModRM=cpu_readop_arg((I->sregs[CS]<<4)+I->ip++)
 
 /* Cycle count macros:
-	CLK  - cycle count is the same on all processors
-	CLKS - cycle count differs between processors, list all counts
-	CLKW - cycle count for word read/write differs for odd/even source/destination address
-	CLKM - cycle count for reg/mem instructions
-	CLKR - cycle count for reg/mem instructions with different counts for odd/even addresses
+    CLK  - cycle count is the same on all processors
+    CLKS - cycle count differs between processors, list all counts
+    CLKW - cycle count for word read/write differs for odd/even source/destination address
+    CLKM - cycle count for reg/mem instructions
+    CLKR - cycle count for reg/mem instructions with different counts for odd/even addresses
 
 
-	Prefetch & buswait time is not emulated.
-	Extra cycles for PUSH'ing or POP'ing registers to odd addresses is not emulated.
-
-#define CLK(all) nec_ICount-=all
-#define CLKS(v20,v30,v33) { const unsigned int ccount=(v20<<16)|(v30<<8)|v33; nec_ICount-=(ccount>>cpu_type)&0x7f; }
-#define CLKW(v20o,v30o,v33o,v20e,v30e,v33e) { const unsigned int ocount=(v20o<<16)|(v30o<<8)|v33o, ecount=(v20e<<16)|(v30e<<8)|v33e; nec_ICount-=(I->ip&1)?((ocount>>cpu_type)&0x7f):((ecount>>cpu_type)&0x7f); }
-#define CLKM(v20,v30,v33,v20m,v30m,v33m) { const unsigned int ccount=(v20<<16)|(v30<<8)|v33, mcount=(v20m<<16)|(v30m<<8)|v33m; nec_ICount-=( ModRM >=0xc0 )?((ccount>>cpu_type)&0x7f):((mcount>>cpu_type)&0x7f); }
-#define CLKR(v20o,v30o,v33o,v20e,v30e,v33e,vall) { const unsigned int ocount=(v20o<<16)|(v30o<<8)|v33o, ecount=(v20e<<16)|(v30e<<8)|v33e; if (ModRM >=0xc0) nec_ICount-=vall; else nec_ICount-=(I->ip&1)?((ocount>>cpu_type)&0x7f):((ecount>>cpu_type)&0x7f); }
+    Prefetch & buswait time is not emulated.
+    Extra cycles for PUSH'ing or POP'ing registers to odd addresses is not emulated.
 */
-#define CLKS(v20,v30,v33) { const unsigned int ccount=(v20<<16)|(v30<<8)|v33; I->nec_ICount-=(ccount>>I->cpu_type)&0x7f; }
 
 #define CLK(all) I->nec_ICount-=all
-#define CLKW(v30MZo,v30MZe) { I->nec_ICount-=(I->ip&1)?v30MZo:v30MZe; }
-#define CLKM(v30MZm,v30MZ) { I->nec_ICount-=( ModRM >=0xc0 )?v30MZ:v30MZm; }
-#define CLKR(v30MZo,v30MZe,vall) { if (ModRM >=0xc0) I->nec_ICount-=vall; else I->nec_ICount-=(I->ip&1)?v30MZo:v30MZe; }
+#define CLKS(v20,v30,v33) { const unsigned int ccount=(v20<<16)|(v30<<8)|v33; I->nec_ICount-=(ccount>>I->cpu_type)&0x7f; }
+#define CLKW(v20o,v30o,v33o,v20e,v30e,v33e,addr) { const unsigned int ocount=(v20o<<16)|(v30o<<8)|v33o, ecount=(v20e<<16)|(v30e<<8)|v33e; I->nec_ICount-=(addr&1)?((ocount>>I->cpu_type)&0x7f):((ecount>>I->cpu_type)&0x7f); }
+#define CLKM(v20,v30,v33,v20m,v30m,v33m) { const unsigned int ccount=(v20<<16)|(v30<<8)|v33, mcount=(v20m<<16)|(v30m<<8)|v33m; I->nec_ICount-=( ModRM >=0xc0 )?((ccount>>I->cpu_type)&0x7f):((mcount>>I->cpu_type)&0x7f); }
+#define CLKR(v20o,v30o,v33o,v20e,v30e,v33e,vall,addr) { const unsigned int ocount=(v20o<<16)|(v30o<<8)|v33o, ecount=(v20e<<16)|(v30e<<8)|v33e; if (ModRM >=0xc0) I->nec_ICount-=vall; else I->nec_ICount-=(addr&1)?((ocount>>I->cpu_type)&0x7f):((ecount>>I->cpu_type)&0x7f); }
 
+/************************************************************************/
 #define CompressFlags() (unsigned short)(CF | (PF << 2) | (AF << 4) | (ZF << 6) \
 				| (SF << 7) | (I->TF << 8) | (I->IF << 9) \
-				| (I->DF << 10) | (OF << 11))
-
+				| (I->DF << 10) | (OF << 11)| (MD << 15))
 
 #define ExpandFlags(f) \
 { \
@@ -147,8 +143,6 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	I->MF = ((f) & 0x8000) == 0x8000; \
 }
 
-
-
 #define IncWordReg(Reg) 					\
 	unsigned tmp = (unsigned)I->regs.w[Reg]; \
 	unsigned tmp1 = tmp+1;					\
@@ -156,8 +150,6 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	SetAF(tmp1,tmp,1);						\
 	SetSZPF_Word(tmp1); 					\
 	I->regs.w[Reg]=tmp1
-
-
 
 #define DecWordReg(Reg) 					\
 	unsigned tmp = (unsigned)I->regs.w[Reg]; \
@@ -171,19 +163,23 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	int tmp = (int)((signed char)FETCH);			\
 	if (flag)								\
 	{										\
+		static const unsigned char table[3]={3,10,10}; 	\
 		I->ip = (unsigned short)(I->ip+tmp);			\
-		I->nec_ICount-=3;						\
+		I->nec_ICount-=table[I->cpu_type/8];		\
+		CHANGE_PC;							\
 		return;								\
 	}
 
 #define ADJ4(param1,param2)					\
 	if (AF || ((I->regs.b[AL] & 0xf) > 9))	\
 	{										\
-		int tmp;							\
-		I->regs.b[AL] = tmp = I->regs.b[AL] + param1;	\
+		unsigned short tmp;							\
+		tmp = I->regs.b[AL] + param1;		\
+		I->regs.b[AL] = tmp;					\
 		I->AuxVal = 1;						\
+		I->CarryVal |= tmp & 0x100;			\
 	}										\
-	if (CF || (I->regs.b[AL] > 0x9f))		\
+	if (CF || (I->regs.b[AL]>0x9f))			\
 	{										\
 		I->regs.b[AL] += param2;				\
 		I->CarryVal = 1;						\
@@ -245,12 +241,12 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 #define ROLC_WORD dst = (dst << 1) + CF; SetCFW(dst)
 #define RORC_BYTE dst = (CF<<8)+dst; I->CarryVal = dst & 0x01; dst >>= 1
 #define RORC_WORD dst = (CF<<16)+dst; I->CarryVal = dst & 0x01; dst >>= 1
-#define SHL_BYTE(c) dst <<= c;	SetCFB(dst); SetSZPF_Byte(dst);	PutbackRMByte(ModRM,(unsigned char)dst)
-#define SHL_WORD(c) dst <<= c;	SetCFW(dst); SetSZPF_Word(dst);	PutbackRMWord(ModRM,(unsigned short)dst)
-#define SHR_BYTE(c) dst >>= c-1; I->CarryVal = dst & 0x1; dst >>= 1; SetSZPF_Byte(dst); PutbackRMByte(ModRM,(unsigned char)dst)
-#define SHR_WORD(c) dst >>= c-1; I->CarryVal = dst & 0x1; dst >>= 1; SetSZPF_Word(dst); PutbackRMWord(ModRM,(unsigned short)dst)
-#define SHRA_BYTE(c) dst = ((signed char)dst) >> (c-1);	I->CarryVal = dst & 0x1;	dst = ((signed char)((unsigned char)dst)) >> 1; SetSZPF_Byte(dst); PutbackRMByte(ModRM,(unsigned char)dst)
-#define SHRA_WORD(c) dst = ((signed short)dst) >> (c-1);	I->CarryVal = dst & 0x1;	dst = ((signed short)((unsigned short)dst)) >> 1; SetSZPF_Word(dst); PutbackRMWord(ModRM,(unsigned short)dst)
+#define SHL_BYTE(c) I->nec_ICount-=c; dst <<= c;	SetCFB(dst); SetSZPF_Byte(dst);	PutbackRMByte(ModRM,(unsigned char)dst)
+#define SHL_WORD(c) I->nec_ICount-=c; dst <<= c;	SetCFW(dst); SetSZPF_Word(dst);	PutbackRMWord(ModRM,(unsigned short)dst)
+#define SHR_BYTE(c) I->nec_ICount-=c; dst >>= c-1; I->CarryVal = dst & 0x1; dst >>= 1; SetSZPF_Byte(dst); PutbackRMByte(ModRM,(unsigned char)dst)
+#define SHR_WORD(c) I->nec_ICount-=c; dst >>= c-1; I->CarryVal = dst & 0x1; dst >>= 1; SetSZPF_Word(dst); PutbackRMWord(ModRM,(unsigned short)dst)
+#define SHRA_BYTE(c) I->nec_ICount-=c; dst = ((signed char)dst) >> (c-1);	I->CarryVal = dst & 0x1;	dst = ((signed char)((unsigned char)dst)) >> 1; SetSZPF_Byte(dst); PutbackRMByte(ModRM,(unsigned char)dst)
+#define SHRA_WORD(c) I->nec_ICount-=c; dst = ((signed short)dst) >> (c-1);	I->CarryVal = dst & 0x1;	dst = ((signed short)((unsigned short)dst)) >> 1; SetSZPF_Word(dst); PutbackRMWord(ModRM,(unsigned short)dst)
 
 #define DIVUB												\
 	uresult = I->regs.w[AW];									\
@@ -297,8 +293,10 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	int count = (I->regs.b[CL]+1)/2;							\
 	unsigned di = I->regs.w[IY];								\
 	unsigned si = I->regs.w[IX];								\
+	static const unsigned char table[3]={18,19,19};	 					\
 	I->ZeroVal = I->CarryVal = 0;								\
 	for (i=0;i<count;i++) {									\
+		I->nec_ICount-=table[I->cpu_type/8];						\
 		tmp = GetMemB(DS, si);								\
 		tmp2 = GetMemB(ES, di);								\
 		v1 = (tmp>>4)*10 + (tmp&0xf);						\
@@ -322,8 +320,10 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	int result; \
     unsigned di = I->regs.w[IY];								\
 	unsigned si = I->regs.w[IX];								\
+	static const unsigned char table[3]={18,19,19};	 					\
 	I->ZeroVal = I->CarryVal = 0;								\
 	for (i=0;i<count;i++) {									\
+		I->nec_ICount-=table[I->cpu_type/8];						\
 		tmp = GetMemB(ES, di);								\
 		tmp2 = GetMemB(DS, si);								\
 		v1 = (tmp>>4)*10 + (tmp&0xf);						\
@@ -352,8 +352,10 @@ typedef enum { AL,AH,CL,CH,DL,DH,BL,BH,SPL,SPH,BPL,BPH,IXL,IXH,IYL,IYH } BREGS;
 	int result; \
     unsigned di = I->regs.w[IY];								\
 	unsigned si = I->regs.w[IX];								\
+	static const unsigned char table[3]={14,19,19};						\
 	I->ZeroVal = I->CarryVal = 0;								\
 	for (i=0;i<count;i++) {									\
+		I->nec_ICount-=table[I->cpu_type/8];						\
 		tmp = GetMemB(ES, di);								\
 		tmp2 = GetMemB(DS, si);								\
 		v1 = (tmp>>4)*10 + (tmp&0xf);						\

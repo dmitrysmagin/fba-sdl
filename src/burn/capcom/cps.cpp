@@ -590,24 +590,12 @@ int CpsInit()
 		CpsZRom[5] = 0xc7;
 	}
 
-	// mprot
-	CpsMProt[0] = 0x40;
-	CpsMProt[1] = 0x42;
-	CpsMProt[2] = 0x44;
-	CpsMProt[3] = 0x46;
-
-	// Board ID (ffight is the default)
-	CpsBID[0] = 0x60;
-	CpsBID[1] = 0x00;
-	CpsBID[2] = 0x04;
-
 	SepTableCalc();									  // Precalc the separate table
 
 	CpsReset = 0; Cpi01A = Cpi01C = Cpi01E = 0;		  // blank other inputs
 
-	nCpsLcReg = 0x66;								  // Layer controller usually at 0x66
-	// Usual bits for layer enable
-	CpsLayEn[1] = 2; CpsLayEn[2] = 4; CpsLayEn[3] = 8; CpsLayEn[4] = 0; CpsLayEn[5] = 0;
+	// Use this as default - all CPS-2 games use it
+	SetCpsBId(NOBATTRY, 0);
 
 	return 0;
 }

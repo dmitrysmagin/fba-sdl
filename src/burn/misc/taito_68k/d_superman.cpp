@@ -525,7 +525,7 @@ int SupermanInit()
 	nCurrentBank = -1;
 
 	int SupermanYM2610RomSize = 0x80000;
-	BurnYM2610Init(8000000, SupermanYM2610Rom, &SupermanYM2610RomSize, SupermanYM2610Rom, &SupermanYM2610RomSize, &SupermanFMIRQHandler, SupermanSynchroniseStream, SupermanGetTime);
+	BurnYM2610Init(8000000, SupermanYM2610Rom, &SupermanYM2610RomSize, SupermanYM2610Rom, &SupermanYM2610RomSize, &SupermanFMIRQHandler, SupermanSynchroniseStream, SupermanGetTime, 0);
 	BurnTimerAttachZet(4000000);
 
 	// ------- GFX Init -------------------
@@ -582,7 +582,7 @@ int SupermanFrame()
 
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];

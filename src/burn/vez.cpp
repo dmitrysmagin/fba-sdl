@@ -9,7 +9,7 @@
 #define VEZ_MEM_MASK	((1 << VEZ_MEM_SHIFT) - 1)
 
 static struct VezContext * VezCPUContext = 0;
-static struct VezContext * VezCurrentCPU = 0;
+struct VezContext * VezCurrentCPU = 0;
 static int nCPUCount = 0;
 static int nOpenedCPU = -1;
 
@@ -17,6 +17,12 @@ unsigned char __fastcall VezDummyReadHandler(unsigned int) { return 0; }
 void __fastcall VezDummyWriteHandler(unsigned int, unsigned char) { }
 unsigned char __fastcall VezDummyReadPort(unsigned int) { return 0; }
 void __fastcall VezDummyWritePort(unsigned int, unsigned char) { }
+
+int VezDummyIrqCallBack(int i) 
+{
+	bprintf(PRINT_NORMAL, _T("CPU #%d IrqCallBack(%x)\n"), nOpenedCPU, i);
+	return 0;
+}
 
 // memory handler for nec emulator
 
@@ -35,6 +41,28 @@ unsigned char cpu_readmem20(unsigned int a)
 	a &= 0xFFFFF;
 	
 	unsigned char * p = VezCurrentCPU->ppMemRead[ a >> VEZ_MEM_SHIFT ];
+	if ( p )
+		return *(p + a);
+	else
+		return VezCurrentCPU->ReadHandler(a);
+}
+
+unsigned char cpu_readmem20_op(unsigned int a)
+{
+	a &= 0xFFFFF;
+	
+	unsigned char * p = VezCurrentCPU->ppMemFetch[ a >> VEZ_MEM_SHIFT ];
+	if ( p )
+		return *(p + a);
+	else
+		return VezCurrentCPU->ReadHandler(a);
+}
+
+unsigned char cpu_readmem20_arg(unsigned int a)
+{
+	a &= 0xFFFFF;
+	
+	unsigned char * p = VezCurrentCPU->ppMemFetchData[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
 		return *(p + a);
 	else
@@ -83,6 +111,7 @@ int VezInit(int nCount, unsigned int * typelist)
 	
 	for(int i=0;i<nCount;i++) {
 		VezCPUContext[i].reg.cpu_type = typelist[i];
+		VezCPUContext[i].reg.irq_callback = VezDummyIrqCallBack;
 		
 		VezCPUContext[i].ReadHandler = VezDummyReadHandler;
 		VezCPUContext[i].WriteHandler = VezDummyWriteHandler;
@@ -111,7 +140,10 @@ void VezNewFrame()
 int VezOpen(int nCPU)
 {
 	nOpenedCPU = nCPU;
-	VezCurrentCPU = VezCPUContext + nCPU;
+	VezCurrentCPU = &VezCPUContext[nCPU];
+	
+	nec_set_context( &(VezCurrentCPU->reg) );
+	
 	return 0;
 }
 
@@ -119,6 +151,7 @@ void VezClose()
 {
 	nOpenedCPU = -1;
 	VezCurrentCPU = 0;
+	nec_set_context( 0 );
 }
 
 int VezMemCallback(int nStart,int nEnd,int nMode)
@@ -134,6 +167,10 @@ int VezMemCallback(int nStart,int nEnd,int nMode)
 				break;
 			case 1:
 				VezCurrentCPU->ppMemWrite[i] = NULL;
+				break;
+			case 2:
+				VezCurrentCPU->ppMemFetch[i] = NULL;
+				VezCurrentCPU->ppMemFetchData[i] = NULL;
 				break;
 		}
 	}
@@ -153,14 +190,37 @@ int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem)
 			case 1:
 				VezCurrentCPU->ppMemWrite[i] = Mem - nStart;
 				break;
+			case 2:
+				VezCurrentCPU->ppMemFetch[i] = Mem - nStart;
+				VezCurrentCPU->ppMemFetchData[i] = Mem - nStart;
+				break;
 		}
 	}
 	return 0;
 }
 
+int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem1, unsigned char *Mem2)
+{
+	int s = nStart >> VEZ_MEM_SHIFT;
+	int e = (nEnd + VEZ_MEM_MASK) >> VEZ_MEM_SHIFT;
+	
+	if (nMode != 2) return 1;
+	
+	for (int i = s; i < e; i++) {
+		VezCurrentCPU->ppMemFetch[i] = Mem1 - nStart;
+		VezCurrentCPU->ppMemFetchData[i] = Mem2 - nStart;
+	}
+	return 0;
+}
+
+void VezSetIrqCallBack(int (*cb)(int))
+{
+	VezCurrentCPU->reg.irq_callback = cb;
+}
+
 int VezReset()
 {
-	nec_reset( &(VezCurrentCPU->reg) );
+	nec_reset();
 	
 	return 0;
 }
@@ -169,7 +229,7 @@ int VezRun(int nCycles)
 {
 	if (nCycles <= 0) return 0;
 
-	return nec_execute( &(VezCurrentCPU->reg), nCycles);
+	return nec_execute(nCycles);
 }
 
 int VezPc(int /*n*/)
@@ -177,15 +237,28 @@ int VezPc(int /*n*/)
 	return 0;
 }
 
-int VezScan(int /*nAction*/)
+int VezScan(int nAction)
 {
+	if ((nAction & ACB_DRIVER_DATA) == 0)
+		return 0;
+	
+	char szText[] = "NEC #0";
+
+	for (int i = 0; i < nCPUCount; i++) {
+		szText[5] = '1' + i;
+
+		ScanVar(& (VezCPUContext[i].reg), sizeof(nec_Regs), szText);
+		
+		/* VezCurrentCPU[i].reg.irq_callback */
+	}
+	
 	return 0;
 }
 
 void VezSetIRQLine(const int line, const int status)
 {
-	//?
 	if ( status )
 		nec_int(line);
-}
 
+//	nec_set_irq_line(0, line);
+}

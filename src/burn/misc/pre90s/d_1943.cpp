@@ -43,6 +43,10 @@ static unsigned char DrvRomBank;
 static unsigned char DrvBg2ScrollX[2];
 static unsigned char DrvBgScrollX[2];
 static unsigned char DrvBgScrollY;
+static unsigned char DrvBg2On;
+static unsigned char DrvBg1On;
+static unsigned char DrvSpritesOn;
+static unsigned char DrvCharsOn;
 
 static int nCyclesDone[2], nCyclesTotal[2];
 static int nCyclesSegment;
@@ -75,7 +79,7 @@ static struct BurnInputInfo DrvInputList[] =
 
 STDINPUTINFO(Drv);
 
-inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -85,7 +89,7 @@ inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void DrvMakeInputs()
+static inline void DrvMakeInputs()
 {
 	// Reset Inputs
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0x00;
@@ -123,7 +127,7 @@ static struct BurnRomInfo DrvRomDesc[] = {
 	{ "1943.24",       0x08000, 0x11134036, BRF_GRA },	     //  13	BG2 Tiles
 	{ "1943.25",       0x08000, 0x092cf9c1, BRF_GRA },	     //  14
 	
-	{ "1943.06" ,      0x08000, 0x97acc8af, BRF_GRA },	     //  15	Sprites
+	{ "1943.06",       0x08000, 0x97acc8af, BRF_GRA },	     //  15	Sprites
 	{ "1943.07",       0x08000, 0xd78f7197, BRF_GRA },	     //  16
 	{ "1943.08",       0x08000, 0x1a626608, BRF_GRA },	     //  17
 	{ "1943.09",       0x08000, 0x92408400, BRF_GRA },	     //  18
@@ -132,8 +136,8 @@ static struct BurnRomInfo DrvRomDesc[] = {
 	{ "1943.12",       0x08000, 0x5e7efdb7, BRF_GRA },	     //  21
 	{ "1943.13",       0x08000, 0x1143829a, BRF_GRA },	     //  22
 		
-	{ "1943.14" ,      0x08000, 0x4d3c6401, BRF_GRA },	     //  23	Tilemaps
-	{ "1943.23" ,      0x08000, 0xa52aecbd, BRF_GRA },	     //  24
+	{ "1943.14",       0x08000, 0x4d3c6401, BRF_GRA },	     //  23	Tilemaps
+	{ "1943.23",       0x08000, 0xa52aecbd, BRF_GRA },	     //  24
 	
 	{ "bmprom.01",     0x00100, 0x74421f18, BRF_GRA },	     //  25	PROMs
 	{ "bmprom.02",     0x00100, 0xac27541f, BRF_GRA },	     //  26
@@ -151,6 +155,106 @@ static struct BurnRomInfo DrvRomDesc[] = {
 
 STD_ROM_PICK(Drv);
 STD_ROM_FN(Drv);
+
+static struct BurnRomInfo DrvjRomDesc[] = {
+	{ "1943jap.001",   0x08000, 0xf6935937, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "1943jap.002",   0x10000, 0xaf971575, BRF_ESS | BRF_PRG }, //	 1
+	{ "1943jap.003",   0x10000, 0x300ec713, BRF_ESS | BRF_PRG }, //	 2
+	
+	{ "1943.05",       0x08000, 0xee2bd2d7, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program 
+
+	{ "1943.04",       0x08000, 0x46cb9d3d, BRF_GRA },	     //  4	Characters
+	
+	{ "1943.15",       0x08000, 0x6b1a0443, BRF_GRA },	     //  5	BG Tiles
+	{ "1943.16",       0x08000, 0x23c908c2, BRF_GRA },	     //  6
+	{ "1943.17",       0x08000, 0x46bcdd07, BRF_GRA },	     //  7
+	{ "1943.18",       0x08000, 0xe6ae7ba0, BRF_GRA },	     //  8
+	{ "1943.19",       0x08000, 0x868ababc, BRF_GRA },	     //  9
+	{ "1943.20",       0x08000, 0x0917e5d4, BRF_GRA },	     //  10
+	{ "1943.21",       0x08000, 0x9bfb0d89, BRF_GRA },	     //  11
+	{ "1943.22",       0x08000, 0x04f3c274, BRF_GRA },	     //  12
+	
+	{ "1943.24",       0x08000, 0x11134036, BRF_GRA },	     //  13	BG2 Tiles
+	{ "1943.25",       0x08000, 0x092cf9c1, BRF_GRA },	     //  14
+	
+	{ "1943.06",       0x08000, 0x97acc8af, BRF_GRA },	     //  15	Sprites
+	{ "1943.07",       0x08000, 0xd78f7197, BRF_GRA },	     //  16
+	{ "1943.08",       0x08000, 0x1a626608, BRF_GRA },	     //  17
+	{ "1943.09",       0x08000, 0x92408400, BRF_GRA },	     //  18
+	{ "1943.10",       0x08000, 0x8438a44a, BRF_GRA },	     //  19
+	{ "1943.11",       0x08000, 0x6c69351d, BRF_GRA },	     //  20
+	{ "1943.12",       0x08000, 0x5e7efdb7, BRF_GRA },	     //  21
+	{ "1943.13",       0x08000, 0x1143829a, BRF_GRA },	     //  22
+		
+	{ "1943.14",       0x08000, 0x4d3c6401, BRF_GRA },	     //  23	Tilemaps
+	{ "1943.23",       0x08000, 0xa52aecbd, BRF_GRA },	     //  24
+	
+	{ "bmprom.01",     0x00100, 0x74421f18, BRF_GRA },	     //  25	PROMs
+	{ "bmprom.02",     0x00100, 0xac27541f, BRF_GRA },	     //  26
+	{ "bmprom.03",     0x00100, 0x251fb6ff, BRF_GRA },	     //  27
+	{ "bmprom.05",     0x00100, 0x206713d0, BRF_GRA },	     //  28
+	{ "bmprom.10",     0x00100, 0x33c2491c, BRF_GRA },	     //  29
+	{ "bmprom.09",     0x00100, 0xaeea4af7, BRF_GRA },	     //  30
+	{ "bmprom.12",     0x00100, 0xc18aa136, BRF_GRA },	     //  31
+	{ "bmprom.11",     0x00100, 0x405aae37, BRF_GRA },	     //  32
+	{ "bmprom.08",     0x00100, 0xc2010a9e, BRF_GRA },	     //  33
+	{ "bmprom.07",     0x00100, 0xb56f30c3, BRF_GRA },	     //  34
+	{ "bmprom.04",     0x00100, 0x91a8a2e1, BRF_GRA },	     //  35
+	{ "bmprom.06",     0x00100, 0x0eaf5158, BRF_GRA },	     //  36
+};
+
+STD_ROM_PICK(Drvj);
+STD_ROM_FN(Drvj);
+
+static struct BurnRomInfo DrvkaiRomDesc[] = {
+	{ "1943kai.01",    0x08000, 0x7d2211db, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "1943kai.02",    0x10000, 0x2ebbc8c5, BRF_ESS | BRF_PRG }, //	 1
+	{ "1943kai.03",    0x10000, 0x475a6ac5, BRF_ESS | BRF_PRG }, //	 2
+	
+	{ "1943kai.05",    0x08000, 0x25f37957, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program 
+
+	{ "1943kai.04",    0x08000, 0x884a8692, BRF_GRA },	     //  4	Characters
+	
+	{ "1943kai.15",    0x08000, 0x6b1a0443, BRF_GRA },	     //  5	BG Tiles
+	{ "1943kai.16",    0x08000, 0x9416fe0d, BRF_GRA },	     //  6
+	{ "1943kai.17",    0x08000, 0x3d5acab9, BRF_GRA },	     //  7
+	{ "1943kai.18",    0x08000, 0x7b62da1d, BRF_GRA },	     //  8
+	{ "1943kai.19",    0x08000, 0x868ababc, BRF_GRA },	     //  9
+	{ "1943kai.20",    0x08000, 0xb90364c1, BRF_GRA },	     //  10
+	{ "1943kai.21",    0x08000, 0x8c7fe74a, BRF_GRA },	     //  11
+	{ "1943kai.22",    0x08000, 0xd5ef8a0e, BRF_GRA },	     //  12
+	
+	{ "1943kai.24",    0x08000, 0xbf186ef2, BRF_GRA },	     //  13	BG2 Tiles
+	{ "1943kai.25",    0x08000, 0xa755faf1, BRF_GRA },	     //  14
+	
+	{ "1943kai.06",    0x08000, 0x5f7e38b3, BRF_GRA },	     //  15	Sprites
+	{ "1943kai.07",    0x08000, 0xff3751fd, BRF_GRA },	     //  16
+	{ "1943kai.08",    0x08000, 0x159d51bd, BRF_GRA },	     //  17
+	{ "1943kai.09",    0x08000, 0x8683e3d2, BRF_GRA },	     //  18
+	{ "1943kai.10",    0x08000, 0x1e0d9571, BRF_GRA },	     //  19
+	{ "1943kai.11",    0x08000, 0xf1fc5ee1, BRF_GRA },	     //  20
+	{ "1943kai.12",    0x08000, 0x0f50c001, BRF_GRA },	     //  21
+	{ "1943kai.13",    0x08000, 0xfd1acf8e, BRF_GRA },	     //  22
+		
+	{ "1943kai.14",    0x08000, 0xcf0f5a53, BRF_GRA },	     //  23	Tilemaps
+	{ "1943kai.23",    0x08000, 0x17f77ef9, BRF_GRA },	     //  24
+	
+	{ "bmk01.bin",     0x00100, 0xe001ea33, BRF_GRA },	     //  25	PROMs
+	{ "bmk02.bin",     0x00100, 0xaf34d91a, BRF_GRA },	     //  26
+	{ "bmk03.bin",     0x00100, 0x43e9f6ef, BRF_GRA },	     //  27
+	{ "bmk05.bin",     0x00100, 0x41878934, BRF_GRA },	     //  28
+	{ "bmk10.bin",     0x00100, 0xde44b748, BRF_GRA },	     //  29
+	{ "bmk09.bin",     0x00100, 0x59ea57c0, BRF_GRA },	     //  30
+	{ "bmk12.bin",     0x00100, 0x8765f8b0, BRF_GRA },	     //  31
+	{ "bmk11.bin",     0x00100, 0x87a8854e, BRF_GRA },	     //  32
+	{ "bmk08.bin",     0x00100, 0xdad17e2d, BRF_GRA },	     //  33
+	{ "bmk07.bin",     0x00100, 0x76307f8d, BRF_GRA },	     //  34
+	{ "bmprom.04",     0x00100, 0x91a8a2e1, BRF_GRA },	     //  35
+	{ "bmprom.06",     0x00100, 0x0eaf5158, BRF_GRA },	     //  36
+};
+
+STD_ROM_PICK(Drvkai);
+STD_ROM_FN(Drvkai);
 
 static int MemIndex()
 {
@@ -209,6 +313,10 @@ static int DrvDoReset()
 	DrvBgScrollX[0] = 0;
 	DrvBgScrollX[1] = 0;
 	DrvBgScrollY = 0;
+	DrvBg2On = 0;
+	DrvBg1On = 0;
+	DrvSpritesOn = 0;
+	DrvCharsOn = 0;
 
 	return 0;
 }
@@ -237,8 +345,7 @@ unsigned char __fastcall Drv1943Read1(unsigned short a)
 		}
 		
 		case 0xc007: {
-			bprintf(PRINT_IMPORTANT, _T("C007 -> %x\n"), ZetBc(0) >> 8);
-			return 0x1d;//ZetBc(0) >> 8;
+			return ZetBc(-1) >> 8;
 		}
 	
 		default: {
@@ -254,7 +361,7 @@ void __fastcall Drv1943Write1(unsigned short a, unsigned char d)
 	switch (a) {
 		case 0xc800: {
 			DrvSoundLatch = d;
-			bprintf(PRINT_IMPORTANT, _T("Sound Latch Sent => %02X\n"), DrvSoundLatch);
+//			bprintf(PRINT_IMPORTANT, _T("Sound Latch Sent => %02X\n"), DrvSoundLatch);
 			return;
 		}
 		
@@ -263,11 +370,7 @@ void __fastcall Drv1943Write1(unsigned short a, unsigned char d)
 			ZetMapArea(0x8000, 0xbfff, 0, DrvZ80Rom1 + 0x10000 + DrvRomBank * 0x1000 );
 			ZetMapArea(0x8000, 0xbfff, 2, DrvZ80Rom1 + 0x10000 + DrvRomBank * 0x1000 );
 			
-			// Reset Sound CPU?
-			
-			// Flip Screen
-			
-			// Char layer on
+			DrvCharsOn = d & 0x80;
 			return;
 		}
 		
@@ -307,6 +410,13 @@ void __fastcall Drv1943Write1(unsigned short a, unsigned char d)
 			return;
 		}
 		
+		case 0xd806: {
+			DrvBg1On = d & 0x10;
+			DrvBg2On = d & 0x20;
+			DrvSpritesOn = d & 0x40;
+			return;
+		}
+		
 		default: {
 			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
 		}
@@ -341,7 +451,7 @@ unsigned char __fastcall Drv1943Read2(unsigned short a)
 {
 	switch (a) {
 		case 0xc800: {
-			bprintf(PRINT_IMPORTANT, _T("Sound Latch Read => %02X\n"), DrvSoundLatch);
+//			bprintf(PRINT_IMPORTANT, _T("Sound Latch Read => %02X\n"), DrvSoundLatch);
 			return DrvSoundLatch;
 		}
 		
@@ -357,22 +467,22 @@ void __fastcall Drv1943Write2(unsigned short a, unsigned char d)
 {
 	switch (a) {
 		case 0xe000: {
-//			BurnYM2203Write(0, 0, d);
+			BurnYM2203Write(0, 0, d);
 			return;
 		}
 		
 		case 0xe001: {
-//			BurnYM2203Write(0, 1, d);
+			BurnYM2203Write(0, 1, d);
 			return;
 		}
 		
 		case 0xe002: {
-//			BurnYM2203Write(1, 0, d);
+			BurnYM2203Write(1, 0, d);
 			return;
 		}
 		
 		case 0xe003: {
-//			BurnYM2203Write(1, 1, d);
+			BurnYM2203Write(1, 1, d);
 			return;
 		}
 		
@@ -540,7 +650,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 	
-	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime);
+	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(3000000);
 
 	GenericTilesInit();
@@ -554,7 +664,7 @@ static int DrvInit()
 static int DrvExit()
 {
 	ZetExit();
-	BurnYM2203Exit();
+//	BurnYM2203Exit();
 	
 	GenericTilesExit();
 	
@@ -565,6 +675,10 @@ static int DrvExit()
 	DrvBgScrollX[0] = 0;
 	DrvBgScrollX[1] = 0;
 	DrvBgScrollY = 0;
+	DrvBg2On = 0;
+	DrvBg1On = 0;
+	DrvSpritesOn = 0;
+	DrvCharsOn = 0;
 	
 	free(Mem);
 	Mem = NULL;
@@ -630,7 +744,7 @@ static void DrvRenderBg2Layer()
 	for (mx = 0; mx < 8; mx++) {
 		for (my = 0; my < 2048; my++) {
 			TileIndex = (my * 8) + mx;
-			
+				
 			Offs = TileIndex * 2;
 			Attr = DrvBg2Tilemap[Offs + 1];
 			Code = DrvBg2Tilemap[Offs];
@@ -644,6 +758,8 @@ static void DrvRenderBg2Layer()
 			
 			x -= xScroll;
 			y -= 16;
+			
+			if (x < -32) x += 65536;
 			
 			if (x < -32 || x > 256) continue;
 			if (y < -32 || y > 240) continue;
@@ -689,7 +805,6 @@ static void DrvRenderBgLayer()
 	yFlip = 0;
 	
 	xScroll = DrvBgScrollX[0] + (256 * DrvBgScrollX[1]);
-	//bprintf(PRINT_NORMAL, _T("%X\n"), xScroll);
 	
 	for (mx = 0; mx < 8; mx++) {
 		for (my = 0; my < 2048; my++) {
@@ -708,6 +823,8 @@ static void DrvRenderBgLayer()
 			
 			x -= xScroll;
 			y -= 16;
+			
+			if (x < -32) x += 65536;
 			
 			if (x < -32 || x > 256) continue;
 			if (y < -32 || y > 240) continue;
@@ -809,18 +926,18 @@ static void DrvDraw()
 {
 	BurnTransferClear();
 	DrvCalcPalette();
-	DrvRenderBg2Layer();
-	DrvRenderSprites(0);
-	DrvRenderBgLayer();
-	DrvRenderSprites(1);
-	DrvRenderCharLayer();
+	if (DrvBg2On) DrvRenderBg2Layer();
+	if (DrvSpritesOn) DrvRenderSprites(0);
+	if (DrvBg1On) DrvRenderBgLayer();
+	if (DrvSpritesOn) DrvRenderSprites(1);
+	if (DrvCharsOn) DrvRenderCharLayer();
 	BurnTransferCopy(DrvPalette);
 }
 
 static int DrvFrame()
 {
 	int nInterleave = 4;
-//	int nSoundBufferPos = 0;
+	int nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -829,6 +946,8 @@ static int DrvFrame()
 	nCyclesTotal[0] = 6000000 / 60;
 	nCyclesTotal[1] = 3000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
+	
+	ZetNewFrame();
 
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
@@ -851,13 +970,32 @@ static int DrvFrame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		ZetRaiseIrq(0);
 		ZetClose();
+		
+		// Render Sound Segment
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			ZetOpen(0);
+			BurnYM2203Update(pSoundBuf, nSegmentLength);
+			ZetClose();
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 	
-//	ZetOpen(1);
-//	BurnTimerEndFrame(nCyclesTotal[1]);
-//	BurnYM2203Update(nBurnSoundLen);
-//	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
-//	ZetClose();
+	// Make sure the buffer is entirely filled.
+	if (pBurnSoundOut) {
+		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		if (nSegmentLength) {
+			ZetOpen(0);
+			BurnYM2203Update(pSoundBuf, nSegmentLength);
+			ZetClose();
+		}
+	}
+	
+	ZetOpen(0);
+	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
+	ZetClose();
 	
 	if (pBurnDraw) DrvDraw();
 
@@ -885,10 +1023,30 @@ static int DrvScan(int nAction, int *pnMin)
 
 struct BurnDriverD BurnDrvNineteen43 = {
 	"1943", NULL, NULL, "1987",
-	"1943: The Battle of Midway (US)\0", NULL, "Capcom", "Miscellaneous",
+	"1943: The Battle of Midway (US)\0", "No sound", "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, DrvRomInfo, DrvRomName, DrvInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 224, 256, 3, 4
+};
+
+struct BurnDriverD BurnDrvNineteen43j = {
+	"1943j", "1943", NULL, "1987",
+	"1943: Midway Kaisen (Japan)\0", "No sound", "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
+	NULL, DrvjRomInfo, DrvjRomName, DrvInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 224, 256, 3, 4
+};
+
+struct BurnDriverD BurnDrvNineteen43kai = {
+	"1943kai", NULL, NULL, "1987",
+	"1943 Kai: Midway Kaisen (Japan)\0", "No sound", "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
+	NULL, DrvkaiRomInfo, DrvkaiRomName, DrvInputInfo, NULL,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 224, 256, 3, 4
 };

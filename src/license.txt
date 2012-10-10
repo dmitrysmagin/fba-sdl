@@ -9,17 +9,18 @@ You may freely use, modify, and distribute both the FB Alpha source code and bin
 The FB Alpha website is http://fba.emuunlim.com/.
 
 FB Alpha is based on Final Burn (http://www.finalburn.com/), see additional text below.
-Musashi MC68000/MC68010/MC68EC020 core by Karl Stenerud (http://www.mame.net/).
-A68K MC68000 core by Mike Coates & Darren Olafson (http://www.mame.net/).
-YM3812 core by Jarek Burczynski & Tatsuyuki Satoh (http://www.mame.net/).
-YM2151 core by Jarek Burczynski (http://www.mame.net/).
-YMF278B core by R. Belmont & O.Galibert (http://www.mame.net/).
-YM2608/YM2610 cores by Jarek Burczynski & Tatsuyuki Satoh (http://www.mame.net/).
-AY8910/YM2149 core by various authors (http://www.mame.net/).
+Musashi MC68000/MC68010/MC68EC020 core by Karl Stenerud (http://www.mamedev.org/).
+A68K MC68000 core by Mike Coates & Darren Olafson (http://www.mamedev.org/).
+YM3812 core by Jarek Burczynski & Tatsuyuki Satoh (http://www.mamedev.org/).
+YM2151 core by Jarek Burczynski (http://www.mamedev.org/).
+YMF278B core by R. Belmont & O.Galibert (http://www.mamedev.org/).
+YM2608/YM2610 cores by Jarek Burczynski & Tatsuyuki Satoh (http://www.mamedev.org/).
+AY8910/YM2149 core by various authors (http://www.mamedev.org/).
+M6502 emulation core by Marat (http://fms.komkon.org/EMUL8/).
+I8039 emulation core by Mirko Buffoni (http://www.mamedev.org/).
 Z80 emulation core by Dave, modifications by Team FB Alpha (http://www.finalburn.com/).
 PNG functionality provided by libpng (http://www.libpng.org/).
 Zip functionality provided by zlib (http://www.gzip.org/zlib/).
-Netplay functionality provided by Kaillera (http://www.kaillera.com/).
 
 Some graphics effects provided by the Scale2x, Eagle Graphics, 2xSaI, and hq2x/hq3x/hq4x libraries (http://scale2x.sourceforge.net/, http://retrofx.com/, http://elektron.its.tudelft.nl/~dalikifa/, http://www.hiend3d.com/).
 

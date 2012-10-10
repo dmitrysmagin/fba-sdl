@@ -9,7 +9,7 @@ static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
 static unsigned int *Palette;
 
 static int tnzs_bg_flag, tnzs_screenflip;
-static int tnzs_cpu1_reset, tnzs_cpu2_irq;
+static int tnzs_cpu1_reset;
 static int tnzs_bank0, tnzs_bank1;
 static int soundlatch;
 
@@ -169,7 +169,11 @@ void __fastcall tnzs_cpu1_write(unsigned short address, unsigned char data)
 
 		case 0xb004:
 			soundlatch = data;
-			tnzs_cpu2_irq = 1;
+			ZetClose();
+			ZetOpen(2);
+			ZetRaiseIrq(0);
+			ZetClose();
+			ZetOpen(0);
 		break;
 	}
 
@@ -267,7 +271,7 @@ static int DrvDoReset()
 	memset (Rom2 + 0x0c000, 0, 0x2000);
 
 	tnzs_bg_flag = tnzs_screenflip = 0;
-	tnzs_cpu1_reset = tnzs_cpu2_irq = 0;
+	tnzs_cpu1_reset = 0;
 	soundlatch = 0;
 
 	for (int i = 0; i < 3; i++) {
@@ -380,7 +384,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
-	BurnYM2203Init(1, 3000000, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime);
+	BurnYM2203Init(1, 3000000, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(6000000);
 
 	DrvDoReset();
@@ -399,7 +403,7 @@ static int DrvExit()
 	Palette = NULL;
 
 	tnzs_bg_flag = tnzs_screenflip = 0;
-	tnzs_cpu1_reset = tnzs_cpu2_irq = 0;
+	tnzs_cpu1_reset = 0;
 	tnzs_bank0 = tnzs_bank1 = 0;
 	soundlatch = 0;
 
@@ -652,22 +656,12 @@ static int DrvFrame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		if (i+1 == nInterleave) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 		ZetClose();
-
-		// Run Z80 #2
-		nCurrentCPU = 2;
-		ZetOpen(nCurrentCPU);
-		if (tnzs_cpu2_irq) { ZetRaiseIrq(0xff); tnzs_cpu2_irq = 0; }
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = ZetRun(nCyclesSegment);
-		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		// irq set by sound chip
-		if (pBurnSoundOut) {
-			BurnTimerEndFrame(nCyclesTotal[2] / nInterleave);
-			BurnYM2203Update(nBurnSoundLen);
-		}
-		ZetClose();
 	}
+	
+	ZetOpen(2);
+	BurnTimerEndFrame(nCyclesTotal[2] - nCyclesDone[2]);
+	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	ZetClose();
 
 	if (pBurnDraw) {
 		DrvDraw();
@@ -734,7 +728,6 @@ static int DrvScan(int nAction,int *pnMin)
 		SCAN_VAR(tnzs_bank0);
 		SCAN_VAR(tnzs_bank1);
 		SCAN_VAR(tnzs_cpu1_reset);
-		SCAN_VAR(tnzs_cpu2_irq);
 
 		ZetOpen(0);
 		tnzs_bankswitch_w(tnzs_bank0);

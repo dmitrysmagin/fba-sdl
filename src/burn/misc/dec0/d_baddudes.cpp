@@ -52,22 +52,17 @@ static struct BurnRomInfo baddudesRomDesc[] =
 	{"baddudes.1", 0x10000, 0x74f5110c, 0x10}, //  1	68000 Program Code
 	{"baddudes.6", 0x10000, 0x3ff8da57, 0x10}, //  2	68000 Program Code
 	{"baddudes.3", 0x10000, 0xf8f2bd94, 0x10}, //  3	68000 Program Code
-
 	{"baddudes.7", 0x08000, 0x9fb1ef4b, 0x10}, // 6502 code
-
 	{"baddudes.25",  0x08000, 0xbcf59a69, 0x10}, // text roms
 	{"baddudes.26",  0x08000, 0x9aff67b8, 0x10},  
-
 	{ "baddudes.18", 0x10000, 0x05cfc3e5, 0x10}, // tiles
 	{ "baddudes.20", 0x10000, 0xe11e988f, 0x10},  
 	{ "baddudes.22", 0x10000, 0xb893d880, 0x10}, 
 	{ "baddudes.24", 0x10000, 0x6f226dda, 0x10}, 
-
 	{ "baddudes.30", 0x10000, 0x982da0d1, 0x10}, 
 	{ "baddudes.30", 0x10000, 0x982da0d1, 0x10}, 
 	{ "baddudes.28", 0x10000, 0xf01ebb3b, 0x10}, 
 	{ "baddudes.28", 0x10000, 0xf01ebb3b, 0x10}, 
-
 	{ "baddudes.15", 0x10000, 0xa38a7d30, 0x10},  // spr
 	{ "baddudes.16", 0x08000, 0x17e42633, 0x10},  
 	{ "baddudes.11", 0x10000, 0x3a77326c, 0x10}, 
@@ -76,7 +71,6 @@ static struct BurnRomInfo baddudesRomDesc[] =
 	{ "baddudes.14", 0x08000, 0xe83c760a, 0x10}, 
 	{ "baddudes.9", 0x10000, 0x6901e628, 0x10}, 
 	{ "baddudes.10", 0x08000, 0xeeee8a1a, 0x10}, 
-
 	{ "baddudes.8", 0x10000, 0x3c87463e, 0x10},  //adpcm
 
 };
@@ -188,7 +182,6 @@ void __fastcall baddudesWriteWord(unsigned int a, unsigned short d)
 
 }
 
-
 static int MemIndex()
 {
 	unsigned char *Next; Next = Mem;
@@ -239,21 +232,18 @@ int baddudesInit()
 	nRet = BurnLoadRom(baddudesTemp+ 0x08000,6,1);
 	if (nRet != 0) 
 		return 1;
-	for (int i =0; i<= 2048; i++)
-	{
-		decodechars(i,robocopChars,baddudesTemp,0x20000 );
-	}
+
+
+	decodechars(robocopChars,baddudesTemp,0x20000,2048 );
 
 	//load and decode BG1 roms
 	for (int w =0 ; w<=4 ; w++)
 	{
 		BurnLoadRom(baddudesTemp+ (0x10000 * w),7+w,1);	
 	}
-	for (int i =0; i<= 2048; i++)
-	{
-		decodeBG1(i,robocopBG1,baddudesTemp );
-	}
 
+	decodeBG1(robocopBG1,baddudesTemp,2048 );
+	
 	//load and decode BG2 roms
 	for (int w =0 ; w<=4 ; w++)
 	{
@@ -267,10 +257,9 @@ int baddudesInit()
 	BurnLoadRom(baddudesTemp+ (0x8000*3),13,1);
 
 	memcpy(baddudesTemp+(0x8000*2),baddudesTemp + (0x8000*4),0x8000);
-	for (int i =0; i<= 1024; i++)
-	{
-		decodeBG2(i,robocopBG2,baddudesTemp );
-	}
+
+	decodeBG2(robocopBG2,baddudesTemp,1024 );
+
 	// load and decode sprite roms
 	nRet = BurnLoadRom(baddudesTemp ,15,1);
 	if (nRet != 0) return 1;
@@ -289,10 +278,8 @@ int baddudesInit()
 	nRet = BurnLoadRom(baddudesTemp+ 0x58000,22,1);
 	if (nRet != 0) return 1;
 
-	for (int i =0; i<= 3072; i++)
-	{
-		decodesprite(i,robocopSprites,baddudesTemp );
-	}
+	decodesprite(robocopSprites,baddudesTemp,3072 );
+
 
 	free(baddudesTemp);
 
@@ -330,6 +317,9 @@ int baddudesInit()
 	SekSetWriteByteHandler(0, baddudesWriteByte);
 	SekClose();
 
+
+	DecSharedInit();
+	init_dec0_aud(4,23);
 	// Reset the driver
 	baddudesDoReset();
 
@@ -338,6 +328,8 @@ int baddudesInit()
 
 int baddudesExit()
 {
+	exit_dec0_aud();
+	DecSharedExit();
 	SekExit();
 	free(Mem);
 	Mem = NULL;
@@ -345,9 +337,12 @@ int baddudesExit()
 	return 0;
 }
 
+
 void baddudesRender()
 {
 //	int trans = 0;
+	BurnTransferClear();
+
 	decvid_calcpal();
 	BurnClearScreen();
 
@@ -370,6 +365,8 @@ void baddudesRender()
 
 	//decvid_drawsprites(0x00,0x00);
 	decvid_drawchars();
+
+	BurnTransferCopy(robocopPalette);
 }
 
 int baddudesFrame()
@@ -390,6 +387,7 @@ int baddudesFrame()
 	SekNewFrame();
 
 	SekOpen(0);
+	m6502Open(0);
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
 
@@ -399,19 +397,29 @@ int baddudesFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
 
+		
+		// m6502
+		nCurrentCPU = 1;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += 	m6502Run(nCyclesSegment);
+
+		render_dec_aud(nInterleave, nCyclesTotal[0]);
 	}
+	endframe_dec_aud(nCyclesTotal[0]);
+	m6502SetIRQ(M6502_IRQ);
 	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+
 	VBL_ACK = false;
-
 	SekClose();
-
+	m6502Close();
 	if (pBurnDraw)
 		baddudesRender();
 
 	return 0;
 }
 
-static int baddudesScan(int /*nAction*/,int* /*pnMin*/)
+static int baddudesScan(int /*nAction*/,int */*pnMin*/)
 {
 
 	return 0;
@@ -426,5 +434,3 @@ struct BurnDriverD BurnDrvbaddudes = {
 		baddudesInit, baddudesExit, baddudesFrame, NULL, baddudesScan,
 		NULL, 256, 256, 4, 3
 };
-
-

@@ -63,15 +63,9 @@ static int DrvInit()
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,4,1);
-  nCpsLcReg=0x66; // Layer control register is at 0x6e
-  CpsLayEn[1]=0x02; //layer enable 1 is different
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08; // Layer enable is different
-
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_pang3);
 
   // Load ADPCM data
   nRet=BurnLoadRom(CpsAd        ,5,1);
@@ -119,15 +113,9 @@ static int Pang3jInit()
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,4,1);
-  nCpsLcReg=0x66; // Layer control register is at 0x6e
-  CpsLayEn[1]=0x02; //layer enable 1 is different
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08; // Layer enable is different
-
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_pang3);
 
   // Load ADPCM data
   nRet=BurnLoadRom(CpsAd        ,5,1);

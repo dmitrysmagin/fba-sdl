@@ -1,5 +1,5 @@
-#include "burnint.h"
-
+#include "tiles_generic.h"
+#include "dec0.h"
 unsigned short dec_pri_reg=0; // graphics layer priority register 
 
 unsigned char  dec_inputbits0[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -8,7 +8,7 @@ unsigned char  dec_inputbits2[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 unsigned char  dec_dipsw[2]         = {0, 0};
 unsigned short dec_input[3]       = {0x00,0x00,0x00};
-
+unsigned char robocopSoundLatch = 0;
 
 static int i8751_return;
 bool VBL_ACK;
@@ -59,6 +59,8 @@ short dec_controls_read(unsigned int a)
 		case 8: /* Intel 8751 mc, Bad Dudes & Heavy Barrel only */
 			//return i8751_return;
 			return i8751_return;
+		default:
+			break;
 	}
 	return ~0x00;
 }
@@ -77,14 +79,16 @@ void dec_ctrl_writeword(unsigned int a, unsigned short d)
 	//	printf("oh no, is dma: %x,%x\n",a,d);
 		break;
 	case 4: // 6502 
-		printf("sound code: %X\n",d);
+		robocopSoundLatch = d & 0xFF;
+		bprintf(PRINT_NORMAL, _T("sound code: %x\n"),d);
+		m6502SetIRQ(M6502_NMI);
 		break;
 	case 6:
 		printf("write to i8751 %x, %x\n",a,d);
 		baddudes_i8751_write(d);
 		SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 		break;
-	case 8: //mame says int ack for vbl, but just ignores it.
+	case 8: //mame says int ack for vbl, but just ignores it???
 		VBL_ACK = false;
 		break;
 	case 0xa:  // unknown
@@ -102,32 +106,43 @@ void dec_ctrl_writeword(unsigned int a, unsigned short d)
 
 void DecMakeInputs()
 {
-   // Reset Inputs
-   dec_input[0] = dec_input[1] = dec_input[2] = 0xFFFF;
-   // Compile Digital Inputs
-   dec_input[0] -= (dec_inputbits0[0] & 1) << 0;
-   dec_input[0] -= (dec_inputbits0[1] & 1) << 1;
-   dec_input[0] -= (dec_inputbits0[2] & 1) << 2;
-   dec_input[0] -= (dec_inputbits0[3] & 1) << 3;
-   dec_input[0] -= (dec_inputbits0[4] & 1) << 4;
-   dec_input[0] -= (dec_inputbits0[5] & 1) << 5;
-   dec_input[0] -= (0) << 6;
-   dec_input[0] -= (0) << 7;
-   dec_input[0] -= (dec_inputbits1[0] & 1) << 8;
-   dec_input[0] -= (dec_inputbits1[1] & 1) << 9;
-   dec_input[0] -= (dec_inputbits1[2] & 1) << 10;
-   dec_input[0] -= (dec_inputbits1[3] & 1) << 11;
-   dec_input[0] -= (dec_inputbits1[4] & 1) << 12;
-   dec_input[0] -= (dec_inputbits1[5] & 1) << 13;
-   dec_input[0] -= (0) << 14;
-   dec_input[0] -= (0) << 15;
+	// Reset Inputs
+	dec_input[0] = dec_input[1] = dec_input[2] = 0xFFFF;
+	// Compile Digital Inputs
+	dec_input[0] -= (dec_inputbits0[0] & 1) << 0;
+	dec_input[0] -= (dec_inputbits0[1] & 1) << 1;
+	dec_input[0] -= (dec_inputbits0[2] & 1) << 2;
+	dec_input[0] -= (dec_inputbits0[3] & 1) << 3;
+	dec_input[0] -= (dec_inputbits0[4] & 1) << 4;
+	dec_input[0] -= (dec_inputbits0[5] & 1) << 5;
+	dec_input[0] -= (0) << 6;
+	dec_input[0] -= (0) << 7;
+	dec_input[0] -= (dec_inputbits1[0] & 1) << 8;
+	dec_input[0] -= (dec_inputbits1[1] & 1) << 9;
+	dec_input[0] -= (dec_inputbits1[2] & 1) << 10;
+	dec_input[0] -= (dec_inputbits1[3] & 1) << 11;
+	dec_input[0] -= (dec_inputbits1[4] & 1) << 12;
+	dec_input[0] -= (dec_inputbits1[5] & 1) << 13;
+	dec_input[0] -= (0) << 14;
+	dec_input[0] -= (0) << 15;
 
-   dec_input[1] -= (0) << 0;
-   dec_input[1] -= (0) << 1;
-   dec_input[1] -= (dec_inputbits2[2] & 1) << 2;
-   dec_input[1] -= (dec_inputbits2[3] & 1) << 3;
-   dec_input[1] -= (dec_inputbits2[4] & 1) << 4;
-   dec_input[1] -= (dec_inputbits2[5] & 1) << 5;
-   dec_input[1] -= (0) << 6;
-   dec_input[1] -= (1) << 7;
+	dec_input[1] -= (0) << 0;
+	dec_input[1] -= (0) << 1;
+	dec_input[1] -= (dec_inputbits2[2] & 1) << 2;
+	dec_input[1] -= (dec_inputbits2[3] & 1) << 3;
+	dec_input[1] -= (dec_inputbits2[4] & 1) << 4;
+	dec_input[1] -= (dec_inputbits2[5] & 1) << 5;
+	dec_input[1] -= (0) << 6;
+	dec_input[1] -= (1) << 7;
 }
+
+void DecSharedInit()
+{
+	GenericTilesInit();
+}
+
+void DecSharedExit()
+{
+	GenericTilesExit();
+}
+

@@ -92,7 +92,7 @@ static struct BurnInputInfo DrvInputList[] =
 
 STDINPUTINFO(Drv);
 
-inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -102,7 +102,7 @@ inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void DrvMakeInputs()
+static inline void DrvMakeInputs()
 {
 	// Reset Inputs
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = DrvInput[3] = DrvInput[4] = 0x00;

@@ -123,10 +123,8 @@ static int DrvInit()
     CpsLoadTiles(CpsGfx+0x200000*i,3+i*4);
   }
 
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_RCM63B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,19,1);

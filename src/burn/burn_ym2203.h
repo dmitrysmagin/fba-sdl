@@ -8,10 +8,10 @@ extern "C" {
 
 extern "C" void BurnYM2203UpdateRequest();
 
-int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)());
+int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)(), int bAddSignal);
 void BurnYM2203Reset();
 void BurnYM2203Exit();
-extern void (*BurnYM2203Update)(int nSegmentEnd);
+extern void (*BurnYM2203Update)(short* pSoundBuf, int nSegmentEnd);
 void BurnYM2203Scan(int nAction, int* pnMin);
 
 #define BurnYM2203Write(i, a, n) YM2203Write(i, a, n)

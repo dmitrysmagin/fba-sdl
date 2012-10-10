@@ -745,9 +745,10 @@ void HangonPPI0WritePortC(UINT8 data)
 	System16RowScroll = ~data & 0x02;
 	
 	if (!(data & 0x80)) {
+		ZetOpen(0);
 		ZetNmi();
-		ZetRun(100);
-		nSystem16CyclesDone[2] += 100;
+		nSystem16CyclesDone[2] += ZetRun(100);
+		ZetClose();
 	}
 }
 
@@ -1063,6 +1064,30 @@ static int EndurorInit()
 	
 	System16ClockSpeed = 10000000;
 	
+	System16PCMDataSizePreAllocate = 0x18000;
+	
+	int nRet = System16Init();
+	
+	unsigned char *pTemp = (unsigned char*)malloc(0x10000);
+	memcpy(pTemp, System16PCMData, 0x10000);
+	memset(System16PCMData, 0, 0x18000);
+	memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
+	memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
+	free(pTemp);
+	
+	return nRet;
+}
+
+static int Enduror1Init()
+{
+	FD1089_Decrypt = fd1089_decrypt_0013A;
+	
+	System16Map68KDo = SharrierMap68K;
+	
+	System16ProcessAnalogControlsDo = EndurorProcessAnalogControls;
+	
+	System16ClockSpeed = 10000000;
+	
 	int nRet = System16Init();
 	
 	return nRet;
@@ -1164,7 +1189,7 @@ Driver defs
 
 struct BurnDriver BurnDrvEnduror = {
 	"enduror", NULL, NULL, "1986",
-	"Enduro Racer (YM2151, FD1089B 317-0013A)\0", "Problem with PCM samples", "Sega", "Hang-On",
+	"Enduro Racer (YM2151, FD1089B 317-0013A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32,
 	NULL, EndurorRomInfo, EndurorRomName, EndurorInputInfo, EndurorDIPInfo,
@@ -1178,7 +1203,7 @@ struct BurnDriver BurnDrvEnduror1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_FD1089B_ENC | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_YM2203,
 	NULL, Enduror1RomInfo, Enduror1RomName, EndurorInputInfo, EndurorDIPInfo,
-	EndurorInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
+	Enduror1Init, System16Exit, HangonYM2203Frame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };
 

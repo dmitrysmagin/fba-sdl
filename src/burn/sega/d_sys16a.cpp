@@ -1831,7 +1831,11 @@ void System16APPI0WritePortB(UINT8 data)
 
 void System16APPI0WritePortC(UINT8 data)
 {
-	if (!(data & 0x80)) ZetNmi();
+	if (!(data & 0x80)) {
+		ZetOpen(0);
+		ZetNmi();
+		ZetClose();
+	}
 	System16ColScroll = ~data & 0x04;
 	System16RowScroll = ~data & 0x02;
 	
@@ -2304,7 +2308,9 @@ void __fastcall Sjryuko1WriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0xc40001: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 		
@@ -2798,7 +2804,7 @@ Driver defs
 
 struct BurnDriver BurnDrvAceattaa = {
 	"aceattaa", "aceattac", NULL, "1986",
-	"Ace Attacker (Japan, System 16A, FD1094 317-0060)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Ace Attacker (Japan, System 16A, FD1094 317-0060)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1094_ENC,
 	NULL, AceattaaRomInfo, AceattaaRomName, AceattaaInputInfo, AceattaaDIPInfo,
@@ -2818,7 +2824,7 @@ struct BurnDriver BurnDrvAFighter = {
 
 struct BurnDriver BurnDrvAlexkidd = {
 	"alexkidd", NULL, NULL, "1986",
-	"Alex Kidd: The Lost Stars (set 2, unprotected)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Alex Kidd: The Lost Stars (set 2, unprotected)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, AlexkiddRomInfo, AlexkiddRomName, System16aInputInfo, AlexkiddDIPInfo,
@@ -2828,7 +2834,7 @@ struct BurnDriver BurnDrvAlexkidd = {
 
 struct BurnDriver BurnDrvAlexkid1 = {
 	"alexkid1", "alexkidd", NULL, "1986",
-	"Alex Kidd: The Lost Stars (set 1, FD1089A 317-unknown)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Alex Kidd: The Lost Stars (set 1, FD1089A 317-unknown)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089A_ENC,
 	NULL, Alexkid1RomInfo, Alexkid1RomName, System16aInputInfo, AlexkiddDIPInfo,
@@ -2838,7 +2844,7 @@ struct BurnDriver BurnDrvAlexkid1 = {
 
 struct BurnDriver BurnDrvAliensy1 = {
 	"aliensy1", "aliensyn", NULL, "1987",
-	"Alien Syndrome (set 1, System 16A, FD1089A 317-0033)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Alien Syndrome (set 1, System 16A, FD1089A 317-0033)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089A_ENC,
 	NULL, Aliensy1RomInfo, Aliensy1RomName, System16afire1InputInfo, AliensynDIPInfo,
@@ -2848,7 +2854,7 @@ struct BurnDriver BurnDrvAliensy1 = {
 
 struct BurnDriver BurnDrvAliensy2 = {
 	"aliensy2", "aliensyn", NULL, "1987",
-	"Alien Syndrome (set 2, System 16A, FD1089A 317-0033)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Alien Syndrome (set 2, System 16A, FD1089A 317-0033)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089A_ENC,
 	NULL, Aliensy2RomInfo, Aliensy2RomName, System16afire1InputInfo, AliensynDIPInfo,
@@ -2858,7 +2864,7 @@ struct BurnDriver BurnDrvAliensy2 = {
 
 struct BurnDriver BurnDrvAliensy5 = {
 	"aliensy5", "aliensyn", NULL, "1987",
-	"Alien Syndrome (set 5, System 16A, FD1089B 317-0037)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Alien Syndrome (set 5, System 16A, FD1089B 317-0037)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089B_ENC,
 	NULL, Aliensy5RomInfo, Aliensy5RomName, System16afire1InputInfo, AliensynDIPInfo,
@@ -2908,7 +2914,7 @@ struct BurnDriver BurnDrvFantzon1 = {
 
 struct BurnDriver BurnDrvMjleague = {
 	"mjleague", NULL, NULL, "1985",
-	"Major League\0", "Incomplete Sound", "Sega", "System 16A",
+	"Major League\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, MjleagueRomInfo, MjleagueRomName, MjleagueInputInfo, MjleagueDIPInfo,
@@ -2918,7 +2924,7 @@ struct BurnDriver BurnDrvMjleague = {
 
 struct BurnDriver BurnDrvPshot16a = {
 	"pshot16a", "passsht", NULL, "1988",
-	"Passing Shot (Japan, 4 Players, System 16A, FD1094 317-0071)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Passing Shot (Japan, 4 Players, System 16A, FD1094 317-0071)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 4, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Pshot16aRomInfo, Pshot16aRomName, Pshot16aInputInfo, Pshot16aDIPInfo,
@@ -2928,7 +2934,7 @@ struct BurnDriver BurnDrvPshot16a = {
 
 struct BurnDriver BurnDrvQuartet = {
 	"quartet", NULL, NULL, "1986",
-	"Quartet (Rev A, 8751 317-unknown)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Quartet (Rev A, 8751 317-unknown)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_SEGA_SYSTEM16A,
 	NULL, QuartetRomInfo, QuartetRomName, QuartetInputInfo, QuartetDIPInfo,
@@ -2938,7 +2944,7 @@ struct BurnDriver BurnDrvQuartet = {
 
 struct BurnDriver BurnDrvQuartet1 = {
 	"quartet1", "quartet", NULL, "1986",
-	"Quartet (8751 315-5194)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Quartet (8751 315-5194)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_SEGA_SYSTEM16A,
 	NULL, Quartet1RomInfo, Quartet1RomName, QuartetInputInfo, QuartetDIPInfo,
@@ -2948,7 +2954,7 @@ struct BurnDriver BurnDrvQuartet1 = {
 
 struct BurnDriver BurnDrvQuart21 = {
 	"quart21", "quartet", NULL, "1986",
-	"Quartet 2 (8751 317-0010)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Quartet 2 (8751 317-0010)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, Quart21RomInfo, Quart21RomName, System16aInputInfo, Quart2DIPInfo,
@@ -2958,7 +2964,7 @@ struct BurnDriver BurnDrvQuart21 = {
 
 struct BurnDriver BurnDrvQuart2 = {
 	"quart2", "quartet", NULL, "1986",
-	"Quartet 2 (unprotected)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Quartet 2 (unprotected)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, Quart2RomInfo, Quart2RomName, System16aInputInfo, Quart2DIPInfo,
@@ -2978,7 +2984,7 @@ struct BurnDriver BurnDrvSdi = {
 
 struct BurnDriver BurnDrvShinobi = {
 	"shinobi", NULL, NULL, "1987",
-	"Shinobi (set 5, System 16A, unprotected)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Shinobi (set 6, System 16A, unprotected)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, ShinobiRomInfo, ShinobiRomName, System16afire3InputInfo, ShinobiDIPInfo,
@@ -2988,7 +2994,7 @@ struct BurnDriver BurnDrvShinobi = {
 
 struct BurnDriver BurnDrvShinobi1 = {
 	"shinobi1", "shinobi", NULL, "1987",
-	"Shinobi (set 1, System 16A, FD1094 317-0050)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Shinobi (set 1, System 16A, FD1094 317-0050)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Shinobi1RomInfo, Shinobi1RomName, System16afire3InputInfo, ShinobiDIPInfo,
@@ -2998,7 +3004,7 @@ struct BurnDriver BurnDrvShinobi1 = {
 
 struct BurnDriver BurnDrvShinobls = {
 	"shinobls", "shinobi", NULL, "1987",
-	"Shinobi (Star bootleg, System 16A)\0", "Incomplete Sound", "bootleg", "System 16A",
+	"Shinobi (Star bootleg, System 16A)\0", NULL, "bootleg", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, ShinoblsRomInfo, ShinoblsRomName, System16afire3InputInfo, ShinobiDIPInfo,
@@ -3008,7 +3014,7 @@ struct BurnDriver BurnDrvShinobls = {
 
 struct BurnDriver BurnDrvSjryuko1 = {
 	"sjryuko1", "sjryuko", NULL, "1987",
-	"Sukeban Jansi Ryuko (set 1, System 16A, FD1089B 317-5021)\0", "Incomplete Sound", "White Board", "System 16A",
+	"Sukeban Jansi Ryuko (set 1, System 16A, FD1089B 317-5021)\0", NULL, "White Board", "System 16A",
 	L"Sukeban Jansi Ryuko (set 1, System 16A, FD1089B 317-5021)\0\u30B9\u30B1\u30D0\u30F3\u96C0\u58EB \u7ADC\u5B50\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089B_ENC,
 	NULL, Sjryuko1RomInfo, Sjryuko1RomName, Sjryuko1InputInfo, Sjryuko1DIPInfo,
@@ -3038,7 +3044,7 @@ struct BurnDriver BurnDrvTetris3 = {
 
 struct BurnDriver BurnDrvTimesca1 = {
 	"timesca1", "timescan", NULL, "1987",
-	"Time Scanner (set 1, System 16A, FD1089B 317-0024)\0", "Incomplete Sound", "Sega", "System 16A",
+	"Time Scanner (set 1, System 16A, FD1089B 317-0024)\0", NULL, "Sega", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089B_ENC,
 	NULL, Timesca1RomInfo, Timesca1RomName, System16aDip3InputInfo, TimescanDIPInfo,

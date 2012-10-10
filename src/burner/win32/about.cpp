@@ -177,7 +177,18 @@ static BOOL CALLBACK AboutProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 
 int AboutCreate()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, AboutProc);
+	HMODULE hRiched = NULL;
+	
+#if defined (_UNICODE)
+	hRiched = LoadLibrary(L"RICHED20.DLL");
+#else
+	hRiched = LoadLibrary("RICHED20.DLL");
+#endif
+	if (hRiched) {	
+		FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, AboutProc);
+		FreeLibrary(hRiched);
+		hRiched = NULL;
+	}
 
 	return 0;
 }
@@ -265,7 +276,18 @@ static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 
 int FirstUsageCreate()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_FIRST), hScrnWnd, FirstProc);
+	HMODULE hRiched = NULL;
+	
+#if defined (_UNICODE)
+	hRiched = LoadLibrary(L"RICHED20.DLL");
+#else
+	hRiched = LoadLibrary("RICHED20.DLL");
+#endif
+	if (hRiched) {	
+		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_FIRST), hScrnWnd, FirstProc);
+		FreeLibrary(hRiched);
+		hRiched = NULL;
+	}
 
 	return 0;
 }

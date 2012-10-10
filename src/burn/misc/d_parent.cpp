@@ -80,3 +80,30 @@ struct BurnDriverD BurnDrvManiacsq = {
 	ParentInit, ParentExit, NULL, NULL, NULL,
 	NULL, 256, 224, 4, 3
 };
+
+static struct BurnRomInfo TumblepRomDesc[] = {
+	{ "hl00-1.f12",         0x40000, 0xfd697c1b, BRF_ESS | BRF_PRG },
+	{ "hl01-1.f13",         0x40000, 0xd5a62a3f, BRF_ESS | BRF_PRG },
+	
+	{ "hl02-.f16",          0x10000, 0xa5cab888, BRF_ESS | BRF_PRG },
+
+	{ "map-02.rom",         0x80000, 0xdfceaa26, BRF_GRA },
+	
+	{ "map-01.rom",         0x80000, 0xe81ffa09, BRF_GRA },
+	{ "map-00.rom",         0x80000, 0x8c879cfe, BRF_GRA },
+	
+	{ "hl03-.j15",          0x20000, 0x01b81da0, BRF_SND },
+};
+
+STD_ROM_PICK(Tumblep);
+STD_ROM_FN(Tumblep);
+
+struct BurnDriver BurnDrvTumblep = {
+	"tumblep", NULL, NULL, "1991",
+	"Tumble Pop (World)\0", NULL, "Data East Corporation", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	0, 2, HARDWARE_MISC_POST90S,
+	NULL, TumblepRomInfo, TumblepRomName, ParentInputInfo, NULL,
+	ParentInit, ParentExit, NULL, NULL, NULL,
+	NULL, 256, 224, 4, 3
+};

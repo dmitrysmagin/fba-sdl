@@ -1,5 +1,6 @@
 #include "tiles_generic.h"
 #include "burn_ym3812.h"
+#include "upd7759.h"
 
 // Input Related Variables
 static unsigned char PrehisleInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -38,6 +39,7 @@ static int SoundLatch;
 
 // CPU Interleave Variables
 static int nCyclesDone[2], nCyclesTotal[2];
+static int nCyclesSegment;
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo PrehisleInputList[] = {
@@ -236,28 +238,12 @@ int PrehisleDoReset()
 	ZetClose();
 
 	BurnYM3812Reset();
+	UPD7759Reset();
 
 	return 0;
 }
 
 // ----------------------------------------------------------------------------
-// CPU synchronisation
-
-static int nCycles68KSync;
-
-static inline void prehisleSynchroniseZ80(int nExtraCycles)
-{
-	int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
-
-	if (nCycles <= ZetTotalCycles()) {
-		return;
-	}
-
-	nCycles68KSync = nCycles - nExtraCycles;
-
-	BurnTimerUpdate(nCycles);
-}
-
 // Callbacks for the FM chip
 
 static void prehisleFMIRQHandler(int, int nStatus)
@@ -364,7 +350,6 @@ void __fastcall PrehisleWriteWord(unsigned int a, unsigned short d)
 
 		case 0x0f0070: {
 			SoundLatch = d & 0xff;
-			prehisleSynchroniseZ80(0);
 			ZetNmi();
 			return;
 		}
@@ -398,12 +383,14 @@ void __fastcall PrehisleZ80PortWrite(unsigned short a, unsigned char d)
 		}
 
 		case 0x40: {
-//			bprintf(PRINT_NORMAL, "UPD7759 Port Write: %02X\n", d);
+			UPD7759PortWrite(d);
+			UPD7759StartWrite(0);
+			UPD7759StartWrite(1);
 			return;
 		}
 
 		case 0x80: {
-//			bprintf(PRINT_NORMAL, "UPD7759 Reset: %02X\n", d);
+			UPD7759ResetWrite(d);
 			return;
 		}
 	}
@@ -536,8 +523,10 @@ int PrehisleInit()
 	ZetSetOutHandler(PrehisleZ80PortWrite);
 	ZetClose();
 
-	BurnYM3812Init(4000000, &prehisleFMIRQHandler, &prehisleSynchroniseStream);
+	BurnYM3812Init(4000000, &prehisleFMIRQHandler, &prehisleSynchroniseStream, 0);
 	BurnTimerAttachZet(4000000);
+	
+	UPD7759Init(UPD7759_STANDARD_CLOCK, PrehisleADPCMSamples);
 	
 	GenericTilesInit();
 
@@ -550,6 +539,7 @@ int PrehisleInit()
 int PrehisleExit()
 {
 	BurnYM3812Exit();
+	UPD7759Exit();
 
 	SekExit();
 	ZetExit();
@@ -759,33 +749,36 @@ void PrehisleDraw()
 // Frame Function
 int PrehisleFrame()
 {
+	int nInterleave = 1;
+	
 	if (PrehisleReset) PrehisleDoReset();
 
 	PrehisleMakeInputs();
 
+	nCyclesTotal[0] = 12000000 / 60;
+	nCyclesTotal[1] = 4000000 / 60;
+	nCyclesDone[0] = nCyclesDone[1] = 0;
+	
 	SekOpen(0);
 	ZetOpen(0);
 
 	SekNewFrame();
 	ZetNewFrame();
-
-	SekIdle(nCyclesDone[0]);
-	ZetIdle(nCyclesDone[1]);
-
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 4000000 / 60;
-
-	SekRun(nCyclesTotal[0] - SekTotalCycles());
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-
-	nCycles68KSync = SekTotalCycles();
-	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
 	
-	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
-	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
+	for (int i = 0; i < nInterleave; i++) {
+		int nCurrentCPU, nNext;
 
-//	bprintf(PRINT_NORMAL, _T("%i\n"), nCyclesDone[0]);
+		// Run 68000
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	}
+	
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	UPD7759Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -817,6 +810,7 @@ static int PrehisleScan(int nAction,int *pnMin)
 		ZetScan(nAction);			// Scan Z80
 
 		BurnYM3812Scan(nAction, pnMin);
+		UPD7759Scan(nAction, pnMin);
 
 		// Scan critical driver variables
 		SCAN_VAR(PrehisleInput);
@@ -832,7 +826,7 @@ static int PrehisleScan(int nAction,int *pnMin)
 // Driver Declarations
 struct BurnDriver BurnDrvPrehisle = {
 	"prehisle", NULL, NULL, "1989",
-	"Prehistoric Isle in 1930 (World)\0", "Incomplete Sound", "SNK", "Prehistoric Isle (SNK)",
+	"Prehistoric Isle in 1930 (World)\0", NULL, "SNK", "Prehistoric Isle (SNK)",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, PrehisleRomInfo, PrehisleRomName, PrehisleInputInfo, PrehisleDIPInfo,
@@ -842,7 +836,7 @@ struct BurnDriver BurnDrvPrehisle = {
 
 struct BurnDriver BurnDrvPrehislu = {
 	"prehislu", "prehisle", NULL, "1989",
-	"Prehistoric Isle in 1930 (US)\0", "Incomplete Sound", "SNK of America", "Prehistoric Isle (SNK)",
+	"Prehistoric Isle in 1930 (US)\0", NULL, "SNK of America", "Prehistoric Isle (SNK)",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, PrehisluRomInfo, PrehisluRomName, PrehisleInputInfo, PrehisleDIPInfo,
@@ -852,7 +846,7 @@ struct BurnDriver BurnDrvPrehislu = {
 
 struct BurnDriver BurnDrvGensitou = {
 	"gensitou", "prehisle", NULL, "1989",
-	"Genshi-Tou 1930's (Japan)\0", "Incomplete Sound", "SNK", "Prehistoric Isle (SNK)",
+	"Genshi-Tou 1930's (Japan)\0", NULL, "SNK", "Prehistoric Isle (SNK)",
 	L"Genshi-Tou 1930's (Japan)\0\u539F\u59CB\u5CF6 1930's (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, GensitouRomInfo, GensitouRomName, PrehisleInputInfo, PrehisleDIPInfo,

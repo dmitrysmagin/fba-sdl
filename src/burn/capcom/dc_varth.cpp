@@ -171,15 +171,8 @@ static int VarthInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx,8);
 
-  nCpsLcReg=0x6e; // Layer control register is at 0x6e
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x0c;
-  CpsLayEn[3]=0x0c;
-
-  MaskAddr[0]=0x66;
-  MaskAddr[1]=0x70;
-  MaskAddr[2]=0x68;
-  MaskAddr[3]=0x62;
+  SetCpsBId(CPS_B_04, 0);
+  SetGfxMapper(mapper_VA24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,12,1);
@@ -298,21 +291,8 @@ static int VarthjInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx,8);
 
-  nCpsLcReg=0x60; // Layer control register is at 0x60
-  CpsLayEn[1]=0x20;
-  CpsLayEn[2]=0x06;
-  CpsLayEn[3]=0x06;
-
-  // Protection enable code by KEV - Looks like only the JAP version uses this
-  CpsMProt[0]=0x4e;
-  CpsMProt[1]=0x4c;
-  CpsMProt[2]=0x4a;
-  CpsMProt[3]=0x48;
-
-  MaskAddr[0]=0x6e;
-  MaskAddr[1]=0x6c;
-  MaskAddr[2]=0x6a;
-  MaskAddr[3]=0x68;
+  SetCpsBId(BATTRY_5, 0);
+  SetGfxMapper(mapper_VA24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,12,1);
@@ -390,15 +370,8 @@ static int VarthuInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx,5);
 
-  nCpsLcReg=0x6e; // Layer control register is at 0x6e
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x0c;
-  CpsLayEn[3]=0x0c;
-
-  MaskAddr[0]=0x66;
-  MaskAddr[1]=0x70;
-  MaskAddr[2]=0x68;
-  MaskAddr[3]=0x62;
+  SetCpsBId(CPS_B_04, 0);
+  SetGfxMapper(mapper_VA24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,9,1);

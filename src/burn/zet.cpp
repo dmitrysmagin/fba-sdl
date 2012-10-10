@@ -1,180 +1,281 @@
 // Z80 (Zed Eight-Ty) Interface
 #include "burnint.h"
 
-#ifdef EMU_DOZE
- static DozeContext* ZetCPUContext = NULL;
-#endif // EMU_DOZE
+#define MAX_Z80		8
+static struct ZetExt * ZetCPUContext = NULL;
+ 
+typedef unsigned char (__fastcall *pZetInHandler)(unsigned short a);
+typedef void (__fastcall *pZetOutHandler)(unsigned short a, unsigned char d);
+typedef unsigned char (__fastcall *pZetReadHandler)(unsigned short a);
+typedef void (__fastcall *pZetWriteHandler)(unsigned short a, unsigned char d);
+ 
+struct ZetExt {
+	Z80_Regs reg;
+	
+	unsigned char* pZetMemMap[0x100 * 4];
+
+	pZetInHandler ZetIn;
+	pZetOutHandler ZetOut;
+	pZetReadHandler ZetRead;
+	pZetWriteHandler ZetWrite;
+};
+ 
+static int nZetCyclesDone[MAX_Z80];
+static int nZetCyclesTotal;
+static int nZ80ICount[MAX_Z80];
+static UINT32 Z80EA[MAX_Z80];
 
 static int nOpenedCPU = -1;
 static int nCPUCount = 0;
+int nHasZet = -1;
 
 unsigned char __fastcall ZetDummyReadHandler(unsigned short) { return 0; }
 void __fastcall ZetDummyWriteHandler(unsigned short, unsigned char) { }
 unsigned char __fastcall ZetDummyInHandler(unsigned short) { return 0; }
 void __fastcall ZetDummyOutHandler(unsigned short, unsigned char) { }
 
+unsigned char __fastcall ZetReadIO(unsigned int a)
+{
+	return ZetCPUContext[nOpenedCPU].ZetIn(a);
+}
+
+void __fastcall ZetWriteIO(unsigned int a, unsigned char d)
+{
+	ZetCPUContext[nOpenedCPU].ZetOut(a, d);
+}
+
+unsigned char __fastcall ZetReadProg(unsigned int a)
+{
+	// check mem map
+	unsigned char * pr = ZetCPUContext[nOpenedCPU].pZetMemMap[0x000 | (a >> 8)];
+	if (pr != NULL) {
+		return pr[a & 0xff];
+	}
+	
+	// check handler
+	if (ZetCPUContext[nOpenedCPU].ZetRead != NULL) {
+		return ZetCPUContext[nOpenedCPU].ZetRead(a);
+	}
+	
+	return 0;
+}
+
+void __fastcall ZetWriteProg(unsigned int a, unsigned char d)
+{
+	// check mem map
+	unsigned char * pr = ZetCPUContext[nOpenedCPU].pZetMemMap[0x100 | (a >> 8)];
+	if (pr != NULL) {
+		pr[a & 0xff] = d;
+		return;
+	}
+	
+	// check handler
+	if (ZetCPUContext[nOpenedCPU].ZetWrite != NULL) {
+		ZetCPUContext[nOpenedCPU].ZetWrite(a, d);
+		return;
+	}
+}
+
+unsigned char __fastcall ZetReadOp(unsigned int a)
+{
+	// check mem map
+	unsigned char * pr = ZetCPUContext[nOpenedCPU].pZetMemMap[0x200 | (a >> 8)];
+	if (pr != NULL) {
+		return pr[a & 0xff];
+	}
+	
+	// check read handler
+	if (ZetCPUContext[nOpenedCPU].ZetRead != NULL) {
+		return ZetCPUContext[nOpenedCPU].ZetRead(a);
+	}
+	
+	return 0;
+}
+
+unsigned char __fastcall ZetReadOpArg(unsigned int a)
+{
+	// check mem map
+	unsigned char * pr = ZetCPUContext[nOpenedCPU].pZetMemMap[0x300 | (a >> 8)];
+	if (pr != NULL) {
+		return pr[a & 0xff];
+	}
+	
+	// check read handler
+	if (ZetCPUContext[nOpenedCPU].ZetRead != NULL) {
+		return ZetCPUContext[nOpenedCPU].ZetRead(a);
+	}
+	
+	return 0;
+}
+
 void ZetSetReadHandler(unsigned char (__fastcall *pHandler)(unsigned short))
 {
-	Doze.ReadHandler = pHandler;
+	ZetCPUContext[nOpenedCPU].ZetRead = pHandler;
 }
 
 void ZetSetWriteHandler(void (__fastcall *pHandler)(unsigned short, unsigned char))
 {
-	Doze.WriteHandler = pHandler;
+	ZetCPUContext[nOpenedCPU].ZetWrite = pHandler;
 }
 
 void ZetSetInHandler(unsigned char (__fastcall *pHandler)(unsigned short))
 {
-	Doze.InHandler = pHandler;
+	ZetCPUContext[nOpenedCPU].ZetIn = pHandler;
 }
 
 void ZetSetOutHandler(void (__fastcall *pHandler)(unsigned short, unsigned char))
 {
-	Doze.OutHandler = pHandler;
+	ZetCPUContext[nOpenedCPU].ZetOut = pHandler;
 }
 
 void ZetNewFrame()
 {
 	for (int i = 0; i < nCPUCount; i++) {
-		ZetCPUContext[i].nCyclesTotal = 0;
+		nZetCyclesDone[i] = 0;
 	}
-	Doze.nCyclesTotal = 0;
+	nZetCyclesTotal = 0;
 }
 
 int ZetInit(int nCount)
 {
-#ifdef EMU_DOZE
-	ZetCPUContext = (DozeContext*)malloc(nCount * sizeof(DozeContext));
-	if (ZetCPUContext == NULL) {
-		return 1;
-	}
-
-	memset(ZetCPUContext, 0, nCount * sizeof(DozeContext));
-
+	nOpenedCPU = -1;
+	
+	ZetCPUContext = (struct ZetExt *) malloc(nCount * sizeof(ZetExt));
+	if (ZetCPUContext == NULL) return 1;
+	memset(ZetCPUContext, 0, nCount * sizeof(ZetExt));
+	
+	Z80Init();
+	
 	for (int i = 0; i < nCount; i++) {
-		ZetCPUContext[i].nInterruptLatch = -1;
-
-		ZetCPUContext[i].ReadHandler = ZetDummyReadHandler;
-		ZetCPUContext[i].WriteHandler = ZetDummyWriteHandler;
-		ZetCPUContext[i].InHandler = ZetDummyInHandler;
-		ZetCPUContext[i].OutHandler = ZetDummyOutHandler;
-
-		ZetCPUContext[i].ppMemFetch = (unsigned char**)malloc(0x0100 * sizeof(char*));
-		ZetCPUContext[i].ppMemFetchData = (unsigned char**)malloc(0x0100 * sizeof(char*));
-		ZetCPUContext[i].ppMemRead = (unsigned char**)malloc(0x0100 * sizeof(char*));
-		ZetCPUContext[i].ppMemWrite = (unsigned char**)malloc(0x0100 * sizeof(char*));
-
-		if (ZetCPUContext[i].ppMemFetch == NULL || ZetCPUContext[i].ppMemFetchData == NULL || ZetCPUContext[i].ppMemRead == NULL || ZetCPUContext[i].ppMemWrite == NULL) {
-			ZetExit();
-			return 1;
-		}
-
-		for (int j = 0; j < 0x0100; j++) {
-			ZetCPUContext[i].ppMemFetch[j] = NULL;
-			ZetCPUContext[i].ppMemFetchData[j] = NULL;
-			ZetCPUContext[i].ppMemRead[j] = NULL;
-			ZetCPUContext[i].ppMemWrite[j] = NULL;
+		ZetCPUContext[i].ZetIn = ZetDummyInHandler;
+		ZetCPUContext[i].ZetOut = ZetDummyOutHandler;
+		ZetCPUContext[i].ZetRead = ZetDummyReadHandler;
+		ZetCPUContext[i].ZetWrite = ZetDummyWriteHandler;
+		// TODO: Z80Init() will set IX IY F regs with default value, so get them ...
+		Z80GetContext(&ZetCPUContext[i].reg);
+		
+		nZetCyclesDone[i] = 0;
+		nZ80ICount[i] = 0;
+		
+		for (int j = 0; j < (0x0100 * 4); j++) {
+			ZetCPUContext[i].pZetMemMap[j] = NULL;
 		}
 	}
-
+	
+	nZetCyclesTotal = 0;
+	
+	Z80SetIOReadHandler(ZetReadIO);
+	Z80SetIOWriteHandler(ZetWriteIO);
+	Z80SetProgramReadHandler(ZetReadProg);
+	Z80SetProgramWriteHandler(ZetWriteProg);
+	Z80SetCPUOpReadHandler(ZetReadOp);
+	Z80SetCPUOpArgReadHandler(ZetReadOpArg);
+	
 	ZetOpen(0);
+	
+	nCPUCount = nCount % MAX_Z80;
 
-	nCPUCount = nCount;
-#endif
+	nHasZet = nCount;
+
+	//for (int i = 0; i < nCount; i++)
+	//	CpuCheatRegister(0x0004, i);
 
 	return 0;
+}
+
+unsigned char ZetReadByte(unsigned short address)
+{
+	if (nOpenedCPU < 0) return 0;
+
+	return ZetReadProg(address);
+}
+
+void ZetWriteByte(unsigned short address, unsigned char data)
+{
+	if (nOpenedCPU < 0) return;
+
+	ZetWriteProg(address, data);
+}
+
+void ZetWriteRom(unsigned short address, unsigned char data)
+{
+	if (nOpenedCPU < 0) return;
+
+	if (ZetCPUContext[nOpenedCPU].pZetMemMap[0x200 | (address >> 8)] != NULL) {
+		ZetCPUContext[nOpenedCPU].pZetMemMap[0x200 | (address >> 8)][address] = data;
+	}
+	
+	if (ZetCPUContext[nOpenedCPU].pZetMemMap[0x300 | (address >> 8)] != NULL) {
+		ZetCPUContext[nOpenedCPU].pZetMemMap[0x300 | (address >> 8)][address] = data;
+	}
+	
+	ZetWriteProg(address, data);
 }
 
 void ZetClose()
 {
-#ifdef EMU_DOZE
-	ZetCPUContext[nOpenedCPU] = Doze;
-#endif
+	Z80GetContext(&ZetCPUContext[nOpenedCPU].reg);
+	nZetCyclesDone[nOpenedCPU] = nZetCyclesTotal;
+	nZ80ICount[nOpenedCPU] = z80_ICount;
+	Z80EA[nOpenedCPU] = EA;
+
 	nOpenedCPU = -1;
 }
 
-int ZetOpen(int nCPU)
+void ZetOpen(int nCPU)
 {
-#ifdef EMU_DOZE
-	Doze = ZetCPUContext[nCPU];
+	Z80SetContext(&ZetCPUContext[nCPU].reg);
+	nZetCyclesTotal = nZetCyclesDone[nCPU];
+	z80_ICount = nZ80ICount[nCPU];
+	EA = Z80EA[nCPU];
 
 	nOpenedCPU = nCPU;
-#endif
+}
 
-	return 0;
+int ZetGetActive()
+{
+	return nOpenedCPU;
 }
 
 int ZetRun(int nCycles)
 {
-#ifdef EMU_DOZE
-
-	if (nCycles <= 0) {
-		return 0;
-	}
-
-	Doze.nCyclesTotal += nCycles;
-	Doze.nCyclesSegment = nCycles;
-	Doze.nCyclesLeft = nCycles;
-
-	DozeRun();
-	nCycles = Doze.nCyclesSegment - Doze.nCyclesLeft;
-
-	Doze.nCyclesTotal -= Doze.nCyclesLeft;
-	Doze.nCyclesLeft = 0;
-	Doze.nCyclesSegment = 0;
-
+	if (nCycles <= 0) return 0;
+	
+	nCycles = Z80Execute(nCycles);
+	
+	nZetCyclesTotal += nCycles;
+	
 	return nCycles;
-#else
-	return 0;
-#endif
 }
 
-void ZetRunAdjust(int nCycles)
+void ZetRunAdjust(int /*nCycles*/)
 {
-#ifdef EMU_DOZE
-	if (nCycles < 0 && Doze.nCyclesLeft < -nCycles) {
-		nCycles = 0;
-	}
-
-	Doze.nCyclesTotal += nCycles;
-	Doze.nCyclesSegment += nCycles;
-	Doze.nCyclesLeft += nCycles;
-#endif
 }
 
 void ZetRunEnd()
 {
-#ifdef EMU_DOZE
-	Doze.nCyclesTotal -= Doze.nCyclesLeft;
-	Doze.nCyclesSegment -= Doze.nCyclesLeft;
-	Doze.nCyclesLeft = 0;
-#endif
 }
 
 // This function will make an area callback ZetRead/ZetWrite
 int ZetMemCallback(int nStart, int nEnd, int nMode)
 {
-#ifdef EMU_DOZE
-	nStart >>= 8;
-	nEnd += 0xff;
-	nEnd >>= 8;
+	unsigned char cStart = (nStart >> 8);
+	unsigned char **pMemMap = ZetCPUContext[nOpenedCPU].pZetMemMap;
 
-	// Leave the section out of the memory map, so the Doze* callback with be used
-	for (int i = nStart; i < nEnd; i++) {
+	for (unsigned short i = cStart; i <= (nEnd >> 8); i++) {
 		switch (nMode) {
 			case 0:
-				Doze.ppMemRead[i] = NULL;
+				pMemMap[0     + i] = NULL;
 				break;
 			case 1:
-				Doze.ppMemWrite[i] = NULL;
+				pMemMap[0x100 + i] = NULL;
 				break;
 			case 2:
-				Doze.ppMemFetch[i] = NULL;
+				pMemMap[0x200 + i] = NULL;
+				pMemMap[0x300 + i] = NULL;
 				break;
 		}
 	}
-
-#endif
 
 	return 0;
 }
@@ -186,118 +287,101 @@ int ZetMemEnd()
 
 void ZetExit()
 {
-#ifdef EMU_DOZE
-	for (int i = 0; i < nCPUCount; i++) {
-		free(ZetCPUContext[i].ppMemFetch);
-		ZetCPUContext[i].ppMemFetch = NULL;
-		free(ZetCPUContext[i].ppMemFetchData);
-		ZetCPUContext[i].ppMemFetchData = NULL;
-		free(ZetCPUContext[i].ppMemRead);
-		ZetCPUContext[i].ppMemRead = NULL;
-		free(ZetCPUContext[i].ppMemWrite);
-		ZetCPUContext[i].ppMemWrite = NULL;
-	}
-
+	Z80Exit();
 	free(ZetCPUContext);
 	ZetCPUContext = NULL;
-#endif
 
 	nCPUCount = 0;
+	nHasZet = -1;
 }
 
 
 int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem)
 {
-#ifdef EMU_DOZE
-	int s = nStart >> 8;
-	int e = (nEnd + 0xFF) >> 8;
+	unsigned char cStart = (nStart >> 8);
+	unsigned char **pMemMap = ZetCPUContext[nOpenedCPU].pZetMemMap;
 
-	// Put this section in the memory map, giving the offset from Z80 memory to PC memory
-	for (int i = s; i < e; i++) {
+	for (unsigned short i = cStart; i <= (nEnd >> 8); i++) {
 		switch (nMode) {
-			case 0:
-				Doze.ppMemRead[i] = Mem - nStart;
+			case 0: {
+				pMemMap[0     + i] = Mem + ((i - cStart) << 8);
 				break;
-			case 1:
-				Doze.ppMemWrite[i] = Mem - nStart;
+			}
+		
+			case 1: {
+				pMemMap[0x100 + i] = Mem + ((i - cStart) << 8);
 				break;
-			case 2:
-				Doze.ppMemFetch[i] = Mem - nStart;
-				Doze.ppMemFetchData[i] = Mem - nStart;
+			}
+			
+			case 2: {
+				pMemMap[0x200 + i] = Mem + ((i - cStart) << 8);
+				pMemMap[0x300 + i] = Mem + ((i - cStart) << 8);
 				break;
+			}
 		}
 	}
-#endif
 
 	return 0;
 }
 
 int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem01, unsigned char *Mem02)
 {
-#ifdef EMU_DOZE
-	int s = nStart >> 8;
-	int e = (nEnd + 0xFF) >> 8;
-
+	unsigned char cStart = (nStart >> 8);
+	unsigned char **pMemMap = ZetCPUContext[nOpenedCPU].pZetMemMap;
+	
 	if (nMode != 2) {
 		return 1;
 	}
-
-	// Put this section in the memory map, giving the offset from Z80 memory to PC memory
-	for (int i = s; i < e; i++) {
-		Doze.ppMemFetch[i] = Mem01 - nStart;
-		Doze.ppMemFetchData[i] = Mem02 - nStart;
+	
+	for (unsigned short i = cStart; i <= (nEnd >> 8); i++) {
+		pMemMap[0x200 + i] = Mem01 + ((i - cStart) << 8);
+		pMemMap[0x300 + i] = Mem02 + ((i - cStart) << 8);
 	}
-#endif
 
 	return 0;
 }
 
 int ZetReset()
 {
-#ifdef EMU_DOZE
-	DozeReset();
-#endif
+	Z80Reset();
 
 	return 0;
 }
 
 int ZetPc(int n)
 {
-#ifdef EMU_DOZE
 	if (n < 0) {
-		return Doze.pc;
+		return ActiveZ80GetPC();
 	} else {
-		return ZetCPUContext[n].pc;
+		return ZetCPUContext[n].reg.pc.w.l;
 	}
-#else
-	return 0;
-#endif
 }
 
 int ZetBc(int n)
 {
-#ifdef EMU_DOZE
 	if (n < 0) {
-		return Doze.bc;
+		return ActiveZ80GetBC();
 	} else {
-		return ZetCPUContext[n].bc;
+		return ZetCPUContext[n].reg.bc.w.l;
 	}
-#else
-	return 0;
-#endif
+}
+
+int ZetDe(int n)
+{
+	if (n < 0) {
+		return ActiveZ80GetDE();
+	} else {
+		return ZetCPUContext[n].reg.de.w.l;
+	}
 }
 
 int ZetHL(int n)
 {
-#ifdef EMU_DOZE
 	if (n < 0) {
-		return Doze.hl;
+		return ActiveZ80GetHL();
 	} else {
-		return ZetCPUContext[n].hl;
+		return ZetCPUContext[n].reg.hl.w.l;
 	}
-#else
-	return 0;
-#endif
 }
 
 int ZetScan(int nAction)
@@ -306,15 +390,72 @@ int ZetScan(int nAction)
 		return 0;
 	}
 
-#ifdef EMU_DOZE
 	char szText[] = "Z80 #0";
-
+	
 	for (int i = 0; i < nCPUCount; i++) {
 		szText[5] = '1' + i;
 
-		ScanVar(&ZetCPUContext[i], 32 + 16, szText);
+		ScanVar(&ZetCPUContext[i].reg, sizeof(Z80_Regs), szText);
+		SCAN_VAR(Z80EA[i]);
+		SCAN_VAR(nZ80ICount[i]);
+		SCAN_VAR(nZetCyclesDone[i]);
 	}
-#endif
+	
+	SCAN_VAR(nZetCyclesTotal);	
 
 	return 0;
 }
+
+void ZetSetIRQLine(const int line, const int status)
+{
+	switch ( status ) {
+		case ZET_IRQSTATUS_NONE:
+			Z80SetIrqLine(0, 0);
+			break;
+		case ZET_IRQSTATUS_ACK: 	
+			Z80SetIrqLine(line, 1);
+			break;
+		case ZET_IRQSTATUS_AUTO:
+			Z80SetIrqLine(line, 1);
+			Z80Execute(0);
+			Z80SetIrqLine(0, 0);
+			Z80Execute(0);
+			break;
+	}
+}
+
+void ZetSetVector(int vector)
+{
+	Z80Vector = vector;
+}
+
+int ZetNmi()
+{
+	Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
+	Z80Execute(0);
+	Z80SetIrqLine(Z80_INPUT_LINE_NMI, 0);
+	Z80Execute(0);
+	int nCycles = 12;
+	nZetCyclesTotal += nCycles;
+
+	return nCycles;
+}
+
+int ZetIdle(int nCycles)
+{
+	nZetCyclesTotal += nCycles;
+
+	return nCycles;
+}
+
+int ZetSegmentCycles()
+{
+	return 0;
+}
+
+int ZetTotalCycles()
+{
+	return nZetCyclesTotal;
+}
+
+#undef MAX_Z80

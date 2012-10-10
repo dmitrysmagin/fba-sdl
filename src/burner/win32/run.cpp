@@ -1,6 +1,5 @@
 // Run module
 #include "burner.h"
-#include "kailleraclient.h"
 
 int bRunPause = 0;
 int bAltPause = 0;
@@ -94,9 +93,9 @@ static int RunFrame(int bDraw, int bPause)
 
 		if (kNetGame) {
 			GetInput(true);						// Update inputs
-			if (KailleraGetInput()) {			// Synchronize input with Kaillera
-				return 0;
-			}
+//			if (KailleraGetInput()) {			// Synchronize input with Kaillera
+//				return 0;
+//			}
 		} else {
 			if (nReplayStatus == 2) {
 				GetInput(false);				// Update burner inputs, but not game inputs
@@ -399,9 +398,9 @@ int RunMessageLoop()
 											break;
 										}
 									}
-									if (i) {
-										kailleraChatSend(TCHARToANSI(EditText, NULL, 0));
-									}
+//									if (i) {
+//										kailleraChatSend(TCHARToANSI(EditText, NULL, 0));
+//									}
 									DeActivateChat();
 
 									break;

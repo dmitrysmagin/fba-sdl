@@ -2,7 +2,7 @@
 #include "burn_sound.h"
 #include "burn_ym3812.h"
 
-void (*BurnYM3812Update)(int nSegmentEnd);
+void (*BurnYM3812Update)(short* pSoundBuf, int nSegmentEnd);
 
 static int (*BurnYM3812StreamCallback)(int nSoundRate);
 
@@ -16,10 +16,12 @@ static int nYM3812Position;
 static unsigned int nSampleSize;
 static unsigned int nFractionalPosition;
 
+static int bYM3812AddSignal;
+
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM3812UpdateDummy(int /* nSegmentEnd */)
+static void YM3812UpdateDummy(short* , int /* nSegmentEnd */)
 {
 	return;
 }
@@ -50,9 +52,8 @@ static void YM3812Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void YM3812UpdateResample(int nSegmentEnd)
+static void YM3812UpdateResample(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 	int nSamplesNeeded = nSegmentEnd * nBurnYM3812SoundRate / nBurnSoundRate + 1;
 
@@ -72,12 +73,18 @@ static void YM3812UpdateResample(int nSegmentEnd)
 	pYM3812Buffer = pBuffer + 0 * 4096 + 4;
 
 	for (int i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
-		pSoundBuf[i + 0] = INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
+		short nSample =  INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
 												pYM3812Buffer[(nFractionalPosition >> 16) - 3],
 												pYM3812Buffer[(nFractionalPosition >> 16) - 2],
 												pYM3812Buffer[(nFractionalPosition >> 16) - 1],
 												pYM3812Buffer[(nFractionalPosition >> 16) - 0]);
-		pSoundBuf[i + 1] = pSoundBuf[i + 0];
+		if (bYM3812AddSignal) {
+			pSoundBuf[i + 0] += nSample;
+			pSoundBuf[i + 1] += nSample;
+		} else {
+			pSoundBuf[i + 0] = nSample;
+			pSoundBuf[i + 1] = nSample;
+		}
 	}
 
 	if (nSegmentEnd >= nBurnSoundLen) {
@@ -95,9 +102,8 @@ static void YM3812UpdateResample(int nSegmentEnd)
 	}
 }
 
-static void YM3812UpdateNormal(int nSegmentEnd)
+static void YM3812UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    YM3812 render %6i -> %6i\n"), nYM3812Position, nSegmentEnd);
@@ -115,8 +121,13 @@ static void YM3812UpdateNormal(int nSegmentEnd)
 	pYM3812Buffer = pBuffer + 4 + 0 * 4096;
 
 	for (int i = nFractionalPosition; i < nSegmentLength; i++) {
-		pSoundBuf[(i << 1) + 0] = pYM3812Buffer[i];
-		pSoundBuf[(i << 1) + 1] = pYM3812Buffer[i];
+		if (bYM3812AddSignal) {
+			pSoundBuf[(i << 1) + 0] += pYM3812Buffer[i];
+			pSoundBuf[(i << 1) + 1] += pYM3812Buffer[i];
+		} else {
+			pSoundBuf[(i << 1) + 0] = pYM3812Buffer[i];
+			pSoundBuf[(i << 1) + 1] = pYM3812Buffer[i];
+		}
 	}
 
 	nFractionalPosition = nSegmentLength;
@@ -160,9 +171,11 @@ void BurnYM3812Exit()
 	BurnTimerExit();
 
 	free(pBuffer);
+	
+	bYM3812AddSignal = 0;
 }
 
-int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int))
+int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int), int bAddSignal)
 {
 	BurnTimerInit(&YM3812TimerOver, NULL);
 
@@ -206,6 +219,8 @@ int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*Stream
 	nYM3812Position = 0;
 
 	nFractionalPosition = 0;
+	
+	bYM3812AddSignal = bAddSignal;
 
 	return 0;
 }

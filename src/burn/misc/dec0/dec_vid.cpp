@@ -1,4 +1,5 @@
-#include "burnint.h"
+#include "tiles_generic.h"
+
 static unsigned char *Mem                  = NULL;
 static unsigned char *MemEnd               = NULL;
 static unsigned char *RamStart             = NULL;
@@ -69,7 +70,7 @@ static int MemIndex()
 	robocopBG1 	    = Next; Next += 0xc0000;
 	robocopBG2	    = Next; Next += 0xc0000;
 	robocopPalette      = (unsigned int*)Next; 
-			      Next += 0x00400 * sizeof(unsigned int);
+	Next += 0x00400 * sizeof(unsigned int);
 	MemEnd = Next;
 	return 0;
 }
@@ -121,163 +122,176 @@ int decvid_calcpal()
 	return 0;
 }
 
-inline void dec0_chartest(int Number, int Startx, int Starty, int Colour)
+
+
+void dec0_sprite_clip(int Number, int Startx, int Starty, int Colour, bool flipx,bool flipy)
 {
 	int x, y, tempCol, sx, sy;
-	unsigned char *temp;
-
-	for (y = 0; y < 8; y++) {
-		for (x = 0; x < 8; x++) {
-			tempCol = robocopChars[(Number * 64) + (y * 8) + x];
-
-			if (tempCol == 0) 
-				continue;	// pixel is transparent
-			
-			sx = Startx + x;
-			sy = Starty + y;
-			
-			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp,robocopPalette[tempCol | (Colour<<4)]);
-			}
-		}
-	}
-}
-
-
-void dec0_spritetest(int Number, int Startx, int Starty, int Colour, bool flipx,bool flipy)
-{
-	int x, y, tempCol, sx, sy;
-	unsigned char *temp;
+	unsigned short *temp;
 
 	if (flipx&&flipy)
 	{
-	Startx+=15;
-	Starty+=15;
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
-			tempCol =  robocopSprites[(Number * 256) + (y * 16) + x];
+		Startx+=15;
+		Starty+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol =  robocopSprites[(Number * 256) + (y * 16) + x];
 
-			if (tempCol == 0) 
-				continue;	// pixel is transparent
-			
-			sx = Startx - x;
-			sy = Starty - y;
-			
-			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp, robocopPalette[tempCol | (Colour << 4)]);
+				if (tempCol == 0) 
+					continue;	// pixel is transparent
+
+				sx = Startx - x;
+				sy = Starty - y;
+
+				if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
+					temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+					*temp = tempCol | (Colour << 4);
+				}
 			}
 		}
-	}
-	return;
+		return;
 	}
 
 	if (flipx)
 	{
-	Startx+=15;
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
-			tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
+		Startx+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
 
-			if (tempCol == 0) continue;	// pixel is transparent
-			
-			sx = Startx - x;
-			sy = Starty + y;
-			
-			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp, robocopPalette[tempCol | (Colour << 4)]);
+				if (tempCol == 0) continue;	// pixel is transparent
+
+				sx = Startx - x;
+				sy = Starty + y;
+
+				if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
+					temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+					*temp = tempCol | (Colour << 4);
+				}
 			}
 		}
-	}
-	return;
+		return;
 	}
 
 	if (flipy)
 	{
-	Starty+=15;
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
-			tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
+		Starty+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
 
-			if (tempCol == 0) continue;	// pixel is transparent
-			
-			sx = Startx + x;
-			sy = Starty - y;
-			
-			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp, robocopPalette[tempCol | (Colour << 4)]);
+				if (tempCol == 0) continue;	// pixel is transparent
+
+				sx = Startx + x;
+				sy = Starty - y;
+
+				if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
+					temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+					*temp = tempCol | (Colour << 4);
+				}
 			}
 		}
-	}
-	return;
-	}
-
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
-			tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
-
-			if (tempCol == 0) 
-				continue;	// pixel is transparent
-			
-			sx = Startx + x;
-			sy = Starty + y;
-			
-			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp,robocopPalette[tempCol | (Colour<<4)]);
-			}
-		}
-	}
-}
-
-inline void dec0_BG1test(int Number, int Startx, int Starty, int Colour)
-{
-	int x, y, tempCol, sx, sy;
-	unsigned char *temp;
-
-	for (y = 0; y < 16; y++) {
-		for (x = 0; x < 16; x++) {
-			tempCol = robocopBG1[(Number * 256) + (y * 16) + x];
-
-			if (tempCol == 0) 
-				continue;	// pixel is transparent
-			
-			sx = Startx + x;
-			sy = Starty + y;
-			
-			if (sx > 0 && sx < 256 && sy > 0 && sy < 256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp,robocopPalette[tempCol | (Colour<<4)]);
-			}
-		}
-	}
-}
-
-inline void dec0_BG2test(int Number, int Startx, int Starty, int Colour)
-{
-	int x, y, tempCol, sx, sy;
-	unsigned char *temp;
-
-	if (Number >= 0xC00)
 		return;
+	}
 
 	for (y = 0; y < 16; y++) {
 		for (x = 0; x < 16; x++) {
-			tempCol = robocopBG2[(Number * 256) + (y * 16) + x];
+			tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
 
 			if (tempCol == 0) 
 				continue;	// pixel is transparent
-			
+
 			sx = Startx + x;
 			sy = Starty + y;
-			
-			if (sx > 0 && sx < 256 && sy > 0 && sy < 256) {
-				temp = pBurnDraw + (nBurnPitch * sy) + (nBurnBpp * sx);
-				PutPix(temp,robocopPalette[tempCol | (Colour<<4)]);
+
+			if (sx >= 0 && sx < 256 && sy >= 0 && sy <256) {
+				temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+				*temp = tempCol | (Colour << 4);
 			}
+		}
+	}
+}
+
+
+void dec0_sprite(int Number, int Startx, int Starty, int Colour, bool flipx,bool flipy)
+{
+	int x, y, tempCol, sx, sy;
+	unsigned short *temp;
+
+	if (flipx&&flipy)
+	{
+		Startx+=15;
+		Starty+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol =  robocopSprites[(Number * 256) + (y * 16) + x];
+
+				if (tempCol == 0) 
+					continue;	// pixel is transparent
+
+				sx = Startx - x;
+				sy = Starty - y;
+
+				temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+				*temp = tempCol | (Colour << 4);
+
+			}
+		}
+		return;
+	}
+
+	if (flipx)
+	{
+		Startx+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
+
+				if (tempCol == 0) continue;	// pixel is transparent
+
+				sx = Startx - x;
+				sy = Starty + y;
+
+				temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+				*temp = tempCol | (Colour << 4);
+
+			}
+		}
+		return;
+	}
+
+	if (flipy)
+	{
+		Starty+=15;
+		for (y = 0; y < 16; y++) {
+			for (x = 0; x < 16; x++) {
+				tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
+
+				if (tempCol == 0) continue;	// pixel is transparent
+
+				sx = Startx + x;
+				sy = Starty - y;
+
+				temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+				*temp = tempCol | (Colour << 4);
+
+			}
+		}
+		return;
+	}
+
+	for (y = 0; y < 16; y++) {
+		for (x = 0; x < 16; x++) {
+			tempCol = robocopSprites[(Number * 256) + (y * 16) + x];
+
+			if (tempCol == 0) 
+				continue;	// pixel is transparent
+
+			sx = Startx + x;
+			sy = Starty + y;
+
+			temp = pTransDraw + (nScreenWidth * sy) + (1 * sx);
+			*temp = tempCol | (Colour << 4);
 		}
 	}
 }
@@ -310,7 +324,7 @@ void decvid_drawsprites(int pri_mask,int pri_val)
 		fx = y & 0x2000;
 		fy = y & 0x4000;
 		multi = (1 << ((y & 0x1800) >> 11)) - 1;	/* 1x, 2x, 4x, 8x height */
-								/* multi = 0   1   3   7 */
+		/* multi = 0   1   3   7 */
 
 		sprite = dec0_spriteram[offs+1] & 0x0fff;
 
@@ -327,7 +341,7 @@ void decvid_drawsprites(int pri_mask,int pri_val)
 			continue; /* Speedup */
 
 		sprite &= ~multi;
-		
+
 		if (fy)
 			inc = -1;
 		else
@@ -340,7 +354,16 @@ void decvid_drawsprites(int pri_mask,int pri_val)
 
 		while (multi >= 0)
 		{
-			dec0_spritetest(sprite - multi * inc,x,y + mult * multi,colour+16,fx,fy);
+			int calcy = y + mult * multi;
+
+			if (x > 16 && x < 239 && calcy > 16 && calcy < 239)
+			{
+				dec0_sprite(sprite - multi * inc,x,calcy,colour+16,fx,fy);
+			}
+			else
+			{
+				dec0_sprite_clip(sprite - multi * inc,x,calcy,colour+16,fx,fy);
+			}
 			multi--;
 		}
 	}
@@ -350,7 +373,7 @@ void decvid_drawsprites(int pri_mask,int pri_val)
 void decvid_drawchars()
 {
 	unsigned int mx, my, Code, Colour, x, y, TileIndex = 0;
- 	unsigned short* dec0_pf1_control_ram = ((unsigned short*)dec0_pf1_control_1);
+	unsigned short* dec0_pf1_control_ram = ((unsigned short*)dec0_pf1_control_1);
 
 	for (my = 0; my < 64 ; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -364,7 +387,15 @@ void decvid_drawchars()
 			y += dec0_pf1_control_ram[1];
 			if (Code!=0) 
 			{
-				dec0_chartest(Code, x, y , Colour);
+				if (x > 16 && x < 239 && y > 16 && y < 239)
+				{
+					Render8x8Tile_Mask(pTransDraw,Code,x,y,Colour,4,0,0,robocopChars);
+				}
+				else
+				{
+					Render8x8Tile_Mask_Clip(pTransDraw,Code,x,y,Colour,4,0,0,robocopChars);
+				}
+				//dec0_chartest(Code, x, y , Colour);
 			}
 			TileIndex += 2 ;
 		}
@@ -376,7 +407,7 @@ void decvid_drawbg1()
 {	
 	int dwI=0;
 	int mx, my, Code, Colour, x, y, TileIndex = 0;
- 	unsigned short* dec0_pf2_control_ram = ((unsigned short*)dec0_pf2_control_1);
+	unsigned short* dec0_pf2_control_ram = ((unsigned short*)dec0_pf2_control_1);
 
 	for (my = 0; my < 32 ; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -396,7 +427,15 @@ void decvid_drawbg1()
 			{
 				y &= 0x1ff;				
 			}
-			dec0_BG1test(Code, x, y , Colour+32);
+			if (x > 16 && x < 239&& y > 16 && y < 239)
+			{
+				Render16x16Tile_Mask(pTransDraw,Code,x,y,Colour+32,4,0,0,robocopBG1);
+			}
+			else
+
+			{
+				Render16x16Tile_Mask_Clip(pTransDraw,Code,x,y,Colour+32,4,0,0,robocopBG1);
+			}
 			TileIndex += 2 ;
 		}
 	}
@@ -406,7 +445,7 @@ void decvid_drawbg2()
 {
 	int dwI=0;
 	int mx, my, Code, Colour, x, y, TileIndex = 0;
- 	unsigned short* dec0_pf3_control_ram = ((unsigned short*)dec0_pf3_control_1);
+	unsigned short* dec0_pf3_control_ram = ((unsigned short*)dec0_pf3_control_1);
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
 			Code = dec0_pf3_data[TileIndex + 0] | ((dec0_pf3_data[TileIndex + 1])<<8) ;
@@ -425,225 +464,73 @@ void decvid_drawbg2()
 			{
 				y &= 0x1ff;				
 			}
-				
-			dec0_BG2test(Code, x, y , Colour+48);
-
+			if (x > 16 && x < 239 && y > 16 && y < 239)
+			{
+				Render16x16Tile_Mask(pTransDraw,Code,x,y,Colour+48,4,0,0,robocopBG2);
+			}
+			else
+			{
+				Render16x16Tile_Mask_Clip(pTransDraw,Code,x,y,Colour+48,4,0,0,robocopBG2);
+			}
 			TileIndex+=2;
 		}
 	}
-
-
-
-
 }
 
 
 
-
-
-void decodechars(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits, int size)
+void decodechars(unsigned char * dest, unsigned char *src, int size, int numberoftiles)
 {
-	unsigned long  xbits[8]= {0,  1,  2,  3,  4,  5,  6,  7 }; // x bit offsets 
-	unsigned long  ybits[8]= {0,  8, 16, 24, 32, 40, 48, 56 }; // y bit offsets 
-	unsigned long  bpoffsets[4] = { 0,size*2,size, size*3}; // start bit of bit planes
+	int xbits[8]= {0,  1,  2,  3,  4,  5,  6,  7 }; // x bit offsets 
+	int ybits[8]= {0,  8, 16, 24, 32, 40, 48, 56 }; // y bit offsets 
+	int  bpoffsets[4] = { 0,size*2,size, size*3}; // start bit of bit planes
 	unsigned long  xsize=8; // x size in pixels
 	unsigned long  ysize=8; // y size in pixels
 	unsigned long  bytespertile=64;
+	unsigned int planes = 4;
 
-	//  The current bit plane.
-	unsigned long bCurPlane;
+	//GfxDecode(int num, int numPlanes, int xSize, int ySize, int planeoffsets[], int xoffsets[], int yoffsets[], int modulo, unsigned char *pSrc, unsigned char *pDest)
 
-	//  The current pixel row and column in the destination buffer.
-	unsigned long dwCurRow;
-	unsigned long dwCurCol;
+	GfxDecode(numberoftiles, planes, xsize, ysize, bpoffsets,xbits, ybits,bytespertile,src,dest );
 
-	//  The source bit of interest.
-	unsigned long dwSourceBit;
-
-	//  The value of the current pixel in the bitmap.
-	unsigned long dwValue;
-
-	//  The offset.
-	unsigned long dwOffset = dwGraphic * bytespertile;
-
-	//  Loop through each row and column of the graphic.
-	for( dwCurRow = 0 ; dwCurRow < ysize ; ++dwCurRow )
-	{
-		for( dwCurCol = 0 ; dwCurCol < xsize ; ++dwCurCol )
-		{
-			//  Initialize the value.
-			dwValue = 0;
-
-			//  Loop through each bit plane for the character.
-			for( bCurPlane = 0 ; bCurPlane < 4 ; ++bCurPlane )
-			{
-				//  Shift the value to make room for the new plane.
-				dwValue <<= 1;
-
-				//  Calculate the source bit.
-				dwSourceBit = dwOffset + bpoffsets[ bCurPlane ] + ybits[ dwCurRow ] +  xbits[ dwCurCol ];
-
-				//  Add the bit from the current bit plane to the 
-				//  destination byte.
-				dwValue |= ( pbBits[ dwSourceBit >> 3 ] >> (7 - ( dwSourceBit & 7 ))) & 0x01;
-				//  Set the pixel value in the bitmap.
-				rBitmap[(bytespertile*dwGraphic)+dwCurCol+(dwCurRow*ysize)]= dwValue ;
-			}
-		}
-	}
 }
 
-void decodesprite(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits)
+void decodesprite(unsigned char * dest, unsigned char *src, int numberoftiles)
 {
-	unsigned long  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
-	unsigned long  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
-	unsigned long  bpoffsets[4] = { 786432, 2359296, 0, 1572864 }; // start bit of bit planes
+	int  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
+	int  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
+	int  bpoffsets[4] = { 786432, 2359296, 0, 1572864 }; // start bit of bit planes
 	unsigned long  xsize=16; // x size in pixels
 	unsigned long  ysize=16; // y size in pixels
 	unsigned long  bytespertile=256;
+	unsigned int planes = 4;
 
-	//  The current bit plane.
-	unsigned long bCurPlane;
+	GfxDecode(numberoftiles, planes, xsize, ysize, bpoffsets,xbits, ybits,bytespertile,src,dest );
 
-	//  The current pixel row and column in the destination buffer.
-	unsigned long dwCurRow;
-	unsigned long dwCurCol;
-
-	//  The source bit of interest.
-	unsigned long dwSourceBit;
-
-	//  The value of the current pixel in the bitmap.
-	unsigned long dwValue;
-
-	//  The offset.
-	unsigned long dwOffset = dwGraphic * bytespertile;
-
-	//  Loop through each row and column of the graphic.
-	for( dwCurRow = 0 ; dwCurRow < ysize ; ++dwCurRow )
-	{
-		for( dwCurCol = 0 ; dwCurCol < xsize ; ++dwCurCol )
-		{
-			//  Initialize the value.
-			dwValue = 0;
-
-			//  Loop through each bit plane for the character.
-			for( bCurPlane = 0 ; bCurPlane < 4 ; ++bCurPlane )
-			{
-				//  Shift the value to make room for the new plane.
-				dwValue <<= 1;
-
-				//  Calculate the source bit.
-				dwSourceBit = dwOffset + bpoffsets[ bCurPlane ] + ybits[ dwCurRow ] +  xbits[ dwCurCol ];
-
-				//  Add the bit from the current bit plane to the 
-				//  destination byte.
-				dwValue |= ( pbBits[ dwSourceBit >> 3 ] >> (7 - ( dwSourceBit & 7 ))) & 0x01;
-				//  Set the pixel value in the bitmap.
-				rBitmap[(bytespertile*dwGraphic)+dwCurCol+(dwCurRow*ysize)]= dwValue ;
-			}
-		}
-	}
 }
-void decodeBG1(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits)
+void decodeBG1(unsigned char * dest, unsigned char *src, int numberoftiles)
 {
-	unsigned long  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
-	unsigned long  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
-	unsigned long  bpoffsets[4] = { 524288, 1572864, 0, 1048576  }; // start bit of bit planes
+	int  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
+	int  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
+	int  bpoffsets[4] = { 524288, 1572864, 0, 1048576  }; // start bit of bit planes
 	unsigned long  xsize=16; // x size in pixels
 	unsigned long  ysize=16; // y size in pixels
 	unsigned long  bytespertile=256;
+	unsigned int planes = 4;
 
-	//  The current bit plane.
-	unsigned long bCurPlane;
+	GfxDecode(numberoftiles, planes, xsize, ysize, bpoffsets,xbits, ybits,bytespertile,src,dest );
 
-	//  The current pixel row and column in the destination buffer.
-	unsigned long dwCurRow;
-	unsigned long dwCurCol;
-
-	//  The source bit of interest.
-	unsigned long dwSourceBit;
-
-	//  The value of the current pixel in the bitmap.
-	unsigned long dwValue;
-
-	//  The offset.
-	unsigned long dwOffset = dwGraphic * bytespertile;
-
-	//  Loop through each row and column of the graphic.
-	for( dwCurRow = 0 ; dwCurRow < ysize ; ++dwCurRow )
-	{
-		for( dwCurCol = 0 ; dwCurCol < xsize ; ++dwCurCol )
-		{
-			//  Initialize the value.
-			dwValue = 0;
-
-			//  Loop through each bit plane for the character.
-			for( bCurPlane = 0 ; bCurPlane < 4 ; ++bCurPlane )
-			{
-				//  Shift the value to make room for the new plane.
-				dwValue <<= 1;
-
-				//  Calculate the source bit.
-				dwSourceBit = dwOffset + bpoffsets[ bCurPlane ] + ybits[ dwCurRow ] +  xbits[ dwCurCol ];
-
-				//  Add the bit from the current bit plane to the 
-				//  destination byte.
-				dwValue |= ( pbBits[ dwSourceBit >> 3 ] >> (7 - ( dwSourceBit & 7 ))) & 0x01;
-				//  Set the pixel value in the bitmap.
-				rBitmap[(bytespertile*dwGraphic)+dwCurCol+(dwCurRow*ysize)]= dwValue ;
-			}
-		}
-	}
 }
 
-void decodeBG2(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits)
+void decodeBG2(unsigned char * dest, unsigned char *src, int numberoftiles)
 {
-	unsigned long  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
-	unsigned long  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
-	unsigned long  bpoffsets[4] = {262144, 786432, 0, 524288  }; // start bit of bit planes
+	int  xbits[16]= {128, 129, 130, 131, 132, 133, 134, 135, 0,   1,   2,   3,   4,   5,   6,   7 }; // x offset layout
+	int  ybits[16]= { 0,   8,  16,  24,  32,  40,  48,  56, 64,  72,  80,  88,  96, 104, 112, 120 }; // y offset layout
+	int  bpoffsets[4] = {262144, 786432, 0, 524288  }; // start bit of bit planes
 	unsigned long  xsize=16; // x size in pixels
 	unsigned long  ysize=16; // y size in pixels
 	unsigned long  bytespertile=256;
+	unsigned int planes = 4;
+	GfxDecode(numberoftiles, planes, xsize, ysize, bpoffsets,xbits, ybits,bytespertile,src,dest );
 
-	//  The current bit plane.
-	unsigned long bCurPlane;
-
-	//  The current pixel row and column in the destination buffer.
-	unsigned long dwCurRow;
-	unsigned long dwCurCol;
-
-	//  The source bit of interest.
-	unsigned long dwSourceBit;
-
-	//  The value of the current pixel in the bitmap.
-	unsigned long dwValue;
-
-	//  The offset.
-	unsigned long dwOffset = dwGraphic * bytespertile;
-
-	//  Loop through each row and column of the graphic.
-	for( dwCurRow = 0 ; dwCurRow < ysize ; ++dwCurRow )
-	{
-		for( dwCurCol = 0 ; dwCurCol < xsize ; ++dwCurCol )
-		{
-			//  Initialize the value.
-			dwValue = 0;
-
-			//  Loop through each bit plane for the character.
-			for( bCurPlane = 0 ; bCurPlane < 4 ; ++bCurPlane )
-			{
-				//  Shift the value to make room for the new plane.
-				dwValue <<= 1;
-
-				//  Calculate the source bit.
-				dwSourceBit = dwOffset + bpoffsets[ bCurPlane ] + ybits[ dwCurRow ] +  xbits[ dwCurCol ];
-
-				//  Add the bit from the current bit plane to the 
-				//  destination byte.
-				dwValue |= ( pbBits[ dwSourceBit >> 3 ] >> (7 - ( dwSourceBit & 7 ))) & 0x01;
-				//  Set the pixel value in the bitmap.
-				rBitmap[(bytespertile*dwGraphic)+dwCurCol+(dwCurRow*ysize)]= dwValue ;
-			}
-		}
-	}
 }

@@ -164,24 +164,14 @@ static int StriderInit()
   CpsLoadTiles(CpsGfx         ,5);
   CpsLoadTiles(CpsGfx+0x200000,9);
 
-  nCpsLcReg=0x66;		// Layer control register is at 0x66
-  CpsLayEn[1]=0x02;		// Layer enable 1 is different
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;		// Layer enable is different
-  // Enable starfield layers
-  CpsLayEn[4]=0x10;
-  CpsLayEn[5]=0x20;
-
-  CpsLoadStars(CpsStar, 5);
+   CpsLoadStars(CpsStar, 5);
 
   // Offset to Scroll tiles
-  nCpsGfxScroll[1]=0x200000;
-  nCpsGfxScroll[3]=0x200000;
+//  nCpsGfxScroll[1]=0x200000;
+//  nCpsGfxScroll[3]=0x200000;
 
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(CPS_B_01, 1);
+  SetGfxMapper(mapper_ST22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,13,1);
@@ -302,19 +292,13 @@ static int StriderjInit()
   CpsLoadTiles(CpsGfx+0x200000,6);
 
   // Offset to Scroll tiles
-  nCpsGfxScroll[1]=0x200000;
-  nCpsGfxScroll[3]=0x200000;
-
-  // Enable starfield layers
-  CpsLayEn[4]=0x10;
-  CpsLayEn[5]=0x20;
+//  nCpsGfxScroll[1]=0x200000;
+//  nCpsGfxScroll[3]=0x200000;
 
   CpsLoadStars(CpsStar, 2);
 
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(CPS_B_01, 1);
+  SetGfxMapper(mapper_ST22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,10,1);

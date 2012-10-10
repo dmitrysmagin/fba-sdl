@@ -246,7 +246,7 @@ static void i_ffpre(void);
 
 static void i_wait(void);
 
-void (*nec_instruction[256])(void) =
+static void (*nec_instruction[256])(void) =
 {
     i_add_br8,          /* 0x00 */
     i_add_wr16,         /* 0x01 */
@@ -263,7 +263,7 @@ void (*nec_instruction[256])(void) =
     i_or_ald8,          /* 0x0c */
     i_or_axd16,         /* 0x0d */
     i_push_cs,          /* 0x0e */
-	i_pre_nec			/* 0x0f */, 
+	i_pre_nec			/* 0x0f */,
     i_adc_br8,          /* 0x10 */
     i_adc_wr16,         /* 0x11 */
     i_adc_r8b,          /* 0x12 */

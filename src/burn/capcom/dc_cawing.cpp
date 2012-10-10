@@ -197,20 +197,8 @@ static int CawingInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx,5);
 
-  nCpsLcReg=0x4c; // Layer control register is at 0x4c
-  CpsLayEn[1]=0x10;
-  CpsLayEn[2]=0x0a;
-  CpsLayEn[3]=0x0a;
-
-  // Start of Board ID improvments by KEV. 0x40,0x0406
-  CpsBID[0]=0x40;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x06;
-
-  MaskAddr[0]=0x4a;
-  MaskAddr[1]=0x48;
-  MaskAddr[2]=0x46;
-  MaskAddr[3]=0x44;
+  SetCpsBId(CPS_B_16, 0);
+  SetGfxMapper(mapper_CA24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,9,1);
@@ -368,20 +356,8 @@ static int CawingjInit()
   CpsLoadTilesByte(CpsGfx, 8);
   CpsLoadTilesByte(CpsGfx+(8*0x020000), 8+8);
 
-  nCpsLcReg=0x4c; // Layer control register is at 0x4c
-  CpsLayEn[1]=0x10;
-  CpsLayEn[2]=0x0a;
-  CpsLayEn[3]=0x0a;
-
-  // Start of Board ID improvments by KEV. 0x40,0x0406
-  CpsBID[0]=0x40;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x06;
-
-  MaskAddr[0]=0x4a;
-  MaskAddr[1]=0x48;
-  MaskAddr[2]=0x46;
-  MaskAddr[3]=0x44;
+  SetCpsBId(CPS_B_16, 0);
+  SetGfxMapper(mapper_CA24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,24,1);

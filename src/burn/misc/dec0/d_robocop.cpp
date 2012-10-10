@@ -88,6 +88,7 @@ static struct BurnRomInfo robocopRomDesc[] =
 	{ "ep02", 0x10000, 0x711ce46f, 0x10},  //adpcm
 
 	{"en_24.a2", 0x200, 0xb8e2ca98, 0x10}, //Hu6280 code
+
 };
 
 STD_ROM_PICK(robocop);
@@ -101,8 +102,6 @@ static struct BurnRomInfo robocopbRomDesc[] =
 	{"robop_00.rom", 0x10000, 0x80ba64ab, 0x10}, //  3	68000 Program Code
 
 	{"ep03-3", 0x08000, 0x5b164b24, 0x10},//4  6502 code
-
-	//	{"en_24.a2", 0x200, 0xb8e2ca98, 0x10}, //Hu6280 code
 
 	{"ep23",  0x10000, 0xa77e4ab1, 0x10}, //5 text roms
 	{"ep22",  0x10000, 0x9fbd6903, 0x10},  
@@ -135,10 +134,11 @@ STD_ROM_FN(robocopb);
 
 int robocopDoReset()
 {
+	reset_dec0_aud();
 	SekOpen(0);
 	SekReset();
 	SekClose();
-	ZetReset();
+
 	return 0;
 }
 
@@ -240,6 +240,7 @@ void __fastcall robocopWriteWord(unsigned int a, unsigned short d)
 
 
 
+
 static int MemIndex()
 {
 	unsigned char *Next; Next = Mem;
@@ -289,31 +290,25 @@ int robocopInit()
 	nRet = BurnLoadRom(robocopTemp+ 0x10000,6,1);
 	if (nRet != 0) 
 		return 1;
-	for (int i =0; i<= 4096; i++)
-	{
-		decodechars(i,robocopChars,robocopTemp,262144 );
-	}
+
+	decodechars(robocopChars,robocopTemp,262144,4096 );
 
 	//load and decode BG1 roms
 	for (int w =0 ; w<=4 ; w++)
 	{
 		BurnLoadRom(robocopTemp+ (0x10000 * w),7+w,1);	
 	}
-	for (int i =0; i<= 2048; i++)
-	{
-		decodeBG1(i,robocopBG1,robocopTemp );
-	}
+
+	decodeBG1(robocopBG1,robocopTemp,2048 );
 
 	//load and decode BG2 roms
 	for (int w =0 ; w<=4 ; w++)
 	{
 		BurnLoadRom(robocopTemp+ (0x8000 * w),11+w,1);	
 	}
-	for (int i =0; i<= 1024; i++)
-	{
-		decodeBG2(i,robocopBG2,robocopTemp );
-	}
-
+	
+	decodeBG2(robocopBG2,robocopTemp,1024 );
+	
 	// load and decode sprite roms
 	nRet = BurnLoadRom(robocopTemp ,15,1);
 	if (nRet != 0) return 1;
@@ -332,10 +327,7 @@ int robocopInit()
 	nRet = BurnLoadRom(robocopTemp+ 0x58000,22,1);
 	if (nRet != 0) return 1;
 
-	for (int i =0; i<= 3072; i++)
-	{
-		decodesprite(i,robocopSprites,robocopTemp );
-	}
+	decodesprite(robocopSprites,robocopTemp,3072 );
 
 	free(robocopTemp);
 
@@ -373,6 +365,9 @@ int robocopInit()
 	SekSetWriteByteHandler(0, robocopWriteByte);
 	SekClose();
 
+	DecSharedInit();
+	init_dec0_aud(4,23);
+
 	// Reset the driver
 	robocopDoReset();
 
@@ -381,6 +376,8 @@ int robocopInit()
 
 int robocopExit()
 {
+	exit_dec0_aud();
+	DecSharedInit();
 	SekExit();
 	free(Mem);
 	Mem = NULL;
@@ -391,6 +388,9 @@ int robocopExit()
 void robocopRender()
 {
 	int trans = 0;
+	BurnTransferClear();
+
+
 	decvid_calcpal();
 	BurnClearScreen();
 
@@ -423,11 +423,13 @@ void robocopRender()
 		decvid_drawsprites(0x00,0x00);
 
 	decvid_drawchars();
+
+	BurnTransferCopy(robocopPalette);
 }
 
 int robocopFrame()
 {
-	int nInterleave = 4;
+	int nInterleave = 20;
 
 	if (robocopReset)
 		robocopDoReset();
@@ -435,7 +437,7 @@ int robocopFrame()
 	DecMakeInputs();
 
 	nCyclesTotal[0] = 10000000 / 60;
-	nCyclesTotal[1] = 4000000 / 60;
+	nCyclesTotal[1] = 1500000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
 //	int nSoundBufferPos = 0;
@@ -443,6 +445,7 @@ int robocopFrame()
 	SekNewFrame();
 
 	SekOpen(0);
+	m6502Open(0);
 	for (int i = 0; i < nInterleave; i++) {
 		int nCurrentCPU, nNext;
 
@@ -452,18 +455,30 @@ int robocopFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
 
+		
+		// m6502
+		nCurrentCPU = 1;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += m6502Run(nCyclesSegment);
+
+		render_dec_aud(nInterleave, nCyclesTotal[0]);
 	}
+	m6502SetIRQ(M6502_IRQ);
 	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+
+	endframe_dec_aud(nCyclesTotal[0]);
+
 	VBL_ACK = false;
 	SekClose();
-
+	m6502Close();
 	if (pBurnDraw)
 		robocopRender();
 
 	return 0;
 }
 
-static int robocopScan(int /*nAction*/,int* /*pnMin*/)
+static int robocopScan(int /*nAction*/,int */*pnMin*/)
 {
 
 	return 0;
@@ -488,6 +503,3 @@ struct BurnDriverD BurnDrvrobocopb = {
 		robocopInit, robocopExit, robocopFrame, NULL, robocopScan,
 		NULL, 256, 256, 4, 3
 };
-
-
-

@@ -826,7 +826,7 @@ static int powerinsInit()
 
 		if (game_drv == GAME_POWERINS ) {
 
-			BurnYM2203Init(1, 2400000, &powerinsIRQHandler, powerinsSynchroniseStream, powerinsGetTime);
+			BurnYM2203Init(1, 2400000, &powerinsIRQHandler, powerinsSynchroniseStream, powerinsGetTime, 0);
 			BurnTimerAttachZet(6000000);
 
 		}
@@ -1181,7 +1181,7 @@ static int powerinsFrame()
 				int nSegmentLength = ( i + 1 ) * nBurnSoundLen / nInterleave - i * nBurnSoundLen / nInterleave;
 		if (game_drv == GAME_POWERINS ) {
 				BurnTimerEndFrame(nCyclesTotal[2]);
-				BurnYM2203Update(nBurnSoundLen);
+				BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 		}
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);

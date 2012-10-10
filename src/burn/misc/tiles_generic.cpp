@@ -470,7 +470,7 @@ void Render16x16Tile_Clip(unsigned short* pDestDraw, int nTileNumber, int StartX
 		if ((StartY + y) < 0 || (StartY + y) >= nScreenHeight) {
 			continue;
 		}
-
+		
 		CLIPPIXEL( 0, StartX, nScreenWidth, PLOTPIXEL( 0, nPaletteOffset));
 		CLIPPIXEL( 1, StartX, nScreenWidth, PLOTPIXEL( 1, nPaletteOffset));
 		CLIPPIXEL( 2, StartX, nScreenWidth, PLOTPIXEL( 2, nPaletteOffset));

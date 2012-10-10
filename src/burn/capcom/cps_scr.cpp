@@ -15,9 +15,6 @@ int Xmcota=0;
 int Varth=0;
 int Wonders3=0;
 
-int StartScroll[2]={0,0};
-int EndScroll[2]={0xffff,0xffff};
-
 int Cps1Scr1Draw(unsigned char *Base,int sx,int sy)
 {
   int x,y;
@@ -43,15 +40,17 @@ int Cps1Scr1Draw(unsigned char *Base,int sx,int sy)
 
       t=pst[0];
 
-	  if (Knights && t==0xf020)      t=0x8820;
+/*	  if (Knights && t==0xf020)      t=0x8820;
       else if(Msword  && t==0xf020) continue;
 
-	  if(t==0x0020) continue;
-
+	  if(t==0x0020) continue;*/
+      
+      t = GfxRomBankMapper(GFXTYPE_SCROLL1, t);
+      if (t == -1) continue;
+            
       t<<=6; // Get real tile address
 
       t+=nCpsGfxScroll[1]; // add on offset to scroll tiles
-
       if (t==nKnowBlank) continue; // Don't draw: we know it's blank
 
       a=pst[1];
@@ -167,15 +166,18 @@ int Cps1Scr3Draw(unsigned char *Base,int sx,int sy)
 
       t=pst[0];
 
-	  if(Wonders3 && t<0x0e00)       t+=0x1000;
+/*	  if(Wonders3 && t<0x0e00)       t+=0x1000;
 	  else if(Varth && t==0x5996)    continue;
 	  else if(Forgottn && t==0x1000) continue;
 
-	  if(t < StartScroll[SCROLL_3] || t > EndScroll[SCROLL_3]) continue;
+	  if(t < StartScroll[SCROLL_3] || t > EndScroll[SCROLL_3]) continue;*/
+	  
+      t = GfxRomBankMapper(GFXTYPE_SCROLL3, t);
+      if (t == -1) continue;
 
       t<<=9; // Get real tile address
       t+=nCpsGfxScroll[3]; // add on offset to scroll tiles
-
+      
       if (t==nKnowBlank) continue; // Don't draw: we know it's blank
 
       a=pst[1];

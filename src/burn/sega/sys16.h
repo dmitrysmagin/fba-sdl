@@ -6,6 +6,7 @@
 #include "burn_gun.h"
 #include "bitswap.h"
 #include "genesis_vid.h"
+#include "z80.h"
 
 #define SYS16_ROM_PROG		1
 #define SYS16_ROM_TILES		2
@@ -82,6 +83,7 @@ extern unsigned int System16Sprite2RomSize;
 extern unsigned int System16RoadRomSize;
 extern unsigned int System16Z80RomSize;
 extern unsigned int System16PCMDataSize;
+extern unsigned int System16PCMDataSizePreAllocate;
 extern unsigned int System16SpriteRamSize;
 extern unsigned int System16SpriteRam2Size;
 extern unsigned int System16RotateRamSize;
@@ -265,25 +267,10 @@ void fd1089_decrypt_0167(void);
 void fd1089_decrypt_0168(void);
 void fd1089_decrypt_5021(void);
 
-// mc8123.cpp
-void mc8123_decrypt_rom(const UINT8* key, int numbanks);
-
 // sys16_fd1094.cpp
 void fd1094_driver_init();
 void fd1094_machine_init();
 void fd1094_exit();
-
-// sys16_pcm.cpp
-unsigned char PcmRead(unsigned short a);
-void PcmWrite(unsigned short a,unsigned char d);
-int PcmInit();
-int PcmExit();
-int PcmUpdate(short *Dest,int Len);
-extern int (*PcmGetBank) (int Reg86);
-extern int PcmRate;
-extern unsigned char *PcmRom;
-extern int PcmBankCount;
-extern int PcmBankSize;
 
 // sys16_ppi.cpp
 typedef UINT8 (*PPIPortRead)();

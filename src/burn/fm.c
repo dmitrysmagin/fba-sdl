@@ -4456,9 +4456,7 @@ int YM2610TimerOver(int n,int c)
 /* here's the virtual YM2612 */
 typedef struct
 {
-#ifdef _STATE_H
 	UINT8		REGS[512];			/* registers			*/
-#endif
 	FM_OPN		OPN;				/* OPN state			*/
 	FM_CH		CH[6];				/* channel state		*/
 	UINT8		addr_A1;			/* address line A1		*/
@@ -4481,7 +4479,7 @@ void YM2612UpdateOne(int num, INT16 **buffer, int length)
 	int i;
 	FMSAMPLE  *bufL,*bufR;
 	INT32 dacout  = F2612->dacout;
-
+	
 	/* set bufer */
 	bufL = buffer[0];
 	bufR = buffer[1];
@@ -4553,10 +4551,11 @@ void YM2612UpdateOne(int num, INT16 **buffer, int length)
 		chan_calc(OPN, cch[2] );
 		chan_calc(OPN, cch[3] );
 		chan_calc(OPN, cch[4] );
-		if( dacen )
+		if( dacen ) {
 			*cch[5]->connect4 += dacout;
-		else
+		} else {
 			chan_calc(OPN, cch[5] );
+		}
 
 		{
 			int lt,rt;
@@ -4573,8 +4572,7 @@ void YM2612UpdateOne(int num, INT16 **buffer, int length)
 			rt += ((out_fm[4]>>0) & OPN->pan[9]);
 			lt += ((out_fm[5]>>0) & OPN->pan[10]);
 			rt += ((out_fm[5]>>0) & OPN->pan[11]);
-
-
+			
 			lt >>= FINAL_SH;
 			rt >>= FINAL_SH;
 
@@ -4605,8 +4603,8 @@ static void YM2612_postload(void)
 	for(num=0;num<YM2612NumChips;num++)
 	{
 		/* DAC data & port */
-		FM2612[num].dacout = ((int)FM2612[num].REGS[0x2a] - 0x80) << 0;	/* level unknown */
-		FM2612[num].dacen  = FM2612[num].REGS[0x2d] & 0x80;
+		FM2612[num].dacout = ((int)FM2612[num].REGS[0x2a] - 0x80) << 7;	/* level unknown */
+		FM2612[num].dacen  = FM2612[num].REGS[0x2b] & 0x80;
 		/* OPN registers */
 		/* DT / MULTI , TL , KS / AR , AMON / DR , SR , SL / RR , SSG-EG */
 		for(r=0x30;r<0x9e;r++)
@@ -4767,7 +4765,7 @@ int YM2612Write(int n, int a, UINT8 v)
 			{
 			case 0x2a:	/* DAC data (YM2612) */
 				YM2612UpdateReq(n);
-				F2612->dacout = ((int)v - 0x80) << 8;	/* level unknown */
+				F2612->dacout = ((int)v - 0x80) << 7;	/* level unknown */
 				break;
 			case 0x2b:	/* DAC Sel  (YM2612) */
 				/* b7 = dac enable */

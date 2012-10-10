@@ -162,20 +162,8 @@ static int DrvInit()
   CpsLoadTiles(CpsGfx         ,5);
   CpsLoadTilesByte(CpsGfx+0x200000,9);
 
-  nCpsLcReg=0x6c; // Layer control register is at 0x70
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  // Start of Board ID improvments by KEV. 0x60,0x0402
-  CpsBID[0]=0x60;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x02;
-
-  StartScroll[SCROLL_2]=0x0600;
-  EndScroll[SCROLL_2]=0x5bff;
-  StartScroll[SCROLL_3]=0x0700;
-  EndScroll[SCROLL_3]=0x17ff;
+  SetCpsBId(CPS_B_12, 0);
+  SetGfxMapper(mapper_0224B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,17,1);
@@ -195,11 +183,6 @@ static int DrvExit()
 
 
   CpsRunExit();
-
-  StartScroll[SCROLL_2]=0;
-  EndScroll[SCROLL_2]=0xffff;
-  StartScroll[SCROLL_3]=0;
-  EndScroll[SCROLL_3]=0xffff;
 
   CpsExit();
   nCpsAdLen=0; nCpsZRomLen=0; nCpsGfxLen=0; nCpsRomLen=0;

@@ -103,8 +103,8 @@ char* DecorateGameName(unsigned int nBurnDrv);
 void ComputeGammaLUT();
 
 // dat.cpp
-int write_datfile(int nDatType, FILE* fDat);
-int create_datfile(TCHAR* szFilename, int nDatType);
+int write_datfile(int nDatType, int bIncMegadrive, FILE* fDat);
+int create_datfile(TCHAR* szFilename, int nDatType, int bIncMegadrive);
 
 // sshot.cpp
 int MakeScreenShot();

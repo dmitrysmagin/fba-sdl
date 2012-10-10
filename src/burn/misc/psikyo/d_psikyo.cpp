@@ -1511,7 +1511,7 @@ static int DrvFrame()
 		case PSIKYO_HW_GUNBIRD: {
 			nCycles68KSync = SekTotalCycles();
 			BurnTimerEndFrame(nCyclesTotal[1]);
-			BurnYM2610Update(nBurnSoundLen);
+			BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 			break;
 		}
 		case PSIKYO_HW_S1945:
@@ -1974,7 +1974,7 @@ static int DrvInit()
 	switch (PsikyoHardwareVersion) {
 		case PSIKYO_HW_SAMURAIA:
 		case PSIKYO_HW_GUNBIRD: {
-			BurnYM2610Init(8000000, PsikyoSampleROM02, &PsikyoSampleROM02Size, PsikyoSampleROM01, &PsikyoSampleROM01Size, &PsikyoFMIRQHandler, PsikyoSynchroniseStream, PsikyoGetTime);
+			BurnYM2610Init(8000000, PsikyoSampleROM02, &PsikyoSampleROM02Size, PsikyoSampleROM01, &PsikyoSampleROM01Size, &PsikyoFMIRQHandler, PsikyoSynchroniseStream, PsikyoGetTime, 0);
 			BurnTimerAttachZet(4000000);
 			break;
 		}

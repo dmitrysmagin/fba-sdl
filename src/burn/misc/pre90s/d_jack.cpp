@@ -1,7 +1,7 @@
 // FB Alpha Jack the Giantkiller driver module
 // Based on MAME driver by Brad Oliver
 
-#include "burnint.h"
+#include "tiles_generic.h"
 #include "bitswap.h"
 #include "driver.h"
 extern "C" {
@@ -10,39 +10,36 @@ extern "C" {
 
 
 static unsigned char *Mem, *Rom0, *Rom1, *Gfx, *Prom, *User;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[3], DrvReset, DrvDips[2];
-static unsigned char inp0, inp1, inp2, inp3, inp4, inp5, inps;
+static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvJoy4[8], DrvReset, DrvDips[2];
 static short *pAY8910Buffer[3], *pFMBuffer = NULL;
 static int tri_fix, joinem, loverb, suprtriv;
-static int timer_rate, flip_screen, *Palette;
+static int timer_rate, flip_screen;
+static unsigned int *Palette, *DrvPal;
+static unsigned char DrvCalcPal;
 static int snd_cpu_irq;
 
 static unsigned char soundlatch;
-static int question_address, question_rom, remap_address[16]; // striv
+static int question_address, question_rom, remap_address[16];
 static int joinem_snd_bit;
 
-
-//--------------------------------------------------------------------------------------
-// Inputs
-
 static struct BurnInputInfo JackInputList[] = {
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"p1 Up"	, BIT_DIGITAL,   DrvJoy1 + 2,   "p1 up"    },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 down", },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 4, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 5, 	"p1 left"  },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 1"},
-	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 7,	"p1 fire 2"},
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"p1 Up"	, BIT_DIGITAL,   DrvJoy2 + 0,   "p1 up"    },
+	{"P1 Down",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p1 down", },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p1 left"  },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 fire 1"},
+	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy3 + 1,	"p1 fire 2"},
 
-	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy2 + 0,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"p2 Up"	, BIT_DIGITAL,   DrvJoy2 + 2,   "p2 up"    },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 down", },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 4, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 5, 	"p2 left"  },
-	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 6,	"p2 fire 1"},
-	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy2 + 7,	"p2 fire 2"},
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy1 + 5,	"p2 coin"  },
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"p2 Up"	, BIT_DIGITAL,   DrvJoy2 + 4,   "p2 up"    },
+	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 5,   "p2 down", },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 6, 	"p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 7, 	"p2 left"  },
+	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy4 + 0,	"p2 fire 1"},
+	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy4 + 1,	"p2 fire 2"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
@@ -52,16 +49,16 @@ static struct BurnInputInfo JackInputList[] = {
 STDINPUTINFO(Jack);
 
 static struct BurnInputInfo ZzyzzyxxInputList[] = {
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"P1 Up"      ,   BIT_DIGITAL  , DrvJoy1 + 2, 	"p1 up"    },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 down", },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 fire 1"},
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"P1 Up"      ,   BIT_DIGITAL  , DrvJoy2 + 0, 	"p1 up"    },
+	{"P1 Down",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p1 down", },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 fire 1"},
 
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"P2 Up"      ,   BIT_DIGITAL  , DrvJoy2 + 2, 	"p2 Up"    },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 down", },
-	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 4,	"p2 fire 1"},
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"P2 Up"      ,   BIT_DIGITAL  , DrvJoy2 + 4, 	"p2 Up"    },
+	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 5,   "p2 down", },
+	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy4 + 0,	"p2 fire 1"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
@@ -71,13 +68,13 @@ static struct BurnInputInfo ZzyzzyxxInputList[] = {
 STDINPUTINFO(Zzyzzyxx);
 
 static struct BurnInputInfo FreezeInputList[] = {
-	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"Start 1"  ,     BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"Start 2"  ,     BIT_DIGITAL  , DrvJoy1 + 2,	"p2 start" },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 3, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 4, 	"p1 left"  },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 fire 1"},
-	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 2"},
+	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
+	{"Start 1"  ,     BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"Start 2"  ,     BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 0, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 1, 	"p1 left"  },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 1,	"p1 fire 1"},
+	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 fire 2"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
@@ -86,17 +83,17 @@ static struct BurnInputInfo FreezeInputList[] = {
 STDINPUTINFO(Freeze);
 
 static struct BurnInputInfo SucasinoInputList[] = {
-	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
+	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
 
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 2, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 3, 	"p1 left"  },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 fire 1"},
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p1 left"  },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 fire 1"},
 
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p2 left"  },
-	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 4,	"p2 fire 1"},
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 6, 	"p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 7, 	"p2 left"  },
+	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy4 + 0,	"p2 fire 1"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
@@ -105,27 +102,27 @@ static struct BurnInputInfo SucasinoInputList[] = {
 STDINPUTINFO(Sucasino);
 
 static struct BurnInputInfo TripoolInputList[] = {
-	{"Select Game 1", BIT_DIGITAL  , DrvJoy3 + 0,   "Select Game 1"},
-	{"Select Game 2", BIT_DIGITAL,   DrvJoy3 + 1,   "Select Game 2"},
-	{"Select Game 3", BIT_DIGITAL,   DrvJoy3 + 2,   "Select Game 3"},
+	{"Select Game 1", BIT_DIGITAL  , DrvJoy1 + 2,   "Select Game 1"},
+	{"Select Game 2", BIT_DIGITAL,   DrvJoy1 + 3,   "Select Game 2"},
+	{"Select Game 3", BIT_DIGITAL,   DrvJoy1 + 4,   "Select Game 3"},
 
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 up"    },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 down", },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 4, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 5, 	"p1 left"  },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 1"},
-	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 7,	"p1 fire 2"},
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
+	{"P1 Up",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p1 up"    },
+	{"P1 Down",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p1 down", },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p1 left"  },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 fire 1"},
+	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy3 + 1,	"p1 fire 2"},
 
-	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy2 + 0,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 up"    },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 down", },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 4, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 5, 	"p2 left"  },
-	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 6,	"p2 fire 1"},
-	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy2 + 7,	"p2 fire 2"},
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy1 + 5,	"p2 coin"  },
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
+	{"P1 Up",	  BIT_DIGITAL,   DrvJoy2 + 4,   "p1 up"    },
+	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 5,   "p2 down", },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 6, 	"p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 7, 	"p2 left"  },
+	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy4 + 0,	"p2 fire 1"},
+	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy4 + 1,	"p2 fire 2"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 };
@@ -133,45 +130,43 @@ static struct BurnInputInfo TripoolInputList[] = {
 STDINPUTINFO(Tripool);
 
 static struct BurnInputInfo JoinemInputList[] = {
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 up",   },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 down", },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 4, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 5, 	"p1 left"  },
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"  },
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy3 + 2,	"p1 start" },
+	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 0,   "p1 up",   },
+	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 1,   "p1 down", },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 2, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 3, 	"p1 left"  },
 
-	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy2 + 0,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 2,   "p2 up",   },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 down", },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 4, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 5, 	"p2 left"  },
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy3 + 1,	"p2 coin"  },
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy3 + 3,	"p2 start" },
+	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 up",   },
+	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p2 down", },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p2 left"  },
 
-	{"Service",	  BIT_DIGITAL,   DrvJoy3 + 0,   "diag"     },
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
 	{"Dip 2",	  BIT_DIPSWITCH, DrvDips + 1,	"dip"	   },
-
 };
 
 STDINPUTINFO(Joinem);
 
 static struct BurnInputInfo LoverboyInputList[] = {
-	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
-	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p1 start" },
-	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 2,   "p1 up",   },
-	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 3,   "p1 down", },
-	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 4, 	"p1 right" },
-	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 5, 	"p1 left"  },
-	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 1"},
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"  },
+	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy3 + 2,	"p1 start" },
+	{"P1 Up",	  BIT_DIGITAL,   DrvJoy1 + 0,   "p1 up",   },
+	{"P1 Down",	  BIT_DIGITAL,   DrvJoy1 + 1,   "p1 down", },
+	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 2, 	"p1 right" },
+	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 3, 	"p1 left"  },
+	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 fire 1"},
 
-	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy2 + 0,	"p2 coin"  },
-	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy2 + 1,	"p2 start" },
-	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 2,   "p2 up",   },
-	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 3,   "p2 down", },
-	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 4, 	"p2 right" },
-	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 5, 	"p2 left"  },
-	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 6,	"p1 fire 2"},
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy3 + 1,	"p2 coin"  },
+	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy3 + 3,	"p2 start" },
+	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 up",   },
+	{"P2 Down",	  BIT_DIGITAL,   DrvJoy2 + 1,   "p2 down", },
+	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 2, 	"p2 right" },
+	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 3, 	"p2 left"  },
+	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 4,	"p2 fire 1"},
 
 	{"Reset",	  BIT_DIGITAL  , &DrvReset,	"reset"    },
 	{"Dip 1",	  BIT_DIPSWITCH, DrvDips + 0,	"dip"	   },
@@ -180,7 +175,7 @@ static struct BurnInputInfo LoverboyInputList[] = {
 STDINPUTINFO(Loverboy);
 
 static struct BurnInputInfo StrivInputList[] = {
-	{"Coin"      ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
+	{"Coin"      ,    BIT_DIGITAL  , DrvJoy3 + 1,	"p1 coin"  },
 
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 1,	"p1 fire 1"},
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 2,	"p1 fire 2"},
@@ -197,9 +192,6 @@ static struct BurnInputInfo StrivInputList[] = {
 };
 
 STDINPUTINFO(Striv);
-
-//--------------------------------------------------------------------------------------
-// Dip switches
 
 static struct BurnDIPInfo JackDIPList[]=
 {
@@ -478,7 +470,7 @@ static struct BurnDIPInfo FreezeDIPList[]=
 
 	// DSW1
 	{0   , 0xfe, 0   , 2   , "Flip Screen"},
-	{0x08, 0x01, 0x01, 0x01, "Off"},
+	{0x08, 0x01, 0x01, 0x00, "Off"},
 	{0x08, 0x01, 0x01, 0x01, "On"},
 
 	{0   , 0xfe, 0   , 2   , "Difficulty"},
@@ -530,38 +522,38 @@ STDDIPINFO(Sucasino);
 static struct BurnDIPInfo JoinemDIPList[]=
 {
 	// Default Values
+	{0x0d, 0xff, 0xff, 0x00, NULL},
 	{0x0e, 0xff, 0xff, 0x00, NULL},
-	{0x0f, 0xff, 0xff, 0x00, NULL},
 
 	// DSW1
 	{0   , 0xfe, 0   , 4   , "Coin A"},
-	{0x0e, 0x01, 0x03, 0x01, "2 coins 1 credit"},
-	{0x0e, 0x01, 0x03, 0x03, "4 coins 3 credits"},
-	{0x0e, 0x01, 0x03, 0x00, "1 coin 1 credit"},
-	{0x0e, 0x01, 0x03, 0x02, "1 coin 3 credits"},
+	{0x0d, 0x01, 0x03, 0x01, "2 coins 1 credit"},
+	{0x0d, 0x01, 0x03, 0x03, "4 coins 3 credits"},
+	{0x0d, 0x01, 0x03, 0x00, "1 coin 1 credit"},
+	{0x0d, 0x01, 0x03, 0x02, "1 coin 3 credits"},
 
 	{0   , 0xfe, 0   , 4   , "Coin B"},
-	{0x0e, 0x01, 0x0c, 0x08, "3 coins 1 credit"},
-	{0x0e, 0x01, 0x0c, 0x04, "2 coins 1 credit"},
-	{0x0e, 0x01, 0x0c, 0x0c, "4 coins 3 credits"},
-	{0x0e, 0x01, 0x0c, 0x00, "1 coin 1 credit"},
+	{0x0d, 0x01, 0x0c, 0x08, "3 coins 1 credit"},
+	{0x0d, 0x01, 0x0c, 0x04, "2 coins 1 credit"},
+	{0x0d, 0x01, 0x0c, 0x0c, "4 coins 3 credits"},
+	{0x0d, 0x01, 0x0c, 0x00, "1 coin 1 credit"},
 
 	{0   , 0xfe, 0   , 2   , "Lives"},
-	{0x0e, 0x01, 0x10, 0x00, "2"},
-	{0x0e, 0x01, 0x10, 0x10, "5"},
+	{0x0d, 0x01, 0x10, 0x00, "2"},
+	{0x0d, 0x01, 0x10, 0x10, "5"},
 
 	// DSW2
 	{0   , 0xfe, 0   , 2   , "Cabinet"},
-	{0x0f, 0x01, 0x01, 0x01, "Upright"},
-	{0x0f, 0x01, 0x01, 0x00, "Cocktail"},
+	{0x0e, 0x01, 0x01, 0x01, "Upright"},
+	{0x0e, 0x01, 0x01, 0x00, "Cocktail"},
 
 	{0   , 0xfe, 0   , 2   , "Sound Check"},
-	{0x0f, 0x01, 0x20, 0x00, "Off"},
-	{0x0f, 0x01, 0x20, 0x20, "On"},
+	{0x0e, 0x01, 0x20, 0x00, "Off"},
+	{0x0e, 0x01, 0x20, 0x20, "On"},
 
 	{0   , 0xfe, 0   , 2   , "Infinite Lives"},
-	{0x0f, 0x01, 0x80, 0x00, "2"},
-	{0x0f, 0x01, 0x80, 0x80, "3"},
+	{0x0e, 0x01, 0x80, 0x00, "2"},
+	{0x0e, 0x01, 0x80, 0x80, "3"},
 };
 
 STDDIPINFO(Joinem);
@@ -608,7 +600,7 @@ STDDIPINFO(Loverboy);
 static struct BurnDIPInfo StrivDIPList[]=
 {
 	// Default Values
-	{0x0A, 0xff, 0xff, 0x00, NULL},
+	{0x0A, 0xff, 0xff, 0x80, NULL},
 
 	// DSW1
 	{0   , 0xfe, 0   , 2   , "Monitor"},
@@ -644,112 +636,6 @@ static struct BurnDIPInfo StrivDIPList[]=
 
 STDDIPINFO(Striv);
 
-//-------------------------------------------------------------------------------------
-// Combine inputs
-
-static void make_inps()
-{
-	switch (inps)
-	{
-		case 0:	// jack
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1];
-			inp2 = (DrvJoy1[1]) | (DrvJoy2[1] << 1) | (DrvJoy2[0] << 5) | (DrvJoy1[0] << 6);
-			inp3 = 0;
-			for (int i = 0; i < 4; i++) inp3 |= (DrvJoy1[i+2] << i) | (DrvJoy2[i+2] << (i + 4));
-			inp4 = (DrvJoy1[6]) | (DrvJoy1[7] << 1);
-			inp5 = (DrvJoy2[6]) | (DrvJoy2[7] << 1);
-		}
-		break;
-
-		case 1:	// zzyzzyxx
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1];
-			inp2 = (DrvJoy1[0] << 5) | (DrvJoy1[1]) | (DrvJoy2[1] << 2);
-			inp3 = (DrvJoy1[2]) | (DrvJoy1[3] << 1) | (DrvJoy2[2] << 4) | (DrvJoy2[3] << 5);
-			inp4 = DrvJoy1[4];
-			inp5 = DrvJoy2[4];
-		}
-		break;
-
-		case 2:	// freeze
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1];
-			inp2 = (DrvJoy1[1]) | (DrvJoy1[2] << 1) | (DrvJoy1[0] << 5);
-			inp3 = (DrvJoy1[3]) | (DrvJoy1[4] << 1);
-			inp4 = (DrvJoy1[6]) | (DrvJoy1[5] << 1);
-			inp5 = 0;
-		}
-		break;
-
-		case 3:	// suscasino
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1];
-			inp2 = (DrvJoy1[0] << 6) | (DrvJoy1[1]) | (DrvJoy2[1] << 1);
-			inp3 = (DrvJoy1[2] << 2) | (DrvJoy1[3] << 3) | (DrvJoy2[2] << 6) | (DrvJoy2[3] << 7);
-			inp4 = DrvJoy1[4];
-			inp5 = DrvJoy2[4];
-		}
-		break;
-
-		case 4:	// tripool
-		{
-			inp2 = (DrvJoy1[1]) | (DrvJoy2[1] << 1) | (DrvJoy3[0] << 2) | (DrvJoy3[1] << 3);
-			inp2 |= (DrvJoy3[2] << 4) | (DrvJoy2[0] << 5) | (DrvJoy1[0] << 6);
-			inp3 = 0;
-			for (int i = 0; i < 4; i++) inp3 |= (DrvJoy1[2] << i) | (DrvJoy2[2] << (i + 4));
-			inp4 = (DrvJoy1[6]) | (DrvJoy1[7] << 1);
-			inp5 = (DrvJoy2[6]) | (DrvJoy2[7] << 1);
-		}
-		break;
-
-		case 5:	// joinem
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1] & ~0x20;
-			inp2 = (DrvJoy1[2]) | (DrvJoy1[3] << 1) | (DrvJoy1[4] << 2) | (DrvJoy1[5] << 3);
-			inp3 = (DrvJoy2[2]) | (DrvJoy2[3] << 1) | (DrvJoy2[4] << 2) | (DrvJoy2[5] << 3);
-			inp4 = (DrvJoy1[0]) | (DrvJoy2[0] << 1) | (DrvJoy1[1] << 2) | (DrvJoy2[1] << 3) | 0x40 | (DrvJoy3[0] << 7);
-			if ((inp4 & 0x80) && !joinem_snd_bit) inp1 |= 0x20;
-			inp5 = 0;
-
-			// hack - joinem isn't reading input port 2 :(
-			inp3 |= inp2;
-		}
-		break;
-
-		case 6:	// loverboy
-		{
-			inp0 = DrvDips[0];
-			inp1 = DrvDips[1] & ~0x20;
-			inp2 = (DrvJoy1[2]) | (DrvJoy1[3] << 1) | (DrvJoy1[4] << 2) | (DrvJoy1[5] << 3) | (DrvJoy1[6] << 4);
-			inp3 = (DrvJoy2[2]) | (DrvJoy2[3] << 1) | (DrvJoy2[4] << 2) | (DrvJoy2[5] << 3) | (DrvJoy2[6] << 4);
-			inp4 = (DrvJoy1[0]) | (DrvJoy2[0] << 1) | (DrvJoy1[1] << 2) | (DrvJoy2[1] << 3) | 0x40;
-			inp5 = 0;
-		}
-		break;
-
-		case 7:	// striv
-		{
-			inp0 = DrvDips[0] | 0x80;
-			inp2 = (DrvJoy1[1] << 1) | (DrvJoy1[2] << 2) | (DrvJoy1[3] << 3) | (DrvJoy1[4] << 4);
-			inp3 = (DrvJoy2[1] << 1) | (DrvJoy2[2] << 2) | (DrvJoy2[3] << 3) | (DrvJoy2[4] << 4);
-			inp4 = DrvJoy1[0] << 1; // needs to be pulsed (but doesn't seem to make a difference)
-			inp5 = 0;
-		}
-		break;
-	}
-}
-
-
-//-------------------------------------------------------------------------------------
-// AY8910 Ports
-
-
 static unsigned char timer_r(unsigned int)
 {
 	return ZetTotalCycles() / timer_rate;
@@ -760,30 +646,24 @@ static unsigned char soundlatch_r(unsigned int)
 	return soundlatch;
 }
 
-
-//-------------------------------------------------------------------------------------
-// Memory handlers
-
-
 static unsigned char __fastcall striv_question_r(unsigned short offset)
 {
-	if((offset & 0xc00) == 0x800)	// Set-up the remap table for every 16 bytes
+	if((offset & 0xc00) == 0x800)
 	{
 		remap_address[offset & 0x0f] = (offset & 0xf0) >> 4;
 	}
-	else if((offset & 0xc00) == 0xc00)	// Select which rom to read and the high 5 bits of address
+	else if((offset & 0xc00) == 0xc00)
 	{
 		question_rom = offset & 7;
 		question_address = (offset & 0xf8) << 7;
 	}
-	else		// Read the actual byte from question roms
+	else
 	{
 		unsigned char *ROM = User;
 		int real_address;
 
 		real_address = question_address | (offset & 0x3f0) | remap_address[offset & 0x0f];
 
-		// Check if it wants to read from the upper 8 roms or not
 		if(offset & 0x400)
 			real_address |= 0x8000 * (question_rom + 8);
 		else
@@ -792,65 +672,98 @@ static unsigned char __fastcall striv_question_r(unsigned short offset)
 		return ROM[real_address];
 	}
 
-	return 0; // the value read from the configuration reads is discarded
+	return 0;
 }
 
 void jack_paletteram_w(unsigned short offset, unsigned char data)
 {
-#define pal2bit(bits)	(((bits) << 6) | ((bits) << 4) | ((bits) << 2) | (bits))
-#define pal3bit(bits)	(((bits) << 5) | ((bits) << 2) | ((bits) >> 1))
+	unsigned int *pl = Palette + (offset & 0x1f);
 
-	// RGB output is inverted
-	data ^= 0xff;
 	Rom0[offset] = data;
 
-	Palette[offset & 0x1f] = (pal3bit(data & 7) << 16) | (pal3bit((data >> 3) & 7) << 8) | pal2bit((data >> 6) & 3);
+	DrvCalcPal = 1;
+
+	data ^= 0xff;
+
+	*pl  = ((data & 7) << 21) | ((data & 7) << 18) | ((data & 6) << 15);
+
+	data >>= 3;
+
+	*pl |= ((data & 7) << 13) | ((data & 7) << 10) | ((data & 6) <<  7);
+
+	data >>= 3;
+
+	*pl |= ((data & 3) <<  6) | ((data & 3) <<  4) | ((data & 3) <<  2) | (data & 3);
 }
 
-unsigned char __fastcall jack_cpu0_read(unsigned short offset)
+unsigned char __fastcall jack_cpu0_read(unsigned short address)
 {
-	if (suprtriv && offset >= 0xc000 && offset <= 0xcfff)
-	{
-		return striv_question_r(offset - 0xc000);
-	}
+	unsigned char ret = 0;
 
-	switch (offset)
+	switch (address)
 	{
 		case 0xb500:
-			return inp0;
+			return DrvDips[0];
 
 		case 0xb501:
-			return inp1;
+		{
+			ret = DrvDips[1];
+			if (joinem && DrvJoy2[7] && !joinem_snd_bit) ret |= 0x20;
+
+			return ret;
+		}
 
 		case 0xb502:
-			return inp2;
+		{
+			for (int i = 0; i < 8; i++) ret |= DrvJoy1[i] << i;
+
+			return ret;
+		}
 
 		case 0xb503:
-			return inp3;
+		{
+			for (int i = 0; i < 8; i++) ret |= DrvJoy2[i] << i;
+
+			return ret;
+		}
 
 		case 0xb504:
-			return inp4;
+		{
+			for (int i = 0; i < 8; i++) ret |= DrvJoy3[i] << i;
+			if (joinem || loverb) ret |= 0x40;
+
+			return ret;
+		}
 
 		case 0xb505:
-			return inp5;
+		{
+			for (int i = 0; i < 8; i++) ret |= DrvJoy4[i] << i;
+
+			return ret;
+		}
 
 		case 0xb506:
-			flip_screen = 1;
+		case 0xb507:
+			flip_screen = (address & 1) ^ suprtriv;
 			return 0;
+	}
+
+	if (suprtriv && address >= 0xc000 && address <= 0xcfff) {
+		return striv_question_r(address & 0x0fff);
 	}
 
 	return 0;
 }
 
-void __fastcall jack_cpu0_write(unsigned short offset, unsigned char data)
+void __fastcall jack_cpu0_write(unsigned short address, unsigned char data)
 {
-	if (offset >= 0xb600 && offset <= 0xb61f)
+	if (address >= 0xb600 && address <= 0xb61f)
 	{
-		jack_paletteram_w(offset, data);
+		jack_paletteram_w(address, data);
 		return;
 	}
 
-	switch (offset)
+	switch (address)
 	{
 		case 0xb400:
 			soundlatch = data;
@@ -868,9 +781,9 @@ void __fastcall jack_cpu0_write(unsigned short offset, unsigned char data)
 	}
 }
 
-unsigned char __fastcall jack_in_port(unsigned short offset)
+unsigned char __fastcall jack_in_port(unsigned short port)
 {
-	switch (offset & 0xff)
+	switch (port & 0xff)
 	{
 		case 0x40:
 			return AY8910Read(0);
@@ -879,9 +792,9 @@ unsigned char __fastcall jack_in_port(unsigned short offset)
 	return 0;
 }
 
-void __fastcall jack_out_port(unsigned short offset, unsigned char data)
+void __fastcall jack_out_port(unsigned short address, unsigned char data)
 {
-	switch (offset & 0xff)
+	switch (address & 0xff)
 	{
 		case 0x40:
 			AY8910Write(0, 1, data);
@@ -895,11 +808,7 @@ void __fastcall jack_out_port(unsigned short offset, unsigned char data)
 
 void __fastcall jack_cpu1_write()
 {
-	// 0x6000 - 0x6fff - NOP
 }
-
-//-------------------------------------------------------------------------------------
-// Init / exit routines
 
 
 static int DrvDoReset()
@@ -929,7 +838,7 @@ static int DrvDoReset()
 		ZetClose();
 	}
 
-	AY8910Reset(0);	// Reset sound
+	AY8910Reset(0);
 
 	return 0;
 }
@@ -987,7 +896,7 @@ static int GetRoms()
 			continue;
 		}
 
-		if ((ri.nType & 7) == 4) { // proms
+		if ((ri.nType & 7) == 4) {
 			if (BurnLoadRom(Prom + 0x000, i + 0, 1)) return 1;
 			if (BurnLoadRom(Prom + 0x200, i + 1, 1)) return 1;
 			i++;
@@ -1017,22 +926,18 @@ static int GetRoms()
 	return 0;
 }
 
-// Combine bitplanes into pixels
 static void gfx_decode()
 {
-	unsigned char* tmp = (unsigned char*)malloc( 0x2000 * 8 );
+	unsigned char* tmp = (unsigned char*)malloc( 0x2000 * 3 );
+	if (!tmp) return;
 
-	for (int i = 0; i < 0x2000 * 8; i++)
-	{
-		unsigned char a, b, c;
-		a = (Gfx[(i >> 3) + 0x0000] >> (i & 7)) & 1; // loverboy & joinem use 3bpp gfx
-		b = (Gfx[(i >> 3) + 0x2000] >> (i & 7)) & 1;
-		c = (Gfx[(i >> 3) + 0x4000] >> (i & 7)) & 1;
+	memcpy (tmp, Gfx, 0x6000);
 
-		tmp[i] = (a << 2) | (b << 1) | c;
-	}
+	static int Planes[3] = { 0, 1024*8*8, 1024*8*8*2 };
+	static int YOffs[8]  = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	static int XOffs[8]  = { 56, 48, 40, 32, 24, 16, 8, 0 };
 
-	memcpy (Gfx, tmp, 0x10000);
+	GfxDecode(1024, 3, 8, 8, Planes, XOffs, YOffs, 64, tmp, Gfx);
 
 	free (tmp);
 }
@@ -1054,7 +959,8 @@ static int DrvInit()
 	Gfx  = Mem + 0x20000;
 	User = Mem + 0x30000;
 	Prom = Mem + 0xb0000;
-	Palette = (int*)(Mem + 0xc0000);
+	Palette = (unsigned int*)(Mem + 0xc0000);
+	DrvPal  = (unsigned int*)(Mem + 0xc1000);
 
 	GetRoms();
 	
@@ -1071,22 +977,24 @@ static int DrvInit()
 		ZetMapArea(0x0000, 0x8fff, 2, Rom0 + 0x0000);
 
 		ZetMapArea(0x8000, 0x8fff, 1, Rom0 + 0x8000);
+
+		ZetMapArea(0xb500, 0xb5ff, 0, Rom0 + 0xb500); // controls hack
 	} else {
 		ZetMapArea(0x0000, 0x3fff, 0, Rom0 + 0x0000);
 		ZetMapArea(0x0000, 0x3fff, 2, Rom0 + 0x0000);
 
 		ZetMapArea(0x4000, 0x5fff, 0, Rom0 + 0x4000);
 		ZetMapArea(0x4000, 0x5fff, 1, Rom0 + 0x4000);
-		ZetMapArea(0x4000, 0x5fff, 2, Rom0 + 0x4000); // tripool runs code in RAM
+		ZetMapArea(0x4000, 0x5fff, 2, Rom0 + 0x4000);
 	}
 
-	ZetMapArea(0xb000, 0xb0ff, 0, Rom0 + 0xb000);	// spriteram
+	ZetMapArea(0xb000, 0xb0ff, 0, Rom0 + 0xb000);
 	ZetMapArea(0xb000, 0xb0ff, 1, Rom0 + 0xb000);
 
-	ZetMapArea(0xb800, 0xbbff, 0, Rom0 + 0xb800);	// video ram
+	ZetMapArea(0xb800, 0xbbff, 0, Rom0 + 0xb800);
 	ZetMapArea(0xb800, 0xbbff, 1, Rom0 + 0xb800);	
 
-	ZetMapArea(0xbc00, 0xbfff, 0, Rom0 + 0xbc00);	// color ram
+	ZetMapArea(0xbc00, 0xbfff, 0, Rom0 + 0xbc00);
 	ZetMapArea(0xbc00, 0xbfff, 1, Rom0 + 0xbc00);
 
 	if (suprtriv)
@@ -1118,6 +1026,8 @@ static int DrvInit()
 
 	AY8910Init(0, 1500000, nBurnSoundRate, &soundlatch_r, &timer_r, NULL, NULL);
 
+	GenericTilesInit();
+
 	DrvDoReset();
 
 	return 0;
@@ -1127,11 +1037,12 @@ static int DrvExit()
 {
 	ZetExit();
 	AY8910Exit(0);
+	GenericTilesExit();
 
 	free (pFMBuffer);
 	free (Mem);
 
-	Palette = NULL;
+	DrvPal = Palette = NULL;
 	pFMBuffer = NULL;
 	Mem = Rom0 = Rom1 = Gfx = User = NULL;
 	pAY8910Buffer[0] = pAY8910Buffer[1] = pAY8910Buffer[2] = NULL;
@@ -1145,36 +1056,17 @@ static int DrvExit()
 }
 
 
-//-------------------------------------------------------------------------------------
-// Draw / Timeslice
-
-
-static inline void DrvDrawTile(int tilenum, int color, int sy, unsigned char sx, int transp, int flipy, int flipx)
-{
-	int x, y, pos, pos2, pxl;
-	unsigned char *src = Gfx + (tilenum << 6);
-
-	for (x = 7; x >= 0; x--)
-	{
-		pos = sy + sx + (x ^ flipx);
-		if (transp) pos ^= 0xff; // sprites need x flipped
-		if ((pos & 0xff) < 16 || (pos & 0xff) > 239) continue;
-		
-		for (y = 7; y >= 0; y--, src++)
-		{
-			if (transp && src[0] == 0) continue;
-			pxl = Palette[color | src[0]];
-
-			pos2 = pos + ((y ^ flipy) << 8);
-		//	if (flip_screen) pos2 ^= 0xff00;
-		
-			PutPix(pBurnDraw + pos2 * nBurnBpp, BurnHighCol(pxl>>16, pxl>>8, pxl, 0));
-		}
-	}
-}
-
 static int DrvDraw()
 {
+	if (DrvCalcPal)
+	{
+		for (int i = 0; i < 0x100; i++) {
+			unsigned int col = Palette[i];
+			DrvPal[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
+		}
+		DrvCalcPal = 0;
+	}
+
 	unsigned char *sram = Rom0 + 0xb000; // sprite ram
 	unsigned char *vram = Rom0 + 0xb800; // video ram
 	unsigned char *cram = Rom0 + 0xbc00; // color ram
@@ -1183,41 +1075,68 @@ static int DrvDraw()
 	for (offs = 0; offs < 0x400; offs++)
 	{
 		sx = (offs & 0x1f) << 3;
-		sy = (offs << 6) & 0xf800;
+		sy = (offs >> 2) & 0xf8;
 
 		if (joinem || loverb) {
 			num = vram[offs] + ((cram[offs] & 0x03) << 8);
-			color = cram[offs] & 0x38;
+			color = (cram[offs] & 0x38) >> 2;
 		} else {
 			num = vram[offs] + ((cram[offs] & 0x18) << 5);
-			color = (cram[offs] & 0x07) << 2;
+			color = (cram[offs] & 0x07);
 		}
 
-		DrvDrawTile(num, color, sy, sx, 0, 0, 0);
+		if (flip_screen) {
+			Render8x8Tile_FlipXY_Clip(pTransDraw, num, sx ^ 0xf8, sy ^ 0xf8, color, 2, 0, Gfx);
+		} else {
+			sx -= 16;
+			Render8x8Tile_Clip(pTransDraw, num, sx, sy, color, 2, 0, Gfx);
+		}
 	}
 
 	for (offs = 0; offs < 0x80; offs += 4)
 	{
-		sx = sram[offs];
-		sy = sram[offs + 1] << 8;
+		sx = 248 - sram[offs];
+		sy = sram[offs + 1];
 
 		if (joinem || loverb) {
 			num   = sram[offs + 2] + ((sram[offs + 3] & 0x01) << 8);
-			color = sram[offs + 3] & 0x38;
+			color = (sram[offs + 3] & 0x38) >> 2;
 		} else {
 			num   = sram[offs + 2] + ((sram[offs + 3] & 0x08) << 5);
-			color = (sram[offs + 3] & 0x07) << 2;
+			color = (sram[offs + 3] & 0x07);
 		}
 
-		flipy = (sram[offs + 3] & 0x80) ? 7 : 0;
-		flipx = (sram[offs + 3] & 0x40) ? 0 : 7;
+		flipx = sram[offs + 3] & 0x40;
+		flipy = sram[offs + 3] & 0x80;
 
-		DrvDrawTile(num, color, sy, sx, 1, flipy, flipx);
+		if (flip_screen) {
+			flipx = !flipx;
+			flipy = !flipy;
+			sx = 248 - sx;
+			sy = 248 - sy;
+		}
+
+		sx -= 16;
+
+		if (flipy) {
+			if (flipx) {
+				Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, num, sx, sy, color, 2, 0, 0, Gfx);
+			} else {
+				Render8x8Tile_Mask_FlipY_Clip(pTransDraw, num, sx, sy, color, 2, 0, 0, Gfx);
+			}
+		} else {
+			if (flipx) {
+				Render8x8Tile_Mask_FlipX_Clip(pTransDraw, num, sx, sy, color, 2, 0, 0, Gfx);
+			} else {
+				Render8x8Tile_Mask_Clip(pTransDraw, num, sx, sy, color, 2, 0, 0, Gfx);
+			}
+		}
 	}
+
+	BurnTransferCopy(DrvPal);
 
 	return 0;
 }
-
 
 static int DrvFrame()
 {
@@ -1225,9 +1144,10 @@ static int DrvFrame()
 		DrvDoReset();
 	}
 
-	make_inps();
-
-	ZetNewFrame();
+	if (joinem || loverb) {
+		for (int i = 0; i < 6; i++)
+			Rom0[0xb500 + i] = jack_cpu0_read(0xb500 + i);
+	}
 
 	int nInterleave = 10;
 	int nSoundBufferPos = 0;
@@ -1251,16 +1171,18 @@ static int DrvFrame()
 
 		if (joinem)
 			if (i == (nInterleave / 3) || i == ((nInterleave / 3) * 2))
-				ZetRaiseIrq(0xff);
+				ZetRaiseIrq(0);
+
+		if (tri_fix && i == (nInterleave / 2)) ZetRaiseIrq(0);
 
 		if (i == (nInterleave - 1))
 		{
 			if (joinem) {					// joinem
-				if (!(inp4 & 0x80)) ZetNmi();
+				if (!DrvJoy3[7]) ZetNmi();
 			} else if (loverb) {				// loverboy
 				ZetNmi();
 			} else {					// other
-				ZetRaiseIrq(0xff);
+				ZetRaiseIrq(0);
 			}
 		}
 
@@ -1351,11 +1273,11 @@ static int DrvScan(int nAction,int *pnMin)
 {
 	struct BurnArea ba;
 
-	if (pnMin) {						// Return minimum compatible version
+	if (pnMin) {
 		*pnMin = 0x029521;
 	}
 
-	if (nAction & ACB_VOLATILE) {		// Scan volatile ram	
+	if (nAction & ACB_VOLATILE) {
 		memset(&ba, 0, sizeof(ba));
 		if (joinem || loverb) {
 			ba.Data	  = Rom0 + 0x8000;
@@ -1384,8 +1306,8 @@ static int DrvScan(int nAction,int *pnMin)
 		ba.szName = "striv question addresses";
 		BurnAcb(&ba);
 
-		ZetScan(nAction);			// Scan Z80
-		AY8910Scan(nAction, pnMin);		// Scan AY8910
+		ZetScan(nAction);
+		AY8910Scan(nAction, pnMin);
 
 		// Scan critical driver variables
 		SCAN_VAR(question_address);
@@ -1398,10 +1320,6 @@ static int DrvScan(int nAction,int *pnMin)
 }
 
 
-//--------------------------------------------------------------------------------------
-// Game drivers
-
-
 // Jack the Giantkiller (set 1)
 
 static struct BurnRomInfo jackRomDesc[] = {
@@ -1409,7 +1327,7 @@ static struct BurnRomInfo jackRomDesc[] = {
 	{ "jgk.j6",       0x1000, 0x36d7810e, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "jgk.j7",       0x1000, 0xb15ff3ee, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "jgk.j5",       0x1000, 0x4a63d242, 1 | BRF_PRG | BRF_ESS }, //  3
-	{ "jgk.j3",       0x1000, 0x605514a8, 1 | BRF_PRG | BRF_ESS }, //  4	// bank 2
+	{ "jgk.j3",       0x1000, 0x605514a8, 1 | BRF_PRG | BRF_ESS }, //  4
 	{ "jgk.j4",       0x1000, 0xbce489b7, 1 | BRF_PRG | BRF_ESS }, //  5
 	{ "jgk.j2",       0x1000, 0xdb21bd55, 1 | BRF_PRG | BRF_ESS }, //  6
 	{ "jgk.j1",       0x1000, 0x49fffe31, 1 | BRF_PRG | BRF_ESS }, //  7
@@ -1427,7 +1345,6 @@ STD_ROM_FN(jack);
 
 static int jackInit()
 {
-	inps = 0;
 	timer_rate = 128;
 
 	return DrvInit();
@@ -1439,8 +1356,8 @@ struct BurnDriver BurnDrvjack = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, jackRomInfo, jackRomName, JackInputInfo, JackDIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1451,7 +1368,7 @@ static struct BurnRomInfo jack2RomDesc[] = {
 	{ "jgk.j6",       0x1000, 0x36d7810e, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "jgk.j7",       0x1000, 0xb15ff3ee, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "jgk.j5",       0x1000, 0x4a63d242, 1 | BRF_PRG | BRF_ESS }, //  3
-	{ "jgk.j3",       0x1000, 0x605514a8, 1 | BRF_PRG | BRF_ESS }, //  4	// bank 2
+	{ "jgk.j3",       0x1000, 0x605514a8, 1 | BRF_PRG | BRF_ESS }, //  4
 	{ "jgk.j4",       0x1000, 0xbce489b7, 1 | BRF_PRG | BRF_ESS }, //  5
 	{ "jgk.j2",       0x1000, 0xdb21bd55, 1 | BRF_PRG | BRF_ESS }, //  6
 	{ "jgk.j1",       0x1000, 0x49fffe31, 1 | BRF_PRG | BRF_ESS }, //  7
@@ -1473,8 +1390,8 @@ struct BurnDriver BurnDrvjack2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, jack2RomInfo, jack2RomName, JackInputInfo, Jack2DIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1507,8 +1424,8 @@ struct BurnDriver BurnDrvjack3 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, jack3RomInfo, jack3RomName, JackInputInfo, Jack3DIPInfo,
-	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1535,55 +1452,29 @@ static struct BurnRomInfo treahuntRomDesc[] = {
 STD_ROM_PICK(treahunt);
 STD_ROM_FN(treahunt);
 
-static void treahunt_decode(void)
+static void treahunt_decode()
 {
-	int A;
-	UINT8 *rom = Rom0;
-	UINT8 *decrypt = User;
-	int data;
-
-	ZetMapArea(0x0000, 0x3fff, 2, User);
-
-	// Thanks to Mike Balfour for helping out with the decryption
-	for (A = 0; A < 0x4000; A++)
+	for (int i = 0; i < 0x4000; i++)
 	{
-		data = rom[A];
-
-		if (A & 0x1000)
+		if (i & 0x1000)
 		{
-			// unencrypted = D0 D2 D5 D1 D3 D6 D4 D7
-			decrypt[A] =
-				 ((data & 0x01) << 7) |
-				 ((data & 0x02) << 3) |
-				 ((data & 0x04) << 4) |
-				  (data & 0x28) |
-				 ((data & 0x10) >> 3) |
-				 ((data & 0x40) >> 4) |
-				 ((data & 0x80) >> 7);
+			User[i] = BITSWAP08(Rom0[i], 0, 2, 5, 1, 3, 6, 4, 7);
 
-			if ((A & 0x04) == 0)
-			// unencrypted = !D0 D2 D5 D1 D3 D6 D4 !D7
-				decrypt[A] ^= 0x81;
+			if (~i & 0x04) User[i] ^= 0x81;
 		}
 		else
 		{
-			// unencrypted = !D7 D2 D5 D1 D3 D6 D4 !D0
-			decrypt[A] =
-					(~data & 0x81) |
-					((data & 0x02) << 3) |
-					((data & 0x04) << 4) |
-					 (data & 0x28) |
-					((data & 0x10) >> 3) |
-					((data & 0x40) >> 4);
+			User[i] = BITSWAP08(Rom0[i], 7, 2, 5, 1, 3, 6, 4, 0) ^ 0x81;
 		}
 	}
+
+	ZetOpen(0);
+	ZetMapArea(0x0000, 0x3fff, 2, User, Rom0);
+	ZetClose();
 }
 
 static int treahuntInit()
 {
-	return 1;
-
-	inps = 0;
 	timer_rate = 128;
 
 	int nRet = DrvInit();
@@ -1593,14 +1484,14 @@ static int treahuntInit()
 	return nRet;
 }
 
-struct BurnDriverD BurnDrvtreahunt = {
+struct BurnDriver BurnDrvtreahunt = {
 	"treahunt", "jack", NULL, "1982",
-	"Treasure Hunt (bootleg?)\0", "Encrypted Z80 not supported", "Hara Industries", "Jack the Giantkiller",
+	"Treasure Hunt (bootleg?)\0", NULL, "Hara Industries", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, treahuntRomInfo, treahuntRomName, JackInputInfo, TreahuntDIPInfo,
-	treahuntInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	treahuntInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1630,12 +1521,9 @@ STD_ROM_FN(zzyzzyxx);
 
 static int zzyzzyxxInit()
 {
-	int nRet = DrvInit();
+	timer_rate = 1;
 
-	inps = 1;
-	timer_rate = 16;
-
-	return nRet;
+	return DrvInit();
 }
 
 struct BurnDriver BurnDrvzzyzzyxx = {
@@ -1644,8 +1532,8 @@ struct BurnDriver BurnDrvzzyzzyxx = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, zzyzzyxxRomInfo, zzyzzyxxRomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1679,8 +1567,8 @@ struct BurnDriver BurnDrvzzyzzyx2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, zzyzzyx2RomInfo, zzyzzyx2RomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1714,8 +1602,8 @@ struct BurnDriver BurnDrvbrix = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, brixRomInfo, brixRomName, ZzyzzyxxInputInfo, ZzyzzyxxDIPInfo,
-	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	zzyzzyxxInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1742,22 +1630,14 @@ static struct BurnRomInfo freezeRomDesc[] = {
 STD_ROM_PICK(freeze);
 STD_ROM_FN(freeze);
 
-static int freezeInit()
-{
-	inps = 2;
-	timer_rate = 128;
-
-	return DrvInit();
-}
-
 struct BurnDriver BurnDrvfreeze = {
 	"freeze", NULL, NULL, "1984",
 	"Freeze\0", NULL, "Cinematronics", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, freezeRomInfo, freezeRomName, FreezeInputInfo, FreezeDIPInfo,
-	freezeInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1782,22 +1662,14 @@ static struct BurnRomInfo sucasinoRomDesc[] = {
 STD_ROM_PICK(sucasino);
 STD_ROM_FN(sucasino);
 
-static int suscasinoInit()
-{
-	inps = 3;
-	timer_rate = 128;
-
-	return DrvInit();
-}
-
 struct BurnDriver BurnDrvsucasino = {
 	"sucasino", NULL, NULL, "1984",
 	"Super Casino\0", NULL, "Data Amusement", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, sucasinoRomInfo, sucasinoRomName, SucasinoInputInfo, SucasinoDIPInfo,
-	suscasinoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	jackInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1823,7 +1695,6 @@ STD_ROM_FN(tripool);
 
 static int tripoolInit()
 {
-	inps = 4;
 	tri_fix = 1;
 	timer_rate = 128;
 
@@ -1836,8 +1707,8 @@ struct BurnDriver BurnDrvtripool = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, tripoolRomInfo, tripoolRomName, TripoolInputInfo, NULL,
-	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1867,8 +1738,8 @@ struct BurnDriver BurnDrvtripoola = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, tripoolaRomInfo, tripoolaRomName, TripoolInputInfo, NULL,
-	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	tripoolInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 
@@ -1898,19 +1769,19 @@ static void joinem_palette_init()
 	{
 		int bit0,bit1,bit2,r,g,b;
 
-		bit0 = (Prom[i] >> 0) & 0x01;
-		bit1 = (Prom[i] >> 1) & 0x01;
-		bit2 = (Prom[i] >> 2) & 0x01;
+		bit0 = (Prom[i] >> 0) & 1;
+		bit1 = (Prom[i] >> 1) & 1;
+		bit2 = (Prom[i] >> 2) & 1;
 		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
 
-		bit0 = (Prom[i] >> 3) & 0x01;
-		bit1 = (Prom[i] >> 4) & 0x01;
-		bit2 = (Prom[i] >> 5) & 0x01;
+		bit0 = (Prom[i] >> 3) & 1;
+		bit1 = (Prom[i] >> 4) & 1;
+		bit2 = (Prom[i] >> 5) & 1;
 		g = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
 
 		bit0 = 0;
-		bit1 = (Prom[i] >> 6) & 0x01;
-		bit2 = (Prom[i] >> 7) & 0x01;
+		bit1 = (Prom[i] >> 6) & 1;
+		bit2 = (Prom[i] >> 7) & 1;
 		b = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
 
 		Palette[i] = (r << 16) | (g << 8) | b;
@@ -1919,9 +1790,8 @@ static void joinem_palette_init()
 
 static int joinemInit()
 {
-	inps = 5;
 	joinem = 1;
-	timer_rate = 16;
+	timer_rate = 1;
 
 	int nRet = DrvInit();
 
@@ -1932,12 +1802,12 @@ static int joinemInit()
 
 struct BurnDriver BurnDrvjoinem = {
 	"joinem", NULL, NULL, "1986",
-	"Joinem\0", "imperfect controls", "Global Corporation", "Jack the Giantkiller",
+	"Joinem\0", NULL, "Global Corporation", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, joinemRomInfo, joinemRomName, JoinemInputInfo, JoinemDIPInfo,
-	joinemInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	joinemInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 240, 3, 4
 };
 
 
@@ -1964,17 +1834,12 @@ STD_ROM_FN(loverboy);
 
 static int loverboyInit()
 {
-	inps = 6;
 	loverb = 1;
 	timer_rate = 16;
 
 	int nRet = DrvInit();
 
-	// this doesn't make sense.. the startup code, and irq0 have jumps to 0..
-	// I replace the startup jump with another jump to what appears to be
-	// the start of the game code.
-
-	// ToDo: Figure out what's really going on
+	// Hack (Protection?)
 	Rom0[0x12] = 0x9d;
 	Rom0[0x13] = 0x01;
 
@@ -1989,8 +1854,8 @@ struct BurnDriver BurnDrvloverboy = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, loverboyRomInfo, loverboyRomName, LoverboyInputInfo, LoverboyDIPInfo,
-	loverboyInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	loverboyInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 240, 3, 4
 };
 
 
@@ -2031,29 +1896,26 @@ STD_ROM_FN(striv);
 
 static int strivInit()
 {
-	inps = 7;
 	suprtriv = 1;
 	timer_rate = 128;
 
 	int nRet = DrvInit();
 
-	for (int A = 0; A < 0x4000; A++ )
+	for (int i = 0; i < 0x4000; i++)
 	{
-		unsigned char data = Rom0[A];
-
-		if (A & 0x1000)
+		if (i & 0x1000)
 		{
-			if (A & 4)
-				Rom0[A] = BITSWAP08(data,7,2,5,1,3,6,4,0) ^ 1;
+			if (i & 4)
+				Rom0[i] = BITSWAP08(Rom0[i],7,2,5,1,3,6,4,0) ^ 1;
 			else
-				Rom0[A] = BITSWAP08(data,0,2,5,1,3,6,4,7) ^ 0x81;
+				Rom0[i] = BITSWAP08(Rom0[i],0,2,5,1,3,6,4,7) ^ 0x81;
 		}
 		else
 		{
-			if (A & 4)
-				Rom0[A] = BITSWAP08(data,7,2,5,1,3,6,4,0) ^ 1;
+			if (i & 4)
+				Rom0[i] = BITSWAP08(Rom0[i],7,2,5,1,3,6,4,0) ^ 1;
 			else
-				Rom0[A] = BITSWAP08(data,0,2,5,1,3,6,4,7);
+				Rom0[i] = BITSWAP08(Rom0[i],0,2,5,1,3,6,4,7);
 		}
 	}
 
@@ -2066,8 +1928,8 @@ struct BurnDriver BurnDrvstriv = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, strivRomInfo, strivRomName, StrivInputInfo, StrivDIPInfo,
-	strivInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL,
-	256, 256, 3, 4
+	strivInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal,
+	224, 256, 3, 4
 };
 
 

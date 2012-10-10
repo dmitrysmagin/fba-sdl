@@ -597,7 +597,7 @@ static int DrvInit()
 	ToaPalSrc2 = RamPal2;
 	ToaPalInit();
 
-	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream);
+	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 	BurnTimerAttachZet(28000000 / 8);
 
 	bDrawScreen = true;
@@ -718,7 +718,7 @@ static int DrvFrame()
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM3812Update(nBurnSoundLen);
+	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];

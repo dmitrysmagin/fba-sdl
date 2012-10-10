@@ -88,7 +88,7 @@ static struct BurnInputInfo DrvInputList[] =
 
 STDINPUTINFO(Drv);
 
-inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -98,7 +98,7 @@ inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void DrvMakeInputs()
+static inline void DrvMakeInputs()
 {
 	// Reset Inputs
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = DrvInput[3] = 0x00;
@@ -1339,7 +1339,7 @@ static int CtribeInit()
 	BurnYM2151SetIrqHandler(&DrvYM2151IrqHandler);
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 1122000 / 132, 100.0, 1);
+	MSM6295Init(0, 1122000 / 132, 50.0, 1);
 	
 	DrawFunction = CtribeDraw;
 	
@@ -1668,7 +1668,9 @@ static int DrvFrame()
 		if (pBurnSoundOut) {
 			int nSegmentLength = nBurnSoundLen / nInterleave;
 			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1684,11 +1686,13 @@ static int DrvFrame()
 		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
+			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 		}
 	}
-
+	
 	if (pBurnDraw) DrawFunction();
 
 	return 0;

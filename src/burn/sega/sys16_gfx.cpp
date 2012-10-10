@@ -376,13 +376,13 @@ static void System16BRenderTileLayer(int Page, int PriorityDraw, int Transparent
 					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
 			
 					if (Transparent) {
-						if (x2 > 7 && x2 < 312 && y > 7 && y < 216) {
+						if (x2 > 8 && x2 < 312 && y > 8 && y < 216) {
 							Render8x8Tile_Mask(pTransDraw, Code, x2, y, Colour, 3, 0, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Mask_Clip(pTransDraw, Code, x2, y, Colour, 3, 0, ColourOff, System16Tiles);
 						}
 					} else {
-						if (x2 > 7 && x2 < 312 && y > 7 && y < 216) {
+						if (x2 > 8 && x2 < 312 && y > 8 && y < 216) {
 							Render8x8Tile(pTransDraw, Code, x2, y, Colour, 3, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Clip(pTransDraw, Code, x2, y, Colour, 3, ColourOff, System16Tiles);
@@ -402,13 +402,13 @@ static void System16BRenderTileLayer(int Page, int PriorityDraw, int Transparent
 					int x1 = x2 + 8;
 					
 					if (Transparent) {
-						if (x1 > 7 && x1 < 312 && y > 7 && y < 216) {
+						if (x1 > 8 && x1 < 312 && y > 8 && y < 216) {
 							Render8x8Tile_Mask(pTransDraw, Code, x1, y, Colour, 3, 0, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Mask_Clip(pTransDraw, Code, x1, y, Colour, 3, 0, ColourOff, System16Tiles);
 						}
 					} else {
-						if (x1 > 7 && x1 < 312 && y > 7 && y < 216) {
+						if (x1 > 8 && x1 < 312 && y > 8 && y < 216) {
 							Render8x8Tile(pTransDraw, Code, x1, y, Colour, 3, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Clip(pTransDraw, Code, x1, y, Colour, 3, ColourOff, System16Tiles);
@@ -470,13 +470,13 @@ static void System16BRenderTileLayer(int Page, int PriorityDraw, int Transparent
 					if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
 			
 					if (Transparent) {
-						if (x > 7 && x < 312 && y > 7 && y < 216) {
+						if (x > 8 && x < 312 && y > 8 && y < 216) {
 							Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 3, 0, ColourOff, System16Tiles);
 						}
 					} else {
-						if (x > 7 && x < 312 && y > 7 && y < 216) {
+						if (x > 8 && x < 312 && y > 8 && y < 216) {
 							Render8x8Tile(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
 						} else {
 							Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 3, ColourOff, System16Tiles);
@@ -486,6 +486,91 @@ static void System16BRenderTileLayer(int Page, int PriorityDraw, int Transparent
 			}
 		}
 	}
+	
+/*	int mx, my, Attr, Code, Colour, x, y, TileIndex, Priority, ColourOff, px, py, xPos = 0, yPos;
+	
+	unsigned char c;
+	unsigned short *pPixel;
+	UINT32 nPalette;
+	
+	UINT16 *VideoRam = (UINT16*)System16TileRam;
+	UINT16 *TextRam = (UINT16*)System16TextRam;
+	int RowScrollIndex, RowScroll;
+	
+	for (my = 0; my < 64; my++) {
+		for (mx = 0; mx < 128; mx++) {
+			x = 8 * mx;
+			y = 8 * my;
+			if (mx >= 64) y += 8;
+
+
+
+			
+			if (my < 32 && mx < 64) ActPage = (EffPage >> 0) & 0x0f;
+			if (my < 32 && mx >= 64) ActPage = (EffPage >> 4) & 0x0f;
+			if (my >= 32 && mx < 64) ActPage = (EffPage >> 8) & 0x0f;
+			if (my >= 32 && mx >= 64) ActPage = (EffPage >> 12) & 0x0f;
+			
+			TileIndex = (ActPage * 64 * 32) + ((my * 64) & 0x7ff) + (mx & 0x1ff);
+						
+			Attr = VideoRam[TileIndex];
+			Priority = (Attr >> 15) & 1;
+			
+			if (Priority != PriorityDraw) continue;
+			
+			Code = Attr & 0x1fff;
+			Code = System16TileBanks[Code / System16TileBankSize] * System16TileBankSize + Code % System16TileBankSize;
+			Code &= (System16NumTiles - 1);
+			Colour = (Attr >> 6) & 0x7f;
+				
+			ColourOff = System16TilemapColorOffset;
+			if (Colour >= 0x20) ColourOff = 0x100 | System16TilemapColorOffset;
+			if (Colour >= 0x40) ColourOff = 0x200 | System16TilemapColorOffset;
+			if (Colour >= 0x60) ColourOff = 0x300 | System16TilemapColorOffset;
+			
+			
+			
+//			x -= (192 - xScroll) & 0x3ff;
+//			y -= yScroll & 0x1ff;
+				
+//			if (x < -8) x += 1024;
+//			if (y < -8) y += 512;
+			
+			nPalette = Colour << 3;
+			
+			for (py = 0; py < 8; py++) {
+				yPos = y + py;
+				if (yScroll & 0x8000) {
+					bprintf(PRINT_NORMAL, _T("Col Scroll\n"));
+					yScroll = TextRam[(0xf16 / 2) + (0x40 / 2 * Page) + ((x - ((192 - xScroll) & 0x3ff) + 8) / 16)];
+				}
+				
+				yPos -= yScroll & 0x1ff;
+				if (yPos < -8) yPos += 512;
+				
+				if (yPos >= 0 && yPos < nScreenHeight) {				
+					for (px = 0; px < 8; px++) {
+						xPos = x + px;
+				
+						xPos -= (192 - xScroll) & 0x3ff;
+						if (xPos < -8) xPos += 1024;
+						if (xPos < 0 || xPos >= nScreenWidth) continue;
+						
+						c = System16Tiles[(Code * 64) + (py * 8) + px];
+						if (!c && Transparent) continue;
+						
+						RowScrollIndex = yPos / 8;
+						RowScroll = TextRam[(0xf80 / 2) + (0x40 / 2 * Page) + RowScrollIndex];
+						xScroll = (xScroll & 0x8000) ? RowScroll : xScroll;						
+					
+						pPixel = pTransDraw + (yPos * nScreenWidth);
+					
+						pPixel[xPos] = c | nPalette | ColourOff;
+					}
+				}
+			}
+		}
+	}*/
 }
 
 static void System16BAltRenderTileLayer(int Page, int PriorityDraw, int Transparent)

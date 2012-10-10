@@ -146,28 +146,10 @@ static int DrvInit()
   CpsLoadTiles(CpsGfx         ,8);
   CpsLoadTiles(CpsGfx+0x200000,12);
 
-  nCpsGfxScroll[2]=0x200000;
+//  nCpsGfxScroll[2]=0x200000;
 
-  nCpsLcReg=0x68; // Layer control register is at 0x68
-  CpsLayEn[1]=0x20;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  // Board ID improvments by KEV. 0x72,0x0800
-  CpsBID[0]=0x72;
-  CpsBID[1]=0x08;
-  CpsBID[2]=0x00;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x4e;
-  CpsMProt[1]=0x4c;
-  CpsMProt[2]=0x4a;
-  CpsMProt[3]=0x48;
-
-  MaskAddr[0]=0x66;
-  MaskAddr[1]=0x64;
-  MaskAddr[2]=0x62;
-  MaskAddr[3]=0x60;
+  SetCpsBId(BATTRY_1, 0);
+  SetGfxMapper(mapper_RT22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,16,1);

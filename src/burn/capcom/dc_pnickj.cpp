@@ -147,15 +147,8 @@ static int DrvInit()
   CpsLoadTilesByte(CpsGfx, 2);
   CpsLoadTilesByte(CpsGfx+(8*0x020000), 2+8);
 
-  nCpsLcReg=0x66; // Layer control register is at 0x66
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_pnickj);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,18,1);

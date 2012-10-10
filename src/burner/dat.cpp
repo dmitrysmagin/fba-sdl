@@ -4,7 +4,7 @@
 
 #include "burner.h"
 
-int write_datfile(int nDatType, FILE* fDat)
+int write_datfile(int nDatType, int bIncMegadrive, FILE* fDat)
 {
 	int nRet=0;
 	unsigned int nOldSelect=0;
@@ -25,6 +25,14 @@ int write_datfile(int nDatType, FILE* fDat)
 		nBurnDrvSelect=nGameSelect;									// Switch to driver nGameSelect
 
 		if (BurnDrvGetFlags() & BDF_BOARDROM) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 0)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 2)) {
 			continue;
 		}
 
@@ -261,7 +269,7 @@ int write_datfile(int nDatType, FILE* fDat)
 	}
 
 	if (nDatType!=0)
-		fprintf(fDat, "[RESOURCES]\n");
+		if (bIncMegadrive != 2) fprintf(fDat, "[RESOURCES]\n");
 
 	// Do another pass over each of the games to find boardROMs
 	for (nBurnDrvSelect=0; nBurnDrvSelect<nBurnDrvCount; nBurnDrvSelect++)
@@ -269,6 +277,10 @@ int write_datfile(int nDatType, FILE* fDat)
 		int i, nPass;
 
 		if (!(BurnDrvGetFlags() & BDF_BOARDROM)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 2)) {
 			continue;
 		}
 
@@ -337,22 +349,22 @@ int write_datfile(int nDatType, FILE* fDat)
 	return 0;
 }
 
-int create_datfile(TCHAR* szFilename, int nDatType)
+int create_datfile(TCHAR* szFilename, int nDatType, int bIncMegadrive)
 {
 	FILE *fDat=0;
 	int nRet=0;
-
-	if ((fDat = _tfopen(szFilename, _T("w")))==0)
+	
+	if ((fDat = _tfopen(szFilename, _T("wt")))==0)
 		return -1;
 
 	if (nDatType==0)
 	{
 		fprintf(fDat, "clrmamepro (\n");
 		fprintf(fDat, "\tname \"" APP_TITLE "\"\n");
-		fprintf(fDat, "\tdescription \"" APP_TITLE " v%.20s\"\n", szAppBurnVer);
+		_ftprintf(fDat, _T("\tdescription ") _T(APP_TITLE) _T(" v%s\"\n"), szAppBurnVer);
 		fprintf(fDat, "\tcategory \"" APP_DESCRIPTION "\"\n");
-		fprintf(fDat, "\tversion %s\n", szAppBurnVer);
-		fprintf(fDat, "\tauthor \"" APP_TITLE " v%.20s\"\n", szAppBurnVer);
+		_ftprintf(fDat, _T("\tversion %s\n"), szAppBurnVer);
+		_ftprintf(fDat, _T("\tauthor ") _T(APP_TITLE) _T(" v%s\"\n"), szAppBurnVer);
 		fprintf(fDat, "\tforcezipping zip\n");
 		fprintf(fDat, ")\n\n");
 	}
@@ -360,17 +372,17 @@ int create_datfile(TCHAR* szFilename, int nDatType)
 	{
 		fprintf(fDat, "[CREDITS]\n");
 		fprintf(fDat, "Author=" APP_TITLE "\n");
-		fprintf(fDat, "Version=%.20s\n", szAppBurnVer);
+		_ftprintf(fDat, _T("Version=%s\n"), szAppBurnVer);
 		fprintf(fDat, "Comment=" APP_DESCRIPTION "\n");
 		fprintf(fDat, "[DAT]\n");
 		fprintf(fDat, "version=2.00\n");
 		fprintf(fDat, "[EMULATOR]\n");
 		fprintf(fDat, "refname=" APP_TITLE "\n");
-		fprintf(fDat, "version=" APP_TITLE " v%.20s\n", szAppBurnVer);
+		_ftprintf(fDat, _T("version=") _T(APP_TITLE) _T(" v%s\n"), szAppBurnVer);
 		fprintf(fDat, "[GAMES]\n");
 	}
 
-	nRet =  write_datfile(nDatType, fDat);
+	nRet =  write_datfile(nDatType, bIncMegadrive, fDat);
 
 	fclose(fDat);
 

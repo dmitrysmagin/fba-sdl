@@ -150,20 +150,8 @@ static int DrvInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx,5);
 
-  nCpsLcReg=0x42; // Layer control register is at 0x42
-  CpsLayEn[1]=0x04;
-  CpsLayEn[2]=0x22;
-  CpsLayEn[3]=0x22;
-
-  // Start of Board ID improvments by KEV. 0x4e,0x0405
-  CpsBID[0]=0x4e;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x05;
-
-  MaskAddr[0]=0x44;
-  MaskAddr[1]=0x46;
-  MaskAddr[2]=0x48;
-  MaskAddr[3]=0x4a;
+  SetCpsBId(CPS_B_15, 0);
+  SetGfxMapper(mapper_NM24B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,9,1);

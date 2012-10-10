@@ -96,14 +96,19 @@ inline void Wc90ClearOpposites(unsigned char* nJoystickInputs)
 inline void Wc90MakeInputs()
 {
 	// Reset Inputs
-	Wc90Input[0] = Wc90Input[1] = Wc90Input[2] = 0x00;
+	Wc90Input[0] = Wc90Input[1] = 0x00;
+	Wc90Input[2] = 0x03;
 
 	// Compile Digital Inputs
 	for (int i = 0; i < 6; i++) {
 		Wc90Input[0] |= (Wc90InputPort0[i] & 1) << i;
 		Wc90Input[1] |= (Wc90InputPort1[i] & 1) << i;
-		Wc90Input[2] -= (Wc90InputPort2[i] & 1) << i;
 	}
+	
+	if (Wc90InputPort2[0]) Wc90Input[2] -= 0x01;
+	if (Wc90InputPort2[1]) Wc90Input[2] -= 0x02;
+	if (Wc90InputPort2[2]) Wc90Input[2] |= 0x04;
+	if (Wc90InputPort2[3]) Wc90Input[2] |= 0x08;
 
 	// Clear Opposites
 	Wc90ClearOpposites(&Wc90Input[0]);
@@ -338,7 +343,7 @@ unsigned char __fastcall Wc90Read1(unsigned short a)
 		}
 
 		case 0xfc05: {
-			return 0xfc - Wc90Input[2];
+			return 0xff - Wc90Input[2];
 		}
 
 		case 0xfc06: {
@@ -1044,7 +1049,7 @@ int Wc90Frame()
 
 	ZetOpen(2);
 	BurnTimerEndFrame(nCyclesTotal[2]);
-	BurnYM2608Update(nBurnSoundLen);
+	BurnYM2608Update(pBurnSoundOut, nBurnSoundLen);
 	nCyclesDone[2] = ZetTotalCycles() - nCyclesTotal[2];
 	ZetClose();
 
@@ -1199,7 +1204,7 @@ int Wc90Init()
 	}
 
 	int Wc90YM2608RomSize = 0x20000;
-	BurnYM2608Init(8000000, Wc90YM2608Rom, &Wc90YM2608RomSize, &wc90FMIRQHandler, wc90SynchroniseStream, wc90GetTime);
+	BurnYM2608Init(8000000, Wc90YM2608Rom, &Wc90YM2608RomSize, &wc90FMIRQHandler, wc90SynchroniseStream, wc90GetTime, 0);
 	BurnTimerAttachZet(4000000);
 
 	// Reset the driver

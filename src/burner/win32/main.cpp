@@ -20,7 +20,6 @@
  #endif
 #endif
 
-#include "kailleraclient.h"
 #include "version.h"
 
 HINSTANCE hAppInst = NULL;			// Application Instance
@@ -352,7 +351,7 @@ static int AppInit()
 
 	FBALocaliseInit(szLocalisationTemplate);
 
-	kailleraInit();
+//	kailleraInit();
 
 #if 1 || !defined (FBA_DEBUG)
 	// print a warning if we're running for the 1st time
@@ -391,7 +390,7 @@ static int AppInit()
 	
 	// Write a clrmame dat file if we are verifying roms
 #if defined (ROM_VERIFY)
-	create_datfile(_T("fba.dat"), 0);
+	create_datfile(_T("fba.dat"), 0, 0);
 #endif
 
 	bNumlockStatus = SetNumLock(false);
@@ -412,7 +411,7 @@ static int AppExit()
 	SDL_Quit();
 #endif
 
-	kailleraShutdown();
+//	kailleraShutdown();
 
 	FBALocaliseExit();
 
@@ -493,7 +492,21 @@ int ProcessCmdLine()
 
 	if (_tcslen(szName)) {
 		if (_tcscmp(szName, _T("-listinfo")) == 0) {
-			write_datfile(0, stdout);
+			write_datfile(0, 0, stdout);
+			return 1;
+		}
+	}
+	
+	if (_tcslen(szName)) {
+		if (_tcscmp(szName, _T("-listinfowithmd")) == 0) {
+			write_datfile(0, 1, stdout);
+			return 1;
+		}
+	}
+	
+	if (_tcslen(szName)) {
+		if (_tcscmp(szName, _T("-listinfomdonly")) == 0) {
+			write_datfile(0, 2, stdout);
 			return 1;
 		}
 	}

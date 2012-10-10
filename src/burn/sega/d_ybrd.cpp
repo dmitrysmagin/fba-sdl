@@ -1234,7 +1234,9 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 			}
 			
 			if (!(d & 0x10)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 			
 			return;
@@ -1329,7 +1331,9 @@ void __fastcall YBoardWriteByte(unsigned int a, unsigned char d)
 	switch (a) {
 		case 0x082001: {
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -1581,7 +1585,23 @@ static int Gforce2Init()
 {
 	System16ProcessAnalogControlsDo = Gforce2ProcessAnalogControls;
 	
+	System16PCMDataSizePreAllocate = 0x180000;
+	
 	int nRet = System16Init();
+	
+	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	memcpy(pTemp, System16PCMData, 0x0c0000);
+	memset(System16PCMData, 0, 0x180000);
+	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
+	memcpy(System16PCMData + 0x080000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0a0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0c0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0e0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x100000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
+	free(pTemp);
 	
 	return nRet;
 }
@@ -1610,9 +1630,25 @@ static int PdriftInit()
 	
 	System16HasGears = true;
 	
+	System16PCMDataSizePreAllocate = 0x180000;
+	
 	int nRet = System16Init();
 	
 	if (!nRet) YBoardIrq2Scanline = 0;
+	
+	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	memcpy(pTemp, System16PCMData, 0x0c0000);
+	memset(System16PCMData, 0, 0x180000);
+	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
+	memcpy(System16PCMData + 0x080000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0a0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0c0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x0e0000, pTemp + 0x080000, 0x20000);
+	memcpy(System16PCMData + 0x100000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
+	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
+	free(pTemp);
 
 	return nRet;
 }

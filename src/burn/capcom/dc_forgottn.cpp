@@ -162,20 +162,14 @@ static int DrvInit()
    nRet=BurnLoadRom(CpsRom+0x080000,4,1); if (nRet!=0) return 1;
 
    // Load graphics roms
-   CpsLoadTiles(CpsGfx         ,5);
-   CpsLoadTiles(CpsGfx+0x200000,9);
-
-   // Enable starfield layers
-   CpsLayEn[4]=0x30;
-   CpsLayEn[5]=0x30;
+   CpsLoadTiles(CpsGfx+0x200000,5);
+   CpsLoadTiles(CpsGfx+0x000000,9);
 
    CpsLoadStars(CpsStar, 5);
 
-   MaskAddr[0]=0x68;
-   MaskAddr[1]=0x6a;
-   MaskAddr[2]=0x6c;
-   MaskAddr[3]=0x6e;
-
+   SetCpsBId(CPS_B_01, 1);
+   SetGfxMapper(mapper_LWCHR);
+   
    nRet=BurnLoadRom(CpsZRom,13,1); //changed to 13
 
    nRet=BurnLoadRom(CpsAd        ,14,1); //changed to 14

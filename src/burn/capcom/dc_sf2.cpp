@@ -304,22 +304,10 @@ static int Drv05Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x68; // Layer control register is at 0x52
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x08;
-  CpsLayEn[3]=0x20; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x5E,0x0404
-  CpsBID[0]=0x60;
-  CpsBID[1]=0x00;
-  CpsBID[2]=0x05;
-
-  MaskAddr[0]=0x6a;
-  MaskAddr[1]=0x6c;
-  MaskAddr[2]=0x6e;
-  MaskAddr[3]=0x70;
+  SetCpsBId(CPS_B_05, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -360,22 +348,10 @@ static int Drv11Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x66; // Layer control register is at 0x54
-  CpsLayEn[1]=0x20;
-  CpsLayEn[2]=0x10;
-  CpsLayEn[3]=0x08; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x48,0x0407
-  CpsBID[0]=0x72;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x01;
-
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(CPS_B_11, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -416,17 +392,10 @@ static int Drv12Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x6c; // Layer control register is at 0x6c
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x60,0x0402
-  CpsBID[0]=0x60;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x02;
+  SetCpsBId(CPS_B_12, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -467,22 +436,10 @@ static int Drv13Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x62; // Layer control register is at 0x62
-  CpsLayEn[1]=0x20;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x02; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x6e,0x0403
-  CpsBID[0]=0x6e;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x03;
-
-  MaskAddr[0]=0x64;
-  MaskAddr[1]=0x66;
-  MaskAddr[2]=0x68;
-  MaskAddr[3]=0x6a;
+  SetCpsBId(CPS_B_13, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -523,22 +480,10 @@ static int Drv14Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x52; // Layer control register is at 0x52
-  CpsLayEn[1]=0x08;
-  CpsLayEn[2]=0x30;
-  CpsLayEn[3]=0x30; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x5E,0x0404
-  CpsBID[0]=0x5E;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x04;
-
-  MaskAddr[0]=0x54;
-  MaskAddr[1]=0x56;
-  MaskAddr[2]=0x58;
-  MaskAddr[3]=0x5a;
+  SetCpsBId(CPS_B_14, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -579,22 +524,10 @@ static int Drv15Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x42; // Layer control register is at 0x52
-  CpsLayEn[1]=0x04;
-  CpsLayEn[2]=0x22;
-  CpsLayEn[3]=0x22; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x5E,0x0404
-  CpsBID[0]=0x4E;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x05;
-
-  MaskAddr[0]=0x44;
-  MaskAddr[1]=0x46;
-  MaskAddr[2]=0x48;
-  MaskAddr[3]=0x4A;
+  SetCpsBId(CPS_B_15, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -635,22 +568,10 @@ static int Drv17Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0x54; // Layer control register is at 0x54
-  CpsLayEn[1]=0x08;
-  CpsLayEn[2]=0x10;
-  CpsLayEn[3]=0x02; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0x48,0x0407
-  CpsBID[0]=0x48;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x07;
-
-  MaskAddr[0]=0x52;
-  MaskAddr[1]=0x50;
-  MaskAddr[2]=0x4e;
-  MaskAddr[3]=0x4c;
+  SetCpsBId(CPS_B_17, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);
@@ -691,22 +612,10 @@ static int Drv18Init()
   // Load up and interleve each set of 4 roms to make the 16x16 tiles
   for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,8+i*4);
 
-  nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+  //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-  nCpsLcReg=0xdc; // Layer control register is at 0xdc
-  CpsLayEn[1]=0x10;
-  CpsLayEn[2]=0x0a;
-  CpsLayEn[3]=0x0a; // Layer enable is different
-
-  // Start of Board ID improvments by KEV. 0xd0,0x0408
-  CpsBID[0]=0xd0;
-  CpsBID[1]=0x04;
-  CpsBID[2]=0x08;
-
-  MaskAddr[0]=0xda;
-  MaskAddr[1]=0xd8;
-  MaskAddr[2]=0xd6;
-  MaskAddr[3]=0xd4;
+  SetCpsBId(CPS_B_18, 0);
+  SetGfxMapper(mapper_STF29);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,20,1);

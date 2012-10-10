@@ -1,15 +1,22 @@
 // Z80 (Zed Eight-Ty) Interface
-#define EMU_DOZE					// Use Dave's 'Doze' Assembler Z80 emulator
 
-#ifdef EMU_DOZE
- #include "doze.h"
+#ifndef FASTCALL
+ #undef __fastcall
+ #define __fastcall
 #endif
 
+#include "z80.h"
+
+extern int nHasZet;
+void ZetWriteByte(unsigned short address, unsigned char data);
+unsigned char ZetReadByte(unsigned short address);
+void ZetWriteRom(unsigned short address, unsigned char data);
 int ZetInit(int nCount);
 void ZetExit();
 void ZetNewFrame();
-int ZetOpen(int nCPU);
+void ZetOpen(int nCPU);
 void ZetClose();
+int ZetGetActive();
 int ZetMemCallback(int nStart,int nEnd,int nMode);
 int ZetMemEnd();
 int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem);
@@ -17,66 +24,24 @@ int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem01, unsigned c
 int ZetReset();
 int ZetPc(int n);
 int ZetBc(int n);
+int ZetDe(int n);
 int ZetHL(int n);
 int ZetScan(int nAction);
-
-#define ZET_IRQSTATUS_NONE DOZE_IRQSTATUS_NONE
-#define ZET_IRQSTATUS_AUTO DOZE_IRQSTATUS_AUTO
-#define ZET_IRQSTATUS_ACK  DOZE_IRQSTATUS_ACK
-
-inline static void ZetSetIRQLine(const int line, const int status)
-{
-#ifdef EMU_DOZE
-	Doze.nInterruptLatch = line | status;
-#endif
-}
-
-#define ZetRaiseIrq(n) ZetSetIRQLine(n, ZET_IRQSTATUS_AUTO)
-#define ZetLowerIrq() ZetSetIRQLine(0, ZET_IRQSTATUS_NONE)
-
-inline static int ZetNmi()
-{
-#ifdef EMU_DOZE
-	int nCycles = DozeNmi();
-#else
-	// Taking an NMI requires 12 cycles
-	int nCycles = 12
-#endif
-
-	Doze.nCyclesTotal += nCycles;
-
-	return nCycles;
-}
-
 int ZetRun(int nCycles);
 void ZetRunEnd();
+void ZetSetIRQLine(const int line, const int status);
+void ZetSetVector(int vector);
+int ZetNmi();
+int ZetIdle(int nCycles);
+int ZetSegmentCycles();
+int ZetTotalCycles();
 
-inline static int ZetIdle(int nCycles)
-{
-#ifdef EMU_DOZE
-	Doze.nCyclesTotal += nCycles;
-#endif
+#define ZET_IRQSTATUS_NONE 0
+#define ZET_IRQSTATUS_ACK  1
+#define ZET_IRQSTATUS_AUTO 2
 
-	return nCycles;
-}
-
-inline static int ZetSegmentCycles()
-{
-#ifdef EMU_DOZE
-	return Doze.nCyclesSegment - Doze.nCyclesLeft;
-#else
-	return 0;
-#endif
-}
-
-inline static int ZetTotalCycles()
-{
-#ifdef EMU_DOZE
-	return Doze.nCyclesTotal - Doze.nCyclesLeft;
-#else
-	return 0;
-#endif
-}
+#define ZetRaiseIrq(n) ZetSetIRQLine(n, ZET_IRQSTATUS_AUTO)
+#define ZetLowerIrq(n) ZetSetIRQLine(0, Z80_CLEAR_LINE)
 
 void ZetSetReadHandler(unsigned char (__fastcall *pHandler)(unsigned short));
 void ZetSetWriteHandler(void (__fastcall *pHandler)(unsigned short, unsigned char));

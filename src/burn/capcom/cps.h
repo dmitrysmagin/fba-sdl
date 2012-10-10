@@ -37,6 +37,75 @@ int CpsLoadTilesByte(unsigned char *Tile,int nStart);
 int Cps2LoadTiles(unsigned char *Tile,int nStart);
 int Cps2LoadTilesSIM(unsigned char *Tile,int nStart);
 
+// cps_config.h
+#define CPS_B_01		0
+#define CPS_B_02		1
+#define CPS_B_03		2
+#define CPS_B_04		3
+#define CPS_B_05		4
+#define CPS_B_11		5
+#define CPS_B_12		6
+#define CPS_B_13		7
+#define CPS_B_14		8
+#define CPS_B_15		9
+#define CPS_B_16		10
+#define CPS_B_17		11
+#define CPS_B_18		12
+#define NOBATTRY		13
+#define BATTRY_1		14
+#define BATTRY_2		15
+#define BATTRY_3		16
+#define BATTRY_4		17
+#define BATTRY_5		18
+#define BATTRY_6		19
+#define BATTRY_7		20
+#define QSOUND_1		21
+#define QSOUND_2		22
+#define QSOUND_3		23
+#define QSOUND_4		24
+#define QSOUND_5		25
+#define HACK_B_1		26
+#define GFXTYPE_SPRITES		(1<<0)
+#define GFXTYPE_SCROLL1		(1<<1)
+#define GFXTYPE_SCROLL2		(1<<2)
+#define GFXTYPE_SCROLL3		(1<<3)
+#define GFXTYPE_STARS		(1<<4)
+#define mapper_LWCHR		0
+#define mapper_DM620		1
+#define mapper_ST22B		2
+#define mapper_TK22B		3
+#define mapper_WL24B		4
+#define mapper_S224B		5
+#define mapper_YI24B		6
+#define mapper_AR24B		7
+#define mapper_0224B		8
+#define mapper_MS24B		9
+#define mapper_CK24B		10
+#define mapper_NM24B		11
+#define mapper_CA24B		12
+#define mapper_STF29		13
+#define mapper_RT22B		14
+#define mapper_KD29B		15
+#define mapper_CC63B		16
+#define mapper_KR63B		17
+#define mapper_S9263B		18
+#define mapper_VA24B		19
+#define mapper_Q522B		20
+#define mapper_TK263B		21
+#define mapper_CD63B		22
+#define mapper_PS63B		23
+#define mapper_MB63B		24
+#define mapper_QD22B		25
+#define mapper_qadj		26
+#define mapper_qtono2		27
+#define mapper_RCM63B		28
+#define mapper_pnickj		29
+#define mapper_pang3		30
+#define mapper_cps2		31
+extern void SetGfxMapper(int MapperId);
+extern int GfxRomBankMapper(int Type, int Code);
+extern void SetCpsBId(int CpsBId, int bStars);
+
 // cps_pal.cpp
 extern unsigned int* CpsPal;										// Hicolor version of palette
 extern unsigned int* CpsObjPal;										// Pointer to lagged obj palette
@@ -211,8 +280,6 @@ extern int Qad;
 extern int Xmcota;
 extern int Varth;
 extern int Wonders3;
-extern int StartScroll[2];
-extern int EndScroll[2];
 int Cps1Scr1Draw(unsigned char *Base,int sx,int sy);
 int Cps1Scr3Draw(unsigned char *Base,int sx,int sy);
 int Cps2Scr1Draw(unsigned char *Base,int sx,int sy);

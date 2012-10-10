@@ -1,6 +1,10 @@
+
+#include "m6502.h"
 //dec_vid.cpp
 extern unsigned char *robocopSpriteRam;
 
+
+extern unsigned char robocopSoundLatch;
 extern unsigned int  *robocopPalette;
 extern unsigned char *robocopSprites;
 extern unsigned char *robocopChars;
@@ -37,10 +41,10 @@ void decvid_drawchars();
 void decvid_drawbg1();
 void decvid_drawbg2();
 
-void decodechars(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits, int size);
-void decodesprite(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits);
-void decodeBG1(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits);
-void decodeBG2(int dwGraphic, unsigned char * rBitmap, unsigned char *pbBits);
+void decodechars(unsigned char * rBitmap, unsigned char *pbBits, int size, int numberoftiles);
+void decodesprite(unsigned char * rBitmap, unsigned char *pbBits, int numberoftiles);
+void decodeBG1(unsigned char * rBitmap, unsigned char *pbBits, int numberoftiles);
+void decodeBG2(unsigned char * rBitmap, unsigned char *pbBits, int numberoftiles);
 
 
 //dec_misc.cpp
@@ -60,3 +64,15 @@ extern unsigned short dec_input[3];
 void DecMakeInputs();
 
 
+void DecSharedInit();
+void DecSharedExit();
+
+
+// Dec_aud
+
+void init_dec0_aud(int romNumPrg, int romNumSamples);
+void reset_dec0_aud();
+void render_dec_aud(int interleave, int cycleseg);
+
+void endframe_dec_aud(int cycles);
+void exit_dec0_aud();

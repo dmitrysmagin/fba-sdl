@@ -159,19 +159,11 @@ static int dwjInit()
   CpsLoadTilesByte(CpsGfx+(0x200000), 24);
   CpsLoadTilesByte(CpsGfx+(0x300000), 32);
 
-  nCpsGfxScroll[2]=0x200000;
-  nCpsGfxScroll[3]=0x200000;
+//  nCpsGfxScroll[2]=0x200000;
+//  nCpsGfxScroll[3]=0x200000;
 
-  nCpsLcReg=0x6c; // Layer control register is at 0x6c
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  MaskAddr[0]=0x6a;
-  MaskAddr[1]=0x68;
-  MaskAddr[2]=0x66;
-  MaskAddr[3]=0x64;
-
+  SetCpsBId(CPS_B_02, 0);
+  SetGfxMapper(mapper_TK22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,40,1);
@@ -290,18 +282,11 @@ static int dwInit()
   CpsLoadTiles(CpsGfx           ,5);
   CpsLoadTiles(CpsGfx+(0x200000),9);
 
-  nCpsGfxScroll[2]=0x200000;
-  nCpsGfxScroll[3]=0x200000;
+//  nCpsGfxScroll[2]=0x200000;
+//  nCpsGfxScroll[3]=0x200000;
 
-  nCpsLcReg=0x6c; // Layer control register is at 0x6c
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  MaskAddr[0]=0x6a;
-  MaskAddr[1]=0x68;
-  MaskAddr[2]=0x66;
-  MaskAddr[3]=0x64;
+  SetCpsBId(CPS_B_02, 0);
+  SetGfxMapper(mapper_TK22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,13,1);

@@ -156,20 +156,8 @@ static int DrvInit()
    CpsLoadTiles(CpsGfx+0x000000,2);
    CpsLoadTiles(CpsGfx+0x200000,6);
 
-   nCpsLcReg=0x68;
-   CpsLayEn[1]=0x20;
-   CpsLayEn[2]=0x10;
-   CpsLayEn[3]=0x02;
-
-   CpsMProt[0]=0x46;
-   CpsMProt[1]=0x44;
-   CpsMProt[2]=0x42;
-   CpsMProt[3]=0x40;
-
-   MaskAddr[0]=0x66;
-   MaskAddr[1]=0x64;
-   MaskAddr[2]=0x62;
-   MaskAddr[3]=0x60;
+   SetCpsBId(BATTRY_4, 0);
+   SetGfxMapper(mapper_KR63B);
 
    nRet=BurnLoadRom(CpsZRom,10,1); //changed to 13
 
@@ -291,20 +279,8 @@ static int KnightsjInit()
    CpsLoadTiles(CpsGfx+0x000000,5+0*4);
    CpsLoadTiles(CpsGfx+0x200000,5+1*4);
 
-   nCpsLcReg=0x68;
-   CpsLayEn[1]=0x20;
-   CpsLayEn[2]=0x10;
-   CpsLayEn[3]=0x02;
-
-   CpsMProt[0]=0x46;
-   CpsMProt[1]=0x44;
-   CpsMProt[2]=0x42;
-   CpsMProt[3]=0x40;
-
-   MaskAddr[0]=0x66;
-   MaskAddr[1]=0x64;
-   MaskAddr[2]=0x62;
-   MaskAddr[3]=0x60;
+   SetCpsBId(BATTRY_4, 0);
+   SetGfxMapper(mapper_KR63B);
 
    nRet=BurnLoadRom(CpsZRom,13,1); //changed to 13
 
@@ -373,21 +349,8 @@ static int KnightshInit()
    CpsLoadTiles(CpsGfx+0x000000,2);
    CpsLoadTiles(CpsGfx+0x200000,6);
 
-   nCpsLcReg=0x66;
-   CpsLayEn[1]=0x02;
-   CpsLayEn[2]=0x04;
-   CpsLayEn[3]=0x08;
-
-   // it works without CpsMProt - we can probably disable this
-   CpsMProt[0]=0x00;
-   CpsMProt[1]=0x00;
-   CpsMProt[2]=0x00;
-   CpsMProt[3]=0x00;
-
-   MaskAddr[0]=0x68;
-   MaskAddr[1]=0x6a;
-   MaskAddr[2]=0x6c;
-   MaskAddr[3]=0x6e;
+   SetCpsBId(BATTRY_4, 0);
+   SetGfxMapper(mapper_KR63B);
 
    nRet=BurnLoadRom(CpsZRom,10,1); //changed to 13
 

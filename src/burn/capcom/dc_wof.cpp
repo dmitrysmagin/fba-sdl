@@ -124,21 +124,8 @@ static int Drvb1Init()
   CpsLoadTiles(CpsGfx         , 2);
   CpsLoadTiles(CpsGfx+0x200000, 6);
 
-  nCpsLcReg=0x66; // Layer control register is at 0x66
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  // Start of Board ID improvments by KEV. 0x00,0x0000
-  CpsBID[0]=0x00;
-  CpsBID[1]=0x00;
-  CpsBID[2]=0x00;
-  //end
-
-  MaskAddr[0]=0x68;
-  MaskAddr[1]=0x6a;
-  MaskAddr[2]=0x6c;
-  MaskAddr[3]=0x6e;
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_TK263B);
 
   nRet=BurnLoadRom(CpsZRom,10,1);
   wof_decode();
@@ -178,28 +165,9 @@ static int Drvq1Init()
   CpsLoadTiles(CpsGfx         , 2);
   CpsLoadTiles(CpsGfx+0x200000, 6);
 
-  nCpsLcReg=0x62; // Layer control register is at 0x62
-  CpsLayEn[1]=0x10;
-  CpsLayEn[2]=0x08;
-  CpsLayEn[3]=0x04;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x00;
-  CpsMProt[1]=0x00;
-  CpsMProt[2]=0x00;
-  CpsMProt[3]=0x00;
-
-  // Start of Board ID improvments by KEV. 0x00,0x0000
-  CpsBID[0]=0x00;
-  CpsBID[1]=0x00;
-  CpsBID[2]=0x00;
-  //end
-
-  MaskAddr[0]=0x64;
-  MaskAddr[1]=0x66;
-  MaskAddr[2]=0x68;
-  MaskAddr[3]=0x6a;
-
+  SetCpsBId(QSOUND_1, 0);
+  SetGfxMapper(mapper_TK263B);
+  
   nRet=BurnLoadRom(CpsZRom,10,1);
   wof_decode();
 

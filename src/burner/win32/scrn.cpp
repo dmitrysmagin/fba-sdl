@@ -1,6 +1,5 @@
 // Screen Window
 #include "burner.h"
-#include "kailleraclient.h"
 #include <shellapi.h>
 
 int OnMenuSelect(HWND, HMENU, int, HMENU, UINT);
@@ -177,7 +176,7 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 	}
 
 	if (!bFound) {
-		kailleraEndGame();
+//		kailleraEndGame();
 		return 1;
 	}
 
@@ -206,7 +205,7 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 	DrvExit();
 	if (kNetGame) {
 		kNetGame = 0;
-		kailleraEndGame();
+//		kailleraEndGame();
 	}
 	DeActivateChat();
 
@@ -232,7 +231,7 @@ static void WINAPI kDropCallback(char *nick, int playernb)
 
 static void DoNetGame()
 {
-	kailleraInfos ki;
+//	kailleraInfos ki;
 	char tmpver[128];
 	char* gameList;
 
@@ -250,28 +249,33 @@ static void DoNetGame()
 
 	gameList = CreateKailleraList();
 
-	ki.appName = tmpver;
-	ki.gameList = gameList;
-	ki.gameCallback = &gameCallback;
-	ki.chatReceivedCallback = &kChatCallback;
-	ki.clientDroppedCallback = &kDropCallback;
-	ki.moreInfosCallback = NULL;
+//	ki.appName = tmpver;
+//	ki.gameList = gameList;
+//	ki.gameCallback = &gameCallback;
+//	ki.chatReceivedCallback = &kChatCallback;
+//	ki.clientDroppedCallback = &kDropCallback;
+//	ki.moreInfosCallback = NULL;
 
-	kailleraSetInfos(&ki);
+//	kailleraSetInfos(&ki);
 
-	kailleraSelectServerDialog(NULL);
+//	kailleraSelectServerDialog(NULL);
 
 	free(gameList);
 
 	POST_INITIALISE_MESSAGE;
 }
 
-int CreateDatfileWindows(int nDatType)
+int CreateDatfileWindows(int nDatType, int bIncMegadrive)
 {
 	TCHAR szTitle[1024];
 	TCHAR szFilter[1024];
-
-	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s).dat"), szAppBurnVer, nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
+	
+	TCHAR szMegadriveString[25];
+	_sntprintf(szMegadriveString, 25, _T(""));
+	if (bIncMegadrive == 1) _sntprintf(szMegadriveString, 25, _T(", including Megadrive"));
+	if (bIncMegadrive == 2) _sntprintf(szMegadriveString, 25, _T(", Megadrive only"));
+	
+	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s%s).dat"), szAppBurnVer, nDatType ? _T("RomCenter") : _T("ClrMame Pro"), szMegadriveString);
 	_sntprintf(szTitle, 256, FBALoadStringEx(hAppInst, IDS_DAT_GENERATE, true), nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
 
 	_stprintf(szFilter, FBALoadStringEx(hAppInst, IDS_DISK_ALL_DAT, true), _T(APP_TITLE));
@@ -292,7 +296,7 @@ int CreateDatfileWindows(int nDatType)
 	if (GetSaveFileName(&ofn) == 0)
 		return -1;
 
-	return create_datfile(szChoice, nDatType);
+	return create_datfile(szChoice, nDatType, bIncMegadrive);
 }
 
 // Returns true if a VidInit is needed when the window is resized
@@ -622,7 +626,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				DrvExit();
   				if (kNetGame) {
 					kNetGame = 0;
-					kailleraEndGame();
+//					kailleraEndGame();
 					DeActivateChat();
 					PostQuitMessage(0);
 				}
@@ -639,7 +643,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			StopReplay();
 			if (kNetGame) {
 				kNetGame = 0;
-				kailleraEndGame();
+//				kailleraEndGame();
 				DeActivateChat();
 			}
 			PostQuitMessage(0);
@@ -1259,13 +1263,37 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_CLRMAME_PRO:
 			if (UseDialogs()) {
-				CreateDatfileWindows(0);
+				CreateDatfileWindows(0, 0);
 			}
 			break;
 
 		case MENU_ROMCENTER:
 			if (UseDialogs()) {
-				CreateDatfileWindows(1);
+				CreateDatfileWindows(1, 0);
+			}
+			break;
+		
+		case MENU_CLRMAME_PRO_INC_MD:
+			if (UseDialogs()) {
+				CreateDatfileWindows(0, 1);
+			}
+			break;
+
+		case MENU_ROMCENTER_INC_MD:
+			if (UseDialogs()) {
+				CreateDatfileWindows(1, 1);
+			}
+			break;
+			
+		case MENU_CLRMAME_PRO_MD_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(0, 2);
+			}
+			break;
+
+		case MENU_ROMCENTER_MD_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(1, 2);
 			}
 			break;
 

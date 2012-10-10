@@ -305,12 +305,10 @@ static int DrvInit()
 	CpsLoadTiles(CpsGfx+0x200000,3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000,3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom,15,1);
@@ -318,11 +316,6 @@ static int DrvInit()
 	// Load ADPCM data
 	nRet=BurnLoadRom(CpsAd        ,16,1);
 	nRet=BurnLoadRom(CpsAd+0x20000,17,1);
-
-	// Start of Board ID improvments by KEV. 0x48,0x0407
-	CpsBID[0]=0x48;
-	CpsBID[1]=0x04;
-	CpsBID[2]=0x07;
 
 	nRet=CpsRunInit();
 	if (nRet!=0) return 1;
@@ -360,24 +353,17 @@ static int Sf2accp2Init()
 	CpsLoadTiles(CpsGfx+0x200000,3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000,3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
-
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
+	
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom,15,1);
 
 	// Load ADPCM data
 	nRet=BurnLoadRom(CpsAd        ,16,1);
 	nRet=BurnLoadRom(CpsAd+0x20000,17,1);
-
-	// Start of Board ID improvments by KEV. 0x48,0x0407
-	CpsBID[0]=0x48;
-	CpsBID[1]=0x04;
-	CpsBID[2]=0x07;
 
 	nRet=CpsRunInit();
 	if (nRet!=0) return 1;
@@ -416,24 +402,17 @@ static int Sf2rbInit()
 	CpsLoadTiles(CpsGfx+0x200000,3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000,3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
-
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
+	
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom,15,1);
 
 	// Load ADPCM data
 	nRet=BurnLoadRom(CpsAd        ,16,1);
 	nRet=BurnLoadRom(CpsAd+0x20000,17,1);
-
-	// Start of Board ID improvments by KEV. 0x48,0x0407
-	CpsBID[0]=0x48;
-	CpsBID[1]=0x04;
-	CpsBID[2]=0x07;
 
 	nRet=CpsRunInit();
 	if (nRet!=0) return 1;
@@ -477,12 +456,10 @@ static int Sf2rb2Init()
 	// Load up and interleve each set of 4 roms to make the 16x16 tiles
 	for (i=0;i<3;i++) CpsLoadTiles(CpsGfx+i*0x200000,9+i*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom,21,1);
@@ -490,11 +467,6 @@ static int Sf2rb2Init()
 	// Load ADPCM data
 	nRet=BurnLoadRom(CpsAd        ,22,1);
 	nRet=BurnLoadRom(CpsAd+0x20000,23,1);
-
-	// Start of Board ID improvments by KEV. 0x48,0x0407
-	CpsBID[0]=0x48;
-	CpsBID[1]=0x04;
-	CpsBID[2]=0x07;
 
 	nRet=CpsRunInit();
 	if (nRet!=0) return 1;
@@ -566,26 +538,10 @@ static int Sf2yycInit()
 	CpsLoadTiles(CpsGfx+0x200000, 4+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 4+2*4);
 
-        nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+        //nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-        nCpsLcReg=0x66;
-	CpsLayEn[1]=0x02;
-	CpsLayEn[2]=0x04;
-	CpsLayEn[3]=0x08;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+        SetCpsBId(NOBATTRY, 0);
+        SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 16, 1);
@@ -630,26 +586,10 @@ static int KouryuInit()
 	CpsLoadTiles(CpsGfx+0x200000, 4+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 4+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	nCpsLcReg=0x66;
-	CpsLayEn[1]=0x02;
-	CpsLayEn[2]=0x04;
-	CpsLayEn[3]=0x08;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 16, 1);
@@ -1367,26 +1307,10 @@ static int Sf2m4Init()
 	CpsLoadTiles(CpsGfx+0x200000, 3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	nCpsLcReg=0x54;
-	CpsLayEn[1]=0xff;
-	CpsLayEn[2]=0xff;
-	CpsLayEn[3]=0xff;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x52;
-	MaskAddr[1]=0x50;
-	MaskAddr[2]=0x4e;
-	MaskAddr[3]=0x4c;
+	SetCpsBId(HACK_B_1, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 15, 1);
@@ -1468,26 +1392,10 @@ static int Sf2m5Init()
 	CpsLoadTiles(CpsGfx+0x200000, 3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	nCpsLcReg=0x66;
-	CpsLayEn[1]=0x02;
-	CpsLayEn[2]=0x04;
-	CpsLayEn[3]=0x08;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 15, 1);
@@ -1615,26 +1523,10 @@ static int Sf2m7Init()
 	CpsLoadTiles(CpsGfx+0x200000, 5+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 5+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	nCpsLcReg=0x66;
-	CpsLayEn[1]=0x02;
-	CpsLayEn[2]=0x04;
-	CpsLayEn[3]=0x08;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 17, 1);
@@ -1722,26 +1614,10 @@ static int Sf2m2Init()
 	CpsLoadTiles(CpsGfx+0x200000, 3+1*4);
 	CpsLoadTiles(CpsGfx+0x400000, 3+2*4);
 
-	nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
+	//nCpsGfxScroll[1]=nCpsGfxScroll[2]=nCpsGfxScroll[3]=0x400000; // Offset to Scroll tiles
 
-	nCpsLcReg=0x66;
-	CpsLayEn[1]=0x02;
-	CpsLayEn[2]=0x04;
-	CpsLayEn[3]=0x08;
-
-	CpsMProt[0]=0x40;
-	CpsMProt[1]=0x42;
-	CpsMProt[2]=0x44;
-	CpsMProt[3]=0x46;
-
-	CpsBID[0]=0x00;
-	CpsBID[1]=0x00;
-	CpsBID[2]=0x00;
-
-	MaskAddr[0]=0x68;
-	MaskAddr[1]=0x6a;
-	MaskAddr[2]=0x6c;
-	MaskAddr[3]=0x6e;
+	SetCpsBId(NOBATTRY, 0);
+	SetGfxMapper(mapper_S9263B);
 
 	// Load Z80 Rom
 	nRet=BurnLoadRom(CpsZRom      , 15, 1);

@@ -58,11 +58,13 @@
 
 #if BUILD_YM2203
   /* in 2203intf.c */
-  #define YM2203UpdateReq(chip)
+void BurnYM2203UpdateRequest(void);
+  #define YM2203UpdateReq(chip) BurnYM2203UpdateRequest()
 #endif
 #if BUILD_YM2608
   /* in 2608intf.c */
-  #define YM2608UpdateReq(chip)
+void BurnYM2608UpdateRequest(void);
+  #define YM2608UpdateReq(chip) BurnYM2608UpdateRequest()
 #endif
 #if BUILD_YM2610
   /* in 2610intf.c */
@@ -71,7 +73,8 @@ void BurnYM2610UpdateRequest(void);
 #endif
 #if BUILD_YM2612
   /* in 2612intf.c */
-  #define YM2612UpdateReq(chip)
+void BurnYM2612UpdateRequest(void);
+  #define YM2612UpdateReq(chip) BurnYM2612UpdateRequest()
 #endif
 #if 0 //BUILD_YM2151
   /* in 2151intf.c */

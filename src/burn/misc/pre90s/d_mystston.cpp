@@ -11,7 +11,7 @@ extern "C" {
 
 static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Gfx2, *Prom;
 static unsigned char DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[2];
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
+static short *pAY8910Buffer[6], *pFMBuffer = NULL;
 static int *Palette;
 
 static int VBLK = 0x80;

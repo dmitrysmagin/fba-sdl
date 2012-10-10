@@ -101,7 +101,7 @@ static struct BurnInputInfo LastduelInputList[] =
 
 STDINPUTINFO(Lastduel);
 
-inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -111,7 +111,7 @@ inline void DrvClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void DrvMakeInputs()
+static inline void DrvMakeInputs()
 {
 	// Reset Inputs
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0x00;
@@ -370,6 +370,38 @@ static struct BurnRomInfo DrvuRomDesc[] = {
 
 STD_ROM_PICK(Drvu);
 STD_ROM_FN(Drvu);
+
+static struct BurnRomInfo Ledstrm2RomDesc[] = {
+	{ "lsu-04.bin",    0x20000, 0x56a2f079, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "lsu-03.bin",    0x20000, 0x9b6408c0, BRF_ESS | BRF_PRG }, //	 1
+	{ "ls-02.bin",     0x20000, 0x05c0285e, BRF_ESS | BRF_PRG }, //	 2
+	{ "ls-01.bin",     0x20000, 0x8bf934dd, BRF_ESS | BRF_PRG }, //	 3
+	
+	{ "ls-07.bin",     0x10000, 0x98af7838, BRF_ESS | BRF_PRG }, //  4	Z80 Program 
+	
+	{ "ls-08.bin",     0x08000, 0x8803cf49, BRF_GRA },	     //  5	Characters
+	
+	{ "ls-12",         0x40000, 0x6c1b2c6c, BRF_GRA },	     //  6	BG Tiles
+	
+	{ "ls-11",         0x80000, 0x6bf81c64, BRF_GRA },	     //  7	FG Tiles
+	
+	{ "mg_m11.rom",    0x10000, 0xee319a64, BRF_GRA },	     //  8	Sprites
+	{ "07",            0x10000, 0x7152b212, BRF_GRA },	     //  9
+	{ "mg_m12.rom",    0x10000, 0x887ef120, BRF_GRA },	     //  10
+	{ "08",            0x10000, 0x72e5d525, BRF_GRA },	     //  11
+	{ "mg_m13.rom",    0x10000, 0xeae07db4, BRF_GRA },	     //  12
+	{ "09",            0x10000, 0x7b5175cb, BRF_GRA },	     //  13
+	{ "mg_m14.rom",    0x10000, 0x21e5424c, BRF_GRA },	     //  14
+	{ "10",            0x10000, 0x6db7ca64, BRF_GRA },	     //  15
+	
+	{ "ls-06",         0x20000, 0x88d39a5b, BRF_SND },	     //  16	Samples
+	{ "ls-05",         0x20000, 0xb06e03b5, BRF_SND },	     //  17
+	
+	{ "63s141.14k",    0x00100, 0x7f862e1e, BRF_GRA },	     //  18	PROM (Priority)
+};
+
+STD_ROM_PICK(Ledstrm2);
+STD_ROM_FN(Ledstrm2);
 
 static struct BurnRomInfo LastduelRomDesc[] = {
 	{ "ldu-06.rom",    0x20000, 0x4228a00b, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
@@ -958,7 +990,7 @@ static int DrvInit()
 	DrvSpritePriMask = 0x10;
 	DrvSpriteFlipYMask = 0x80;
 	
-	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime);
+	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(3579545);
 	
 	MSM6295Init(0, 7575, 98, 1);
@@ -1074,7 +1106,7 @@ static int LastduelInit()
 	DrvSpritePriMask = 0x00;
 	DrvSpriteFlipYMask = 0x40;
 	
-	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime);
+	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(3579545);
 	
 	// Reset the driver
@@ -1534,9 +1566,10 @@ static int DrvFrame()
 		SekClose();
 	}
 	
+	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2203Update(nBurnSoundLen);
-	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
+	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	ZetClose();
 	MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	
 	if (pBurnDraw) DrvDraw();
@@ -1577,10 +1610,11 @@ static int LastduelFrame()
 		if (i == 3 || i == 6) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 		SekClose();
 	}
-	
-	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2203Update(nBurnSoundLen);
-	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
+		
+	ZetOpen(0);
+	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
+	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	ZetClose();
 	
 	if (pBurnDraw) LastduelDraw();
 	
@@ -1706,6 +1740,16 @@ struct BurnDriver BurnDrvMadgearu = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
 	NULL, DrvuRomInfo, DrvuRomName, DrvInputInfo, DrvDIPInfo,
+	DrvInit, MadgearExit, DrvFrame, NULL, MadgearScan,
+	NULL, 240, 384, 3, 4
+};
+
+struct BurnDriver BurnDrvLedstrm2 = {
+	"ledstrm2", "madgear", NULL, "1988",
+	"Led Storm Rally 2011 (US)\0", NULL, "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S,
+	NULL, Ledstrm2RomInfo, Ledstrm2RomName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, MadgearExit, DrvFrame, NULL, MadgearScan,
 	NULL, 240, 384, 3, 4
 };

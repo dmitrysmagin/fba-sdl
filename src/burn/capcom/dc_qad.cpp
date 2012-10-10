@@ -250,16 +250,8 @@ static int QadInit()
   // Load graphics roms
   CpsLoadTilesByte(CpsGfx, 4);
 
-  nCpsLcReg=0x6c; // Layer control register is at 0x6c
-  CpsLayEn[1]=0x14;
-  CpsLayEn[2]=0x02;
-  CpsLayEn[3]=0x14;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x00;
-  CpsMProt[1]=0x00;
-  CpsMProt[2]=0x00;
-  CpsMProt[3]=0x00;
+  SetCpsBId(BATTRY_7, 0);
+  SetGfxMapper(mapper_QD22B);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,12,1);
@@ -334,16 +326,8 @@ static int QadjInit()
   // Load graphics roms
   CpsLoadTiles(CpsGfx         ,2);
 
-  nCpsLcReg=0x66; // Layer control register is at 0x66
-  CpsLayEn[1]=0x02;
-  CpsLayEn[2]=0x04;
-  CpsLayEn[3]=0x08;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x40;
-  CpsMProt[1]=0x42;
-  CpsMProt[2]=0x44;
-  CpsMProt[3]=0x46;
+  SetCpsBId(NOBATTRY, 0);
+  SetGfxMapper(mapper_qadj);
 
   // Load Z80 Rom
   nRet=BurnLoadRom(CpsZRom,6,1);

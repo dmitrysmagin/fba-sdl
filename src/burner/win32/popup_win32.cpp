@@ -334,14 +334,24 @@ int FBAPopupDestroyText()
 
 int FBAPopupDisplay(int nFlags)
 {
+	HMODULE hRiched = NULL;
+	
+#if defined (_UNICODE)
+	hRiched = LoadLibrary(L"RICHED20.DLL");
+#else
+	hRiched = LoadLibrary("RICHED20.DLL");
+#endif
+
 	nPopupFlags = nFlags;
 
 	SplashDestroy(true);
 
 	FBAPopupLog();
 
-	if (!(nPopupFlags & PUF_TYPE_LOGONLY)) {
+	if (!(nPopupFlags & PUF_TYPE_LOGONLY) && hRiched) {
 		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_POPUP), hScrnWnd, FBAPopupProc);
+		FreeLibrary(hRiched);
+		hRiched = NULL;
 	}
 
 	FBAPopupDestroyText();

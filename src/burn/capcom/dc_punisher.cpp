@@ -85,26 +85,8 @@ static int PunisherInit()
   CpsLoadTiles(CpsGfx         , 9);
   CpsLoadTiles(CpsGfx+0x200000, 13);
 
-  nCpsLcReg=0x52; // Layer control register is at 0x52
-  CpsLayEn[1]=0x04;
-  CpsLayEn[2]=0x02;
-  CpsLayEn[3]=0x20;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x00;
-  CpsMProt[1]=0x00;
-  CpsMProt[2]=0x00;
-  CpsMProt[3]=0x00;
-
-  // Start of Board ID improvments by KEV. 0x4e,0x0c00
-  CpsBID[0]=0x4e;
-  CpsBID[1]=0x0c;
-  CpsBID[2]=0x00;
-
-  MaskAddr[0]=0x54;
-  MaskAddr[1]=0x56;
-  MaskAddr[2]=0x48;
-  MaskAddr[3]=0x4a;
+  SetCpsBId(QSOUND_3, 0);
+  SetGfxMapper(mapper_PS63B);
 
   nRet=BurnLoadRom(CpsZRom,17,1);
   punisher_decode();
@@ -145,26 +127,8 @@ static int PunishrjInit()
   CpsLoadTiles(CpsGfx         , 3);
   CpsLoadTiles(CpsGfx+0x200000, 7);
 
-  nCpsLcReg=0x52; // Layer control register is at 0x52
-  CpsLayEn[1]=0x04;
-  CpsLayEn[2]=0x02;
-  CpsLayEn[3]=0x20;
-
-  // Protection enable code by KEV
-  CpsMProt[0]=0x00;
-  CpsMProt[1]=0x00;
-  CpsMProt[2]=0x00;
-  CpsMProt[3]=0x00;
-
-  // Start of Board ID improvments by KEV. 0x4e,0x0c00
-  CpsBID[0]=0x4e;
-  CpsBID[1]=0x0c;
-  CpsBID[2]=0x00;
-
-  MaskAddr[0]=0x54;
-  MaskAddr[1]=0x56;
-  MaskAddr[2]=0x48;
-  MaskAddr[3]=0x4a;
+  SetCpsBId(QSOUND_3, 0);
+  SetGfxMapper(mapper_PS63B);
 
   nRet=BurnLoadRom(CpsZRom,11,1);
   punisher_decode();

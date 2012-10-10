@@ -1104,6 +1104,49 @@ static struct BurnRomInfo SmgpjRomDesc[] = {
 STD_ROM_PICK(Smgpj);
 STD_ROM_FN(Smgpj);
 
+static struct BurnRomInfo SmgpjaRomDesc[] = {
+	{ "epr12432a.58",     0x20000, 0x22517672, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr12433a.63",     0x20000, 0xa46b5d13, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+		
+	{ "epr12441a.20",     0x20000, 0x2c9599c1, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr12442a.29",     0x20000, 0x77a5ec16, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+
+	{ "epr12429.154",     0x10000, 0x5851e614, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12430.153",     0x10000, 0x05e00134, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12431.152",     0x10000, 0x35572f4a, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "mpr12425.90",      0x20000, 0x14bf2a15, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12426.94",      0x20000, 0x28b60dc0, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12427.98",      0x20000, 0x0a367928, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12428.102",     0x20000, 0xefa80ad5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12421.91",      0x20000, 0x25f46140, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12422.95",      0x20000, 0xcb51c8f6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12423.99",      0x20000, 0x0be9818e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12424.103",     0x20000, 0x0ce00dfc, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12417.92",      0x20000, 0xa806eabf, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12418.96",      0x20000, 0xed1a0f2b, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12419.100",     0x20000, 0xce4568cb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12420.104",     0x20000, 0x679442eb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12413.93",      0x20000, 0x2f1693df, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12414.97",      0x20000, 0xc78f3d45, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12415.101",     0x20000, 0x6080e9ed, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12416.105",     0x20000, 0x6f1f2769, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr12436.17",      0x10000, 0x16ec5f0a, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr12587.14",      0x08000, 0x2afe648b, SYS16_ROM_Z80PROG2 | BRF_ESS | BRF_PRG },
+	
+	{ "mpr12437.11",      0x20000, 0xa1c7e712, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "mpr12438.12",      0x20000, 0x6573d46b, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "mpr12439.13",      0x20000, 0x13bf6de5, SYS16_ROM_PCMDATA | BRF_SND },
+	
+	{ "317-0124a.key",    0x02000, 0x022a8a16, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Smgpja);
+STD_ROM_FN(Smgpja);
+
 static struct BurnRomInfo SmgpuRomDesc[] = {
 	{ "ep12561c.58",      0x20000, 0xa5b0f3fe, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "ep12562c.63",      0x20000, 0x799e55f4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1546,6 +1589,13 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x0e8000 && a <= 0x0e801f) {
+		if (a == 0x0e8016) {
+			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
+			ZetNmi();
+			ZetClose();
+		}
+		
 		System16CompareTimerChipWrite(0, (a - 0x0e8000) >> 1, d);
 		return;
 	}
@@ -1558,7 +1608,9 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 		if (offset == 2) {
 			System16VideoEnable = d & 0x20;
 			if (!(d & 0x01)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 		}
 		return;
@@ -1625,7 +1677,9 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 		if (offset == 2) {
 			System16VideoEnable = d & 0x20;
 			if (!(d & 0x01)) {
+				ZetOpen(0);
 				ZetReset();
+				ZetClose();
 			}
 		}
 		return;
@@ -1662,8 +1716,11 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 		}
 		
 		case 0x0e8017: {
+			System16CompareTimerChipWrite(0, (a - 0x0e8000) >> 1, d);
 			System16SoundLatch = d & 0xff;
+			ZetOpen(0);
 			ZetNmi();
+			ZetClose();
 			return;
 		}
 	}
@@ -2160,7 +2217,7 @@ struct BurnDriver BurnDrvRachero = {
 
 struct BurnDriver BurnDrvSmgp = {
 	"smgp", NULL, NULL, "1989",
-	"Super Monaco GP (set 8, World, Rev B, 'Twin', FD1094 317-0126a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 9, World, Rev B, 'Twin', FD1094 317-0126a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpRomInfo, SmgpRomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2170,7 +2227,7 @@ struct BurnDriver BurnDrvSmgp = {
 
 struct BurnDriver BurnDrvSmgp5 = {
 	"smgp5", "smgp", NULL, "1989",
-	"Super Monaco GP (set 6, World, 'Air Drive Cabinet', FD1094 317-0126)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 7, World, 'Air Drive Cabinet', FD1094 317-0126)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgp5RomInfo, Smgp5RomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2180,7 +2237,7 @@ struct BurnDriver BurnDrvSmgp5 = {
 
 struct BurnDriver BurnDrvSmgp6 = {
 	"smgp6", "smgp", NULL, "1989",
-	"Super Monaco GP (set 7, World, Rev A, FD1094 317-0126a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 8, World, Rev A, FD1094 317-0126a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgp6RomInfo, Smgp6RomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2190,7 +2247,7 @@ struct BurnDriver BurnDrvSmgp6 = {
 
 struct BurnDriver BurnDrvSmgpj = {
 	"smgpj", "smgp", NULL, "1989",
-	"Super Monaco GP (set 1, Japan, Rev B, FD1094 317-0124a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 2, Japan, Rev B, FD1094 317-0124a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpjRomInfo, SmgpjRomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2198,9 +2255,19 @@ struct BurnDriver BurnDrvSmgpj = {
 	NULL, 320, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvSmgpja = {
+	"smgpja", "smgp", NULL, "1989",
+	"Super Monaco GP (set 1, Japan, Rev A, FD1094 317-0124a)\0", NULL, "Sega", "X-Board",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
+	NULL, SmgpjaRomInfo, SmgpjaRomName, SmgpInputInfo, SmgpDIPInfo,
+	SmgpInit, XBoardExit, XBoardFrame, NULL, XBoardScan,
+	NULL, 320, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvSmgpu = {
 	"smgpu", "smgp", NULL, "1989",
-	"Super Monaco GP (set 5, US, Rev C, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 6, US, Rev C, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, SmgpuRomInfo, SmgpuRomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2210,7 +2277,7 @@ struct BurnDriver BurnDrvSmgpu = {
 
 struct BurnDriver BurnDrvSmgpu1 = {
 	"smgpu1", "smgp", NULL, "1989",
-	"Super Monaco GP (set 4, US, Rev B, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 5, US, Rev B, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu1RomInfo, Smgpu1RomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2220,7 +2287,7 @@ struct BurnDriver BurnDrvSmgpu1 = {
 
 struct BurnDriver BurnDrvSmgpu2 = {
 	"smgpu2", "smgp", NULL, "1989",
-	"Super Monaco GP (set 3, US, Rev A, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 4, US, Rev A, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu2RomInfo, Smgpu2RomName, SmgpInputInfo, SmgpDIPInfo,
@@ -2230,7 +2297,7 @@ struct BurnDriver BurnDrvSmgpu2 = {
 
 struct BurnDriver BurnDrvSmgpu3 = {
 	"smgpu3", "smgp", NULL, "1989",
-	"Super Monaco GP (set 2, US, FD1094 317-0125a)\0", "Imperfect Sound", "Sega", "X-Board",
+	"Super Monaco GP (set 3, US, FD1094 317-0125a)\0", NULL, "Sega", "X-Board",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEMX | HARDWARE_SEGA_SPRITE_LOAD32 | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Smgpu3RomInfo, Smgpu3RomName, SmgpInputInfo, SmgpDIPInfo,

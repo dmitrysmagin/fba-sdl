@@ -186,15 +186,17 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 
 		x=ps[0]; y=ps[1]; n=ps[2]; a=ps[3];
 
-		if (Wonders3 && n>=0x2a00) {
+/*		if (Wonders3 && n>=0x2a00) {
 			if (n==0xffff)	continue;
 			n+=0x4000;
 		} else if (Forgottn) {
 			if (n==0xd400)	continue;
 			n+=0x4000;
 		} else if (Ghouls && n>=0x1000)
-			n+=0x4000;
-
+			n+=0x4000;*/
+		n = GfxRomBankMapper(GFXTYPE_SPRITES, n);
+		if (n == -1) continue;
+		
 		// CPS1 coords are 9 bit signed?
 		x&=0x01ff; if (x>=0x1c0) x-=0x200;
 		y&=0x01ff; y^=0x100; y-=0x100;
@@ -204,7 +206,7 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 
 		n|=(ps[1]&0x6000)<<3; // high bits of address
 		n<<=7; // Find real tile address
-
+		
 		// Find the palette for the tiles on this sprite
 		CpstPal = CpsObjPal + ((a & 0x1F) << 4);
 

@@ -634,7 +634,7 @@ static int aerofgtInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();												// Reset machine
@@ -1155,7 +1155,7 @@ static int DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -1666,7 +1666,7 @@ static int turbofrcInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();	
@@ -2186,7 +2186,7 @@ static int turbofrcFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -2627,7 +2627,7 @@ static int karatblzInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();	
@@ -2826,7 +2826,7 @@ static int karatblzFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3356,7 +3356,7 @@ static int spinlbrkInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	bg2scrollx = 0;	// 
@@ -3488,7 +3488,7 @@ static int spinlbrkFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3866,7 +3866,7 @@ static int aerofgtbInit()
 		ZetClose();
 	}
 	
-	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime);
+	BurnYM2610Init(8000000, RomSnd2, &RomSndSize2, RomSnd1, &RomSndSize1, &aerofgtFMIRQHandler, aerofgtSynchroniseStream, aerofgtGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	DrvDoReset();												// Reset machine
@@ -4372,7 +4372,7 @@ static int aerofgtbFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(nBurnSoundLen);
+	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();

@@ -4,7 +4,7 @@
 
 #define MAX_YM2203	2
 
-void (*BurnYM2203Update)(int nSegmentEnd);
+void (*BurnYM2203Update)(short* pSoundBuf, int nSegmentEnd);
 
 static int (*BurnYM2203StreamCallback)(int nSoundRate);
 
@@ -24,10 +24,12 @@ static unsigned int nFractionalPosition;
 
 static int nNumChips = 0;
 
+static int bYM2203AddSignal;
+
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM2203UpdateDummy(int /* nSegmentEnd */)
+static void YM2203UpdateDummy(short*, int /* nSegmentEnd */)
 {
 	return;
 }
@@ -95,9 +97,8 @@ static void YM2203Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void YM2203UpdateResample(int nSegmentEnd)
+static void YM2203UpdateResample(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 	int nSamplesNeeded = nSegmentEnd * nBurnYM2203SoundRate / nBurnSoundRate + 1;
 
@@ -155,7 +156,11 @@ static void YM2203UpdateResample(int nSegmentEnd)
 									   pYM2203Buffer[6][(nFractionalPosition >> 16) - 2] + pYM2203Buffer[11][(nFractionalPosition >> 16) - 2],
 									   pYM2203Buffer[6][(nFractionalPosition >> 16) - 1] + pYM2203Buffer[11][(nFractionalPosition >> 16) - 1],
 									   pYM2203Buffer[6][(nFractionalPosition >> 16) - 0] + pYM2203Buffer[11][(nFractionalPosition >> 16) - 0]);
-		pSoundBuf[i + 0] = CLIP(nSample);
+		if (bYM2203AddSignal) {
+			pSoundBuf[i + 0] += CLIP(nSample);
+		} else {
+			pSoundBuf[i + 0] = CLIP(nSample);
+		}
 
 		// Right channel
 		nSample = INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
@@ -169,7 +174,11 @@ static void YM2203UpdateResample(int nSegmentEnd)
 									   pYM2203Buffer[7][(nFractionalPosition >> 16) - 1] + pYM2203Buffer[11][(nFractionalPosition >> 16) - 1],
 									   pYM2203Buffer[7][(nFractionalPosition >> 16) - 0] + pYM2203Buffer[11][(nFractionalPosition >> 16) - 0]);
 		
-		pSoundBuf[i + 1] = CLIP(nSample);
+		if (bYM2203AddSignal) {
+			pSoundBuf[i + 1] += CLIP(nSample);
+		} else {
+			pSoundBuf[i + 1] = CLIP(nSample);
+		}
 
 #undef CLIP
 
@@ -205,9 +214,8 @@ static void YM2203UpdateResample(int nSegmentEnd)
 	}
 }
 
-static void YM2203UpdateNormal(int nSegmentEnd)
+static void YM2203UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
 	int nSegmentLength = nSegmentEnd;
 	int i;
 
@@ -272,8 +280,13 @@ static void YM2203UpdateNormal(int nSegmentEnd)
 					nTotalSample = 32767;
 				}
 			}
-			pSoundBuf[(n << 1) + 0] = nTotalSample;
-
+			
+			if (bYM2203AddSignal) {
+				pSoundBuf[(n << 1) + 0] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 0] = nTotalSample;
+			}
+			
 			nTotalSample = nAYSample + pYM2203Buffer[1][n];
 			if (nNumChips > 1) nTotalSample += pYM2203Buffer[7][n];
 			if (nTotalSample < -32768) {
@@ -283,7 +296,12 @@ static void YM2203UpdateNormal(int nSegmentEnd)
 					nTotalSample = 32767;
 				}
 			}
-			pSoundBuf[(n << 1) + 1] = nTotalSample;
+			
+			if (bYM2203AddSignal) {
+				pSoundBuf[(n << 1) + 1] += nTotalSample;
+			} else {
+				pSoundBuf[(n << 1) + 1] = nTotalSample;
+			}
 		}
 	}
 
@@ -357,9 +375,10 @@ void BurnYM2203Exit()
 	if (nNumChips > 1) free(pAYBuffer2);
 	
 	nNumChips = 0;
+	bYM2203AddSignal = 0;
 }
 
-int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)())
+int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)(), int bAddSignal)
 {
 	if (num > MAX_YM2203) num = MAX_YM2203;
 	
@@ -418,6 +437,7 @@ int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int 
 	nFractionalPosition = 0;
 	
 	nNumChips = num;
+	bYM2203AddSignal = bAddSignal;
 
 	return 0;
 }

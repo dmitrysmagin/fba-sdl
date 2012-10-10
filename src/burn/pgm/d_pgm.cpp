@@ -348,7 +348,7 @@ STD_ROM_FN(orlegend);
 
 struct BurnDriver BurnDrvOrlegend = {
 	"orlegend", NULL, "pgm", "1997",
-	"Oriental Legend\0Xi Yo Gi Shi Re Zuang (V126)\0", NULL, "IGS", "PGM",
+	"Oriental Legend - Xi Yo Gi Shi Re Zuang (V126)\0", NULL, "IGS", "PGM",
 	L"Oriental Legend\0\u897F\u6E38\u91CA\u5384\u4F20 (V126)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, orlegendRomInfo, orlegendRomName, pgmInputInfo, orlegendDIPInfo,
@@ -383,7 +383,7 @@ STD_ROM_FN(orlegnde);
 
 struct BurnDriver BurnDrvOrlegnde = {
 	"orlegnde", "orlegend", "pgm", "1997",
-	"Oriental Legend\0Xi Yo Gi Shi Re Zuang (V112)\0", NULL, "IGS", "PGM",
+	"Oriental Legend - Xi Yo Gi Shi Re Zuang (V112)\0", NULL, "IGS", "PGM",
 	L"Oriental Legend\0\u897F\u6E38\u91CA\u5384\u4F20 (V112)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, orlegndeRomInfo, orlegndeRomName, pgmInputInfo, orlegendDIPInfo,
@@ -418,7 +418,7 @@ STD_ROM_FN(orlegndc);
 
 struct BurnDriver BurnDrvOrlegndc = {
 	"orlegndc", "orlegend", "pgm", "1997",
-	"Oriental Legend\0Xi Yo Gi Shi Re Zuang (V112, Chinese Board)\0", NULL, "IGS", "PGM",
+	"Oriental Legend - Xi Yo Gi Shi Re Zuang (V112, Chinese Board)\0", NULL, "IGS", "PGM",
 	L"Oriental Legend\0\u897F\u6E38\u91CA\u5384\u4F20 (V112, Chinese Board)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, orlegndcRomInfo, orlegndcRomName, pgmInputInfo, orlegndcDIPInfo,
@@ -456,7 +456,7 @@ STD_ROM_FN(orld111c);
 
 struct BurnDriver BurnDrvOrld111c = {
 	"orld111c", "orlegend", "pgm", "1997",
-	"Oriental Legend\0Xi Yo Gi Shi Re Zuang (V111, Chinese Board)\0", NULL, "IGS", "PGM",
+	"Oriental Legend - Xi Yo Gi Shi Re Zuang (V111, Chinese Board)\0", NULL, "IGS", "PGM",
 	L"Oriental Legend\0\u897F\u6E38\u91CA\u5384\u4F20 (V111, Chinese Board)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, orld111cRomInfo, orld111cRomName, pgmInputInfo, orld111cDIPInfo,
@@ -558,7 +558,7 @@ struct BurnDriver BurnDrvDrgw2 = {
 	"drgw2", NULL, "pgm", "1997",
 	"Dragon World II (V110X, Export)\0", "Unemulated protection", "IGS", "PGM",
 	NULL, NULL, NULL, NULL,
-	BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, drgw2RomInfo, drgw2RomName, pgmInputInfo, pgmDIPInfo,
 	drgw2Init,pgmExit,pgmFrame,pgmDraw,pgmScan,&nPgmPalRecalc,
 	448,224,4,3
@@ -610,11 +610,11 @@ static struct BurnRomInfo drgw2jRomDesc[] = {
 STDROMPICKEXT(drgw2j, drgw2j, pgm);
 STD_ROM_FN(drgw2j);
 
-struct BurnDriverD BurnDrvDrgw2j = {
+struct BurnDriver BurnDrvDrgw2j = {
 	"drgw2j", "drgw2", "pgm", "1997",
 	"Chuugokuryuu II (V100J, Japan)\0", "Unemulated protection", "IGS", "PGM",
 	L"\u4E2D\u570B\u9F8D II (V100J, Japan)\0", NULL, NULL, NULL,
-	BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, drgw2jRomInfo, drgw2jRomName, pgmInputInfo, pgmDIPInfo,
 	drgw2Init,pgmExit,pgmFrame,pgmDraw,pgmScan,&nPgmPalRecalc,
 	448,224,4,3
@@ -927,7 +927,7 @@ STD_ROM_FN(olds100);
 
 struct BurnDriverD BurnDrvOlds100 = {
 	"olds100", "olds", "pgm", "1999",
-	"Oriental Legend Special\0Xi Yo Gi Shi Re Zuang Super (V100)\0", NULL, "IGS", "PGM",
+	"Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100)\0", NULL, "IGS", "PGM",
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, olds100RomInfo, olds100RomName, pgmInputInfo, sangoDIPInfo,
@@ -969,7 +969,7 @@ STD_ROM_FN(olds100a);
 
 struct BurnDriverD BurnDrvOlds100a = {
 	"olds100a", "olds", "pgm", "1999",
-	"Oriental Legend Special\0Xi Yo Gi Shi Re Zuang Super (V100 alt)\0", NULL, "IGS", "PGM",
+	"Oriental Legend Special - Xi Yo Gi Shi Re Zuang Super (V100 alt)\0", NULL, "IGS", "PGM",
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, olds100aRomInfo, olds100aRomName, pgmInputInfo, sangoDIPInfo,
@@ -1088,7 +1088,7 @@ static int kovInit()
 
 struct BurnDriver BurnDrvKov = {
 	"kov", NULL, "pgm", "1999",
-	"Knights of Valour\0Sangoku Senki (V117)\0", NULL, "IGS", "PGM",
+	"Knights of Valour - Sangoku Senki (V117)\0", NULL, "IGS", "PGM",
 	L"Knights of Valour\0\u4E09\u56FD\u6226\u7D00\0\u4E09\u56FD\u6218\u7EAA (V117)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, kovRomInfo, kovRomName, pgmInputInfo, sangoDIPInfo,
@@ -1120,7 +1120,7 @@ STD_ROM_FN(kov115);
 
 struct BurnDriver BurnDrvKov115 = {
 	"kov115", "kov", "pgm", "1999",
-	"Knights of Valour\0Sangoku Senki (V115)\0", NULL, "IGS", "PGM",
+	"Knights of Valour - Sangoku Senki (V115)\0", NULL, "IGS", "PGM",
 	L"Knights of Valour\0\u4E09\u56FD\u6226\u7D00\0\u4E09\u56FD\u6218\u7EAA (V115)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, kov115RomInfo, kov115RomName, pgmInputInfo, sangoDIPInfo,
@@ -1156,7 +1156,7 @@ STD_ROM_FN(kovj);
 
 struct BurnDriver BurnDrvKovj = {
 	"kovj", "kov", "pgm", "1999",
-	"Knights of Valour\0Sangoku Senki (V100, Japanese Board)\0", NULL, "IGS", "PGM",
+	"Knights of Valour - Sangoku Senki (V100, Japanese Board)\0", NULL, "IGS", "PGM",
 	L"Knights of Valour\0\u4E09\u56FD\u6226\u7D00\0\u4E09\u56FD\u6218\u7EAA (V100, Japanese Board)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, kovjRomInfo, kovjRomName, pgmInputInfo, kovjDIPInfo,
@@ -1188,7 +1188,7 @@ STD_ROM_FN(kovplus);
 
 struct BurnDriver BurnDrvKovplus = {
 	"kovplus", "kov", "pgm", "1999",
-	"Knights of Valour Plus\0Sangoku Senki Plus (V119)\0", NULL, "IGS", "PGM",
+	"Knights of Valour Plus - Sangoku Senki Plus (V119)\0", NULL, "IGS", "PGM",
 	L"Knights of Valour Plus\0\u4E09\u56FD\u6226\u7D00 Plus\0\u4E09\u56FD\u6218\u7EAA Plus (V119)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, kovplusRomInfo, kovplusRomName, pgmInputInfo, sangoDIPInfo,
@@ -1224,7 +1224,7 @@ STD_ROM_FN(kovplusa);
 
 struct BurnDriver BurnDrvKovplusa = {
 	"kovplusa", "kov", "pgm", "1999",
-	"Knights of Valour Plus\0Sangoku Senki Plus (V119 alt)\0", NULL, "IGS", "PGM",
+	"Knights of Valour Plus - Sangoku Senki Plus (V119 alt)\0", NULL, "IGS", "PGM",
 	L"Knights of Valour Plus\0\u4E09\u56FD\u6226\u7D00 Plus\0\u4E09\u56FD\u6218\u7EAA Plus (V119 alt)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY, 4, HARDWARE_IGS_PGM,
 	NULL, kovplusaRomInfo, kovplusaRomName, pgmInputInfo, sangoDIPInfo,

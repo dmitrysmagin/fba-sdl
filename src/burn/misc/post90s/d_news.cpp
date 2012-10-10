@@ -219,6 +219,8 @@ void __fastcall NewsWrite(unsigned short a, unsigned char d)
 	}
 }
 
+
+
 // Function to Allocate and Index required memory
 static int MemIndex()
 {

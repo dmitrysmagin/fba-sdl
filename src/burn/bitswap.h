@@ -97,3 +97,4 @@
 		 ((((n) >> (bit00)) & 1) <<  0))
 
 #define BYTE_XOR_LE(a)  	((a))
+#define BIT(x,n) 		(((x)>>(n))&1)

@@ -70,7 +70,7 @@ endif
 objdir	= obj/VC_WIN32/$(NAME)/
 srcdir	= src/
 
-alldir	= burn burn/capcom burn/cave burn/cps3 burn/neogeo burn/pgm burn/sega burn/toaplan burn/misc burn/misc/dec0 burn/misc/post90s burn/misc/pre90s burn/misc/psikyo burn/misc/taito_68k burner burner/win32 interface interface/win32 interface/sdl cpu/doze cpu/a68k cpu/m68k cpu/sh2 cpu/m6502 cpu/nec kaillera/client generated
+alldir	= burn burn/capcom burn/cave burn/cps3 burn/megadrive burn/misc burn/misc/dec0 burn/misc/konami burn/misc/post90s burn/misc/pre90s burn/misc/psikyo burn/misc/taito_68k burn/neogeo burn/pgm burn/sega burn/taito burn/toaplan burner burner/win32 interface interface/win32 cpu/doze cpu/a68k cpu/i8039 cpu/m68k cpu/m6502 cpu/nec cpu/sh2 cpu/z80 generated
 
 incdir	= $(foreach dir,$(alldir),/I$(srcdir)$(dir)) /I$(objdir)generated
 
@@ -80,7 +80,7 @@ endif
 
 lib	+=	user32.lib gdi32.lib comdlg32.lib comctl32.lib shell32.lib winmm.lib \
 		advapi32.lib setupapi.lib dxguid.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dinput.lib \
-		libpngstat.lib zlibstat.lib $(srcdir)/kaillera/client/kailleraclient.lib
+		libpngstat.lib zlibstat.lib
 
 drvobj	=   	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o \
 		d_sailormn.o d_uopoko.o \
@@ -117,21 +117,29 @@ drvobj	=   	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwa
 		\
 		d_opwolf.o d_rainbow.o d_rastan.o d_superman.o d_twinhawk.o \
 		\
+		d_mia.o d_tmnt.o \
+		\
+		d_taitoz.o \
+		\
 		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bankp.o d_bombjack.o d_dotrikun.o \
-		d_epos.o d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrdo.o \
-		d_mrflea.o d_mystston.o d_pacman.o d_pkunwar.o d_prehisle.o d_quizo.o d_route16.o \
-		d_solomon.o d_sys1.o d_tigerheli.o d_tmnt.o d_tnzs.o d_wallc.o d_wc90.o \
+		d_epos.o d_funkybee.o d_gunsmoke.o d_jack.o d_kyugo.o d_madgear.o d_meijinsn.o d_minivdr.o \
+		d_mole.o d_mrdo.o d_mrflea.o d_mystston.o d_pacman.o d_pkunwar.o d_pooyan.o d_prehisle.o \
+		d_quizo.o d_route16.o d_scregg.o d_solomon.o d_sys1.o d_tigerheli.o d_tnzs.o d_wallc.o \
+		d_wc90.o \
 		\
 		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_ddragon3.o d_fstarfrc.o d_galpanic.o d_hyperpac.o \
-		d_kaneko16.o d_m92.o d_news.o d_ohmygod.o d_powerins.o d_seta2.o d_shadfrce.o d_wwfwfest.o \
+		d_kaneko16.o d_m90.o d_m92.o d_news.o d_ohmygod.o d_powerins.o d_raiden.o d_seta2.o \
+		d_shadfrce.o d_tumbleb.o d_wwfwfest.o irem_cpu.o \
 		\
-		d_parent.o
+		d_parent.o \
+		\
+		d_megadrive.o
 
 depobj	:= 	main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
 	   	sel.o media.o drv.o load.o run.o progress.o \
 	   	popup_win32.o scrn.o menu.o replay.o dynhuff.o memcard.o wave.o \
 	   	inpc.o inpd.o inps.o inpcheat.o inpdipsw.o sfactd.o stated.o numdial.o res.o \
-	   	cona.o localise.o fba_kaillera.o roms.o \
+	   	cona.o localise.o roms.o \
 	   	misc.o bzip.o unzip.o zipfn.o state.o statec.o sshot.o dat.o \
 	   	cong.o conc.o gamc.o gami.o \
 	   	\
@@ -142,9 +150,11 @@ depobj	:= 	main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
 	   	sek.o zet.o doze.o vez.o eeprom_93cxx.o \
 	   	burn_sound.o burn_sound_c.o timer.o \
 	   	burn_ym2151.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o burn_ym2203.o burn_ym2612.o \
-	   	ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o ics2115.o msm5205.o msm6295.o rf5c68.o ymf278b.o ymz280b.o \
+	   	ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o \
+	   	dac.o ics2115.o msm5205.o msm6295.o rf5c68.o segapcm.o sn76496.o upd7759.o ymf278b.o ymz280b.o \
 	   	x1010.o \
-	   	sh2.o m6502.o nec.o \
+	   	\
+	   	i8039.o m6502.o m6502_intf.o nec.o sh2.o z80.o z80daisy.o \
 	   	\
 	   	interface.o \
 	   	vid_interface.o vid_support.o vid_softfx.o \
@@ -155,7 +165,7 @@ depobj	:= 	main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
 	   	\
 	   	cave.o cave_tile.o cave_sprite.o cave_palette.o \
 	   	\
-	   	cps.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
+	   	cps.o cps_config.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
 	   	cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o dc_input.o \
 	   	cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
 	   	kabuki.o \
@@ -166,18 +176,25 @@ depobj	:= 	main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
 	   	\
 	   	pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
 	   	\
-	   	sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_pcm.o sys16_ppi.o genesis_vid.o \
+	   	sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_ppi.o genesis_vid.o \
+	   	\
 	   	toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
 	   	\
 	   	toa_bcu2.o toaplan1.o \
 	   	\
 	   	psikyo_tile.o psikyo_sprite.o psikyo_palette.o \
 	   	\
-	   	dec_misc.o dec_vid.o \
+	   	dec_aud.o dec_misc.o dec_vid.o \
 	   	\
 	   	rain_chip.o taito_gfx.o vid_sysx.o vid_pc080sn.o vid_pc090oj.o snd_tc0140.o \
 	   	\
-	   	tiles_generic.o
+	   	K052109.o tmnt_inp.o tmnt_pal.o tmnt_run.o tmnt_til.o \
+	   	\
+	   	tc0110pcr.o tc0220ioc.o tc0150rod.o tc0140syt.o tc0100scn.o \
+	   	\
+	   	tiles_generic.o \
+	   	\
+		megadrive.o
 
 ifdef	DEBUG
 depobj += m68kdasm.o

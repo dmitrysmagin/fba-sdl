@@ -431,9 +431,11 @@ static char TreeBuilding = 0;									// if 1, ignore TVN_SELCHANGED messages
 #define MASKTOAPLAN 	(1 << (HARDWARE_PREFIX_TOAPLAN		>> 24))
 #define MASKCAVE	(1 << (HARDWARE_PREFIX_CAVE		>> 24))
 #define MASKPGM		(1 << (HARDWARE_PREFIX_IGS_PGM		>> 24))
+#define MASKMEGADRIVE	(1 << (HARDWARE_PREFIX_SEGA_MEGADRIVE   >> 24))
+#define MASKTAITO	(1 << (HARDWARE_PREFIX_TAITO		>> 24))
 #define MASKMISCPRE90S	(1 << (HARDWARE_PREFIX_MISC_PRE90S	>> 24))
 #define MASKMISCPOST90S	(1 << (HARDWARE_PREFIX_MISC_POST90S	>> 24))
-#define MASKALL		(MASKCPS | MASKCPS2 | MASKCPS3 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM | MASKMISCPRE90S | MASKMISCPOST90S)
+#define MASKALL		(MASKCPS | MASKCPS2 | MASKCPS3 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM | MASKTAITO | MASKMEGADRIVE | MASKMISCPRE90S | MASKMISCPOST90S)
 
 #define AVAILONLY	(1 << 16)
 #define AUTOEXPAND	(1 << 17)
@@ -764,6 +766,8 @@ static void RefreshPanel()
 	CheckDlgButton(hSelDlg, IDC_CHECKMISCPRE90S, nLoadMenuShowX & MASKMISCPRE90S ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKMISCPOST90S, nLoadMenuShowX & MASKMISCPOST90S ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKPGM, nLoadMenuShowX & MASKPGM ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKTAITO, nLoadMenuShowX & MASKTAITO ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKMEGADRIVE, nLoadMenuShowX & MASKMEGADRIVE ? BST_UNCHECKED : BST_CHECKED);
 
 	CheckDlgButton(hSelDlg, IDC_CHECKAUTOEXPAND, (nLoadMenuShowX & AUTOEXPAND) ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKAVAILABLEONLY, (nLoadMenuShowX & AVAILONLY) ? BST_CHECKED : BST_UNCHECKED);
@@ -1144,16 +1148,16 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
         TCI.mask = TCIF_TEXT; 
 
 #if defined (_UNICODE)
-        TCI.pszText = L"Title"; // INGAME PREVIEW TAB
+        TCI.pszText = L"In Game"; // INGAME PREVIEW TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 0, (LPARAM) &TCI);        
-		TCI.pszText = L"Ingame"; // TITLE SCREEN PREVIEW TAB
+		TCI.pszText = L"Title"; // TITLE SCREEN PREVIEW TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 1, (LPARAM) &TCI);        
         TCI.pszText = L"Flyer"; // GAME FLYER TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 2, (LPARAM) &TCI);
 #else
-        TCI.pszText = "Title"; // INGAME PREVIEW TAB
+        TCI.pszText = "In Game"; // INGAME PREVIEW TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 0, (LPARAM) &TCI);        
-		TCI.pszText = "Ingame"; // TITLE SCREEN PREVIEW TAB
+		TCI.pszText = "Title"; // TITLE SCREEN PREVIEW TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 1, (LPARAM) &TCI);        
         TCI.pszText = "Flyer"; // GAME FLYER TAB
         SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 2, (LPARAM) &TCI);
@@ -1258,10 +1262,6 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 		hTabControl = GetDlgItem(hSelDlg, IDC_TAB1);
 
-#if 1 && !defined FBA_DEBUG
-//		EnableWindow(GetDlgItem(hDlg, IDC_CHECKSEGA), FALSE);
-#endif
-
 #if !defined _UNICODE
 		EnableWindow(GetDlgItem(hDlg, IDC_SEL_ASCIIONLY), FALSE);
 #endif
@@ -1355,6 +1355,14 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nLoadMenuShowX ^= MASKPGM;
 					RebuildEverything();
 					break;
+				case IDC_CHECKTAITO:
+					nLoadMenuShowX ^= MASKTAITO;
+					RebuildEverything();
+					break;
+				case IDC_CHECKMEGADRIVE:
+					nLoadMenuShowX ^= MASKMEGADRIVE;
+					RebuildEverything();
+					break;
 
 				case IDC_CHECKAVAILABLEONLY:
 					nLoadMenuShowX ^= AVAILONLY;
@@ -1386,16 +1394,16 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	if (Msg == WM_TIMER) {
 		switch(nPrevType)
 		{
-			//Title
+			//Ingame
 			case 1:
 			{
-				UpdatePreview(false, TITLE_PREVIEW_DIRECTORY, 1);
+				UpdatePreview(false, PREVIEW_DIRECTORY, 1);
 				break;
 			}
-			//Ingame
+			//Title
 			case 2:
 			{
-				UpdatePreview(false, PREVIEW_DIRECTORY, 2);
+				UpdatePreview(false, TITLE_PREVIEW_DIRECTORY, 2);
 				break;
 			}
 			//Flyer
@@ -1498,16 +1506,16 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
                     // Preview Tabs and their job... 
                     switch(iPage)
                     { 
-					case 0: // TITLE
+					case 0: // INGAME
 						if (bDrvSelected==true) {
-							UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+							UpdatePreview(true, PREVIEW_DIRECTORY, 1);
 							nViewPreview = 1;
 						}
 						break;
 
-					case 1: // INGAME
+					case 1: // TITLE
 						if (bDrvSelected==true) {
-							UpdatePreview(true, PREVIEW_DIRECTORY, 2);
+							UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 2);
 							nViewPreview = 2;
 						}
 						break;
@@ -1519,9 +1527,9 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						}
 						break;
 
-					default: // DEFAULT (TITLE) 
+					default: // DEFAULT (INGAME) 
 						if (bDrvSelected==true) {
-							UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+							UpdatePreview(true, PREVIEW_DIRECTORY, 1);
 							nViewPreview = 1;
 						}
 						break;					
@@ -1809,16 +1817,16 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			switch(nViewPreview)
 			{
 			case 1:
-				UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+				UpdatePreview(true, PREVIEW_DIRECTORY, 1);
 				break;
 			case 2: 
-				UpdatePreview(true, PREVIEW_DIRECTORY, 2);
+				UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 2);
 				break;
 			case 3:
 				UpdatePreview(true, FLYER_DIRECTORY, 3);
 				break;
 			default:
-				UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+				UpdatePreview(true, PREVIEW_DIRECTORY, 1);
 				break;
 			}
 
@@ -1832,7 +1840,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 int SelDialog()
 {
 	int nOldSelect = nBurnDrvSelect;
-
+	
 	InitCommonControls();
 	nViewPreview = 1; // Set to view INGAME each time the dialog comes up
 

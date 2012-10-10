@@ -153,24 +153,8 @@ static int DrvInit()
    CpsLoadTiles(CpsGfx,5);
 
    //-----------------------------------------------------
-   nCpsLcReg =0x52;
-   CpsLayEn[1]=0x08;
-   CpsLayEn[2]=0x30;
-   CpsLayEn[3]=0x30;
-
-   //-----------------------------------------------------
-   CpsBID[0]=0x5e;
-   CpsBID[1]=0x04;
-   CpsBID[2]=0x04;
-   //-----------------------------------------------------
-
-   MaskAddr[0]=0x54;
-   MaskAddr[1]=0x56;
-   MaskAddr[2]=0x58;
-   MaskAddr[3]=0x5a;
-
-   EndScroll[SCROLL_2]=0x3fff;
-   StartScroll[SCROLL_3]=0x0e00;
+   SetCpsBId(CPS_B_14, 0);
+   SetGfxMapper(mapper_CK24B);
 
    // Load Z80 Rom
    nRet=BurnLoadRom(CpsZRom,9,1);
@@ -189,9 +173,6 @@ static int DrvExit()
 {
 
    CpsRunExit();
-
-   EndScroll[SCROLL_2]=0xffff;
-   StartScroll[SCROLL_3]=0;
 
    CpsExit();
    nCpsAdLen=0; nCpsZRomLen=0; nCpsGfxLen=0; nCpsRomLen=0;

@@ -294,10 +294,6 @@ void FreeROMInfo();
 // res.cpp
 int ResCreate();
 
-// fba_kaillera.cpp
-int KailleraInitInput();
-int KailleraGetInput();
-
 // replay.cpp
 extern int nReplayStatus;
 int RecordInput();
