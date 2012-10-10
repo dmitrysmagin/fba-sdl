@@ -17,171 +17,41 @@ FB Alpha is an arcade emulator supporting the following hardware platforms;
 What's New?
 -----------
 
-v0.2.96.72
+v0.2.96.73
    This is still an alpha release!
 
    Note that, if compiled with GCC, you will need to use version 3.3.x, and
    the experimental DirectX 9 blitter is not built.
 
-This list is nothing like exhaustive. These are only the highlights of a big new version;
+Thanks go to the neosource forum regulars for a lot of this stuff. iq_132 has
+written many drivers for older games, and Oopsware has contributed some impressive
+drivers too. Captain CPS-X and KOF2112 have also tidied up some things. This list
+is from memory and some stuff is sure to be missing. Here's what's new anyway;
 
-- Thanks to the contributions of OopsWare we have some nice new drivers
-      - PGM Hardware
-      - Video System Hardware
-      - 1945k III
-      - Gals Panic
-      - Power Instinct
-      - Shadow Force
-
-- I have been busy with the following
-      - Added a Sega System 18 driver
-      - Added Ace Attacker, Excite League and Super League to the Sega System 16 drivers
-      - Added various bootlegs to the Sega System 16 driver
-      - Added driver for Kaneko 16 Hardware
-      - Added Honey Dolls, Snow Bros. 3, and The Winter Bobble to the Pandora based driver
-      - Added a generic lightgun interface to the burn library and converted all existing drivers to use it
-      - Emulated column and row scroll in System 16 tilemaps (still has a few issues with a few instances)
-      - Added support for (multiple) YM2612/3438 sound chips (as used by System 18)
-      - Added support for the RF5C68 PCM sound chip (still has issues which escape me at present, used by System 18)
-      - Fixed an issue with high BPP support in the generic tiles interface
-      - Matched all sets to MAME 0.117u3 and added some clones to various drivers
-
-- Added Ganbare Ginkun and Riot to the Tecmo 16 driver [BisonSAS]
-- Added kev's preliminary Dec0 driver to debug builds [kev]
-
-v0.2.96.71
-- Added driver for Galaxy Force 2 (gforce2, gforce2j)
-- Added driver for G-LOC (gloc, glocr360)
-- Added driver for Line of Fire (loffire, loffirej, loffireu)
-- Added driver for Major League (mjleague)
-- Added driver for Power Drift (pdrift, pdrifta, pdrifte, pdriftj)
-- Added driver for Rail Chase (rchase)
-- Added driver for Strike Fighter (strkgftr)
-- Fixed sprite flip in Sonic Boom
-- Added some unicode titles [BisonSAS]
-- Matched sets to MAME 0.114u1
-
-v0.2.96.70
-- Datfiles should be sorted properly now - thanks to LogiqX for pointing out the errors again
-
-v0.2.96.69
-- Optimised the FD1094 routines resulting in a big speedup for those games
-- Fixed some minor dat file issues - thanks to LogiqX for pointing them out
-
-v0.2.96.68
-- Added driver for Bullet using Aaron's preliminary FD1094 key (bullet)
-- Added driver for Enduro Racer (enduror, enduror1, endurobl)
-- Added driver for Final Tetris (finalttr)
-- Added driver for Hang-On (hangon)
-- Added driver for SDI (sdi, sdib, sdibl, defense)
-- Added driver for Space Harrier (sharrier, sharrir1)
-- Added driver for Sukeban Jansi Ryuko (sjryuko, sjryuko1)
-- Added driver for Twin Adventure (twinadv, twinadvk)
-- Emulated the NVRAM for X-Board, Out Run, System 16B and System 16A drivers, although Out Run games don't seem to
-  use it
-- Emulated the PPI I/O Chip and hooked it up for the System 16A and Out Run drivers
-- Fixed a bug in the System 16 Tilemap rendering (fixes Golden Axe, Wrestle War and some others)
-- Optimisations to the graphics rendering in the System 16, Out Run and X-Board drivers
-- Added an interface to the YM2203 FM sound core
-- Added mahjong controls to the default assignment routine and updated the mahjong games to use it
-- Fixed savestate support in some Cave drivers [BisonSAS]
-- Various driver cleanups [BisonSAS]
-- Improved the rom verify feature and moved the define to the makefile
-- Updated some unicode titles [BisonSAS]
-- Updated sets to match MAME 0.114
-
-v0.2.96.67
-- Added driver for AB Cop (abcop)
-- Added driver for After Burner (aburner2, aburner)
-- Added driver for Dunk Shot (dunkshot)
-- Added driver for E-Swat (eswat, eswatj, eswatu)
-- Added driver for Golden Axe (goldnaxe, goldnaxj, goldnaxu, goldnax1, goldnax2, goldnax3)
-- Added driver for GP Rider (gprider, gprider1)
-- Added driver for Heavyweight Champ (hwchamp)
-- Added driver for Racing Hero (rachero)
-- Added driver for RyuKyu (ryukyu)
-- Added driver for Super Monaco GP (smgp, smgp5, smgp6, smgpj, smgpu, smgpu1, smgpu2, smgpu3)
-- Added driver for Thunder Blade (thndrbld, thndrbd1)
-- Added Jan's preliminary driver for Madgear in debug builds only (madgear)
-- Added Kev's preliminary driver for Teenage Mutant Ninja Turtles in debug builds only (tmnt, tmntu, tmntua, tmht,
-  tmntj, tmht2p, tmnt2pj, tmnt2po)
-- Rewrite of the Bombjack driver [kev]
-- Fixed a crash in some FD-1094 encrypted games
-- Fixed the reset function for FD-1094 encrypted games
-- Cleanups to the Taito 68K drivers [BisonSAS]
-- Fixed bug in the preview cycling code for the Game Select dialog [Captain CPS-X]
-
-
-v0.2.96.66
-- Added driver for Cotton (cotton, cottonj, cottonu)
-- Added driver for Out Run (outrun, outrun1, outrun2, outrunb)
-- Added driver for Passing Shot (passshot, passshta, passshtj)
-- Added driver for Super Hang-On (shangon, shangon2, shangon3, shangnle)
-- Added driver for Turbo Out Run (toutrun, toutrun2)
-- Fixed a bug in the System 16 Sprite rendering [kev]
-- Fixed a problem with memory card support
-- Updated the region dips in the Battle Bakraid and Batrider drivers [BisonSAS]
-- Forced the Battle Bakraid driver to use the Musashi 68K core [BisonSAS]
-- Updated some unicode titles [BisonSAS]
-
-v0.2.96.65
-- Corrected the rom size of the v4 rom in lastbldh and lastsold
-- Finally beat the bug that sometimes hides the license dialog (hopefully!)
-- Updated the load dialog based on code from Captain CPS-X, should be the last change as I'm really happy with it
-- Updated sets to match MAME 0.112u4
-
-v0.2.96.64
-- Big update to the System 16 drivers - these drivers are still preliminary and thus still have issues (major issues
-  only listed);
-- Dynamic memory maps for System 16B are not emulated
-- Row and Column scroll not emulated for System 16A and B
-- Alernate tilemap select for System 16B not emulated
-- Some of the FD1094 encrypted games require a driver reset after loading before they boot
-- There are plenty of other small issues as well but most games are running well
-- Added driver for Biomechanical Toy (biomtoy) [kev, cleanup by BisonSAS]
-- Fixed blank tile bug in the Prehistoric Isle driver
-- Fixed bad tiles in The King of Fighters 99 driver [BisonSAS, Ryo, Robert, Yuri, Takuma)
-- Updated the CPS-1 drivers to allow brightness control in the palette
-- Removed the XOR from spf2ta now the decryption key is known
-- Cleanup to the Bombjack driver [BisonSAS]
-- Fixed issues with savestates in several drivers
-- Changed the game selection dialog again
-- Added/fixed several non-Latin titles [doomking, BisonSAS]
-- Updated several romsets to match MAME 0.112u3
-- Fixed the perl script that generates the driver list so that sets can be assigned to debug builds only again
-
-v0.2.96.63
-- Added garoubl to the Garou driver
-
-v0.2.96.62
-- Added driver for Choko (choko)
-- Added driver for Jyangokushi: Haoh no Saihai (jyangoku)
-- Added various CPS-2 clones now the decryption keys are known
-- Added rastsag1 to the Rastan driver
-- Fixed bug with EEPROM on startup in CPS games
-- Fixed crash bug in Q-Sound games with sound disabled
-- Enabled the "Tournament" mode in the tournament versions of Super Street Fighter 2 - now they try to connect to
-  other terminals (if you just want to play the games then change the setup in the "Test Menu", access using F2)
-- Fixed bug in datfile generation module
-- Various rom changes to match MAME 0.112u2 (with the exception of the XOR for spf2ta)
-
-v0.2.96.61
-- Fixed bug in System 16 sound - won't test with volume down in future!
-
-v0.2.96.60
-- Added Sega System 16A driver supporting Action Fighter, Alex Kidd, Fantasy Zone, Quartet, Shinobi and Time Scanner
-- Added various clones to the CPS-2 driver as the keys are now known
-- Added driver for Street Fighter Alpha CPS-Changer
-- Various renames and XOR removals to match MAME 0.111u5
-- Improved save state support in numerous drivers
-- Dropped the "(BH)" monikor from the App title
-
-v0.2.96.59
-- Fixed issues with sound in irrmaze, joyjoy, mahretsu, pspikes2 and socbrawl
-- Added sf2m2 to the Street Fighter 2 Champion Edition driver
-- Amended the game selection dialog and separated CPS-1/CPS-2 games
-- Widened the dip switch dialog
-
+- Added a generic tiles decoding routine and updated various drivers to use it
+- Added support for 32x32 tiles in the generic tile rendering module
+- Added support for multiple YM2203s to the YM2203 interface
+- Updated all sets to match MAME 0.123u1
+- Tidied up all source code to compile cleanly for all builds (unicode, non-unicode,
+  debug, non-debug)
+- Added support for M6502 CPU
+- Added support for SH-2 CPU
+- Added support for NEC V30 family CPU
+- Seperated misc drivers into "Misc (pre 90s)" and "Misc (post 90s)"
+- Moved some common sound cores into the burn folder
+- Added various clones and fixed some little issues in various games
+- Added driver for Madgear and Last Duel
+- Added driver for 1942
+- Added preliminary driver for 1943 and added support to the Zet interface to get the
+  BC register
+- Added Oopsware's CPS-3 driver
+- Added various drivers by iq_132
+- Cleaned up the drivers by iq_132 (seperated into Misc pre 90s category, corrected
+  aspect ratios, fixed rom-sets, etc.)
+- Added driver for seta2 hardware
+- Added preliminary driver for m92 hardware in debug builds
+- Added a d_parent module to put required parent drivers that don't have a specific
+  driver
 
 System requirements
 -------------------

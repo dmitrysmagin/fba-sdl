@@ -54,6 +54,30 @@ static struct BurnRomInfo EcofghtrRomDesc[] = {
 STD_ROM_PICK(Ecofghtr) STD_ROM_FN(Ecofghtr)
 
 static struct BurnRomInfo EcofghtuRomDesc[] = {
+	{ "uecu.03a",     0x80000, 0x22d88a4d, 1 | BRF_ESS | BRF_PRG },
+	{ "uecu.04a",     0x80000, 0x6436cfcd, 1 | BRF_ESS | BRF_PRG },
+	{ "uecu.05a",     0x80000, 0x336f121b, 1 | BRF_ESS | BRF_PRG },
+	{ "uecu.06a",     0x80000, 0x6f99d984, 1 | BRF_ESS | BRF_PRG },
+
+	{ "uec.13m",      0x200000, 0xdcaf1436, 3 | BRF_GRA },
+	{ "uec.15m",      0x200000, 0x2807df41, 3 | BRF_GRA },
+	{ "uec.17m",      0x200000, 0x8a708d02, 3 | BRF_GRA },
+	{ "uec.19m",      0x200000, 0xde7be0ef, 3 | BRF_GRA },
+	{ "uec.14m",      0x100000, 0x1a003558, 3 | BRF_GRA },
+	{ "uec.16m",      0x100000, 0x4ff8a6f9, 3 | BRF_GRA },
+	{ "uec.18m",      0x100000, 0xb167ae12, 3 | BRF_GRA },
+	{ "uec.20m",      0x100000, 0x1064bdc2, 3 | BRF_GRA },
+
+	{ "uec.01",       0x020000, 0xc235bd15, 4 | BRF_ESS | BRF_PRG },
+
+	{ "uec.11m",      0x200000, 0x81b25d39, 5 | BRF_SND },
+	{ "uec.12m",      0x200000, 0x27729e52, 5 | BRF_SND },
+};
+
+
+STD_ROM_PICK(Ecofghtu) STD_ROM_FN(Ecofghtu)
+
+static struct BurnRomInfo Ecofgtu1RomDesc[] = {
 	{ "uecu.03",       0x80000, 0x6792480c, 1 | BRF_ESS | BRF_PRG },
 	{ "uecu.04",       0x80000, 0x95ce69d5, 1 | BRF_ESS | BRF_PRG },
 	{ "uecu.05",       0x80000, 0x3a1e78ad, 1 | BRF_ESS | BRF_PRG },
@@ -75,7 +99,7 @@ static struct BurnRomInfo EcofghtuRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ecofghtu) STD_ROM_FN(Ecofghtu)
+STD_ROM_PICK(Ecofgtu1) STD_ROM_FN(Ecofgtu1)
 
 static struct BurnRomInfo UecologyRomDesc[] = {
 	{ "uecj.03",       0x80000, 0x94c40a4c, 1 | BRF_ESS | BRF_PRG },
@@ -137,10 +161,20 @@ struct BurnDriver BurnDrvCpsEcofghtr = {
 
 struct BurnDriver BurnDrvCpsEcofghtu = {
 	"ecofghtu", "ecofghtr", NULL, "1993",
-	"Eco Fighters (931203 USA)\0", NULL, "Capcom", "CPS2",
+	"Eco Fighters (940215 USA)\0", NULL, "Capcom", "CPS2",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS2,
 	NULL, EcofghtuRomInfo, EcofghtuRomName, DrvInputInfo, NULL,
+	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,384,224,4,3
+};
+
+struct BurnDriver BurnDrvCpsEcofgtu1 = {
+	"ecofgtu1", "ecofghtr", NULL, "1993",
+	"Eco Fighters (931203 USA)\0", NULL, "Capcom", "CPS2",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS2,
+	NULL, Ecofgtu1RomInfo, Ecofgtu1RomName, DrvInputInfo, NULL,
 	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
 };

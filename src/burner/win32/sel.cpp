@@ -423,15 +423,17 @@ static HICON hNotWorking, hNotFoundEss, hNotFoundNonEss;
 
 static char TreeBuilding = 0;									// if 1, ignore TVN_SELCHANGED messages
 
-#define MASKCPS		(1 << (HARDWARE_PREFIX_CAPCOM	>> 24))
+#define MASKCPS		(1 << (HARDWARE_PREFIX_CAPCOM		>> 24))
 #define MASKCPS2	(1 << (HARDWARE_PREFIX_CPS2		>> 24))
+#define MASKCPS3	(1 << (HARDWARE_PREFIX_CPS3		>> 24))
 #define MASKNEOGEO	(1 << (HARDWARE_PREFIX_SNK		>> 24))
 #define MASKSEGA	(1 << (HARDWARE_PREFIX_SEGA		>> 24))
-#define MASKTOAPLAN 	(1 << (HARDWARE_PREFIX_TOAPLAN	>> 24))
+#define MASKTOAPLAN 	(1 << (HARDWARE_PREFIX_TOAPLAN		>> 24))
 #define MASKCAVE	(1 << (HARDWARE_PREFIX_CAVE		>> 24))
-#define MASKMISC	(1 << (HARDWARE_PREFIX_MISC		>> 24))
 #define MASKPGM		(1 << (HARDWARE_PREFIX_IGS_PGM		>> 24))
-#define MASKALL		(MASKCPS | MASKCPS2 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM)
+#define MASKMISCPRE90S	(1 << (HARDWARE_PREFIX_MISC_PRE90S	>> 24))
+#define MASKMISCPOST90S	(1 << (HARDWARE_PREFIX_MISC_POST90S	>> 24))
+#define MASKALL		(MASKCPS | MASKCPS2 | MASKCPS3 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM | MASKMISCPRE90S | MASKMISCPOST90S)
 
 #define AVAILONLY	(1 << 16)
 #define AUTOEXPAND	(1 << 17)
@@ -537,7 +539,7 @@ static int SelListMake()
 		}
 
 		int nHardware = 1 << (BurnDrvGetHardwareCode() >> 24);
-		if ((nHardware & MASKALL) && (nHardware & nLoadMenuShowX) || ((nHardware & MASKALL) == 0) && (nLoadMenuShowX & (1 << (HARDWARE_PREFIX_MISC >> 8)))) {
+		if ((nHardware & MASKALL) && (nHardware & nLoadMenuShowX) || (nHardware & MASKALL) == 0) {
 			continue;
 		}
 
@@ -571,7 +573,7 @@ static int SelListMake()
 		}
 
 		int nHardware = 1 << (BurnDrvGetHardwareCode() >> 24);
-		if ((nHardware & MASKALL) && (nHardware & nLoadMenuShowX) || ((nHardware & MASKALL) == 0) && (nLoadMenuShowX & (1 << (HARDWARE_PREFIX_MISC >> 8)))) {
+		if ((nHardware & MASKALL) && (nHardware & nLoadMenuShowX) || ((nHardware & MASKALL) == 0)) {
 			continue;
 		}
 
@@ -754,11 +756,13 @@ static void RefreshPanel()
 
 	CheckDlgButton(hSelDlg, IDC_CHECKCPS1, nLoadMenuShowX & MASKCPS ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKCPS2, nLoadMenuShowX & MASKCPS2 ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKCPS3, nLoadMenuShowX & MASKCPS3 ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKNEOGEO, nLoadMenuShowX & MASKNEOGEO ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKSEGA, nLoadMenuShowX & MASKSEGA ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKTOAPLAN, nLoadMenuShowX & MASKTOAPLAN ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKCAVE, nLoadMenuShowX & MASKCAVE ? BST_UNCHECKED : BST_CHECKED);
-	CheckDlgButton(hSelDlg, IDC_CHECKMISC, nLoadMenuShowX & MASKMISC ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKMISCPRE90S, nLoadMenuShowX & MASKMISCPRE90S ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKMISCPOST90S, nLoadMenuShowX & MASKMISCPOST90S ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKPGM, nLoadMenuShowX & MASKPGM ? BST_UNCHECKED : BST_CHECKED);
 
 	CheckDlgButton(hSelDlg, IDC_CHECKAUTOEXPAND, (nLoadMenuShowX & AUTOEXPAND) ? BST_CHECKED : BST_UNCHECKED);
@@ -1319,6 +1323,10 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nLoadMenuShowX ^= MASKCPS2;
 					RebuildEverything();
 					break;
+				case IDC_CHECKCPS3:
+					nLoadMenuShowX ^= MASKCPS3;
+					RebuildEverything();
+					break;
 				case IDC_CHECKNEOGEO:
 					nLoadMenuShowX ^= MASKNEOGEO;
 					RebuildEverything();
@@ -1335,8 +1343,12 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nLoadMenuShowX ^= MASKCAVE;
 					RebuildEverything();
 					break;
-				case IDC_CHECKMISC:
-					nLoadMenuShowX ^= MASKMISC;
+				case IDC_CHECKMISCPRE90S:
+					nLoadMenuShowX ^= MASKMISCPRE90S;
+					RebuildEverything();
+					break;
+				case IDC_CHECKMISCPOST90S:
+					nLoadMenuShowX ^= MASKMISCPOST90S;
 					RebuildEverything();
 					break;
 				case IDC_CHECKPGM:

@@ -438,7 +438,7 @@ int robocopFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
+//	int nSoundBufferPos = 0;
 
 	SekNewFrame();
 
@@ -463,7 +463,7 @@ int robocopFrame()
 	return 0;
 }
 
-static int robocopScan(int nAction,int *pnMin)
+static int robocopScan(int /*nAction*/,int* /*pnMin*/)
 {
 
 	return 0;
@@ -473,7 +473,7 @@ struct BurnDriverD BurnDrvrobocop = {
 	"robocop", NULL, NULL, "1988",
 		"Robocop (World revision 4)\0", NULL, "Data East Corporation", "DEC0",
 		NULL, NULL, NULL, NULL,
-		BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+		BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 		NULL, robocopRomInfo, robocopRomName, robocopInputInfo, NULL,
 		robocopInit, robocopExit, robocopFrame, NULL, robocopScan,
 		NULL, 256, 256, 4, 3
@@ -483,7 +483,7 @@ struct BurnDriverD BurnDrvrobocopb = {
 	"robocopb", "robocop", NULL, "1988",
 		"Robocop (World bootleg)\0", NULL, "bootleg", "DEC0",
 		NULL, NULL, NULL, NULL,
-		BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+		BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 		NULL, robocopbRomInfo, robocopbRomName, robocopInputInfo, NULL,
 		robocopInit, robocopExit, robocopFrame, NULL, robocopScan,
 		NULL, 256, 256, 4, 3

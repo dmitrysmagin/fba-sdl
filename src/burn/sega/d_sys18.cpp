@@ -1009,8 +1009,8 @@ STD_ROM_PICK(Cltchtrj);
 STD_ROM_FN(Cltchtrj);
 
 static struct BurnRomInfo DdcrewRomDesc[] = {
-	{ "epr14160.a4",   0x40000, 0xb9f897b7, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr14161.a6",   0x40000, 0xbb03c1f0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14160.a4",  0x40000, 0xb9f897b7, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14161.a6",  0x40000, 0xbb03c1f0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14139.5a",  0x40000, 0x06c31531, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14141.7a",  0x40000, 0x080a494b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 
@@ -1041,8 +1041,8 @@ STD_ROM_PICK(Ddcrew);
 STD_ROM_FN(Ddcrew);
 
 static struct BurnRomInfo Ddcrew1RomDesc[] = {
-	{ "epr14138.a4",   0x40000, 0x9a0dadf0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr14140.a6",   0x40000, 0xe74362f4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14154.a4",  0x40000, 0x9a0dadf0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14155.a6",  0x40000, 0xe74362f4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14139.5a",  0x40000, 0x06c31531, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14141.7a",  0x40000, 0x080a494b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 
@@ -1065,7 +1065,7 @@ static struct BurnRomInfo Ddcrew1RomDesc[] = {
 	{ "mpr-14131.5c",  0x80000, 0xbe5a7d0b, SYS16_ROM_RF5C68DATA | BRF_SND },
 	{ "epr-14130.4c",  0x80000, 0x948f34a1, SYS16_ROM_RF5C68DATA | BRF_SND },
 	
-	{ "317-unknown_ddcrewa.key",  0x02000, 0x1dfb60be, SYS16_ROM_KEY | BRF_ESS | BRF_PRG},
+	{ "317-0187.key",  0x02000, 0x1dfb60be, SYS16_ROM_KEY | BRF_ESS | BRF_PRG},
 };
 
 
@@ -1073,8 +1073,8 @@ STD_ROM_PICK(Ddcrew1);
 STD_ROM_FN(Ddcrew1);
 
 static struct BurnRomInfo Ddcrew2RomDesc[] = {
-	{ "epr14148.a4",   0x40000, 0xdf4cb0cf, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr14149.a6",   0x40000, 0x380ff818, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14148.a4",  0x40000, 0xdf4cb0cf, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14149.a6",  0x40000, 0x380ff818, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14139.5a",  0x40000, 0x06c31531, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14141.7a",  0x40000, 0x080a494b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 
@@ -1137,8 +1137,8 @@ STD_ROM_PICK(Ddcrewj);
 STD_ROM_FN(Ddcrewj);
 
 static struct BurnRomInfo DdcrewuRomDesc[] = {
-	{ "14152.4a",      0x40000, 0x69c7b571, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "14153.6a",      0x40000, 0xe01fae0c, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14152.4a",  0x40000, 0x69c7b571, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-14153.6a",  0x40000, 0xe01fae0c, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14139.5a",  0x40000, 0x06c31531, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "mpr-14141.7a",  0x40000, 0x080a494b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 

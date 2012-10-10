@@ -215,6 +215,59 @@ static struct BurnInputInfo MjleagueInputList[] = {
 
 STDINPUTINFO(Mjleague);
 
+static struct BurnInputInfo Pshot16aInputList[] = {
+	{"Coin 1"            , BIT_DIGITAL  , System16InputPort0 + 0, "p1 coin"    },
+	{"Start 1"           , BIT_DIGITAL  , System16InputPort0 + 4, "p1 start"   },
+	{"Coin 2"            , BIT_DIGITAL  , System16InputPort0 + 1, "p2 coin"    },
+	{"Start 2"           , BIT_DIGITAL  , System16InputPort0 + 5, "p2 start"   },
+	{"Start 3"           , BIT_DIGITAL  , System16InputPort0 + 6, "p3 start"   },
+	{"Start 4"           , BIT_DIGITAL  , System16InputPort0 + 7, "p4 start"   },
+
+	{"P1 Up"             , BIT_DIGITAL  , System16InputPort1 + 1, "p1 up"      },
+	{"P1 Down"           , BIT_DIGITAL  , System16InputPort1 + 0, "p1 down"    },
+	{"P1 Left"           , BIT_DIGITAL  , System16InputPort1 + 3, "p1 left"    },
+	{"P1 Right"          , BIT_DIGITAL  , System16InputPort1 + 2, "p1 right"   },
+	{"P1 Fire 1"         , BIT_DIGITAL  , System16InputPort1 + 4, "p1 fire 1"  },
+	{"P1 Fire 2"         , BIT_DIGITAL  , System16InputPort1 + 5, "p1 fire 2"  },
+	{"P1 Fire 3"         , BIT_DIGITAL  , System16InputPort1 + 6, "p1 fire 3"  },
+	{"P1 Fire 4"         , BIT_DIGITAL  , System16InputPort1 + 7, "p1 fire 4"  },
+
+	{"P2 Up"             , BIT_DIGITAL  , System16InputPort2 + 1, "p2 up"      },
+	{"P2 Down"           , BIT_DIGITAL  , System16InputPort2 + 0, "p2 down"    },
+	{"P2 Left"           , BIT_DIGITAL  , System16InputPort2 + 3, "p2 left"    },
+	{"P2 Right"          , BIT_DIGITAL  , System16InputPort2 + 2, "p2 right"   },
+	{"P2 Fire 1"         , BIT_DIGITAL  , System16InputPort2 + 4, "p2 fire 1"  },
+	{"P2 Fire 2"         , BIT_DIGITAL  , System16InputPort2 + 5, "p2 fire 2"  },
+	{"P2 Fire 3"         , BIT_DIGITAL  , System16InputPort2 + 6, "p2 fire 3"  },
+	{"P2 Fire 4"         , BIT_DIGITAL  , System16InputPort2 + 7, "p2 fire 4"  },
+	
+	{"P3 Up"             , BIT_DIGITAL  , System16InputPort3 + 1, "p3 up"      },
+	{"P3 Down"           , BIT_DIGITAL  , System16InputPort3 + 0, "p3 down"    },
+	{"P3 Left"           , BIT_DIGITAL  , System16InputPort3 + 3, "p3 left"    },
+	{"P3 Right"          , BIT_DIGITAL  , System16InputPort3 + 2, "p3 right"   },
+	{"P3 Fire 1"         , BIT_DIGITAL  , System16InputPort3 + 4, "p3 fire 1"  },
+	{"P3 Fire 2"         , BIT_DIGITAL  , System16InputPort3 + 5, "p3 fire 2"  },
+	{"P3 Fire 3"         , BIT_DIGITAL  , System16InputPort3 + 6, "p3 fire 3"  },
+	{"P3 Fire 4"         , BIT_DIGITAL  , System16InputPort3 + 7, "p3 fire 4"  },
+
+	{"P4 Up"             , BIT_DIGITAL  , System16InputPort4 + 1, "p4 up"      },
+	{"P4 Down"           , BIT_DIGITAL  , System16InputPort4 + 0, "p4 down"    },
+	{"P4 Left"           , BIT_DIGITAL  , System16InputPort4 + 3, "p4 left"    },
+	{"P4 Right"          , BIT_DIGITAL  , System16InputPort4 + 2, "p4 right"   },
+	{"P4 Fire 1"         , BIT_DIGITAL  , System16InputPort4 + 4, "p4 fire 1"  },
+	{"P4 Fire 2"         , BIT_DIGITAL  , System16InputPort4 + 5, "p4 fire 2"  },
+	{"P4 Fire 3"         , BIT_DIGITAL  , System16InputPort4 + 6, "p4 fire 3"  },
+	{"P4 Fire 4"         , BIT_DIGITAL  , System16InputPort4 + 7, "p4 fire 4"  },
+
+	{"Service"           , BIT_DIGITAL  , System16InputPort0 + 3 , "service"   },
+	{"Diagnostics"       , BIT_DIGITAL  , System16InputPort0 + 2 , "diag"      },
+	{"Reset"             , BIT_DIGITAL  , &System16Reset         , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH, System16Dip + 0        , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH, System16Dip + 1        , "dip"       },
+};
+
+STDINPUTINFO(Pshot16a);
+
 static struct BurnInputInfo QuartetInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System16InputPort0 + 6, "p1 coin"   },
 	{"Coin 2"            , BIT_DIGITAL  , System16InputPort1 + 6, "p2 coin"   },
@@ -599,6 +652,45 @@ static struct BurnDIPInfo MjleagueDIPList[]=
 };
 
 STDDIPINFO(Mjleague);
+
+static struct BurnDIPInfo Pshot16aDIPList[]=
+{
+	// Default Values
+	{0x29, 0xff, 0xff, 0xff, NULL                                 },
+	{0x2a, 0xff, 0xff, 0xf0, NULL                                 },
+
+	// Dip 1
+	SYSTEM16A_COINAGE(0x29)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                        },
+	{0x2a, 0x01, 0x01, 0x01, "Off"                                },
+	{0x2a, 0x01, 0x01, 0x00, "On"                                 },
+	
+	{0   , 0xfe, 0   , 8   , "Initial Point"                      },
+	{0x2a, 0x01, 0x0e, 0x06, "2000"                               },
+	{0x2a, 0x01, 0x0e, 0x0a, "3000"                               },
+	{0x2a, 0x01, 0x0e, 0x0c, "4000"                               },
+	{0x2a, 0x01, 0x0e, 0x0e, "5000"                               },
+	{0x2a, 0x01, 0x0e, 0x08, "6000"                               },
+	{0x2a, 0x01, 0x0e, 0x04, "7000"                               },
+	{0x2a, 0x01, 0x0e, 0x02, "8000"                               },
+	{0x2a, 0x01, 0x0e, 0x00, "9000"                               },
+	
+	{0   , 0xfe, 0   , 4   , "Point Table"                        },
+	{0x2a, 0x01, 0x30, 0x20, "Easy"                               },
+	{0x2a, 0x01, 0x30, 0x30, "Normal"                             },
+	{0x2a, 0x01, 0x30, 0x10, "Hard"                               },
+	{0x2a, 0x01, 0x30, 0x00, "Hardest"                            },	
+	
+	{0   , 0xfe, 0   , 4   , "Difficulty"                         },
+	{0x2a, 0x01, 0xc0, 0x80, "Easy"                               },
+	{0x2a, 0x01, 0xc0, 0xc0, "Normal"                             },
+	{0x2a, 0x01, 0xc0, 0x40, "Hard"                               },
+	{0x2a, 0x01, 0xc0, 0x00, "Hardest"                            },
+};
+
+STDDIPINFO(Pshot16a);
 
 static struct BurnDIPInfo QuartetDIPList[]=
 {
@@ -1088,6 +1180,40 @@ static struct BurnRomInfo Aliensy2RomDesc[] = {
 STD_ROM_PICK(Aliensy2);
 STD_ROM_FN(Aliensy2);
 
+static struct BurnRomInfo Aliensy5RomDesc[] = {
+	{ "epr10804.43",   0x08000, 0x23f78b83, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr10802.26",   0x08000, 0x996768bd, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr10805.42",   0x08000, 0x53d7fe50, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr10803.25",   0x08000, 0x0536dd33, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr10732.41",   0x08000, 0xc5712bfc, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr10729.24",   0x08000, 0x3e520e30, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "10739",         0x10000, 0xa29ec207, SYS16_ROM_TILES | BRF_GRA },
+	{ "10740",         0x10000, 0x47f93015, SYS16_ROM_TILES | BRF_GRA },
+	{ "10741",         0x10000, 0x4970739c, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "10709.b1",      0x10000, 0xaddf0a90, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10713.b5",      0x10000, 0xececde3a, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10710.b2",      0x10000, 0x992369eb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10714.b6",      0x10000, 0x91bf42fb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10711.b3",      0x10000, 0x29166ef6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10715.b7",      0x10000, 0xa7c57384, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10712.b4",      0x10000, 0x876ad019, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "10716.b8",      0x10000, 0x40ba1d48, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "10705",         0x08000, 0x777b749e, SYS16_ROM_Z80PROG | BRF_ESS |BRF_PRG },
+	
+	{ "7751.bin",      0x00400, 0x6a9534fc, SYS16_ROM_7751PROG | BRF_ESS | BRF_PRG },
+	
+	{ "10706",         0x08000, 0xaa114acc, SYS16_ROM_7751DATA | BRF_SND },
+	{ "10707",         0x08000, 0x800c1d82, SYS16_ROM_7751DATA | BRF_SND },
+	{ "10708",         0x08000, 0x5921ef52, SYS16_ROM_7751DATA | BRF_SND },
+};
+
+
+STD_ROM_PICK(Aliensy5);
+STD_ROM_FN(Aliensy5);
+
 static struct BurnRomInfo BodyslamRomDesc[] = {
 	{ "epr-10066.b9",  0x08000, 0x6cd53290, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-10063.b6",  0x08000, 0xdd849a16, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1248,6 +1374,37 @@ static struct BurnRomInfo MjleagueRomDesc[] = {
 
 STD_ROM_PICK(Mjleague);
 STD_ROM_FN(Mjleague);
+
+static struct BurnRomInfo Pshot16aRomDesc[] = {
+	{ "epr11833.43",   0x10000, 0x5eb1405c, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11832.26",   0x10000, 0x718a3fe4, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11834.95",   0x10000, 0xdf4e18ab, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11835.94",   0x10000, 0x6a07acc0, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11836.93",   0x10000, 0x93c74928, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr11842.10",   0x10000, 0xb6e94727, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11845.11",   0x10000, 0x17e8d5d5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11843.17",   0x10000, 0x3e670098, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11846.18",   0x10000, 0x50eb71cc, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11844.23",   0x10000, 0x05733ca8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11847.24",   0x10000, 0x81e49697, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr11837.12",   0x08000, 0x74d11552, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "7751.bin",      0x00400, 0x6a9534fc, SYS16_ROM_7751PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11838.1",    0x08000, 0xa465cd69, SYS16_ROM_7751DATA | BRF_SND },
+	{ "epr11839.2",    0x08000, 0x99de6197, SYS16_ROM_7751DATA | BRF_SND },
+	{ "epr11840.4",    0x08000, 0x9854e8b3, SYS16_ROM_7751DATA | BRF_SND },
+	{ "epr11841.5",    0x08000, 0x1e89877e, SYS16_ROM_7751DATA | BRF_SND },
+		
+	{ "317-0071.key",  0x02000, 0xc69949ec, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Pshot16a);
+STD_ROM_FN(Pshot16a);
 
 static struct BurnRomInfo QuartetRomDesc[] = {
 	{ "epr-7458a.9b",  0x08000, 0x42e7b23e, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1491,35 +1648,35 @@ static struct BurnRomInfo Shinobi1RomDesc[] = {
 STD_ROM_PICK(Shinobi1);
 STD_ROM_FN(Shinobi1);
 
-static struct BurnRomInfo ShinoblRomDesc[] = {
+static struct BurnRomInfo ShinoblsRomDesc[] = {
 	{ "b3",            0x10000, 0x38e59646, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "b1",            0x10000, 0x8529d192, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr11263.43",   0x10000, 0xa2a620bd, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr11261.25",   0x10000, 0xa3ceda52, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "b4",            0x10000, 0xa2a620bd, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "b2",            0x10000, 0xa3ceda52, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 
-	{ "epr11264.95",   0x10000, 0x46627e7d, SYS16_ROM_TILES | BRF_GRA },
-	{ "epr11265.94",   0x10000, 0x87d0f321, SYS16_ROM_TILES | BRF_GRA },
-	{ "epr11266.93",   0x10000, 0xefb4af87, SYS16_ROM_TILES | BRF_GRA },
+	{ "b5",            0x10000, 0x46627e7d, SYS16_ROM_TILES | BRF_GRA },
+	{ "b6",            0x10000, 0x87d0f321, SYS16_ROM_TILES | BRF_GRA },
+	{ "b7",            0x10000, 0xefb4af87, SYS16_ROM_TILES | BRF_GRA },
 	
-	{ "epr11290.10",   0x10000, 0x611f413a, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11294.11",   0x10000, 0x5eb00fc1, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11291.17",   0x10000, 0x3c0797c0, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11295.18",   0x10000, 0x25307ef8, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11292.23",   0x10000, 0xc29ac34e, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11296.24",   0x10000, 0x04a437f8, SYS16_ROM_SPRITES | BRF_GRA },
-	{ "epr11293.29",   0x10000, 0x41f41063, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b10",           0x10000, 0x611f413a, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b14",           0x10000, 0x5eb00fc1, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b11",           0x10000, 0x3c0797c0, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b15",           0x10000, 0x25307ef8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b12",           0x10000, 0xc29ac34e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b16",           0x10000, 0x04a437f8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "b13",           0x10000, 0x7e98bd36, SYS16_ROM_SPRITES | BRF_GRA },
 	{ "b17",           0x10000, 0x0315cf42, SYS16_ROM_SPRITES | BRF_GRA },
 
-	{ "epr11267.12",   0x08000, 0xdd50b745, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	{ "b8",            0x08000, 0xdd50b745, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
 	
 	{ "7751.bin",      0x00400, 0x6a9534fc, SYS16_ROM_7751PROG | BRF_ESS | BRF_PRG },
 	
-	{ "epr11268.1",    0x08000, 0x6d7966da, SYS16_ROM_7751DATA | BRF_SND },
+	{ "b9",            0x08000, 0x6d7966da, SYS16_ROM_7751DATA | BRF_SND },
 };
 
 
-STD_ROM_PICK(Shinobl);
-STD_ROM_FN(Shinobl);
+STD_ROM_PICK(Shinobls);
+STD_ROM_FN(Shinobls);
 
 static struct BurnRomInfo Sjryuko1RomDesc[] = {
 	{ "epr12251.43",   0x08000, 0x1af3cd0b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1983,6 +2140,44 @@ unsigned char __fastcall MjleagueReadByte(unsigned int a)
 	return 0xff;
 }
 
+unsigned char __fastcall Pshot16aReadByte(unsigned int a)
+{
+	static int PortNum = 0;
+	
+	switch (a) {
+		case 0xc41001: {
+			return 0xff - System16Input[0];
+		}
+		
+		case 0xc41003: {
+			switch ((PortNum++) & 3) {
+				case 0: return 0xff - System16Input[1];
+				case 1: return 0xff - System16Input[2];
+				case 2: return 0xff - System16Input[3];
+				case 3: return 0xff - System16Input[4];
+			}
+		}
+		
+		case 0xc42001: {
+			return System16Dip[0];
+		}
+
+		case 0xc42003: {
+			return System16Dip[1];
+		}
+		
+		case 0xc60000: {
+			return 0;
+		}
+	}
+	
+#if 0 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
+#endif
+
+	return 0xff;
+}
+
 unsigned char __fastcall QuartetReadByte(unsigned int a)
 {
 	switch (a) {
@@ -2236,6 +2431,34 @@ static int Aliensy1Init()
 	return nRet;
 }
 
+static int Aliensy5Init()
+{
+	FD1089_Decrypt = fd1089_decrypt_0037;
+	
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		// Handle different sprite rom layout
+		unsigned char *pTemp = (unsigned char*)malloc(System16SpriteRomSize);
+		if (pTemp) {
+			memcpy(pTemp, System16Sprites, System16SpriteRomSize);
+			memcpy(System16Sprites + 0x00000, pTemp + 0x00000, 0x10000);
+			memcpy(System16Sprites + 0x10000, pTemp + 0x20000, 0x10000);
+			memcpy(System16Sprites + 0x20000, pTemp + 0x40000, 0x10000);
+			memcpy(System16Sprites + 0x30000, pTemp + 0x60000, 0x10000);
+			memcpy(System16Sprites + 0x40000, pTemp + 0x10000, 0x10000);
+			memcpy(System16Sprites + 0x50000, pTemp + 0x30000, 0x10000);
+			memcpy(System16Sprites + 0x60000, pTemp + 0x50000, 0x10000);
+			memcpy(System16Sprites + 0x70000, pTemp + 0x70000, 0x10000);
+		} else {
+			nRet = 1;
+		}
+		free(pTemp);		
+	}
+	
+	return nRet;
+}
+
 void Bodyslam_Sim8751()
 {
 	UINT8 flag = ((System16Ram[0x200 + 1] << 8) | System16Ram[0x200 + 0]) >> 8;
@@ -2345,6 +2568,37 @@ void Quartet_Sim8751()
 	// Page Values
 	*((unsigned short*)(System16TextRam + 0xe9e)) = ((System16Ram[0x0d1c + 1] << 8) | System16Ram[0x0d1c + 0]);
 	*((unsigned short*)(System16TextRam + 0xe9c)) = ((System16Ram[0x0d1e + 1] << 8) | System16Ram[0x0d1e + 0]);
+}
+
+static int Pshot16aInit()
+{
+	// Start off with some sprite rom and let the load routine add on the rest
+	System16SpriteRomSize = 0x70000 - 0x60000;
+	
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekSetReadByteHandler(0, Pshot16aReadByte);
+		SekClose();
+
+		// Handle different sprite rom layout
+		unsigned char *pTemp = (unsigned char*)malloc(System16SpriteRomSize);
+		if (pTemp) {
+			memcpy(pTemp, System16Sprites, System16SpriteRomSize);
+			memcpy(System16Sprites + 0x00000, pTemp + 0x00000, 0x10000);
+			memcpy(System16Sprites + 0x10000, pTemp + 0x20000, 0x10000);
+			memcpy(System16Sprites + 0x20000, pTemp + 0x40000, 0x10000);
+			memcpy(System16Sprites + 0x40000, pTemp + 0x10000, 0x10000);
+			memcpy(System16Sprites + 0x50000, pTemp + 0x30000, 0x10000);
+			memcpy(System16Sprites + 0x60000, pTemp + 0x50000, 0x10000);
+		} else {
+			nRet = 1;
+		}
+		free(pTemp);
+	}
+	
+	return nRet;
 }
 
 static int QuartetInit()
@@ -2602,6 +2856,16 @@ struct BurnDriver BurnDrvAliensy2 = {
 	NULL, 320, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvAliensy5 = {
+	"aliensy5", "aliensyn", NULL, "1987",
+	"Alien Syndrome (set 5, System 16A, FD1089B 317-0037)\0", "Incomplete Sound", "Sega", "System 16A",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1089B_ENC,
+	NULL, Aliensy5RomInfo, Aliensy5RomName, System16afire1InputInfo, AliensynDIPInfo,
+	Aliensy5Init, System16Exit, System16AFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvBodyslam = {
 	"bodyslam", NULL, NULL, "1986",
 	"Body Slam (8751 317-0015)\0", NULL, "Sega", "System 16A",
@@ -2649,6 +2913,16 @@ struct BurnDriver BurnDrvMjleague = {
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM16A,
 	NULL, MjleagueRomInfo, MjleagueRomName, MjleagueInputInfo, MjleagueDIPInfo,
 	MjleagueInit, MjleagueExit, System16AFrame, NULL, MjleagueScan,
+	NULL, 224, 320, 3, 4
+};
+
+struct BurnDriver BurnDrvPshot16a = {
+	"pshot16a", "passsht", NULL, "1988",
+	"Passing Shot (Japan, 4 Players, System 16A, FD1094 317-0071)\0", "Incomplete Sound", "Sega", "System 16A",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 4, HARDWARE_SEGA_SYSTEM16A | HARDWARE_SEGA_FD1094_ENC,
+	NULL, Pshot16aRomInfo, Pshot16aRomName, Pshot16aInputInfo, Pshot16aDIPInfo,
+	Pshot16aInit, System16Exit, System16AFrame, NULL, System16Scan,
 	NULL, 224, 320, 3, 4
 };
 
@@ -2722,12 +2996,12 @@ struct BurnDriver BurnDrvShinobi1 = {
 	NULL, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvShinobl = {
-	"shinobl", "shinobi", NULL, "1987",
-	"Shinobi (bootleg)\0", "Incomplete Sound", "bootleg", "System 16A",
+struct BurnDriver BurnDrvShinobls = {
+	"shinobls", "shinobi", NULL, "1987",
+	"Shinobi (Star bootleg, System 16A)\0", "Incomplete Sound", "bootleg", "System 16A",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16A,
-	NULL, ShinoblRomInfo, ShinoblRomName, System16afire3InputInfo, ShinobiDIPInfo,
+	NULL, ShinoblsRomInfo, ShinoblsRomName, System16afire3InputInfo, ShinobiDIPInfo,
 	ShinobiInit, System16Exit, System16AFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };

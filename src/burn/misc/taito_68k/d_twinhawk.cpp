@@ -739,7 +739,7 @@ struct BurnDriver BurnDrvtwinhawk = {
 	"twinhawk", NULL, NULL, "1989",
 	"Twin Hawk (World)\0", NULL, "Taito", "Taito X System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_PRE90S,
 	NULL,twinhawkRomInfo,twinhawkRomName,twinhawkInputInfo, twinhawkDIPInfo,
 	twinhawkInit,twinhawkExit,twinhawkFrame,NULL,twinhawkScan,
 	&taitoRecalcPal,224,384,3,4
@@ -766,7 +766,7 @@ struct BurnDriver BurnDrvtwinhwku = {
 	"twinhwku", "twinhawk", NULL, "1989",
 	"Twin Hawk (US)\0", NULL, "Taito", "Taito X System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_PRE90S,
 	NULL,twinhwkuRomInfo,twinhwkuRomName,twinhawkInputInfo, twinhwkuDIPInfo,
 	twinhawkInit,twinhawkExit,twinhawkFrame,NULL,twinhawkScan,
 	&taitoRecalcPal,224,384,3,4
@@ -793,7 +793,7 @@ struct BurnDriver BurnDrvDaisenpu = {
 	"daisenpu", "twinhawk", NULL, "1989",
 	"Daisenpu (Japan)\0", NULL, "Taito", "Taito X System",
 	L"Daisenpu (Japan)\0\u5927\u65CB\u98A8\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL,2,HARDWARE_MISC_PRE90S,
 	NULL,daisenpuRomInfo,daisenpuRomName,twinhawkInputInfo, daisenpuDIPInfo,
 	twinhawkInit,twinhawkExit,twinhawkFrame,NULL,twinhawkScan,
 	&taitoRecalcPal,224,384,3,4

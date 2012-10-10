@@ -395,7 +395,7 @@ unsigned short dw2_d80000_r(unsigned int /*sekAddress*/)
 {
 	// The value at 0x80EECE is computed in the routine at 0x107c18
 
-	unsigned short d = SekReadWord(0x80eece);
+	unsigned short d = SekReadWord(0x80EECE);
 	unsigned short d2 = 0;
 
 	d=(d>>8)|(d<<8);
@@ -562,7 +562,7 @@ unsigned short killbld_prot_r(unsigned int offset)
 			return reg & 0x7f;
 
 		if(kb_cmd == 5)
-			return ((0x89911400 | (/*PgmInput[7] + */0x16)) >> (8 * (ptr - 1))) & 0xff; // region
+			return ((0x89911400 | PgmInput[7]) >> (8 * (ptr - 1))) & 0xff; // region
 	}
 
 	return 0;

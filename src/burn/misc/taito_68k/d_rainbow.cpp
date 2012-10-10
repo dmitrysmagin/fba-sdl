@@ -750,7 +750,7 @@ struct BurnDriver BurnDrvrainbow = {
 	"rainbow", NULL, NULL, "1987",
 	"Rainbow Islands (new version)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S,
 	NULL,rainbowRomInfo,rainbowRomName,rainbowInputInfo, rainbowDIPInfo,
 	rainbowInit,rainbowExit,rainbowFrame,NULL,rainbowScan,
 	&taitoRecalcPal,320,240,4,3
@@ -760,7 +760,7 @@ struct BurnDriver BurnDrvrainbowo = {
 	"rainbowo", "rainbow", NULL, "1987",
 	"Rainbow Islands (old version)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rainbowoRomInfo,rainbowoRomName,rainbowInputInfo, rainbowDIPInfo,
 	rainbowInit,rainbowExit,rainbowFrame,NULL,rainbowScan,
 	&taitoRecalcPal,320,240,4,3
@@ -770,7 +770,7 @@ struct BurnDriver BurnDrvrainbowe = {
 	"rainbowe", "rainbow", NULL, "1988",
 	"Rainbow Islands (Extra)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rainboweRomInfo,rainboweRomName,rainbowInputInfo, rainbowDIPInfo,
 	rainbowInit,rainbowExit,rainbowFrame,NULL,rainbowScan,
 	&taitoRecalcPal,320,240,4,3

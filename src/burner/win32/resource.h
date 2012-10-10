@@ -124,7 +124,7 @@
 #define IDC_CHECKSEGA                   20049
 #define IDC_CHECKTOAPLAN                20050
 #define IDC_CHECKCAVE                   20051
-#define IDC_CHECKMISC                   20052
+#define IDC_CHECKMISCPRE90S             20052
 #define IDC_LABELROMNAME                20053
 #define IDC_LABELROMINFO                20054
 #define IDC_LABELCOMMENT                20055
@@ -136,6 +136,8 @@
 #define IDC_TREE1                       20061
 #define IDC_SEL_SHORTNAME				20062
 #define IDC_SEL_ASCIIONLY				20063
+#define IDC_CHECKCPS3                    20064
+#define IDC_CHECKMISCPOST90S             20065
 
 #define IDC_DRVCOUNT                    20141
 

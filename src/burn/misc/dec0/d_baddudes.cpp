@@ -347,7 +347,7 @@ int baddudesExit()
 
 void baddudesRender()
 {
-	int trans = 0;
+//	int trans = 0;
 	decvid_calcpal();
 	BurnClearScreen();
 
@@ -385,7 +385,7 @@ int baddudesFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
+//	int nSoundBufferPos = 0;
 
 	SekNewFrame();
 
@@ -411,7 +411,7 @@ int baddudesFrame()
 	return 0;
 }
 
-static int baddudesScan(int nAction,int *pnMin)
+static int baddudesScan(int /*nAction*/,int* /*pnMin*/)
 {
 
 	return 0;
@@ -421,7 +421,7 @@ struct BurnDriverD BurnDrvbaddudes = {
 	"baddudes", NULL, NULL, "1988",
 		"Bad Dudes vs. Dragonninja (US)\0", NULL, "Data East USA", "DEC0",
 		NULL, NULL, NULL, NULL,
-		BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+		BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 		NULL, baddudesRomInfo, baddudesRomName, baddudesInputInfo, NULL,
 		baddudesInit, baddudesExit, baddudesFrame, NULL, baddudesScan,
 		NULL, 256, 256, 4, 3

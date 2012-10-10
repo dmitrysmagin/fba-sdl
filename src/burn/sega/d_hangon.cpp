@@ -462,10 +462,10 @@ STD_ROM_PICK(Endurobl);
 STD_ROM_FN(Endurobl);
 
 static struct BurnRomInfo HangonRomDesc[] = {
-	{ "epr-6918.ic22",    0x08000, 0x20b1c2b0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-6916.ic8",     0x08000, 0x7d9db1bf, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-6917.ic20",    0x08000, 0xfea12367, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
-	{ "epr-6915.ic6",     0x08000, 0xac883240, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6918a.ic22",   0x08000, 0x20b1c2b0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6916a.ic8",    0x08000, 0x7d9db1bf, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6917a.ic20",   0x08000, 0xfea12367, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6915a.ic6",    0x08000, 0xac883240, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	
 	{ "epr-6920.ic63",    0x08000, 0x1c95013e, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	{ "epr-6919.ic51",    0x08000, 0x6ca30d69, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
@@ -502,6 +502,48 @@ static struct BurnRomInfo HangonRomDesc[] = {
 
 STD_ROM_PICK(Hangon);
 STD_ROM_FN(Hangon);
+
+static struct BurnRomInfo Hangon1RomDesc[] = {
+	{ "epr-6918.ic22",    0x08000, 0x0bf4f2ac, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6916.ic8",     0x08000, 0x06c21c8a, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6917.ic20",    0x08000, 0xf48a6cbc, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-6915.ic6",     0x08000, 0x75d3b5ee, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr-6920.ic63",    0x08000, 0x1c95013e, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+	{ "epr-6919.ic51",    0x08000, 0x6ca30d69, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
+
+	{ "epr-6841.ic38",    0x08000, 0x54d295dc, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-6842.ic23",    0x08000, 0xf677b568, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-6843.ic7",     0x08000, 0xa257f0da, SYS16_ROM_TILES | BRF_GRA },
+
+	{ "epr-6819.ic27",    0x08000, 0x469dad07, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6820.ic34",    0x08000, 0x87cbc6de, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6821.ic28",    0x08000, 0x15792969, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6822.ic35",    0x08000, 0xe9718de5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6823.ic29",    0x08000, 0x49422691, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6824.ic36",    0x08000, 0x701deaa4, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6825.ic30",    0x08000, 0x6e23c8b4, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6826.ic37",    0x08000, 0x77d0de2c, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6827.ic31",    0x08000, 0x7fa1bfb6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6828.ic38",    0x08000, 0x8e880c93, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6829.ic32",    0x08000, 0x7ca0952d, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6830.ic39",    0x08000, 0xb1a63aef, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6845.ic18",    0x08000, 0xba08c9b8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-6846.ic25",    0x08000, 0xf21e57a3, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr-6840.ic108",   0x08000, 0x581230e3, SYS16_ROM_ROAD | BRF_GRA },
+
+	{ "epr-6833.ic73",    0x04000, 0x3b942f5f, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr-6831.ic5",     0x08000, 0xcfef5481, SYS16_ROM_PCMDATA | BRF_SND },
+	{ "epr-6832.ic6",     0x08000, 0x4165aea5, SYS16_ROM_PCMDATA | BRF_SND },
+	
+	{ "epr-6844.ic123",   0x02000, 0xe3ec7bd6, SYS16_ROM_PROM | BRF_GRA },
+};
+
+
+STD_ROM_PICK(Hangon1);
+STD_ROM_FN(Hangon1);
 
 static struct BurnRomInfo ShangupbRomDesc[] = {
 	{ "s-hangon.30",      0x10000, 0xd95e82fc, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1152,10 +1194,20 @@ struct BurnDriver BurnDrvEndurobl = {
 
 struct BurnDriver BurnDrvHangon = {
 	"hangon", NULL, NULL, "1985",
-	"Hang-On\0", NULL, "Sega", "Hang-On",
+	"Hang-On (rev A)\0", NULL, "Sega", "Hang-On",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203,
 	NULL, HangonRomInfo, HangonRomName, HangonInputInfo, HangonDIPInfo,
+	HangonInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvHangon1 = {
+	"hangon1", "hangon", NULL, "1985",
+	"Hang-On\0", NULL, "Sega", "Hang-On",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_HANGON | HARDWARE_SEGA_YM2203,
+	NULL, Hangon1RomInfo, Hangon1RomName, HangonInputInfo, HangonDIPInfo,
 	HangonInit, System16Exit, HangonYM2203Frame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };

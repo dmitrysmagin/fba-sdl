@@ -788,12 +788,12 @@ STD_ROM_FN(rastanu2);
 
 /// Rom information
 static struct BurnRomInfo rastsagaRomDesc[] = {
-	{ "rs19_38.bin", 0x10000, 0xa38ac909, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
-	{ "rs07_37.bin", 0x10000, 0xbad60872, BRF_ESS | BRF_PRG }, //  1            (odd)
-	{ "rs20_40.bin", 0x10000, 0x6bcf70dc, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
-	{ "rs08_39.bin", 0x10000, 0x8838ecc5, BRF_ESS | BRF_PRG }, //  1            (odd)
-	{ "rs21_42.bin", 0x10000, 0xb626c439, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
-	{ "rs09_43.bin", 0x10000, 0xc928a516, BRF_ESS | BRF_PRG }, //  1            (odd)
+	{ "b04-38.19",   0x10000, 0xa38ac909, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
+	{ "b04-37.7",    0x10000, 0xbad60872, BRF_ESS | BRF_PRG }, //  1            (odd)
+	{ "b04-40.20",   0x10000, 0x6bcf70dc, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
+	{ "b04-39.8",    0x10000, 0x8838ecc5, BRF_ESS | BRF_PRG }, //  1            (odd)
+	{ "b04-42.21",   0x10000, 0xb626c439, BRF_ESS | BRF_PRG }, //  0 68000 code (even)
+	{ "b04-43.9",    0x10000, 0xc928a516, BRF_ESS | BRF_PRG }, //  1            (odd)
 
 	{ "b04-19.49",   0x10000, 0xee81fdd8, BRF_ESS | BRF_PRG }, //  2 z80 code
 
@@ -845,7 +845,7 @@ struct BurnDriver BurnDrvrastan = {
 	"rastan", NULL, NULL, "1987",
 	"Rastan (World)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S,
 	NULL,rastanRomInfo,rastanRomName,rastanInputInfo, rastanDIPInfo,
 	rastanInit,rastanExit,rastanFrame,NULL,rastanScan,
 	NULL,320,240,4,3
@@ -855,7 +855,7 @@ struct BurnDriver BurnDrvrastanu = {
 	"rastanu", "rastan", NULL, "1987",
 	"Rastan (US set 1)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rastanuRomInfo,rastanuRomName,rastanInputInfo, rastsagaDIPInfo,
 	rastanInit,rastanExit,rastanFrame,NULL,rastanScan,
 	NULL,320,240,4,3
@@ -865,7 +865,7 @@ struct BurnDriver BurnDrvrastanu2 = {
 	"rastanu2", "rastan", NULL, "1987",
 	"Rastan (US set 2)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rastanu2RomInfo,rastanu2RomName,rastanInputInfo, rastsagaDIPInfo,
 	rastanInit,rastanExit,rastanFrame,NULL,rastanScan,
 	NULL,320,240,4,3
@@ -875,7 +875,7 @@ struct BurnDriver BurnDrvrastsaga = {
 	"rastsaga", "rastan", NULL, "1987",
 	"Rastan Saga (Japan)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rastsagaRomInfo,rastsagaRomName,rastanInputInfo, rastsagaDIPInfo,
 	rastanInit,rastanExit,rastanFrame,NULL,rastanScan,
 	NULL,320,240,4,3
@@ -885,7 +885,7 @@ struct BurnDriver BurnDrvrastsag1 = {
 	"rastsag1", "rastan", NULL, "1987",
 	"Rastan Saga (Japan rev 1)\0", NULL, "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,rastsag1RomInfo,rastsag1RomName,rastanInputInfo, rastsagaDIPInfo,
 	rastanInit,rastanExit,rastanFrame,NULL,rastanScan,
 	NULL,320,240,4,3

@@ -234,7 +234,7 @@ struct BurnDriver BurnDrvCpsFfight = {
 //Final Fight (USA)
 //=================
 
-static int FfightuInit()
+static int FfightuaInit()
 {
   int nRet=0;
   Cps=1;
@@ -281,7 +281,7 @@ static int FfightuInit()
   return 0;
 }
 
-static int FfightuaInit()
+static int FfightubInit()
 {
   int nRet=0;
   Cps=1;
@@ -334,6 +334,29 @@ static int FfightuaInit()
 
 // Rom information
 static struct BurnRomInfo FfightuRomDesc[] = {
+	{ "ff30-36.bin",   0x20000, 0xf9a5ce83, BRF_ESS | BRF_PRG }, // 0 even 68000 code
+	{ "ff35-42.bin",   0x20000, 0x65f11215, BRF_ESS | BRF_PRG }, // 1 odd
+	{ "ff31-37.bin",   0x20000, 0xe1033784, BRF_ESS | BRF_PRG }, // 2 even
+	{ "ff43.rom",      0x20000, 0x4ca65947, BRF_ESS | BRF_PRG }, // 3 odd
+	{ "ff32-32m.bin",  0x80000, 0xc747696e, BRF_ESS | BRF_PRG }, // 4 both
+
+  // graphics:
+	{ "ff05-05m.bin",  0x80000, 0x9c284108, BRF_GRA },			 // 5
+	{ "ff07-07m.bin",  0x80000, 0xa7584dfb, BRF_GRA },
+	{ "ff01-01m.bin",  0x80000, 0x0b605e44, BRF_GRA },
+	{ "ff03-03m.bin",  0x80000, 0x52291cd2, BRF_GRA },
+
+  // z80 rom
+	{ "ff09-09.bin",   0x10000, 0xb8367eb5, BRF_GRA },			 // 9
+  // samples
+	{ "ff18-18.bin",   0x20000, 0x375c66e7, BRF_GRA },
+	{ "ff19-19.bin",   0x20000, 0x1ef137f9, BRF_GRA },
+};
+
+// Make The RomInfo/Name functions for the game
+STD_ROM_PICK(Ffightu) STD_ROM_FN(Ffightu)
+
+static struct BurnRomInfo FfightuaRomDesc[] = {
 	{ "36",            0x20000, 0xe2a48af9, BRF_ESS | BRF_PRG }, // 0 even 68000 code
 	{ "42",            0x20000, 0xf4bb480e, BRF_ESS | BRF_PRG }, // 1 odd
 	{ "37",            0x20000, 0xc371c667, BRF_ESS | BRF_PRG }, // 2 even
@@ -355,9 +378,9 @@ static struct BurnRomInfo FfightuRomDesc[] = {
 
 
 // Make The RomInfo/Name functions for the game
-STD_ROM_PICK(Ffightu) STD_ROM_FN(Ffightu)
+STD_ROM_PICK(Ffightua) STD_ROM_FN(Ffightua)
 
-static struct BurnRomInfo FfightuaRomDesc[] = {
+static struct BurnRomInfo FfightubRomDesc[] = {
 	{ "30_2da0.010",   0x20000, 0xed988977, BRF_ESS | BRF_PRG }, // 0 even 68000 code
 	{ "35_46ff.010",   0x20000, 0x07bf1c21, BRF_ESS | BRF_PRG }, // 1 odd
 	{ "31_c933.010",   0x20000, 0xdba5a476, BRF_ESS | BRF_PRG }, // 2 even
@@ -378,25 +401,35 @@ static struct BurnRomInfo FfightuaRomDesc[] = {
 };
 
 // Make The RomInfo/Name functions for the game
-STD_ROM_PICK(Ffightua) STD_ROM_FN(Ffightua)
+STD_ROM_PICK(Ffightub) STD_ROM_FN(Ffightub)
 
 struct BurnDriver BurnDrvCpsFfightu = {
 	"ffightu", "ffight", NULL, "1989",
-	"Final Fight (900112 USA)\0", NULL, "Capcom", "CPS1",
+	"Final Fight (USA)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS1,
 	NULL,FfightuRomInfo,FfightuRomName,DrvInputInfo, ffightDIPInfo,
-	FfightuInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
+	FfightInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
 };
 
 struct BurnDriver BurnDrvCpsFfightua = {
 	"ffightua", "ffight", NULL, "1989",
-	"Final Fight (900613 USA)\0", NULL, "Capcom", "CPS1",
+	"Final Fight (900112 USA)\0", NULL, "Capcom", "CPS1",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS1,
 	NULL,FfightuaRomInfo,FfightuaRomName,DrvInputInfo, ffightDIPInfo,
 	FfightuaInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,384,224,4,3
+};
+
+struct BurnDriver BurnDrvCpsFfightub = {
+	"ffightub", "ffight", NULL, "1989",
+	"Final Fight (900613 USA)\0", NULL, "Capcom", "CPS1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS1,
+	NULL,FfightubRomInfo,FfightubRomName,DrvInputInfo, ffightDIPInfo,
+	FfightubInit,DrvExit,Cps1Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
 };
 

@@ -43,6 +43,32 @@ static struct BurnRomInfo zerowingRomDesc[] = {
 STD_ROM_PICK(zerowing);
 STD_ROM_FN(zerowing);
 
+static struct BurnRomInfo zerowng2RomDesc[] = {
+	{ "o15-11iiw.bin",0x008000, 0x38b0bb5b, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "o15-12iiw.bin",0x008000, 0x74c91e6f, BRF_ESS | BRF_PRG }, //  1
+	{ "o15-09.rom",   0x020000, 0x13764e95, BRF_ESS | BRF_PRG }, //  1
+	{ "o15-10.rom",   0x020000, 0x351ba71a, BRF_ESS | BRF_PRG }, //  1
+
+	{ "o15-05.rom",   0x020000, 0x4e5dd246, BRF_GRA },			 //  6
+	{ "o15-06.rom",   0x020000, 0xc8c6d428, BRF_GRA },			 //  7
+	{ "o15-07.rom",   0x020000, 0xefc40e99, BRF_GRA },			 //  8
+	{ "o15-08.rom",   0x020000, 0x1b019eab, BRF_GRA },			 //  9
+	
+	{ "o15-03.rom",   0x020000, 0x7f245fd3, BRF_GRA },			 //  2
+	{ "o15-04.rom",   0x020000, 0x0b1a1289, BRF_GRA },			 //  3
+	{ "o15-01.rom",   0x020000, 0x70570e43, BRF_GRA },			 //  4
+	{ "o15-02.rom",   0x020000, 0x724b487f, BRF_GRA },			 //  5
+
+	{ "o15-13.rom",   0x008000, 0xe7b72383, BRF_ESS | BRF_PRG }, //  10 Z80 program
+
+	{ "tp015_14.bpr", 0x000020, 0xbc88cced, BRF_SND },			 // 11 Sprite attribute PROM
+	{ "tp015_15.bpr", 0x000020, 0xa1e17492, BRF_SND },			 // 12 ???
+};
+
+
+STD_ROM_PICK(zerowng2);
+STD_ROM_FN(zerowng2);
+
 static struct BurnInputInfo zerowingInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
 	{"P1 Start",	BIT_DIGITAL,	DrvButton + 5,	"p1 start"},
@@ -133,6 +159,61 @@ static struct BurnDIPInfo zerowingDIPList[] = {
 };
 
 STDDIPINFO(zerowing);
+
+static struct BurnDIPInfo zerowng2DIPList[] = {
+	// Defaults
+	{0x12,	0xFF, 0xFF,	0x01, NULL},
+	{0x13,	0xFF, 0xFF,	0x00, NULL},
+	{0x14,	0xFF, 0xFF,	0x00, NULL},
+
+	// DIP 1
+	{0x12,	0x01, 0x01,	0x01, "Upright"},
+	{0x12,	0x01, 0x01,	0x00, "Cocktail"},	
+	{0,		0xFE, 0,	2,	  NULL},
+	{0x12,	0x01, 0x02,	0x00, "Normal screen"},
+	{0x12,	0x01, 0x02,	0x02, "Invert screen"},
+	{0,		0xFE, 0,	2,	  NULL},
+	{0x12,	0x01, 0x04,	0x00, "Normal mode"},
+	{0x12,	0x01, 0x04,	0x04, "Screen test mode"},
+	{0,		0xFE, 0,	2,	  "Advertise sound"},
+	{0x12,	0x01, 0x08,	0x00, "On"},
+	{0x12,	0x01, 0x08,	0x08, "Off"},
+	{0,		0xFE, 0,	4,	  "Coin A"},
+	{0x12,	0x01, 0x30,	0x00, "1 coin 1 play"},
+	{0x12,	0x01, 0x30,	0x10, "2 coin 1 play"},
+	{0x12,	0x01, 0x30,	0x20, "3 coin 1 play"},
+	{0x12,	0x01, 0x30,	0x30, "4 coin 1	 play"},
+	{0,		0xFE, 0,	4,	  "Coin B"},
+	{0x12,	0x01, 0xC0,	0x00, "1 coin 2 play"},
+	{0x12,	0x01, 0xC0,	0x40, "1 coin 3 play"},
+	{0x12,	0x01, 0xC0,	0x80, "1 coin 4 play"},
+	{0x12,	0x01, 0xC0,	0xC0, "1 coin 6 play"},
+
+	// DIP 2
+	{0,		0xFE, 0,	4,	  "Game difficulty"},
+	{0x13,	0x01, 0x03,	0x00, "B"},
+	{0x13,	0x01, 0x03,	0x01, "A"},
+	{0x13,	0x01, 0x03,	0x02, "C"},
+	{0x13,	0x01, 0x03,	0x03, "D"},
+	{0,		0xFE, 0,	4,	  "Extend bonus"},
+	{0x13,	0x01, 0x0C,	0x00, "200000, every 500000"},
+	{0x13,	0x01, 0x0C,	0x04, "500000, every 1000000"},
+	{0x13,	0x01, 0x0C,	0x08, "500000 only"},
+	{0x13,	0x01, 0x0C,	0x0C, "Never"},
+	{0,		0xFE, 0,	4,	  "Hero counts"},
+	{0x13,	0x01, 0x30,	0x30, "2"},
+	{0x13,	0x01, 0x30,	0x00, "3"},
+	{0x13,	0x01, 0x30,	0x20, "4"},
+	{0x13,	0x01, 0x30,	0x10, "5"},
+	{0,		0xFE, 0,	2,	  NULL},
+    	{0x13,	0x01, 0x40,	0x00, "Normal Game"},
+    	{0x13,	0x01, 0x40,	0x40, "No death & stop mode"},
+        {0,		0xFE, 0,	2,	  "Allow Continue"},
+    	{0x13,	0x01, 0x80,	0x00, "Yes"},
+    	{0x13,	0x01, 0x80,	0x80, "No"},
+};
+
+STDDIPINFO(zerowng2);
 
 static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
@@ -658,6 +739,16 @@ struct BurnDriver BurnDrvZerowing = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TOAPLAN_RAIZING,
 	NULL, zerowingRomInfo, zerowingRomName, zerowingInputInfo, zerowingDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
+	320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvZerowng2 = {
+	"zerowng2", "zerowing", NULL, "1989",
+	"Zero Wing (2 player simultaneous ver.)\0", NULL, "[Toaplan] Williams Electronics Games, Inc", "Toaplan BCU-2 / FCU-2 based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING,
+	NULL, zerowng2RomInfo, zerowng2RomName, zerowingInputInfo, zerowng2DIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette,
 	320, 240, 4, 3
 };

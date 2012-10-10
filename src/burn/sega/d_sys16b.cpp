@@ -3704,12 +3704,13 @@ unsigned char __fastcall BootlegZ80Read(unsigned short a)
 	return 0;
 }
 
+#if 1 && defined FBA_DEBUG
 void __fastcall BootlegZ80Write(unsigned short a, unsigned char d)
 {
-#if 1 && defined FBA_DEBUG
+
 	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
-#endif
 }
+#endif
 
 void BootlegMapZ80()
 {
@@ -3721,7 +3722,9 @@ void BootlegMapZ80()
 	ZetMapArea(0xf800, 0xffff, 2, System16Z80Ram);
 	
 	ZetSetReadHandler(BootlegZ80Read);
+#if 1 && defined FBA_DEBUG
 	ZetSetWriteHandler(BootlegZ80Write);
+#endif
 	ZetSetInHandler(BootlegZ80PortRead);
 	ZetSetOutHandler(BootlegZ80PortWrite);
 }

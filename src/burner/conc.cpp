@@ -148,10 +148,12 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		}
 
 		if ((t = LabelCheck(s, _T("type"))) != 0) {					// Cheat type
+#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue cheat type"), szLine);
 				break;
 			}
+#endif
 			s = t;
 
 			// Set type
@@ -161,10 +163,12 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		}
 
 		if ((t = LabelCheck(s, _T("default"))) != 0) {				// Default option
+#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue default"), szLine);
 				break;
 			}
+#endif
 			s = t;
 
 			// Set default option
@@ -176,10 +180,12 @@ static int ConfigParseFile(TCHAR* pszFilename)
 		int n = _tcstol(s, &t, 0);
 		if (t != s) {				   								// New option
 
+#if defined (UNICODE)
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
 				CheatError(pszFilename, nLine, pCurrentCheat, _T("rogue option"), szLine);
 				break;
 			}
+#endif
 
 			// Link a new Option structure to the cheat
 			if (n < CHEAT_MAX_OPTIONS) {

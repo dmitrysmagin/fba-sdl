@@ -274,6 +274,19 @@ int ZetPc(int n)
 #endif
 }
 
+int ZetBc(int n)
+{
+#ifdef EMU_DOZE
+	if (n < 0) {
+		return Doze.bc;
+	} else {
+		return ZetCPUContext[n].bc;
+	}
+#else
+	return 0;
+#endif
+}
+
 int ZetScan(int nAction)
 {
 	if ((nAction & ACB_DRIVER_DATA) == 0) {

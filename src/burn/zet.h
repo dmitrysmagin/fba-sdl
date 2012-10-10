@@ -16,6 +16,7 @@ int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem);
 int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem01, unsigned char *Mem02);
 int ZetReset();
 int ZetPc(int n);
+int ZetBc(int n);
 int ZetScan(int nAction);
 
 #define ZET_IRQSTATUS_NONE DOZE_IRQSTATUS_NONE

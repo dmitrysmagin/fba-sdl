@@ -677,7 +677,7 @@ struct BurnDriver BurnDrvSuperman = {
 	"superman", NULL, NULL, "1988",
 	"Superman\0", NULL, "Taito", "Taito X System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S,
 	NULL, SupermanRomInfo, SupermanRomName, SupermanInputInfo, SupermanDIPInfo,
 	SupermanInit, SupermanExit, SupermanFrame, NULL, SupermanScan,
 	&taitoRecalcPal, 384, 240, 4, 3
@@ -687,7 +687,7 @@ struct BurnDriver BurnDrvSuprmanj = {
 	"suprmanj", "superman", NULL, "1988",
 	"Superman (Japan)\0", NULL, "Taito", "Taito X System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S,
 	NULL, SuprmanjRomInfo, SuprmanjRomName, SupermanInputInfo, SuprmanjDIPInfo,
 	SupermanInit, SupermanExit, SupermanFrame, NULL, SupermanScan,
 	&taitoRecalcPal, 384, 240, 4, 3

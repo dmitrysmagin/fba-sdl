@@ -24,7 +24,7 @@ static unsigned char *Mem = NULL, *MemEnd = NULL;
 static unsigned char *RamStart, *RamEnd;
 
 unsigned char *USER0, *USER1, *USER2; // User regions
-unsigned char *PGM68KBIOS, *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM, *PGMSNDROM, *PGMARMROM;
+unsigned char *PGM68KBIOS, *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM, *PGMARMROM;
 
 static unsigned char bGamePuzlstar = 0;
 unsigned char nPgmPalRecalc = 0;
@@ -37,7 +37,7 @@ static int pgmMemIndex()
 {
 	unsigned char *Next; Next = Mem;
 	PGM68KBIOS	= Next; Next += 0x0020000;		// 68000 BIOS
-	PGM68KROM	= Next; Next += 0x0400000;		// 68000 PRG (max 0x400000)
+	PGM68KROM	= Next; Next += nPGM68KROMLen;	// 68000 PRG (max 0x400000)
 	USER0		= Next; Next += 0x0200000;		// User0 ROM/RAM space (for protection roms, etc)
 
 	RamStart	= Next;
@@ -69,7 +69,7 @@ static int pgmGetRoms(bool bLoad)
 	unsigned char *PGMTileROMLoad = PGMTileROM + 0x400000;
 	unsigned char *PGMSPRColROMLoad = PGMSPRColROM;
 	unsigned char *PGMSPRMaskROMLoad = PGMSPRMaskROM;
-	unsigned char *PGMSNDROMLoad = PGMSNDROM + 0x400000;
+	unsigned char *PGMSNDROMLoad = ICSSNDROM + 0x400000;
 
 	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
@@ -224,7 +224,7 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 	r = (nColour & 0x001F) << 3;	// Red
 	r |= r >> 5;
-	g = (nColour & 0x03E0) >> 2;  	// Green
+	g = (nColour & 0x03E0) >> 2;  // Green
 	g |= g >> 5;
 	b = (nColour & 0x7C00) >> 7;	// Blue
 	b |= b >> 5;
@@ -247,8 +247,8 @@ unsigned char __fastcall PgmReadByte(unsigned int sekAddress)
 		case 0xC00007:
 			return pgm_calendar_r();
 
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %x\n"), sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %x\n"), sekAddress);
 	
 	}
 	return 0;
@@ -296,20 +296,20 @@ unsigned short __fastcall PgmReadWord(unsigned int sekAddress)
 		case 0xDCB402:
 			return olds_r16(sekAddress & 3);
 
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to read word value of location %x\n"), sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to read word value of location %x\n"), sekAddress);
 	}
 	return 0;
 }
 
-void __fastcall PgmWriteByte(unsigned int sekAddress, unsigned char byteValue)
+/*void __fastcall PgmWriteByte(unsigned int sekAddress, unsigned char byteValue)
 {
 	switch (sekAddress) {
 		
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to write byte value %x to location %x\n"), byteValue, sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to write byte value %x to location %x\n"), byteValue, sekAddress);
 	}
-}
+}*/
 
 void __fastcall PgmWriteWord(unsigned int sekAddress, unsigned short wordValue)
 {
@@ -339,7 +339,7 @@ void __fastcall PgmWriteWord(unsigned int sekAddress, unsigned short wordValue)
 			pgm_calendar_w(wordValue);
 			break;
 		case 0xC00008:	// z80_reset_w
-			bprintf(PRINT_NORMAL, _T("z80_reset_w(%04x)  %4.1f%%\n"), wordValue, 6.0 * SekTotalCycles() / 20000.0);
+//			bprintf(PRINT_NORMAL, _T("z80_reset_w(%04x)  %4.1f%%\n"), wordValue, 6.0 * SekTotalCycles() / 20000.0);
 			if (wordValue == 0x5050) {
 				ics2115_reset();
 				nPgmZ80Work = 1;
@@ -378,8 +378,8 @@ void __fastcall PgmWriteWord(unsigned int sekAddress, unsigned short wordValue)
 			olds_w16(sekAddress & 3, wordValue);
 			break;
 
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to write word value %x to location %x\n"), wordValue, sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to write word value %x to location %x\n"), wordValue, sekAddress);
 	}
 }
 
@@ -396,8 +396,8 @@ unsigned char __fastcall PgmZ80ReadByte(unsigned int sekAddress)
 {
 	switch (sekAddress) {
 
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %x\n"), sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to read byte value of location %x\n"), sekAddress);
 	}
 	return 0;
 }
@@ -408,14 +408,14 @@ unsigned short __fastcall PgmZ80ReadWord(unsigned int sekAddress)
 	return (RamZ80[sekAddress] << 8) | RamZ80[sekAddress+1];
 }
 
-void __fastcall PgmZ80WriteByte(unsigned int sekAddress, unsigned char byteValue)
+/*void __fastcall PgmZ80WriteByte(unsigned int sekAddress, unsigned char byteValue)
 {
 	switch (sekAddress) {
 		
-		default:
-			bprintf(PRINT_NORMAL, _T("Attempt to write byte value %x to location %x\n"), byteValue, sekAddress);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Attempt to write byte value %x to location %x\n"), byteValue, sekAddress);
 	}
-}
+}*/
 
 void __fastcall PgmZ80WriteWord(unsigned int sekAddress, unsigned short wordValue)
 {
@@ -435,8 +435,8 @@ unsigned char __fastcall PgmZ80PortRead(unsigned short p)
 			return ics2115_soundlatch_r(0) & 0xff;
 		case 0x84:
 			return ics2115_soundlatch_r(1) & 0xff;
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 Attempt to read port %04x\n"), p);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 Attempt to read port %04x\n"), p);
 	}
 	return 0;
 }
@@ -456,8 +456,8 @@ void __fastcall PgmZ80PortWrite(unsigned short p, unsigned char v)
 		case 0x84:
 			ics2115_soundlatch_w(1, v);
 			break;
-		default:
-			bprintf(PRINT_NORMAL, _T("Z80 Attempt to write %02x to port %04x\n"), v, p);
+//		default:
+//			bprintf(PRINT_NORMAL, _T("Z80 Attempt to write %02x to port %04x\n"), v, p);
 	}
 }
 
@@ -504,7 +504,7 @@ int pgmInit()
 	PGMTileROMExp   = (unsigned char*)malloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
 	PGMSPRColROM	= (unsigned char*)malloc(nPGMSPRColROMLen);
 	PGMSPRMaskROM	= (unsigned char*)malloc(nPGMSPRMaskROMLen);
-	PGMSNDROM		= (unsigned char*)malloc(nPGMSNDROMLen);
+	ICSSNDROM		= (unsigned char*)malloc(nPGMSNDROMLen);
 
 	pgmMemIndex();
 	int nLen = MemEnd - (unsigned char *)0;
@@ -517,7 +517,7 @@ int pgmInit()
 	// load bios roms
 	BurnLoadRom(PGM68KBIOS,		0x00080, 1);	// 68k bios
 	BurnLoadRom(PGMTileROM,		0x00081, 1);	// Bios Text and Tiles
-	BurnLoadRom(PGMSNDROM,		0x00082, 1);	// Bios Intro Sounds
+	BurnLoadRom(ICSSNDROM,		0x00082, 1);	// Bios Intro Sounds
 
 	// expand gfx1 into gfx2
 	expand_gfx_2();
@@ -553,7 +553,7 @@ int pgmInit()
 		SekMapMemory((unsigned char *)RamBg,	0x900000, 0x903FFF, SM_RAM);
 		SekMapMemory((unsigned char *)RamTx,	0x904000, 0x905FFF, SM_RAM);
 		SekMapMemory((unsigned char *)RamRs,	0x907000, 0x9077FF, SM_RAM);
-		SekMapMemory((unsigned char *)RamPal,	0xA00000, 0xA011FF, SM_ROM);	// 
+		SekMapMemory((unsigned char *)RamPal,	0xA00000, 0xA011FF, SM_ROM);
 		SekMapMemory((unsigned char *)RamVReg,	0xB00000, 0xB0FFFF, SM_RAM);
 		
 		SekMapHandler(1,						0xA00000, 0xA011FF, SM_WRITE);
@@ -562,14 +562,14 @@ int pgmInit()
 		SekSetReadWordHandler(0, PgmReadWord);
 		SekSetReadByteHandler(0, PgmReadByte);
 		SekSetWriteWordHandler(0, PgmWriteWord);
-		SekSetWriteByteHandler(0, PgmWriteByte);
+//		SekSetWriteByteHandler(0, PgmWriteByte);
 		
 		SekSetWriteWordHandler(1, PgmPalWriteWord);
 		
 		SekSetReadWordHandler(2, PgmZ80ReadWord);
-		SekSetReadByteHandler(2, PgmZ80ReadByte);
+//		SekSetReadByteHandler(2, PgmZ80ReadByte);
 		SekSetWriteWordHandler(2, PgmZ80WriteWord);
-		SekSetWriteByteHandler(2, PgmZ80WriteByte);
+//		SekSetWriteByteHandler(2, PgmZ80WriteByte);
 		
 
 		SekClose();
@@ -613,7 +613,6 @@ int pgmExit()
 	free (PGMTileROMExp);
 	free (PGMSPRColROM);
 	free (PGMSPRMaskROM);
-	free (PGMSNDROM);
 
 	PGM68KBIOS = NULL;
 	PGM68KROM = NULL;
@@ -621,7 +620,6 @@ int pgmExit()
 	PGMTileROMExp = NULL;
 	PGMSPRColROM = NULL;
 	PGMSPRMaskROM = NULL;
-	PGMSNDROM = NULL;
 
 	nPGM68KROMLen = 0;
 	nPGMTileROMLen = 0;
@@ -638,7 +636,7 @@ int pgmExit()
 #define M68K_CYCS_PER_FRAME	(20000000 / 60)
 #define Z80_CYCS_PER_FRAME	( 8468000 / 60)
 
-#define	PGM_INTER_LEAVE		32
+#define	PGM_INTER_LEAVE	2
 
 #define M68K_CYCS_PER_INTER	(M68K_CYCS_PER_FRAME / PGM_INTER_LEAVE)
 #define Z80_CYCS_PER_INTER	(Z80_CYCS_PER_FRAME  / PGM_INTER_LEAVE)
@@ -689,8 +687,15 @@ int pgmFrame()
 		} else
 			nCyclesDone[1] += nCyclesNext[1] - nCyclesDone[1];
 	}
-	
+
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "drgw2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "drgw2c") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "drgw2j") == 0) {
 	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	SekRun(nCyclesNext[0] - nCyclesDone[0]);
+	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	SekRun(nCyclesNext[0] - nCyclesDone[0]);
+	} else {
+	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	}
 
 	ics2115_frame();
 
@@ -721,7 +726,6 @@ int pgmScan(int nAction,int *pnMin)
 
 		ba.Data		= PGM68KROM;
 		ba.nLen		= nPGM68KROMLen;
-
 		ba.nAddress = 0;
 		ba.szName	= "68K ROM";
 		BurnAcb(&ba);

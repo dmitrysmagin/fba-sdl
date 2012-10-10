@@ -8,12 +8,12 @@ extern "C" {
 
 extern "C" void BurnYM2203UpdateRequest();
 
-int BurnYM2203Init(int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)());
+int BurnYM2203Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)());
 void BurnYM2203Reset();
 void BurnYM2203Exit();
 extern void (*BurnYM2203Update)(int nSegmentEnd);
 void BurnYM2203Scan(int nAction, int* pnMin);
 
-#define BurnYM2203Write(a, n) YM2203Write(0, a, n)
-#define BurnYM2203Read(a) YM2203Read(0, a)
+#define BurnYM2203Write(i, a, n) YM2203Write(i, a, n)
+#define BurnYM2203Read(i, a) YM2203Read(i, a)
 

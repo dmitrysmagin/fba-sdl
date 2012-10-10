@@ -47,9 +47,10 @@ static bool bNumlockStatus;
 TCHAR szChoice[MAX_PATH] = _T("");
 OPENFILENAME ofn;
 
-/* const */ char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize)
-{
 #if defined (UNICODE)
+char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize)
+{
+
 	static char szStringBuffer[1024];
 	memset(szStringBuffer, 0, sizeof(szStringBuffer));
 
@@ -61,19 +62,10 @@ OPENFILENAME ofn;
 	}
 
 	return NULL;
-#else
-	if (pszOutString) {
-		strcpy(pszOutString, pszInString);
-		return pszOutString;
-	}
-
-	return (char*)pszInString;
-#endif
 }
 
-/* const */ TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize)
+TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize)
 {
-#if defined (UNICODE)
 	static TCHAR szStringBuffer[1024];
 
 	TCHAR* pszBuffer = pszOutString ? pszOutString : szStringBuffer;
@@ -84,15 +76,28 @@ OPENFILENAME ofn;
 	}
 
 	return NULL;
+}
 #else
+char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int /*nOutSize*/)
+{
+	if (pszOutString) {
+		strcpy(pszOutString, pszInString);
+		return pszOutString;
+	}
+
+	return (char*)pszInString;
+}
+
+TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int /*nOutSize*/)
+{
 	if (pszOutString) {
 		_tcscpy(pszOutString, pszInString);
 		return pszOutString;
 	}
 
 	return (TCHAR*)pszInString;
-#endif
 }
+#endif
 
 #if defined (FBA_DEBUG)
  static TCHAR szConsoleBuffer[1024];

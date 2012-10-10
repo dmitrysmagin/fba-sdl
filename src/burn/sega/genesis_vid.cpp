@@ -47,7 +47,7 @@ UINT32 VdpAddress;
 
 #define EXTRACT_PIXEL(x,i)	(((x) >> (((i) ^ 1) * 4)) & 0x0f)
 
-static void VdpRegisterWrite(int d, int vBlank)
+static void VdpRegisterWrite(int d, int /*vBlank*/)
 {	
 	UINT8 RegNum = (d & 0x1f00) >> 8;
 	UINT8 RegDat = d & 0x00ff;
@@ -576,7 +576,7 @@ static void drawline_tiles(UINT32 *tiles, UINT16 *bmap, unsigned int pri, int of
 	}
 }
 
-static void draw8pixs(UINT16 *bmap, int patno, int priority, int colbase, int patline)
+static void draw8pixs(UINT16 *bmap, int patno, int /*priority*/, int colbase, int patline)
 {
 	UINT32 tile = *(UINT32 *)&VDP_VRAM_BYTE(patno * 32 + 4 * patline);
 	int col;
@@ -654,7 +654,7 @@ static void draw8pixs(UINT16 *bmap, int patno, int priority, int colbase, int pa
 
 
 /* draw a horizontally-flipped section of a sprite */
-static void draw8pixs_hflip(UINT16 *bmap, int patno, int priority, int colbase, int patline)
+static void draw8pixs_hflip(UINT16 *bmap, int patno, int /*priority*/, int colbase, int patline)
 {
 	UINT32 tile = *(UINT32 *)&VDP_VRAM_BYTE(patno * 32 + 4 * patline);
 	int col;

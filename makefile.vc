@@ -1,4 +1,4 @@
-# Makefile for FBA, for use with GNU make & Microsoft Visual C++ 2003
+# Makefile for FBA, for use with GNU make & Microsoft Visual C++ 2008
 #
 # The first pass makes sure all intermediary targets are present. The second pass updates
 # any targets, if necessary. (Intermediary) targets which have their own unique rules
@@ -70,7 +70,7 @@ endif
 objdir	= obj/VC_WIN32/$(NAME)/
 srcdir	= src/
 
-alldir	= burn burn/capcom burn/toaplan burn/cave burn/psikyo burn/neogeo burn/sega burn/pgm burn/misc burn/misc/taito_68k burn/misc/dec0 burner burner/win32 interface interface/win32 cpu/doze cpu/a68k cpu/m68k kaillera/client generated
+alldir	= burn burn/capcom burn/cave burn/cps3 burn/neogeo burn/pgm burn/sega burn/toaplan burn/misc burn/misc/dec0 burn/misc/post90s burn/misc/pre90s burn/misc/psikyo burn/misc/taito_68k burner burner/win32 interface interface/win32 interface/sdl cpu/doze cpu/a68k cpu/m68k cpu/sh2 cpu/m6502 cpu/nec kaillera/client generated
 
 incdir	= $(foreach dir,$(alldir),/I$(srcdir)$(dir)) /I$(objdir)generated
 
@@ -82,90 +82,102 @@ lib	+=	user32.lib gdi32.lib comdlg32.lib comctl32.lib shell32.lib winmm.lib \
 		advapi32.lib setupapi.lib dxguid.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dinput.lib \
 		libpngstat.lib zlibstat.lib $(srcdir)/kaillera/client/kailleraclient.lib
 
-drvobj	=   d_neogeo.o \
+drvobj	=   	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o \
+		d_sailormn.o d_uopoko.o \
 		\
-	    dc_1941.o dc_3wonders.o dc_captcomm.o dc_cawing.o dc_dino.o  dc_dw.o \
+		dc_1941.o dc_3wonders.o dc_captcomm.o dc_cawing.o dc_dino.o  dc_dw.o \
 		dc_ffight.o dc_forgottn.o dc_ghouls.o dc_knights.o dc_kod.o dc_megaman.o \
 		dc_mercs.o dc_msword.o dc_mtwins.o dc_nemo.o dc_pang3.o dc_pnickj.o \
 		dc_punisher.o dc_qad.o dc_qtono2.o dc_sf2.o dc_sf2t.o dc_sfzch.o \
 		dc_slammast.o dc_strider.o dc_unsquad.o dc_varth.o dc_willow.o dc_wof.o \
-	    dc_1944.o dc_19xx.o dc_armwar.o dc_avsp.o dc_batcir.o dc_choko.o dc_csclub.o \
+		\
+		dc_1944.o dc_19xx.o dc_armwar.o dc_avsp.o dc_batcir.o dc_choko.o dc_csclub.o \
 		dc_cworld2j.o dc_cyb.o dc_ddsom.o dc_ddtod.o dc_dimahoo.o dc_dstlk.o \
-		dc_ecofghtr.o dc_gigawing.o dc_hsf2.o dc_jyangoku.o dc_megaman2.o dc_mmatrix.o dc_mpang.o dc_msh.o \
-		dc_mshvsf.o dc_mvsc.o dc_nwarr.o dc_progear.o dc_pzloop2.o dc_qnd.o dc_ringdest.o dc_sfa.o \
-		dc_sfa2.o dc_sfa3.o dc_sgemf.o dc_spf.o dc_ssf2.o dc_ssf2t.o dc_vhunt2.o \
-		dc_vsav.o dc_vsav2.o dc_xmcota.o dc_xmvsf.o \
+		dc_ecofghtr.o dc_gigawing.o dc_hsf2.o dc_jyangoku.o dc_megaman2.o dc_mmancp2u.o \
+		dc_mmatrix.o dc_mpang.o dc_msh.o dc_mshvsf.o dc_mvsc.o dc_nwarr.o dc_progear.o \
+		dc_pzloop2.o dc_qnd.o dc_ringdest.o dc_sfa.o dc_sfa2.o dc_sfa3.o dc_sgemf.o \
+		dc_spf.o dc_ssf2.o dc_ssf2t.o dc_vhunt2.o dc_vsav.o dc_vsav2.o dc_xmcota.o \
+		dc_xmvsf.o \
 		\
-	    d_tekipaki.o d_dogyuun.o d_truxton2.o d_vfive.o d_kbash.o d_batsugun.o \
-		d_snowbro2.o d_mahoudai.o d_shippumd.o d_battleg.o d_batrider.o d_bbakraid.o \
+		d_cps3.o \
 		\
-	    d_hellfire.o d_outzone.o d_truxton.o d_zerowing.o \
+		d_neogeo.o \
 		\
-	    d_sailormn.o d_gaia.o \
-	    d_donpachi.o d_dodonpachi.o d_feversos.o d_esprade.o d_uopoko.o d_guwange.o \
+		d_pgm.o \
 		\
-	    d_rainbow.o d_opwolf.o d_rastan.o d_twinhawk.o d_superman.o \
+		d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_sys18.o d_xbrd.o d_ybrd.o \
 		\
-	    d_psikyo.o \
+	        d_batrider.o d_batsugun.o d_battleg.o d_bbakraid.o d_dogyuun.o d_hellfire.o d_kbash.o \
+		d_mahoudai.o d_outzone.o d_shippumd.o d_snowbro2.o d_tekipaki.o d_truxton.o \
+		d_truxton2.o d_vfive.o d_zerowing.o \
 		\
-	    d_sys16a.o d_sys16b.o d_sys18.o d_hangon.o d_outrun.o d_xbrd.o d_ybrd.o \
-	        \
-	    d_baddudes.o d_robocop.o \
-	        \
-	    d_pgm.o \
-	    	\
-	    d_tigerheli.o d_news.o d_ohmygod.o d_solomon.o d_prehisle.o d_hyperpac.o \
-	    d_wc90.o d_fstarfrc.o d_bombjack.o d_biomtoy.o d_tmnt.o d_madgear.o \
-	    d_kaneko16.o d_aerofgt.o d_galpanic.o d_shadfrce.o d_1945kiii.o d_powerins.o \
+		d_psikyo.o \
+		\
+		d_baddudes.o d_robocop.o \
+		\
+		d_opwolf.o d_rainbow.o d_rastan.o d_superman.o d_twinhawk.o \
+		\
+		d_4enraya.o d_1942.o d_1943.o d_ambush.o d_arkanoid.o d_bombjack.o d_dotrikun.o d_epos.o \
+		d_jack.o d_madgear.o d_meijinsn.o d_minivdr.o d_mole.o d_mrflea.o d_pacman.o d_pkunwar.o \
+		d_prehisle.o d_quizo.o d_route16.o d_solomon.o d_sys1.o d_tigerheli.o d_tmnt.o d_wallc.o \
+		d_wc90.o \
+		\
+		d_1945kiii.o d_aerofgt.o d_biomtoy.o d_fstarfrc.o d_galpanic.o d_hyperpac.o d_kaneko16.o \
+		d_m92.o d_news.o d_ohmygod.o d_powerins.o d_seta2.o d_shadfrce.o \
+		\
+		d_parent.o
 
-depobj	:= main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
-	   sel.o media.o drv.o load.o run.o progress.o \
-	   popup_win32.o scrn.o menu.o replay.o dynhuff.o memcard.o wave.o \
-	   inpc.o inpd.o inps.o inpcheat.o inpdipsw.o sfactd.o stated.o numdial.o res.o \
-	   cona.o localise.o fba_kaillera.o roms.o \
-	   \
-	   misc.o bzip.o unzip.o zipfn.o state.o statec.o sshot.o dat.o \
-	   cong.o conc.o gamc.o gami.o \
-	   \
-	   $(drvobj) \
-	   \
-	   burn.o cheat.o \
-	   burn_gun.o \
-	   sek.o zet.o doze.o eeprom_93cxx.o \
-	   burn_sound.o burn_sound_c.o timer.o \
-	   burn_ym2151.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o burn_ym2203.o burn_ym2612.o \
-	   ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o msm5205.o msm6295.o ymf278b.o ymz280b.o \
-	   \
-	   interface.o \
-	   vid_interface.o vid_support.o vid_softfx.o \
-	   vid_directx_support.o vid_d3d.o vid_ddraw.o vid_ddrawfx.o vid_directx9.o \
-	   aud_interface.o aud_dsp.o lowpass2.o aud_dsound3.o \
-	   inp_interface.o inp_dinput.o \
-	   prf_interface.o prf_performance_counter.o \
-	   \
-	   neogeo.o neo_run.o neo_decrypt.o neo_text.o neo_sprite.o neo_palette.o neo_upd4990a.o \
-	   \
-	   cps.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
-	   cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o dc_input.o \
-	   cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
-	   kabuki.o \
-	   \
-	   toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
-	   toa_bcu2.o toaplan1.o \
-	   \
-	   cave.o cave_tile.o cave_sprite.o cave_palette.o \
-	   \
-	   rain_chip.o taito_gfx.o vid_sysx.o vid_pc080sn.o vid_pc090oj.o snd_tc0140.o \
-	   \
-	   psikyo_tile.o psikyo_sprite.o psikyo_palette.o \
-	   \
-	   sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_pcm.o sys16_ppi.o genesis_vid.o rf5c68.o \
-	   \
-	   dec_misc.o dec_vid.o \
-	   \
-	   pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o pgm_snd.o \
-	   \
-	   tiles_generic.o
+depobj	:= 	main.o splash.o about.o systeminfo.o debugger.o misc_win32.o \
+	   	sel.o media.o drv.o load.o run.o progress.o \
+	   	popup_win32.o scrn.o menu.o replay.o dynhuff.o memcard.o wave.o \
+	   	inpc.o inpd.o inps.o inpcheat.o inpdipsw.o sfactd.o stated.o numdial.o res.o \
+	   	cona.o localise.o fba_kaillera.o roms.o \
+	   	misc.o bzip.o unzip.o zipfn.o state.o statec.o sshot.o dat.o \
+	   	cong.o conc.o gamc.o gami.o \
+	   	\
+	   	$(drvobj) \
+	   	\
+	   	burn.o cheat.o burn_gun.o \
+	   	\
+	   	sek.o zet.o doze.o vez.o eeprom_93cxx.o \
+	   	burn_sound.o burn_sound_c.o timer.o \
+	   	burn_ym2151.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o burn_ym2203.o burn_ym2612.o \
+	   	ay8910.o ym2151.o fm.o fmopl.o ymdeltat.o ics2115.o msm5205.o msm6295.o rf5c68.o ymf278b.o ymz280b.o \
+	   	x1010.o \
+	   	sh2.o m6502.o nec.o \
+	   	\
+	   	interface.o \
+	   	vid_interface.o vid_support.o vid_softfx.o \
+	   	vid_directx_support.o vid_d3d.o vid_ddraw.o vid_ddrawfx.o vid_directx9.o \
+	   	aud_interface.o aud_dsp.o lowpass2.o aud_dsound3.o \
+	   	inp_interface.o inp_dinput.o \
+	   	prf_interface.o prf_performance_counter.o \
+	   	\
+	   	cave.o cave_tile.o cave_sprite.o cave_palette.o \
+	   	\
+	   	cps.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
+	   	cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o dc_input.o \
+	   	cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
+	   	kabuki.o \
+	   	\
+	   	cps3run.o cps3snd.o \
+	   	\
+	   	neogeo.o neo_run.o neo_decrypt.o neo_text.o neo_sprite.o neo_palette.o neo_upd4990a.o \
+	   	\
+	   	pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
+	   	\
+	   	sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o sys16_pcm.o sys16_ppi.o genesis_vid.o \
+	   	toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
+	   	\
+	   	toa_bcu2.o toaplan1.o \
+	   	\
+	   	psikyo_tile.o psikyo_sprite.o psikyo_palette.o \
+	   	\
+	   	dec_misc.o dec_vid.o \
+	   	\
+	   	rain_chip.o taito_gfx.o vid_sysx.o vid_pc080sn.o vid_pc090oj.o snd_tc0140.o \
+	   	\
+	   	tiles_generic.o
 
 ifdef	DEBUG
 depobj += m68kdasm.o
@@ -239,7 +251,7 @@ ifdef ROM_VERIFY
 endif
 
 ifdef	SYMBOL
-	CFLAGS	 = /nologo /Od /G$(cpulevel) /GF /GS /RTC1 /Yd /Zi /Zc:forScope /MTd /YX /Fp$(objdir)/generated/ # /Wall
+	CFLAGS	 = /nologo /w /O2 /Ox /Od /GF /GS /RTC1 /Yd /Zi /Zc:forScope /MTd /YX /Fp$(objdir)/generated/ # /Wall
 	ASFLAGS += -g
 	LDFLAGS += /DEBUG
 	DEF	:= $(DEF) /D_DEBUG
@@ -251,7 +263,7 @@ else
 endif
 
 else
-	CFLAGS	 = /nologo /Og /Oi /Ot /Op /Oy /Ob2 /G$(cpulevel) /GF /Gs /Gy /GL /Gr /Zc:forScope /MT
+	CFLAGS	 = /nologo /w /O2 /Ox /Oi /Ot /Oy /Ob2 /GF /Gs /Gy /GL /Gr /Zc:forScope /MT
 	LDFLAGS += /LTCG:STATUS
 endif
 

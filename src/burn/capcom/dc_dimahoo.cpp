@@ -30,7 +30,7 @@ static struct BurnInputInfo DrvInputList[] =
 STDINPUTINFO(Drv);
 
 static struct BurnRomInfo DimahooRomDesc[] = {
-	{ "gmdu.03",       0x80000, 0x43BCB15F, 1 | BRF_ESS | BRF_PRG },
+	{ "gdme_03.03",    0x80000, 0x968FCECD, 1 | BRF_ESS | BRF_PRG },
 	{ "gmd.04",        0x80000, 0x37485567, 1 | BRF_ESS | BRF_PRG },
 	{ "gmd.05",        0x80000, 0xDA269FFB, 1 | BRF_ESS | BRF_PRG },
 	{ "gmd.06",        0x80000, 0x55B483C9, 1 | BRF_ESS | BRF_PRG },
@@ -49,6 +49,27 @@ static struct BurnRomInfo DimahooRomDesc[] = {
 
 
 STD_ROM_PICK(Dimahoo) STD_ROM_FN(Dimahoo)
+
+static struct BurnRomInfo DimahoouRomDesc[] = {
+	{ "gmdu.03",       0x80000, 0x43BCB15F, 1 | BRF_ESS | BRF_PRG },
+	{ "gmd.04",        0x80000, 0x37485567, 1 | BRF_ESS | BRF_PRG },
+	{ "gmd.05",        0x80000, 0xDA269FFB, 1 | BRF_ESS | BRF_PRG },
+	{ "gmd.06",        0x80000, 0x55B483C9, 1 | BRF_ESS | BRF_PRG },
+
+	{ "gmd.13m",      0x400000, 0x80DD19F0, 3 | BRF_GRA },
+	{ "gmd.15m",      0x400000, 0xDFD93A78, 3 | BRF_GRA },
+	{ "gmd.17m",      0x400000, 0x16356520, 3 | BRF_GRA },
+	{ "gmd.19m",      0x400000, 0xDFC33031, 3 | BRF_GRA },
+
+	{ "gmd.01",       0x020000, 0x3F9BC985, 4 | BRF_ESS | BRF_PRG },
+	{ "gmd.02",       0x020000, 0x3FD39DDE, 4 | BRF_ESS | BRF_PRG },
+
+	{ "gmd.11m",      0x400000, 0x06A65542, 5 | BRF_SND },
+	{ "gmd.12m",      0x400000, 0x50BC7A31, 5 | BRF_SND },
+};
+
+
+STD_ROM_PICK(Dimahoou) STD_ROM_FN(Dimahoou)
 
 static struct BurnRomInfo gmdjRomDesc[] = {
 	{ "gmdj.03",       0x80000, 0xCD6979E3, 1 | BRF_ESS | BRF_PRG },
@@ -73,10 +94,20 @@ STD_ROM_PICK(gmdj) STD_ROM_FN(gmdj)
 
 struct BurnDriver BurnDrvCpsDimahoo = {
 	"dimahoo", NULL, NULL, "2000",
-	"Dimahoo (000121 USA)\0", NULL, "8ing / Raizing / Capcom", "CPS2",
+	"Dimahoo (000121 Euro)\0", NULL, "8ing / Raizing / Capcom", "CPS2",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_CAPCOM_CPS2,
 	NULL, DimahooRomInfo, DimahooRomName, DrvInputInfo, NULL,
+	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,224,384,3,4
+};
+
+struct BurnDriver BurnDrvCpsDimahoou = {
+	"dimahoou", "dimahoo", NULL, "2000",
+	"Dimahoo (000121 USA)\0", NULL, "8ing / Raizing / Capcom", "CPS2",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_CAPCOM_CPS2,
+	NULL, DimahoouRomInfo, DimahoouRomName, DrvInputInfo, NULL,
 	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,224,384,3,4
 };

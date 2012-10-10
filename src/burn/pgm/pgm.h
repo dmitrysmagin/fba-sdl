@@ -1,4 +1,5 @@
 #include "burnint.h"
+#include "ics2115.h"
 
 // pgm_run.cpp
 extern unsigned char PgmJoy1[];
@@ -14,11 +15,11 @@ extern int pgmInit();
 extern int pgmExit();
 extern int pgmFrame();
 extern int pgmDraw();
-extern int pgmScan(int /*nAction*/, int */*pnMin*/);
+extern int pgmScan(int nAction, int *pnMin);
 
 extern int nPGM68KROMLen;
 extern unsigned char *USER0, *USER1, *USER2;
-extern unsigned char *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM, *PGMSNDROM;
+extern unsigned char *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM;
 extern unsigned short *RamRs, *RamPal, *RamVReg, *RamSpr;
 extern unsigned int *RamBg, *RamTx, *RamCurPal;
 extern unsigned char nPgmPalRecalc;
@@ -28,21 +29,6 @@ extern int (*pPgmScanCallback)(int, int*);
 
 // pgm_draw
 extern int pgmDraw();
-
-// pgm_snd
-extern unsigned char ics2115read(unsigned char offset);
-extern void ics2115write(unsigned char offset, unsigned char data);
-
-extern int ics2115_init();
-extern void ics2115_exit();
-extern void ics2115_reset();
-
-extern unsigned short ics2115_soundlatch_r(int i);
-extern void ics2115_soundlatch_w(int i, unsigned short d);
-
-extern void ics2115_frame();
-extern void ics2115_update(int length);
-extern void ics2115_scan(int nAction,int *pnMin);
 
 // pgm_prot.cpp
 

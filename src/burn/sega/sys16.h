@@ -260,6 +260,7 @@ void fd1089_decrypt_0027(void);
 void fd1089_decrypt_0028(void);
 void fd1089_decrypt_0033(void);
 void fd1089_decrypt_0034(void);
+void fd1089_decrypt_0037(void);
 void fd1089_decrypt_0167(void);
 void fd1089_decrypt_0168(void);
 void fd1089_decrypt_5021(void);

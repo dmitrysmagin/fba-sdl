@@ -613,20 +613,20 @@ STD_ROM_PICK(dfeveron);
 STD_ROM_FN(dfeveron);
 
 struct BurnDriver BurnDrvFeverSOS = {
-	"feversos", "dfeveron", NULL, "1998",
+	"feversos", NULL, NULL, "1998",
 	"Fever SOS (International ver. Fri Sep 25 1998)\0", NULL, "Cave / Nihon System inc.", "Cave",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, feversosRomInfo, feversosRomName, feversosInputInfo, NULL,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
 	240, 320, 3, 4
 };
 
 struct BurnDriver BurnDrvDFeveron = {
-	"dfeveron", NULL, NULL, "1998",
+	"dfeveron", "feversos", NULL, "1998",
 	"Dangun Feveron (Japan ver. Thu Sep 17 1998)\0", NULL, "Cave / Nihon System inc.", "Cave",
 	L"\u5F3E\u9283 Feveron (Japan ver. Thu Sep 17 1998)\0Dangun Feveron (Japan ver. Thu Sep 17 1998)\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_CAVE_68K_ONLY,
 	NULL, dfeveronRomInfo, dfeveronRomName, feversosInputInfo, NULL,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &CaveRecalcPalette,
 	240, 320, 3, 4

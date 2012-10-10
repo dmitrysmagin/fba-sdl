@@ -69,7 +69,7 @@ void LowPass2::Filter(signed short int *Buff, int Tam)
 void LowPass2::SetParam(double Freq, double SampleRate, double Q, double Gain,
 		        double Freq2, double Q2, double Gain2)
 {
-  double omega, sn, cs, alpha, a0;
+  double omega, sn, cs, alpha;
 
   if (Q < 0) { Q = 0; }
 

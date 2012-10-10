@@ -395,21 +395,21 @@ void __fastcall System16Z80PortWrite(unsigned short a, unsigned char d)
 #endif
 }
 
+#if 1 && defined FBA_DEBUG
 unsigned char __fastcall System16Z80Read(unsigned short a)
 {
-#if 1 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("Z80 Read -> %04X\n"), a);
-#endif
 
 	return 0;
 }
+#endif
 
+#if 1 && defined FBA_DEBUG
 void __fastcall System16Z80Write(unsigned short a, unsigned char d)
 {
-#if 1 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
-#endif
 }
+#endif
 
 unsigned char __fastcall System16Z80PCMRead(unsigned short a)
 {
@@ -462,7 +462,7 @@ unsigned char __fastcall System16Z802203Read(unsigned short a)
 	
 	switch (a) {
 		case 0xd000: {
-			return BurnYM2203Read(0);
+			return BurnYM2203Read(0, 0);
 		}
 	}
 
@@ -482,12 +482,12 @@ void __fastcall System16Z802203Write(unsigned short a, unsigned char d)
 	
 	switch (a) {
 		case 0xd000: {
-			BurnYM2203Write(0, d);
+			BurnYM2203Write(0, 0, d);
 			return;
 		}
 		
 		case 0xd001: {
-			BurnYM2203Write(1, d);
+			BurnYM2203Write(0, 1, d);
 			return;
 		}
 	}
@@ -1823,8 +1823,8 @@ int System16Init()
 				ZetMapArea(0x0000, 0x9fff, 0, System16Z80Rom);
 				ZetMapArea(0x0000, 0x9fff, 2, System16Z80Rom);
 			
-				ZetMapArea(0xa000, 0xbfff, 0, System16Z80Rom/* + 0xa000*/);
-				ZetMapArea(0xa000, 0xbfff, 2, System16Z80Rom/* + 0xa000*/);
+				ZetMapArea(0xa000, 0xbfff, 0, System16Z80Rom + 0xa000);
+				ZetMapArea(0xa000, 0xbfff, 2, System16Z80Rom + 0xa000);
 			
 				ZetMapArea(0xe000, 0xffff, 0, System16Z80Ram);
 				ZetMapArea(0xe000, 0xffff, 1, System16Z80Ram);
@@ -1848,8 +1848,10 @@ int System16Init()
 					ZetSetReadHandler(System16Z80PCMRead);
 					ZetSetWriteHandler(System16Z80PCMWrite);
 				} else {
+#if 1 && defined FBA_DEBUG
 					ZetSetReadHandler(System16Z80Read);
 					ZetSetWriteHandler(System16Z80Write);
+#endif
 				}		
 				ZetSetInHandler(System16Z80PortRead);
 				ZetSetOutHandler(System16Z80PortWrite);
@@ -1866,7 +1868,7 @@ int System16Init()
 		RF5C68PCMInit(10000000);
 	} else {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-			BurnYM2203Init(4000000, &System16YM2203IRQHandler, System16SynchroniseStream, System16GetTime);
+			BurnYM2203Init(1, 4000000, &System16YM2203IRQHandler, System16SynchroniseStream, System16GetTime);
 			BurnTimerAttachZet(4000000);
 		} else {
 			BurnYM2151Init(4000000, 25.0);

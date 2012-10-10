@@ -668,7 +668,7 @@ static int A68KIRQAcknowledge(int nIRQ)
 	nSekIRQPending[nSekActive] = 0;
 	
 	if (pSekExt->IrqCallback) {
-		pSekExt->IrqCallback(nIRQ);
+		return pSekExt->IrqCallback(nIRQ);
 	}
 
 	return -1;
@@ -721,7 +721,7 @@ extern "C" int M68KIRQAcknowledge(int nIRQ)
 	}
 	
 	if (pSekExt->IrqCallback) {
-		pSekExt->IrqCallback(nIRQ);
+		return pSekExt->IrqCallback(nIRQ);
 	}
 
 	return M68K_INT_ACK_AUTOVECTOR;

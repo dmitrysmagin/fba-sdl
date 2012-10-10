@@ -949,7 +949,7 @@ struct BurnDriver BurnDrvopwolf = {
 	"opwolf",NULL, NULL, "1987",
 	"Operation Wolf (World)\0", "Protection C-Chip not emulated", "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	0,1,HARDWARE_MISC_MISC,
+	0,1,HARDWARE_MISC_PRE90S,
 	NULL,opwolfRomInfo,opwolfRomName,opwolfInputInfo, opwolfDIPInfo,
 	opwolfInit,opwolfExit,opwolfFrame,NULL,opwolfScan,
 	&taitoRecalcPal,320,240,4,3
@@ -959,7 +959,7 @@ struct BurnDriverD BurnDrvOpwolfu = {
 	"opwolfu", "opwolf", NULL, "1987",
 	"Operation Wolf (US)\0", "Protection C-Chip not emulated", "Taito", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE,2,HARDWARE_MISC_MISC,
+	BDF_CLONE,2,HARDWARE_MISC_PRE90S,
 	NULL,opwolfuRomInfo,opwolfuRomName,opwolfInputInfo, opwolfDIPInfo,
 	opwolfInit,opwolfExit,opwolfFrame,NULL,opwolfScan,
 	&taitoRecalcPal,320,240,4,3
@@ -969,7 +969,7 @@ struct BurnDriver BurnDrvopwolfb = {
 	"opwolfb", "opwolf", NULL, "1987",
 	"Operation Bear (bootleg)\0", NULL, "Bear", "Custom Taito",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG,2,HARDWARE_MISC_MISC,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG,2,HARDWARE_MISC_PRE90S,
 	NULL,opwolfbRomInfo,opwolfbRomName,opwolfInputInfo, opwolfDIPInfo,
 	opwolfInit,opwolfExit,opwolfFrame,NULL,opwolfScan,
 	&taitoRecalcPal,320,240,4,3
