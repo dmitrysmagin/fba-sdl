@@ -1,6 +1,7 @@
 // burn_sound.h - General sound support functions
 // based on code by Daniel Moreno (ComaC) < comac2k@teleline.es >
 
+#if defined BUILD_X86_ASM
 extern "C" {
 	int __cdecl ChannelMix_QS_A(int* Dest, int nLen,
 								char* Sample, int LoopEnd,
@@ -23,6 +24,7 @@ extern "C" {
 	void __cdecl BurnSoundCopy_FM_OPN_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
 	void __cdecl BurnSoundCopy_FM_OPN_Add_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
 }
+#endif
 
 void BurnSoundCopyClamp_C(int* Src, short* Dest, int Len);
 void BurnSoundCopyClamp_Add_C(int* Src, short* Dest, int Len);

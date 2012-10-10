@@ -1187,7 +1187,7 @@ static int ExecuteCommand(TCHAR* cmd)
 // ----------------------------------------------------------------------------
 // Message processing
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 
@@ -1543,7 +1543,7 @@ int DebugCreate()
 
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &SystemWorkArea, 0);
 	bLargeWindow = (SystemWorkArea.right - SystemWorkArea.left >= 1024 && SystemWorkArea.bottom - SystemWorkArea.top >= 768) ? true : false;
-	hDbgDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(bLargeWindow ? IDD_DEBUG_LRG : IDD_DEBUG_SML), hScrnWnd, DialogProc);
+	hDbgDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(bLargeWindow ? IDD_DEBUG_LRG : IDD_DEBUG_SML), hScrnWnd, (DLGPROC)DialogProc);
 	if (hDbgDlg == NULL) {
 		return 1;
 	}

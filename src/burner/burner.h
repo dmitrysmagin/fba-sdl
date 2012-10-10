@@ -27,11 +27,9 @@
 
 #if defined (BUILD_WIN32)
  #include "burner_win32.h"
-#include <shellapi.h>
+ #include <shellapi.h>
 #include <shlwapi.h>
 #include "net.h"
-#include "menugui.h"
-#include "imagebutton.h"
 #include "dwmapi_core.h"
 #elif defined (BUILD_SDL)
  #include "burner_sdl.h"
@@ -44,10 +42,21 @@
 
 #include "interface.h"
 
+#define IMG_FREE		(1 << 0)
+
 // Macros for parsing text
 #define SKIP_WS(s) while (_istspace(*s)) { s++; }			// Skip whitespace
 #define FIND_WS(s) while (*s && !_istspace(*s)) { s++; }	// Find whitespace
 #define FIND_QT(s) while (*s && *s != _T('\"')) { s++; }	// Find quote
+
+#ifndef BUILD_SDL
+// image.cpp
+void img_free(IMAGE* img);
+int img_alloc(IMAGE* img);
+
+bool PNGIsImage(FILE* fp);
+int PNGLoad(IMAGE* img, FILE* fp, int nPreset);
+#endif
 
 // gami.cpp
 extern struct GameInp* GameInp;
@@ -113,8 +122,8 @@ TCHAR* DecorateGenreInfo();
 void ComputeGammaLUT();
 
 // dat.cpp
-int write_datfile(int nDatType, int bIncMegadrive, FILE* fDat);
-int create_datfile(TCHAR* szFilename, int nDatType, int bIncMegadrive);
+int write_datfile(int bIncMegadrive, FILE* fDat);
+int create_datfile(TCHAR* szFilename, int bIncMegadrive);
 
 // sshot.cpp
 int MakeScreenShot();

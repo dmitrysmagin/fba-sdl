@@ -98,9 +98,6 @@ static bool bVidRecalcPalette;
 static unsigned char* pVidTransImage = NULL;
 static unsigned int* pVidTransPalette = NULL;
 
-bool bVidUsePlaceholder = true;					// Use a placeholder image when no game is loaded
-TCHAR szPlaceHolder[MAX_PATH] = _T("");
-
 static unsigned int __cdecl HighCol15(int r, int g, int b, int  /* i */)
 {
 	unsigned int t;
@@ -135,27 +132,9 @@ int VidInit()
 	VidExit();
 
 #if defined (BUILD_WIN32) && defined (ENABLE_PREVIEW)
-	if (!bDrvOkay && bVidUsePlaceholder) {
-		if (_tcslen(szPlaceHolder)) {
-			LPTSTR p = _tcsrchr(szPlaceHolder, '.');
-			if (!_tcsicmp(p+1, _T("bmp"))) {
-				hbitmap = (HBITMAP)LoadImage(hAppInst, szPlaceHolder, IMAGE_BITMAP, 304, 224, LR_LOADFROMFILE);
-			} else {
-				if (!_tcsicmp(p+1, _T("png"))) {
-					FILE *fp = _tfopen(szPlaceHolder, _T("rb"));
-					if (fp) {
-						char szTemp[MAX_PATH];
-						sprintf(szTemp, _TtoA(szPlaceHolder));
-						hbitmap = PNGtoBMP_Simple(hScrnWnd, szTemp);
-						fclose(fp);
-					}
-				}
-			}
-		} else {
-			hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
-		}
-		
-		if (!hbitmap) hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
+	if (!bDrvOkay) {
+		//hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
+		hbitmap = (HBITMAP)LoadImage(hAppInst, MAKEINTRESOURCE(BMP_SPLASH), IMAGE_BITMAP, 304, 224, 0);
 		
 		GetObject(hbitmap, sizeof(BITMAP), &bitmap);
 

@@ -3,6 +3,9 @@
 // #define USE_D3D_REFERENCE_DEVICE
 
 #include "burner.h"
+
+#if !defined BUILD_X64_EXE
+
 // #include "vid_directx_support.h"
 #include <InitGuid.h>
 #include "vid_softfx.h"
@@ -2412,4 +2415,7 @@ static int vidGetSettings(InterfaceInfo* pInfo)
 
 // The video output plugin:
 struct VidOut VidOutD3D = { vidInit, vidExit, vidFrame, vidPaint, vidScale, vidGetSettings, _T("DirectDraw7 / Direct3D7 Enhanced video output") };
+#else
+struct VidOut VidOutD3D = { NULL, NULL, NULL, NULL, NULL, NULL, _T("DirectDraw7 / Direct3D7 Enhanced video output") };
+#endif
 

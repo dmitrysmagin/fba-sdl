@@ -137,8 +137,10 @@ int PrintExceptionInfo()
 	}
 	AddLine(_T(""));
 
+#ifdef BUILD_X86_ASM
 	AddLine(_T("EAX: 0x%08X, EBX: 0x%08X, ECX: 0x%08X, EDX: 0x%08X"), (unsigned int)pExceptionPointers->ContextRecord->Eax, (unsigned int)pExceptionPointers->ContextRecord->Ebx, (unsigned int)pExceptionPointers->ContextRecord->Ecx, (unsigned int)pExceptionPointers->ContextRecord->Edx);
 	AddLine(_T("ESI: 0x%08X, EDI: 0x%08X, ESP: 0x%08X, EBP: 0x%08X"), (unsigned int)pExceptionPointers->ContextRecord->Esi, (unsigned int)pExceptionPointers->ContextRecord->Edi, (unsigned int)pExceptionPointers->ContextRecord->Esp, (unsigned int)pExceptionPointers->ContextRecord->Ebp);
+#endif
 
 	return 0;
 }
@@ -1122,7 +1124,7 @@ int PrintDeviceInfo()
 	return 0;
 }
 
-static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	static int nReturnCode = 0;
 
@@ -1352,7 +1354,7 @@ LONG CALLBACK ExceptionFilter(_EXCEPTION_POINTERS* pExceptionInfo)
 
 	pExceptionPointers = pExceptionInfo;
 
-	nRet = FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_EXCEPTION), hScrnWnd, SysInfoProc);
+	nRet = FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_EXCEPTION), hScrnWnd, (DLGPROC)SysInfoProc);
 
 	switch (nRet) {
 		case 1:
@@ -1367,7 +1369,7 @@ int SystemInfoCreate()
 {
 	pExceptionPointers = NULL;
 
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SYSINFO), hScrnWnd, SysInfoProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SYSINFO), hScrnWnd, (DLGPROC)SysInfoProc);
 
 	return 0;
 }

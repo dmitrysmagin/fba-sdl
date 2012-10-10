@@ -57,7 +57,7 @@ static int FBAPopupLog()
 
 // ----------------------------------------------------------------------------
 
-static BOOL CALLBACK FBAPopupProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK FBAPopupProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (Msg) {
 
@@ -349,7 +349,7 @@ int FBAPopupDisplay(int nFlags)
 	FBAPopupLog();
 
 	if (!(nPopupFlags & PUF_TYPE_LOGONLY) && hRiched) {
-		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_POPUP), hScrnWnd, FBAPopupProc);
+		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_POPUP), hScrnWnd, (DLGPROC)FBAPopupProc);
 		FreeLibrary(hRiched);
 		hRiched = NULL;
 	}

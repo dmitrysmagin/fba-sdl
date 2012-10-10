@@ -684,7 +684,7 @@ int UsePreset(bool bMakeDefault)
 	return 0;
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 		hInpdDlg = hDlg;
@@ -842,7 +842,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 			switch (plvcd->nmcd.dwDrawStage) {
 				case CDDS_PREPAINT:
-                    SetWindowLong(hInpdDlg, DWL_MSGRESULT, CDRF_NOTIFYITEMDRAW);
+                    SetWindowLongPtr(hInpdDlg, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
 					return 1;
 				case CDDS_ITEMPREPAINT:
 					if (plvcd->nmcd.dwItemSpec < nGameInpCount) {
@@ -851,14 +851,14 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 							if (GameInp[plvcd->nmcd.dwItemSpec].nInput == 0) {
 								plvcd->clrTextBk = RGB(0xDF, 0xDF, 0xDF);
 
-								SetWindowLong(hInpdDlg, DWL_MSGRESULT, CDRF_NEWFONT);
+								SetWindowLongPtr(hInpdDlg, DWLP_MSGRESULT, CDRF_NEWFONT);
 								return 1;
 							}
 
 							if (GameInp[plvcd->nmcd.dwItemSpec].nType == BIT_DIPSWITCH) {
 								plvcd->clrTextBk = RGB(0xFF, 0xEF, 0xD7);
 
-								SetWindowLong(hInpdDlg, DWL_MSGRESULT, CDRF_NEWFONT);
+								SetWindowLongPtr(hInpdDlg, DWLP_MSGRESULT, CDRF_NEWFONT);
 								return 1;
 							}
 						}
@@ -871,7 +871,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 							plvcd->clrTextBk = RGB(0xFF, 0xEF, 0xEF);
 						}
 
-						SetWindowLong(hInpdDlg, DWL_MSGRESULT, CDRF_NEWFONT);
+						SetWindowLongPtr(hInpdDlg, DWLP_MSGRESULT, CDRF_NEWFONT);
 						return 1;
 					}
 					return 1;
@@ -891,7 +891,7 @@ int InpdCreate()
 
 	DestroyWindow(hInpdDlg);										// Make sure exitted
 
-	hInpdDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPD), hScrnWnd, DialogProc);
+	hInpdDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPD), hScrnWnd, (DLGPROC)DialogProc);
 	if (hInpdDlg == NULL) {
 		return 1;
 	}

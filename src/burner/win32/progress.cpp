@@ -1,8 +1,9 @@
 #include "burner.h"
+#include <process.h>
 
 static HWND hProgressDlg = NULL;
 static HANDLE hProgressThread = NULL;
-static DWORD dwProgressThreadID = 0;
+static unsigned ProgressThreadID = 0;
 
 int nProgressPosBurn, nProgressPosBurner;
 int nProgressMin, nProgressMax;
@@ -90,7 +91,7 @@ int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs)
 // ----------------------------------------------------------------------------
 // Code that runs in a seperate thread
 
-static BOOL CALLBACK ProgressProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM /*lParam*/)
+static INT_PTR CALLBACK ProgressProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if (Msg == WM_INITDIALOG) {
 		TCHAR szText[128] = _T("");
@@ -115,7 +116,7 @@ static BOOL CALLBACK ProgressProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM
 	return 0;
 }
 
-static DWORD WINAPI DoProgress(LPVOID)
+static unsigned __stdcall DoProgress(void*)
 {
 	MSG msg;
 
@@ -131,7 +132,7 @@ static DWORD WINAPI DoProgress(LPVOID)
 	BurnExtProgressRangeCallback = ProgressSetRangeBurn;
 	BurnExtProgressUpdateCallback = ProgressUpdateBurn;
 
-	FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_WAIT), NULL, ProgressProc);
+	FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_WAIT), NULL, (DLGPROC)ProgressProc);
 
 	if (hEvent) {
 		SetEvent(hEvent);
@@ -163,7 +164,7 @@ int ProgressCreate()
 
 	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	hProgressThread = CreateThread(NULL, 0, DoProgress, NULL, THREAD_TERMINATE, &dwProgressThreadID);
+	hProgressThread = (HANDLE)_beginthreadex(NULL, 0, DoProgress, NULL, 0, &ProgressThreadID);
 
 	WaitForSingleObject(hEvent, 15000);
 
@@ -178,7 +179,7 @@ int ProgressDestroy()
 	if (hProgressThread) {
 
 		// Signal the prgress thread to end
-		PostThreadMessage(dwProgressThreadID, WM_APP + 0, 0, 0);
+		PostThreadMessage(ProgressThreadID, WM_APP + 0, 0, 0);
 
 		// Wait for the thread to finish
 		if (WaitForSingleObject(hProgressThread, 15000) != WAIT_OBJECT_0) {
@@ -194,7 +195,7 @@ int ProgressDestroy()
 		CloseHandle(hProgressThread);
 
 		hProgressThread = NULL;
-		dwProgressThreadID = 0;
+		ProgressThreadID = 0;
 	}
 
 	return 0;

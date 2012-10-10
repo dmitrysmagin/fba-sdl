@@ -2,23 +2,11 @@
 // TreeView Version by HyperYagami
 #include "burner.h"
 
-int	nIconsSize					= ICON_16x16;
-int	nIconsSizeXY				= 16;
-bool bEnableIcons				= 0;
-bool bIconsLoaded				= 0;
-int nIconsXDiff;
-int nIconsYDiff;
-
 UINT_PTR nTimer					= 0;
 int nDialogSelect				= -1;										// The driver which this dialog selected
 int nOldDlgSelected				= -1;
 bool bDialogCancel				= false;
 
-static int nShowMVSCartsOnly	= 0;
-
-bool bMVSMultiSlot				= false;
-
-bool bGameInfoOpen				= false;
 bool bDrvSelected				= false;
 
 HBITMAP hPrevBmp				= NULL;
@@ -34,10 +22,14 @@ static HBRUSH hWhiteBGBrush;
 static HICON hExpand, hCollapse;
 static HICON hNotWorking, hNotFoundEss, hNotFoundNonEss;
 
-static HICON hDrvIcon[9999];
 static HICON hDrvIconMiss;
 
 static char TreeBuilding		= 0;										// if 1, ignore TVN_SELCHANGED messages
+
+static int bImageOrientation;
+static int UpdatePreview(bool bReset, TCHAR *szPath, int HorCtrl, int VerCrtl);
+
+static int RomInfoDialog();
 
 // Filter TreeView
 HWND hFilterList			= NULL;
@@ -167,110 +159,9 @@ struct NODEINFO {
 static NODEINFO* nBurnDrv;
 static unsigned int nTmpDrvCount;
 
-// Creates a tooltip for an item in a dialog box. (CaptainCPS-X)
-void CreateToolTipForRect(HWND hwndParent, PTSTR pszText)
-{
-	// Check if we are running Windows XP/Vista/7
-    bIsWindowsXPorGreater = DetectWindowsVersion();
-   
-	HWND hwndTT = NULL;
-
-	// Create a tooltip.
-	if(bIsWindowsXPorGreater) {
-		hwndTT = CreateWindowEx( WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndParent, NULL, hAppInst, NULL);
-	} else {
-		hwndTT = CreateWindowEx( WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndParent, NULL, hAppInst, NULL);
-	}
-
-    SetWindowPos(hwndTT, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-    // Set up "tool" information.
-	TOOLINFO ti;
-	memset(&ti, 0, sizeof(TOOLINFO));
-	ti.cbSize   = sizeof(TOOLINFO);
-    ti.uFlags   = TTF_SUBCLASS;
-    ti.hwnd     = hwndParent;
-    ti.hinst    = hAppInst;
-    ti.lpszText = pszText;
-    GetClientRect (hwndParent, &ti.rect); // rect of the button, window, etc...assosiated with the tooltip
-
-    // Associate the tooltip with the "tool" window.
-    SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);   
-}
-
-void CheckInfoButtons() {
-	UINT idcButtons[7] = {IDC_VIEWGINFO_B, IDC_ADDFAV_B, IDC_DELFAV_B, IDC_JUKE_B, IDC_MAWS_B, IDC_CAESAR_B, IDC_PROGETTOEMMA_B};
-
-	// nothing is selected
-	if(!bDrvSelected && !bFavSelected) {
-		for(int x = 0; x < 7; x++) {
-			EnableWindow(GetDlgItem(hSelDlg, idcButtons[x]), false);	// disable all buttons
-		}
-	}
-
-	if(bDrvSelected) {
-		for(int x = 0; x < 7; x++) {
-			EnableWindow(GetDlgItem(hSelDlg, idcButtons[x]), true);	// enable all buttons
-		}
-
-		if (!(BurnJukeboxGetFlags() & JBF_GAME_WORKING)) {
-			EnableWindow(GetDlgItem(hSelDlg, IDC_JUKE_B), false);
-		}
-
-		EnableWindow(GetDlgItem(hSelDlg, IDC_DELFAV_B), false);
-
-		if(bFavSelected) {
-			EnableWindow(GetDlgItem(hSelDlg, IDC_DELFAV_B), true);
-			EnableWindow(GetDlgItem(hSelDlg, IDC_ADDFAV_B), false);
-		}
-	}
-}
-
 // prototype  -----------------------
 static void RebuildEverything();
 // ----------------------------------
-
-void SelDlgDisplayControls(int nTabSel) {
-	
-	// Gamelist
-	if(nTabSel == 0) {
-		
-		RebuildEverything();
-
-		ShowWindow(hFavListView,								SW_HIDE);					// Hide Favorites
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAVAILABLEONLY),	SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAUTOEXPAND),	SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_SHORTNAME),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_ASCIIONLY),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_OPT_STATIC),			SW_HIDE);
-		AnimateWindow(GetDlgItem(hSelDlg, IDC_TREE1), 400, AW_HOR_POSITIVE | SW_SHOW);		// Show Gamelist
-		return;
-	} 
-	// Favorites
-	if(nTabSel == 1) {
-		if (bEnableIcons) SetFavoritesIcons();
-		ShowWindow(GetDlgItem(hSelDlg, IDC_TREE1),				SW_HIDE);					// Hide Gamelist
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAVAILABLEONLY), SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAUTOEXPAND),	SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_SHORTNAME),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_ASCIIONLY),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_OPT_STATIC),			SW_HIDE);
-		RebuildEverything();
-		AnimateWindow(hFavListView, 400, AW_HOR_POSITIVE | SW_SHOW);						// Show Favorites
-		if(ListView_GetItemCount(hFavListView) != 0) {
-			ListView_SetItemState(hFavListView, 0, LVIS_SELECTED | LVIS_FOCUSED, 0x000F);
-		}
-	}
-	if(nTabSel == 2) {
-		ShowWindow(GetDlgItem(hSelDlg, IDC_TREE1),				SW_HIDE);					// Hide Gamelist
-		ShowWindow(hFavListView,								SW_HIDE);					// Hide Favorites
-		ShowWindow(GetDlgItem(hSelDlg, IDC_OPT_STATIC),			SW_SHOW);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAVAILABLEONLY), SW_SHOW);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAUTOEXPAND),	SW_SHOW);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_SHORTNAME),		SW_SHOW);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_ASCIIONLY),		SW_SHOW);
-	}
-}
 
 // Check if a specified driver is working
 static bool CheckWorkingStatus(int nDriver)
@@ -323,8 +214,6 @@ static TCHAR* MangleGamename(const TCHAR* szOldName, bool /*bRemoveArticle*/)
 
 static int DoExtraFilters()
 {
-	if (nShowMVSCartsOnly && ((BurnDrvGetHardwareCode() & HARDWARE_SNK_MVSCARTRIDGE) != HARDWARE_SNK_MVSCARTRIDGE)) return 1;
-
 	if ((nLoadMenuBoardTypeFilter & BDF_BOOTLEG)	&& (BurnDrvGetFlags() & BDF_BOOTLEG))				return 1;
 	if ((nLoadMenuBoardTypeFilter & BDF_DEMO)		&& (BurnDrvGetFlags() & BDF_DEMO))					return 1;
 	if ((nLoadMenuBoardTypeFilter & BDF_HACK)		&& (BurnDrvGetFlags() & BDF_HACK))					return 1;
@@ -406,12 +295,7 @@ static int SelListMake()
 		nBurnDrvSelect = i;																// Switch to driver i
 
 		if (BurnDrvGetFlags() & BDF_BOARDROM) {
-#if defined (INCLUDE_NEOGEO_MULTISLOT)
-			if (_stricmp(BurnDrvGetTextA(DRV_NAME), "neogeo")) continue;
-			if (nShowMVSCartsOnly) continue;
-#else
 			continue;
-#endif
 		}
 		if (BurnDrvGetText(DRV_PARENT) != NULL && (BurnDrvGetFlags() & BDF_CLONE)) {	// Skip clones
 			continue;
@@ -575,6 +459,9 @@ static void MyEndDialog()
 
 	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
 	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT2_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT2_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
 
 	if (hPrevBmp) {
 		DeleteObject((HGDIOBJ)hPrevBmp);
@@ -616,38 +503,34 @@ static void MyEndDialog()
 // User clicked ok for a driver in the list
 static void SelOkay()
 {	
-	if(bFavSelected == false)
-	{
-		TV_ITEM TvItem;
-		unsigned int nSelect = 0;
-		HTREEITEM hSelectHandle = (HTREEITEM)SendMessage(hSelList, TVM_GETNEXTITEM, TVGN_CARET, ~0U);
+	TV_ITEM TvItem;
+	unsigned int nSelect = 0;
+	HTREEITEM hSelectHandle = (HTREEITEM)SendMessage(hSelList, TVM_GETNEXTITEM, TVGN_CARET, ~0U);
 		
-		if (!hSelectHandle)	{			// Nothing is selected, return without closing the window
-			return;
-		}
-
-		TvItem.hItem = hSelectHandle;
-		TvItem.mask = TVIF_PARAM;
-		SendMessage(hSelList, TVM_GETITEM, 0, (LPARAM)&TvItem);
-		nSelect = ((NODEINFO*)TvItem.lParam)->nBurnDrvNo;
-
-	#if DISABLE_NON_AVAILABLE_SELECT
-		if (!gameAv[nSelect]) {			// Game not available, return without closing the window
-			return;
-		}
-	#endif
-
-	#if NON_WORKING_PROMPT_ON_LOAD
-		if (!CheckWorkingStatus(nSelect)) {
-			if (MessageBox(hSelDlg, _T("This game isn't working. Load it anyway?"), _T("Warning!"), MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING) == IDNO) {
-				return;
-			}
-		}
-	#endif
-		nDialogSelect = nSelect;
+	if (!hSelectHandle)	{			// Nothing is selected, return without closing the window
+		return;
 	}
 
-	bJukeboxInUse = false;
+	TvItem.hItem = hSelectHandle;
+	TvItem.mask = TVIF_PARAM;
+	SendMessage(hSelList, TVM_GETITEM, 0, (LPARAM)&TvItem);
+	nSelect = ((NODEINFO*)TvItem.lParam)->nBurnDrvNo;
+
+#if DISABLE_NON_AVAILABLE_SELECT
+	if (!gameAv[nSelect]) {			// Game not available, return without closing the window
+		return;
+	}
+#endif
+
+#if NON_WORKING_PROMPT_ON_LOAD
+	if (!CheckWorkingStatus(nSelect)) {
+		if (MessageBox(hSelDlg, _T("This game isn't working. Load it anyway?"), _T("Warning!"), MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING) == IDNO) {
+			return;
+		}
+	}
+#endif
+	nDialogSelect = nSelect;
+
 	bDialogCancel = false;
 	MyEndDialog();
 }
@@ -664,9 +547,15 @@ static void RefreshPanel()
 		nTimer = 0;
 	}
 
-	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPreview);
-	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	
+	hPrevBmp = PNGLoadBitmap(hSelDlg, NULL, 213, 160, 2);
 
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPrevBmp);
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT2_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPrevBmp);
+	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT2_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	
 	// Clear the things in our Info-box
 	for (int i = 0; i < 6; i++) {
 		SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)_T(""));
@@ -678,6 +567,162 @@ static void RefreshPanel()
 
 	CheckDlgButton(hSelDlg, IDC_SEL_SHORTNAME, nLoadMenuShowX & SHOWSHORT ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(hSelDlg, IDC_SEL_ASCIIONLY, nLoadMenuShowX & ASCIIONLY ? BST_CHECKED : BST_UNCHECKED);
+}
+
+FILE* OpenPreview(int nIndex, TCHAR *szPath)
+{
+	static bool bTryParent;
+
+	TCHAR szBaseName[MAX_PATH];
+	TCHAR szFileName[MAX_PATH];
+
+	FILE* fp = NULL;
+
+	// Try to load a .PNG preview image
+	_sntprintf(szBaseName, sizeof(szBaseName), _T("%s%s"), szPath, BurnDrvGetText(DRV_NAME));
+	if (nIndex <= 1) {
+		_stprintf(szFileName, _T("%s.png"), szBaseName);
+		fp = _tfopen(szFileName, _T("rb"));
+	}
+	if (!fp) {
+		_stprintf(szFileName, _T("%s [%02i].png"), szBaseName, nIndex);
+		fp = _tfopen(szFileName, _T("rb"));
+	}
+
+	if (nIndex <= 1) {
+		bTryParent = fp ? false : true;
+	}
+	
+	if (!fp && BurnDrvGetText(DRV_PARENT) && bTryParent) {						// Try the parent
+		_sntprintf(szBaseName, sizeof(szBaseName), _T("%s%s"), szPath, BurnDrvGetText(DRV_PARENT));
+		if (nIndex <= 1) {
+			_stprintf(szFileName, _T("%s.png"), szBaseName);
+			fp = _tfopen(szFileName, _T("rb"));
+		}
+		if (!fp) {
+			_stprintf(szFileName, _T("%s [%02i].png"), szBaseName, nIndex);
+			fp = _tfopen(szFileName, _T("rb"));
+		}
+	}
+
+	return fp;
+}
+
+static VOID CALLBACK PreviewTimerProc(HWND, UINT, UINT_PTR, DWORD)
+{
+	UpdatePreview(false, szAppPreviewsPath, IDC_SCREENSHOT_H, IDC_SCREENSHOT_V);
+}
+
+static int UpdatePreview(bool bReset, TCHAR *szPath, int HorCtrl, int VerCtrl)
+{
+	static int nIndex;
+	int nOldIndex = 0;
+
+	FILE* fp = NULL;
+	HBITMAP hNewImage = NULL;
+	
+	if (HorCtrl == IDC_SCREENSHOT_H) {
+		nOldIndex = nIndex;
+		nIndex++;
+		if (bReset) {
+			nIndex = 1;
+			nOldIndex = -1;
+			if (hPrevBmp) {
+				DeleteObject((HGDIOBJ)hPrevBmp);
+				hPrevBmp = NULL;
+			}
+			if (nTimer) {
+				KillTimer(hSelDlg, 1);
+				nTimer = 0;
+			}
+		}
+	}
+
+	nBurnDrvSelect = nDialogSelect;
+
+	if ((nIndex != nOldIndex) || (HorCtrl == IDC_SCREENSHOT2_H)) {
+		int x, y, ax, ay;
+
+		BurnDrvGetAspect(&ax, &ay);
+
+		//if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+		if (ay > ax) {
+			bImageOrientation = true;
+
+			y = 160;
+			x = y * ax / ay;
+		} else {
+			bImageOrientation = false;
+
+			x = 213;
+			y = x * ay / ax;
+		}
+		
+		if (HorCtrl == IDC_SCREENSHOT_H) {
+			fp = OpenPreview(nIndex, szPath);
+		} else {
+			fp = OpenPreview(0, szPath);
+		}
+		if (!fp && nIndex > 1 && HorCtrl == IDC_SCREENSHOT_H) {
+			if (nIndex == 2) {
+
+				// There's only a single preview image, stop timer
+
+				if (nTimer) {
+					KillTimer(hSelDlg, 1);
+					nTimer = 0;
+				}
+
+				return 0;		
+			} 
+
+			nIndex = 1;
+			fp = OpenPreview(nIndex, szPath);
+		}
+		if (fp) {
+			hNewImage = PNGLoadBitmap(hSelDlg, fp, x, y, 3);
+		}
+	}
+
+	if (fp) {
+		fclose(fp);
+
+		if (HorCtrl == IDC_SCREENSHOT_H) nTimer = SetTimer(hSelDlg, 1, 2500, PreviewTimerProc);
+	} else {
+
+		// We couldn't load a new image for this game, so kill the timer (it will be restarted when a new game is selected)
+
+		if (HorCtrl == IDC_SCREENSHOT_H) {
+			if (nTimer) {
+				KillTimer(hSelDlg, 1);
+				nTimer = 0;
+			}
+		}
+
+		bImageOrientation = false;
+		hNewImage = PNGLoadBitmap(hSelDlg, NULL, 213, 160, 2);
+	}
+
+	if (hPrevBmp) {
+		DeleteObject((HGDIOBJ)hPrevBmp);
+	}
+	hPrevBmp = hNewImage;
+
+	if (bImageOrientation == 0) {
+		SendDlgItemMessage(hSelDlg, HorCtrl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPrevBmp);
+		SendDlgItemMessage(hSelDlg, VerCtrl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+		ShowWindow(GetDlgItem(hSelDlg, HorCtrl), SW_SHOW);
+		ShowWindow(GetDlgItem(hSelDlg, VerCtrl), SW_HIDE);
+	} else {
+		SendDlgItemMessage(hSelDlg, HorCtrl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+		SendDlgItemMessage(hSelDlg, VerCtrl, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPrevBmp);
+		ShowWindow(GetDlgItem(hSelDlg, HorCtrl), SW_HIDE);
+		ShowWindow(GetDlgItem(hSelDlg, VerCtrl), SW_SHOW);
+	}
+	
+	UpdateWindow(hSelDlg);
+
+	return 0;
 }
 
 static void RebuildEverything()
@@ -699,8 +744,6 @@ static void RebuildEverything()
 	}
 
 	TreeBuilding = 0;
-
-	CheckInfoButtons();
 }
 
 #define _TVCreateFiltersA(a, b, c, d)								\
@@ -799,52 +842,6 @@ static void CreateFilters()
 	SendMessage(hFilterList	, TVM_EXPAND,TVE_EXPAND, (LPARAM)hHardware);
 }
 
-void LoadDrvIcons() 
-{
-	if(nIconsSize == ICON_16x16) {
-		nIconsSizeXY	= 16;
-		nIconsYDiff		= 4;
-	}
-	if(nIconsSize == ICON_24x24) {
-		nIconsSizeXY	= 24;
-		nIconsYDiff		= 8;
-	}
-	if(nIconsSize == ICON_32x32) {
-		nIconsSizeXY	= 32;
-		nIconsYDiff		= 12;
-	}
-
-	unsigned int nOldDrvSel = nBurnDrvSelect;
-
-	for(unsigned int nDrvIndex = 0; nDrvIndex < nBurnDrvCount; nDrvIndex++) 
-	{		
-		nBurnDrvSelect = nDrvIndex;	
-		TCHAR szIcon[MAX_PATH];
-
-		_stprintf(szIcon, _T("%s%s.ico"), szAppIconsPath, BurnDrvGetText(DRV_NAME));
-		hDrvIcon[nDrvIndex] = (HICON)LoadImage(hAppInst, szIcon, IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_LOADFROMFILE);
-		
-		if(!hDrvIcon[nDrvIndex] && BurnDrvGetText(DRV_PARENT)) {
-			_stprintf(szIcon, _T("%s%s.ico"), szAppIconsPath, BurnDrvGetText(DRV_PARENT));
-			hDrvIcon[nDrvIndex] = (HICON)LoadImage(hAppInst, szIcon, IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_LOADFROMFILE);
-		}
-	}
-
-	nBurnDrvSelect = nOldDrvSel;
-}
-
-void UnloadDrvIcons() {
-	
-	nIconsSizeXY	= 16;
-	nIconsYDiff		= 4;
-
-	for(unsigned int nDrvIndex = 0; nDrvIndex < nBurnDrvCount; nDrvIndex++) 
-	{		
-		DestroyIcon(hDrvIcon[nDrvIndex]);
-		hDrvIcon[nDrvIndex] = NULL;
-	}
-}
-
 #define UM_CHECKSTATECHANGE (WM_USER + 100)
 #define UM_CLOSE			(WM_USER + 101)
 
@@ -852,9 +849,9 @@ void UnloadDrvIcons() {
 {																							\
 	nShowX ^= nMASK;																		\
 	_TreeView_SetCheckState(hFilterList, hItemChanged, (nShowX & nMASK) ? FALSE : TRUE);	\
-}																						
+}	
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 
@@ -865,35 +862,19 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		SendDlgItemMessage(hDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
 		SendDlgItemMessage(hDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
 		
+		SendDlgItemMessage(hDlg, IDC_SCREENSHOT2_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+		SendDlgItemMessage(hDlg, IDC_SCREENSHOT2_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+		
 		hWhiteBGBrush	= CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-
-		if (_tcslen(szPlaceHolder)) {
-			LPTSTR p = _tcsrchr(szPlaceHolder, '.');
-			if (!_tcsicmp(p+1, _T("bmp"))) {
-				hPreview = (HBITMAP)LoadImage(hAppInst, szPlaceHolder, IMAGE_BITMAP, 304, 228, LR_LOADFROMFILE);
-			} else {
-				if (!_tcsicmp(p+1, _T("png"))) {
-					FILE *fp = _tfopen(szPlaceHolder, _T("rb"));
-					if (fp) {
-						char szTemp[MAX_PATH];
-						sprintf(szTemp, _TtoA(szPlaceHolder));
-						hPreview = PNGtoBMP_Simple(hScrnWnd, szTemp);
-						fclose(fp);
-					}
-				}
-			}
-		} else {
-			hPreview = (HBITMAP)LoadImage(hAppInst, MAKEINTRESOURCE(BMP_PREVIEW), IMAGE_BITMAP, 304, 228, 0);
-		}
 
 		hExpand			= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_PLUS),			IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 		hCollapse		= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_MINUS),			IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
-		hNotWorking		= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTWORKING),	IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_DEFAULTCOLOR);
-		hNotFoundEss	= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTFOUND_ESS),	IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_DEFAULTCOLOR);
-		hNotFoundNonEss = (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTFOUND_NON),	IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_DEFAULTCOLOR);
+		hNotWorking		= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTWORKING),	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+		hNotFoundEss	= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTFOUND_ESS),	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+		hNotFoundNonEss = (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_TV_NOTFOUND_NON),	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 		
-		hDrvIconMiss	= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_APP),	IMAGE_ICON, nIconsSizeXY, nIconsSizeXY, LR_DEFAULTCOLOR);
+		hDrvIconMiss	= (HICON)LoadImage(hAppInst, MAKEINTRESOURCE(IDI_APP),	IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
 		TCHAR szOldTitle[1024] = _T(""), szNewTitle[1024] = _T("");
 		GetWindowText(hSelDlg, szOldTitle, 1024);		
@@ -929,97 +910,35 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		if (!bFoundROMs) {
 			RomsDirCreate(hSelDlg);
 		}
-
-		// Icons size related -----------------------------------------
-		SHORT cyItem = nIconsSizeXY + 4;								// height (in pixels) of each item on the TreeView list
-		TreeView_SetItemHeight(hSelList, cyItem);
-
+		
+		SetFocus(hSelList);
+		
 		RebuildEverything();
-
-		if (nDialogSelect > -1) {
+		
+		TreeView_SetItemHeight(hSelList, 20);
+		
+/*		if (nDialogSelect > -1) {
 			for (unsigned int i = 0; i < nTmpDrvCount; i++) {
 				if (nBurnDrv[i].nBurnDrvNo == nDialogSelect) {
-					//SendMessage(hSelList, TVM_SELECTITEM, (WPARAM)TVGN_CARET | TVGN_FIRSTVISIBLE, (LPARAM)nBurnDrv[i].hTreeHandle);
-					TreeView_Select(hSelList, nBurnDrv[i].hTreeHandle, TVGN_CARET);
 					TreeView_EnsureVisible(hSelList, nBurnDrv[i].hTreeHandle);
+					TreeView_Select(hSelList, nBurnDrv[i].hTreeHandle, TVGN_CARET);
 					break;
 				}
 			}			
-			//SendMessage(hDlg, WM_NEXTDLGCTL, (WPARAM)hSelList, TRUE);
-		}
+		}*/
 
-		SetFocus(hSelList);
-		
-		DWORD dwStyle;
-		dwStyle = (DWORD) GetWindowLongPtr (GetDlgItem(hSelDlg, IDC_TREE2), GWL_STYLE);
+		LONG_PTR dwStyle;
+		dwStyle = GetWindowLongPtr (GetDlgItem(hSelDlg, IDC_TREE2), GWL_STYLE);
 		dwStyle |= TVS_CHECKBOXES;
-		SetWindowLongPtr (GetDlgItem(hSelDlg, IDC_TREE2), GWL_STYLE, (LONG_PTR) dwStyle);
+		SetWindowLongPtr (GetDlgItem(hSelDlg, IDC_TREE2), GWL_STYLE, dwStyle);
 		
 		CreateFilters();
 		
-		bDoPatch = FALSE;
-		PatchExit();
-		
 		WndInMid(hDlg, hParent);
-
-		ImageButton_EnableXPThemes();
-		
-		ImageButton_Create(hSelDlg, IDCANCEL);
-		ImageButton_Create(hSelDlg, IDOK);
-		ImageButton_Create(hSelDlg, IDROM);
-		ImageButton_Create(hSelDlg, IDRESCAN);
-
-		ImageButton_Create(hSelDlg, IDC_VIEWGINFO_B);
-		ImageButton_Create(hSelDlg, IDC_ADDFAV_B);
-		ImageButton_Create(hSelDlg, IDC_DELFAV_B);
-		ImageButton_Create(hSelDlg, IDC_JUKE_B);
-		ImageButton_Create(hSelDlg, IDC_MAWS_B);
-		ImageButton_Create(hSelDlg, IDC_CAESAR_B);
-		ImageButton_Create(hSelDlg, IDC_PROGETTOEMMA_B);
-
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_VIEWGINFO_B),		IDI_VIEWGINFO,		IDI_VIEWGINFO_GRAY,		0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_ADDFAV_B),			IDI_ADDFAV,			IDI_ADDFAV_GRAY,		0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_DELFAV_B),			IDI_DELFAV,			IDI_DELFAV_GRAY,		0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_JUKE_B),			IDI_JUKE,			IDI_JUKE_GRAY,			0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_MAWS_B),			IDI_MAWS,			IDI_MAWS_GRAY,			0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_CAESAR_B),			IDI_CAESAR,			IDI_CAESAR_GRAY,		0,	28,24);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDC_PROGETTOEMMA_B),	IDI_PROGETTOEMMA,	IDI_PROGETTOEMMA_GRAY,	0,	28,24);
-
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDCANCEL),	IDI_CANCEL,		0,0,16,16);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDOK),		IDI_PLAY,		0,0,16,16);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDROM),		IDI_SCAN,		0,0,16,16);
-		ImageButton_SetIcon(GetDlgItem(hSelDlg, IDRESCAN),	IDI_ROMDIRS,	0,0,16,16);
 
 		HICON hIcon = LoadIcon(hAppInst, MAKEINTRESOURCE(IDI_APP));
 		SendMessage(hSelDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);		// Set the Game Selection dialog icon.
 		
-		hSelDlgTabControl	= GetDlgItem(hSelDlg, IDC_TAB3);					// GameList & Favorite games list tabs control
-		hFavListView		= GetDlgItem(hSelDlg, IDC_FAVLIST);				// Favorite games 'list view' control 		
-		InsertTabs();														// Insert Game list & Favorites tabs
-		InitFavGameList();													// Initiate Favorites Module
-
-		ShowWindow(hFavListView, SW_HIDE);									// Hide Favorites Gamelist	
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAVAILABLEONLY), SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_CHECKAUTOEXPAND),	SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_SHORTNAME),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_SEL_ASCIIONLY),		SW_HIDE);
-		ShowWindow(GetDlgItem(hSelDlg, IDC_OPT_STATIC),			SW_HIDE);
-
-		// ------------------------------------------------------------
-		// Loading / Unloading of driver icons is done in main.cpp now
-		/* LoadDrvIcons(); */
-
-		CheckInfoButtons();
-		
-		// Init tooltips for the Select Dialog buttons
-		CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_VIEWGINFO_B), FBALoadStringEx(hAppInst, IDS_VIEW_GAME_INFO, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_ADDFAV_B), FBALoadStringEx(hAppInst, IDS_ADD_FAVORITE, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_DELFAV_B), FBALoadStringEx(hAppInst, IDS_DEL_FAVORITE, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_JUKE_B), FBALoadStringEx(hAppInst, IDS_JUKEBOX, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_MAWS_B), FBALoadStringEx(hAppInst, IDS_MAWS, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_CAESAR_B), FBALoadStringEx(hAppInst, IDS_CAESAR, true));
-      	CreateToolTipForRect(GetDlgItem(hSelDlg, IDC_PROGETTOEMMA_B), FBALoadStringEx(hAppInst, IDS_PROGETTOEMMA, true));
-
 		return TRUE;
 	}
 
@@ -1288,144 +1207,13 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nLoadMenuShowX ^= ASCIIONLY;
 					RebuildEverything();
 					break;
-
-				case IDC_ADDFAV_B:	{
-					if(!bFavSelected) {
-						AddToFavorites();
-						RefreshFavGameList();
-						//SelDlgDisplayControls(1);
+				case IDROMINFO:
+					if (bDrvSelected) {
+						RomInfoDialog();
+					} else {
+						MessageBox(hSelDlg, FBALoadStringEx(hAppInst, IDS_ERR_NO_DRIVER_SELECTED, true), FBALoadStringEx(hAppInst, IDS_ERR_ERROR, true), MB_OK);
 					}
 					break;
-				}
-				case IDC_DELFAV_B: {
-					if(bFavSelected) {
-						RemoveFromFavorites();
-						RefreshFavGameList();
-						SetFocus(hSelDlgTabControl);
-						SelDlgDisplayControls(1);
-					}
-					break;
-				}
-				case IDC_VIEWGINFO_B: {
-					if (nTimer) {
-						KillTimer(hSelDlg, nTimer);
-						nTimer = 0;
-					}
-					GameInfoDialogCreate(hSelDlg, nBurnDrvSelect);
-					break;
-				}				
-				case IDC_JUKE_B: {
-					if (BurnJukeboxGetFlags() & JBF_GAME_WORKING) {
-						SelOkay();
-						bJukeboxInUse = true;
-					}
-					break;
-				}				
-				case IDC_MAWS_B: {
-					if (!nVidFullscreen) {
-						TCHAR szURL[MAX_PATH];
-						_stprintf(szURL, _T("http://maws.mameworld.info/maws/set/%s/"), BurnDrvGetText(DRV_NAME));
-						bprintf(PRINT_NORMAL, _T("%s\n"), szURL);
-						ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-						break;
-					}
-				}				
-				case IDC_CAESAR_B: {
-					if (!nVidFullscreen) {
-						//YES
-						TCHAR szURL[MAX_PATH];
-						_stprintf(szURL, _T("http://caesar.logiqx.com/php/emulator_game.php?id=finalburnalpha&game=%s"), BurnDrvGetText(DRV_NAME));
-						ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-						break;
-					}
-				}				
-				case IDC_PROGETTOEMMA_B: {
-					if (!nVidFullscreen) {
-						//YES
-						TCHAR szURL[MAX_PATH];
-						_stprintf(szURL, _T("http://www.progettoemma.net/gioco.php?&game=%s"), BurnDrvGetText(DRV_NAME));
-						ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-						break;
-					}
-				}
-			}
-		}
-		
-		int id = LOWORD(wParam);
-			
-		switch (id) {
-
-			// ADD TO FAVORITES
-			case ID_ADDFAV:	{
-				AddToFavorites();
-				RefreshFavGameList();
-			}
-			break;
-
-			// REMOVE FROM FAVORITES
-			case ID_REMOVEFAV: {
-				RemoveFromFavorites();
-				RefreshFavGameList();
-			}
-			break;
-
-			case GAMESEL_MENU_PLAY: {
-				SelOkay();
-				break;
-			}
-				
-			case GAMESEL_MENU_GAMEINFO: {
-				UpdatePreview(true, hSelDlg, szAppPreviewsPath);
-				if (nTimer) {
-					KillTimer(hSelDlg, nTimer);
-					nTimer = 0;
-				}
-				GameInfoDialogCreate(hSelDlg, nBurnDrvSelect);
-				break;
-			}
-			
-			case GAMESEL_MENU_IPSMANAGER: {
-				IpsManagerCreate(hSelDlg);
-				break;
-			}
-			
-			case GAMESEL_MENU_IPSPLAY: {
-				bDoPatch = TRUE;
-				SelOkay();
-				break;
-			}
-			
-			case GAMESEL_MENU_JUKEBOX: {
-				SelOkay();
-				bJukeboxInUse = true;
-				break;
-			}
-			
-			case GAMESEL_MENU_VIEWMAWS: {
-				if (!nVidFullscreen) {
-					TCHAR szURL[MAX_PATH];
-					_stprintf(szURL, _T("http://maws.mameworld.info/maws/set/%s/"), BurnDrvGetText(DRV_NAME));
-					ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-				}
-				break;
-			}
-			
-			case GAMESEL_MENU_VIEWCAESAR: {
-				if (!nVidFullscreen) {
-					TCHAR szURL[MAX_PATH];
-					_stprintf(szURL, _T("http://caesar.logiqx.com/php/emulator_game.php?id=finalburnalpha&game=%s"), BurnDrvGetText(DRV_NAME));
-					ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-				}
-				break;
-			}
-			
-			case GAMESEL_MENU_VIEWEMMA: {
-				if (!nVidFullscreen) {
-					TCHAR szURL[MAX_PATH];
-					_stprintf(szURL, _T("http://www.progettoemma.net/gioco.php?&game=%s"), BurnDrvGetText(DRV_NAME));
-					ShellExecute(NULL, _T("open"), szURL, NULL, NULL, SW_SHOWNORMAL);
-				}
-				break;
 			}
 		}
 	}
@@ -1446,7 +1234,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	}
 
 	if (Msg == WM_TIMER) {
-		UpdatePreview(false, hSelDlg, szAppPreviewsPath);
+		UpdatePreview(false, szAppPreviewsPath, IDC_SCREENSHOT_H, IDC_SCREENSHOT_V);
 		return 0;
 	}
 	
@@ -1455,345 +1243,11 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			if ((HWND)lParam == hInfoLabel[i])	{ return (BOOL)hWhiteBGBrush; }
 			if ((HWND)lParam == hInfoText[i])	{ return (BOOL)hWhiteBGBrush; }
 		}
-		
-		if((HWND)lParam == GetDlgItem(hSelDlg, IDC_CHECKAVAILABLEONLY)) 
-		{
-			SetBkColor((HDC)wParam, RGB(0xFF,0xFF,0xFF));
-			SetTextColor((HDC)wParam, RGB(0x00,0x00,0x00));
-			return (BOOL)CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-		}
-
-		if((HWND)lParam == GetDlgItem(hSelDlg, IDC_CHECKAUTOEXPAND)) 
-		{
-			SetBkColor((HDC)wParam, RGB(0xFF,0xFF,0xFF));
-			SetTextColor((HDC)wParam, RGB(0x00,0x00,0x00));
-			return (BOOL)CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-		}
-
-		if((HWND)lParam == GetDlgItem(hSelDlg, IDC_SEL_SHORTNAME)) 
-		{
-			SetBkColor((HDC)wParam, RGB(0xFF,0xFF,0xFF));
-			SetTextColor((HDC)wParam, RGB(0x00,0x00,0x00));
-			return (BOOL)CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-		}
-
-		if((HWND)lParam == GetDlgItem(hSelDlg, IDC_SEL_ASCIIONLY)) 
-		{
-			SetBkColor((HDC)wParam, RGB(0xFF,0xFF,0xFF));
-			SetTextColor((HDC)wParam, RGB(0x00,0x00,0x00));
-			return (BOOL)CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-		}
-
-		if((HWND)lParam == GetDlgItem(hSelDlg, IDC_OPT_STATIC)) 
-		{
-			SetBkMode((HDC)wParam, OPAQUE);
-			SetBkColor((HDC)wParam, RGB(0xFF,0xFF,0xFF));
-			SetTextColor((HDC)wParam, RGB(0x00,0x00,0x00));
-			return (BOOL)CreateSolidBrush(RGB(0xFF,0xFF,0xFF));
-		}
 	}
 
 	NMHDR* pNmHdr = (NMHDR*)lParam;
 	if (Msg == WM_NOTIFY) 
 	{
-		static int lastnListViewColumnIndex = -1;
-
-		// SORT FAV GAME LIST
-		if (pNmHdr->code == LVN_COLUMNCLICK && LOWORD(wParam) == IDC_FAVLIST)
-		{
-			NMLISTVIEW *nmlv = (NMLISTVIEW*)lParam;
-            
-			hFavListView = nmlv->hdr.hwndFrom;
-			nListViewColumnIndex = nmlv->iSubItem;
-            
-			if (lastnListViewColumnIndex == nListViewColumnIndex) {
-				bListViewAscendingOrder = !bListViewAscendingOrder;
-			} else {
-				bListViewAscendingOrder = false;
-			}
-
-			ListView_SetHeaderSortImage(hFavListView, nListViewColumnIndex, bListViewAscendingOrder);
-			lastnListViewColumnIndex = nListViewColumnIndex;
-			
-			// Sort Favorite Games List (macro)
-			ListView_SortItemsEx(hFavListView, ListView_CompareFunc, (LPARAM)hFavListView);
-
-			return 1;
-		}
-
-		// For ListView (favorites)
-		NMLISTVIEW* pnmv	= (NMLISTVIEW*)lParam;
-		NMHDR lpNMHDR		= pnmv->hdr;
-
-		// GAME SELECTED IN FAVORITES
-		if (/*(lpNMHDR.code == NM_CLICK && lpNMHDR.idFrom == IDC_FAVLIST) || */(lpNMHDR.code == LVN_ITEMCHANGED && lpNMHDR.idFrom == IDC_FAVLIST)) 
-		{
-			int iCount		= SendMessage(hFavListView, LVM_GETITEMCOUNT, 0, 0);
-			int iSelCount	= SendMessage(hFavListView, LVM_GETSELECTEDCOUNT, 0, 0);
-
-			if(iCount == 0 || iSelCount == 0) return 1;
-
-			TCHAR szRomSet[9] = _T("");
-
-			//int iSel = SendMessage(hFavListView, LVM_GETNEXTITEM, (WPARAM)-1, LVNI_FOCUSED);
-			int iItem = pnmv->iItem; // simple way of getting the 'iItem'
-
-			LVITEM LvItem;
-			memset(&LvItem, 0, sizeof(LvItem));
-			LvItem.iItem		= iItem;
-			LvItem.mask			= LVIF_TEXT;
-			LvItem.iSubItem		= 0;
-			LvItem.pszText		= szRomSet;
-			LvItem.cchTextMax	= 9;
-
-			SendMessage(hFavListView, LVM_GETITEMTEXT, (WPARAM)iItem, (LPARAM)&LvItem);
-			
-			for (unsigned int i = 0; i < nBurnDrvCount; i++) 
-			{
-				nBurnDrvSelect = i;
-				if (!(_tcscmp(BurnDrvGetText(DRV_NAME), szRomSet))) {
-					break;
-				}
-			}
-
-			nDialogSelect	= nBurnDrvSelect;				
-			bDrvSelected	= true;
-			bFavSelected	= true;
-
-			UpdatePreview(true, hSelDlg, szAppPreviewsPath);
-			CheckInfoButtons();
-
-			// Get the text from the drivers via BurnDrvGetText()
-			for (int i = 0; i < 6; i++) {
-				int nGetTextFlags = nLoadMenuShowX & ASCIIONLY ? DRV_ASCIIONLY : 0;
-				TCHAR szItemText[256];
-				szItemText[0] = _T('\0');
-
-				switch (i) {
-					case 0: {
-						bool bBracket = false;
-
-						_stprintf(szItemText, _T("%s"), BurnDrvGetText(DRV_NAME));
-						if ((BurnDrvGetFlags() & BDF_CLONE) && BurnDrvGetTextA(DRV_PARENT)) {
-							int nOldDrvSelect = nBurnDrvSelect;
-							TCHAR* pszName = BurnDrvGetText(DRV_PARENT);
-
-							_stprintf(szItemText + _tcslen(szItemText), _T(" (clone of %s"), BurnDrvGetText(DRV_PARENT));
-
-							for (nBurnDrvSelect = 0; nBurnDrvSelect < nBurnDrvCount; nBurnDrvSelect++) {
-								if (!_tcsicmp(pszName, BurnDrvGetText(DRV_NAME))) {
-									break;
-								}
-							}
-							if (nBurnDrvSelect < nBurnDrvCount) {
-								if (BurnDrvGetText(DRV_PARENT)) {
-									_stprintf(szItemText + _tcslen(szItemText), _T(", uses ROMs from %s"), BurnDrvGetText(DRV_PARENT));
-								}
-							}
-							nBurnDrvSelect = nOldDrvSelect;
-							bBracket = true;
-						} else {
-							if (BurnDrvGetTextA(DRV_PARENT)) {
-								_stprintf(szItemText + _tcslen(szItemText), _T("%suses ROMs from %s"), bBracket ? _T(", ") : _T(" ("), BurnDrvGetText(DRV_PARENT));
-								bBracket = true;
-							}
-						}
-						if (bBracket) {
-							_stprintf(szItemText + _tcslen(szItemText), _T(")"));
-						}
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-						EnableWindow(hInfoLabel[i], TRUE);
-						break;
-					}
-					case 1: {
-						bool bUseInfo = false;
-
-						if (BurnDrvGetFlags() & BDF_PROTOTYPE) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("prototype"));
-							bUseInfo = true;
-						}
-						if (BurnDrvGetFlags() & BDF_BOOTLEG) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%sbootleg"), bUseInfo ? _T(", ") : _T(""));
-							bUseInfo = true;
-						}
-						if (BurnDrvGetFlags() & BDF_HACK) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%shack"), bUseInfo ? _T(", ") : _T(""));
-							bUseInfo = true;
-						}
-						if (BurnDrvGetFlags() & BDF_HOMEBREW) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%shomebrew"), bUseInfo ? _T(", ") : _T(""));
-							bUseInfo = true;
-						}						
-						if (BurnDrvGetFlags() & BDF_DEMO) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%sdemo"), bUseInfo ? _T(", ") : _T(""));
-							bUseInfo = true;
-						}
-						_stprintf(szItemText + _tcslen(szItemText), _T("%s%i player%s"), bUseInfo ? _T(", ") : _T(""), BurnDrvGetMaxPlayers(), (BurnDrvGetMaxPlayers() != 1) ? _T("s max") : _T(""));
-						bUseInfo = true;
-						if (BurnDrvGetText(DRV_BOARDROM)) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%suses board-ROMs from %s"), bUseInfo ? _T(", ") : _T(""), BurnDrvGetText(DRV_BOARDROM));
-							SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-							EnableWindow(hInfoLabel[i], TRUE);
-							bUseInfo = true;
-						}
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-						EnableWindow(hInfoLabel[i], bUseInfo);
-						break;
-					}
-					case 2: {
-						_stprintf(szItemText, _T("%s (%s, %s hardware)"), BurnDrvGetTextA(DRV_MANUFACTURER) ? BurnDrvGetText(nGetTextFlags | DRV_MANUFACTURER) : _T("unknown"), BurnDrvGetText(DRV_DATE), ((BurnDrvGetHardwareCode() & HARDWARE_SNK_MVSCARTRIDGE) == HARDWARE_SNK_MVSCARTRIDGE) ? _T("Neo Geo MVS Cartidge") : BurnDrvGetText(nGetTextFlags | DRV_SYSTEM));
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-						EnableWindow(hInfoLabel[i], TRUE);
-						break;
-					}
-					case 3: {
-						TCHAR szText[1024] = _T("");
-						TCHAR* pszPosition = szText;
-						TCHAR* pszName = BurnDrvGetText(nGetTextFlags | DRV_FULLNAME);
-
-						pszPosition += _sntprintf(szText, 1024, pszName);
-
-						pszName = BurnDrvGetText(nGetTextFlags | DRV_FULLNAME);
-						while ((pszName = BurnDrvGetText(nGetTextFlags | DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
-							if (pszPosition + _tcslen(pszName) - 1024 > szText) {
-								break;
-							}
-							pszPosition += _stprintf(pszPosition, _T(SEPERATOR_2) _T("%s"), pszName);
-						}
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
-						if (szText[0]) {
-							EnableWindow(hInfoLabel[i], TRUE);
-						} else {
-							EnableWindow(hInfoLabel[i], FALSE);
-						}
-						break;
-					}
-					case 4: {
-						_stprintf(szItemText, _T("%s"), BurnDrvGetTextA(DRV_COMMENT) ? BurnDrvGetText(nGetTextFlags | DRV_COMMENT) : _T(""));
-						if (BurnDrvGetFlags() & BDF_HISCORE_SUPPORTED) {
-							_stprintf(szItemText + _tcslen(szItemText), _T("%shigh scores supported"), _tcslen(szItemText) ? _T(", ") : _T(""));
-						}
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-						EnableWindow(hInfoLabel[i], TRUE);
-						break;
-					}
-					
-					case 5: {
-						_stprintf(szItemText, _T("%s"), DecorateGenreInfo());
-						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
-						EnableWindow(hInfoLabel[i], TRUE);
-						break;
-					}
-				}
-			}
-		}
-
-		// Tabs changed
-		if (pNmHdr->code == TCN_SELCHANGE) 
-		{
-			int nTab = SendMessage(hSelDlgTabControl, TCM_GETCURSEL, 0, 0);
-
-			switch(nTab) 
-			{
-				// Games list tab
-				case 0:
-					SelDlgDisplayControls(0);
-					SetFocus(hSelList);
-					break;
-				// Favorite games list tab
-				case 1:
-					SetFocus(hFavListView);
-					RefreshFavGameList();
-					SelDlgDisplayControls(1);
-					break;
-				// Options 
-				case 2:
-					SelDlgDisplayControls(2);
-					break;
-			}
-			return FALSE;
-		}
-
-		// Favorites context menu
-		if (lpNMHDR.code == NM_RCLICK && lpNMHDR.idFrom == IDC_FAVLIST) 
-		{
-			HMENU hMenuLoad,hMenuX; // Context Menu handlers
-			POINT oPoint,pt;
-
-			// avoid popping the menu when there is no game in the list, or the user hasn't selected anything
-			int iCount		= SendMessage(GetDlgItem(hSelDlg, IDC_FAVLIST), LVM_GETITEMCOUNT, 0, 0);
-			int iSelCount	= SendMessage(GetDlgItem(hSelDlg, IDC_FAVLIST), LVM_GETSELECTEDCOUNT, 0, 0);			
-			if(iCount == 0 || iSelCount == 0) return 1;
-
-			GetCursorPos( &pt);
-			ScreenToClient(hSelList,&pt);
-			GetCursorPos( &oPoint);
-
-			// Load Favorite Games List context menu
-			hMenuLoad = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_FAVLIST));
-			hMenuX = GetSubMenu(hMenuLoad, 0);
-
-			TCHAR RomSet[9]	= _T("");
-			
-			int iItem = pnmv->iItem;
-
-			LVITEM LvItem;
-			memset(&LvItem,0,sizeof(LvItem));
-			LvItem.mask			= LVIF_TEXT;
-			LvItem.iSubItem		= 0;
-			LvItem.pszText		= RomSet;
-			LvItem.cchTextMax	= 9;
-			LvItem.iItem		= iItem;
-
-			SendMessage(GetDlgItem(hSelDlg, IDC_FAVLIST), LVM_GETITEMTEXT, iItem, (LPARAM)&LvItem); 
-
-			for (unsigned int i = 0; i < nBurnDrvCount; i++) {
-				nBurnDrvSelect = i;
-				if (!_tcscmp(BurnDrvGetText(0), RomSet)) break;
-			}
-
-			nDialogSelect	= nBurnDrvSelect;					
-			bDrvSelected	= true;
-			bFavSelected	= true;
-			UpdatePreview(true, hSelDlg, szAppPreviewsPath);
-
-			CheckInfoButtons();
-			
-			if (BurnJukeboxGetFlags() & JBF_GAME_WORKING) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_JUKEBOX,	MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_JUKEBOX,	MF_GRAYED	| MF_BYCOMMAND);
-			}
-			
-			if (GetNumPatches()) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSMANAGER, MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSMANAGER, MF_GRAYED	| MF_BYCOMMAND);
-			}
-			
-			LoadActivePatches();
-			if (GetNumActivePatches()) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSPLAY,	MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSPLAY,	MF_GRAYED	| MF_BYCOMMAND);
-			}
-
-			TrackPopupMenu(hMenuX, TPM_LEFTALIGN | TPM_RIGHTBUTTON, oPoint.x, oPoint.y, 0, hSelDlg, NULL);			
-			DestroyMenu(hMenuLoad);
-		}
-
-		// Favorites game list Double-Click event
-		if (pNmHdr->code == NM_DBLCLK && LOWORD(wParam) == IDC_FAVLIST) 
-		{
-			// if the user hasn't selected a valid item in the listview, return
-			int iCount		= SendMessage(hFavListView, LVM_GETITEMCOUNT, 0, 0);
-			int iSelCount	= SendMessage(hFavListView, LVM_GETSELECTEDCOUNT, 0, 0);		
-			
-			if(iCount == 0 || iSelCount == 0) return 1;
-
-			SelOkay();
-		}
-
 		if ((pNmHdr->code == NM_CLICK) && (pNmHdr->idFrom == IDC_TREE2)) 
 		{
 			TVHITTESTINFO thi;
@@ -1825,7 +1279,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			TreeView_HitTest(pNmHdr->hwndFrom, &thi);
 
 			HTREEITEM hSelectHandle = thi.hItem;
-         	if(hSelectHandle == NULL) return 1;
+         		if(hSelectHandle == NULL) return 1;
 
 			TreeView_SelectItem(hSelList, hSelectHandle);
 
@@ -1839,79 +1293,15 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			
 			nDialogSelect	= nBurnDrvSelect;
 			bDrvSelected	= true;
-			bFavSelected	= false;
 
 			SelOkay();
 
 			// disable double-click node-expand
-			SetWindowLong(hSelDlg, DWL_MSGRESULT, 1);
+			SetWindowLongPtr(hSelDlg, DWLP_MSGRESULT, 1);
 
 			return 1;
 		}
 		
-		if(!TreeBuilding && pnmtv->hdr.code == NM_RCLICK && pnmtv->hdr.idFrom == IDC_TREE1)
-		{
-			DWORD dwpos = GetMessagePos();
-
-			TVHITTESTINFO thi;
-			thi.pt.x	= GET_X_LPARAM(dwpos);
-			thi.pt.y	= GET_Y_LPARAM(dwpos);
-			
-			MapWindowPoints(HWND_DESKTOP, pNmHdr->hwndFrom, &thi.pt, 1);
-			
-			TreeView_HitTest(pNmHdr->hwndFrom, &thi);
-			
-			HTREEITEM hSelectHandle = thi.hItem;
-         	if(hSelectHandle == NULL) return 1;
-
-			TreeView_SelectItem(hSelList, hSelectHandle);
-
-			// Search through nBurnDrv[] for the nBurnDrvNo according to the returned hSelectHandle
-			for (unsigned int i = 0; i < nTmpDrvCount; i++) {
-				if (hSelectHandle == nBurnDrv[i].hTreeHandle) {
-					nBurnDrvSelect = nBurnDrv[i].nBurnDrvNo;
-					break;
-				}
-			}
-			
-			nDialogSelect	= nBurnDrvSelect;
-			bDrvSelected	= true;
-			bFavSelected	= false;
-			UpdatePreview(true, hSelDlg, szAppPreviewsPath);
-			CheckInfoButtons();
-
-			// Menu
-			POINT oPoint;
-			GetCursorPos(&oPoint);
-
-			HMENU hMenuLoad = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_GAMESEL));
-			HMENU hMenuX = GetSubMenu(hMenuLoad, 0);
-
-			if (BurnJukeboxGetFlags() & JBF_GAME_WORKING) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_JUKEBOX,	MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_JUKEBOX,	MF_GRAYED	| MF_BYCOMMAND);
-			}
-			
-			if (GetNumPatches()) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSMANAGER, MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSMANAGER, MF_GRAYED	| MF_BYCOMMAND);
-			}
-			
-			LoadActivePatches();
-			if (GetNumActivePatches()) {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSPLAY,	MF_ENABLED	| MF_BYCOMMAND);
-			} else {
-				EnableMenuItem(hMenuX, GAMESEL_MENU_IPSPLAY,	MF_GRAYED	| MF_BYCOMMAND);
-			}
-
-			TrackPopupMenu(hMenuX, TPM_LEFTALIGN | TPM_RIGHTBUTTON, oPoint.x, oPoint.y, 0, hSelDlg, NULL);			
-			DestroyMenu(hMenuLoad);
-			
-			return 1;
-		}
-
 		if (pNmHdr->code == NM_CUSTOMDRAW && LOWORD(wParam) == IDC_TREE1) {
 			LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
 			int nGetTextFlags = nLoadMenuShowX & ASCIIONLY ? DRV_ASCIIONLY : 0;
@@ -1919,7 +1309,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			
 			switch (lplvcd->nmcd.dwDrawStage) {
 				case CDDS_PREPAINT: {
-					SetWindowLong(hSelDlg, DWL_MSGRESULT, CDRF_NOTIFYITEMDRAW);
+					SetWindowLongPtr(hSelDlg, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
 					return 1;
 				}
 
@@ -1972,10 +1362,10 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						// Draw plus and minus buttons
 						if (((NODEINFO*)TvItem.lParam)->bIsParent) {
 							if (TvItem.state & TVIS_EXPANDED) {
-								DrawIconEx(lplvcd->nmcd.hdc, rect.left + 4, rect.top + nIconsYDiff, hCollapse, 16, 16, 0, NULL, DI_NORMAL);
+								DrawIconEx(lplvcd->nmcd.hdc, rect.left + 4, rect.top + 0, hCollapse, 16, 16, 0, NULL, DI_NORMAL);
 							} else {
 								if (TvItem.cChildren) {
-									DrawIconEx(lplvcd->nmcd.hdc, rect.left + 4, rect.top + nIconsYDiff, hExpand, 16, 16, 0, NULL, DI_NORMAL);
+									DrawIconEx(lplvcd->nmcd.hdc, rect.left + 4, rect.top + 0, hExpand, 16, 16, 0, NULL, DI_NORMAL);
 								}
 							}
 						}
@@ -2004,31 +1394,19 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						{
 							// Draw icons if needed
 							if (!CheckWorkingStatus(((NODEINFO*)TvItem.lParam)->nBurnDrvNo)) {
-								DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotWorking, nIconsSizeXY, nIconsSizeXY, 0, NULL, DI_NORMAL);
-								rect.left += nIconsSizeXY + 4;
+								DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotWorking, 16, 16, 0, NULL, DI_NORMAL);
+								rect.left += 16 + 4;
 							} else {
 								if (!(gameAv[((NODEINFO*)TvItem.lParam)->nBurnDrvNo])) {
-									DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundEss, nIconsSizeXY, nIconsSizeXY, 0, NULL, DI_NORMAL);
-									rect.left += nIconsSizeXY + 4;
+									DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundEss, 16, 16, 0, NULL, DI_NORMAL);
+									rect.left += 16 + 4;
 								} else {
 									if (!(nLoadMenuShowX & AVAILONLY) && !(gameAv[((NODEINFO*)TvItem.lParam)->nBurnDrvNo] & 2)) {
-										DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundNonEss, nIconsSizeXY, nIconsSizeXY, 0, NULL, DI_NORMAL);
-										rect.left += nIconsSizeXY + 4;
+										DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundNonEss, 16, 16, 0, NULL, DI_NORMAL);
+										rect.left += 16 + 4;
 									}
 								}
 							}
-						}
-
-						// Driver Icon drawing code...
-						if(bEnableIcons && bIconsLoaded) {
-							if(hDrvIcon[nBurnDrvSelect]) {
-								DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hDrvIcon[nBurnDrvSelect], nIconsSizeXY, nIconsSizeXY, 0, NULL, DI_NORMAL);
-							}
-
-							if(!hDrvIcon[nBurnDrvSelect]) {								
-								DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hDrvIconMiss, nIconsSizeXY, nIconsSizeXY, 0, NULL, DI_NORMAL);
-							}
-							rect.left += nIconsSizeXY + 4;
 						}
 
 						_tcsncpy(szText, MangleGamename(BurnDrvGetText(nGetTextFlags | DRV_FULLNAME), false), 1024);
@@ -2063,12 +1441,12 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 					DeleteObject(hBackBrush);
 
-					SetWindowLong(hSelDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
+					SetWindowLongPtr(hSelDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT);
 					return 1;
 				}
 
 				default: {
-					SetWindowLong(hSelDlg, DWL_MSGRESULT, CDRF_DODEFAULT);
+					SetWindowLongPtr(hSelDlg, DWLP_MSGRESULT, CDRF_DODEFAULT);
 					return 1;
 				}
 			}
@@ -2089,9 +1467,8 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nBurnDrvSelect	= nBurnDrv[i].nBurnDrvNo;					
 					nDialogSelect	= nBurnDrvSelect;					
 					bDrvSelected	= true;	
-					bFavSelected	= false;
-					UpdatePreview(true, hSelDlg, szAppPreviewsPath);
-					CheckInfoButtons();
+					UpdatePreview(true, szAppPreviewsPath, IDC_SCREENSHOT_H, IDC_SCREENSHOT_V);
+					UpdatePreview(false, szAppTitlesPath, IDC_SCREENSHOT2_H, IDC_SCREENSHOT2_V);
 					break;
 				}
 			}
@@ -2228,7 +1605,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
-int SelDialog(int nMVSCartsOnly, HWND hParentWND)
+int SelDialog(HWND hParentWND)
 {
 	int nOldSelect = nBurnDrvSelect;
 	
@@ -2237,19 +1614,10 @@ int SelDialog(int nMVSCartsOnly, HWND hParentWND)
 	}
 
 	hParent = hParentWND;
-	nShowMVSCartsOnly = nMVSCartsOnly;
 	
 	InitCommonControls();
 
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SELNEW), hParent, DialogProc);
-
-	if (!_tcscmp(BurnDrvGetText(DRV_NAME), _T("neogeo"))) {
-		bMVSMultiSlot = true;
-	} else {
-		if(!nShowMVSCartsOnly) {
-			bMVSMultiSlot = false;
-		}
-	}
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SELNEW), hParent, (DLGPROC)DialogProc);
 
 	hSelDlg = NULL;
 	hSelList = NULL;
@@ -2262,3 +1630,291 @@ int SelDialog(int nMVSCartsOnly, HWND hParentWND)
 	return nDialogSelect;
 }
 
+// Rom Info Dialog
+
+static HWND hTabControl = NULL;
+
+static INT_PTR CALLBACK RomInfoDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg) {
+		case WM_INITDIALOG: {
+			TCHAR szText[1024] = _T("");
+			TCHAR szFullName[1024] = _T("");
+			TCHAR* pszPosition = szText;
+			TCHAR* pszName = BurnDrvGetText(DRV_FULLNAME);
+
+			pszPosition += _sntprintf(szText, 1024, pszName);
+	
+			pszName = BurnDrvGetText(DRV_FULLNAME);
+			while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
+				if (pszPosition + _tcslen(pszName) - 1024 > szText) {
+					break;
+				}
+				pszPosition += _stprintf(pszPosition, _T(SEPERATOR_2) _T("%s"), pszName);
+			}
+	
+			_tcscpy(szFullName, szText);
+			_stprintf(szText, _T("%s") _T(SEPERATOR_1) _T("%s"), FBALoadStringEx(hAppInst, IDS_ROMINFO_DIALOGTITLE, true), szFullName);
+			SetWindowText(hDlg, szText);
+			
+			// Setup the tabs
+			hTabControl = GetDlgItem(hDlg, IDC_TAB1);
+
+			TC_ITEM tcItem; 
+			tcItem.mask = TCIF_TEXT;
+
+			UINT idsString[2] = { IDS_ROMINFO_ROMS, IDS_ROMINFO_SAMPLES };
+			
+			for(int nIndex = 0; nIndex < 2; nIndex++) {
+				tcItem.pszText = FBALoadStringEx(hAppInst, idsString[nIndex], true);
+				TabCtrl_InsertItem(hTabControl, nIndex, &tcItem);
+			}
+
+			// Set up the rom info list
+			HWND hList = GetDlgItem(hDlg, IDC_LIST1);
+			LV_COLUMN LvCol;
+			LV_ITEM LvItem;
+	
+			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
+	
+			memset(&LvCol, 0, sizeof(LvCol));
+			LvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+			LvCol.cx = 200;
+			LvCol.pszText = _T("Name");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 0, (LPARAM)&LvCol);
+			LvCol.cx = 100;
+			LvCol.pszText = _T("Size (bytes)");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 1, (LPARAM)&LvCol);
+			LvCol.cx = 100;
+			LvCol.pszText = _T("CRC32");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 2, (LPARAM)&LvCol);
+			LvCol.cx = 200;
+			LvCol.pszText = _T("Type");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 3, (LPARAM)&LvCol);
+			LvCol.cx = 100;
+			LvCol.pszText = _T("Flags");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 4, (LPARAM)&LvCol);
+			LvCol.cx = 100;
+	
+			memset(&LvItem, 0, sizeof(LvItem));
+			LvItem.mask=  LVIF_TEXT;
+			LvItem.cchTextMax = 256;
+			int RomPos = 0;
+			for (int i = 0; i < 0x100; i++) { // assume max 0x100 roms per game
+				int nRet;
+				struct BurnRomInfo ri;
+				char nLen[10] = "";
+				char nCrc[8] = "";
+				char *szRomName = NULL;
+				char Type[100] = "";
+				char FormatType[100] = "";
+
+				memset(&ri, 0, sizeof(ri));
+	
+				nRet = BurnDrvGetRomInfo(&ri, i);
+				nRet += BurnDrvGetRomName(&szRomName, i, 0);
+		
+				if (ri.nLen == 0) continue;		
+				if (ri.nType & BRF_BIOS) continue;
+		
+				LvItem.iItem = RomPos;
+				LvItem.iSubItem = 0;
+				LvItem.pszText = ANSIToTCHAR(szRomName, NULL, 0);
+				SendMessage(hList, LVM_INSERTITEM, 0, (LPARAM)&LvItem);
+		
+				sprintf(nLen, "%d", ri.nLen);
+				LvItem.iSubItem = 1;
+				LvItem.pszText = ANSIToTCHAR(nLen, NULL, 0);
+				SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+		
+				sprintf(nCrc, "%08X", ri.nCrc);
+				if (!(ri.nType & BRF_NODUMP)) {
+					LvItem.iSubItem = 2;
+					LvItem.pszText = ANSIToTCHAR(nCrc, NULL, 0);
+					SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+				}
+		
+				if (ri.nType & BRF_ESS) sprintf(Type, "%s, Essential", Type);
+				if (ri.nType & BRF_OPT) sprintf(Type, "%s, Optional", Type);
+				if (ri.nType & BRF_PRG)	sprintf(Type, "%s, Program", Type);
+				if (ri.nType & BRF_GRA) sprintf(Type, "%s, Graphics", Type);
+				if (ri.nType & BRF_SND) sprintf(Type, "%s, Sound", Type);
+				if (ri.nType & BRF_BIOS) sprintf(Type, "%s, BIOS", Type);
+		
+				for (int j = 0; j < 98; j++) {
+					FormatType[j] = Type[j + 2];
+				}
+		
+				LvItem.iSubItem = 3;
+				LvItem.pszText = ANSIToTCHAR(FormatType, NULL, 0);
+				SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+		
+				LvItem.iSubItem = 4;
+				LvItem.pszText = _T("");
+				if (ri.nType & BRF_NODUMP) LvItem.pszText = _T("No Dump");
+				SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+		
+				RomPos++;
+			}
+	
+			// Check for board roms
+			if (BurnDrvGetTextA(DRV_BOARDROM)) {
+				char szBoardName[8] = "";
+				unsigned int nOldDrvSelect = nBurnDrvSelect;
+				strcpy(szBoardName, BurnDrvGetTextA(DRV_BOARDROM));
+			
+				for (unsigned int i = 0; i < nBurnDrvCount; i++) {
+					nBurnDrvSelect = i;
+					if (!strcmp(szBoardName, BurnDrvGetTextA(DRV_NAME))) break;
+				}
+			
+				for (int j = 0; j < 0x100; j++) {
+					int nRetBoard;
+					struct BurnRomInfo riBoard;
+					char nLenBoard[10] = "";
+					char nCrcBoard[8] = "";
+					char *szBoardRomName = NULL;
+					char BoardType[100] = "";
+					char BoardFormatType[100] = "";
+
+					memset(&riBoard, 0, sizeof(riBoard));
+
+					nRetBoard = BurnDrvGetRomInfo(&riBoard, j);
+					nRetBoard += BurnDrvGetRomName(&szBoardRomName, j, 0);
+		
+					if (riBoard.nLen == 0) continue;
+				
+					LvItem.iItem = RomPos;
+					LvItem.iSubItem = 0;
+					LvItem.pszText = ANSIToTCHAR(szBoardRomName, NULL, 0);
+					SendMessage(hList, LVM_INSERTITEM, 0, (LPARAM)&LvItem);
+		
+					sprintf(nLenBoard, "%d", riBoard.nLen);
+					LvItem.iSubItem = 1;
+					LvItem.pszText = ANSIToTCHAR(nLenBoard, NULL, 0);
+					SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+		
+					sprintf(nCrcBoard, "%08X", riBoard.nCrc);
+					if (!(riBoard.nType & BRF_NODUMP)) {
+						LvItem.iSubItem = 2;
+						LvItem.pszText = ANSIToTCHAR(nCrcBoard, NULL, 0);
+						SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+					}
+			
+					if (riBoard.nType & BRF_ESS) sprintf(BoardType, "%s, Essential", BoardType);
+					if (riBoard.nType & BRF_OPT) sprintf(BoardType, "%s, Optional", BoardType);
+					if (riBoard.nType & BRF_PRG) sprintf(BoardType, "%s, Program", BoardType);
+					if (riBoard.nType & BRF_GRA) sprintf(BoardType, "%s, Graphics", BoardType);
+					if (riBoard.nType & BRF_SND) sprintf(BoardType, "%s, Sound", BoardType);
+					if (riBoard.nType & BRF_BIOS) sprintf(BoardType, "%s, BIOS", BoardType);
+		
+					for (int k = 0; k < 98; k++) {
+						BoardFormatType[k] = BoardType[k + 2];
+					}
+		
+					LvItem.iSubItem = 3;
+					LvItem.pszText = ANSIToTCHAR(BoardFormatType, NULL, 0);
+					SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+			
+					LvItem.iSubItem = 4;
+					LvItem.pszText = _T("");
+					if (riBoard.nType & BRF_NODUMP) LvItem.pszText = _T("No Dump");
+					SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&LvItem);
+			
+					RomPos++;
+				}
+		
+				nBurnDrvSelect = nOldDrvSelect;
+			}
+			
+			// Set up the sample info list
+			hList = GetDlgItem(hDlg, IDC_LIST2);
+	
+			ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT);
+	
+			memset(&LvCol, 0, sizeof(LvCol));
+			LvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
+			LvCol.cx = 200;
+			LvCol.pszText = _T("Name");	
+			SendMessage(hList, LVM_INSERTCOLUMN , 0, (LPARAM)&LvCol);
+		
+			memset(&LvItem, 0, sizeof(LvItem));
+			LvItem.mask=  LVIF_TEXT;
+			LvItem.cchTextMax = 256;
+			int SamplePos = 0;
+			if (BurnDrvGetTextA(DRV_SAMPLENAME) != NULL) {
+				for (int i = 0; i < 0x100; i++) { // assume max 0x100 samples per game
+					int nRet;
+					struct BurnSampleInfo si;
+					char *szSampleName = NULL;
+
+					memset(&si, 0, sizeof(si));
+
+					nRet = BurnDrvGetSampleInfo(&si, i);
+					nRet += BurnDrvGetSampleName(&szSampleName, i, 0);
+		
+					if (si.nFlags == 0) continue;		
+		
+					LvItem.iItem = SamplePos;
+					LvItem.iSubItem = 0;
+					LvItem.pszText = ANSIToTCHAR(szSampleName, NULL, 0);
+					SendMessage(hList, LVM_INSERTITEM, 0, (LPARAM)&LvItem);
+		
+					SamplePos++;
+				}
+			}
+			
+			ShowWindow(GetDlgItem(hDlg, IDC_LIST1), SW_SHOW);
+			ShowWindow(GetDlgItem(hDlg, IDC_LIST2), SW_HIDE);
+			UpdateWindow(hDlg);
+			
+			WndInMid(hDlg, hSelDlg);
+			SetFocus(hDlg);											// Enable Esc=close
+			return TRUE;
+		}
+		
+		case WM_COMMAND: {
+			int Id = LOWORD(wParam);
+			int Notify = HIWORD(wParam);
+		
+			if (Id == IDCANCEL && Notify == BN_CLICKED) {
+				SendMessage(hDlg, WM_CLOSE, 0, 0);
+				return 0;
+			}
+		}
+		
+		case WM_NOTIFY: {
+			NMHDR* pNmHdr = (NMHDR*)lParam;
+
+			if (pNmHdr->code == TCN_SELCHANGE) {
+				int TabPage = TabCtrl_GetCurSel(hTabControl);
+			
+				ShowWindow(GetDlgItem(hDlg, IDC_LIST1), SW_HIDE);
+				ShowWindow(GetDlgItem(hDlg, IDC_LIST2), SW_HIDE);
+				
+				if (TabPage == 0) ShowWindow(GetDlgItem(hDlg, IDC_LIST1), SW_SHOW);
+				if (TabPage == 1) ShowWindow(GetDlgItem(hDlg, IDC_LIST2), SW_SHOW);
+				UpdateWindow(hDlg);
+
+				return FALSE;
+			}
+			break;
+		}
+	
+		case WM_CLOSE: {
+			EndDialog(hDlg, 0);
+			break;
+		}
+	}
+	
+	return 0;
+}
+
+static int RomInfoDialog()
+{
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMINFO), hSelDlg, (DLGPROC)RomInfoDialogProc);
+	
+	SetFocus(hSelList);
+	
+	return 1;
+}

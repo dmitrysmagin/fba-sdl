@@ -22,9 +22,6 @@ FILES		= fbasdl.ini gamelist.txt fb.png
 # Check for changes in header files
 DEPEND = 1
 
-# Include symbols and other debug information in the executable
-#SYMBOL = 1
-
 # Include features for debugging drivers
 # DEBUG	= 1
 
@@ -79,26 +76,30 @@ objdir	= obj/GNU_SDL/$(NAME)/
 srcdir	= src/
 
 alldir	= burn \
-		burn/atari \
-		burn/capcom \
-		burn/cave \
-		burn/cps3 \
-		burn/galaxian \
-		burn/konami \
-		burn/megadrive \
-		burn/misc \
-		burn/misc/post90s \
-		burn/misc/pre90s \
-		burn/neogeo \
-		burn/pgm \
-		burn/psikyo \
-		burn/sega \
-		burn/taito \
-		burn/toaplan \
+		burn/devices \
+		burn/drivers \
+		burn/drivers/atari \
+		burn/drivers/capcom \
+		burn/drivers/cave \
+		burn/drivers/cps3 \
+		burn/drivers/galaxian \
+		burn/drivers/konami \
+		burn/drivers/megadrive \
+		burn/drivers/misc_post90s \
+		burn/drivers/misc_pre90s \
+		burn/drivers/neogeo \
+		burn/drivers/pgm \
+		burn/drivers/psikyo \
+		burn/drivers/sega \
+		burn/drivers/taito \
+		burn/drivers/toaplan \
+		burn/sound \
 		burner \
 		burner/sdl \
 		interface \
+		interface/scalers \
 		interface/sdl \
+		cpu \
 		cpu/arm \
 		cpu/arm7 \
 		cpu/hd6309 \
@@ -113,74 +114,71 @@ alldir	= burn \
 		cpu/s2650 \
 		cpu/sh2 \
 		cpu/z80 \
-		kaillera/client \
-		libs/libpng \
-		libs/pnglib \
-		libs/zlib \
-		generated
+		depend/kaillera/client \
+		depend/libs/libpng \
+		depend/libs/zlib \
+		depend/mingw/include \
+		depend/scripts \
+		depend/vc/include \
+		depend/generated
 
-incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)generated -I/local/include -I/include/SDL
+incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I/local/include -I/include/SDL
 
 lib	=  -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lmingw32 -lSDL -lz -lopengl32 -lglu32
 
-drvobj	= d_gauntlet.o \
-		\
-		d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o d_hotdogst.o d_korokoro.o \
-		d_mazinger.o d_metmqstr.o d_pwrinst2.o d_sailormn.o d_tjumpman.o d_uopoko.o \
-		\
-		d_cps1.o \
-		\
-		d_cps2.o \
-		\
-		d_cps3.o \
-		\
-		d_neogeo.o \
-		\
-		d_pgm.o \
-		\
-		d_hangon.o d_outrun.o d_sys16a.o d_sys16b.o d_sys18.o d_xbrd.o d_ybrd.o \
-		\
-		d_batrider.o d_batsugun.o d_battleg.o d_bbakraid.o d_demonwld.o d_dogyuun.o d_hellfire.o d_kbash.o \
-		d_kbash2.o d_mahoudai.o d_outzone.o d_rallybik.o d_samesame.o d_shippumd.o d_snowbro2.o d_tekipaki.o \
-		d_truxton.o d_truxton2.o d_vfive.o d_vimana.o d_zerowing.o \
-		\
-		d_psikyo.o d_psikyosh.o \
-		\
-		d_88games.o d_ajax.o d_aliens.o d_blockhl.o d_bottom9.o d_contra.o d_crimfght.o d_gbusters.o \
-		d_gradius3.o d_hcastle.o d_hexion.o d_mainevt.o d_parodius.o d_rollerg.o d_simpsons.o d_spy.o \
-		d_surpratk.o d_thunderx.o d_tmnt.o d_twin16.o d_ultraman.o d_vendetta.o d_xmen.o \
-		\
-		d_taitob.o d_taitof2.o d_taitox.o d_taitoz.o d_taitomisc.o d_asuka.o d_bublbobl.o d_darius2.o d_othunder.o \
-		d_slapshot.o d_superchs.o \
-		\
-		d_galaxian.o \
-		\
-		d_pacman.o d_pac2650.o \
-		\
-		d_4enraya.o d_1942.o d_1943.o d_airbustr.o d_ambush.o d_angelkds.o d_arabian.o d_arkanoid.o d_armedf.o \
-		d_bankp.o d_baraduke.o d_bionicc.o d_blktiger.o d_blockout.o d_blueprnt.o d_bombjack.o d_chaknpop.o \
-		d_commando.o d_dec0.o d_dec8.o d_ddragon.o d_dotrikun.o d_dynduke.o d_epos.o d_exedexes.o d_flstory.o \
-		d_funkybee.o d_galaga.o d_gberet.o d_ginganin.o d_gng.o d_gunsmoke.o d_gyruss.o d_higemaru.o d_ikki.o \
-		d_jack.o d_kangaroo.o d_karnov.o d_kyugo.o d_ladybug.o d_lkage.o d_lwings.o d_m62.o d_m63.o d_m72.o \
-		d_madgear.o d_markham.o d_marineb.o d_meijinsn.o d_minivdr.o d_mitchell.o d_mole.o d_mrdo.o d_mrflea.o \
-		d_mystston.o d_pkunwar.o d_pooyan.o d_prehisle.o d_quizo.o d_rallyx.o d_renegade.o d_retofinv.o d_route16.o \
-		d_scotrsht.o d_scregg.o d_sf.o d_skyfox.o d_skykid.o d_snk68.o d_solomon.o d_sonson.o d_srumbler.o d_sys1.o \
-		d_tecmo.o d_tigerheli.o d_tigeroad.o d_toki.o d_tnzs.o d_vigilant.o d_vulgus.o d_wallc.o d_wc90.o d_wc90b.o \
-		d_wwfsstar.o \
-		tnzs_prot.o \
-		\
-		d_1945kiii.o d_aerofgt.o d_aquarium.o d_ashnojoe.o d_backfire.o d_bloodbro.o d_crospang.o d_crshrace.o \
-		d_darkseal.o d_dcon.o d_deniam.o d_ddragon3.o d_diverboy.o d_drtomy.o d_egghunt.o d_esd16.o d_f1gp.o \
-		d_fstarfrc.o d_funybubl.o d_fuukifg3.o d_gaelco.o d_gaiden.o d_galpanic.o d_gotcha.o d_gumbo.o d_hyperpac.o \
-		d_kaneko16.o d_lordgun.o d_m90.o d_m92.o d_mcatadv.o d_midas.o d_mogura.o d_mugsmash.o d_news.o d_nmg5.o \
-		d_nmk16.o d_ohmygod.o d_pass.o d_pirates.o d_pktgaldx.o d_powerins.o d_pushman.o d_raiden.o d_seta.o d_seta2.o \
-		d_shadfrce.o d_silkroad.o d_simpl156.o d_speedspn.o d_suna16.o d_taotaido.o d_tecmosys.o d_tumbleb.o d_unico.o \
-		d_vmetal.o d_welltris.o d_wwfwfest.o d_xorworld.o d_yunsun16.o d_zerozone.o \
-		deco16ic.o irem_cpu.o nmk004.o \
-		\
-		d_parent.o \
-		\
-		d_megadrive.o
+drvobj	= 	d_gauntlet.o \
+			\
+			d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o d_hotdogst.o d_korokoro.o d_mazinger.o \
+			d_metmqstr.o d_pwrinst2.o d_sailormn.o d_tjumpman.o d_uopoko.o \
+			\
+			d_cps1.o \
+			\
+			d_cps2.o \
+			\
+			d_cps3.o \
+			\
+			d_galaxian.o \
+			\
+			d_88games.o d_ajax.o d_aliens.o d_blockhl.o d_bottom9.o d_contra.o d_crimfght.o d_gbusters.o d_gradius3.o d_hcastle.o \
+			d_hexion.o d_mainevt.o d_parodius.o d_rollerg.o d_simpsons.o d_spy.o d_surpratk.o d_thunderx.o d_tmnt.o d_twin16.o \
+			d_ultraman.o d_vendetta.o d_xmen.o \
+			\
+			d_neogeo.o \
+			\
+			d_pacman.o d_pac2650.o \
+			\
+			d_pgm.o \
+			\
+			d_psikyo.o d_psikyosh.o \
+			\
+			d_hangon.o d_outrun.o d_sys1.o d_sys16a.o d_sys16b.o d_sys18.o d_xbrd.o d_ybrd.o \
+			\
+			d_taitob.o d_taitof2.o d_taitox.o d_taitoz.o d_taitomisc.o d_asuka.o d_bublbobl.o d_darius2.o d_othunder.o d_slapshot.o \
+			d_superchs.o \
+			\
+			d_batrider.o d_batsugun.o d_battleg.o d_bbakraid.o d_demonwld.o d_dogyuun.o d_hellfire.o d_kbash.o d_kbash2.o d_mahoudai.o \
+			d_outzone.o d_rallybik.o d_samesame.o d_shippumd.o d_snowbro2.o d_tekipaki.o d_truxton.o d_truxton2.o d_vfive.o d_vimana.o \
+			d_zerowing.o \
+			\
+			d_4enraya.o d_1942.o d_1943.o d_airbustr.o d_ambush.o d_angelkds.o d_arabian.o d_arkanoid.o d_armedf.o d_bankp.o d_baraduke.o \
+			d_bionicc.o d_blktiger.o d_blockout.o d_blueprnt.o d_bombjack.o d_chaknpop.o d_commando.o d_dec0.o d_dec8.o d_ddragon.o \
+			d_dotrikun.o d_dynduke.o d_epos.o d_exedexes.o d_flstory.o d_funkybee.o d_galaga.o d_gberet.o d_ginganin.o d_gng.o \
+			d_gunsmoke.o d_gyruss.o d_higemaru.o d_ikki.o d_jack.o d_kangaroo.o d_karnov.o d_kyugo.o d_ladybug.o d_lkage.o d_lwings.o \
+			d_m62.o d_m63.o d_m72.o d_madgear.o d_markham.o d_marineb.o d_meijinsn.o d_minivdr.o d_mitchell.o d_mole.o d_mrdo.o d_mrflea.o \
+			d_mystston.o d_pkunwar.o d_pooyan.o d_prehisle.o d_quizo.o d_rallyx.o d_renegade.o d_retofinv.o d_route16.o d_scotrsht.o \
+			d_scregg.o d_sf.o d_skyfox.o d_skykid.o d_snk68.o d_solomon.o d_sonson.o d_srumbler.o d_tecmo.o d_tigerheli.o d_tigeroad.o \
+			d_toki.o d_tnzs.o d_vigilant.o d_vulgus.o d_wallc.o d_wc90.o d_wc90b.o d_wwfsstar.o \
+			\
+			d_1945kiii.o d_aerofgt.o d_aquarium.o d_ashnojoe.o d_backfire.o d_bloodbro.o d_crospang.o d_crshrace.o d_darkseal.o d_dcon.o \
+			d_deniam.o d_ddragon3.o d_diverboy.o d_drtomy.o d_egghunt.o d_esd16.o d_f1gp.o d_fstarfrc.o d_funybubl.o d_fuukifg3.o \
+			d_gaelco.o d_gaiden.o d_galpanic.o d_gotcha.o d_gumbo.o d_hyperpac.o d_kaneko16.o d_lordgun.o d_m90.o d_m92.o d_mcatadv.o \
+			d_midas.o d_mogura.o d_mugsmash.o d_news.o d_nmg5.o d_nmk16.o d_ohmygod.o d_pass.o d_pirates.o d_pktgaldx.o d_powerins.o \
+			d_pushman.o d_raiden.o d_seta.o d_seta2.o d_shadfrce.o d_silkroad.o d_simpl156.o d_speedspn.o d_suna16.o d_taotaido.o \
+			d_tecmosys.o d_tumbleb.o d_unico.o d_vmetal.o d_welltris.o d_wwfwfest.o d_xorworld.o d_yunsun16.o d_zerozone.o \
+			\
+			d_parent.o \
+			\
+			d_megadrive.o
 	    
 depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o stringset.o \
 		ips_manager.o jukebox.o support_paths.o scrn.o misc_sdl.o \
@@ -202,67 +200,68 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 		\
 		$(drvobj) \
 		\
-		burn.o load.o cheat.o burn_gun.o burn_memory.o burn_led.o hiscore.o \
-		\
-		sek.o zet.o vez.o eeprom.o 8255ppi.o timekpr.o \
-		burn_sound.o burn_sound_c.o timer.o \
-		burn_ym2151.o burn_ym2413.o burn_ym3526.o burn_ym3812.o burn_ym2608.o burn_ym2610.o burn_ymf278b.o \
-		burn_ym2203.o burn_ym2612.o burn_y8950.o ay8910.o ym2151.o ym2413.o fm.o fmopl.o ymdeltat.o \
-		dac.o es5506.o es8712.o ics2115.o iremga20.o k007232.o k051649.o k053260.o k054539.o msm5205.o msm6295.o \
-		namco_snd.o rf5c68.o segapcm.o seibusnd.o sn76496.o upd7759.o ymf278b.o ymz280b.o x1010.o samples.o \
-		\
-		arm.o arm_intf.o arm7.o arm7_intf.o hd6309.o hd6309_intf.o i8039.o konami.o konami_intf.o m6502.o m6502_intf.o \
-		m6800.o m6800_intf.o m6805.o m6805_intf.o m6809.o m6809_intf.o nec.o s2650.o s2650_intf.o sh2.o \
-		z80.o z80daisy.o \
-		\
-		cave.o cave_tile.o cave_sprite.o cave_palette.o \
-		\
-		cps.o cps_config.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o \
-		cps2_crpt.o cps_rw.o cps_scr.o cpsr.o cpsrd.o \
-		cpst.o ctv.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
-		kabuki.o \
-		\
-		cps3run.o cps3snd.o \
-		\
-		neogeo.o neo_run.o neo_decrypt.o neo_text.o neo_sprite.o neo_palette.o neo_upd4990a.o \
-		rom_save.o \
-		\
-		pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
-		\
-		sys16_run.o sys16_gfx.o sys16_fd1094.o fd1089.o fd1094.o mc8123.o genesis_vid.o \
-		\
-		toaplan.o toa_gp9001.o toa_extratext.o toa_palette.o \
-		\
-		toa_bcu2.o toaplan1.o \
-		\
-		psikyo_tile.o psikyo_sprite.o psikyo_palette.o psikyosh_render.o \
-		\
-		konamiic.o k051316.o k051733.o k051960.o k052109.o k053245.o k053247.o k053251.o k053936.o k054000.o \
-		\
-		gal_gfx.o gal_run.o gal_sound.o gal_stars.o \
-		\
-		pc080sn.o pc090oj.o tc0100scn.o tc0110pcr.o tc0140syt.o tc0150rod.o tc0180vcu.o tc0220ioc.o tc0280grd.o \
-		tc0360pri.o tc0480scp.o tc0510nio.o tc0640fio.o cchip.o taito_ic.o taito.o taito_m68705.o \
-		\
-		tiles_generic.o \
-		\
-		megadrive.o
+		burn.o burn_gun.o burn_led.o burn_memory.o burn_sound.o burn_sound_c.o cheat.o hiscore.o load.o tiles_generic.o timer.o \
+			\
+			8255ppi.o eeprom.o seibusnd.o timekpr.o \
+			\
+			ay8910.o burn_y8950.o burn_ym2151.o burn_ym2203.o burn_ym2413.o burn_ym2608.o burn_ym2610.o burn_ym2612.o burn_ym3526.o \
+			burn_ym3812.o burn_ymf278b.o dac.o es5506.o es8712.o fm.o fmopl.o ics2115.o iremga20.o k007232.o k051649.o k053260.o k054539.o \
+			msm5205.o msm6295.o namco_snd.o rf5c68.o samples.o segapcm.o sn76496.o upd7759.o x1010.o ym2151.o ym2413.o ymdeltat.o \
+			ymf278b.o ymz280b.o \
+			\
+			arm7_intf.o arm_intf.o hd6309_intf.o konami_intf.o m6502_intf.o m6800_intf.o m6805_intf.o m6809_intf.o s2650_intf.o sek.o vez.o \
+			zet.o \
+			\
+			arm.o arm7.o hd6309.o i8039.o konami.o m6502.o m6800.o m6805.o m6809.o nec.o s2650.o sh2.o z80.o z80daisy.o \
+			\
+			2xpm.o 2xsai.o epx.o hq2xs.o hq2xs_16.o \
+			\
+			cave.o cave_palette.o cave_sprite.o cave_tile.o \
+			\
+			cps2_crpt.o cps.o cps_config.o cps_draw.o cps_mem.o cps_obj.o cps_pal.o cps_run.o cps_rw.o cps_scr.o cpsr.o cpsrd.o cpst.o ctv.o \
+			kabuki.o ps.o ps_m.o ps_z.o qs.o qs_c.o qs_z.o \
+			\
+			cps3run.o cps3snd.o \
+			\
+			gal_gfx.o gal_run.o gal_sound.o gal_stars.o \
+			\
+			k051316.o k051733.o k051960.o k052109.o k053245.o k053247.o k053251.o k053936.o k054000.o konamiic.o \
+			\
+			neo_decrypt.o neo_palette.o neo_run.o neo_sprite.o neo_text.o neo_upd4990a.o neogeo.o \
+			\
+			pgm_crypt.o pgm_draw.o pgm_prot.o pgm_run.o \
+			\
+			psikyo_palette.o psikyo_sprite.o psikyo_tile.o psikyosh_render.o \
+			\
+			fd1089.o fd1094.o genesis_vid.o mc8123.o sys16_fd1094.o sys16_gfx.o sys16_run.o \
+			\
+			cchip.o pc080sn.o pc090oj.o taito.o taito_ic.o taito_m68705.o tc0100scn.o tc0110pcr.o tc0140syt.o tc0150rod.o tc0180vcu.o \
+			tc0220ioc.o tc0280grd.o tc0360pri.o tc0480scp.o tc0510nio.o tc0640fio.o \
+			\
+			toa_bcu2.o toa_extratext.o toa_gp9001.o toa_palette.o toaplan1.o toaplan.o \
+			\
+			tnzs_prot.o \
+			\
+			deco16ic.o irem_cpu.o nmk004.o \
+			\
+			megadrive.o
+			\
 
 
 autobj += $(depobj) burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o 
 
 autdep	= $(depobj:.o=.d)
 
-#a68k.o	= $(objdir)cpu/a68k/a68k.o
-
-#app_windres.rc = $(srcdir)generated/app_windres.rc
-#license.rc = $(srcdir)generated/license.rc
-driverlist.h = $(srcdir)generated/driverlist.h
-ctv.h	= $(srcdir)generated/ctv.h
-toa_gp9001_func.h = $(srcdir)generated/toa_gp9001_func.h
-neo_sprite_func.h = $(srcdir)generated/neo_sprite_func.h
-cave_tile_func.h = $(srcdir)generated/cave_tile_func.h
-cave_sprite_func.h = $(srcdir)generated/cave_sprite_func.h
+#app_windres.rc = $(srcdir)depend/generated/app_windres.rc
+#license.rc = $(srcdir)depend/generated/license.rc
+driverlist.h = $(srcdir)depend/generated/driverlist.h
+ctv.h	= $(srcdir)depend/generated/ctv.h
+toa_gp9001_func.h = $(srcdir)depend/generated/toa_gp9001_func.h
+neo_sprite_func.h = $(srcdir)depend/generated/neo_sprite_func.h
+cave_tile_func.h = $(srcdir)depend/generated/cave_tile_func.h
+cave_sprite_func.h = $(srcdir)depend/generated/cave_sprite_func.h
+psikyo_tile_func.h = $(srcdir)depend/generated/psikyo_tile_func.h
+build_details.h = $(srcdir)depend/generated/build_details.h
 
 allobj	= $(objdir)cpu/m68k/m68kcpu.o $(objdir)cpu/m68k/m68kopnz.o $(objdir)cpu/m68k/m68kopdm.o $(objdir)cpu/m68k/m68kopac.o $(objdir)cpu/m68k/m68kops.o \
 	  $(foreach file,$(autobj:.o=.c), \
@@ -412,9 +411,9 @@ endif
 
 burn.o burn.d:	driverlist.h
 
-$(driverlist.h): $(drvobj) $(srcdir)scripts/gamelist.pl
+$(driverlist.h): $(drvobj) $(srcdir)depend/scripts/gamelist.pl
 ifdef	PERL
-	@perl $(srcdir)scripts/gamelist.pl -o $@ -l gamelist.txt \
+	@perl $(srcdir)depend/scripts/gamelist.pl -o $@ -l gamelist.txt \
 		$(filter %.cpp,$(foreach file,$(drvobj:.o=.cpp),$(foreach dir,$(alldir), \
 		$(firstword $(wildcard $(srcdir)$(dir)/$(file))))))
 else
@@ -432,11 +431,11 @@ endif
 
 resource.o resource.d:	$(app_windres.rc) version.rc version.h
 
-$(license.rc): $(srcdir)license.txt $(srcdir)scripts/license2rtf.pl $(srcdir)scripts/license2rc.pl
+$(license.rc): $(srcdir)license.txt $(srcdirdepend/)scripts/license2rtf.pl $(srcdir)depend/scripts/license2rc.pl
 
 ifdef	PERL
-	@perl $(srcdir)scripts/license2rtf.pl $< -o $(srcdir)generated/$(@F:.rc=.rtf)
-	@perl $(srcdir)scripts/license2rc.pl $(srcdir)generated/$(@F:.rc=.rtf) -o $@
+	@perl $(srcdir)depend/scripts/license2rtf.pl $< -o $(srcdir)depend/generated/$(@F:.rc=.rtf)
+	@perl $(srcdir)depend/scripts/license2rc.pl $(srcdir)depend/generated/$(@F:.rc=.rtf) -o $@
 else
 ifeq ($(MAKELEVEL),1)
 	@echo
@@ -446,10 +445,10 @@ ifeq ($(MAKELEVEL),1)
 endif
 endif
 
-$(app_windres.rc): app.rc $(license.rc) $(srcdir)scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
+$(app_windres.rc): app.rc $(license.rc) $(srcdir)depend/scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
 
 ifdef	PERL
-	@perl $(srcdir)scripts/fixrc.pl $< -o $@
+	@perl $(srcdir)depend/scripts/fixrc.pl $< -o $@
 else
 ifeq ($(MAKELEVEL),1)
 	@echo
@@ -460,57 +459,45 @@ endif
 endif
 
 #
-#	Compile 68000 cores
+#	Compile Musashi 68000 cores
 #
 
-# A68K
-
-#$(a68k.o):	fba_make68k.c
-#	@echo Compiling A68K MC68000 core...
-#	@$(CC) $(CFLAGS_CONSOLE) -s -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
-#		-s $< -o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe)
-#	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.asm) \
-#		$(@D)/a68k_tab.asm 00 $(ppro)
-#	@echo Assembling A68K MC68000 core...
-#	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
-
-# Musashi
-
-$(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)generated/m68kops.h $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)depend/generated/m68kops.h $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kcpu.c\)...
 	@$(CC) $(CFLAGS) -c $(srcdir)cpu/m68k/m68kcpu.c -o $(objdir)cpu/m68k/m68kcpu.o
 
-$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kops.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
+	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
 
-$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopac.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
+	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
 
-$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopdm.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
+	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
 
-$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)generated/m68kops.h $(objdir)generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopnz.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
+	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
 
-$(objdir)generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
-	$(objdir)/cpu/m68k/m68kmake.exe $(objdir)generated/ $(srcdir)cpu/m68k/m68k_in.c
+$(objdir)depend/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
+	$(objdir)/cpu/m68k/m68kmake $(objdir)depend/generated/ $(srcdir)cpu/m68k/m68k_in.c
 
 $(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(CC) $(CFLAGS_CONSOLE) -s $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
+	@$(CC) $(CFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
 
+#
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
 #
 
 ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
-	@echo Generating $(srcdir)generated/$(@F)...
-	@$(CXX) $(CFLAGS_CONSOLE) $(CXXFLAGS) $< \
+	@echo Generating $(srcdir)depend/generated/$(@F)...
+	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
 		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
 	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
 
@@ -518,19 +505,10 @@ $(ctv.h):	ctv_make.cpp
 #	Extra rules for generated header file toa_gp9001_func.h, needed by toa_gp9001.cpp
 #
 
-toa_gp9001.d toa_gp9001.o: $(toa_gp9001_func.h)
+toa_bcu2.d toa_bcu2.o toa_gp9001.d toa_gp9001.o: $(toa_gp9001_func.h)
 
-$(toa_gp9001_func.h):	$(srcdir)scripts/toa_gp9001_func.pl
-ifdef   PERL    
-	@perl $(srcdir)scripts/toa_gp9001_func.pl -o $(toa_gp9001_func.h)
-else
-ifeq ($(MAKELEVEL),1)
-        @echo
-        @echo Warning: Perl is not available on this system.
-        @echo $@ cannot be updated or created!
-        @echo
-endif   
-endif
+$(toa_gp9001_func.h):	$(srcdir)depend/scripts/toa_gp9001_func.pl
+	@$(srcdir)depend/scripts/toa_gp9001_func.pl -o $(toa_gp9001_func.h)
 
 #
 #	Extra rules for generated header file neo_sprite_func.h, needed by neo_sprite.cpp
@@ -538,17 +516,8 @@ endif
 
 neo_sprite.d neo_sprite.o: $(neo_sprite_func.h)
 
-$(neo_sprite_func.h):	$(srcdir)scripts/neo_sprite_func.pl
-ifdef   PERL
-	@perl $(srcdir)scripts/neo_sprite_func.pl -o $(neo_sprite_func.h)
-else            
-ifeq ($(MAKELEVEL),1)
-        @echo
-        @echo Warning: Perl is not available on this system.
-        @echo $@ cannot be updated or created!
-        @echo 
-endif
-endif
+$(neo_sprite_func.h):	$(srcdir)depend/scripts/neo_sprite_func.pl
+	@$(srcdir)depend/scripts/neo_sprite_func.pl -o $(neo_sprite_func.h)
 
 #
 #	Extra rules for generated header file cave_tile_func.h, needed by cave_tile.cpp
@@ -556,17 +525,8 @@ endif
 
 cave_tile.d cave_tile.o: $(cave_tile_func.h)
 
-$(cave_tile_func.h):	$(srcdir)scripts/cave_tile_func.pl
-ifdef   PERL
-	@perl $(srcdir)scripts/cave_tile_func.pl -o $(cave_tile_func.h)
-else            
-ifeq ($(MAKELEVEL),1)
-        @echo
-        @echo Warning: Perl is not available on this system.
-        @echo $@ cannot be updated or created!
-        @echo 
-endif
-endif
+$(cave_tile_func.h):	$(srcdir)depend/scripts/cave_tile_func.pl
+	@$(srcdir)depend/scripts/cave_tile_func.pl -o $(cave_tile_func.h)
 
 #
 #	Extra rules for generated header file cave_sprite_func.h, needed by cave_sprite.cpp
@@ -574,17 +534,18 @@ endif
 
 cave_sprite.d cave_sprite.o: $(cave_sprite_func.h)
 
-$(cave_sprite_func.h):	$(srcdir)scripts/cave_sprite_func.pl
-ifdef   PERL
-	@perl $(srcdir)scripts/cave_sprite_func.pl -o $(cave_sprite_func.h)
-else            
-ifeq ($(MAKELEVEL),1)
-        @echo
-        @echo Warning: Perl is not available on this system.
-        @echo $@ cannot be updated or created!
-        @echo 
-endif
-endif
+$(cave_sprite_func.h):	$(srcdir)depend/scripts/cave_sprite_func.pl
+	@$(srcdir)depend/scripts/cave_sprite_func.pl -o $(cave_sprite_func.h)
+
+#
+#	Extra rules for generated header file psikyo_tile_func.h / psikyo_sprite_func.h, needed by psikyo_tile.cpp / psikyo_sprite.cpp
+#
+
+psikyo_tile.d psikyo_tile.o psikyosprite.d psikyo_sprite.o: $(psikyo_tile_func.h)
+
+$(psikyo_tile_func.h):	$(srcdir)depend/scripts/psikyo_tile_func.pl
+	@perl $(srcdir)depend/scripts/psikyo_tile_func.pl -o $(psikyo_tile_func.h)
+
 
 ifeq ($(MAKELEVEL),1)
 ifdef DEPEND
@@ -674,7 +635,7 @@ else
 endif
 	@echo
 	@mkdir -p $(foreach dir, $(alldir),$(objdir)$(dir))
-	@mkdir -p $(srcdir)generated
+	@mkdir -p $(srcdir)depend/generated
 
 cleandep:
 	@echo Removing depend files from $(objdir)...

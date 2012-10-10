@@ -1,15 +1,16 @@
 // Splash screen code
 #include "burner.h"
+#include <process.h>
 
 int nSplashTime = 1500;
 
 static HWND hSplashDlg = NULL;
 static HANDLE hSplashThread = NULL;
-static DWORD dwSplashThreadID = 0;
+static unsigned SplashThreadID = 0;
 
 static 	clock_t StartTime;
 
-static BOOL CALLBACK SplashProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM /*lParam*/)
+static INT_PTR CALLBACK SplashProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if (Msg == WM_INITDIALOG) {
 		RECT rect;
@@ -33,14 +34,14 @@ static BOOL CALLBACK SplashProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM /
 	return 0;
 }
 
-static DWORD WINAPI DoSplash(LPVOID)
+static unsigned __stdcall DoSplash(void*)
 {
 	MSG msg;
 
 	// Raise the thread priority for this thread
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 
-	CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_SPLASH), NULL, SplashProc);
+	CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_SPLASH), NULL, (DLGPROC)SplashProc);
 
 	while (GetMessage(&msg, NULL, 0, 0)) {
 
@@ -64,7 +65,7 @@ int SplashCreate()
 		return 1;
 	}
 
-	hSplashThread = CreateThread(NULL, 0, DoSplash, NULL, THREAD_TERMINATE, &dwSplashThreadID);
+	hSplashThread = (HANDLE)_beginthreadex(NULL, 0, DoSplash, NULL, 0, &SplashThreadID);
 
 	StartTime = clock();
 	return 0;
@@ -79,7 +80,7 @@ void SplashDestroy(bool bForce)
 		}
 
 		// Signal the splash thread to end
-		PostThreadMessage(dwSplashThreadID, WM_APP + 0, 0, 0);
+		PostThreadMessage(SplashThreadID, WM_APP + 0, 0, 0);
 
 		// Wait for the thread to finish
 		if (WaitForSingleObject(hSplashThread, 10000) != WAIT_OBJECT_0) {
@@ -92,7 +93,7 @@ void SplashDestroy(bool bForce)
 		CloseHandle(hSplashThread);
 
 		hSplashThread = NULL;
-		dwSplashThreadID = 0;
+		SplashThreadID = 0;
 
 	}
 }

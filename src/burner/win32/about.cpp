@@ -130,7 +130,7 @@ void AddLicenseText(HWND hDlg, unsigned int nControlID)
 
 // ----------------------------------------------------------------------------
 
-static BOOL CALLBACK AboutProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK AboutProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 		WndInMid(hDlg, hScrnWnd);
@@ -185,7 +185,7 @@ int AboutCreate()
 	hRiched = LoadLibrary("RICHED20.DLL");
 #endif
 	if (hRiched) {	
-		FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, AboutProc);
+		FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, (DLGPROC)AboutProc);
 		FreeLibrary(hRiched);
 		hRiched = NULL;
 	}
@@ -195,7 +195,7 @@ int AboutCreate()
 
 // ----------------------------------------------------------------------------
 
-static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	static bool bLicenseDisplayed, bLicenseAccepted;
 
@@ -284,7 +284,7 @@ int FirstUsageCreate()
 	hRiched = LoadLibrary("RICHED20.DLL");
 #endif
 	if (hRiched) {	
-		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_FIRST), hScrnWnd, FirstProc);
+		DialogBox(hAppInst, MAKEINTRESOURCE(IDD_FIRST), hScrnWnd, (DLGPROC)FirstProc);
 		FreeLibrary(hRiched);
 		hRiched = NULL;
 	}

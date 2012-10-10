@@ -243,28 +243,12 @@ static void OnPaint(HWND hwnd)
 		// This was formerly an alternative for the fail in using the "Preview blitter"
 		// option in Win9x plattaforms, now, this is used just to complement the option
 		// if you don't like the preview enabled.
-		if (!bDrvOkay && !bVidUsePlaceholder) {
+		if (!bDrvOkay) {
 			PAINTSTRUCT ps;
-			if (_tcslen(szPlaceHolder)) {
-				LPTSTR p = _tcsrchr(szPlaceHolder, '.');
-				if (!_tcsicmp(p+1, _T("bmp"))) {
-					hbitmap = (HBITMAP)LoadImage(hAppInst, szPlaceHolder, IMAGE_BITMAP, 304, 224, LR_LOADFROMFILE);
-				} else {
-					if (!_tcsicmp(p+1, _T("png"))) {
-						FILE *fp = _tfopen(szPlaceHolder, _T("rb"));
-						if (fp) {
-							char szTemp[MAX_PATH];
-							sprintf(szTemp, _TtoA(szPlaceHolder));
-							hbitmap = PNGtoBMP_Simple(hScrnWnd, szTemp);
-							fclose(fp);
-						}
-					}
-				}
-			} else {
-				hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
-			}
 
-			if (!hbitmap) hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
+			//hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
+			hbitmap = (HBITMAP)LoadImage(hAppInst, MAKEINTRESOURCE(BMP_SPLASH), IMAGE_BITMAP, 304, 224, 0);
+
 			HDC hDC = BeginPaint(hwnd, &ps);
 			StretchBmForClient(hDC, hwnd, hbitmap);
 

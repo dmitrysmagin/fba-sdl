@@ -76,43 +76,12 @@ static int RunFrame(int bDraw, int bPause)
 	static int bPrevPause = 0;
 	static int bPrevDraw = 0;
 
-	extern bool bDoPostInitialize;
-
-	// Exit Jukebox properly
-	
-	if(bDoPostInitialize == true && bJukeboxInUse == true) {
-		DrvExit();
-		bJukeboxDisplayed	= false;
-		bJukeboxInUse		= false;
-		bDoPostInitialize = false;
-		POST_INITIALISE_MESSAGE;
-	}
-
 	if (bPrevDraw && !bPause) {
 		VidPaint(0);							// paint the screen (no need to validate)
 	}
 
 	if (!bDrvOkay) {
 		return 1;
-	}
-
-	if (bPause && bJukeboxInUse == true) {
-		GetInput(false);						// Update burner inputs, but not game inputs
-		if (bPause != bPrevPause) {
-			VidPaint(2);                        // Redraw the screen (to ensure mode indicators are updated)
-		}
-		return 0;
-	}
-	
-	if (!bPause && bJukeboxInUse == true) {
-		//if (!bJukeboxDisplayed) JukeboxDialogCreate();
-		int TracklistDialog();
-
-		if (bJukeboxDisplayed == false) TracklistDialog();
-		nFramesEmulated++;
-		nCurrentFrame++;
-		BurnJukeboxFrame();
-		return 0;		
 	}
 
 	if (bPause) {

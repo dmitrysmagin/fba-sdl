@@ -1,13 +1,8 @@
 // Screen Window
 #include "burner.h"
-#include "tracklst.h"
 
 #define		HORIZONTAL_ORIENTED_RES		0
 #define		VERTICAL_ORIENTED_RES		1
-
-extern HWND hJukeboxDlg;
-
-TCHAR szMenuBackground[MAX_PATH];
 
 int nActiveGame;
 
@@ -159,7 +154,7 @@ int ActivateChat()
 		_T("EDIT"), NULL,
 		WS_CHILD | ES_LEFT,
 		0, rect.bottom - 32, rect.right, 32,
-		hScrnWnd, (HMENU)ID_NETCHAT, (HINSTANCE)GetWindowLong(hScrnWnd, GWL_HINSTANCE), NULL);                // pointer not needed
+		hScrnWnd, (HMENU)ID_NETCHAT, (HINSTANCE)GetWindowLongPtr(hScrnWnd, GWLP_HINSTANCE), NULL);                // pointer not needed
 
 	EditText[0] = 0;
 	bEditTextChanged = true;
@@ -283,7 +278,7 @@ static void DoNetGame()
 	POST_INITIALISE_MESSAGE;
 }
 
-int CreateDatfileWindows(int nDatType, int bIncMegadrive)
+int CreateDatfileWindows(int bIncMegadrive)
 {
 	TCHAR szTitle[1024];
 	TCHAR szFilter[1024];
@@ -294,9 +289,7 @@ int CreateDatfileWindows(int nDatType, int bIncMegadrive)
 	if (bIncMegadrive == 2) _sntprintf(szMegadriveString, 25, _T(", Megadrive only"));
 	
 	TCHAR szProgramString[25];	
-	if (nDatType == 0) _sntprintf(szProgramString, 25, _T("ClrMame Pro old"));
-	if (nDatType == 1) _sntprintf(szProgramString, 25, _T("RomCenter old"));
-	if (nDatType == 2) _sntprintf(szProgramString, 25, _T("ClrMame Pro XML"));
+	_sntprintf(szProgramString, 25, _T("ClrMame Pro XML"));
 	
 	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s%s).dat"), szAppBurnVer, szProgramString, szMegadriveString);
 	_sntprintf(szTitle, 256, FBALoadStringEx(hAppInst, IDS_DAT_GENERATE, true), szProgramString);
@@ -319,7 +312,7 @@ int CreateDatfileWindows(int nDatType, int bIncMegadrive)
 	if (GetSaveFileName(&ofn) == 0)
 		return -1;
 
-	return create_datfile(szChoice, nDatType, bIncMegadrive);
+	return create_datfile(szChoice, bIncMegadrive);
 }
 
 // Returns true if a VidInit is needed when the window is resized
@@ -595,48 +588,8 @@ static void OnDestroy(HWND)
 OPENFILENAME	bgFn;
 TCHAR			szFile[MAX_PATH];
 
-static void MakeOfn()
-{
-	memset(&bgFn, 0, sizeof(bgFn));
-	bgFn.lStructSize = sizeof(bgFn);
-	bgFn.hwndOwner = hScrnWnd;
-	bgFn.lpstrFilter = _T("BMP / PNG images (*.bmp,*.png)\0*.bmp;*.png\0\0)");
-	bgFn.lpstrFile = szFile;
-	bgFn.nMaxFile = sizeof(szFile) / sizeof(TCHAR);
-	bgFn.lpstrInitialDir = _T(".\\");
-	bgFn.Flags = OFN_NOCHANGEDIR | OFN_HIDEREADONLY;
-	bgFn.lpstrDefExt = _T("png");
-	bgFn.lpstrTitle	= _T("Select Menubar background image");
-	return;
-}
-
-void ChangeMenuBackground() 
-{
-	int				nRet;
-	int				bOldPause;
-
-	MakeOfn();
-
-	bOldPause	= bRunPause;
-	bRunPause	= 1;
-
-	nRet		= GetOpenFileName(&bgFn);	// Browse dialog
-
-	bRunPause	= bOldPause;
-
-	if(nRet == 0) {
-		return;
-	}
-
-	//szMenuBackground[0]		= _T('\0');
-	//memcpy(szMenuBackground, szFile, sizeof(szFile));
-	_stprintf(szMenuBackground, _T("%s"), szFile);
-}
-
 static void UpdatePreviousGameList()
 {
-	if (bJukeboxInUse) return;
-
 	int nRecentIdenticalTo = -1;
 
 	// check if this game is identical to any of the listed in the recent menu 
@@ -750,12 +703,6 @@ static void UpdatePreviousGameList()
 // Compact driver loading module
 int BurnLoadDriver(TCHAR *szDriverName)
 {
-
-	// This is needed in case NeoGeo slot loading is canceled
-	if(bDrvOkay) {
-		nActiveGame = nBurnDrvSelect;
-	}
-
 	for (unsigned int i = 0; i < nBurnDrvCount; i++)
 	{
 		nBurnDrvSelect = i;
@@ -767,44 +714,6 @@ int BurnLoadDriver(TCHAR *szDriverName)
 	// If not in range, return error
 	if(nBurnDrvSelect >= nBurnDrvCount) return 1;
 
-	if (!_tcscmp(BurnDrvGetText(DRV_NAME), _T("neogeo"))) {
-		bMVSMultiSlot = true;
-	} else {
-		bMVSMultiSlot = false;
-	}
-
-#if defined (INCLUDE_NEOGEO_MULTISLOT)
-	//DrvExit();
-	if (!bMVSMultiSlot) {
-		DrvInit(nBurnDrvSelect, true);			// Init the game driver
-	} else {
-		if(!NeogeoSlotSelectCreate(hScrnWnd)) 
-		{
-			// [CANCEL button was pressed] get previous emulation state
-			if(bDrvOkay) {
-				nBurnDrvSelect = nActiveGame;
-			}						
-			GameInpCheckMouse();
-			AudSoundPlay();					// Restart sound
-			bLoading = 0;
-			return 1;
-		} else {
-			// [OK button was pressed]
-			// NEOGEO MVS SLOT STUFF GOES HERE
-		}
-	}
-	MenuEnableItems();
-	bAltPause = 0;
-	AudSoundPlay();					// Restart sound
-	bLoading = 0;
-	if (!bMVSMultiSlot) {
-		UpdatePreviousGameList();
-		if (bVidAutoSwitchFull) {
-			nVidFullscreen = 1;
-			POST_INITIALISE_MESSAGE;
-		}
-	}
-#else
 	DrvExit();
 	DrvInit(nBurnDrvSelect, true);      // Init the game driver
 	MenuEnableItems();
@@ -816,7 +725,7 @@ int BurnLoadDriver(TCHAR *szDriverName)
 		nVidFullscreen = 1;
 		POST_INITIALISE_MESSAGE;
 	}
-#endif   
+
 	POST_INITIALISE_MESSAGE;
    return 0;
 }
@@ -840,13 +749,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 	}
 	
 	switch (id) {
-
-		case MENU_MVS_LOAD:	{
-			EndDialog(hJukeboxDlg, 0);
-			BurnLoadDriver(_T("neogeo"));
-			break;
-		}
-
 		case MENU_LOAD: {
 			int nGame;
 
@@ -862,57 +764,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			bLoading = 1;
 			AudSoundStop();						// Stop while the dialog is active or we're loading ROMs
 
-			// This is needed in case NeoGeo slot loading is canceled
-			if(bDrvOkay) {
-				nActiveGame = nBurnDrvSelect;
-			}
-
-			nGame = SelDialog(0, hScrnWnd);		// Bring up select dialog to pick a driver
+			nGame = SelDialog(hScrnWnd);		// Bring up select dialog to pick a driver
 			
 			extern bool bDialogCancel;
 
 			if (nGame >= 0 && bDialogCancel == false) {
-
-				if(bJukeboxInUse == true) {
-					DrvExit();
-					bJukeboxInUse = true;
-				}
-
-				EndDialog(hJukeboxDlg, 0);
-
-#if defined (INCLUDE_NEOGEO_MULTISLOT)
-				//DrvExit();
-				if (!bMVSMultiSlot) {
-					DrvInit(nGame, true);		// Init the game driver
-				} else {
-					if(!NeogeoSlotSelectCreate(hScrnWnd)) 
-					{
-						// [CANCEL button was pressed] get previous emulation state
-						if(bDrvOkay) {
-							nBurnDrvSelect = nActiveGame;
-						}						
-						GameInpCheckMouse();
-						AudSoundPlay();					// Restart sound
-						bLoading = 0;
-						break;
-					} else {
-						// [OK button was pressed]
-						// NEOGEO MVS SLOT STUFF GOES HERE
-					}
-				}
-				MenuEnableItems();
-				bAltPause = 0;
-				AudSoundPlay();					// Restart sound
-				bLoading = 0;
-				if (!bMVSMultiSlot) {
-					UpdatePreviousGameList();
-					if (bVidAutoSwitchFull) {
-						nVidFullscreen = 1;
-						POST_INITIALISE_MESSAGE;
-					}
-				}
-#else
-				EndDialog(hJukeboxDlg, 0);
 				DrvExit();
 				DrvInit(nGame, true);			// Init the game driver
 				MenuEnableItems();
@@ -924,7 +780,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					nVidFullscreen = 1;
 					POST_INITIALISE_MESSAGE;
 				}
-#endif
+
 				POST_INITIALISE_MESSAGE;
 				break;
 			} else {
@@ -935,14 +791,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 		}
 
-		case MENU_TRACKLIST:
-		{
-			if (UseDialogs()) {
-				if (bDrvOkay) TracklistDialog();
-			}
-			break;
-		}
-		
 		case MENU_PREVIOUSGAMES1:
 		case MENU_PREVIOUSGAMES2:
 		case MENU_PREVIOUSGAMES3:
@@ -955,11 +803,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_PREVIOUSGAMES10: {
 			unsigned int j;
 			
-			bDoPatch = FALSE;
-			PatchExit();
-			
 			int nOldDrvSelect = nBurnDrvSelect;
-			EndDialog(hJukeboxDlg, 0);
 			DrvExit();
 			bLoading = 1;
 			
@@ -1030,13 +874,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			StopReplay();
 			break;
 			
-		case MENU_VIEWGAMEINFO:
-			if (bDrvOkay && UseDialogs()) {
-				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
-				GameInfoDialogCreate(hScrnWnd, nBurnDrvSelect);
-			}
-			break;
-			
 		case MENU_QUIT:
 			AudBlankSound();
 			if (nVidFullscreen) {
@@ -1044,8 +881,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				VidExit();
 			}
 			if (bDrvOkay) {
-				
-				bMVSMultiSlot = false;
 				StopReplay();
 				DrvExit();
   				if (kNetGame) {
@@ -1730,13 +1565,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			POST_INITIALISE_MESSAGE;
 			break;
 
-		case MENU_BLITTERPREVIEW:
-			bVidUsePlaceholder = !bVidUsePlaceholder;
-			if (!bDrvOkay) {
-				POST_INITIALISE_MESSAGE;
-			}
-			break;
-			
 		case MENU_AUD_PLUGIN_1:
 			AudSelect(0);
 			POST_INITIALISE_MESSAGE;
@@ -1896,77 +1724,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			SupportDirCreate();
 			break;
 			
-		case MENU_DISABLETHEMES:
-			nMenuUITheme = 0;
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_DEFAULTTHEME:
-			nMenuUITheme = 1;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_GRAYTHEME:
-			nMenuUITheme = 2;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_OFFICETHEME:
-			nMenuUITheme = 3;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_OFFICE2003THEME:
-			nMenuUITheme = 4;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-		
-		case MENU_OFFICE2007THEME:
-			nMenuUITheme = 5;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_VISSTUDIOEXTHEME:
-			nMenuUITheme = 6;
-			bModelessMenu = false;
-			ImageMenu_SetStyle(nMenuUITheme - 1);
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_SELECTPLACEHOLDER: 
-			if (UseDialogs()) {
-				SelectPlaceHolder();
-				POST_INITIALISE_MESSAGE;
-			}
-			break;
-
-		case MENU_SELECT_MENUBG:
-			if (UseDialogs()) {
-				ChangeMenuBackground();
-				POST_INITIALISE_MESSAGE;
-			}
-			break;
-
-		case MENU_RESET_MENUBG:			
-			szMenuBackground[0] = _T('\0');
-			POST_INITIALISE_MESSAGE;
-			break;
-			
-		case MENU_DISABLEPLACEHOLDER:
-			ResetPlaceHolder();
-			POST_INITIALISE_MESSAGE;
-			break;
-
 		case MENU_LANGUAGE_SELECT:
 			if (UseDialogs()) {
 				FBALocaliseLoadTemplate();
@@ -1984,89 +1741,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			POST_INITIALISE_MESSAGE;
 			break;
 			
-		case MENU_GAMELANG_SELECT:
-			if (UseDialogs()) {
-				SelectGameListLocalisationTemplate();
-				POST_INITIALISE_MESSAGE;
-			}
-			break;
-			
-		case MENU_GAMELANG_EXPORT:
-			if (UseDialogs()) {
-				ExportGameListLocalisationTemplate();
-			}
-			break;
-			
-		case MENU_GAMELANG_RESET:
-			szGamelistLocalisationTemplate[0] = _T('\0');
-			POST_INITIALISE_MESSAGE;
-			break;
-
-		case MENU_ENABLEICONS:
-			bEnableIcons = !bEnableIcons;
-			if(!bEnableIcons && bIconsLoaded) {
-				// unload icons
-				UnloadDrvIcons();
-				bIconsLoaded = 0;
-			} 
-			if(bEnableIcons && !bIconsLoaded) {
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			break;
-
-		case MENU_ICONS_SIZE_16:
-			nIconsSize = ICON_16x16;
-			if(bEnableIcons && bIconsLoaded) {
-				// unload icons
-				UnloadDrvIcons();
-				bIconsLoaded = 0;
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			if(bEnableIcons && !bIconsLoaded) {
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			break;
-
-		case MENU_ICONS_SIZE_24:
-			nIconsSize = ICON_24x24;
-			if(bEnableIcons && bIconsLoaded) {
-				// unload icons
-				UnloadDrvIcons();
-				bIconsLoaded = 0;
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			if(bEnableIcons && !bIconsLoaded) {
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			break;
-
-		case MENU_ICONS_SIZE_32:
-			nIconsSize = ICON_32x32;
-			if(bEnableIcons && bIconsLoaded) {
-				// unload icons
-				UnloadDrvIcons();
-				bIconsLoaded = 0;
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			if(bEnableIcons && !bIconsLoaded) {
-				// load icons
-				LoadDrvIcons();
-				bIconsLoaded = 1;
-			}
-			break;
-
 		case MENU_PRIORITY_REALTIME:
 			nAppThreadPriority = THREAD_PRIORITY_TIME_CRITICAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
@@ -2092,102 +1766,22 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
 			
-		case MENU_SAVECROMS:
-			bSaveCRoms = !bSaveCRoms;
-			break;
-
-		case MENU_CLRMAME_PRO:
-			if (UseDialogs()) {
-				CreateDatfileWindows(0, 0);
-			}
-			break;
-
-		case MENU_ROMCENTER:
-			if (UseDialogs()) {
-				CreateDatfileWindows(1, 0);
-			}
-			break;
-			
 		case MENU_CLRMAME_PRO_XML:
 			if (UseDialogs()) {
-				CreateDatfileWindows(2, 0);
-			}
-			break;
-		
-		case MENU_CLRMAME_PRO_INC_MD:
-			if (UseDialogs()) {
-				CreateDatfileWindows(0, 1);
-			}
-			break;
-
-		case MENU_ROMCENTER_INC_MD:
-			if (UseDialogs()) {
-				CreateDatfileWindows(1, 1);
+				CreateDatfileWindows(0);
 			}
 			break;
 		
 		case MENU_CLRMAME_PRO_XML_INC_MD:
 			if (UseDialogs()) {
-				CreateDatfileWindows(2, 1);
+				CreateDatfileWindows(1);
 			}
 			break;
 			
-		case MENU_CLRMAME_PRO_MD_ONLY:
-			if (UseDialogs()) {
-				CreateDatfileWindows(0, 2);
-			}
-			break;
-
-		case MENU_ROMCENTER_MD_ONLY:
-			if (UseDialogs()) {
-				CreateDatfileWindows(1, 2);
-			}
-			break;
-		
 		case MENU_CLRMAME_PRO_XML_MD_ONLY:
 			if (UseDialogs()) {
-				CreateDatfileWindows(2, 2);
+				CreateDatfileWindows(2);
 			}
-			break;
-
-		case MENU_IMPORT_PREVIEWS:
-			ImporterDlgCreate(0);
-			break;
-
-		case MENU_IMPORT_TITLES:
-			ImporterDlgCreate(1);
-			break;
-
-		case MENU_IMPORT_FLYERS:
-			ImporterDlgCreate(2);
-			break;
-
-		case MENU_IMPORT_CABINETS:
-			ImporterDlgCreate(3);
-			break;
-
-		case MENU_IMPORT_MARQUEES:
-			ImporterDlgCreate(4);
-			break;
-
-		case MENU_IMPORT_CPANELS:
-			ImporterDlgCreate(5);
-			break;
-
-		case MENU_IMPORT_PCBS:
-			ImporterDlgCreate(6);
-			break;
-
-		case MENU_IMPORT_ICONS:
-			ImporterDlgCreate(7);
-			break;
-
-		case MENU_IMPORT_ROMS:
-			ImporterDlgCreate(8);
-			break;
-
-		case MENU_IMPORT_TRACKLISTS:
-			ImporterDlgCreate(9);
 			break;
 
 		case MENU_ENABLECHEAT:
@@ -3239,9 +2833,8 @@ int ScrnInit()
 			GetWindowRect(hMenubar, &rect);
 
 			rebarBandInfo.cbSize		= sizeof(REBARBANDINFO);
-			rebarBandInfo.fMask			= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_SIZE | RBBIM_STYLE | RBBIM_BACKGROUND;
-			rebarBandInfo.hbmBack		= PNGtoBMP_Simple(NULL, TCHARToANSI(szMenuBackground, NULL, 0));
-			rebarBandInfo.fStyle		= RBBS_GRIPPERALWAYS | RBBS_FIXEDBMP;
+			rebarBandInfo.fMask			= RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_SIZE | RBBIM_STYLE;// | RBBIM_BACKGROUND;
+			rebarBandInfo.fStyle		= RBBS_GRIPPERALWAYS;// | RBBS_FIXEDBMP;
 			rebarBandInfo.hwndChild		= hMenubar;
 			rebarBandInfo.cxMinChild	= 100;
 			rebarBandInfo.cyMinChild	= ((SendMessage(hMenubar, TB_GETBUTTONSIZE, 0, 0)) >> 16) + 1;

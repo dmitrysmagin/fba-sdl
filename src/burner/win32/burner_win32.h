@@ -213,8 +213,6 @@ extern int nWindowPosX, nWindowPosY;
 
 extern int nSavestateSlot;
 
-extern TCHAR szMenuBackground[MAX_PATH];
-
 int ScrnInit();
 int ScrnExit();
 int ScrnSize();
@@ -242,7 +240,6 @@ extern int nScreenSize;
 extern int nScreenSizeHor;	// For horizontal orientation
 extern int nScreenSizeVer;	// For vertical orientation
 extern int nWindowSize;
-extern int nMenuUITheme;
 
 #define SHOW_PREV_GAMES		10
 extern TCHAR szPrevGames[SHOW_PREV_GAMES][32];
@@ -263,22 +260,26 @@ extern int nLoadMenuShowX;
 extern int nLoadMenuBoardTypeFilter;
 extern int nLoadMenuGenreFilter;
 extern int nLoadMenuFamilyFilter;
-int SelDialog(int nMVSCartsOnly, HWND hParentWND);
-extern bool bGameInfoOpen;
-extern bool bReset;
+int SelDialog(HWND hParentWND);
 extern UINT_PTR nTimer;
 extern HBITMAP hPrevBmp;
 extern int nDialogSelect;
-extern bool bMVSMultiSlot;
-void LoadDrvIcons();
-void UnloadDrvIcons();
-#define		ICON_16x16			0
-#define		ICON_24x24			1
-#define		ICON_32x32			2
-extern bool bEnableIcons;
-extern bool bIconsLoaded;
-extern int nIconsSize, nIconsSizeXY, nIconsYDiff;
 void CreateToolTipForRect(HWND hwndParent, PTSTR pszText);
+
+// image_win32.cpp
+typedef struct tagIMAGE {
+	unsigned int	width;
+	unsigned int	height;
+	unsigned int	rowbytes;
+	unsigned int	imgbytes;
+	unsigned char**	rowptr;
+	unsigned char*	bmpbits;
+	unsigned int	flags;
+} IMAGE;
+
+HBITMAP ImageToBitmap(HWND hwnd, IMAGE* img);
+HBITMAP PNGLoadBitmap(HWND hWnd, FILE* fp, int nWidth, int nHeight, int nPreset);
+HBITMAP LoadBitmap(HWND hWnd, FILE* fp, int nWidth, int nHeight, int nPreset);
 
 // cona.cpp
 extern int nIniVersion;
@@ -359,24 +360,7 @@ void FreeROMInfo();
 // support_paths.cpp
 extern TCHAR szAppPreviewsPath[MAX_PATH];
 extern TCHAR szAppTitlesPath[MAX_PATH];
-extern TCHAR szAppSelectPath[MAX_PATH];
-extern TCHAR szAppVersusPath[MAX_PATH];
-extern TCHAR szAppHowtoPath[MAX_PATH];
-extern TCHAR szAppScoresPath[MAX_PATH];
-extern TCHAR szAppBossesPath[MAX_PATH];
-extern TCHAR szAppGameoverPath[MAX_PATH];
-extern TCHAR szAppFlyersPath[MAX_PATH];
-extern TCHAR szAppMarqueesPath[MAX_PATH];
-extern TCHAR szAppControlsPath[MAX_PATH];
-extern TCHAR szAppCabinetsPath[MAX_PATH];
-extern TCHAR szAppPCBsPath[MAX_PATH];
 extern TCHAR szAppCheatsPath[MAX_PATH];
-extern TCHAR szAppHistoryPath[MAX_PATH];
-extern TCHAR szAppListsPath[MAX_PATH];
-extern TCHAR szAppDatListsPath[MAX_PATH];
-extern TCHAR szAppIpsPath[MAX_PATH];
-extern TCHAR szAppIconsPath[MAX_PATH];
-extern TCHAR szAppArchivesPath[MAX_PATH];
 int SupportDirCreate();
 
 // res.cpp
@@ -417,108 +401,13 @@ extern HWND hDbgDlg;
 int DebugExit();
 int DebugCreate();
 
-// Game info
-int GameInfoDialogCreate(HWND hParentWND, int nDrvSelected);
-extern HBITMAP hGiBmp;
-
-// jukebox.cpp
-extern bool bJukeboxInUse;
-extern bool bJukeboxDisplayed;
-int JukeboxDialogCreate();
-
-// placeholderd.cpp
-int SelectPlaceHolder();
-void ResetPlaceHolder();
-
-// ips_manager.cpp
-extern int nSelectedLanguage;
-int GetNumActivePatches();
-void LoadActivePatches();
-int GetNumPatches();
-int IpsManagerCreate(HWND hParentWND);
-void PatchExit();
-
-// localise_gamelist.cpp
-int SelectGameListLocalisationTemplate();
-int ExportGameListLocalisationTemplate();
-
-// ngslotd.cpp
-int NeogeoSlotSelectCreate(HWND hParentWND);
-
 // paletteviewer.cpp
 int PaletteViewerDialogCreate(HWND hParentWND);
-
-// favorites.cpp
-#define FAV_DRV_NAME		0
-#define FAV_DRV_TITLE		1
-#define FAV_DRV_HARDWARE	2
-#define FAV_DRV_YEAR		3
-#define FAV_DRV_COMPANY		4
-#define FAV_DRV_MAXPLAYERS	5
-#define FAV_DRV_NUMBER		6
-#define FAV_DRV_PLAYCOUNTER	7
-#define LV_MAX_COLS			7
-extern HWND	hSelDlgTabControl;
-extern HWND	hFavListView;		
-extern bool	bFavSelected;
-extern int	nListViewColumnIndex;
-extern bool	bListViewAscendingOrder;
-extern int nFavDrvCount;
-void InsertTabs();
-void SelDlgDisplayControls(int);
-int	CALLBACK ListView_CompareFunc(LPARAM, LPARAM, LPARAM);
-BOOL IsCommCtrlVersion6();
-void ListView_SetHeaderSortImage(HWND, int, bool);
-void RefreshFavGameList();
-void SetFavListRow(int, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*, TCHAR*);
-void SetFavListViewContent();
-TCHAR* FavDrvGetContent(int, int);
-int ParseFavListDat();
-int SaveFavListAlt(HWND, FILE*, TCHAR*, int , int);
-void InitFavGameList();
-int FavDrvGetValue(int, int);
-void FavDrvSetContent(int, int, TCHAR*, int);
-void UpdatePlayCounter(int);
-void AddToFavorites();
-void RemoveFromFavorites();
-struct FAVORITESINFO {
-	TCHAR szDrvName[32];
-	TCHAR szDrvTitle[2048];
-	TCHAR szDrvHardware[64];
-	TCHAR szDrvYear[5];
-	TCHAR szDrvCompany[32];
-	TCHAR szDrvMaxPlayers[5];
-	int nDrvPlayCount;
-	unsigned int nDrvNumber;
-};
-void SetFavoritesIcons();
-
-// pngload.cpp
-extern char szSupportArchive[13][MAX_PATH];
-int CheckFile(TCHAR* szName, TCHAR* szPath, TCHAR* szExt);
-int CheckZipFile(TCHAR* szName, TCHAR* szPath, TCHAR* szExt);
-HBITMAP PNGtoBMP(HWND hWnd, char* szPath, char* szDrvName, int nLoadMethod, int nMaxW, int nMaxWY);
-HBITMAP PNGtoBMP_Simple(HWND hWnd, char* szPath);
-void UpdatePreview(bool bPrevReset, HWND hDlg, TCHAR* szPreviewDir); 
-
-// bmp_resize.cpp
-#define FBA_LM_FILE			0
-#define FBA_LM_ZIP_BUFF		1
-HBITMAP ScaleBitmap(HBITMAP, WORD, WORD);
 
 // Misc
 #define _TtoA(a)	TCHARToANSI(a, NULL, 0)
 #define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
 int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
-
-// import.cpp
-int ImporterDlgCreate(int);
-void ImportPackage(int nPackage);
-
-#define PROC_IMPORTSUPPORTFILES		0
-#define PROC_IMPORT_CHECKDISKSPACE	1
-
-int ImportProcessStart(int nProcID, HWND hProcWnd);
 
 // numpluscommas.cpp
 TCHAR* FormatCommasNumber(__int64);

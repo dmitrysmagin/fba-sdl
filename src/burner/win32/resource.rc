@@ -27,9 +27,6 @@
 // Version resource
 #include "version.rc"
 
-// Manifest for Windows XP in themed mode
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resource/manifest.xml"
-
 // License (we need to use a custom resource type, since Windres doesn't understand rcdata strings
 ID_LICENSE 256 "license.rtf"
 

@@ -105,6 +105,45 @@
 <a href="http://neosource.1emu.net/forums">http://neosource.1emu.net/forums</a></p>
 
 
+<h3>v0.2.97.10</h3>
+<ul>
+<li>Redesigned the game selection dialog [Barry]</li>
+<li>Added a dialog to view roms and/or samples required by a driver to the game selection dialog [Barry]</li>
+<li>Removed the incomplete Neo-Geo multi-slot implementation [Barry]</li>
+<li>Removed the "save decrypted C roms" functionality [Barry]</li>
+<li>Removed the jukebox functionality and resources [Barry]</li>
+<li>Removed support for datfiles other than the latest ClrMAME format [Barry]</li>
+<li>Removed the package importer and resources [Barry]</li>
+<li>Removed the menu themes and resources [Barry]</li>
+<li>Removed skins and resources [Barry]</li>
+<li>Removed the gamelist translation module and resources [Barry]</li>
+<li>Removed icons support and resources [Barry]</li>
+<li>Removed the favourites functionality and resources [Barry]</li>
+<li>Removed the context menu from the game selection dialog [Barry]</li>
+<li>Removed IPS Patch functionality and resources [Barry]</li>
+<li>Removed the game information dialog and resources [Barry]</li>
+<li>Removed unneeded support file paths and resources [Barry]</li>
+<li>Removed IPS Patch functionality and resources [Barry]</li>
+<li>Restructured source code and removed any unneeded modules [Barry]</li>
+<li>Removed PNGlib and updated preview loading code to use libPNG [Barry, heavily based on some old code from Jan_Klaassen]</li>
+<li>Updated preview loading code to allow interpolation on resizing [Barry, heavily based on some old code from Jan_Klaassen]</li>
+<li>Fixed the localisation template support [Barry]</li>
+<li>Tidied up the resource files [Barry]</li>
+<li>Added flag to the makefile allowing X86 assembly code to not be built, and added support in the code to not build X86 assembly when defined [Barry]</li>
+<li>Fixed sound rendering in the YM2151 module when not using the MMX routines [Barry]</li>
+<li>Tidied up the source code to compile with Microsoft tools when building in an X64 environment [Barry]</li>
+<li>Added an option in the makefile to build an X64 binary, and updated the VC makefile and source code to support it [Barry]</li>
+<li>Added ability to change the volume of the YM2203 module and used it to bring down the volume in the 1943 driver [Barry]</li>
+<li>Fixed FM Interpolation rendering routine in the YM2203 module [Barry]</li>
+<li>Added support for the YM2610 module to mix the sounds into one stream (mono) and updated the Bonze Adventure, Darius 2, Operation Thunderbolt, Taito-B, Taito-Z and Welltris drivers to use it [Barry]</li>
+<li>Added Super Chase to release builds as it works fine except for sound [Barry]</li>
+<li>Fixed missing sounds in the 1943 driver [Barry]</li>
+<li>Disabled the corrupt boot screen in Last Hope in the Neo-Geo driver [Barry, with info from Johnboy]</li>
+<li>Corrected default dip values in the PS2 datafile System 16B version of Bloxeed [Barry]</li>
+<li>Fixed some rom sizes in the Irem M72 driver [Barry]</li>
+<li>Updated the help file based on the above feature cull [Barry]</li>
+</ul>
+
 <h3>v0.2.97.09</h3>
 <ul>
 <li>Ported the ARM CPU core from MAME [iq_132]

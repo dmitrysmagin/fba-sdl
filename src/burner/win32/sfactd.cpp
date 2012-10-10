@@ -74,7 +74,7 @@ static int SFactdExit()
 }
 
 
-static BOOL CALLBACK DialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
 {
   (void)lParam; (void)wParam; (void)hDlg;
 
@@ -196,6 +196,6 @@ int SFactdCreate()
 //	WndInMid(hSFactdlg,hScrnWnd);
 //	ShowWindow(hSFactdlg,SW_NORMAL);
 //	SFactdUpdate();
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CAPTURE), hScrnWnd, DialogProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CAPTURE), hScrnWnd, (DLGPROC)DialogProc);
 	return 0;
 }

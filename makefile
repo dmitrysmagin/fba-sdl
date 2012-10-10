@@ -18,6 +18,15 @@ export
 # Inluclude Unicode support
 UNICODE = 1
 
+# Build A68K ASM 68000 core
+BUILD_A68K = 1
+
+# Include x86 Assembly routines
+BUILD_X86_ASM = 1
+
+# Build for x64 targets (MSVC environment only)
+#BUILD_X64_EXE = 1
+
 # Include symbols and other debug information in the executable
 #SYMBOL = 1
 
@@ -39,8 +48,6 @@ FASTCALL = 1
 # Perl is available
 PERL = 1
 
-# Build A68K ASM 68000 core
-#BUILD_A68K = 1
 
 #
 #	execute an appropriate system-specific makefile
@@ -57,8 +64,5 @@ sdl: FORCE
 
 vc: FORCE
 	@$(MAKE) -s -f makefile.vc
-	
-vc64: FORCE
-	@$(MAKE) -s -f makefile.vc64
 
 FORCE:

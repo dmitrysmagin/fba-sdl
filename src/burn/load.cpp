@@ -36,7 +36,6 @@ static int LoadRom(unsigned char *Dest,int i,int nGap,int bXor)
 
     // Load in the file
     nRet=BurnExtLoadRom(Load,&nLoadLen,i);
-    if (bDoPatch) ApplyPatches(Load, RomName);
     if (nRet!=0) { free(Load); return 1; }
 
     if (nLoadLen<0) nLoadLen=0;
@@ -61,7 +60,6 @@ static int LoadRom(unsigned char *Dest,int i,int nGap,int bXor)
   {
     // If no XOR, and gap of 1, just copy straight in
     nRet=BurnExtLoadRom(Dest,NULL,i);
-    if (bDoPatch) ApplyPatches(Dest, RomName);
     if (nRet!=0) return 1;
   }
 

@@ -4,7 +4,7 @@
 #define		VERTICAL_ORIENTED_RES		1
 int			nOrientation;
 
-static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+static INT_PTR CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static bool bOK;
 
@@ -92,7 +92,7 @@ int ResCreate(int nResOrientation)
 {
 	nOrientation = nResOrientation;
 
-	FBADialogBox(hAppInst,MAKEINTRESOURCE(IDD_CHOOSERES),hScrnWnd,ResProc);
+	FBADialogBox(hAppInst,MAKEINTRESOURCE(IDD_CHOOSERES),hScrnWnd,(DLGPROC)ResProc);
 	return 0;
 }
 

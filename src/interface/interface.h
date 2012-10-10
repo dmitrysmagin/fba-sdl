@@ -190,9 +190,6 @@ extern int nVidImageDepth;
 
 extern "C" unsigned int (__cdecl *VidHighCol) (int r, int g, int b, int i);
 
-extern bool bVidUsePlaceholder;
-extern TCHAR szPlaceHolder[MAX_PATH];
-
 // vid_directx_support.cpp
 
 int VidSNewTinyMsg(const TCHAR* pText, int nRGB = 0, int nDuration = 0, int nPiority = 5);

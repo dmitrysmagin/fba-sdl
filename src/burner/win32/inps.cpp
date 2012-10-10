@@ -281,7 +281,7 @@ int InpsUpdate()
 	return 0;
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 		hInpsDlg = hDlg;
@@ -324,7 +324,7 @@ int InpsCreate()
 	DestroyWindow(hInpsDlg);					// Make sure exitted
 	hInpsDlg = NULL;
 
-	hInpsDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPS), hInpdDlg, DialogProc);
+	hInpsDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPS), hInpdDlg, (DLGPROC)DialogProc);
 	if (hInpsDlg == NULL) {
 		return 1;
 	}

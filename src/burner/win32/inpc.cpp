@@ -53,7 +53,7 @@ static int InpcExit()
 	return 0;
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM /*lParam*/)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (Msg == WM_INITDIALOG) {						// 1 = we didn't set focus?
 		hInpcDlg = hDlg;
@@ -114,7 +114,7 @@ int InpcCreate()
 	DestroyWindow(hInpcDlg);
 	hInpcDlg = NULL;
 
-	hInpcDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPC), hInpdDlg, DialogProc);
+	hInpcDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPC), hInpdDlg, (DLGPROC)DialogProc);
 	if (hInpcDlg == NULL) {
 		return 1;
 	}

@@ -38,7 +38,7 @@ static void UpdateLabels()
 	}
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 		hPaletteViewerDlg = hDlg;
@@ -152,7 +152,7 @@ int PaletteViewerDialogCreate(HWND hParentWND)
 	if (pBurnDrvPalette == NULL) return 1;
 	
 	hParent = hParentWND;
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_PALETTEVIEWER), hParent, DialogProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_PALETTEVIEWER), hParent, (DLGPROC)DialogProc);
 	
 	hParent = NULL;
 	hPaletteViewerDlg = NULL;

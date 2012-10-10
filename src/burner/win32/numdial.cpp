@@ -11,7 +11,7 @@ static int nExitStatus;
 
 // -----------------------------------------------------------------------------
 
-static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
+static INT_PTR CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 {
  	int nRet = 0;
 	BOOL fTrue = FALSE;
@@ -46,7 +46,7 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 
 int NumDialCreate(int)
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_VALUE), hScrnWnd, DefInpProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_VALUE), hScrnWnd, (DLGPROC)DefInpProc);
 
 	return 1;
 }
@@ -54,7 +54,7 @@ int NumDialCreate(int)
 // -----------------------------------------------------------------------------
 // Gamma dialog
 
-static BOOL CALLBACK GammaProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+static INT_PTR CALLBACK GammaProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static double nPrevGamma;
 
@@ -212,13 +212,13 @@ static BOOL CALLBACK GammaProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LP
 
 void GammaDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_GAMMA), hScrnWnd, GammaProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_GAMMA), hScrnWnd, (DLGPROC)GammaProc);
 }
 
 // -----------------------------------------------------------------------------
 // Scanline intensity dialog
 
-static BOOL CALLBACK ScanlineProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+static INT_PTR CALLBACK ScanlineProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static int nPrevIntensity;
 
@@ -353,12 +353,12 @@ static BOOL CALLBACK ScanlineProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	//
 
 void ScanlineDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, ScanlineProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, (DLGPROC)ScanlineProc);
 }
 
 // -----------------------------------------------------------------------------
 // Feedback intensity dialog
-static BOOL CALLBACK PhosphorProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)	// LPARAM lParam
+static INT_PTR CALLBACK PhosphorProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)	// LPARAM lParam
 {
 	static int nPrevIntensity;
 	static int nPrevSaturation;
@@ -532,12 +532,12 @@ static BOOL CALLBACK PhosphorProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 
 void PhosphorDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_PHOSPHOR), hScrnWnd, PhosphorProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_PHOSPHOR), hScrnWnd, (DLGPROC)PhosphorProc);
 }
 
 // -----------------------------------------------------------------------------
 // Screen Angle dialog
-static BOOL CALLBACK ScreenAngleProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ScreenAngleProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	static float fPrevScreenAngle, fPrevScreenCurvature;
 	static HWND hScreenAngleSlider, hScreenAngleEdit;
@@ -719,13 +719,13 @@ static BOOL CALLBACK ScreenAngleProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 
 void ScreenAngleDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCREENANGLE), hScrnWnd, ScreenAngleProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCREENANGLE), hScrnWnd, (DLGPROC)ScreenAngleProc);
 }
 
 // -----------------------------------------------------------------------------
 // CPU clock dialog
 
-static BOOL CALLBACK CPUClockProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+static INT_PTR CALLBACK CPUClockProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	switch (Msg) {
 		case WM_INITDIALOG: {
@@ -857,13 +857,13 @@ static BOOL CALLBACK CPUClockProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	//
 
 void CPUClockDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CPUCLOCK), hScrnWnd, CPUClockProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CPUCLOCK), hScrnWnd, (DLGPROC)CPUClockProc);
 }
 
 // -----------------------------------------------------------------------------
 // Cubic filter quality dialog
 
-static BOOL CALLBACK CubicProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+static INT_PTR CALLBACK CubicProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static double dPrevB, dPrevC;
 
@@ -1008,6 +1008,6 @@ static BOOL CALLBACK CubicProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LP
 
 void CubicSharpnessDialog()
 {
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, CubicProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, (DLGPROC)CubicProc);
 }
 

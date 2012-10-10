@@ -43,11 +43,7 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	ProgressCreate();
 
-	if (bJukeboxInUse) {
-		nRet = BurnJukeboxInit();
-	} else {
-		nRet = BurnDrvInit();
-	}
+	nRet = BurnDrvInit();
 
 	BzipClose();
 
@@ -141,8 +137,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 		nVidHeight	= nVidHorHeight;
 	}
 
-	UpdatePlayCounter(nBurnDrvSelect);	// Update favorites play count
-
 	bSaveRAM = false;
 	if (kNetGame) {
 		KailleraInitInput();
@@ -187,26 +181,18 @@ int DrvExit()
 		DestroyWindow(hInpCheatDlg);	// Make sure the Cheat Dialog is exited
 
 		if (nBurnDrvSelect < nBurnDrvCount) {
-			
-			if(!bJukeboxInUse) 
-			{
-				MemCardEject();				// Eject memory card if present
+			MemCardEject();				// Eject memory card if present
 
-				if (bSaveRAM) {
-					StatedAuto(1);			// Save NV (or full) RAM
-					bSaveRAM = false;
-				}
-
-				ConfigGameSave(bSaveInputs);
+			if (bSaveRAM) {
+				StatedAuto(1);			// Save NV (or full) RAM
+				bSaveRAM = false;
 			}
+
+			ConfigGameSave(bSaveInputs);
 
 			GameInpExit();				// Exit game input
 			
-			if (bJukeboxInUse) {
-				BurnJukeboxExit();
-			} else {
-				BurnDrvExit();				// Exit the driver
-			}
+			BurnDrvExit();				// Exit the driver
 		}
 	}
 

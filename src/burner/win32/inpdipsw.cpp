@@ -226,7 +226,7 @@ static void InpDIPSWSelect()
 	}
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 
@@ -326,7 +326,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 			switch (plvcd->nmcd.dwDrawStage) {
 				case CDDS_PREPAINT: {
-                    SetWindowLong(hInpDIPSWDlg, DWL_MSGRESULT, CDRF_NOTIFYITEMDRAW);
+                    SetWindowLongPtr(hInpDIPSWDlg, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
 					return 1;
 				}
 				case CDDS_ITEMPREPAINT: {
@@ -334,7 +334,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					BurnDrvGetDIPInfo(&bdi, plvcd->nmcd.lItemlParam);
 					if (bdi.nFlags == 0xFD) {
 						plvcd->clrTextBk = RGB(0xFF, 0xDF, 0xBB);
-    					SetWindowLong(hInpDIPSWDlg, DWL_MSGRESULT, CDRF_NEWFONT);
+    					SetWindowLongPtr(hInpDIPSWDlg, DWLP_MSGRESULT, CDRF_NEWFONT);
 					}
 
 					return 1;
@@ -354,7 +354,7 @@ int InpDIPSWCreate()
 
 	bOK = false;
 
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, DialogProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, (DLGPROC)DialogProc);
 
 	return 0;
 }

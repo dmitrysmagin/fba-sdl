@@ -43,6 +43,11 @@ extern TCHAR szAppSamplesPath[MAX_PATH];
  #define CPUID(f,ra,rb,rc,rd)
 #endif
 
+#ifndef BUILD_X86_ASM
+ #undef CPUID
+ #define CPUID(f,ra,rb,rc,rd)
+#endif
+
 #ifdef _UNICODE
  #define SEPERATOR_1 " \u2022 "
  #define SEPERATOR_2 " \u25E6 "
@@ -56,8 +61,6 @@ extern TCHAR szAppSamplesPath[MAX_PATH];
 #else
  #define WRITE_UNICODE_BOM(file)
 #endif
-
-#define		INCLUDE_NEOGEO_MULTISLOT	1
 
 typedef signed char INT8;
 typedef unsigned char UINT8;
@@ -248,28 +251,7 @@ int BurnDrvGetFamilyFlags();
 int BurnDrvGetSampleInfo(struct BurnSampleInfo *pri, unsigned int i);
 int BurnDrvGetSampleName(char** pszName, unsigned int i, int nAka);
 
-extern TCHAR szGamelistLocalisationTemplate[260];
-int BurnDoGameListLocalisation();
-
 void Reinitialise();
-
-#define JUKEBOX_SOUND_NULL	0
-#define JUKEBOX_SOUND_STOP	1
-#define JUKEBOX_SOUND_PLAY	2
-extern unsigned int JukeboxSoundLatch;
-extern unsigned int JukeboxSoundCommand;
-int BurnJukeboxGetFlags();
-int BurnJukeboxInit();
-int BurnJukeboxExit();
-int BurnJukeboxFrame();
-
-extern bool bSaveCRoms;
-
-extern bool bDoPatch;
-void ApplyPatches(UINT8* base, char* rom_name);
-
-#define MAX_NEO_SLOTS	6
-extern unsigned int nNeoSlotDrvNum[MAX_NEO_SLOTS];
 
 // ---------------------------------------------------------------------------
 // Flags used with the Burndriver structure
@@ -409,9 +391,6 @@ extern unsigned int nNeoSlotDrvNum[MAX_NEO_SLOTS];
 #define HARDWARE_GALAXIAN		(HARDWARE_PREFIX_GALAXIAN)
 
 #define HARDWARE_ATARI_GAUNTLET		(HARDWARE_PREFIX_ATARI | 0x00010000)
-
-// flags for the jukebox member
-#define JBF_GAME_WORKING		(1 << 0)
 
 // flags for the genre member
 #define GBF_HORSHOOT			(1 << 0)

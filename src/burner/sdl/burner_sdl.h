@@ -101,3 +101,14 @@ extern bool bJukeboxDisplayed;
 #define _TtoA(a)	TCHARToANSI(a, NULL, 0)
 #define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
 int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
+
+// image.cpp
+typedef struct tagIMAGE {
+	unsigned int	width;
+	unsigned int	height;
+	unsigned int	rowbytes;
+	unsigned int	imgbytes;
+	unsigned char**	rowptr;
+	unsigned char*	bmpbits;
+	unsigned int	flags;
+} IMAGE;

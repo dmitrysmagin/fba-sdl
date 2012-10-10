@@ -1,5 +1,6 @@
 #include "burner.h"
 #include <shlobj.h>
+#include <process.h>
 
 static HWND hTabControl = NULL;
 
@@ -9,7 +10,7 @@ static HWND hParent = NULL;
 char* gameAv = NULL;
 bool avOk = false;
 
-static DWORD dwScanThreadId = 0;
+static unsigned ScanThreadId = 0;
 static HANDLE hScanThread = NULL;
 static int nOldSelect = 0;
 
@@ -24,7 +25,7 @@ static void CreateRomDatName(TCHAR* szRomDat)
 
 //Select Directory Dialog//////////////////////////////////////////////////////////////////////////
 
-static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	int var;
 	static bool chOk;
@@ -170,7 +171,7 @@ int RomsDirCreate(HWND hParentWND)
 {
 	hParent = hParentWND;
 	
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hParent, DefInpProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hParent, (DLGPROC)DefInpProc);
 	return 1;
 }
 
@@ -310,7 +311,7 @@ static int QuitRomsScan()
 	hEvent = NULL;
 
 	hScanThread = NULL;
-	dwScanThreadId = 0;
+	ScanThreadId = 0;
 
 	BzipClose();
 
@@ -325,7 +326,7 @@ static int QuitRomsScan()
 	return 1;
 }
 
-static DWORD WINAPI AnalyzingRoms(LPVOID)					// LPVOID lParam
+static unsigned __stdcall AnalyzingRoms(void*)
 {
 	for (unsigned int z = 0; z < nBurnDrvCount; z++) {
 		nBurnDrvSelect = z;
@@ -357,7 +358,7 @@ static DWORD WINAPI AnalyzingRoms(LPVOID)					// LPVOID lParam
 	return 0;
 }
 
-static BOOL CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LPARAM lParam
+static INT_PTR CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LPARAM lParam
 {
 	switch (Msg) {
 		case WM_INITDIALOG:
@@ -372,7 +373,7 @@ static BOOL CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LP
 			ShowWindow(GetDlgItem(hDlg, IDCANCEL), TRUE);
 
 			avOk = false;
-			hScanThread = CreateThread(NULL, 0, AnalyzingRoms, NULL, THREAD_TERMINATE, &dwScanThreadId);
+			hScanThread = (HANDLE)_beginthreadex(NULL, 0, AnalyzingRoms, NULL, 0, &ScanThreadId);
 
 			hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 			
@@ -424,7 +425,7 @@ int CreateROMInfo(HWND hParentWND)
 
 	if (gameAv) {
 		if (CheckGameAvb() || bRescanRoms) {
-			FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hParent, WaitProc);
+			FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hParent, (DLGPROC)WaitProc);
 		}
 	}
 

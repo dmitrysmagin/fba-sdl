@@ -3997,7 +3997,7 @@ This list contains all games supported by FB Alpha.
 | g_supbub	| D NW	| Super Bubble Bobble (China) (Unl)			| 		| 	| Sega License	| Megadrive	| 					|
 | sbbros	|  	| Super Buster Bros. (US 901001)			| spang		| 1990	| Mitchell + Cap| Miscellaneous	| 					|
 | sucasino	|  	| Super Casino						| 		| 1984	| Data Amusement| Jack the Giant| 					|
-| superchs	| D	| Super Chase - Criminal Termintation (US)		| 		| 1992	| Taito America | Taito Misc	| 					|
+| superchs	|  	| Super Chase - Criminal Termintation (US)		| 		| 1992	| Taito America | Taito Misc	| No Sound				|
 | scobra	|  	| Super Cobra						| 		| 1981	| Konami	| Galaxian	| 					|
 | scobrab	|  	| Super Cobra (bootleg)					| scobra	| 1981	| bootleg	| Galaxian	| 					|
 | scobrase	|  	| Super Cobra (Sega)					| scobra	| 1981	| Konami (Sega l| Galaxian	| 					|

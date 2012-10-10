@@ -16,7 +16,11 @@ unsigned int nBurnDrvCount = 0;		// Count of game drivers
 unsigned int nBurnDrvSelect = ~0U;	// Which game driver is selected
 
 bool bBurnUseMMX;
+#if defined BUILD_A68K
 bool bBurnUseASMCPUEmulation = true;
+#else
+bool bBurnUseASMCPUEmulation = false;
+#endif
 
 #if defined (FBA_DEBUG)
  clock_t starttime = 0;
@@ -53,11 +57,15 @@ unsigned int *pBurnDrvPalette;
 
 bool BurnCheckMMXSupport()
 {
+#if defined BUILD_X86_ASM
 	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nSignatureECX = 0, nSignatureEDX = 0;
 
 	CPUID(1, nSignatureEAX, nSignatureEBX, nSignatureECX, nSignatureEDX);
 
 	return (nSignatureEDX >> 23) & 1;						// bit 23 of edx indicates MMX support
+#else
+	return 0;
+#endif
 }
 
 extern "C" int BurnLibInit()
@@ -460,7 +468,7 @@ extern "C" int BurnDrvGetVisibleOffs(int* pnLeft, int* pnTop)
 
 extern "C" int BurnDrvGetFullSize(int* pnWidth, int* pnHeight)
 {
-	if (pDriver[nBurnDrvSelect]->flags & BDF_ORIENTATION_VERTICAL) {
+	if (pDriver[nBurnDrvSelect]->Flags & BDF_ORIENTATION_VERTICAL) {
 		*pnWidth =pDriver[nBurnDrvSelect]->nHeight;
 		*pnHeight=pDriver[nBurnDrvSelect]->nWidth;
 	} else {
@@ -482,7 +490,7 @@ extern "C" int BurnDrvGetAspect(int* pnXAspect, int* pnYAspect)
 
 extern "C" int BurnDrvSetVisibleSize(int pnWidth, int pnHeight)
 {
-	if (pDriver[nBurnDrvSelect]->flags & BDF_ORIENTATION_VERTICAL) {
+	if (pDriver[nBurnDrvSelect]->Flags & BDF_ORIENTATION_VERTICAL) {
 		pDriver[nBurnDrvSelect]->nHeight = pnWidth;
 		pDriver[nBurnDrvSelect]->nWidth = pnHeight;
 	} else {
@@ -504,37 +512,37 @@ extern "C" int BurnDrvSetAspect(int pnXAspect, int pnYAspect)
 // Get the hardware code
 extern "C" int BurnDrvGetHardwareCode()
 {
-	return pDriver[nBurnDrvSelect]->hardware;
+	return pDriver[nBurnDrvSelect]->Hardware;
 }
 
 // Get flags, including BDF_GAME_WORKING flag
 extern "C" int BurnDrvGetFlags()
 {
-	return pDriver[nBurnDrvSelect]->flags;
+	return pDriver[nBurnDrvSelect]->Flags;
 }
 
 // Return BDF_WORKING flag
 extern "C" bool BurnDrvIsWorking()
 {
-	return pDriver[nBurnDrvSelect]->flags & BDF_GAME_WORKING;
+	return pDriver[nBurnDrvSelect]->Flags & BDF_GAME_WORKING;
 }
 
 // Return max. number of players
 extern "C" int BurnDrvGetMaxPlayers()
 {
-	return pDriver[nBurnDrvSelect]->players;
+	return pDriver[nBurnDrvSelect]->Players;
 }
 
 // Return genre flags
 extern "C" int BurnDrvGetGenreFlags()
 {
-	return pDriver[nBurnDrvSelect]->genre;
+	return pDriver[nBurnDrvSelect]->Genre;
 }
 
 // Return family flags
 extern "C" int BurnDrvGetFamilyFlags()
 {
-	return pDriver[nBurnDrvSelect]->family;
+	return pDriver[nBurnDrvSelect]->Family;
 }
 
 // Init game emulation (loading any needed roms)
@@ -590,7 +598,7 @@ extern "C" int BurnDrvInit()
 
 	nReturnValue = pDriver[nBurnDrvSelect]->Init();	// Forward to drivers function
 
-	nMaxPlayers = pDriver[nBurnDrvSelect]->players;
+	nMaxPlayers = pDriver[nBurnDrvSelect]->Players;
 	
 #if defined (FBA_DEBUG)
 	if (!nReturnValue) {
@@ -665,170 +673,9 @@ extern "C" int BurnRecalcPal()
 	return 0;
 }
 
-extern "C" int BurnDoGameListLocalisation()
-{
-#if defined (_UNICODE)
-	FILE* fp = _tfopen(szGamelistLocalisationTemplate, _T("rt"));
-	TCHAR szLine[256];
-	
-	if (fp) {
-		static TCHAR LongName[5000][256];
-		int LongNamePos = 0;
-		
-		while (_fgetts(szLine, sizeof(szLine), fp)) {
-			int nLen = _tcslen(szLine);
-			
-			// Get rid of the linefeed at the end
-			if (szLine[nLen - 1] == 10) {
-				szLine[nLen - 1] = 0;
-				nLen--;
-			}
-			
-			if (!_tcsnicmp(szLine, _T("//"), 2)) continue;
-			if (!_tcsicmp(szLine, _T(""))) continue;
-			if (!_tcsnicmp(szLine, _T("version"), 7)) continue;
-			
-			TCHAR *Tokens;
-			TCHAR ShortName[33];
-			
-			Tokens = _tcstok(szLine, _T("\t"));
-			while (Tokens != NULL) {
-				if (_tcsicmp(szLine, Tokens)) {
-					for (unsigned int i = 0; i < nBurnDrvCount; i++) {
-						mbstowcs(ShortName, pDriver[i]->szShortName, strlen(pDriver[i]->szShortName));
-						ShortName[strlen(pDriver[i]->szShortName)] = _T('\0');
-
-						if (!_tcsicmp(szLine, ShortName)) {
-							_stprintf(LongName[LongNamePos], _T("%s\0"), Tokens);
-							pDriver[i]->szFullNameW = LongName[LongNamePos];
-							LongNamePos++;
-						}
-					}
-					
-				}
-				Tokens = _tcstok(NULL, _T("\t"));
-			}		
-		}
-		
-		fclose(fp);
-	}
-#endif
-	
-	return 0;
-}
-
 extern "C" int BurnDrvGetPaletteEntries()
 {
 	return pDriver[nBurnDrvSelect]->nPaletteEntries;
-}
-
-// Jukebox functions
-unsigned int JukeboxSoundCommand = 0;
-unsigned int JukeboxSoundLatch = 0;
-
-extern "C" int BurnJukeboxGetFlags()
-{
-	return pDriver[nBurnDrvSelect]->JukeboxFlags;
-}
-
-extern "C" int BurnJukeboxInit()
-{
-	int nReturnValue;
-
-	if (nBurnDrvSelect >= nBurnDrvCount) {
-		return 1;
-	}
-
-#if defined (FBA_DEBUG)
-	{
-		TCHAR szText[1024] = _T("");
-		TCHAR* pszPosition = szText;
-		TCHAR* pszName = BurnDrvGetText(DRV_FULLNAME);
-		int nName = 1;
-
-		while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
-			nName++;
-		}
-
-		// Print the title
-
-		bprintf(PRINT_IMPORTANT, _T("*** Starting jukebox emulation of %s") _T(SEPERATOR_1) _T("%s.\n"), BurnDrvGetText(DRV_NAME), BurnDrvGetText(DRV_FULLNAME));
-
-		// Then print the alternative titles
-
-		if (nName > 1) {
-			bprintf(PRINT_IMPORTANT, _T("    Alternative %s "), (nName > 2) ? _T("titles are") : _T("title is"));
-			pszName = BurnDrvGetText(DRV_FULLNAME);
-			nName = 1;
-			while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
-				if (pszPosition + _tcslen(pszName) - 1022 > szText) {
-					break;
-				}
-				if (nName > 1) {
-					bprintf(PRINT_IMPORTANT, _T(SEPERATOR_1));
-				}
-				bprintf(PRINT_IMPORTANT, _T("%s"), pszName);
-				nName++;
-			}
-			bprintf(PRINT_IMPORTANT, _T(".\n"));
-		}
-	}
-#endif
-
-	BurnSetRefreshRate(60.0);
-
-	if((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK)==HARDWARE_SNK_NEOGEO) {
-		nReturnValue = pDriver[nBurnDrvSelect]->Init();			// Forward to drivers function
-	} else {
-		nReturnValue = pDriver[nBurnDrvSelect]->JukeboxInit();	// Forward to drivers function
-	}
-
-#if defined (FBA_DEBUG)
-	if (!nReturnValue) {
-		starttime = clock();
-		nFramesEmulated = 0;
-		nFramesRendered = 0;
-		nCurrentFrame = 0;
-	} else {
-		starttime = 0;
-	}
-#endif
-
-	return nReturnValue;
-}
-
-extern "C" int BurnJukeboxExit()
-{
-#if defined (FBA_DEBUG)
-	if (starttime) {
-		clock_t endtime;
-		clock_t nElapsedSecs;
-
-		endtime = clock();
-		nElapsedSecs = (endtime - starttime);
-		bprintf(PRINT_IMPORTANT, _T(" ** Emulation ended (running for %.2f seconds).\n"), (float)nElapsedSecs / CLOCKS_PER_SEC);
-		bprintf(PRINT_IMPORTANT, _T("    %.2f%% of frames rendered (%d out of a total %d).\n"), (float)nFramesRendered / nFramesEmulated * 100, nFramesRendered, nFramesEmulated);
-		bprintf(PRINT_IMPORTANT, _T("    %.2f frames per second (average).\n"), (float)nFramesRendered / nFramesEmulated * nBurnFPS / 100);
-		bprintf(PRINT_NORMAL, _T("\n"));
-	}
-#endif
-	JukeboxSoundCommand = 0;
-	JukeboxSoundLatch = 0;
-
-	if((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK)==HARDWARE_SNK_NEOGEO) {
-		return pDriver[nBurnDrvSelect]->Exit();					// Forward to drivers function
-	} else {
-		return pDriver[nBurnDrvSelect]->JukeboxExit();			// Forward to drivers function
-	}
-}
-
-extern "C" int BurnJukeboxFrame()
-{
-	if((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK)==HARDWARE_SNK_NEOGEO) {
-		return pDriver[nBurnDrvSelect]->Frame();			// Forward to drivers function
-	} else {
-		return pDriver[nBurnDrvSelect]->JukeboxFrame();		// Forward to drivers function
-	}
 }
 
 // ----------------------------------------------------------------------------
@@ -884,7 +731,7 @@ int BurnClearScreen()
 {
 	struct BurnDriver* pbd = pDriver[nBurnDrvSelect];
 
-	if (pbd->flags & BDF_ORIENTATION_VERTICAL) {
+	if (pbd->Flags & BDF_ORIENTATION_VERTICAL) {
 		BurnClearSize(pbd->nHeight, pbd->nWidth);
 	} else {
 		BurnClearSize(pbd->nWidth, pbd->nHeight);

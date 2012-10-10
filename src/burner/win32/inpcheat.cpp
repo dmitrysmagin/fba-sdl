@@ -147,7 +147,7 @@ static void InpCheatSelect()
 	}
 }
 
-static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_INITDIALOG) {
 
@@ -268,7 +268,7 @@ int InpCheatCreate()
 //	WndInMid(hInpCheatDlg, hScrnWnd);
 //	ShowWindow(hInpCheatDlg, SW_NORMAL);
 
-	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPCHEAT), hScrnWnd, DialogProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_INPCHEAT), hScrnWnd, (DLGPROC)DialogProc);
 
 	return 0;
 }

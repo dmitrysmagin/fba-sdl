@@ -41,11 +41,11 @@ struct BurnDriver {
 	char*    szFullNameA; char*    szCommentA; char*    szManufacturerA; char*    szSystemA;
 	wchar_t* szFullNameW; wchar_t* szCommentW; wchar_t* szManufacturerW; wchar_t* szSystemW;
 
-	int flags;			// See burn.h
-	int players;		// Max number of players a game supports (so we can remove single player games from netplay)
-	int hardware;		// Which type of hardware the game runs on
-	int genre;
-	int family;
+	int Flags;			// See burn.h
+	int Players;		// Max number of players a game supports (so we can remove single player games from netplay)
+	int Hardware;		// Which type of hardware the game runs on
+	int Genre;
+	int Family;
 	int (*GetZipName)(char** pszName, unsigned int i);				// Function to get possible zip names
 	int (*GetRomInfo)(struct BurnRomInfo* pri,unsigned int i);		// Function to get the length and crc of each rom
 	int (*GetRomName)(char** pszName, unsigned int i, int nAka);	// Function to get the possible names for each rom
@@ -54,7 +54,6 @@ struct BurnDriver {
 	int (*GetInputInfo)(struct BurnInputInfo* pii, unsigned int i);	// Function to get the input info for the game
 	int (*GetDIPInfo)(struct BurnDIPInfo* pdi, unsigned int i);		// Function to get the input info for the game
 	int (*Init)(); int (*Exit)(); int (*Frame)(); int (*Redraw)(); int (*AreaScan)(int nAction, int* pnMin);
-	int JukeboxFlags; int (*JukeboxInit)(); int (*JukeboxExit)(); int (*JukeboxFrame)();
 	unsigned char* pRecalcPal; unsigned int nPaletteEntries;										// Set to 1 if the palette needs to be fully re-calculated
 	int nWidth, nHeight; int nXAspect, nYAspect;					// Screen width, height, x/y aspect
 };

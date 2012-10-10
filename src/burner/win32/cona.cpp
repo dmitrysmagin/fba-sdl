@@ -113,9 +113,6 @@ int ConfigAppLoad()
 		VAR(bForce60Hz);
 		VAR(bAlwaysDrawFrames);
 
-		VAR(bVidUsePlaceholder);
-		STR(szPlaceHolder);
-
 		VAR(nVidSelect);
 		VAR(nVidBlitterOpt[0]);
 		VAR64(nVidBlitterOpt[1]);
@@ -153,7 +150,6 @@ int ConfigAppLoad()
 
 		// Other
 		STR(szLocalisationTemplate);
-		STR(szGamelistLocalisationTemplate);
 
 		VAR(nVidSDisplayStatus);
 		VAR(nMinChatFontSize);
@@ -185,40 +181,14 @@ int ConfigAppLoad()
 		
 		STR(szAppPreviewsPath);
 		STR(szAppTitlesPath);
-		STR(szAppSelectPath);
-		STR(szAppVersusPath);
-		STR(szAppHowtoPath);
-		STR(szAppScoresPath);
-		STR(szAppBossesPath);
-		STR(szAppGameoverPath);
-		STR(szAppFlyersPath);
-		STR(szAppMarqueesPath);
-		STR(szAppControlsPath);
-		STR(szAppCabinetsPath);
-		STR(szAppPCBsPath);
 		STR(szAppCheatsPath);
-		STR(szAppHistoryPath);
-		STR(szAppListsPath);
-		STR(szAppDatListsPath);
-		STR(szAppIpsPath);
-		STR(szAppIconsPath);
-		STR(szAppArchivesPath);
 		STR(szAppHiscorePath);
 		STR(szAppSamplesPath);
 
-		VAR(nMenuUITheme);
-		
 		VAR(bNoChangeNumLock);
-		
-		VAR(bSaveCRoms);
 		
 		VAR(EnableHiscores);
 		
-		VAR(nSelectedLanguage);
-
-		VAR(bEnableIcons);
-		VAR(nIconsSize);
-
 		STR(szPrevGames[0]);
 		STR(szPrevGames[1]);
 		STR(szPrevGames[2]);
@@ -376,11 +346,6 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// If non-zero, skip frames when needed to keep the emulation running at full speed\n"));
 	VAR(bAlwaysDrawFrames);
 
-	_ftprintf(h, _T("\n// If non-zero, use a placeholder image when no game is loaded\n"));
-	VAR(bVidUsePlaceholder);
-	_ftprintf(h, _T("\n// The filename of the placeholder image to use (empty filename = use built-in)\n"));
-	STR(szPlaceHolder);
-
 	_ftprintf(h, _T("\n"));
 	_ftprintf(h, _T("// --- DirectDraw blitter module settings -------------------------------------\n"));
 	_ftprintf(h, _T("\n// If non-zero, draw scanlines at 50%% intensity\n"));
@@ -438,9 +403,6 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// Filename of the active UI translation template\n"));
 	STR(szLocalisationTemplate);
 	
-	_ftprintf(h, _T("\n// Filename of the active game list translation template\n"));
-	STR(szGamelistLocalisationTemplate);
-
 	_ftprintf(h, _T("\n// 1 = display pause/record/replay/kaillera icons in the upper right corner of the display\n"));
 	VAR(nVidSDisplayStatus);
 	_ftprintf(h, _T("\n// Minimum height (in pixels) of the font used for the Kaillera chat function (used for arcade resolution)\n"));
@@ -491,51 +453,19 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// The paths to search for support files (include trailing backslash)\n"));
 	STR(szAppPreviewsPath);
 	STR(szAppTitlesPath);
-	STR(szAppSelectPath);
-	STR(szAppVersusPath);
-	STR(szAppHowtoPath);
-	STR(szAppScoresPath);
-	STR(szAppBossesPath);
-	STR(szAppGameoverPath);
-	STR(szAppFlyersPath);
-	STR(szAppMarqueesPath);
-	STR(szAppControlsPath);
-	STR(szAppCabinetsPath);
-	STR(szAppPCBsPath);
 	STR(szAppCheatsPath);
-	STR(szAppHistoryPath);
-	STR(szAppListsPath);
-	STR(szAppDatListsPath);
-	STR(szAppIpsPath);
-	STR(szAppIconsPath);
-	STR(szAppArchivesPath);
 	STR(szAppHiscorePath);
 	STR(szAppSamplesPath);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- miscellaneous ---------------------------------------------------------\n"));
 
-	_ftprintf(h, _T("\n// If non-zero, use an image menu theme.\n"));
-	VAR(nMenuUITheme);
-	
 	_ftprintf(h, _T("\n// If non-zero, don't change the status of the Num Lock key.\n"));
 	VAR(bNoChangeNumLock);
-	
-	_ftprintf(h, _T("\n// If non-zero, write the decrypted Neo-Geo 'C' roms to disc.\n"));
-	VAR(bSaveCRoms);
 	
 	_ftprintf(h, _T("\n// If non-zero, enable high score saving support.\n"));
 	VAR(EnableHiscores);
 	
-	_ftprintf(h, _T("\n// The language index to use for the IPS Patch Manager dialog.\n"));
-	VAR(nSelectedLanguage);
-
-	_ftprintf(h, _T("\n// If non-zero, display drivers icons.\n"));
-	VAR(bEnableIcons);
-
-	_ftprintf(h, _T("\n// Specify icons display size, 0 = 16x16 , 1 = 24x24, 2 = 32x32.\n"));
-	VAR(nIconsSize);
-
 	_ftprintf(h, _T("\n// Previous games list.\n"));
 	STR(szPrevGames[0]);
 	STR(szPrevGames[1]);

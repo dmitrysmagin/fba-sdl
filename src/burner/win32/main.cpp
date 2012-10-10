@@ -521,7 +521,6 @@ static int AppInit()
 
 	// Init the Burn library
 	BurnLibInit();
-	BurnDoGameListLocalisation();
 
 	ComputeGammaLUT();
 
@@ -537,30 +536,16 @@ static int AppInit()
 	
 	// Write a clrmame dat file if we are verifying roms
 #if defined (ROM_VERIFY)
-	create_datfile(_T("fba.dat"), 2, 0);	
+	create_datfile(_T("fba.dat"), 0);	
 #endif
 
 	bNumlockStatus = SetNumLock(false);
-
-	ParseFavListDat();
-
-	if(bEnableIcons && !bIconsLoaded) {
-		// load driver icons
-		LoadDrvIcons();
-		bIconsLoaded = 1;
-	}
 
 	return 0;
 }
 
 static int AppExit()
 {
-	if(bIconsLoaded) {
-		// unload driver icons
-		UnloadDrvIcons();
-		bIconsLoaded = 0;
-	}
-
 	SetNumLock(bNumlockStatus);
 
 	DrvExit();						// Make sure any game driver is exitted
@@ -651,17 +636,17 @@ int ProcessCmdLine()
 
 	if (_tcslen(szName)) {
 		if (_tcscmp(szName, _T("-listinfo")) == 0) {
-			write_datfile(0, 0, stdout);
+			write_datfile(0, stdout);
 			return 1;
 		}
 		
 		if (_tcscmp(szName, _T("-listinfowithmd")) == 0) {
-			write_datfile(0, 1, stdout);
+			write_datfile(1, stdout);
 			return 1;
 		}
 		
 		if (_tcscmp(szName, _T("-listinfomdonly")) == 0) {
-			write_datfile(0, 2, stdout);
+			write_datfile(2, stdout);
 			return 1;
 		}
 		
@@ -778,10 +763,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	AppDirectory();								// Set current directory to be the applications directory
 
 	// Make sure there are roms and cfg subdirectories
-	TCHAR szDirs[32][MAX_PATH] = {
+	TCHAR szDirs[14][MAX_PATH] = {
 		{_T("config")},
 		{_T("config\\games")},
-		{_T("config\\ips")},
 		{_T("config\\localisation")},
 		{_T("config\\presets")},
 		{_T("recordings")},
@@ -791,29 +775,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 		{_T("support\\")},
 		{_T("support\\previews\\")},
 		{_T("support\\titles\\")},
-		{_T("support\\select\\")},
-		{_T("support\\versus\\")},
-		{_T("support\\howto\\")},
-		{_T("support\\scores\\")},
-		{_T("support\\bosses\\")},
-		{_T("support\\gameover\\")},
-		{_T("support\\flyers\\")},
-		{_T("support\\marquees\\")},
-		{_T("support\\controls\\")},
-		{_T("support\\cabinets\\")},
-		{_T("support\\pcbs\\")},
 		{_T("support\\cheats\\")},
-		{_T("support\\lists\\")},
-		{_T("support\\lists\\lst\\")},
-		{_T("support\\lists\\dat\\")},
-		{_T("support\\ips\\")},
-		{_T("support\\icons\\")},
-		{_T("support\\archives\\")},
 		{_T("support\\hiscores\\")},
 		{_T("support\\samples\\")},
 	};
 
-	for(int x = 0; x < 32; x++) {
+	for(int x = 0; x < 14; x++) {
 		CreateDirectory(szDirs[x], NULL);
 	}
 

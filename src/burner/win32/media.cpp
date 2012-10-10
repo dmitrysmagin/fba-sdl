@@ -41,7 +41,7 @@ int MediaInit()
 			ScrnSize();
 		}
 
-		if (!bVidOkay && (bDrvOkay || bVidUsePlaceholder)) {
+		if (!bVidOkay) {
 			// Make sure the error will be visible
 			SplashDestroy(1);
 

@@ -3,44 +3,21 @@
 #include "burner.h"
 #include "vid_softfx.h"
 
-void _2xpm_lq(void *SrcPtr, void *DstPtr, unsigned long SrcPitch, unsigned long DstPitch, unsigned long SrcW, unsigned long SrcH, int nDepth);
-void _2xpm_hq(void *SrcPtr, void *DstPtr, unsigned long SrcPitch, unsigned long DstPitch, unsigned long SrcW, unsigned long SrcH, int nDepth);
-
-extern "C" void __cdecl superscale_line(UINT16 *src0, UINT16 *src1, UINT16 *src2, UINT16 *dst, UINT32 width, UINT64 *mask);
-extern "C" void __cdecl  superscale_line_75(UINT16 *src0, UINT16 *src1, UINT16 *src2, UINT16 *dst, UINT32 width, UINT64 *mask);
-
-#ifdef __ELF__
- #define LUT16to32 _LUT16to32
- #define RGBtoYUV _RGBtoYUV
- #define hq2x_32 _hq2x_32
- #define hq3x_32 _hq3x_32
- #define hq4x_32 _hq4x_32
-#endif
-
-#if defined __GNUC__
- #include "scale2x.h"
-#elif defined _MSC_VER
- #include "scale2x_vc.h"
- #define scale2x_16_mmx internal_scale2x_16_mmx
- #define scale2x_32_mmx internal_scale2x_32_mmx
-#endif
-#include "scale3x.h"
-
-extern "C" void __cdecl _eagle_mmx16(unsigned long* lb, unsigned long* lb2, short width, unsigned long* screen_address1, unsigned long* screen_address2);
-
 typedef unsigned long uint32;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 
-extern "C" void __cdecl _2xSaISuperEagleLine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
-extern "C" void __cdecl _2xSaILine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
-extern "C" void __cdecl _2xSaISuper2xSaILine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
-extern "C" void __cdecl Init_2xSaIMMX(uint32 BitFormat);
+#ifndef _WIN32
+ typedef unsigned long DWORD;
+#endif
+
+void _2xpm_lq(void *SrcPtr, void *DstPtr, unsigned long SrcPitch, unsigned long DstPitch, unsigned long SrcW, unsigned long SrcH, int nDepth);
+void _2xpm_hq(void *SrcPtr, void *DstPtr, unsigned long SrcPitch, unsigned long DstPitch, unsigned long SrcW, unsigned long SrcH, int nDepth);
 
 extern void hq2xS_init(unsigned bits_per_pixel);
 extern void hq2xS(unsigned char*, unsigned int, unsigned char*, unsigned char*, unsigned int, int, int);
 extern void hq2xS32(unsigned char*, unsigned int, unsigned char*, unsigned char*, unsigned int, int, int);
-#if defined _MSC_VER
+#if defined _MSC_VER && defined BUILD_X86_ASM
 extern void hq3xS(unsigned char*,unsigned int,unsigned char*,unsigned char*,unsigned int,int,int);
 extern void hq3xS32(unsigned char*,unsigned int,unsigned char*,unsigned char*,unsigned int,int,int);
 #endif
@@ -57,9 +34,33 @@ extern void RenderHQ3XS(unsigned char*, unsigned int, unsigned char*, unsigned i
 void RenderEPXB(unsigned char*, unsigned int, unsigned char*, unsigned int, int, int, int);
 void RenderEPXC(unsigned char*, unsigned int, unsigned char*, unsigned int, int, int, int);
 
-#ifndef _WIN32
- typedef unsigned long DWORD;
+#if defined __GNUC__
+ #include "scale2x.h"
+#elif defined _MSC_VER && defined BUILD_X86_ASM
+ #include "scale2x_vc.h"
+ #define scale2x_16_mmx internal_scale2x_16_mmx
+ #define scale2x_32_mmx internal_scale2x_32_mmx
 #endif
+#include "scale3x.h"
+
+#if defined BUILD_X86_ASM
+extern "C" void __cdecl superscale_line(UINT16 *src0, UINT16 *src1, UINT16 *src2, UINT16 *dst, UINT32 width, UINT64 *mask);
+extern "C" void __cdecl  superscale_line_75(UINT16 *src0, UINT16 *src1, UINT16 *src2, UINT16 *dst, UINT32 width, UINT64 *mask);
+
+#ifdef __ELF__
+ #define LUT16to32 _LUT16to32
+ #define RGBtoYUV _RGBtoYUV
+ #define hq2x_32 _hq2x_32
+ #define hq3x_32 _hq3x_32
+ #define hq4x_32 _hq4x_32
+#endif
+
+extern "C" void __cdecl _eagle_mmx16(unsigned long* lb, unsigned long* lb2, short width, unsigned long* screen_address1, unsigned long* screen_address2);
+
+extern "C" void __cdecl _2xSaISuperEagleLine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
+extern "C" void __cdecl _2xSaILine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
+extern "C" void __cdecl _2xSaISuper2xSaILine(uint8* srcPtr, uint8* deltaPtr, uint32 srcPitch, uint32 width, uint8* dstPtr, uint32 dstPitch, uint16 dstBlah);
+extern "C" void __cdecl Init_2xSaIMMX(uint32 BitFormat);
 
 extern "C" {
 	void __cdecl hq2x_32(unsigned char*, unsigned char*, DWORD, DWORD, DWORD);
@@ -69,6 +70,7 @@ extern "C" {
 	unsigned int LUT16to32[65536];
 	unsigned int RGBtoYUV[65536];
 }
+#endif
 
 #define FXF_MMX		(1 << 31)
 
@@ -114,11 +116,15 @@ static bool nSoftFXEnlarge = 0;
 
 static bool MMXSupport()
 {
+#if defined BUILD_X86_ASM
 	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nSignatureECX = 0, nSignatureEDX = 0;
 
 	CPUID(1, nSignatureEAX, nSignatureEBX, nSignatureECX, nSignatureEDX);
 
 	return (nSignatureEDX >> 23) & 1;						// bit 23 of edx ndicates MMX support
+#else
+	return 0;
+#endif
 }
 
 TCHAR* VidSoftFXGetEffect(int nEffect)
@@ -249,11 +255,13 @@ int VidSoftFXInit(int nBlitter, int nRotate)
 
 		memset(pSoftFXXBuffer, 0, (nSoftFXImageHeight + 2) * nSoftFXImagePitch);
 
+#if defined BUILD_X86_ASM
 		if (nVidImageDepth == 15) {
 			Init_2xSaIMMX(555);
 		} else {
 			Init_2xSaIMMX(565);
 		}
+#endif
 	}
 	
 	if (nSoftFXBlitter >= FILTER_SUPEREAGLE_VBA && nSoftFXBlitter <= FILTER_SUPER_2XSAI_VBA) {
@@ -266,6 +274,7 @@ int VidSoftFXInit(int nBlitter, int nRotate)
 
 		memset(pSoftFXXBuffer, 0, nMemLen);
 
+#if defined BUILD_X86_ASM
 		if (nVidImageDepth == 15) {
 			Init_2xSaIMMX(555);
 		}
@@ -275,8 +284,10 @@ int VidSoftFXInit(int nBlitter, int nRotate)
 		else {
 			Init_2xSaI(565, 32); // 32 bit
 		}
+#endif
 	}
 
+#if defined BUILD_X86_ASM
 	if (nSoftFXBlitter >= FILTER_HQ2X && nSoftFXBlitter <= FILTER_HQ4X) {
 		int i, j, k, r, g, b, Y, u, v;
 
@@ -318,6 +329,7 @@ int VidSoftFXInit(int nBlitter, int nRotate)
 			}
 		}
 	}
+#endif
 	
 	if (nSoftFXBlitter >= FILTER_HQ2XS_VBA && nSoftFXBlitter <= FILTER_HQ3XS_VBA) {
                 hq2xS_init(nVidImageDepth);
@@ -560,7 +572,7 @@ void VidSoftFXApplyEffect(unsigned char* ps, unsigned char* pd, int nPitch)
 			}
 			break;
 		}
-
+#if defined BUILD_X86_ASM
 		case FILTER_ADVMAME_SCALE_2X: {											// AdvanceMAME Scale2x blitter (16/32BPP only)
 			unsigned char* psp = pSoftFXImage;
 			unsigned char* psc = pSoftFXImage;
@@ -611,6 +623,7 @@ void VidSoftFXApplyEffect(unsigned char* ps, unsigned char* pd, int nPitch)
 
 			break;
 		}
+#endif
 		case FILTER_ADVMAME_SCALE_3X: {
 			unsigned char* src_prev = pSoftFXImage;
 			unsigned char* src_curr = pSoftFXImage;
@@ -651,6 +664,7 @@ void VidSoftFXApplyEffect(unsigned char* ps, unsigned char* pd, int nPitch)
 
 			break;
 		}
+#if defined BUILD_X86_ASM
 		case FILTER_2XPM_LQ: {
 			_2xpm_lq(ps, pd, (unsigned long)nSoftFXImagePitch, (unsigned long)nPitch, (unsigned long)nSoftFXImageWidth, (unsigned long)nSoftFXImageHeight, nVidImageDepth);
 			break;			
@@ -822,6 +836,7 @@ void VidSoftFXApplyEffect(unsigned char* ps, unsigned char* pd, int nPitch)
 			hq4x_32(ps, pd, nSoftFXImageWidth, nSoftFXImageHeight, nPitch);
 			break;
 		}
+#endif
 		case FILTER_HQ2XS_VBA: {                                                                                      // hq2xS filter (16/32BPP only)
                         if (nVidImageDepth == 16) {
                                 hq2xS(ps, nSoftFXImagePitch, NULL, pd, nPitch, nSoftFXImageWidth, nSoftFXImageHeight);
@@ -832,7 +847,7 @@ void VidSoftFXApplyEffect(unsigned char* ps, unsigned char* pd, int nPitch)
                         break;
                 }
                 case FILTER_HQ3XS_VBA: {                                                                                      // hq3xS filter (16/32BPP only)
-#ifdef _MSC_VER
+#if defined _MSC_VER && defined BUILD_X86_ASM
                         if (nVidImageDepth == 16) {
                                 hq3xS(ps, nSoftFXImagePitch, NULL, pd, nPitch, nSoftFXImageWidth, nSoftFXImageHeight);
                         }
