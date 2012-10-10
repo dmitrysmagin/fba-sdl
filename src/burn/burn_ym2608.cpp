@@ -329,7 +329,7 @@ int BurnYM2608Init(int nClockFrequency, unsigned char* YM2608ADPCMROM, int* nYM2
 void BurnYM2608Scan(int nAction, int* pnMin)
 {
 	BurnTimerScan(nAction, pnMin);
-	AY9810Scan(nAction, pnMin);
+	AY8910Scan(nAction, pnMin);
 
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(nYM2608Position);

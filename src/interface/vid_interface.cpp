@@ -10,11 +10,12 @@
 	extern struct VidOut VidOutDDraw;
 	extern struct VidOut VidOutD3D;
 	extern struct VidOut VidOutDDrawFX;
+ #if 1 && defined _MSC_VER
+	extern struct VidOut VidOutDX9;
+ #endif
 #elif defined (BUILD_SDL)
-	extern struct VidOut VidOutSDLFX;
 	extern struct VidOut VidOutSDLOpenGL;
-#elif defined (BUILD_WXW)
-	extern struct VidOut VidOutWXWOpenGL;
+	extern struct VidOut VidOutSDLFX;
 #endif
 
 static struct VidOut *pVidOut[] = {
@@ -22,11 +23,12 @@ static struct VidOut *pVidOut[] = {
 	&VidOutDDraw,
 	&VidOutD3D,
 	&VidOutDDrawFX,
+ #if 1 && defined _MSC_VER
+	&VidOutDX9,
+ #endif
 #elif defined (BUILD_SDL)
-	&VidOutSDLFX,
 	&VidOutSDLOpenGL,
-#elif defined (BUILD_WXW)
-	&VidOutWXWOpenGL,
+	&VidOutSDLFX,
 #endif
 };
 
@@ -36,7 +38,7 @@ int nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (meanin
 
 static InterfaceInfo VidInfo = { NULL, NULL, NULL };
 
-unsigned int nVidSelect =0;					// Which video output is selected
+unsigned int nVidSelect = 0;					// Which video output is selected
 static unsigned int nVidActive = 0;
 
 bool bVidOkay = false;
@@ -45,6 +47,7 @@ int nVidWidth = 640, nVidHeight = 480, nVidDepth = 16, nVidRefresh = 0;
 int nVidFullscreen = 0;
 int bVidFullStretch = 0;						// 1 = stretch to fill the entire window/screen
 int bVidCorrectAspect = 1;						// 1 = stretch to fill the window/screen while maintaining the correct aspect ratio
+int bVidVSync = 0;								// 1 = sync blits/pageflips/presents to the screen
 int bVidTripleBuffer = 0;						// 1 = use triple buffering
 int bVidBilinear = 1;							// 1 = enable bi-linear filtering (D3D blitter)
 int bVidScanlines = 0;							// 1 = draw scanlines
@@ -65,6 +68,8 @@ int nVidTransferMethod = -1;					// How to transfer the game image to video memo
 												// -1 = autodetect for ddraw, equals 1 for d3d
 float fVidScreenAngle = 0.174533f;				// The angle at which to tilt the screen backwards (in radians, D3D blitter)
 float fVidScreenCurvature = 0.698132f;			// The angle of the maximum screen curvature (in radians, D3D blitter)
+double dVidCubicB = 0.0;						// Paremeters for the cubic filter (default is the CAtmull-Rom spline, DX9 blitter)
+double dVidCubicC = 0.5;						//
 
 #ifdef BUILD_WIN32
  HWND hVidWnd = NULL;							// Actual window used for video
@@ -356,6 +361,23 @@ int VidImageSize(RECT* pRect, int nGameWidth, int nGameHeight)
 	} else {
 		return pVidOut[nVidSelect]->ImageSize(pRect, nGameWidth, nGameHeight);
 	}
+}
+
+const TCHAR* VidGetModuleName()
+{
+	const TCHAR* pszName = NULL;
+
+	if (bVidOkay) {
+		pszName = pVidOut[nVidActive]->szModuleName;
+	} else {
+		pszName = pVidOut[nVidSelect]->szModuleName;
+	}
+
+	if (pszName) {
+		return pszName;
+	}
+
+	return FBALoadStringEx(hAppInst, IDS_ERR_UNKNOWN, true);
 }
 
 InterfaceInfo* VidGetInfo()

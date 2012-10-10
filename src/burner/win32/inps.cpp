@@ -46,13 +46,13 @@ static int InpsInit()
 	// Set the dialog title
 	if (nInpsInput >= nGameInpCount) {
 		// Macro
-		_stprintf(szTitle, _T("Move control or press key for %.100hs"), pgi->Macro.szName);
+		_stprintf(szTitle, FBALoadStringEx(hAppInst, IDS_INPSET_MOVENAME, true), pgi->Macro.szName);
 	} else {
 		// Normal input
 		if (bii.szName == NULL || bii.szName[0] == _T('\0')) {
-			_stprintf(szTitle, _T("Move control or press key"));
+			_stprintf(szTitle, FBALoadStringEx(hAppInst, IDS_INPSET_MOVE, true));
 		} else {
-			_stprintf(szTitle, _T("Move control or press key for %.100hs"), bii.szName);
+			_stprintf(szTitle, FBALoadStringEx(hAppInst, IDS_INPSET_MOVENAME, true), bii.szName);
 		}
 	}
 	SetWindowText(hInpsDlg, szTitle);
@@ -233,7 +233,7 @@ int InpsUpdate()
 
 				// Alert the user that a control is stuck
 
-				_stprintf(szTemp, _T("Waiting for %.80s to be released..."), InputCodeDesc(nFind));
+				_stprintf(szTemp, FBALoadStringEx(hAppInst, IDS_INPSET_WAITING, true), InputCodeDesc(nFind));
 				SetWindowText(GetDlgItem(hInpsDlg, IDC_INPS_CONTROL), szTemp);
 
 				nCounter = 0;
@@ -324,7 +324,7 @@ int InpsCreate()
 	DestroyWindow(hInpsDlg);					// Make sure exitted
 	hInpsDlg = NULL;
 
-	hInpsDlg = CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPS), hInpdDlg, DialogProc);
+	hInpsDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPS), hInpdDlg, DialogProc);
 	if (hInpsDlg == NULL) {
 		return 1;
 	}

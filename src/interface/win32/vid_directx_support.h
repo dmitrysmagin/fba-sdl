@@ -19,6 +19,18 @@ int VidSUpdateGamma();
 int VidSSetupGamma(IDirectDrawSurface7* pSurf);
 
 // Select optimal full-screen resolution
+struct VidSDisplayScoreInfo {
+	// Filled in advance by the caller
+	unsigned int nRequestedWidth; unsigned int nRequestedHeight; unsigned int nRequestedDepth; unsigned int nRequestedZoom;
+	unsigned int nModeWidth; unsigned int nModeHeight; unsigned int nModeDepth;
+	// Filled by the scoring routine
+	unsigned int nBestWidth; unsigned int nBestHeight; unsigned int nBestDepth;
+	unsigned int nBestScore;
+};
+
+int VidSScoreDisplayMode(VidSDisplayScoreInfo* pScoreInfo);
+int VidSInitScoreInfo(VidSDisplayScoreInfo* pScoreInfo);
+
 void VidSRestoreScreenMode();
 int VidSEnterFullscreenMode(int nZoom, int nDepth);
 

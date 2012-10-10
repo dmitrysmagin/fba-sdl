@@ -82,12 +82,15 @@ int ReplayInput()
 	}
 }
 
-static void MakeOfn()
+static void MakeOfn(TCHAR* pszFilter)
 {
+	_stprintf(pszFilter, FBALoadStringEx(hAppInst, IDS_DISK_FILE_REPLAY, true), _T(APP_TITLE));
+	memcpy(pszFilter + _tcslen(pszFilter), _T(" (*.fr)\0*.fr\0\0"), 14 * sizeof(TCHAR));
+
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hScrnWnd;
-	ofn.lpstrFilter = _T("FB Alpha Input Recording Files (*.fr)\0*.fr\0\0");
+	ofn.lpstrFilter = pszFilter;
 	ofn.lpstrFile = szChoice;
 	ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
 	ofn.lpstrInitialDir = _T(".\\recordings");
@@ -99,14 +102,16 @@ static void MakeOfn()
 
 int StartRecord()
 {
+	TCHAR szFilter[1024];
+
 	int nRet;
 	int bOldPause;
 
 	fp = NULL;
 
 	_stprintf(szChoice, _T("%.8s"), BurnDrvGetText(DRV_NAME));
-	MakeOfn();
-	ofn.lpstrTitle = _T("Record Input to File");
+	MakeOfn(szFilter);
+	ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_REPLAY_RECORD, true);
 	ofn.Flags |= OFN_OVERWRITEPROMPT;
 
 	bOldPause = bRunPause;
@@ -155,7 +160,9 @@ int StartRecord()
 			fp = NULL;
 		}
 
-		AppError(_T("Error Creating File"), 1);
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_CREATE));
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_REPLAY));
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 		return 1;
 	} else {
 		struct BurnInputInfo bii;
@@ -193,6 +200,7 @@ int StartRecord()
 
 int StartReplay(const TCHAR* szFileName)					// const char* szFileName = NULL
 {
+	TCHAR szFilter[1024];
 	int nRet;
 	int bOldPause;
 
@@ -206,8 +214,8 @@ int StartReplay(const TCHAR* szFileName)					// const char* szFileName = NULL
 		} else {
 			_stprintf(szChoice, _T("recording"));
 		}
-		MakeOfn();
-		ofn.lpstrTitle = _T("Replay Input from File");
+		MakeOfn(szFilter);
+		ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_REPLAY_REPLAY, true);
 
 		bOldPause = bRunPause;
 		bRunPause = 1;
@@ -254,16 +262,20 @@ int StartReplay(const TCHAR* szFileName)					// const char* szFileName = NULL
 
 		// Describe any possible errors:
 		if (nRet == 3) {
-			AppError(_T("This input recording is for an unavailable game."), 0);
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_REPLAY));
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_UNAVAIL));
 		} else {
 			if (nRet == 4) {
-				AppError(_T("This input recording is too old and cannot be loaded."), 0);
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_REPLAY));
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_TOOOLD), _T(APP_TITLE));
 			} else {
 				if (nRet == 5) {
-					AppError(_T("The emulator is too old to load this input recording."), 0);
+					FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_REPLAY));
+					FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_TOONEW), _T(APP_TITLE));
 				} else {
 					if (nRet) {
-						AppError(_T("Error loading input recording."), 0);
+						FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_LOAD));
+						FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_REPLAY));
 					}
 				}
 			}
@@ -274,6 +286,8 @@ int StartReplay(const TCHAR* szFileName)					// const char* szFileName = NULL
 				fclose(fp);
 				fp = NULL;
 			}
+
+			FBAPopupDisplay(PUF_TYPE_ERROR);
 
 			return 1;
 		}

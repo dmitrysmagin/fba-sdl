@@ -12,7 +12,6 @@ unsigned char *PC090OJ_spritectrl;
 unsigned int *taito_pal;
 typedef void (*RenderSpriteFunction)(int,int,int,int);
 static RenderSpriteFunction* RenderSprite;
-static char gunRecalcPal;
 
 int rCyclesDone[3];
 
@@ -29,7 +28,6 @@ void PC090OJ_draw_sprites()
 	{
 		nLastSpriteBpp=nBurnBpp;
 		taitoRecalcPal=1;
-		gunRecalcPal=1;
 		switch(nBurnBpp) {
 		case 2:
 			RenderSprite=RenderSprite16;
@@ -102,92 +100,6 @@ void PC090OJ_draw_sprites()
 					break;
 				}
 
-			}
-		}
-	}
-}
-
-void init_gun()
-{
-	gunRecalcPal = 1;
-}
-
-void draw_gun(int x, int y)
-{
-	static unsigned char gun_data[18][18] = {
-
-#define a 0,
-#define b 1,
-#define c 2,
-#define d 3,
-#define e 4,
-#define f 5,
-
-		{ a a a a  a a a a  d a a a  a a a a  a a },
-		{ a a a a  a a e e  e e e a  a a a a  a a },
-		{ a a a a  e e a a  e a a e  e a a a  a a },
-		{ a a a e  a a a a  d a a a  a e a a  a a },
-		{ a a e a  a a a a  c a a a  a a e a  a a },
-		{ a a e a  a a a f  f f a a  a a e a  a a },
-		{ a e a a  a a f b  c b f a  a a a e  a a },
-		{ a e a a  a f b a  a a a f  a a a e  a a },
-		{ d e e d  c f c a  a a c f  c d e e  d a },
-		{ a e a a  a f b a  a a a f  b a a e  a a },
-		{ a e a a  a a f a  c a f b  a a a e  a a },
-		{ a a e a  a a a f  f f b a  a a e a  a a },
-		{ a a e a  a a a a  c b a a  a a e a  a a },
-		{ a a a e  a a a a  d a a a  a e a a  a a },
-		{ a a a a  e e a a  e a a e  e a a a  a a },
-		{ a a a a  a a e e  e e e a  a a a a  a a },
-		{ a a a a  a a a a  d a a a  a a a a  a a },
-		{ a a a a  a a a a  a a a a  a a a a  a a },
-
-#undef f
-#undef e
-#undef d
-#undef c
-#undef b
-#undef a
-
-	};
-
-	static unsigned int gun_palette[] = {
-		0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0x00404040, 0x00808080, 0x00C0C0C0, 0x00FFFFFF, 0, 0
-	};
-
-	if (gunRecalcPal) {
-		gunRecalcPal = 0;
-		for (int c = 2; c < 6; c++) {
-			gun_palette[c] = BurnHighCol((gun_palette[8 + c] >> 16) & 255,(gun_palette[8 + c] >> 8) & 255,(gun_palette[8 + c] >> 0) & 255, 0);
-		}
-	}
-
-	x -= 29;
-	y += 21;
-
-	unsigned char* pTile = pBurnDraw + 320 * nBurnBpp * (y - 1) + nBurnBpp * x;
-
-	for (int y2 = 0; y2 < 17; y2++) {
-
-		pTile += 320 * nBurnBpp;
-
-		if ((y + y2) < 0 || (y + y2) > 239) {
-			continue;
-		}
-
-		for (int x2 = 0; x2 < 17; x2++) {
-
-			if ((x + x2) < 0 || (x + x2) > 319) {
-				continue;
-			}
-
-			if (gun_data[y2][x2]) {
-				if (nBurnBpp == 2) {
-					((unsigned short*)pTile)[x2] = (unsigned short)gun_palette[gun_data[y2][x2]];
-				} else {
-					((unsigned int*)pTile)[x2] = gun_palette[gun_data[y2][x2]];
-				}
 			}
 		}
 	}

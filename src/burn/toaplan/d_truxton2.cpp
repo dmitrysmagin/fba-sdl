@@ -486,8 +486,7 @@ static int LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
-	BurnByteswap(Rom01, 0x080000);
-
+	
 	// Load GP9001 tile data
 	ToaLoadGP9001Tiles(GP9001ROM[0], 1, 2, nGP9001ROMSize[0]);
 
@@ -600,7 +599,7 @@ static int DrvInit()
 
 // Rom information
 static struct BurnRomInfo truxton2RomDesc[] = {
-	{ "tp024_1.bin",  0x080000, 0xF5CFE6EE, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp024_1.bin",  0x080000, 0xeb26f0e5, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
 
 	{ "tp024_4.bin",  0x100000, 0x805C449E, BRF_GRA },			 //  1 GP9001 Tile data
 	{ "tp024_3.bin",  0x100000, 0x47587164, BRF_GRA },			 //  2

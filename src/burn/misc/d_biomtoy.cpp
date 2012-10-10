@@ -130,8 +130,8 @@ static struct BurnDIPInfo BiomtoyDIPList[]=
 };
 
 
-STDDIPINFO(Biomtoy)
-STDINPUTINFO(Biomtoy)
+STDDIPINFO(Biomtoy);
+STDINPUTINFO(Biomtoy);
 
 inline void BiomtoyMakeInputs()
 {
@@ -878,8 +878,8 @@ static struct BurnRomInfo BiomtoyRomDesc[]=
 
 };
 
-STD_ROM_PICK(Biomtoy)
-STD_ROM_FN(Biomtoy)
+STD_ROM_PICK(Biomtoy);
+STD_ROM_FN(Biomtoy);
 
 
 struct BurnDriver BurnDrvBiomtoy = {

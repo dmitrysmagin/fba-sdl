@@ -63,8 +63,6 @@ static struct BurnRomInfo robocopRomDesc[] =
 
 	{"ep03-3", 0x08000, 0x5b164b24, 0x10}, // 6502 code
 
-	//	{"en_24.a2", 0x200, 0xb8e2ca98, 0x10}, //Hu6280 code
-
 	{"ep23",  0x10000, 0xa77e4ab1, 0x10}, // text roms
 	{"ep22",  0x10000, 0x9fbd6903, 0x10},  
 
@@ -89,6 +87,7 @@ static struct BurnRomInfo robocopRomDesc[] =
 
 	{ "ep02", 0x10000, 0x711ce46f, 0x10},  //adpcm
 
+	{"en_24.a2", 0x200, 0xb8e2ca98, 0x10}, //Hu6280 code
 };
 
 STD_ROM_PICK(robocop);
@@ -470,7 +469,7 @@ static int robocopScan(int nAction,int *pnMin)
 	return 0;
 }
 
-struct BurnDriver BurnDrvrobocop = {
+struct BurnDriverD BurnDrvrobocop = {
 	"robocop", NULL, NULL, "1988",
 		"Robocop (World revision 4)\0", NULL, "Data East Corporation", "DEC0",
 		NULL, NULL, NULL, NULL,
@@ -480,11 +479,11 @@ struct BurnDriver BurnDrvrobocop = {
 		NULL, 256, 256, 4, 3
 };
 
-struct BurnDriver BurnDrvrobocopb = {
+struct BurnDriverD BurnDrvrobocopb = {
 	"robocopb", "robocop", NULL, "1988",
 		"Robocop (World bootleg)\0", NULL, "bootleg", "DEC0",
 		NULL, NULL, NULL, NULL,
-		BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+		BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
 		NULL, robocopbRomInfo, robocopbRomName, robocopInputInfo, NULL,
 		robocopInit, robocopExit, robocopFrame, NULL, robocopScan,
 		NULL, 256, 256, 4, 3

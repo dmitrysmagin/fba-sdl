@@ -783,7 +783,7 @@ int CaveTileRender(int nMode)
 	for (nLayer = 0; nLayer < 4; nLayer++) {
 
 		nLayerXOffset[nLayer] = nLayer + nOffset - nCaveXOffset - nCaveExtraXOffset;
-
+		
 		if ((CaveTileReg[nLayer][2] & 0x0010) == 0) {
 
 			for (nPriority = 0; nPriority < 4; nPriority++) {

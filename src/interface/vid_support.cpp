@@ -18,6 +18,8 @@ int VidSAllocVidImage()
 {
 	int nMemLen = 0;
 
+	VidSFreeVidImage();
+
 	// Allocate an extra line above and below the image to accomodate effects
 	nVidImagePitch = nVidImageWidth * ((nVidImageDepth + 7) >> 3);
 	nMemLen = (nVidImageHeight + 2) * nVidImagePitch;

@@ -36,6 +36,7 @@ static int Fourin1boot = 0;
 static int Finalttr = 0;
 static int Twinadv = 0;
 static int Honeydol = 0;
+static int Wintbob = 0;
 
 static int HyperpacNumTiles = 0;
 static int HyperpacNumTiles8bpp = 0;
@@ -44,6 +45,9 @@ static int nCyclesDone[2], nCyclesTotal[2];
 static int nCyclesSegment;
 
 static short* pFMBuffer;
+
+static int Snowbro3MusicPlaying;
+static int Snowbro3Music;
 
 static struct BurnInputInfo HyperpacInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , HyperpacInputPort2 + 2, "p1 coin"   },
@@ -484,6 +488,61 @@ static struct BurnDIPInfo TwinadvDIPList[]=
 };
 	
 STDDIPINFO(Twinadv);
+
+static struct BurnDIPInfo HoneydolDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xef, NULL                     },
+
+	// Dip 1
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x13, 0x01, 0x03, 0x00, "3 Coins 1 Credit"       },
+	{0x13, 0x01, 0x03, 0x01, "2 Coins 1 Credit"       },
+	{0x13, 0x01, 0x03, 0x03, "1 Coin  1 Credit"       },
+	{0x13, 0x01, 0x03, 0x02, "1 Coin  2 Credits"      },
+	
+	{0   , 0xfe, 0   , 2   , "Show Girls"             },
+	{0x13, 0x01, 0x04, 0x00, "Off"                    },
+	{0x13, 0x01, 0x04, 0x04, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sound"             },
+	{0x13, 0x01, 0x10, 0x00, "Off"                    },
+	{0x13, 0x01, 0x10, 0x10, "On"                     },
+
+	{0   , 0xfe, 0   , 2   , "Level Select"           },
+	{0x13, 0x01, 0x40, 0x40, "Off"                    },
+	{0x13, 0x01, 0x40, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Slide show on boot"     },
+	{0x13, 0x01, 0x80, 0x80, "Off"                    },
+	{0x13, 0x01, 0x80, 0x00, "On"                     },
+
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x14, 0x01, 0x03, 0x03, "Normal"                 },
+	{0x14, 0x01, 0x03, 0x02, "Hard"                   },
+	{0x14, 0x01, 0x03, 0x01, "Harder"                 },
+	{0x14, 0x01, 0x03, 0x00, "Hardest"                },
+	
+	{0   , 0xfe, 0   , 4   , "Timer speed"            },
+	{0x14, 0x01, 0x0c, 0x0c, "Normal"                 },
+	{0x14, 0x01, 0x0c, 0x08, "Fast"                   },
+	{0x14, 0x01, 0x0c, 0x04, "Faster"                 },
+	{0x14, 0x01, 0x0c, 0x00, "Fastest"                },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x30, 0x00, "1"                      },
+	{0x14, 0x01, 0x30, 0x10, "2"                      },
+	{0x14, 0x01, 0x30, 0x20, "3"                      },
+	{0x14, 0x01, 0x30, 0x30, "5"                      },
+
+	{0   , 0xfe, 0   , 2   , "Max vs Round"           },
+	{0x14, 0x01, 0x80, 0x80, "3"                      },
+	{0x14, 0x01, 0x80, 0x00, "1"                      },
+};
+
+STDDIPINFO(Honeydol);
 
 static struct BurnDIPInfo SnowbrosDIPList[]=
 {
@@ -958,6 +1017,44 @@ static struct BurnRomInfo SnowbrojRomDesc[] = {
 STD_ROM_PICK(Snowbroj);
 STD_ROM_FN(Snowbroj);
 
+static struct BurnRomInfo WintbobRomDesc[] = {
+	{ "wb03.bin",      0x10000, 0xdf56e168, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "wb01.bin",      0x10000, 0x05722f17, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "wb04.bin",      0x10000, 0x53be758d, BRF_ESS | BRF_PRG }, //  2	68000 Program Code
+	{ "wb02.bin",      0x10000, 0xfc8e292e, BRF_ESS | BRF_PRG }, //  3	68000 Program Code
+
+	{ "wb13.bin",      0x10000, 0x426921de, BRF_GRA },			 //  4	Sprites
+	{ "wb06.bin",      0x10000, 0x68204937, BRF_GRA },			 //  5	Sprites
+	{ "wb12.bin",      0x10000, 0xef4e04c7, BRF_GRA },			 //  6	Sprites
+	{ "wb07.bin",      0x10000, 0x53f40978, BRF_GRA },			 //  7	Sprites
+	{ "wb11.bin",      0x10000, 0x41cb4563, BRF_GRA },			 //  8	Sprites
+	{ "wb08.bin",      0x10000, 0x9497b88c, BRF_GRA },			 //  9	Sprites
+	{ "wb10.bin",      0x10000, 0x5fa22b1e, BRF_GRA },			 //  10	Sprites
+	{ "wb09.bin",      0x10000, 0x9be718ca, BRF_GRA },			 //  11	Sprites
+
+	{ "wb05.bin",      0x10000, 0x53fe59df, BRF_SND },			 //  12	Z80 Program Code
+};
+
+
+STD_ROM_PICK(Wintbob);
+STD_ROM_FN(Wintbob);
+
+static struct BurnRomInfo Snowbro3RomDesc[] = {
+	{ "ur4",           0x020000, 0x19c13ffd, BRF_ESS | BRF_PRG }, 		 //  0	68000 Program Code
+	{ "ur3",           0x020000, 0x3f32fa15, BRF_ESS | BRF_PRG }, 		 //  1	68000 Program Code
+
+	{ "ua5",           0x080000, 0x0604e385, BRF_GRA },			 //  2	4bpp Sprites
+	
+	{ "un7",           0x200000, 0x4a79da4c, BRF_GRA },			 //  3	8bpp Sprites
+	{ "un8",           0x200000, 0x7a4561a4, BRF_GRA },			 //  4	8bpp Sprites
+
+	{ "us5",           0x080000, 0x7c6368ef, BRF_SND },		 //  5	Samples
+};
+
+
+STD_ROM_PICK(Snowbro3);
+STD_ROM_FN(Snowbro3);
+
 int HyperpacDoReset()
 {
 	HyperpacSoundLatch = 0;
@@ -993,6 +1090,20 @@ int SnowbrosDoReset()
 	ZetClose();
 
 	BurnYM3812Reset();
+
+	return 0;
+}
+
+int Snowbro3DoReset()
+{
+	SekOpen(0);
+	SekReset();
+	SekClose();
+	
+	MSM6295Reset(0);
+	
+	Snowbro3Music = 0;
+	Snowbro3MusicPlaying = 0;
 
 	return 0;
 }
@@ -1043,6 +1154,76 @@ static int snowbrosSynchroniseStream(int nSoundRate)
 static int HoneydolSynchroniseStream(int nSoundRate)
 {
 	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+}
+
+static void Snowbro3PlayMusic(int data)
+{
+	Snowbro3Music = data;
+	
+	bprintf(PRINT_NORMAL, _T("%x\n"), data);
+	
+	switch (data) {
+		case 0x23: {
+			memcpy(MSM6295ROM + 0x20000, MSM6295ROM + 0x80000, 0x20000);
+			Snowbro3MusicPlaying = 1;
+			break;
+		}
+		
+		case 0x24: {
+			memcpy(MSM6295ROM + 0x20000, MSM6295ROM + 0xa0000, 0x20000);
+			Snowbro3MusicPlaying = 1;
+			break;
+		}
+		
+		case 0x25: {
+			memcpy(MSM6295ROM + 0x20000, MSM6295ROM + 0xc0000, 0x20000);
+			Snowbro3MusicPlaying = 1;
+			break;
+		}
+		
+		case 0x26: {
+			memcpy(MSM6295ROM + 0x20000, MSM6295ROM + 0x80000, 0x20000);
+			Snowbro3MusicPlaying = 1;
+			break;
+		}
+		
+		case 0x27:
+		case 0x28:
+		case 0x29:
+		case 0x2a:
+		case 0x2b:
+		case 0x2c:
+		case 0x2d: {
+			memcpy(MSM6295ROM + 0x20000, MSM6295ROM + 0xc0000, 0x20000);
+			Snowbro3MusicPlaying = 1;
+			break;
+		}
+		
+		case 0x2e: {
+			Snowbro3MusicPlaying = 0;
+			break;
+		}
+	}
+}
+
+static void Snowbro3PlaySound(int data)
+{
+	int Status = MSM6295ReadStatus(0);
+	
+	if ((Status & 0x01) == 0x00) {
+		MSM6295Command(0, 0x80 | data);
+		MSM6295Command(0, 0x12);
+	} else {
+		if ((Status & 0x02) == 0x00) {
+			MSM6295Command(0, 0x80 | data);
+			MSM6295Command(0, 0x12);
+		} else {
+			if ((Status & 0x04) == 0x00) {
+				MSM6295Command(0, 0x80 | data);
+				MSM6295Command(0, 0x42);
+			}
+		}	
+	}
 }
 
 // ----------------------------------------------------------------------------
@@ -1236,7 +1417,7 @@ unsigned char __fastcall HoneydolReadByte(unsigned int a)
 		}
 		
 		case 0x900001: {
-			return 0xff;
+			return HyperpacDip[0];
 		}
 		
 		case 0x900002: {
@@ -1244,7 +1425,7 @@ unsigned char __fastcall HoneydolReadByte(unsigned int a)
 		}
 		
 		case 0x900003: {
-			return 0xff;
+			return HyperpacDip[1];
 		}
 		
 		case 0x900004: {
@@ -1511,6 +1692,114 @@ void __fastcall SnowbrosWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
+unsigned short __fastcall Snowbro3ReadWord(unsigned int a)
+{
+	switch (a) {
+		case 0x300000: {
+			return 3;
+		}
+		
+		case 0x500000:
+		case 0x500002:
+		case 0x500004: {
+			SEK_DEF_READ_WORD(0, a);
+		}
+	}
+	
+	bprintf(PRINT_NORMAL, _T("68000 Read Word %06X\n"), a);
+
+	return 0;
+}
+
+unsigned char __fastcall Snowbro3ReadByte(unsigned int a)
+{
+	switch (a) {
+/*		case 0x300001: {
+			snowbrosSynchroniseZ80(0x0100);
+			return HyperpacSoundLatch;
+		}*/
+
+		case 0x500000: {
+			return 0x7f - HyperpacInput[0];
+		}
+
+		case 0x500001: {
+			return 0xff - HyperpacDip[0];
+		}
+
+		case 0x500002: {
+			return 0xff - HyperpacInput[1];
+		}
+
+		case 0x500003: {
+			return 0xff - HyperpacDip[1];
+		}
+
+		case 0x500004: {
+			return 0xff - HyperpacInput[2];
+		}
+		
+		case 0x500005: {
+			return 0xff;
+		}
+	}
+	
+	bprintf(PRINT_NORMAL, _T("68000 Read Byte %06X\n"), a);
+
+	return 0;
+}
+
+void __fastcall Snowbro3WriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0x300000: {
+			if (d == 0xfe) {
+				Snowbro3MusicPlaying = 0;
+				MSM6295Command(0, 0x78);
+			} else {
+				d = d >> 8;
+				
+				if (d <= 0x21) Snowbro3PlaySound(d);
+				if (d >= 0x22 && d <= 0x31) Snowbro3PlayMusic(d);
+				if (d >= 0x30 && d <= 0x51) Snowbro3PlaySound(d - 0x30);
+				if (d >= 0x52 && d <= 0x5f) Snowbro3PlayMusic(d - 0x30);
+			}
+			return;
+		}
+		
+		case 0x200000:
+		case 0x800000:
+		case 0x900000:
+		case 0xa00000: {
+			return;
+		}
+	}
+	
+	bprintf(PRINT_NORMAL, _T("68000 Write Word %06X -> %04X\n"), a, d);
+}
+
+void __fastcall Snowbro3WriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0x300000: {
+			if (d == 0xfe) {
+				Snowbro3MusicPlaying = 0;
+				MSM6295Command(0, 0x78);
+			} else {
+				//d = d >> 8;
+				
+				if (d <= 0x21) Snowbro3PlaySound(d);
+				if (d >= 0x22 && d <= 0x31) Snowbro3PlayMusic(d);
+				if (d >= 0x30 && d <= 0x51) Snowbro3PlaySound(d - 0x30);
+				if (d >= 0x52 && d <= 0x5f) Snowbro3PlayMusic(d - 0x30);
+			}
+			return;
+		}
+	}
+	
+	bprintf(PRINT_NORMAL, _T("68000 Write Byte %06X -> %02X\n"), a, d);
+}
+
 unsigned char __fastcall SnowbrosZ80PortRead(unsigned short a)
 {
 	a &= 0xff;
@@ -1595,7 +1884,7 @@ static int SnowbrosMemIndex()
 	unsigned char *Next; Next = Mem;
 
 	HyperpacRom          = Next; Next += 0x40000;
-	HyperpacZ80Rom       = Next; Next += 0x08000;
+	HyperpacZ80Rom       = Next; Next += (Wintbob) ? 0x10000 : 0x08000;
 
 	RamStart = Next;
 
@@ -1609,6 +1898,29 @@ static int SnowbrosMemIndex()
 	HyperpacSprites      = Next; Next += (HyperpacNumTiles * 16 * 16);
 	HyperpacPalette      = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
 	pFMBuffer = (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	MemEnd = Next;
+
+	return 0;
+}
+
+static int Snowbro3MemIndex()
+{
+	unsigned char *Next; Next = Mem;
+
+	HyperpacRom          = Next; Next += 0x40000;
+	MSM6295ROM           = Next; Next += 0xe0000;
+
+	RamStart = Next;
+
+	HyperpacRam          = Next; Next += 0x04000;
+	HyperpacPaletteRam   = Next; Next += 0x00400;
+	HyperpacSpriteRam    = Next; Next += 0x02200;
+
+	RamEnd = Next;
+
+	HyperpacSprites      = Next; Next += (HyperpacNumTiles * 16 * 16);
+	HyperpacSprites8bpp  = Next; Next += (HyperpacNumTiles8bpp * 16 * 16);
+	HyperpacPalette      = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
 	MemEnd = Next;
 
 	return 0;
@@ -1701,128 +2013,114 @@ void SnowbrosDecodeSprites()
 	}
 }
 
-void Honeydol8bppDecodeSprites()
+inline static int readbit(const UINT8 *src, int bitnum)
 {
-	int y;
-	for (int c = 0; c < HyperpacNumTiles8bpp; c++) {
-		for (y = 0; y < 8; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] = HyperpacTempGfx[0x000000 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] = HyperpacTempGfx[0x000000 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] = HyperpacTempGfx[0x000001 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] = HyperpacTempGfx[0x000001 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] = HyperpacTempGfx[0x000002 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] = HyperpacTempGfx[0x000002 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] = HyperpacTempGfx[0x000003 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] = HyperpacTempGfx[0x000003 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] = HyperpacTempGfx[0x000020 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] = HyperpacTempGfx[0x000020 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] = HyperpacTempGfx[0x000021 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] = HyperpacTempGfx[0x000021 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] = HyperpacTempGfx[0x000022 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] = HyperpacTempGfx[0x000022 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] = HyperpacTempGfx[0x000023 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] = HyperpacTempGfx[0x000023 + (y * 4) + (c * 128)];
-		}
+	return src[bitnum / 8] & (0x80 >> (bitnum % 8));
+}
 
-		for (y = 8; y < 16; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] = HyperpacTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] = HyperpacTempGfx[0x00000 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] = HyperpacTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] = HyperpacTempGfx[0x00001 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] = HyperpacTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] = HyperpacTempGfx[0x00002 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] = HyperpacTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] = HyperpacTempGfx[0x00003 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] = HyperpacTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] = HyperpacTempGfx[0x00020 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] = HyperpacTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] = HyperpacTempGfx[0x00021 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] = HyperpacTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] = HyperpacTempGfx[0x00022 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] = HyperpacTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] = HyperpacTempGfx[0x00023 + ((y + 8) * 4) + (c * 128)];
-		}
-	}
+static void decodechar(int num)
+{
+	int plane, x, y;
 	
-	for (int c = 0; c < HyperpacNumTiles8bpp; c++) {
-		for (y = 0; y < 8; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] |= HyperpacTempGfx[0x100000 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] |= HyperpacTempGfx[0x100000 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] |= HyperpacTempGfx[0x100001 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] |= HyperpacTempGfx[0x100001 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] |= HyperpacTempGfx[0x100002 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] |= HyperpacTempGfx[0x100002 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] |= HyperpacTempGfx[0x100003 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] |= HyperpacTempGfx[0x100003 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] |= HyperpacTempGfx[0x100020 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] |= HyperpacTempGfx[0x100020 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] |= HyperpacTempGfx[0x100021 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] |= HyperpacTempGfx[0x100021 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] |= HyperpacTempGfx[0x100022 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] |= HyperpacTempGfx[0x100022 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] |= HyperpacTempGfx[0x100023 + (y * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] |= HyperpacTempGfx[0x100023 + (y * 4) + (c * 128)];
-		}
-
-		for (y = 8; y < 16; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] |= HyperpacTempGfx[0x100000 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] |= HyperpacTempGfx[0x100000 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] |= HyperpacTempGfx[0x100001 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] |= HyperpacTempGfx[0x100001 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] |= HyperpacTempGfx[0x100002 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] |= HyperpacTempGfx[0x100002 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] |= HyperpacTempGfx[0x100003 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] |= HyperpacTempGfx[0x100003 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] |= HyperpacTempGfx[0x100020 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] |= HyperpacTempGfx[0x100020 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] |= HyperpacTempGfx[0x100021 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] |= HyperpacTempGfx[0x100021 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] |= HyperpacTempGfx[0x100022 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] |= HyperpacTempGfx[0x100022 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] |= HyperpacTempGfx[0x100023 + ((y + 8) * 4) + (c * 128)];
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] |= HyperpacTempGfx[0x100023 + ((y + 8) * 4) + (c * 128)];
-		}
-	}
+	UINT8 *dp = HyperpacSprites8bpp + (num * 256);
+	memset(dp, 0, 256);
 	
-	for (int c = 0; c < HyperpacNumTiles8bpp; c++) {
-		for (y = 0; y < 8; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] &= 0x1f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] >>= 4;
-		}
-
-		for (y = 8; y < 16; y++) {
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  0] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  1] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  2] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  3] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  4] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  5] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  6] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  7] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  8] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) +  9] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 10] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 11] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 12] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 13] &= 0x0f;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 14] >>= 4;
-			HyperpacSprites8bpp[(c * 256) + (y * 16) + 15] &= 0x0f;
+	int planeoffsets[8] = { 0, 1, 2, 3, 0x800000, 0x800001, 0x800002, 0x800003 };
+	int yoffsets[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+	int xoffsets[16] = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+	
+	for (plane = 0; plane < 8; plane++) {
+		int planebit = 1 << (8 - 1 - plane);
+		int planeoffs = (num * 0x400) + planeoffsets[plane];
+		
+		for (y = 0; y < 16; y++) {
+			int yoffs = planeoffs + yoffsets[y];
+			dp = HyperpacSprites8bpp + (num * 256) + (y * 16);
+			
+			for (x = 0; x < 16; x++) {
+				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
+			}
 		}
 	}
+}
+
+void HoneydolDecode8bppSprites()
+{
+	int c;
+	
+	for (c = 0; c < HyperpacNumTiles8bpp; c++) {
+		decodechar(c);
+	}	
+}
+
+static void WintbobDecodeChar(int num)
+{
+	int plane, x, y;
+	
+	UINT8 *dp = HyperpacSprites + (num * 256);
+	memset(dp, 0, 256);
+	
+	int planeoffsets[4] = { 0, 1, 2, 3 };
+	int yoffsets[16] = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+	int xoffsets[16] = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
+	
+	for (plane = 0; plane < 4; plane++) {
+		int planebit = 1 << (4 - 1 - plane);
+		int planeoffs = (num * 0x400) + planeoffsets[plane];
+		
+		for (y = 0; y < 16; y++) {
+			int yoffs = planeoffs + yoffsets[y];
+			dp = HyperpacSprites + (num * 256) + (y * 16);
+			
+			for (x = 0; x < 16; x++) {
+				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
+			}
+		}
+	}
+}
+
+void WintbobDecodeSprites()
+{
+	int c;
+	
+	for (c = 0; c < HyperpacNumTiles; c++) {
+		WintbobDecodeChar(c);
+	}	
+}
+
+static void Snowbro3DecodeChar(int num)
+{
+	int plane, x, y;
+	
+	UINT8 *dp = HyperpacSprites8bpp + (num * 256);
+	memset(dp, 0, 256);
+	
+	int planeoffsets[8] = { 8, 9, 10, 11, 0, 1, 2, 3 };
+	int yoffsets[16] = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
+	int xoffsets[16] = { 0, 4, 16, 20, 32, 36, 48, 52, 512, 516, 528, 532, 544, 548, 560, 564 };
+	
+	for (plane = 0; plane < 8; plane++) {
+		int planebit = 1 << (8 - 1 - plane);
+		int planeoffs = (num * 0x800) + planeoffsets[plane];
+		
+		for (y = 0; y < 16; y++) {
+			int yoffs = planeoffs + yoffsets[y];
+			dp = HyperpacSprites8bpp + (num * 256) + (y * 16);
+			
+			for (x = 0; x < 16; x++) {
+				if (readbit(HyperpacTempGfx, yoffs + xoffsets[x])) dp[x] |= planebit;
+			}
+		}
+	}
+}
+
+void Snowbro3Decode8bppSprites()
+{
+	int c;
+	
+	for (c = 0; c < HyperpacNumTiles8bpp; c++) {
+		Snowbro3DecodeChar(c);
+	}	
 }
 
 int HyperpacMachineInit()
@@ -1868,7 +2166,7 @@ int HyperpacMachineInit()
 	BurnYM2151SetIrqHandler(&HyperpacYM2151IrqHandler);
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 9999, 100.0, 1);
+	MSM6295Init(0, 999900 / 132, 100.0, 1);
 
 	GenericTilesInit();
 
@@ -2341,7 +2639,7 @@ int TwinadvInit()
 	ZetClose();
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 120000/12, 100.0, 0);
+	MSM6295Init(0, (12000000/12) / 132 , 100.0, 0);
 
 	GenericTilesInit();
 
@@ -2356,7 +2654,7 @@ int HoneydolInit()
 	int nRet = 0, nLen;
 	
 	HyperpacNumTiles = 4096;
-	HyperpacNumTiles8bpp = /*16384*/ 8192;
+	HyperpacNumTiles8bpp = 8192;
 	
 	Honeydol = 1;
 	
@@ -2387,7 +2685,7 @@ int HoneydolInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x180000, 6, 1); if (nRet != 0) return 1;
-	Honeydol8bppDecodeSprites();
+	HoneydolDecode8bppSprites();
 	free(HyperpacTempGfx);
 
 	// Load Sample Roms
@@ -2426,7 +2724,7 @@ int HoneydolInit()
 	BurnTimerAttachZet(4000000);
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 9999, 100.0, 1);
+	MSM6295Init(0, 999900 / 132, 100.0, 1);
 
 	GenericTilesInit();
 
@@ -2442,6 +2740,8 @@ int SnowbrosInit()
 
 	BurnSetRefreshRate(57.5);
 	
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "wintbob")) Wintbob = 1;
+	
 	HyperpacNumTiles = 4096;
 
 	// Allocate and Blank all required memory
@@ -2454,17 +2754,40 @@ int SnowbrosInit()
 
 	HyperpacTempGfx = (unsigned char*)malloc(0x80000);
 
-	// Load and byte-swap 68000 Program roms
-	nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
-	nRet = BurnLoadRom(HyperpacRom + 0x00000, 1, 2); if (nRet != 0) return 1;
+	if (Wintbob) {
+		// Load and byte-swap 68000 Program roms
+		nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacRom + 0x00000, 1, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacRom + 0x20001, 2, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacRom + 0x20000, 3, 2); if (nRet != 0) return 1;
 
-	// Load Z80 Program Rom
-	nRet = BurnLoadRom(HyperpacZ80Rom, 3, 1); if (nRet != 0) return 1;
+		// Load Z80 Program Rom
+		nRet = BurnLoadRom(HyperpacZ80Rom, 12, 1); if (nRet != 0) return 1;
 
-	// Load and Decode Sprite Roms
-	nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
-	SnowbrosDecodeSprites();
-	free(HyperpacTempGfx);
+		// Load and Decode Sprite Roms
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 4, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x00001, 5, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x20000, 6, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x20001, 7, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x40000, 8, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x40001, 9, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x60000, 10, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x60001, 11, 2); if (nRet != 0) return 1;
+		WintbobDecodeSprites();
+		free(HyperpacTempGfx);
+	} else {
+		// Load and byte-swap 68000 Program roms
+		nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(HyperpacRom + 0x00000, 1, 2); if (nRet != 0) return 1;
+
+		// Load Z80 Program Rom
+		nRet = BurnLoadRom(HyperpacZ80Rom, 3, 1); if (nRet != 0) return 1;
+
+		// Load and Decode Sprite Roms
+		nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
+		SnowbrosDecodeSprites();
+		free(HyperpacTempGfx);
+	}
 
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -2503,6 +2826,77 @@ int SnowbrosInit()
 	return 0;
 }
 
+int Snowbro3Init()
+{
+	int nRet = 0, nLen;
+
+	HyperpacNumTiles = 0x1000;
+	HyperpacNumTiles8bpp = 0x4000;
+
+	// Allocate and Blank all required memory
+	Mem = NULL;
+	Snowbro3MemIndex();
+	nLen = MemEnd - (unsigned char *)0;
+	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	memset(Mem, 0, nLen);
+	Snowbro3MemIndex();
+
+	HyperpacTempGfx = (unsigned char*)malloc(0x400000);
+
+	// Load and byte-swap 68000 Program roms
+	nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(HyperpacRom + 0x00000, 1, 2); if (nRet != 0) return 1;
+	
+	// Decode 68000 Program Rom
+	UINT8 *buffer;
+	buffer = (UINT8*)malloc(0x40000);
+	for (int i = 0; i < 0x40000; i++) {
+		buffer[i] = HyperpacRom[BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,3,4,1,2,0)];
+	}
+	memcpy(HyperpacRom, buffer, 0x40000);
+	free(buffer);
+
+	// Load and Decode Sprite Roms
+	nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
+	SnowbrosDecodeSprites();
+	
+	// Load and Decode 8bpp Sprite Roms
+	memset(HyperpacTempGfx, 0, 0x400000);
+	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 3, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(HyperpacTempGfx + 0x200000, 4, 1); if (nRet != 0) return 1;
+	Snowbro3Decode8bppSprites();
+	
+	// Load Sample Roms
+	memset(HyperpacTempGfx, 0, 0x400000);
+	nRet = BurnLoadRom(HyperpacTempGfx, 5, 1); if (nRet != 0) return 1;
+	memcpy(MSM6295ROM + 0x00000, HyperpacTempGfx + 0x00000, 0x20000);
+	memcpy(MSM6295ROM + 0x80000, HyperpacTempGfx + 0x20000, 0x60000);
+	free(HyperpacTempGfx);
+
+	// Setup the 68000 emulation
+	SekInit(0, 0x68000);
+	SekOpen(0);
+	SekMapMemory(HyperpacRom       , 0x000000, 0x03ffff, SM_ROM);
+	SekMapMemory(HyperpacRam       , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(HyperpacPaletteRam, 0x600000, 0x6003ff, SM_RAM);
+	SekMapMemory(HyperpacSpriteRam , 0x700000, 0x7021ff, SM_RAM);
+	SekSetReadWordHandler(0, Snowbro3ReadWord);
+	SekSetWriteWordHandler(0, Snowbro3WriteWord);
+	SekSetReadByteHandler(0, Snowbro3ReadByte);
+	SekSetWriteByteHandler(0, Snowbro3WriteByte);
+	SekClose();
+	
+	// Setup the OKIM6295 emulation
+	MSM6295Init(0, 999900 / 132, 100.0, 0);
+
+	GenericTilesInit();
+
+	// Reset the driver
+	Snowbro3DoReset();
+
+	return 0;
+}
+
 int HyperpacExit()
 {
 	BurnYM3812Exit();
@@ -2527,13 +2921,14 @@ int HyperpacExit()
 	Finalttr = 0;
 	Twinadv = 0;
 	Honeydol = 0;
-
+	
 	return 0;
 }
 
 int SnowbrosExit()
 {
 	BurnYM3812Exit();
+	MSM6295Exit(0);
 
 	SekExit();
 	ZetExit();
@@ -2545,6 +2940,10 @@ int SnowbrosExit()
 	
 	HyperpacNumTiles = 0;
 	HyperpacNumTiles8bpp = 0;
+	Wintbob = 0;
+	
+	Snowbro3Music = 0;
+	Snowbro3MusicPlaying = 0;
 
 	return 0;
 }
@@ -2580,30 +2979,30 @@ void HyperpacRenderSpriteLayer()
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 
 				} else {
-					Render16x16Tile_Mask_FlipX(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		}
@@ -2635,30 +3034,30 @@ void TwinadvRenderSpriteLayer()
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 
 				} else {
-					Render16x16Tile_Mask_FlipX(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		}
@@ -2685,34 +3084,34 @@ void HoneydolRenderSpriteLayer()
 
 		if (x > 511) x &= 0x1ff;
 		if (y > 511) y &= 0x1ff;
-
+		
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 
 				} else {
-					Render16x16Tile_Mask_FlipX(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask_Clip(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY_Clip(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 8, 0, 0, HyperpacSprites8bpp);
 				}
 			}
 		}
@@ -2730,7 +3129,7 @@ void HoneydolRenderSpriteLayer()
 		Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
 		Colour     = (TileColour & 0x3f0) >> 4;
 		Colour    ^= 0x3f;
-
+		
 		x = dx;
 		y = dy;
 
@@ -2740,30 +3139,30 @@ void HoneydolRenderSpriteLayer()
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 
 				} else {
-					Render16x16Tile_Mask_FlipX(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		}
@@ -2801,30 +3200,164 @@ void SnowbrosRenderSpriteLayer()
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 
 				} else {
-					Render16x16Tile_Mask_FlipX(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render16x16Tile_Mask_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render16x16Tile_Mask_FlipY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				}
+			}
+		}
+	}
+}
+
+void WintbobRenderSpriteLayer()
+{
+	int x = 0, y = 0, Offs;
+	
+	UINT16 *SpriteRam = (UINT16*)HyperpacSpriteRam;
+
+	for (Offs = 0; Offs < 0x2000 >> 1; Offs += 8) {
+		x              = SpriteRam[Offs + 0] & 0xff;
+		y              = SpriteRam[Offs + 4] & 0xff;
+		int Attr       = SpriteRam[Offs + 1];
+		int Disbl      = Attr & 0x02;
+		int Wrapr      = Attr & 0x08;
+		int Colour     = (Attr & 0xf0) >> 4;
+		int Attr2      = SpriteRam[Offs + 2];
+		int Tile       = (Attr2 << 8) | (SpriteRam[Offs + 3] & 0xff);
+		int FlipX      = Attr2 & 0x80;
+		int FlipY      = (Attr2 & 0x40) << 1;
+
+		if (Wrapr == 8) x -= 256;
+
+		Tile &= 0xfff;
+
+		if (Disbl == 2) continue;
+
+		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
+			if (!FlipY) {
+				if (!FlipX) {
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+
+				} else {
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				}
+			} else {
+				if (!FlipX) {
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				} else {
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				}
+			}
+		} else {
+			if (!FlipY) {
+				if (!FlipX) {
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				} else {
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				}
+			} else {
+				if (!FlipX) {
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				} else {
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, 4, 0, 0, HyperpacSprites);
+				}
+			}
+		}
+	}
+}
+
+void Snowbro3RenderSpriteLayer()
+{
+	int x = 0, y = 0, Offs;
+	
+	UINT16 *SpriteRam = (UINT16*)HyperpacSpriteRam;
+	unsigned char *pTile = NULL;
+	int ColourDepth = 0;
+
+	for (Offs = 0; Offs < 0x2200 >> 1; Offs += 8) {
+		int dx         = SpriteRam[Offs + 4] & 0xff;
+		int dy         = SpriteRam[Offs + 5] & 0xff;
+		int TileColour = SpriteRam[Offs + 3];
+		int Attr       = SpriteRam[Offs + 7];
+		int Attr2      = SpriteRam[Offs + 6];
+		int FlipX      = Attr & 0x80;
+		int FlipY      = (Attr & 0x40) << 1;
+		int Tile       = ((Attr & 0xff) << 8) + (Attr2 & 0xff);
+		
+		if (TileColour & 1) dx = -1 - (dx ^ 0xff);
+		if (TileColour & 2) dy = -1 - (dy ^ 0xff);
+		if (TileColour & 4) {
+			x += dx;
+			y += dy;
+		} else {
+			x = dx;
+			y = dy;
+		}
+
+		if (x > 511) x &= 0x1ff;
+		if (y > 511) y &= 0x1ff;
+		
+		if (Offs < 0x800) {
+			TileColour = 0x10;
+			Tile &= 0x3fff;
+			ColourDepth = 8;
+			pTile = HyperpacSprites8bpp;
+		} else {
+			Tile &= 0xfff;
+			ColourDepth = 4;
+			pTile = HyperpacSprites;
+		}
+		
+		int Colour     = (TileColour & 0xf0) >> 4;
+
+		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
+			if (!FlipY) {
+				if (!FlipX) {
+					Render16x16Tile_Mask(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+
+				} else {
+					Render16x16Tile_Mask_FlipX(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				}
+			} else {
+				if (!FlipX) {
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				} else {
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				}
+			}
+		} else {
+			if (!FlipY) {
+				if (!FlipX) {
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				} else {
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				}
+			} else {
+				if (!FlipX) {
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
+				} else {
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Tile, x, y - 16, Colour, ColourDepth, 0, 0, pTile);
 				}
 			}
 		}
@@ -2872,6 +3405,19 @@ int HoneydolCalcPalette()
 	return 0;
 }
 
+int Snowbro3CalcPalette()
+{
+	int i;
+	unsigned short* ps;
+	unsigned int* pd;
+
+	for (i = 0, ps = (unsigned short*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x400; i++, ps++, pd++) {
+		*pd = CalcCol(*ps);
+	}
+
+	return 0;
+}
+
 void HyperpacClearScreen()
 {
 	unsigned char pBlankTile[1][256] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -2893,7 +3439,7 @@ void HyperpacClearScreen()
 				    
 	for (int x = 0; x < nScreenWidth; x += 16) {
 		for (int y = 0; y < nScreenHeight; y += 16) {
-			Render16x16Tile(0, x, y, 0xf0, 4, 0, (unsigned char*)pBlankTile);
+			Render16x16Tile(pTransDraw, 0, x, y, 0xf0, 4, 0, (unsigned char*)pBlankTile);
 		}
 	}
 	
@@ -2928,7 +3474,19 @@ void SnowbrosRender()
 {
 	BurnTransferClear();
 	HyperpacCalcPalette();
-	SnowbrosRenderSpriteLayer();
+	if (Wintbob) {
+		WintbobRenderSpriteLayer();
+	} else {
+		SnowbrosRenderSpriteLayer();
+	}
+	BurnTransferCopy(HyperpacPalette);
+}
+
+void Snowbro3Render()
+{
+	BurnTransferClear();
+	Snowbro3CalcPalette();
+	Snowbro3RenderSpriteLayer();
 	BurnTransferCopy(HyperpacPalette);
 }
 
@@ -3194,7 +3752,7 @@ int SnowbrosFrame()
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
 
-	nCyclesTotal[0] = 8000000 / 60;
+	nCyclesTotal[0] = (Wintbob) ? 12000000 / 60 : 8000000 / 60;
 	nCyclesTotal[1] = 6000000 / 60;
 
 	for (int i = 0; i < nInterleave; i++) {
@@ -3226,6 +3784,61 @@ int SnowbrosFrame()
 	SekClose();
 
 	if (pBurnDraw) SnowbrosRender();
+
+	return 0;
+}
+
+int Snowbro3Frame()
+{
+	int nInterleave = 4;
+
+	if (HyperpacReset) Snowbro3DoReset();
+
+	HyperpacMakeInputs();
+
+	SekOpen(0);
+
+	SekNewFrame();
+
+	SekIdle(nCyclesDone[0]);
+
+	nCyclesTotal[0] = 16000000 / 60;
+
+	for (int i = 0; i < nInterleave; i++) {
+		int nCurrentCPU, nNext;
+
+		// Run 68000
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - SekTotalCycles();
+		SekRun(nCyclesSegment);
+
+		if (i == 1) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
+		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+		
+		int Status = MSM6295ReadStatus(0);
+		if (Snowbro3MusicPlaying) {
+			if ((Status & 0x08) == 0x00) {
+				MSM6295Command(0, 0x80 | Snowbro3Music);
+				MSM6295Command(0, 0x82);
+			}
+		} else {
+			if ((Status & 0x08) == 0x00) {
+				MSM6295Command(0, 0x40);
+			}
+		}
+	}
+
+	SekClose();
+
+	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
+
+	SekClose();
+	
+	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+
+	if (pBurnDraw) Snowbro3Render();
 
 	return 0;
 }
@@ -3290,6 +3903,38 @@ static int SnowbrosScan(int nAction,int *pnMin)
 		SCAN_VAR(HyperpacSoundLatch);
 		SCAN_VAR(HyperpacInput);
 		SCAN_VAR(HyperpacDip);
+	}
+
+	return 0;
+}
+
+static int Snowbro3Scan(int nAction,int *pnMin)
+{
+	struct BurnArea ba;
+
+	if (pnMin != NULL) {					// Return minimum compatible version
+		*pnMin = 0x029672;
+	}
+
+	if (nAction & ACB_MEMORY_RAM) {								// Scan all memory, devices & variables
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = RamStart;
+		ba.nLen	  = RamEnd-RamStart;
+		ba.szName = "All Ram";
+		BurnAcb(&ba);
+	}
+
+	if (nAction & ACB_DRIVER_DATA) {	
+		SekScan(nAction);				// Scan 68000
+
+		MSM6295Scan(0, nAction);			// Scan OKIM6295
+
+		// Scan critical driver variables
+		SCAN_VAR(HyperpacSoundLatch);
+		SCAN_VAR(HyperpacInput);
+		SCAN_VAR(HyperpacDip);
+		SCAN_VAR(Snowbro3Music);
+		SCAN_VAR(Snowbro3MusicPlaying);
 	}
 
 	return 0;
@@ -3425,12 +4070,12 @@ struct BurnDriver BurnDrvTwinadvk = {
 	NULL, 256, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvHoneydol = {
+struct BurnDriver BurnDrvHoneydol = {
 	"honeydol", NULL, NULL, "1995",
 	"Honey Dolls\0", NULL, "Barko Corp", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
-	NULL, HoneydolRomInfo, HoneydolRomName, HyperpacInputInfo, NULL,
+	NULL, HoneydolRomInfo, HoneydolRomName, HyperpacInputInfo, HoneydolDIPInfo,
 	HoneydolInit, HyperpacExit, HoneydolFrame, NULL, HyperpacScan,
 	NULL, 256, 224, 4, 3
 };
@@ -3482,5 +4127,25 @@ struct BurnDriver BurnDrvSnowbroj = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_MISC,
 	NULL, SnowbrojRomInfo, SnowbrojRomName, SnowbrosInputInfo, SnowbrojDIPInfo,
 	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
+	NULL, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvWintbob = {
+	"wintbob", "snowbros", NULL, "1990",
+	"The Winter Bobble (bootleg)\0", NULL, "bootleg", "Kaneko Pandora based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	NULL, WintbobRomInfo, WintbobRomName, SnowbrosInputInfo, SnowbrosDIPInfo,
+	SnowbrosInit, SnowbrosExit, SnowbrosFrame, NULL, SnowbrosScan,
+	NULL, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvSnowbro3 = {
+	"snowbro3", "snowbros", NULL, "2002",
+	"Snow Brothers 3 - Magical Adventure\0", NULL, "bootleg", "Kaneko Pandora based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_MISC,
+	NULL, Snowbro3RomInfo, Snowbro3RomName, SnowbrosInputInfo, SnowbrojDIPInfo,
+	Snowbro3Init, SnowbrosExit, Snowbro3Frame, NULL, SnowbrosScan,
 	NULL, 256, 224, 4, 3
 };

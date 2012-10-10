@@ -1,10 +1,13 @@
 #include "burner.h"
-#include "m68k.h"
+
+HWND hDbgDlg = NULL;
+
+#if defined (FBA_DEBUG)
+
 #include "sek.h"
 #include "sekdebug.h"
 #include "richedit.h"
 
-HWND hDbgDlg = NULL;
 static bool bLargeWindow;
 static bool bOldPause;
 
@@ -115,7 +118,8 @@ static int AddFeedback(HWND hWindow, TCHAR* pszText)
 
 	// Add the new info to the top
 	SendMessage(hWindow, EM_SETSEL, (WPARAM)0, (LPARAM)0);
-	SendMessage(hWindow, EM_SETTEXTEX, (WPARAM)&settext, (LPARAM)pszText);
+	// Doesn't work if you send it Unicode data...
+	SendMessageA(hWindow, EM_SETTEXTEX, (WPARAM)&settext, (LPARAM)TCHARToANSI(pszText, NULL, 0));
 
 	// Trim the bottom lines
 	SendMessage(hWindow, EM_SETSEL, (WPARAM)SendMessage(hWindow, EM_LINEINDEX, 18, 0) - 1, (LPARAM)-1);
@@ -513,7 +517,7 @@ static int GetMemoryAreas()
 
 	BurnAcb = GetMemoryAcb;
 	BurnAreaScan(ACB_MEMORY_ROM | ACB_NVRAM | ACB_MEMCARD | ACB_MEMORY_RAM | ACB_READ, NULL);
-	
+
 	return 0;
 }
 
@@ -1494,8 +1498,13 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 // ----------------------------------------------------------------------------
 // Public functions
 
+#endif
+
 int DebugExit()
 {
+
+#if defined (FBA_DEBUG)
+
 	free(DbgMemoryAreaInfo);
 	DbgMemoryAreaInfo = NULL;
 
@@ -1508,17 +1517,22 @@ int DebugExit()
 	SekDbgDisableBreakpoints();
 	if (bBreakpointHit) {
 		bBreakpointHit = false;
-		PostMessage(hScrnWnd, WM_APP + 0, 0, 0);
+		POST_INITIALISE_MESSAGE;
 	}
 
 	SetPauseMode(bOldPause);
 	MenuUpdate();
+
+#endif
 
 	return 0;
 }
 
 int DebugCreate()
 {
+
+#if defined (FBA_DEBUG)
+
 	if (bDrvOkay == 0) {
 		return 1;
 	}
@@ -1529,7 +1543,7 @@ int DebugCreate()
 
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &SystemWorkArea, 0);
 	bLargeWindow = (SystemWorkArea.right - SystemWorkArea.left >= 1024 && SystemWorkArea.bottom - SystemWorkArea.top >= 768) ? true : false;
-	hDbgDlg = CreateDialog(hAppInst, MAKEINTRESOURCE(bLargeWindow ? IDD_DEBUG_LRG : IDD_DEBUG_SML), hScrnWnd, DialogProc);
+	hDbgDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(bLargeWindow ? IDD_DEBUG_LRG : IDD_DEBUG_SML), hScrnWnd, DialogProc);
 	if (hDbgDlg == NULL) {
 		return 1;
 	}
@@ -1543,4 +1557,13 @@ int DebugCreate()
 	SetPauseMode(true);
 
 	return 0;
+
+#else
+
+	POST_INITIALISE_MESSAGE;
+
+	return 1;
+
+#endif
+
 }

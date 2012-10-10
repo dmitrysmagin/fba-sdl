@@ -560,9 +560,9 @@ void OhmygodRenderCharLayer()
 			y -= OhmygodScrolly;
 
 			if (x > 7 && x < 312 && y > 7 && y < 232) {
-				Render8x8Tile(Code, x, y, Colour, 4, 0, OhmygodChars);
+				Render8x8Tile(pTransDraw, Code, x, y, Colour, 4, 0, OhmygodChars);
 			} else {
-				Render8x8Tile_Clip(Code, x, y, Colour, 4, 0, OhmygodChars);
+				Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 4, 0, OhmygodChars);
 			}
 
 			TileIndex +=2 ;
@@ -589,15 +589,15 @@ void OhmygodRenderSpriteLayer()
 
 		if (sx > 15 && sx < 304 && sy > 15 && sy < 224) {
 			if (!Flipx) {
-				Render16x16Tile_Mask(Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
+				Render16x16Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
 			} else {
-				Render16x16Tile_Mask_FlipX(Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
+				Render16x16Tile_Mask_FlipX(pTransDraw, Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
 			}
 		} else {
 			if (!Flipx) {
-				Render16x16Tile_Mask_Clip(Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
 			} else {
-				Render16x16Tile_Mask_FlipX_Clip(Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
+				Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 512, OhmygodSprites);
 			}
 		}
 	}

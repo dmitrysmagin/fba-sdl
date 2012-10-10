@@ -8,6 +8,7 @@ Coding by KEV, with help from Treble Winner and Jan_Klaassen
 
 #include "taito.h"
 #include "msm5205.h"
+#include "burn_gun.h"
 
 static unsigned char *Mem=NULL,*MemEnd=NULL;
 static unsigned char *RamStart=NULL,*RamEnd=NULL;
@@ -17,7 +18,6 @@ static unsigned char drvReset = 0;
 static unsigned char *z80_rom=NULL,*z80_ram=NULL,*z802_ram=NULL,*z802_rom=NULL;
 static unsigned int *opwolf_pal=NULL;
 
-static int gun_x=134 << 8,gun_y=77 << 8;
 // Z80 ROM bank
 static int Z80Bank=0;
 static int nCurrentBank=0;
@@ -134,30 +134,13 @@ void opwolfYM2151IRQHandler(int irq )
 
 int opwolfInpMake()
 {
-	const int min_x =  21 * 0x0100;
-	const int min_y = -29 * 0x0100;
-
 	opwolfInput[0] = 0x00;
 	opwolfInput[1] = 0xFF;
 
 	for (int i = 0; i < 8; i++) {
 		opwolfInput[0] |= (opwolfInputPort0[i] & 1) << i;
 		opwolfInput[1] -= (opwolfInputPort1[i] & 1) << i;
-
 	}
-// gun - could be considered a hack :)
-
-	gun_x += (short)opwolfAxis[0];
-	gun_y += (short)opwolfAxis[1];
-
-	if (gun_x < min_x)
-		gun_x = min_x;
-	if (gun_x > min_x + 319 * 0x0100)
-		gun_x = min_x + 319 * 0x0100;
-	if (gun_y < min_y)
-		gun_y = min_y;
-	if (gun_y > min_y + 239 * 0x0100)
-		gun_y = min_y + 239 * 0x0100;
 
 	return 0;
 }
@@ -284,7 +267,6 @@ static int LoadRoms()
 	}
 	
 	free(TempGfx);
-	init_gun();
 	return nRet;
 }
 
@@ -298,8 +280,8 @@ static int opwolfbLoadRoms()
 	nRet=BurnLoadRom(Rom+0x20000,3,2); if (nRet!=0) return 1;
 
 	// Fix gun coords
-  Rom[0x3ffae] = 0x1c;
-  Rom[0x3ffb0] = 0xec;
+//  Rom[0x3ffae] = 0x1c;
+//  Rom[0x3ffb0] = 0xec;
 
 	nRet=BurnLoadRom(z80_rom,4,1); // load z80 code rom
 	nRet=BurnLoadRom(z802_rom,5,1); // load z80 code rom
@@ -356,7 +338,6 @@ static int opwolfbLoadRoms()
 	}
 	
 	free(TempGfx);
-	init_gun();
 	return nRet;
   }
 
@@ -457,11 +438,12 @@ unsigned short __fastcall opwolfReadWord(unsigned int a)
 {
 	if (a>=0x3a0000&&a<=0x3a0001)
 	{
-		return gun_x >> 8;
+		int scaled = (BurnGunReturnX(0) * 320) / 256;
+		return scaled + 0x15 - 2;
 	}
 	if (a>=0x3a0002&&a<=0x3a0003)
 	{
-		return gun_y >> 8;
+		return BurnGunReturnY(0) - 0x24 + 17;
 	}
 
 	if (a>=0x0ff000&&a<=0x0fffff)
@@ -710,6 +692,7 @@ int opwolfInit()
 	taito_pal=opwolf_pal;
 	init_taito_gfx();
 	//-------------------------------------
+	BurnGunInit(1, true);
 	drvDoReset();
 	return 0;
 	}
@@ -725,6 +708,7 @@ int opwolfExit()
 	MSM5205Exit(1);
 	SekExit(); // Deallocate 68000
 	ZetExit();
+	BurnGunExit();
 	if (Mem!=NULL)
 		free(Mem);
 	Mem=NULL;
@@ -737,7 +721,9 @@ static int opwolfGFX()
 	PC080SN_bg();
 	PC090OJ_draw_sprites();
 	PC080SN_fg();
-	draw_gun(gun_x >> 8,gun_y >> 8);
+	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
+	}
 	return 0;
 }
 
@@ -758,6 +744,8 @@ int opwolfFrame()
 	}
 
 	opwolfInpMake();
+	
+	BurnGunMakeInputs(0, (short)opwolfAxis[0], (short)opwolfAxis[1]);
 
 	int nInterleave = 10;
 

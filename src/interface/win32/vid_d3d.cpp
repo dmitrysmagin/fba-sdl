@@ -3,8 +3,10 @@
 // #define USE_D3D_REFERENCE_DEVICE
 
 #include "burner.h"
-#include "vid_directx_support.h"
+// #include "vid_directx_support.h"
 #include "vid_softfx.h"
+
+// #define ENABLE_PROFILING FBA_DEBUG
 
 #define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
 #define D3D_OVERLOADS
@@ -129,19 +131,19 @@ static const EffectPreset PresetInfo[] = {
 	{  1,  1,  1,  0,  0, 0x0080, 0x20, 0x00, 0, _T("4x4_rgb_pattern.i.rgb"),		0x00, 0, 0x008F8F8F, 0, 0 },	// 2x zoom
 	{  1,  1,  1,  0,  0, 0x00A0, 0x30, 0x00, 2, _T("4x6_rgb_pattern.i.rgb"),		0x00, 0, 0x005F5F5F, 0, 0 },	// 3x zoom
 	{  1,  1,  1,  0,  1, 0x0080, 0x20, 0x00, 3, _T("6x8_rgb_pattern.i.rgb"),		0x20, 0, 0x004F4F4F, 0, 0 },	// 4x zoom
-	{  1,  1,  1,  0,  1, 0x0060, 0x10, 0x48, 3, _T("9x10_ellipsoid.i.rgb"),			0x20, 0, 0x005F5F5F, 0, 0 },	// 5x zoom
+	{  1,  1,  1,  0,  1, 0x0060, 0x10, 0x48, 3, _T("9x10_ellipsoid.i.rgb"),		0x20, 0, 0x005F5F5F, 0, 0 },	// 5x zoom
 	{  0,  0,  0,  0,  0, 0,	  0,	0,	  0, NULL,					 			0,	  0, 0,			 0, 0 },	// 6x zoom
 	{  0,  0,  0,  0,  0, 0,	  0,	0,	  0, NULL,					 			0,	  0, 0,			 0, 0 },	// 7x zoom
 	{  0,  0,  0,  0,  0, 0,	  0,	0,	  0, NULL,					 			0,	  0, 0,			 0, 0 },	// 8x zoom
 
 	// Selectable presets
 	{  0,  1, -1,  0,  0, 0x0100, 0x80, 0x40, 2, _T("4x6_rgb_pattern.i.rgb"),		0,	  1, 0,			 0, 0 },	// Small Faint RGB mask
-	{  0,  1, -1,  0,  0, 0x0100, 0x80, 0x40, 2, _T("10x6_large_dot.i.rgb"),			0,	  1, 0,			 0, 0 },	// Large RGB Dot mask
+	{  0,  1, -1,  0,  0, 0x0100, 0x80, 0x40, 2, _T("10x6_large_dot.i.rgb"),		0,	  1, 0,			 0, 0 },	// Large RGB Dot mask
 	{  0,  1, -1,  0,  0, 0x0100, 0x90, 0x80, 2, _T("12x10_large_ellipsoid.i.rgb"),	0,	  1, 0,			 0, 0 },	// Large Faint RGB mask
 	{  0,  1, -1,  0,  0, 0x0100, 0xC0, 0x00, 0, _T("4x4_mame_rgbtiny.i.rgb"),	    0,	  1, 0,			 0, 0 },	// MAME rgbtiny	small
 	{  0,  1, -1,  0,  0, 0x0100, 0xD0, 0x00, 0, _T("8x8_mame_rgbtiny.i.rgb"),	    0,	  1, 0,			 0, 0 },	// MAME rgbtiny	large
 	{  0,  1,  1,  0,  0, 0x0030, 0x00, 0x00, 0, _T("3x1_aperture_grille.i.rgb"),	0x20, 0, 0x00BFBFBF, 0, 0 },	// Aperture Grille
-	{  0,  1, -1,  0,  0, 0x0040, 0x00, 0x00, 0, _T("10x6_large_dot.i.rgb"),			0x08, 0, 0,			 0, 0 },	// Large Oversaturated RGB Dot
+	{  0,  1, -1,  0,  0, 0x0040, 0x00, 0x00, 0, _T("10x6_large_dot.i.rgb"),		0x08, 0, 0,			 0, 0 },	// Large Oversaturated RGB Dot
 	{  0,  1, -1,  0,  0, 0x00E0, 0x00, 0x40, 3, _T("18x10_large_round.i.rgb"),		0x10, 0, 0,			 0, 0 },	// Huge Oversaturated pattern
 };
 
@@ -786,11 +788,10 @@ static int InitEffectsSurfaces()
 
 				// Check if the file is the correct size.
 				if (ftell(fp) != nPatternSize) {
-					TCHAR szTemp[256];
 
 					fclose(fp);
-					_stprintf(szTemp, _T("RGB pattern \"%s\" has an incorrect size.\nIt should be %i bytes long."), pRGBEffectPatternName, nPatternSize);
-					AppError(szTemp, 1);
+					FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("RGB pattern \'%s\' has an incorrect size.\nIt should be %i bytes long."), pRGBEffectPatternName, nPatternSize);
+					FBAPopupDisplay(PUF_TYPE_WARNING);
 					return 1;
 				}
 
@@ -870,7 +871,7 @@ static int InitEffectsSurfaces()
 						unsigned char* pSurface = (unsigned char*)ddsd.lpSurface + ddsd.lPitch * y;
 						unsigned char* pPattern = &RGBPattern[(ry % nPatternXSize) << 2];
 						for (unsigned int x = 0; x < ddsd.dwWidth; x++) {
-							int rx = (nRotateGame & 2) == 0 ? ddsd.dwWidth - 1 - x : x;
+							int rx = nRotateGame & 2 ? ddsd.dwWidth - 1 - x : x;
 							int nColour = pPattern[((rx % nPatternYSize) * (nPatternXSize << 2)) + 0] << 16;
 							nColour |= pPattern[((rx % nPatternYSize) * (nPatternXSize << 2)) + 1] << 8;
 							nColour |= pPattern[((rx % nPatternYSize) * (nPatternXSize << 2)) + 2];
@@ -898,7 +899,8 @@ static int InitEffectsSurfaces()
 
 			free(RGBPattern);
 		} else {
-			AppError(_T("Couldn't find RGB pattern."), 1);
+			FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Couldn't find RGB pattern."));
+			FBAPopupDisplay(PUF_TYPE_WARNING);
 			return 1;
 		}
 	}
@@ -1006,7 +1008,8 @@ static int vidAllocSurfaces()
 	}
 
 	if ((int)d3dDeviceDesc.dwMaxTextureWidth < nTextureWidth || (int)d3dDeviceDesc.dwMaxTextureHeight < nTextureHeight) {
-		AppError(_T("Required texture size not supported by 3D hardware."), 1);
+		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE,_T("Required texture size not supported by 3D hardware."));
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 		return 1;
 	}
 
@@ -1188,6 +1191,10 @@ static HRESULT CALLBACK MyEnumDevicesCallback(LPSTR lpDeviceDescription, LPSTR /
 
 static int vidInit()
 {
+#ifdef ENABLE_PROFILING
+	ProfileInit();
+#endif
+
 	bCreateImage = true;
 
 	bUseTriplebuffer = false;
@@ -2200,7 +2207,11 @@ static int vidFrame(bool bRedraw)			// bRedraw = 0
 		bLostControl = false;
 	}
 
+#ifdef ENABLE_PROFILING
+	ProfileProfileStart(0);
+#else
 	vidRenderImageA();
+#endif
 
 	if (bDrvOkay) {
 		if (bRedraw) {						// Redraw current frame
@@ -2211,10 +2222,42 @@ static int vidFrame(bool bRedraw)			// bRedraw = 0
 			BurnDrvFrame();					// Run one frame and draw the screen
 		}
 	}
+#ifdef ENABLE_PROFILING
+	ProfileProfileEnd(0);
+
+	ProfileProfileStart(1);
+#endif
 
 	vidBurnToSurf();						// Copy the memory buffer
 
+#ifdef ENABLE_PROFILING
+	ProfileProfileStart(2);
+	vidRenderImageA();
+#endif
+
 	vidRenderImageB();						// Use 3D hardware to render the image
+
+#ifdef ENABLE_PROFILING
+	{
+		// Force the D3D pipeline to be flushed
+
+		DDSURFACEDESC2 ddsd;
+
+		memset(&ddsd, 0, sizeof(ddsd));
+		ddsd.dwSize = sizeof(ddsd);
+
+		if (SUCCEEDED(pBackbuffer->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL))) {
+			unsigned char c  = *((unsigned char*)ddsd.lpSurface);
+
+			pBackbuffer->Unlock(NULL);
+		}
+	}
+
+	ProfileProfileEnd(2);
+	ProfileProfileEnd(1);
+
+	dprintf(_T("burn %.2lfms; blit %.2lf; effect %.2lf\n"), ProfileProfileReadAverage(0), ProfileProfileReadAverage(1), ProfileProfileReadAverage(2));
+#endif
 
 	return 0;
 }
@@ -2292,45 +2335,34 @@ int vidPaint(int bValidate)
 
 static int vidGetSettings(InterfaceInfo* pInfo)
 {
-	{
-		pInfo->ppszPluginSettings[0] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[0] == NULL) {
-			return 1;
-		}
-		if (nVidFullscreen) {
-			if (bUseTriplebuffer) {
-				_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using a triple buffer"));
-			} else {
-				if (bUsePageflip) {
-					_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using a double buffer"));
-				} else {
-					_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using Bltfast() to transfer the image"));
-				}
-			}
+	if (nVidFullscreen) {
+		if (bUseTriplebuffer) {
+			IntInfoAddStringModule(pInfo, _T("Using a triple buffer"));
 		} else {
-			_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using Blt() to transfer the image"));
+			if (bUsePageflip) {
+				IntInfoAddStringModule(pInfo, _T("Using a double buffer"));
+			} else {
+				IntInfoAddStringModule(pInfo, _T("Using Bltfast() to transfer the image"));
+			}
 		}
+	} else {
+		IntInfoAddStringModule(pInfo, _T("Using Blt() to transfer the image"));
 	}
 
 	if (nPreScale) {
-		pInfo->ppszPluginSettings[1] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[1] == NULL) {
-			return 1;
-		}
+		TCHAR szString[MAX_PATH] = _T("");
+
 		if (nPreScaleEffect) {
-			_sntprintf(pInfo->ppszPluginSettings[1], MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
+			_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
 		} else {
-			_sntprintf(pInfo->ppszPluginSettings[1], MAX_PATH, _T("Prescaling using 3D hardware (%i× zoom)"), nPreScaleZoom);
+			_sntprintf(szString, MAX_PATH, _T("Prescaling using 3D hardware (%i× zoom)"), nPreScaleZoom);
 		}
+		IntInfoAddStringModule(pInfo, szString);
 	}
 
 	if (bUse3DProjection || bUseRGBEffects || bVidScanDelay || bVidScanlines) {
 		TCHAR* pszEffect[8] = { _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T("") };
-
-		pInfo->ppszPluginSettings[2] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[2] == NULL) {
-			return 1;
-		}
+		TCHAR szString[MAX_PATH] = _T("");
 
 		if (bUse3DProjection) {
 			pszEffect[0] = _T("3D projection");
@@ -2355,15 +2387,15 @@ static int vidGetSettings(InterfaceInfo* pInfo)
 			}
 		}
 
-		_sntprintf(pInfo->ppszPluginSettings[2], MAX_PATH, _T("Applying %s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		_sntprintf(szString, MAX_PATH, _T("Applying %s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		IntInfoAddStringModule(pInfo, szString);
 	}
 
 	if (nVidTransferMethod > 0) {
-		pInfo->ppszPluginSettings[3] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[3] == NULL) {
-			return 1;
-		}
-		_sntprintf(pInfo->ppszPluginSettings[3], MAX_PATH, _T("Using Direct3D texture management"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
+		TCHAR szString[MAX_PATH] = _T("");
+
+		_sntprintf(szString, MAX_PATH, _T("Using Direct3D texture management"), VidSoftFXGetEffect(nPreScaleEffect), nPreScaleZoom);
+		IntInfoAddStringModule(pInfo, szString);
 	}
 
 	return 0;

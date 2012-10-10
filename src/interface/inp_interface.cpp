@@ -356,7 +356,7 @@ int InputFind(const int nFlags)
 		case  8: {
 			if (nFind >= 0) {
 				nInputCode = nFind;
-				if (nInputCode & 0x4000 && (nInputCode & 0xFF) < 0x10) {
+				if ((nInputCode & 0x4000) && (nInputCode & 0xFF) < 0x10) {
 					nJoyPrevPos = CinpJoyAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
 				}
 				nDelay = 0;
@@ -368,7 +368,7 @@ int InputFind(const int nFlags)
 
 			// Treat joystick axes specially
 			// Wait until the axis reports no movement for some time
-			if (nInputCode & 0x4000 && (nInputCode & 0xFF) < 0x10) {
+			if ((nInputCode & 0x4000) && (nInputCode & 0xFF) < 0x10) {
 				int nJoyPos = CinpJoyAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
 				int nJoyDelta = nJoyPrevPos - nJoyPos;
 
@@ -393,7 +393,7 @@ int InputFind(const int nFlags)
 
 			// Treat mouse axes specially
 			// Wait until the axis reports no movement/movement in the same direction for some time
-			if (nInputCode & 0x8000 && (nInputCode & 0xFF) < 0x06) {
+			if ((nInputCode & 0x8000) && (nInputCode & 0xFF) < 0x06) {
 				int nMouseDelta = CinpMouseAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
 				if (nFind == -1 || ((nInputCode & 1) ? nMouseDelta > 0 : nMouseDelta < 0)) {
 					nDelay++;

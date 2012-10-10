@@ -69,8 +69,10 @@ int ConfigAppLoad()
 		VAR(bVidCorrectAspect);
 
 		VAR(bVidTripleBuffer);
+		VAR(bVidVSync);
 
 		VAR(bVidScanlines);
+		VAR(nVidScanIntensity);
 		VAR(nVidScrnAspectX);
 		VAR(nVidScrnAspectY);
 		VAR(bForce60Hz);
@@ -83,6 +85,7 @@ int ConfigAppLoad()
 		VAR(nVidBlitterOpt[0]);
 		VAR(nVidBlitterOpt[1]);
 		VAR(nVidBlitterOpt[2]);
+		VAR(nVidBlitterOpt[3]);
 
 		// DirectDraw blitter
 		VAR(bVidScanHalf);
@@ -92,13 +95,16 @@ int ConfigAppLoad()
 		VAR(bVidScanDelay);
 		VAR(bVidScanRotate);
 		VAR(bVidScanBilinear);
-		VAR(nVidScanIntensity);
 		VAR(nVidFeedbackIntensity);
 		VAR(nVidFeedbackOverSaturation);
 		FLT(fVidScreenAngle);
 		FLT(fVidScreenCurvature);
 		VAR(bVidForce16bit);
 		VAR(nVidTransferMethod);
+
+		// DirectX Graphics blitter
+		FLT(dVidCubicB);
+		FLT(dVidCubicC);
 
 		// Sound
 		VAR(nAudSampleRate);
@@ -108,14 +114,7 @@ int ConfigAppLoad()
 		VAR(nFMInterpolation);
 
 		// Other
-		STR(szAppRomPaths[0]);
-		STR(szAppRomPaths[1]);
-		STR(szAppRomPaths[2]);
-		STR(szAppRomPaths[3]);
-		STR(szAppRomPaths[4]);
-		STR(szAppRomPaths[5]);
-		STR(szAppRomPaths[6]);
-		STR(szAppRomPaths[7]);
+		STR(szLocalisationTemplate);
 
 		VAR(nVidSDisplayStatus);
 		VAR(nMinChatFontSize);
@@ -132,8 +131,15 @@ int ConfigAppLoad()
 		VAR(bSaveInputs);
 
 		VAR(nLoadMenuShowX);
-		VAR(bLoadMenuAutoExpand);
-		VAR(bAvbOnly);
+
+		STR(szAppRomPaths[0]);
+		STR(szAppRomPaths[1]);
+		STR(szAppRomPaths[2]);
+		STR(szAppRomPaths[3]);
+		STR(szAppRomPaths[4]);
+		STR(szAppRomPaths[5]);
+		STR(szAppRomPaths[6]);
+		STR(szAppRomPaths[7]);
 
 		// Default Controls
 		VAR(nPlayerDefaultControls[0]);
@@ -175,9 +181,9 @@ int ConfigAppSave()
 	_ftprintf(h, _T("// Don't edit this file manually unless you know what you're doing\n"));
 	_ftprintf(h, _T("// ") _T(APP_TITLE) _T(" will restore default settings when this file is deleted\n"));
 
-#define VAR(x) _ftprintf(h, _T(#x) _T(" %d\n"), x)
-#define FLT(x) _ftprintf(h, _T(#x) _T(" %f\n"), x)
-#define STR(x) _ftprintf(h, _T(#x) _T(" %s\n"), x)
+#define VAR(x) _ftprintf(h, _T(#x) _T(" %d\n"),  x)
+#define FLT(x) _ftprintf(h, _T(#x) _T(" %lf\n"), x)
+#define STR(x) _ftprintf(h, _T(#x) _T(" %s\n"),  x)
 
 	_ftprintf(h, _T("\n// The application version this file was saved from\n"));
 	// We can't use the macros for this!
@@ -225,13 +231,16 @@ int ConfigAppSave()
 	VAR(bVidCorrectAspect);
 	_ftprintf(h, _T("\n// If non-zero, try to use a triple buffer in fullscreen\n"));
 	VAR(bVidTripleBuffer);
+	_ftprintf(h, _T("\n// If non-zero, try to synchronise blits with the display\n"));
+	VAR(bVidVSync);
 	_ftprintf(h, _T("\n// Transfer method:  0 = blit from system memory / use driver/DirectX texture management;\n"));
 	_ftprintf(h, _T("//                   1 = copy to a video memory surface, then use bltfast();\n"));
 	_ftprintf(h, _T("//                  -1 = autodetect for DirectDraw, equals 1 for Direct3D\n"));
 	VAR(nVidTransferMethod);
 	_ftprintf(h, _T("\n// If non-zero, draw scanlines to simulate a low-res monitor\n"));
-
 	VAR(bVidScanlines);
+	_ftprintf(h, _T("\n// Maximum scanline intensity\n"));
+	VAR(nVidScanIntensity);
 	_ftprintf(h, _T("\n// If non-zero, rotate scanlines and RGB effects for rotated games\n"));
 	VAR(bVidScanRotate);
 	_ftprintf(h, _T("\n// The selected blitter module\n"));
@@ -240,6 +249,7 @@ int ConfigAppSave()
 	VAR(nVidBlitterOpt[0]);
 	VAR(nVidBlitterOpt[1]);
 	VAR(nVidBlitterOpt[2]);
+	VAR(nVidBlitterOpt[3]);
 	_ftprintf(h, _T("\n// The aspect ratio of the monitor\n"));
 	VAR(nVidScrnAspectX);
 	VAR(nVidScrnAspectY);
@@ -254,19 +264,17 @@ int ConfigAppSave()
 	STR(szPlaceHolder);
 
 	_ftprintf(h, _T("\n"));
-	_ftprintf(h, _T("// --- DirectDraw blitter settings --------------------------------------------\n"));
+	_ftprintf(h, _T("// --- DirectDraw blitter module settings -------------------------------------\n"));
 	_ftprintf(h, _T("\n// If non-zero, draw scanlines at 50%% intensity\n"));
 	VAR(bVidScanHalf);
 	_ftprintf(h, _T("\n"));
-	_ftprintf(h, _T("// --- Direct3D blitter settings ----------------------------------------------\n"));
+	_ftprintf(h, _T("// --- Direct3D 7 blitter module settings -------------------------------------\n"));
 	_ftprintf(h, _T("\n// If non-zero, use bi-linear filtering to display the image\n"));
 	VAR(bVidBilinear);
 	_ftprintf(h, _T("\n// If non-zero, simulate slow phosphors (feedback)\n"));
 	VAR(bVidScanDelay);
 	_ftprintf(h, _T("\n// If non-zero, use bi-linear filtering for the scanlines\n"));
 	VAR(bVidScanBilinear);
-	_ftprintf(h, _T("\n// Maximum scanline intensity\n"));
-	VAR(nVidScanIntensity);
 	_ftprintf(h, _T("\n// Feedback amount for slow phosphor simulation\n"));
 	VAR(nVidFeedbackIntensity);
 	_ftprintf(h, _T("\n// Oversaturation amount for slow phosphor simulation\n"));
@@ -277,6 +285,11 @@ int ConfigAppSave()
 	FLT(fVidScreenCurvature);
 	_ftprintf(h, _T("\n// If non-zero, force 16 bit emulation even in 32-bit screenmodes\n"));
 	VAR(bVidForce16bit);
+	_ftprintf(h, _T("\n"));
+	_ftprintf(h, _T("// --- DirectX Graphics 9 blitter module settings -----------------------------\n"));
+	_ftprintf(h, _T("\n// The filter parameters for the cubic filter\n"));
+	FLT(dVidCubicB);
+	FLT(dVidCubicC);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- Sound ------------------------------------------------------------------\n"));
@@ -295,9 +308,12 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- UI ---------------------------------------------------------------------\n"));
 
+	_ftprintf(h, _T("\n// Filename of the active UI translation template\n"));
+	STR(szLocalisationTemplate);
+
 	_ftprintf(h, _T("\n// 1 = display pause/record/replay/kaillera icons in the upper right corner of the display\n"));
 	VAR(nVidSDisplayStatus);
-	_ftprintf(h, _T("\n// Minimum height (in pixels) of the font used for the Kaillera chat function.(used for arcade resolution)\n"));
+	_ftprintf(h, _T("\n// Minimum height (in pixels) of the font used for the Kaillera chat function (used for arcade resolution)\n"));
 	VAR(nMinChatFontSize);
 	_ftprintf(h, _T("\n// Maximum height (in pixels) of the font used for the Kaillera chat function (used for 1280x960 or higher).\n"));
 	VAR(nMaxChatFontSize);
@@ -320,14 +336,10 @@ int ConfigAppSave()
 	VAR(bSaveInputs);
 	_ftprintf(h, _T("\n"));
 	_ftprintf(h, _T("// --- Load Game Dialog -------------------------------------------------------\n"));
-	_ftprintf(h, _T("\n// Which systems to show ROMs for.\n"));
+	_ftprintf(h, _T("\n// Load game dialog options\n"));
 	VAR(nLoadMenuShowX);
-	_ftprintf(h, _T("\n// If non-zero, show all clones\n"));
-	VAR(bLoadMenuAutoExpand);
-	_ftprintf(h, _T("\n// If non-zero, show only available ROMsets\n"));
-	VAR(bAvbOnly);
 
-	_ftprintf(h, _T("\n// The paths to search for rom zips. (include trailing backslash)\n"));
+	_ftprintf(h, _T("\n// The paths to search for rom zips (include trailing backslash)\n"));
 	STR(szAppRomPaths[0]);
 	STR(szAppRomPaths[1]);
 	STR(szAppRomPaths[2]);

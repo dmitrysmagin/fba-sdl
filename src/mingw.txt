@@ -55,7 +55,7 @@ FBA is compiled on a system that does have Perl.
 
 2 - SETTING UP MINGW
 
- - download and extract minGW (http://www.mingw.org - tested with version 2)
+ - download and extract minGW (http://www.mingw.org - you will need GCC 3.3)
    to the directory you want it to live in (you can use WinZip).
 
  - download UnxUtils.zip (http://unxutils.sourceforge.net) and extract the
@@ -111,20 +111,24 @@ FBA is compiled on a system that does have Perl.
 
 3 - ADDITIONAL SETUP
 
- - Win32 API 2.4 (from the MinGW sourceforge downloads)
+ - Win32 API 3.1 (from the MinGW sourceforge downloads)
 
- - ZLib 1.14 (http://caesar.logiqx.com/zips/tools/zip_libs/zlib/zlib114-mingw.zip)
+ - ZLib 1.14 or 1.22 (http://caesar.logiqx.com/zips/tools/zip_libs/zlib/zlib114-mingw.zip)
 
  - LibPNG (can be obtained from the FBA site)
+
+ - Nasm 0.98.38 (or higher, http://nasm.sourceforge.net/)
+
+ - UPX (http://upx.sourceforge.net/)
 
  - DirectX 7 (http://caesar.logiqx.com/zips/tools/compilers/mingw/dx70_mgw.zip)
 
  - For all of the above extract the .a files to the mingw/lib directory and
    the .h files to the mingw/include directory.
 
-   Additionally, Nasm and UPX need to be present in your path. FBA assumes
-   your nasm executable is named nasm.exe, if yours is nasmw.exe edit the
-   makefile or create a copy of nasm with the correct name.
+   Nasm and UPX need to be present in your path. FBA assumes your nasm
+   executable is named nasm.exe, if yours is nasmw.exe edit the makefile or
+   create a copy of nasm with the correct name.
 
 
 4 - SETTING UP PERL

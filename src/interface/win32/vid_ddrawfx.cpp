@@ -1,6 +1,6 @@
 // Software blitter effects via DirectDraw
 #include "burner.h"
-#include "vid_directx_support.h"
+// #include "vid_directx_support.h"
 #include "vid_softfx.h"
 
 static IDirectDraw7* BlitFXDD = NULL;				// DirectDraw interface
@@ -294,7 +294,9 @@ static int Init()
 
 		if (bVidTripleBuffer) {
 			if (PrimInit(1)) {						// Try to make triple buffer
-				AppError(_T("Could not make Triple Buffer"), 1);
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_TRIPLE));
+				FBAPopupDisplay(PUF_TYPE_WARNING);
+
 				// If we fail, fail entirely and make a normal buffer
 				RELEASE(BlitFXBack);
 				RELEASE(BlitFXPrim);
@@ -335,7 +337,7 @@ static int Init()
 		}
 	}
 
-	VidSInitOSD(0);
+	VidSInitOSD(4 - nSize);
 
 	return 0;
 }
@@ -507,49 +509,29 @@ static int Paint(int bValidate)
 
 static int GetSettings(InterfaceInfo* pInfo)
 {
-	{
-		pInfo->ppszPluginSettings[0] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[0] == NULL) {
-			return 1;
-		}
-		if (nVidFullscreen && BlitFXBack) {
-			_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using a triple buffer"));
-		} else {
-			_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using Blt() to transfer the image"));
-		}
+	TCHAR szString[MAX_PATH] = _T("");
+
+	if (nVidFullscreen && BlitFXBack) {
+		IntInfoAddStringModule(pInfo, _T("Using a triple buffer"));
+	} else {
+		IntInfoAddStringModule(pInfo, _T("Using Blt() to transfer the image"));
 	}
 
-	{
-		pInfo->ppszPluginSettings[1] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[1] == NULL) {
-			return 1;
-		}
-		_sntprintf(pInfo->ppszPluginSettings[1], MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nUseBlitter), nSize);
-	}
+	_sntprintf(szString, MAX_PATH, _T("Prescaling using %s (%i× zoom)"), VidSoftFXGetEffect(nUseBlitter), nSize);
+	IntInfoAddStringModule(pInfo, szString);
 
-	{
-		pInfo->ppszPluginSettings[2] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[2] == NULL) {
-			return 1;
-		}
-
-		if (nUseSys) {
-			_sntprintf(pInfo->ppszPluginSettings[2], MAX_PATH, _T("Using system memory"));
+	if (nUseSys) {
+		IntInfoAddStringModule(pInfo, _T("Using system memory"));
+	} else {
+		if (nDirectAccess) {
+			IntInfoAddStringModule(pInfo, _T("Using video memory for effect buffers"));
 		} else {
-			if (nDirectAccess) {
-				_sntprintf(pInfo->ppszPluginSettings[2], MAX_PATH, _T("Using video memory for effect buffers"));
-			} else {
-				_sntprintf(pInfo->ppszPluginSettings[2], MAX_PATH, _T("Using video memory for the final blit"));
-			}
+			IntInfoAddStringModule(pInfo, _T("Using video memory for the final blit"));
 		}
 	}
 
 	if (nRotateGame) {
-		pInfo->ppszPluginSettings[3] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[3] == NULL) {
-			return 1;
-		}
-		_sntprintf(pInfo->ppszPluginSettings[3], MAX_PATH, _T("Using software rotation"));
+		IntInfoAddStringModule(pInfo, _T("Using software rotation"));
 	}
 
 	return 0;

@@ -3,14 +3,13 @@
 // Set the current directory to be the application's directory
 int AppDirectory()
 {
-	TCHAR *szCmd = NULL;
-	TCHAR *szPath = NULL;
+	TCHAR szPath[MAX_PATH] = _T("");
 	int nLen = 0;
 	TCHAR *pc1, *pc2;
-	szCmd = GetCommandLine();
+	TCHAR* szCmd = GetCommandLine();
 
 	// Find the end of the "c:\directory\program.exe" bit
-	if (szCmd[0] == _T('\"')) {						// Filneame is enclosed in quotes
+	if (szCmd[0] == _T('\"')) {						// Filename is enclosed in quotes
 		szCmd++;
 		for (pc1 = szCmd; *pc1; pc1++) {
 			if (*pc1 == _T('\"')) break;			// Find the last "
@@ -43,15 +42,11 @@ int AppDirectory()
 	if (nLen <= 0) return 1;			// No path
 
 	// Now copy the path into a new buffer
-	szPath = (TCHAR*)malloc((nLen + 1) * sizeof(TCHAR));
-	if (szPath == NULL) {
-		return 1;
-	}
-
 	_tcsncpy(szPath, szCmd, nLen);
-	szPath[nLen] = 0;
 	SetCurrentDirectory(szPath);		// Finally set the current directory to be the application's directory
-	free(szPath);
+
+	dprintf(szPath);
+	dprintf(_T("\n"));
 
 	return 0;
 }
@@ -100,54 +95,29 @@ void RegisterExtensions(bool bCreateKeys)
 	TCHAR myKeyValue[MAX_PATH + 32] = _T("");
 
 	if (bCreateKeys) {
-		TCHAR* szCmd;
-		int nCmdSize;
 		TCHAR szExename[MAX_PATH] = _T("");
-
-		szCmd = GetCommandLine();
-		if (szCmd[0] == _T('\"')) {
-			int nLen = _tcslen(szCmd);
-			nCmdSize = 1;
-			while (szCmd[nCmdSize] != _T('\"') && nCmdSize < nLen) {
-				nCmdSize++;
-			}
-			if (nCmdSize == nLen) {
-				szExename[0] = 0;
-			} else {
-				nCmdSize++;
-				_tcsncpy(szExename, szCmd + 1, nCmdSize - 2);
-				szExename[nCmdSize - 2] = 0;
-			}
-		} else {
-			int nLen = _tcslen(szCmd);
-			nCmdSize = 0;
-			while (szCmd[nCmdSize] != _T(' ') && nCmdSize < nLen) {
-				nCmdSize++;
-			}
-			_tcsncpy(szExename, szCmd, nCmdSize);
-			szExename[nCmdSize] = 0;
-		}
+		GetModuleFileName(NULL, szExename, MAX_PATH);
 
 		MyRegCreateKeys(1, myKeynames1, myKeys);
 		_stprintf(myKeyValue, _T("FBAlpha"));
-		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, _tcslen(myKeyValue) + 1);
+		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, (_tcslen(myKeyValue) + 1) * sizeof(TCHAR));
 		MyRegCloseKeys(2, myKeys);
 
 		MyRegCreateKeys(1, myKeynames2, myKeys);
 		_stprintf(myKeyValue, _T("FBAlpha"));
-		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, _tcslen(myKeyValue) + 1);
+		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, (_tcslen(myKeyValue) + 1) * sizeof(TCHAR));
 		MyRegCloseKeys(2, myKeys);
 
 		MyRegCreateKeys(4, myKeynames3, myKeys);
 		_stprintf(myKeyValue, _T("\"%s\" \"%%1\" -w"), szExename);
-		RegSetValueEx(myKeys[3], NULL, 0, REG_SZ, (BYTE*)myKeyValue, _tcslen(myKeyValue) + 1);
+		RegSetValueEx(myKeys[3], NULL, 0, REG_SZ, (BYTE*)myKeyValue, (_tcslen(myKeyValue) + 1) * sizeof(TCHAR));
 		_stprintf(myKeyValue, _T("FB Alpha file"));
-		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, _tcslen(myKeyValue) + 1);
+		RegSetValueEx(myKeys[0], NULL, 0, REG_SZ, (BYTE*)myKeyValue, (_tcslen(myKeyValue) + 1) * sizeof(TCHAR));
 		MyRegCloseKeys(4, myKeys);
 
 		MyRegCreateKeys(2, myKeynames4, myKeys);
 		_stprintf(myKeyValue, _T("\"%s\", 0"), szExename);
-		RegSetValueEx(myKeys[1], NULL, 0, REG_SZ, (BYTE*)myKeyValue, _tcslen(myKeyValue) + 1);
+		RegSetValueEx(myKeys[1], NULL, 0, REG_SZ, (BYTE*)myKeyValue, (_tcslen(myKeyValue) + 1) * sizeof(TCHAR));
 		MyRegCloseKeys(2, myKeys);
 	} else {
 		MyRegDeleteKeys(2, myKeynames4, myKeys);

@@ -69,7 +69,7 @@
 #define EMULATE_WATCHDOG
 
 // If defined, reset the Z80 when switching between the Z80 BIOS/cartridge ROM
-// #define Z80_RESET_ON_BANKSWITCH
+//#define Z80_RESET_ON_BANKSWITCH
 
 // If defined, adjust the Z80 speed along with the 68000 when overclocking
 #define Z80_SPEED_ADJUST

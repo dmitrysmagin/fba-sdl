@@ -87,10 +87,10 @@ extern "C" {
   */
   DLLEXP kailleraSelectServerDialog(HWND parent);
 
-  /* 
+  /*
      kailleraModifyPlayValues:
      You must call this method at every frame after you retrieved values from your input devices.
-     This method will record/bufferize the values you send in and will manage to mix them with 
+     This method will record/bufferize the values you send in and will manage to mix them with
      the other players.
 
      Basically, each players sends his values and receive all players values concatened.
@@ -102,11 +102,11 @@ extern "C" {
      you may want to look at the modified MAME source code available on kaillera's home page
      to have a working example out of this (look in inptport.c)
 
-     Ideally, your input values should be defined like 1 bit for a given key, which has to be 
+     Ideally, your input values should be defined like 1 bit for a given key, which has to be
      unset when the key is not pressed and set when the key is pressed.
 
      The size of the values you pass to this function is the size for ONE player's values.
-     Also, it must be the SAME for a given game and should be kept to a minimum (for network 
+     Also, it must be the SAME for a given game and should be kept to a minimum (for network
      speed and latency issues).
 
      Be sure that the values parameters has enough space for receiving all inputs from all players
@@ -129,7 +129,7 @@ extern "C" {
   DLLEXP kailleraEndGame();
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

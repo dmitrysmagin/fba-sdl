@@ -63,7 +63,7 @@ static struct BurnInputInfo CawingbInputList[] =
   {"Dip C"         , BIT_DIPSWITCH, &Cpi01E    , "dip"},
 };
 
-STDINPUTINFO(Cawingb)
+STDINPUTINFO(Cawingb);
 
 static struct BurnDIPInfo cawingDIPList[]=
 {
@@ -157,7 +157,7 @@ static struct BurnDIPInfo cawingDIPList[]=
 	{0x17, 0x01, 0x40, 0x40, "On"                     },
 };
 
-STDDIPINFO(cawing)
+STDDIPINFO(cawing);
 
 
 static int DrvExit()

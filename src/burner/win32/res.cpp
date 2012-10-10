@@ -38,7 +38,7 @@ static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPAR
 
 			bOK = 0;
 			WndInMid(hDlg, hScrnWnd);
-			
+
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -71,7 +71,7 @@ static BOOL CALLBACK ResProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPAR
 
 int ResCreate()
 {
-	DialogBox(hAppInst,MAKEINTRESOURCE(IDD_CHOOSERES),hScrnWnd,ResProc);
+	FBADialogBox(hAppInst,MAKEINTRESOURCE(IDD_CHOOSERES),hScrnWnd,ResProc);
 	return 0;
 }
 

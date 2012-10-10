@@ -4,15 +4,20 @@
 int MediaInit()
 {
 	if (ScrnInit()) {					// Init the Scrn Window
-		AppError(_T("ScrnInit Failed"), 0);
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_WINDOW));
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 		return 1;
 	}
 
-	InputInit();						// Init Input
+	if (!bInputOkay) {
+		InputInit();					// Init Input
+	}
 
 	nAppVirtualFps = nBurnFPS;
 
-	AudSoundInit();						// Init Sound (not critical if it fails)
+	if (!bAudOkay) {
+		AudSoundInit();					// Init Sound (not critical if it fails)
+	}
 
 	nBurnSoundRate = 0;					// Assume no sound
 	pBurnSoundOut = NULL;
@@ -21,10 +26,38 @@ int MediaInit()
 		nBurnSoundLen = nAudSegLen;
 	}
 
+	if (!bVidOkay) {
+
+		// Reinit the video plugin
+		VidInit();
+		if (!bVidOkay && nVidFullscreen) {
+
+			nVidFullscreen = 0;
+
+			MediaExit();
+			return (MediaInit());
+		}
+		if (!nVidFullscreen) {
+			ScrnSize();
+		}
+
+		if (!bVidOkay && (bDrvOkay || bVidUsePlaceholder)) {
+			// Make sure the error will be visible
+			SplashDestroy(1);
+
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_MODULE), VidGetModuleName());
+			FBAPopupDisplay(PUF_TYPE_ERROR);
+		}
+
+		if (bVidOkay && ((bRunPause && bAltPause) || !bDrvOkay)) {
+			VidRedraw();
+		}
+	}
+
 	return 0;
 }
 
-int MediaExit(bool bRestart)
+int MediaExit()
 {
 	nBurnSoundRate = 0;					// Blank sound
 	pBurnSoundOut = NULL;
@@ -38,7 +71,7 @@ int MediaExit(bool bRestart)
 	DestroyWindow(hInpsDlg);			// Make sure the Input Set dialog is exitted
 	DestroyWindow(hInpdDlg);			// Make sure the Input Dialog is exitted
 
-	ScrnExit(bRestart);					// Exit the Scrn Window
+	ScrnExit();							// Exit the Scrn Window
 
 	return 0;
 }

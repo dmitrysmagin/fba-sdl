@@ -73,8 +73,8 @@ void SetPauseMode(bool bPause)
 	bAltPause = bPause;
 
 	if (bPause) {
+		AudBlankSound();
 		if (UseDialogs()) {
-			AudBlankSound();
 			InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 		}
 	} else {
@@ -82,14 +82,20 @@ void SetPauseMode(bool bPause)
 	}
 }
 
-static int CreateKailleraList(char* pList, int nSize)
+static char* CreateKailleraList()
 {
 	unsigned int nOldDrvSelect = nBurnDrvSelect;
+	int nSize = 256 * 1024;
+	char* pList = (char*)malloc(nSize);
 	char* pName = pList;
 
+	if (pList == NULL) {
+		return NULL;
+	}
+
 	// Add chat option to the gamelist
-	sprintf(pName, "* Chat only\0");
-	pName += strlen(pName) + 1;
+	pName += sprintf(pName, "* Chat only");
+	pName++;
 
 	if (avOk) {
 		// Add all the driver names to the list
@@ -103,24 +109,24 @@ static int CreateKailleraList(char* pList, int nSize)
 					nSize <<= 1;
 					pNewList = (char*)realloc(pList, nSize);
 					if (pNewList == NULL) {
-						sprintf(pName, "\0");
-						return 1;
+						return NULL;
 					}
 					pName -= (unsigned int)pList;
 					pList = pNewList;
 					pName += (unsigned int)pList;
 				}
-				sprintf(pName, "%s\0", szDecoratedName);
-				pName += strlen(szDecoratedName) + 1;
+				pName += sprintf(pName, "%s", szDecoratedName);
+				pName++;
 			}
 		}
 	}
 
-	sprintf(pName, "\0");
+	*pName = '\0';
+	pName++;
 
 	nBurnDrvSelect = nOldDrvSelect;
 
-	return 0;
+	return pList;
 }
 
 void DeActivateChat()
@@ -148,7 +154,7 @@ int ActivateChat()
 	bEditTextChanged = true;
 	bEditActive = true;
 
-	SendMessage(hwndChat, EM_LIMITTEXT, 60, 0);				// Limit the amount of text to 60 characters
+	SendMessage(hwndChat, EM_LIMITTEXT, MAX_CHAT_SIZE, 0);			// Limit the amount of text
 
 	SetFocus(hwndChat);
 
@@ -181,14 +187,18 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 	bCheatsAllowed = false;								// Disable cheats during netplay
 	AudSoundStop();										// Stop while we load roms
 	DrvInit(nBurnDrvSelect, false);						// Init the game driver
+	ScrnInit();
 	AudSoundPlay();										// Restart sound
+	VidInit();
 	SetFocus(hScrnWnd);
+
+//	dprintf(_T(" ** OSD startnet text sent.\n"));
 
 	TCHAR szTemp1[256];
 	TCHAR szTemp2[256];
-	VidSAddChatMsg(_T("*** Starting netplay: "), 0xFFFFFF, BurnDrvGetText(DRV_FULLNAME), 0xFFBFBF);
-	_stprintf(szTemp1, _T("*** You are player %i. "), player);
-	_stprintf(szTemp2, _T("There are %i total players."), numplayers);
+	VidSAddChatMsg(FBALoadStringEx(hAppInst, IDS_NETPLAY_START, true), 0xFFFFFF, BurnDrvGetText(DRV_FULLNAME), 0xFFBFBF);
+	_sntprintf(szTemp1, 256, FBALoadStringEx(hAppInst, IDS_NETPLAY_START_YOU, true), player);
+	_sntprintf(szTemp2, 256, FBALoadStringEx(hAppInst, IDS_NETPLAY_START_TOTAL, true), numplayers);
 	VidSAddChatMsg(szTemp1, 0xFFFFFF, szTemp2, 0xFFBFBF);
 
 	RunMessageLoop();
@@ -209,14 +219,14 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 static void WINAPI kChatCallback(char* nick, char* text)
 {
 	TCHAR szTemp[128];
-	_stprintf(szTemp, _T("«%.32hs» "), nick);
+	_sntprintf(szTemp, 128, _T("«%.32hs» "), nick);
 	VidSAddChatMsg(szTemp, 0xBFBFFF, ANSIToTCHAR(text, NULL, 0), 0x7F7FFF);
 }
 
 static void WINAPI kDropCallback(char *nick, int playernb)
 {
 	TCHAR szTemp[128];
-	_stprintf(szTemp, _T("*** Player %1i «%.32hs» dropped from the game."), playernb, nick);
+	_sntprintf(szTemp, 128, FBALoadStringEx(hAppInst, IDS_NETPLAY_DROP, true), playernb, nick);
 	VidSAddChatMsg(szTemp, 0xFFFFFF, NULL, 0);
 }
 
@@ -233,16 +243,12 @@ static void DoNetGame()
 	MenuEnableItems();
 
 #ifdef _UNICODE
-	sprintf(tmpver, APP_TITLE " v%.20S", szAppBurnVer);
+	_snprintf(tmpver, 128, APP_TITLE " v%.20ls", szAppBurnVer);
 #else
-	sprintf(tmpver, APP_TITLE " v%.20s", szAppBurnVer);
+	_snprintf(tmpver, 128, APP_TITLE " v%.20s", szAppBurnVer);
 #endif
 
-	gameList = (char*)malloc(0x100000);
-
-	if (CreateKailleraList(gameList, 0x100000)) {
-		AppError(_T("Size of Kaillera gamelist too big."), 0);
-	}
+	gameList = CreateKailleraList();
 
 	ki.appName = tmpver;
 	ki.gameList = gameList;
@@ -257,20 +263,24 @@ static void DoNetGame()
 
 	free(gameList);
 
-	PostMessage(NULL, WM_APP + 0, 0, 0);
+	POST_INITIALISE_MESSAGE;
 }
 
 int CreateDatfileWindows(int nDatType)
 {
-	TCHAR szTitle[256];
+	TCHAR szTitle[1024];
+	TCHAR szFilter[1024];
 
-	_stprintf(szChoice, _T(APP_TITLE) _T(" v%.20s (%s).dat"), szAppBurnVer, nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
-	_stprintf(szTitle, _T("Generate %s dat"), nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
+	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s).dat"), szAppBurnVer, nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
+	_sntprintf(szTitle, 256, FBALoadStringEx(hAppInst, IDS_DAT_GENERATE, true), nDatType ? _T("RomCenter") : _T("ClrMame Pro"));
+
+	_stprintf(szFilter, FBALoadStringEx(hAppInst, IDS_DISK_ALL_DAT, true), _T(APP_TITLE));
+	memcpy(szFilter + _tcslen(szFilter), _T(" (*.dat)\0*.dat\0\0"), 16 * sizeof(TCHAR));
 
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hScrnWnd;
-	ofn.lpstrFilter = _T("dat files (*.dat)\0*.dat\0\0");
+	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = szChoice;
 	ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
 	ofn.lpstrInitialDir = _T(".");
@@ -281,7 +291,7 @@ int CreateDatfileWindows(int nDatType)
 
 	if (GetSaveFileName(&ofn) == 0)
 		return -1;
-		
+
 	return create_datfile(szChoice, nDatType);
 }
 
@@ -290,6 +300,9 @@ static bool VidInitNeeded()
 {
 	// D3D blitter needs to re-initialise only when auto-size RGB effects are enabled
 	if (nVidSelect == 1 && (nVidBlitterOpt[nVidSelect] & 0x00030000) == 0x00030000) {
+		return true;
+	}
+	if (nVidSelect == 3) {
 		return true;
 	}
 
@@ -357,7 +370,7 @@ static LRESULT CALLBACK ScrnProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 static int OnDisplayChange(HWND, UINT, UINT, UINT)
 {
 	if (nVidFullscreen == 0) {
-		PostMessage(NULL, WM_APP + 0, 0, 0);
+		POST_INITIALISE_MESSAGE;
 	}
 
 	return 0;
@@ -372,13 +385,13 @@ static int OnRButtonDown(HWND hwnd, BOOL bDouble, int, int, UINT)
 	if (bDouble) {
 		if (bDrvOkay) {
 			nVidFullscreen = !nVidFullscreen;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			return 0;
 		}
 	} else {
 		if (!nVidFullscreen) {
 			bMenuEnabled = !bMenuEnabled;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			return 0;
 		}
 	}
@@ -618,7 +631,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				ScrnSize();
 				ScrnTitle();
 				MenuEnableItems();
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 
@@ -642,7 +655,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_INPUT:
 			if (UseDialogs()) {
-				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
+				InputSetCooperativeLevel(false, false);
 				InpdCreate();
 			}
 			break;
@@ -666,7 +679,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 
 		case MENU_MEMCARD_CREATE:
-			if (UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 				AudBlankSound();
 				MemCardEject();
@@ -676,7 +689,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 		case MENU_MEMCARD_SELECT:
-			if (UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 				AudBlankSound();
 				MemCardEject();
@@ -697,7 +710,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 
 		case MENU_MEMCARD_TOGGLE:
-			if (!kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				MemCardToggle();
 			}
 			break;
@@ -727,7 +740,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			if (nSavestateSlot < 1) {
 				nSavestateSlot = 1;
 			}
-			_stprintf(szString, _T("slot %d active"), nSavestateSlot);
+			_sntprintf(szString, 256, FBALoadStringEx(hAppInst, IDS_STATE_ACTIVESLOT, true), nSavestateSlot);
 			VidSNewShortMsg(szString);
 			break;
 		}
@@ -738,25 +751,25 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			if (nSavestateSlot > 8) {
 				nSavestateSlot = 8;
 			}
-			_stprintf(szString, _T("slot %d active"), nSavestateSlot);
+			_sntprintf(szString, 256, FBALoadStringEx(hAppInst, IDS_STATE_ACTIVESLOT, true), nSavestateSlot);
 			VidSNewShortMsg(szString);
 			break;
 		}
 		case MENU_STATE_LOAD_SLOT:
 			if (bDrvOkay && !kNetGame) {
 				if (StatedLoad(nSavestateSlot) == 0) {
-					VidSNewShortMsg(_T("state loaded"));
+					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_LOADED, true));
 				} else {
-					VidSNewShortMsg(_T("load error"), 0xFF3F3F);
+					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_LOAD_ERROR, true), 0xFF3F3F);
 				}
 			}
 			break;
 		case MENU_STATE_SAVE_SLOT:
 			if (bDrvOkay) {
 				if (StatedSave(nSavestateSlot) == 0) {
-					VidSNewShortMsg(_T("state saved"));
+					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_SAVED, true));
 				} else {
-					VidSNewShortMsg(_T("save error"), 0xFF3F3F);
+					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_SAVE_ERROR, true), 0xFF3F3F);
 					SetPauseMode(1);
 				}
 			}
@@ -769,7 +782,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_NOSTRETCH:
 			bVidCorrectAspect = 0;
 			bVidFullStretch = 0;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_STRETCH:
@@ -777,7 +790,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			if (bVidFullStretch) {
 				bVidCorrectAspect = 0;
 			}
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_ASPECT:
@@ -785,7 +798,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			if (bVidCorrectAspect) {
 				bVidFullStretch = 0;
 			}
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_TRIPLE:
@@ -794,36 +807,36 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_BLITTER_1:
 			VidSelect(0);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_BLITTER_2:
 			VidSelect(1);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_BLITTER_3:
 			VidSelect(2);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
-#if 0
 		case MENU_BLITTER_4:
 			VidSelect(3);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
+#if 0
 		case MENU_BLITTER_5:
 			VidSelect(4);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_BLITTER_6:
 			VidSelect(5);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_BLITTER_7:
 			VidSelect(6);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_BLITTER_8:
 			VidSelect(7);
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 #endif
 
@@ -1016,82 +1029,86 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_FULL:
 			if (bDrvOkay || nVidFullscreen) {
 				nVidFullscreen = !nVidFullscreen;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			return;
 
 		case MENU_MEMAUTO:
 			nVidTransferMethod = -1;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_VIDEOMEM:
 			nVidTransferMethod = 0;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_SYSMEM:
 			nVidTransferMethod = 1;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_AUTOSIZE:
 			if (nWindowSize != 0) {
 				nWindowSize = 0;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_SINGLESIZEWINDOW:
 			if (nWindowSize != 1) {
 				nWindowSize = 1;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_DOUBLESIZEWINDOW:
 			if (nWindowSize != 2) {
 				nWindowSize = 2;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_TRIPLESIZEWINDOW:
 			if (nWindowSize != 3) {
 				nWindowSize = 3;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_QUADSIZEWINDOW:
 			if (nWindowSize != 4) {
 				nWindowSize = 4;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_MAXIMUMSIZEWINDOW:
 			if (nWindowSize <= 4) {
 				nWindowSize = 9999;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 
 		case MENU_ASPECTNORMAL:
 			nVidScrnAspectX = 4; nVidScrnAspectY = 3;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_ASPECTLCD:
 			nVidScrnAspectX = 5; nVidScrnAspectY = 4;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_ASPECTWIDE:
 			nVidScrnAspectX = 16; nVidScrnAspectY = 9;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
+			break;
+		case MENU_ASPECTWIDELCD:
+			nVidScrnAspectX = 16; nVidScrnAspectY = 10;
+			POST_INITIALISE_MESSAGE;
 			break;
 		case MENU_MONITORMIRRORVERT:
 			nVidRotationAdjust ^= 2;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_ROTATEVERTICAL:
 			nVidRotationAdjust ^= 1;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_FORCE60HZ:
@@ -1105,38 +1122,38 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_BLITTERPREVIEW:
 			bVidUsePlaceholder = !bVidUsePlaceholder;
 			if (!bDrvOkay) {
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 
 		case MENU_NOSOUND:
 			if (!bDrvOkay) {
 				nAudSampleRate = 0;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_11025:
 			if (!bDrvOkay) {
 				nAudSampleRate = 11025;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_22050:
 			if (!bDrvOkay) {
 				nAudSampleRate = 22050;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_44100:
 			if (!bDrvOkay) {
 				nAudSampleRate = 44100;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 		case MENU_48000:
 			if (!bDrvOkay) {
 				nAudSampleRate = 48000;
-				PostMessage(NULL, WM_APP + 0, 0, 0);
+				POST_INITIALISE_MESSAGE;
 			}
 			break;
 
@@ -1145,7 +1162,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				if (!bDrvOkay) {
 //					AudBlankSound();
 					NumDialCreate(0);
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 				}
 			}
 			break;
@@ -1200,34 +1217,41 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_MODELESS:
 			bModelessMenu = !bModelessMenu;
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
+			break;
+
+		case MENU_LANGUAGE_SELECT:
+			if (UseDialogs()) {
+				FBALocaliseLoadTemplate();
+				POST_INITIALISE_MESSAGE;
+			}
+			break;
+		case MENU_LANGUAGE_EXPORT:
+			if (UseDialogs()) {
+				FBALocaliseCreateTemplate();
+			}
 			break;
 
 		case MENU_PRIORITY_REALTIME:
 			nAppThreadPriority = THREAD_PRIORITY_TIME_CRITICAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
-
 		case MENU_PRIORITY_HIGH:
 			nAppThreadPriority = THREAD_PRIORITY_HIGHEST;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
-
 		case MENU_PRIORITY_ABOVE_NORMAL:
 			nAppThreadPriority = THREAD_PRIORITY_ABOVE_NORMAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
-
 		case MENU_PRIORITY_NORMAL:
 			nAppThreadPriority = THREAD_PRIORITY_NORMAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
-
 		case MENU_PRIORITY_BELOW_NORMAL:
 			nAppThreadPriority = THREAD_PRIORITY_BELOW_NORMAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
 			break;
-
 		case MENU_PRIORITY_LOW:
 			nAppThreadPriority = THREAD_PRIORITY_LOWEST;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
@@ -1263,14 +1287,14 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_SAVESNAP: {
 			if (bDrvOkay) {
-				TCHAR tmpmsg[16];
-
 				int status = MakeScreenShot();
+
 				if (!status) {
-					_stprintf(tmpmsg, _T("PNG saved"));
-					VidSNewShortMsg(tmpmsg);
+					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SSHOT_SAVED, true));
 				} else {
-					_stprintf(tmpmsg, _T("PNG error %1d"), status);
+					TCHAR tmpmsg[256];
+
+					_sntprintf(tmpmsg, 256, FBALoadStringEx(hAppInst, IDS_SSHOT_ERROR, true), status);
 					VidSNewShortMsg(tmpmsg, 0xFF3F3F);
 				}
 			}
@@ -1305,7 +1329,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_LOADSET:
 			ConfigAppLoad();
-			PostMessage(NULL, WM_APP + 0, 0, 0);
+			POST_INITIALISE_MESSAGE;
 			break;
 
 		case MENU_ABOUT:
@@ -1359,22 +1383,22 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				// Options for the Default DirectDraw blitter
 				case MENU_NORMAL:
 					bVidScanlines = 0;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_SCAN:
 					bVidScanlines = 1;
 					bVidScanHalf = 0;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_SCAN50:
 					bVidScanlines = 1;
 					bVidScanHalf = 1;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_ROTSCAN:
 					bVidScanRotate = !bVidScanRotate;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 			}
 			break;
@@ -1386,7 +1410,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					bVidBilinear = 0;
 					bVidScanlines = 0;
 					nVidBlitterOpt[nVidSelect] &= 0xF40200FF;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_BILINEAR:
@@ -1402,12 +1426,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 				case MENU_NORMAL:
 					nVidBlitterOpt[nVidSelect] &= ~0x00110000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_SCAN:
 					bVidScanlines = !bVidScanlines;
 					nVidBlitterOpt[nVidSelect] &= ~0x00010000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_RGBEFFECTS:
 					nVidBlitterOpt[nVidSelect] &= ~0x00100000;
@@ -1426,13 +1450,13 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_3DPROJECTION:
 					nVidBlitterOpt[nVidSelect] &= ~0x00010000;
 					nVidBlitterOpt[nVidSelect] |= 0x00100000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_EFFECT_AUTO:
 					nVidBlitterOpt[nVidSelect] &= ~0x001000000;
 					nVidBlitterOpt[nVidSelect] |= 0x00030000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					if (bVidOkay && (bRunPause || !bDrvOkay)) {
 						VidRedraw();
 					}
@@ -1455,7 +1479,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_EFFECT_10:
 					nVidBlitterOpt[nVidSelect] &= ~0x001300FF;
 					nVidBlitterOpt[nVidSelect] |= 0x00010008 + id - MENU_EFFECT_01;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					if (bVidOkay && (bRunPause || !bDrvOkay)) {
 						VidRedraw();
 					}
@@ -1463,17 +1487,17 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 				case MENU_ROTSCAN:
 					bVidScanRotate = !bVidScanRotate;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_PRESCALE:
 					nVidBlitterOpt[nVidSelect] ^= 0x01000000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_SOFTFX:
 					nVidBlitterOpt[nVidSelect] ^= 0x02000000;
 					nVidBlitterOpt[nVidSelect] |= 0x01000000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_SOFT_STRETCH:
@@ -1488,12 +1512,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_SOFT_HQ4X: {
 					nVidBlitterOpt[nVidSelect] &= 0x0FFFFFFF;
 					nVidBlitterOpt[nVidSelect] |= 0x03000000 + ((id - MENU_SOFT_STRETCH) << 28);
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				}
 				case MENU_SOFT_AUTOSIZE:
 					nVidBlitterOpt[nVidSelect] ^= 0x04000000;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_SCANINTENSITY:
@@ -1580,21 +1604,157 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_SOFT_HQ4X:
 					nVidBlitterOpt[nVidSelect] &= ~0xFF;
 					nVidBlitterOpt[nVidSelect] |= id - MENU_SOFT_STRETCH;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 
 				case MENU_SOFT_AUTOSIZE:
 					nVidBlitterOpt[nVidSelect] ^= 0x0100;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 				case MENU_SOFT_DIRECTACCESS:
 					nVidBlitterOpt[nVidSelect] ^= 0x0200;
-					PostMessage(NULL, WM_APP + 0, 0, 0);
+					POST_INITIALISE_MESSAGE;
 					break;
 			}
 			break;
 		}
 		case 3:
+			switch (id) {
+				// Options for the DirectX Graphics 9 blitter
+				case MENU_DX9_POINT:
+					nVidBlitterOpt[nVidSelect] &= ~(3 << 24);
+					nVidBlitterOpt[nVidSelect] |=  (0 << 24);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_LINEAR:
+					nVidBlitterOpt[nVidSelect] &= ~(3 << 24);
+					nVidBlitterOpt[nVidSelect] |=  (1 << 24);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_CUBIC:
+					nVidBlitterOpt[nVidSelect] &= ~(3 << 24);
+					nVidBlitterOpt[nVidSelect] |=  (2 << 24);
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_CUBIC_LIGHT:
+					dVidCubicB = 0.0;
+					dVidCubicC = 0.0;
+					VidRedraw();
+					break;
+				case MENU_DX9_CUBIC_BSPLINE:
+					dVidCubicB = 1.0;
+					dVidCubicC = 0.0;
+					VidRedraw();
+					break;
+				case MENU_DX9_CUBIC_NOTCH:
+					dVidCubicB =  3.0 / 2.0;
+					dVidCubicC = -0.25;
+					VidRedraw();
+					break;
+				case MENU_DX9_CUBIC_OPTIMAL:
+					dVidCubicB = 1.0 / 3.0;
+					dVidCubicC = 1.0 / 3.0;
+					VidRedraw();
+					break;
+				case MENU_DX9_CUBIC_CATMULL:
+					dVidCubicB = 0.0;
+					dVidCubicC = 0.5;
+					VidRedraw();
+					break;
+				case MENU_DX9_CUBIC_SHARP:
+					dVidCubicB = 0.0;
+					dVidCubicC = 1.0;
+					VidRedraw();
+					break;
+
+/*
+					if (UseDialogs()) {
+						InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
+						AudBlankSound();
+						if ((nVidBlitterOpt[nVidSelect] & (3 << 24)) !=  (2 << 24)) {
+							nVidBlitterOpt[nVidSelect] &= ~(3 << 24);
+							nVidBlitterOpt[nVidSelect] |=  (2 << 24);
+							ScrnSize();
+							VidInit();
+							VidRedraw();
+						}
+						CubicSharpnessDialog();
+						GameInpCheckMouse();
+					}
+					break;
+*/
+
+				case MENU_SCAN:
+					bVidScanlines = !bVidScanlines;
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_SCANINTENSITY:
+					if (UseDialogs()) {
+						InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
+						AudBlankSound();
+						if (!bVidScanlines) {
+							bVidScanlines = 1;
+							ScrnSize();
+							VidInit();
+							VidRedraw();
+						}
+						ScanlineDialog();
+						GameInpCheckMouse();
+					}
+					break;
+
+				case MENU_DX9_FPTERXTURES:
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_FORCE_PS14:
+					nVidBlitterOpt[nVidSelect] ^=  (1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_CUBIC0:
+					nVidBlitterOpt[nVidSelect] &= ~(7 << 28);
+					nVidBlitterOpt[nVidSelect] |=  (0 << 28);
+
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  8);
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_CUBIC1:
+					nVidBlitterOpt[nVidSelect] &= ~(7 << 28);
+					nVidBlitterOpt[nVidSelect] |=  (1 << 28);
+
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  8);
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_CUBIC2:
+					nVidBlitterOpt[nVidSelect] &= ~(7 << 28);
+					nVidBlitterOpt[nVidSelect] |=  (2 << 28);
+
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  8);
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_CUBIC3:
+					nVidBlitterOpt[nVidSelect] &= ~(7 << 28);
+					nVidBlitterOpt[nVidSelect] |=  (3 << 28);
+
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  8);
+					nVidBlitterOpt[nVidSelect] |=  (1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+				case MENU_DX9_CUBIC4:
+					nVidBlitterOpt[nVidSelect] &= ~(7 << 28);
+					nVidBlitterOpt[nVidSelect] |=  (4 << 28);
+
+					nVidBlitterOpt[nVidSelect] &= ~(1 <<  8);
+					nVidBlitterOpt[nVidSelect] &= ~(1 <<  9);
+					POST_INITIALISE_MESSAGE;
+					break;
+
+			}
 			break;
 	}
 
@@ -1602,7 +1762,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		switch (codeNotify) {
 			case EN_CHANGE: {
 				bEditTextChanged = true;
-				SendMessage(hwndChat, WM_GETTEXT, (WPARAM)64, (LPARAM)EditText);
+				SendMessage(hwndChat, WM_GETTEXT, (WPARAM)MAX_CHAT_SIZE + 1, (LPARAM)EditText);
 				break;
 			}
 			case EN_KILLFOCUS: {
@@ -1610,7 +1770,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				break;
 			}
 			case EN_MAXTEXT: {
-				VidSNewShortMsg(_T("too much text"), 0xFF3F3F);
+				VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_NETPLAY_TOOMUCH, true), 0xFF3F3F);
 				break;
 			}
 		}
@@ -1929,7 +2089,7 @@ int ScrnTitle()
 			pszPosition += _stprintf(pszPosition, _T(SEPERATOR_2) _T("%s"), pszName);
 		}
 	} else {
-		_stprintf(szText, _T(APP_TITLE) _T( " v%.20s") _T(SEPERATOR_1) _T("[no game loaded]"), szAppBurnVer);
+		_stprintf(szText, _T(APP_TITLE) _T( " v%.20s") _T(SEPERATOR_1) _T("[%s]"), szAppBurnVer, FBALoadStringEx(hAppInst, IDS_SCRN_NOGAME, true));
 	}
 
 	SetWindowText(hScrnWnd, szText);
@@ -1944,7 +2104,7 @@ int ScrnInit()
 	RECT rect;
 	int nWindowStyles, nWindowExStyles;
 
-	ScrnExit(true);
+	ScrnExit();
 
 	if (ScrnRegister() != 0) {
 		return 1;
@@ -1968,7 +2128,7 @@ int ScrnInit()
 		NULL, NULL, hAppInst, NULL);
 
 	if (hScrnWnd == NULL) {
-		ScrnExit(true);
+		ScrnExit();
 		return 1;
 	}
 
@@ -2019,7 +2179,7 @@ int ScrnInit()
 }
 
 // Exit the screen window (destroy it)
-int ScrnExit(bool)							// bool bRestart
+int ScrnExit()
 {
 	// Ensure the window is destroyed
 	DeActivateChat();

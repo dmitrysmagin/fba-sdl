@@ -246,18 +246,18 @@
 #define FBK_F14             0x65				//						(NEC PC98)
 #define FBK_F15             0x66				//						(NEC PC98)
 
-#define FBK_KANA            0x70				// (Japanese keyboard)           
+#define FBK_KANA            0x70				// (Japanese keyboard)
 #define FBK_ABNT_C1         0x73				// / ? on Portugese (Brazilian) keyboards
-#define FBK_CONVERT         0x79				// (Japanese keyboard)           
-#define FBK_NOCONVERT       0x7B				// (Japanese keyboard)           
-#define FBK_YEN             0x7D				// (Japanese keyboard)           
+#define FBK_CONVERT         0x79				// (Japanese keyboard)
+#define FBK_NOCONVERT       0x7B				// (Japanese keyboard)
+#define FBK_YEN             0x7D				// (Japanese keyboard)
 #define FBK_ABNT_C2         0x7E				// Numpad . on Portugese (Brazilian) keyboards
 #define FBK_NUMPADEQUALS    0x8D				// = on numeric keypad  (NEC PC98)
 #define FBK_PREVTRACK       0x90				// Previous Track (FBK_CIRCUMFLEX on Japanese keyboard)
 #define FBK_AT              0x91				//						(NEC PC98)
 #define FBK_COLON           0x92				//						(NEC PC98)
 #define FBK_UNDERLINE       0x93				//						(NEC PC98)
-#define FBK_KANJI           0x94				// (Japanese keyboard)           
+#define FBK_KANJI           0x94				// (Japanese keyboard)
 #define FBK_STOP            0x95				//						(NEC PC98)
 #define FBK_AX              0x96				//						(Japan AX)
 #define FBK_UNLABELED       0x97				//						(J3100)

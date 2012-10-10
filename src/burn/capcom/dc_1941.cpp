@@ -30,7 +30,7 @@ static struct BurnInputInfo DrvInputList[] =
 	{"Dip C"      , BIT_DIPSWITCH, &Cpi01E    , "dip"       },
 };
 
-STDINPUTINFO(Drv)
+STDINPUTINFO(Drv);
 
 static struct BurnDIPInfo NTFODIPList[]=
 {
@@ -125,7 +125,7 @@ static struct BurnDIPInfo NTFODIPList[]=
 	{0x15, 0x01, 0x40, 0x40, "On"                     },
 };
 
-STDDIPINFO(NTFO)
+STDDIPINFO(NTFO);
 
 
 static int DrvInit()
@@ -225,8 +225,8 @@ static struct BurnRomInfo NTFODrvRomDesc[] = {
 
 
 // Make The RomInfo/Name functions for the game
-STD_ROM_PICK(NTFODrv)
-STD_ROM_FN(NTFODrv)
+STD_ROM_PICK(NTFODrv);
+STD_ROM_FN(NTFODrv);
 
 struct BurnDriver BurnDrvCps1941 = {
 	"1941", NULL, NULL, "1990",
@@ -265,8 +265,8 @@ static struct BurnRomInfo NTFOJDrvRomDesc[] = {
 
 
 // Make The RomInfo/Name functions for the game
-STD_ROM_PICK(NTFOJDrv)
-STD_ROM_FN(NTFOJDrv)
+STD_ROM_PICK(NTFOJDrv);
+STD_ROM_FN(NTFOJDrv);
 
 struct BurnDriver BurnDrvCps1941j = {
 	"1941j", "1941", NULL, "1990",

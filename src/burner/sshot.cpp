@@ -151,14 +151,14 @@ int MakeScreenShot()
 
 	// Fill the PNG text fields
 #ifdef _UNICODE
-	sprintf(szAuthor, APP_TITLE " v%.20S", szAppBurnVer);
+	sprintf(szAuthor, APP_TITLE " v%.20ls", szAppBurnVer);
 #else
 	sprintf(szAuthor, APP_TITLE " v%.20s", szAppBurnVer);
 #endif
 	sprintf(szDescription, "Screenshot of %s", DecorateGameName(nBurnDrvSelect));
 	sprintf(szCopyright, "%s %s", BurnDrvGetTextA(DRV_DATE), BurnDrvGetTextA(DRV_MANUFACTURER));
 #ifdef _UNICODE
-	sprintf(szSoftware, APP_TITLE " v%.20S using LibPNG " PNG_LIBPNG_VER_STRING, szAppBurnVer);
+	sprintf(szSoftware, APP_TITLE " v%.20ls using LibPNG " PNG_LIBPNG_VER_STRING, szAppBurnVer);
 #else
 	sprintf(szSoftware, APP_TITLE " v%.20s using LibPNG " PNG_LIBPNG_VER_STRING, szAppBurnVer);
 #endif

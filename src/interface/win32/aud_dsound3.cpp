@@ -18,24 +18,6 @@ int (*DSoundGetNextSound)(int);				// Callback used to request more sound
 static int nDSoundFps;						// Application fps * 100
 static long nDSoundVol = 0;
 
-void audiospec_callback(void* data, Uint8* stream, int len)
-{
-/*
-	if(audio_len < len)
-	{
-		memcpy(stream,data,audio_len);
-		audio_len=0;
-		printf("resetting audio_len\n");
-		return;
-	}
-	//printf("audio_len=%d\n",audio_len);
-	memcpy(stream,data,len);
-	audio_len-=len;
-	memcpy(data,(unsigned char*)data+len,audio_len);
-*/
-printf("audiospec_callback: Buffer underrun???\n");
-}
-
 static int DSoundGetNextSoundFiller(int)							// int bDraw
 {
 	if (nAudNextSound == NULL) {
@@ -149,7 +131,6 @@ static int DxSoundCheck()
 static int DxSoundExit()
 {
 	DspExit();
-	bAudOkay = 0;													// This module is no longer okay
 
 	free(nAudNextSound);
 	nAudNextSound = NULL;
@@ -239,7 +220,6 @@ static int DxSoundInit()
 
 	DxSetCallback(NULL);
 
-	bAudOkay = 1;											// This module was initted okay
 	DspInit();
 
 	return 0;
@@ -298,13 +278,10 @@ static int DxSoundSetVolume()
 
 static int DxGetSettings(InterfaceInfo* pInfo)
 {
-	{
-		pInfo->ppszPluginSettings[0] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[0] == NULL) {
-			return 1;
-		}
-		_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Audio is delayed by approx. %ims"), int(100000.0 / (nDSoundFps / (nAudSegCount - 1.0))));
-	}
+	TCHAR szString[MAX_PATH] = _T("");
+
+	_sntprintf(szString, MAX_PATH, _T("Audio is delayed by approx. %ims"), int(100000.0 / (nDSoundFps / (nAudSegCount - 1.0))));
+	IntInfoAddStringModule(pInfo, szString);
 
 	return 0;
 }

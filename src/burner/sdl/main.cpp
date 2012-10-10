@@ -38,7 +38,7 @@ void ProcessCommandLine(int argc, char *argv[])
 {
 
 }
-
+#undef main
 int main(int argc, char *argv[]) 
 {
 	unsigned int i=0;

@@ -99,7 +99,7 @@ static BOOL CALLBACK ProgressProc(HWND hDlg, UINT Msg, WPARAM /*wParam*/, LPARAM
 
 		SendDlgItemMessage(hDlg, IDC_WAIT_PROG, PBM_SETRANGE32, nProgressMin, nProgressMax);
 
-		_stprintf(szText, _T("Loading and initialising %s..."), BurnDrvGetText(DRV_NAME));
+		_stprintf(szText, FBALoadStringEx(hAppInst, IDS_PROGRESS_LOADING, true), BurnDrvGetText(DRV_NAME));
 		SendDlgItemMessage(hDlg, IDC_WAIT_LABEL_B1, WM_SETTEXT, 0, (LPARAM)szText);
 
 		ShowWindow(GetDlgItem(hDlg, IDC_WAIT_LABEL_B1), TRUE);
@@ -131,7 +131,7 @@ static DWORD WINAPI DoProgress(LPVOID)
 	BurnExtProgressRangeCallback = ProgressSetRangeBurn;
 	BurnExtProgressUpdateCallback = ProgressUpdateBurn;
 
-	CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_WAIT), NULL, ProgressProc);
+	FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_WAIT), NULL, ProgressProc);
 
 	if (hEvent) {
 		SetEvent(hEvent);

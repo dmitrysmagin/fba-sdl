@@ -3,6 +3,35 @@
 STDINPUTINFOSPEC(Drv, CpsFsi);
 
 static struct BurnRomInfo NwarrRomDesc[] = {
+	{ "vphe.03f",     0x080000, 0xa922c44f, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.04c",     0x080000, 0x7312d890, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.05d",     0x080000, 0xcde8b506, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.06c",     0x080000, 0xbe99e7d0, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.07b",     0x080000, 0x69e0e60c, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.08b",     0x080000, 0xd95a3849, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.09b",     0x080000, 0x9882561c, 1 | BRF_ESS | BRF_PRG },
+	{ "vphe.10b",     0x080000, 0x976fa62f, 1 | BRF_ESS | BRF_PRG },
+
+	{ "vph.13m",      0x400000, 0xc51baf99, 3 | BRF_GRA },
+	{ "vph.15m",      0x400000, 0x3ce83c77, 3 | BRF_GRA },
+	{ "vph.17m",      0x400000, 0x4f2408e0, 3 | BRF_GRA },
+	{ "vph.19m",      0x400000, 0x9ff60250, 3 | BRF_GRA },
+	{ "vph.14m",      0x400000, 0x7a0e1add, 3 | BRF_GRA },
+	{ "vph.16m",      0x400000, 0x2f41ca75, 3 | BRF_GRA },
+	{ "vph.18m",      0x400000, 0x64498eed, 3 | BRF_GRA },
+	{ "vph.20m",      0x400000, 0x17f2433f, 3 | BRF_GRA },
+
+	{ "vph.01",       0x020000, 0x5045dcac, 4 | BRF_ESS | BRF_PRG },
+	{ "vph.02",       0x020000, 0x86b60e59, 4 | BRF_ESS | BRF_PRG },
+
+	{ "vph.11m",      0x200000, 0xe1837d33, 5 | BRF_SND },
+	{ "vph.12m",      0x200000, 0xfbd3cd90, 5 | BRF_SND },
+};
+
+
+STD_ROM_PICK(Nwarr) STD_ROM_FN(Nwarr)
+
+static struct BurnRomInfo NwarruRomDesc[] = {
 	{ "vphu.03f",     0x080000, 0x85d6a359, 1 | BRF_ESS | BRF_PRG },
 	{ "vphu.04c",     0x080000, 0xcb7fce77, 1 | BRF_ESS | BRF_PRG },
 	{ "vphu.05e",     0x080000, 0xe08f2bba, 1 | BRF_ESS | BRF_PRG },
@@ -29,7 +58,7 @@ static struct BurnRomInfo NwarrRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Nwarr) STD_ROM_FN(Nwarr)
+STD_ROM_PICK(Nwarru) STD_ROM_FN(Nwarru)
 
 static struct BurnRomInfo NwarrhRomDesc[] = {
 	{ "vphh.03d",     0x080000, 0x6029c7be, 1 | BRF_ESS | BRF_PRG },
@@ -178,10 +207,20 @@ STD_ROM_PICK(Vhuntjr2) STD_ROM_FN(Vhuntjr2)
 
 struct BurnDriver BurnDrvCpsNwarr = {
 	"nwarr", NULL, NULL, "1995",
-	"Night Warriors - darkstalkers' revenge (950406 USA)\0", NULL, "Capcom", "CPS2",
+	"Night Warriors - darkstalkers' revenge (950316 Euro)\0", NULL, "Capcom", "CPS2",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING,2,HARDWARE_CAPCOM_CPS2,
 	NULL, NwarrRomInfo, NwarrRomName, DrvInputInfo, NULL,
+	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,384,224,4,3
+};
+
+struct BurnDriver BurnDrvCpsNwarru = {
+	"nwarru", "nwarr", NULL, "1995",
+	"Night Warriors - darkstalkers' revenge (950406 USA)\0", NULL, "Capcom", "CPS2",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_CAPCOM_CPS2,
+	NULL, NwarruRomInfo, NwarruRomName, DrvInputInfo, NULL,
 	Cps2Init, CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,384,224,4,3
 };

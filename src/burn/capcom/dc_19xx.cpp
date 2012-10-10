@@ -152,6 +152,31 @@ static struct BurnRomInfo NinexxhRomDesc[] = {
 
 STD_ROM_PICK(Ninexxh) STD_ROM_FN(Ninexxh)
 
+static struct BurnRomInfo NinexxbRomDesc[] = {
+	{ "19xb.03a",      0x80000, 0x341bdf4a, 1 | BRF_ESS | BRF_PRG },
+	{ "19xb.04a",      0x80000, 0xdff8069e, 1 | BRF_ESS | BRF_PRG },
+	{ "19xb.05a",      0x80000, 0xa47a92a8, 1 | BRF_ESS | BRF_PRG },
+	{ "19xb.06a",      0x80000, 0xc52df10d, 1 | BRF_ESS | BRF_PRG },
+	{ "19x.07",        0x80000, 0x61c0296c, 1 | BRF_ESS | BRF_PRG },
+
+	{ "19x.13m",      0x080000, 0x427aeb18, 3 | BRF_GRA },
+	{ "19x.15m",      0x080000, 0x63bdbf54, 3 | BRF_GRA },
+	{ "19x.17m",      0x080000, 0x2dfe18b5, 3 | BRF_GRA },
+	{ "19x.19m",      0x080000, 0xcbef9579, 3 | BRF_GRA },
+	{ "19x.14m",      0x200000, 0xe916967c, 3 | BRF_GRA },
+	{ "19x.16m",      0x200000, 0x6e75f3db, 3 | BRF_GRA },
+	{ "19x.18m",      0x200000, 0x2213e798, 3 | BRF_GRA },
+	{ "19x.20m",      0x200000, 0xab9d5b96, 3 | BRF_GRA },
+
+	{ "19x.01",       0x020000, 0xef55195e, 4 | BRF_ESS | BRF_PRG },
+
+	{ "19x.11m",      0x200000, 0xd38beef3, 5 | BRF_SND },
+	{ "19x.12m",      0x200000, 0xd47c96e2, 5 | BRF_SND },
+};
+
+
+STD_ROM_PICK(Ninexxb) STD_ROM_FN(Ninexxb)
+
 struct BurnDriver BurnDrvCps19xx = {
 	"19xx", NULL, NULL, "1995",
 	"19XX - the war against destiny (951207 USA)\0", NULL, "Capcom", "CPS2",
@@ -198,6 +223,16 @@ struct BurnDriver BurnDrvCps19xxh = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_CAPCOM_CPS2,
 	NULL, NinexxhRomInfo, NinexxhRomName, DrvInputInfo, NULL,
+	Cps2Init,CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
+	&CpsRecalcPal,224,384,3,4
+};
+
+struct BurnDriver BurnDrvCps19xxb = {
+	"19xxb", "19xx", NULL, "1995",
+	"19XX - the war against destiny (951218 Brazil)\0", NULL, "Capcom", "CPS2",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_CAPCOM_CPS2,
+	NULL, NinexxbRomInfo, NinexxbRomName, DrvInputInfo, NULL,
 	Cps2Init,CpsExit,Cps2Frame,CpsRedraw,CpsAreaScan,
 	&CpsRecalcPal,224,384,3,4
 };

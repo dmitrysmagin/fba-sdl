@@ -877,7 +877,7 @@ void CloseCompressedFile()
 		if (!bEmbed) {
 			fclose(cFile);
 		}
-		
+
 		cFile = NULL;
 		embed_offset = 0;
 		bEmbed = 0;

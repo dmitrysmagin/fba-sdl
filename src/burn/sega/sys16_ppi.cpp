@@ -42,7 +42,7 @@ typedef struct
 
 static ppi8255 chips[MAX_PPIS];
 
-static void ppi8255_get_handshake_signals(ppi8255 *chip, int is_read, UINT8 *result)
+static void ppi8255_get_handshake_signals(ppi8255 *chip, UINT8 *result)
 {
 	UINT8 handshake = 0x00;
 	UINT8 mask = 0x00;
@@ -101,7 +101,7 @@ static void ppi8255_write_port(ppi8255 *chip, int port, int chipnum)
 
 	/* write out special port 2 signals */
 	if (port == 2)
-		ppi8255_get_handshake_signals(chip, 0, &write_data);
+		ppi8255_get_handshake_signals(chip, &write_data);
 
 	chip->output[port] = write_data;
 	
@@ -200,7 +200,7 @@ static UINT8 ppi8255_read_port(ppi8255 *chip, int port, int chipnum)
 
 	/* read special port 2 signals */
 	if (port == 2)
-		ppi8255_get_handshake_signals(chip, 1, &result);
+		ppi8255_get_handshake_signals(chip, &result);
 
 	return result;
 }

@@ -24,6 +24,153 @@ int GamcMisc(struct GameInp* pgi, char* szi, int nPlayer)
 				KEY(FBK_9);
 				return 0;
 			}
+			if (strcmp(szi, "service2" ) == 0) {
+				KEY(FBK_0);
+				return 0;
+			}
+			if (strcmp(szi, "service3" ) == 0) {
+				KEY(FBK_MINUS);
+				return 0;
+			}
+			if (strcmp(szi, "service4" ) == 0) {
+				KEY(FBK_EQUALS);
+				return 0;
+			}
+			if (strcmp(szi, "tilt") == 0) {
+				KEY(FBK_T);
+				return 0;
+			}
+			
+			if (strcmp(szi, "op menu" ) == 0) {
+				KEY(FBK_F1);
+				return 0;
+			}
+			
+			if (strcmp(szi, "clear credit" ) == 0) {
+				KEY(FBK_G);
+				return 0;
+			}
+			
+			if (strcmp(szi, "hopper" ) == 0) {
+				KEY(FBK_H);
+				return 0;
+			}
+			
+			// Mahjong controls
+			if (strcmp(szi, "mah a") == 0) {
+				KEY(FBK_A);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah b") == 0) {
+				KEY(FBK_B);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah c") == 0) {
+				KEY(FBK_C);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah d") == 0) {
+				KEY(FBK_D);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah e") == 0) {
+				KEY(FBK_E);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah f") == 0) {
+				KEY(FBK_F);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah g") == 0) {
+				KEY(FBK_G);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah h") == 0) {
+				KEY(FBK_H);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah i") == 0) {
+				KEY(FBK_I);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah j") == 0) {
+				KEY(FBK_J);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah k") == 0) {
+				KEY(FBK_K);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah l") == 0) {
+				KEY(FBK_L);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah m") == 0) {
+				KEY(FBK_M);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah n") == 0) {
+				KEY(FBK_N);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah kan") == 0) {
+				KEY(FBK_LCONTROL);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah pon") == 0) {
+				KEY(FBK_LALT);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah chi") == 0) {
+				KEY(FBK_SPACE);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah reach") == 0) {
+				KEY(FBK_LSHIFT);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah ron") == 0) {
+				KEY(FBK_Z);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah ff") == 0) {
+				KEY(FBK_Y);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah lc") == 0) {
+				KEY(FBK_RALT);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah bet") == 0) {
+				KEY(FBK_2);
+				return 0;
+			}
+			
+			if (strcmp(szi, "mah score") == 0) {
+				KEY(FBK_RCONTROL);
+				return 0;
+			}
 
 			// Player 1 controls
 			if (strcmp(szi, "p1 start") == 0) {
@@ -236,11 +383,12 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 {
 	char* szSearch = szPlay[nPlayer & 3];
 	int nJoyBase = 0;
+	
 	if (_strnicmp(szSearch, szi, 3) != 0) {	// Not our player
 		return 1;
 	}
 	szi += 3;
-
+	
 	if (nDevice <= -2) {
 		int bOurs = 0;
 		if (strcmp(szi, "up") == 0 || strcmp(szi, "y-axis-neg") == 0) {

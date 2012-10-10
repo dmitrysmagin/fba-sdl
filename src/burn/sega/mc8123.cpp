@@ -1824,10 +1824,10 @@ static UINT8 mc8123_decrypt(int addr,UINT8 val,const UINT8 *key,int opcode)
 }
 
 
-void mc8123_decrypt_rom(int cpunum, const UINT8* key, int banknum, int numbanks)
+void mc8123_decrypt_rom(const UINT8* key, int numbanks)
 {
-	UINT8 *decrypted1 = (unsigned char*)malloc(numbanks == 1 ? 0xc000 : 0x8000);
-	UINT8 *decrypted2 = numbanks > 1 ? (unsigned char*)malloc(0x4000 * numbanks) : decrypted1 + 0x8000;
+	//UINT8 *decrypted1 = (unsigned char*)malloc(numbanks == 1 ? 0xc000 : 0x8000);
+	//UINT8 *decrypted2 = numbanks > 1 ? (unsigned char*)malloc(0x4000 * numbanks) : decrypted1 + 0x8000;
 	UINT8 *rom = System16Z80Rom;
 	int A, bank;
 
@@ -1857,7 +1857,7 @@ void mc8123_decrypt_rom(int cpunum, const UINT8* key, int banknum, int numbanks)
 	{
 		for (A = 0x8000;A < 0xc000;A++)
 		{
-			UINT8 src = rom[0x8000 + 0x4000*bank + A];
+	//		UINT8 src = rom[0x8000 + 0x4000*bank + A];
 
 			/* decode the opcodes */
 	//		decrypted2[0x4000 * bank + (A-0x8000)] = mc8123_decrypt(A,src,key,1);

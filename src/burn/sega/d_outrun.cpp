@@ -779,21 +779,6 @@ void OutrunPPI0WritePortC(UINT8 data)
 	}
 }
 
-unsigned short __fastcall OutrunReadWord(unsigned int a)
-{
-	switch (a) {
-		case 0x140060: {
-			return 0xffff;
-		}
-	}
-
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
-#endif
-
-	return 0xffff;
-}
-
 unsigned char __fastcall OutrunReadByte(unsigned int a)
 {
 	switch (a) {
@@ -821,7 +806,7 @@ unsigned char __fastcall OutrunReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
+void __fastcall OutrunWriteWord(unsigned int a, unsigned short /*d*/)
 {
 	switch (a) {
 		case 0x140070: {
@@ -885,15 +870,6 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
-}
-
-unsigned short __fastcall Outrun2ReadWord(unsigned int a)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 # 2 Read Word -> 0x%06X\n"), a);
-#endif
-
-	return 0;
 }
 
 unsigned char __fastcall Outrun2ReadByte(unsigned int a)

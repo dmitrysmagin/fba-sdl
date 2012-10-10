@@ -1182,7 +1182,7 @@ int GameInputAutoIni(int nPlayer, TCHAR* lpszFile, bool bOverWrite)
 			nAnalogSpeed = _tcstol(szValue, NULL, 0);
 		}
 
-		if (nMinVersion <= nFileVersion && nFileVersion <= nBurnVer) {
+		if (nConfigMinVersion <= nFileVersion && nFileVersion <= nBurnVer) {
 			szValue = LabelCheck(szLine, _T("input"));
 			if (szValue) {
 				TCHAR* szQuote = NULL;

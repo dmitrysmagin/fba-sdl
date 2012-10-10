@@ -1,7 +1,7 @@
 // Burner Config for Game file module
 #include "burner.h"
 
-const int nMinVersion = 0x020921;
+const int nConfigMinVersion = 0x020921;
 
 bool bSaveInputs = true;
 
@@ -56,7 +56,7 @@ int ConfigGameLoad(bool bOverWrite)
 			}
 		}
 
-		if (nMinVersion <= nFileVersion && nFileVersion <= nBurnVer) {
+		if (nConfigMinVersion <= nFileVersion && nFileVersion <= nBurnVer) {
 			szValue = LabelCheck(szLine, _T("input"));
 			if (szValue) {
 				GameInpRead(szValue, bOverWrite);

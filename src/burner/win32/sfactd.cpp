@@ -188,7 +188,7 @@ int SFactdCreate()
 	bOldPause = bRunPause;
 	bRunPause = 1;
 	AudBlankSound();
-	hSFactdlg=CreateDialog(hAppInst,MAKEINTRESOURCE(IDD_CAPTURE),hScrnWnd,DialogProc);
+	hSFactdlg=FBACreateDialog(hAppInst,MAKEINTRESOURCE(IDD_CAPTURE),hScrnWnd,DialogProc);
 	if (hSFactdlg==NULL) return 1;
 	WndInMid(hSFactdlg,hScrnWnd);
 	ShowWindow(hSFactdlg,SW_NORMAL);

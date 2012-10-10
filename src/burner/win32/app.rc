@@ -157,19 +157,19 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,140,181,50,14
 END
 
-IDD_INPDIP DIALOGEX 0, 0, 210, 200
+IDD_INPDIP DIALOGEX 0, 0, 270, 200
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit DIPswitch settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "", IDC_STATIC, 3, 0, 204, 176
+    GROUPBOX        "", IDC_STATIC, 3, 0, 264, 176
     CTEXT           "Select a setting to change it.", IDC_STATIC, 7, 7,
-                    192, 15, SS_CENTERIMAGE
-    CONTROL         "List1", IDC_INPCHEAT_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP, 9, 24, 192, 128
-    COMBOBOX        IDC_INPCX1_VALUE, 9, 157, 137, 128, CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL
-    PUSHBUTTON      "Defaults",IDC_INPC_RESET,151,156,50,14
-    DEFPUSHBUTTON   "OK",IDOK,155,181,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,100,181,50,14
+                    252, 15, SS_CENTERIMAGE
+    CONTROL         "List1", IDC_INPCHEAT_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP, 9, 24, 252, 128
+    COMBOBOX        IDC_INPCX1_VALUE, 9, 157, 197, 128, CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL
+    PUSHBUTTON      "Defaults",IDC_INPC_RESET,211,156,50,14
+    DEFPUSHBUTTON   "OK",IDOK,215,181,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,181,50,14
 END
 
 IDD_VALUE DIALOG DISCARDABLE  0, 0, 97, 20
@@ -246,48 +246,57 @@ BEGIN
     CONTROL			" I understand and agree to be bound by the terms of the above license agreement",IDC_ACCEPTLICENSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,170,282,14
 END
 
-IDD_SELNEW DIALOGEX 0, 0, 395, 260
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_SELNEW DIALOGEX 0, 0, 620, 352
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Select Game"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "",IDC_STATIC,3,0,389,236
-
-    DEFPUSHBUTTON   "OK",IDOK,340,241,50,14
-
-    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32", TVS_LINESATROOT | TVS_HASBUTTONS | TVS_FULLROWSELECT | TVS_SHOWSELALWAYS | WS_TABSTOP, 8,8,257,178, WS_EX_STATICEDGE
-
-    CONTROL         "", IDC_STATIC, "Static", SS_WHITERECT | SS_SUNKEN, 8, 189, 258, 43
-    CONTROL         "Game info:",IDC_LABELCOMMENT,"Static",SS_LEFT,12,191,45,8
-    CONTROL         "ROM name:",IDC_LABELROMNAME,"Static",SS_LEFT,12,201,45,8
-    CONTROL         "ROM info:",IDC_LABELROMINFO,"Static",SS_LEFT,12,211,45,8
-    CONTROL         "Released by:",IDC_LABELSYSTEM,"Static",SS_LEFT,11,221,45,8
-    CONTROL         "",IDC_TEXTCOMMENT,"Edit",ES_LEFT | ES_AUTOHSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE,58,191,205,8
-    CONTROL         "",IDC_TEXTROMNAME,"Edit",ES_LEFT | ES_AUTOHSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE,58,201,205,8
-    CONTROL         "",IDC_TEXTROMINFO,"Edit",ES_LEFT | ES_AUTOHSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE,58,211,205,8
-    CONTROL         "",IDC_TEXTSYSTEM,"Edit",ES_LEFT | ES_AUTOHSCROLL | ES_READONLY | WS_CHILD | WS_VISIBLE,58,221,205,8
-
-    GROUPBOX        "",IDC_STATIC,270,4,117,112
-    CONTROL         "",IDC_SCREENSHOT_H,"Static",SS_BITMAP | SS_REALSIZEIMAGE | SS_SUNKEN,274,24,106,100
-    CONTROL         "",IDC_SCREENSHOT_V,"Static",SS_BITMAP | SS_REALSIZEIMAGE | SS_SUNKEN,288,12,106,100
-
-    GROUPBOX        "",IDC_STATIC,270,116,117,116
-    CONTROL         "Show CPS",IDC_CHECKCPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,125,80,8
-    CONTROL         "Show Neo Geo",IDC_CHECKNEOGEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,135,80,8
-    CONTROL         "Show Sega",IDC_CHECKSEGA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,145,80,8
-    CONTROL         "Show Toaplan",IDC_CHECKTOAPLAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,155,80,8
-    CONTROL         "Show Cave",IDC_CHECKCAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,165,80,8
-    CONTROL         "Show Misc",IDC_CHECKMISC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,276,175,80,8
-
-    CONTROL         "Show Available Only",IDC_CHECKAVAILABLEONLY,"Button", BS_AUTOCHECKBOX | WS_TABSTOP,276,189,80,8
-    CONTROL         "Always show clones",IDC_CHECKAUTOEXPAND,"Button", BS_AUTOCHECKBOX | WS_TABSTOP,276,199,80,8
-
-    PUSHBUTTON      "ROM Dirs...",IDROM,276,212,50,14
-    PUSHBUTTON      "Rescan ROMs",IDRESCAN,330,212,50,14
-
-	CONTROL			"Use zipnames",IDC_SEL_SHORTNAME,"Button", BS_AUTOCHECKBOX | WS_TABSTOP,6,241,100,14
-
-    PUSHBUTTON      "Cancel",IDCANCEL,286,241,50,14
+    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_TABSTOP | 0x8000,226,8,387,261,WS_EX_STATICEDGE
+    CONTROL         "",IDC_SCREENSHOT_H,"Static",SS_BITMAP | SS_REALSIZEIMAGE | SS_SUNKEN,10,45,106,100, WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_SCREENSHOT_V,"Static",SS_BITMAP | SS_REALSIZEIMAGE,36,24,106,100,WS_EX_CLIENTEDGE
+    CONTROL         "Tab1",IDC_TAB1,"SysTabControl32",TCS_MULTILINE | WS_TABSTOP,4,6,217,210
+    GROUPBOX        "",IDC_STATIC1,2,0,616,332
+    CONTROL         "",IDC_STATIC_INFOBOX,"Static",SS_WHITERECT | SS_SUNKEN,226,272,387,56
+    LTEXT           "Game info:",IDC_LABELCOMMENT,230,277,45,8,NOT WS_GROUP
+    LTEXT           "ROM name:",IDC_LABELROMNAME,230,287,45,8,NOT WS_GROUP
+    LTEXT           "ROM info:",IDC_LABELROMINFO,230,297,45,8,NOT WS_GROUP
+    LTEXT           "Released by:",IDC_LABELSYSTEM,230,307,45,8,NOT WS_GROUP
+    LTEXT           "Notes:",IDC_LABELNOTES,230,317,45,8,NOT WS_GROUP
+    EDITTEXT        IDC_TEXTCOMMENT,277,277,245,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_TEXTROMNAME,277,287,245,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_TEXTROMINFO,277,297,245,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_TEXTSYSTEM,277,307,245,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_TEXTNOTES,277,317,245,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    GROUPBOX        "Filters",IDC_STATIC_SYS,5,216,68,94
+    CONTROL         "Cave",IDC_CHECKCAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,228,50,8
+    CONTROL         "CPS-1",IDC_CHECKCPS1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,238,50,8
+    CONTROL         "CPS-2",IDC_CHECKCPS2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,248,52,8
+    CONTROL         "Neo Geo",IDC_CHECKNEOGEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,258,59,8
+    CONTROL         "Sega",IDC_CHECKSEGA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,268,50,8
+    CONTROL         "PGM",IDC_CHECKPGM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,278,50,8
+    CONTROL         "Toaplan",IDC_CHECKTOAPLAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,288,58,8
+    CONTROL         "Misc",IDC_CHECKMISC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,298,50,8
+    CONTROL         "Show Available Only",IDC_CHECKAVAILABLEONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,228,80,8
+    CONTROL         "Always show clones",IDC_CHECKAUTOEXPAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,238,80,8
+    CONTROL         "Use zipnames",IDC_SEL_SHORTNAME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,248,59,10
+    CONTROL         "Use only Latin text",IDC_SEL_ASCIIONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,258,76,10
+#if defined (_UNICODE)
+    CONTROL         "ROMs Dirs...",IDROM,"Button",BS_OWNERDRAW | WS_TABSTOP,78,285,67,14
+    CONTROL         "Scan ROMs",IDRESCAN,"Button",BS_OWNERDRAW | WS_TABSTOP,148,285,68,14
+#else
+    CONTROL         "ROMs Dirs...",IDROM,"Button",WS_TABSTOP,78,280,67,14
+    CONTROL         "Scan ROMs",IDRESCAN,"Button",WS_TABSTOP,148,280,68,14
+#endif
+    GROUPBOX        "Options",IDC_STATIC_OPT,75,216,146,94
+    GROUPBOX        "",IDC_STATIC,5,308,216,20
+    CTEXT           "",IDC_DRVCOUNT,7,315,212,8
+#if defined (_UNICODE)
+    CONTROL         "Cancel",IDCANCEL,"Button",BS_OWNERDRAW | WS_TABSTOP,496,334,58,14
+    CONTROL         "Play",IDOK,"Button",BS_OWNERDRAW | WS_TABSTOP,559,334,58,14
+#else
+    CONTROL         "Cancel",IDCANCEL,"Button",WS_TABSTOP,496,334,58,14
+    CONTROL         "Play",IDOK,"Button",WS_TABSTOP,559,334,58,14
+#endif
 END
 
 IDD_CAPTURE DIALOGEX DISCARDABLE  0, 0, 227, 122
@@ -356,7 +365,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
         DEFPUSHBUTTON "OK",IDOK,159,63,50,14
 	GROUPBOX "", IDC_STATIC, 3, 0, 208, 58
-        CONTROL "Feedback strength",IDC_PHOSPHOR_1_SLIDER,"msctls_trackbar32", WS_TABSTOP, 5, 10, 160, 18
+        CONTROL "Feedback strength",IDC_PHOSPHOR_1_SLIDER,"msctls_trackbar32", WS_TABSTOP, 5, 10, 160, 18
         EDITTEXT IDC_PHOSPHOR_1_EDIT,167,10,35,14,SS_CENTERIMAGE
         RTEXT "Max. Oversaturation:", IDC_STATIC, 8, 35, 75, 10, SS_CENTERIMAGE
         CONTROL "Feedback oversaturation",IDC_PHOSPHOR_2_SLIDER,"msctls_trackbar32", WS_TABSTOP, 85, 33, 80, 18
@@ -372,10 +381,10 @@ BEGIN
         DEFPUSHBUTTON "OK",IDOK,179,63,50,14
 		GROUPBOX "", IDC_STATIC, 3, 0, 228, 58
         RTEXT "Angle:", IDC_STATIC, 8, 12, 25, 10, SS_CENTERIMAGE
-        CONTROL "Screen Angle",IDC_SCREENANGLE_SLIDER,"msctls_trackbar32", WS_TABSTOP, 35, 10, 150, 18
+        CONTROL "Screen Angle",IDC_SCREENANGLE_SLIDER,"msctls_trackbar32", WS_TABSTOP, 35, 10, 150, 18
         EDITTEXT IDC_SCREENANGLE_EDIT,187,10,35,14,SS_CENTERIMAGE
         RTEXT "Fishbowl Factor:", IDC_STATIC, 8, 35, 55, 10, SS_CENTERIMAGE
-        CONTROL "Fishbowl Factor",IDC_SCREENCURVATURE_SLIDER,"msctls_trackbar32", WS_TABSTOP, 65, 33, 120, 18
+        CONTROL "Fishbowl Factor",IDC_SCREENCURVATURE_SLIDER,"msctls_trackbar32", WS_TABSTOP, 65, 33, 120, 18
         EDITTEXT IDC_SCREENCURVATURE_EDIT,187,33,35,14,SS_CENTERIMAGE
         PUSHBUTTON "Cancel",IDCANCEL,125,63,50,14
 END
@@ -428,27 +437,41 @@ BEGIN
     CONTROL         "",IDC_SYSINFO_EDIT,"EDIT",ES_MULTILINE | ES_WANTRETURN | ES_READONLY | WS_TABSTOP | WS_VSCROLL,3,3,342,122, WS_EX_STATICEDGE
 END
 
-IDD_DEBUG_LRG DIALOGEX 0, 0, 582, 410
+IDD_DEBUG_LRG DIALOGEX 0, 0, 582, 442
 STYLE DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "FB Alpha debugger"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL         "",IDC_STATIC,"Static",SS_WHITERECT,3,367,523,14,WS_EX_STATICEDGE
-    CONTROL         "",IDC_DBG_COMMAND,"RICHEDIT20A",ES_LOWERCASE | ES_AUTOHSCROLL | ES_NOIME | WS_TABSTOP,4,368,521,12, ES_EX_NOCALLOLEINIT
-    CONTROL         "",IDC_DBG_MAINWN1,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP,3,3,401,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
-    CONTROL         "",IDC_DBG_MAINWN2,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP,3,185,401,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
-    CONTROL         "",IDC_DBG_INFOWN1,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME,407,3,172,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
-    CONTROL         "",IDC_DBG_INFOWN2,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME,407,185,172,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
-    DEFPUSHBUTTON   "Execute",IDOK,529,367,50,14
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,3,385,579,4,WS_EX_STATICEDGE
-    PUSHBUTTON	    "Exit",IDCANCEL,527,391,50,14
-    PUSHBUTTON	    "Go!",IDC_DBG_GO,473,391,50,14
-    PUSHBUTTON	    "Step frame",IDC_DBG_STEPFRAME,419,391,50,14
-    PUSHBUTTON	    "Step",IDC_DBG_STEP,365,391,50,14
-    PUSHBUTTON	    "Step into",IDC_DBG_STEPINTO,311,391,50,14
-    PUSHBUTTON	    "Skip",IDC_DBG_SKIP,257,391,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_WHITERECT,3,399,523,14,WS_EX_STATICEDGE
+    CONTROL         "",IDC_DBG_COMMAND,"RICHEDIT20A",ES_LOWERCASE | ES_AUTOHSCROLL | ES_NOIME | WS_TABSTOP,4,400,521,12, ES_EX_NOCALLOLEINIT
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,11,83,16,WS_EX_STATICEDGE
+	CTEXT			"Disassembly", IDC_STATIC,13,3,48,16,SS_CENTERIMAGE
+    COMBOBOX        IDC_DBG_MAINWN1_DRP1,95,3,145,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+	RTEXT			"Endianness", IDC_STATIC,250,3,40,16,SS_CENTERIMAGE
+    COMBOBOX        IDC_DBG_MAINWN1_DRP2,295,3,105,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,412,11,167,16,WS_EX_STATICEDGE
+	CTEXT			"Internal CPU state", IDC_STATIC,417,3,67,16,SS_CENTERIMAGE
+    CONTROL         "",IDC_DBG_MAINWN1,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP,3,19,401,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,209,83,16,WS_EX_STATICEDGE
+	CTEXT			"Memory map", IDC_STATIC,13,201,48,16,SS_CENTERIMAGE
+    COMBOBOX        IDC_DBG_MAINWN2_DRP1,95,201,145,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+	RTEXT			"Endianness", IDC_STATIC,250,201,40,16,SS_CENTERIMAGE
+    COMBOBOX        IDC_DBG_MAINWN2_DRP2,295,201,105,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,412,209,167,16,WS_EX_STATICEDGE
+	CTEXT			"Debugger messages", IDC_STATIC,417,201,72,16,SS_CENTERIMAGE
+    CONTROL         "",IDC_DBG_MAINWN2,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP,3,217,401,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
+    CONTROL         "",IDC_DBG_INFOWN1,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME,407,19,172,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
+    CONTROL         "",IDC_DBG_INFOWN2,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME,407,217,172,179, WS_EX_STATICEDGE | ES_EX_NOCALLOLEINIT
+    DEFPUSHBUTTON   "Execute",IDOK,529,399,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,3,417,577,4,WS_EX_STATICEDGE
+    PUSHBUTTON	    "Exit",IDCANCEL,527,423,50,14
+    PUSHBUTTON	    "Go!",IDC_DBG_GO,473,423,50,14
+    PUSHBUTTON	    "Step frame",IDC_DBG_STEPFRAME,419,423,50,14
+    PUSHBUTTON	    "Step",IDC_DBG_STEP,365,423,50,14
+    PUSHBUTTON	    "Step into",IDC_DBG_STEPINTO,311,423,50,14
+    PUSHBUTTON	    "Skip",IDC_DBG_SKIP,257,423,50,14
 
-    PUSHBUTTON	    "Screenshot",IDC_DBG_SHOT,6,391,50,14
+    PUSHBUTTON	    "Screenshot",IDC_DBG_SHOT,6,423,50,14
 END
 
 IDD_DEBUG_SML DIALOGEX 0, 0, 592, 356
@@ -477,6 +500,18 @@ BEGIN
     PUSHBUTTON	    "Skip",IDC_DBG_SKIP,266,337,50,14
 
     PUSHBUTTON	    "Screenshot",IDC_DBG_SHOT,6,337,50,14
+END
+
+IDD_POPUP DIALOGEX 0, 0, 45, 36
+STYLE DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "FB Alpha message"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,38,16,50,14
+    CONTROL         "",IDC_MESSAGE_BACK,"Static",SS_WHITERECT | NOT WS_VISIBLE,0,0,0,0
+	CONTROL			"",IDC_MESSAGE_ICON,"Static",SS_OWNERDRAW,7,7,30,30
+    CONTROL         "",IDC_MESSAGE_EDIT_LOCAL,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP | NOT WS_VISIBLE,38,7,4,2 | ES_EX_NOCALLOLEINIT
+    CONTROL         "",IDC_MESSAGE_EDIT_ENG,"RICHEDIT20A",ES_MULTILINE | ES_READONLY | ES_WANTRETURN | ES_NOIME | WS_TABSTOP,38,7,4,2 | ES_EX_NOCALLOLEINIT
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -529,6 +564,7 @@ BEGIN
             MENUITEM "Basic\t(DirectDraw 7)",				MENU_BLITTER_1
             MENUITEM "SoftFX\t(DirectDraw 7)",				MENU_BLITTER_3
             MENUITEM "Enhanced\t(Direct3D 7)",				MENU_BLITTER_2
+            MENUITEM "Experimental\t(DirectX Graphics 9)",	MENU_BLITTER_4
         END
         MENUITEM "&Blitter options",					0, GRAYED
         POPUP "&Stretch"
@@ -590,7 +626,7 @@ BEGIN
             MENUITEM "Normal CRT aspect ratio\t(4:3)",			MENU_ASPECTNORMAL
             MENUITEM "Normal LCD aspect ratio\t(5:4)",			MENU_ASPECTLCD
             MENUITEM "Widescreen CRT aspect ratio\t(16:9)",		MENU_ASPECTWIDE
-            MENUITEM "Widescreen LCD aspect ratio\t(16:10)",	0, GRAYED
+            MENUITEM "Widescreen LCD aspect ratio\t(16:10)",	MENU_ASPECTWIDELCD
             MENUITEM SEPARATOR
             MENUITEM "Mirrored vertical alignment",				MENU_MONITORMIRRORVERT
         END
@@ -632,12 +668,14 @@ BEGIN
         MENUITEM "Display mode indicator",				MENU_DISPLAYINDICATOR
         MENUITEM "Modeless menu",					MENU_MODELESS
         MENUITEM SEPARATOR
+        MENUITEM "Select UI language...",					MENU_LANGUAGE_SELECT
+        MENUITEM "Export UI translation template...",			MENU_LANGUAGE_EXPORT
+        MENUITEM SEPARATOR
         POPUP "Set application thread priority"
         BEGIN
-            MENUITEM "Realtime",					MENU_PRIORITY_REALTIME
+//          MENUITEM "Realtime",					MENU_PRIORITY_REALTIME
             MENUITEM "High",						MENU_PRIORITY_HIGH
             MENUITEM "Above normal",					MENU_PRIORITY_ABOVE_NORMAL
-
             MENUITEM "Normal",						MENU_PRIORITY_NORMAL
             MENUITEM "Below normal",					MENU_PRIORITY_BELOW_NORMAL
 
@@ -665,13 +703,13 @@ BEGIN
     END
     POPUP "Help"
     BEGIN
-        MENUITEM "&About FB Alpha",					MENU_ABOUT
-        MENUITEM "&System information",				MENU_SYSINFO
-        MENUITEM SEPARATOR
         MENUITEM "View &readme.txt",					MENU_CONTENTS
         MENUITEM SEPARATOR
         MENUITEM "FB Alpha &homepage",					MENU_WWW_HOME
         MENUITEM "FB Alpha &forums",					MENU_WWW_FORUM
+        MENUITEM SEPARATOR
+        MENUITEM "&System information",				MENU_SYSINFO
+        MENUITEM "&About FB Alpha",					MENU_ABOUT
     END
 END
 
@@ -768,9 +806,9 @@ BEGIN
                 MENUITEM "Super Eagle\t(15/16-bit only)",               MENU_SOFT_SUPEREAGLE
                 MENUITEM "2xSaI\t(15/16-bit only)",                     MENU_SOFT_2XSAI
                 MENUITEM "Super 2xSaI\t(15/16-bit only)",               MENU_SOFT_SUPER2XSAI
-                MENUITEM "hq2x Filter\t(32-bit only)",                  MENU_SOFT_HQ2X
-                MENUITEM "hq3x Filter\t(32-bit only)",                  MENU_SOFT_HQ3X
-                MENUITEM "hq4x Filter\t(32-bit only)",                  MENU_SOFT_HQ4X
+                MENUITEM "hq2x filter\t(32-bit only)",                  MENU_SOFT_HQ2X
+                MENUITEM "hq3x filter\t(32-bit only)",                  MENU_SOFT_HQ3X
+                MENUITEM "hq4x filter\t(32-bit only)",                  MENU_SOFT_HQ4X
                 MENUITEM SEPARATOR
                 MENUITEM "&Force image to SoftFX size",                 MENU_SOFT_AUTOSIZE
                 POPUP "Buffering &method"
@@ -780,6 +818,48 @@ BEGIN
                         MENUITEM "&System memory",                      MENU_SYSMEM
                         MENUITEM SEPARATOR
                         MENUITEM "Directly access video memory",        MENU_SOFT_DIRECTACCESS
+                END
+        END
+END
+IDR_MENU_BLITTER_4 MENU
+BEGIN
+        POPUP "Experimental\t(DirectX Graphics 9)"
+        BEGIN
+                MENUITEM "Enable point filtering",						MENU_DX9_POINT
+                MENUITEM "Enable linear filtering",						MENU_DX9_LINEAR
+                MENUITEM "Enable cubic filtering",						MENU_DX9_CUBIC
+                POPUP "Cubic filter quality"
+                BEGIN
+		            MENUITEM "Lightly filtered\tTensioned B-spline",			MENU_DX9_CUBIC_LIGHT
+	                MENUITEM SEPARATOR
+		            MENUITEM "Smoothened strongly\tMitchell-Netravali notch",	MENU_DX9_CUBIC_NOTCH
+	                MENUITEM "Smoothened lightly\tCubic B-spline",				MENU_DX9_CUBIC_BSPLINE
+		            MENUITEM "Perceptual compromise\tMitchell-Netravali",		MENU_DX9_CUBIC_OPTIMAL
+					MENUITEM "Sharpened lightly\tCatmull-Rom spline",			MENU_DX9_CUBIC_CATMULL
+					MENUITEM "Sharpened strongly\tCardinal cubic spline",		MENU_DX9_CUBIC_SHARP
+	                MENUITEM SEPARATOR
+				    MENUITEM "Duff's tensioned B-splines...",			MENU_DX9_CUBIC_DUFF, GRAYED
+			        MENUITEM "Mitchell-Netravali 2C + B = 1...",		MENU_DX9_CUBIC_MITCHELL, GRAYED
+		            MENUITEM "Cardinal cubic splines...",				MENU_DX9_CUBIC_CARDINAL, GRAYED
+		            MENUITEM "Mitchell-Netravali free...",				MENU_DX9_CUBIC_CUSTOM, GRAYED
+                END
+                MENUITEM SEPARATOR
+                MENUITEM "Enable &Scanlines",                           MENU_SCAN
+                MENUITEM "Set scanline &intensity...",                  MENU_SCANINTENSITY
+                MENUITEM SEPARATOR
+                POPUP "Advanced settings"
+                BEGIN
+//                      MENUITEM "Single-pass reference implementation",			MENU_DX9_CUBIC0
+//                      MENUITEM "Single-pass partial precision implementation",	MENU_DX9_CUBIC1
+//                      MENUITEM "Multi-pass full precision implementation",		MENU_DX9_CUBIC2
+//                      MENUITEM "Multi-pass partial precision implementation",		MENU_DX9_CUBIC3
+//                      MENUITEM "Multi-pass high-performance implementation",		MENU_DX9_CUBIC4
+                        MENUITEM "Single-pass\tRadeon GPUs",						MENU_DX9_CUBIC1
+                        MENUITEM "Multi-pass\tGeforce GPUs",						MENU_DX9_CUBIC3
+                        MENUITEM "High-performance",								MENU_DX9_CUBIC4
+		                MENUITEM SEPARATOR
+						MENUITEM "Use PS1.4",										MENU_DX9_FORCE_PS14, GRAYED
+						MENUITEM "Use floating-point textures",						MENU_DX9_FPTERXTURES, GRAYED
                 END
         END
 END
@@ -830,34 +910,16 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_CANCEL		ICON	DISCARDABLE	"resource/cancel.ico"
+IDI_PLAY		ICON	DISCARDABLE	"resource/play.ico"
+IDI_SCAN		ICON	DISCARDABLE	"resource/scan.ico"
+IDI_ROMDIRS		ICON	DISCARDABLE	"resource/romdirs.ico"
 IDI_APP                 ICON    DISCARDABLE     "resource/fba.ico"
 IDI_TV_PLUS             ICON    DISCARDABLE     "resource/TV Plus.ico"
 IDI_TV_MINUS            ICON    DISCARDABLE     "resource/TV Minus.ico"
 IDI_TV_NOTWORKING       ICON    DISCARDABLE     "resource/TV Not Working.ico"
 IDI_TV_NOTFOUND_ESS     ICON    DISCARDABLE     "resource/TV Not Found.ico"
 IDI_TV_NOTFOUND_NON     ICON    DISCARDABLE     "resource/TV Not Found Non Essential.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE DISCARDABLE
-BEGIN
-    21000 "&Arcade"
-    21001 "&Other..."
-    21002 "&Other Gamma value..."
-    21003 "Adjust &CPU speed..."
-    21004 "Load state from active slot (no %d)\tF9"
-    21005 "Save state to active slot (no %d)\tF10"
-END
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Manifest
-//
-
-CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resource/manifest.xml"
 
 #endif    // English (U.K.) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,13 @@
+#ifdef FBA_DEBUG
+ #define PRINT_DEBUG_INFO
+#endif
+
 // GameInp structure
 #include "gameinp.h"
 // Key codes
 #include "inp_keys.h"
 
-// Interface info (used for all module)
+// Interface info (used for all modules)
 struct InterfaceInfo {
 	const TCHAR* pszModuleName;
 	TCHAR** ppszInterfaceSettings;
@@ -17,22 +21,22 @@ int IntInfoAddStringModule(InterfaceInfo* pInfo, TCHAR* szString);
 
 // Input plugin:
 struct InputInOut {
-	int (*Init)();
-	int (*Exit)();
-	int (*SetCooperativeLevel)(bool bExclusive, bool bForeground);
+	int   (*Init)();
+	int   (*Exit)();
+	int   (*SetCooperativeLevel)(bool bExclusive, bool bForeground);
 	// Setup new frame
-	int (*NewFrame)();
+	int   (*NewFrame)();
 	// Read digital
-	int (*ReadSwitch)(int nCode);
+	int   (*ReadSwitch)(int nCode);
 	// Read analog
-	int (*ReadJoyAxis)(int i, int nAxis);
-	int (*ReadMouseAxis)(int i, int nAxis);
+	int   (*ReadJoyAxis)(int i, int nAxis);
+	int   (*ReadMouseAxis)(int i, int nAxis);
 	// Find out which control is activated
-	int (*Find)(bool CreateBaseline);
+	int   (*Find)(bool CreateBaseline);
 	// Get the name of a control
-	int (*GetControlName)(int nCode, TCHAR* pszDeviceName, TCHAR* pszControlName);
+	int   (*GetControlName)(int nCode, TCHAR* pszDeviceName, TCHAR* pszControlName);
 	// Get plugin info
-	int (*GetPluginSettings)(InterfaceInfo* pInfo);
+	int   (*GetPluginSettings)(InterfaceInfo* pInfo);
 	const TCHAR* szModuleName;
 };
 
@@ -47,18 +51,42 @@ InterfaceInfo* InputGetInfo();
 extern bool bInputOkay;
 extern unsigned int nInputSelect;
 
+// Profiling plugin
+struct ProfileDo {
+	int    (*ProfileExit)();
+	int    (*ProfileInit)();
+	int    (*ProfileStart)(int nSubSystem);
+	int    (*ProfileEnd)(int nSubSystem);
+	double (*ProfileReadLast)(int nSubSystem);
+	double (*ProfileReadAverage)(int nSubSystem);
+	// Get plugin info
+	int    (*GetPluginSettings)(InterfaceInfo* pInfo);
+	const  TCHAR* szModuleName;
+};
+
+extern bool bProfileOkay;
+extern unsigned int nProfileSelect;
+
+int ProfileInit();
+int ProfileExit();
+int ProfileProfileStart(int nSubSystem);
+int ProfileProfileEnd(int nSubSustem);
+double ProfileProfileReadLast(int nSubSustem);
+double ProfileProfileReadAverage(int nSubSustem);
+InterfaceInfo* ProfileGetInfo();
+
 // Audio Output plugin
 struct AudOut {
-	int (*BlankSound)();
-	int (*SoundCheck)();
-	int (*SoundInit)();
-	int (*SetCallback)(int (*pCallback)(int));
-	int (*SoundPlay)();
-	int (*SoundStop)();
-	int (*SoundExit)();
-	int (*SoundSetVolume)();
+	int   (*BlankSound)();
+	int   (*SoundCheck)();
+	int   (*SoundInit)();
+	int   (*SetCallback)(int (*pCallback)(int));
+	int   (*SoundPlay)();
+	int   (*SoundStop)();
+	int   (*SoundExit)();
+	int   (*SoundSetVolume)();
 	// Get plugin info
-	int (*GetPluginSettings)(InterfaceInfo* pInfo);
+	int   (*GetPluginSettings)(InterfaceInfo* pInfo);
 	const TCHAR* szModuleName;
 };
 
@@ -83,13 +111,13 @@ extern int nAudDSPModule;			// DSP module to use: 0 = none, 1 = low-pass filter
 
 // Video Output plugin:
 struct VidOut {
-	int (*Init)();
-	int (*Exit)();
-	int (*Frame)(bool bRedraw);
-	int (*Paint)(int bValidate);
-	int (*ImageSize)(RECT* pRect, int nGameWidth, int nGameHeight);
+	int   (*Init)();
+	int   (*Exit)();
+	int   (*Frame)(bool bRedraw);
+	int   (*Paint)(int bValidate);
+	int   (*ImageSize)(RECT* pRect, int nGameWidth, int nGameHeight);
 	// Get plugin info
-	int (*GetPluginSettings)(InterfaceInfo* pInfo);
+	int   (*GetPluginSettings)(InterfaceInfo* pInfo);
 	const TCHAR* szModuleName;
 };
 
@@ -101,6 +129,7 @@ int VidRedraw();
 int VidRecalcPal();
 int VidPaint(int bValidate);
 int VidImageSize(RECT* pRect, int nGameWidth, int nGameHeight);
+const TCHAR* VidGetModuleName();
 InterfaceInfo* VidGetInfo();
 
 #ifdef BUILD_WIN32
@@ -131,7 +160,9 @@ extern float fVidScreenCurvature;
 extern int nVidBlitterOpt[];
 extern int bVidFullStretch;
 extern int bVidTripleBuffer;
-
+extern int bVidVSync;
+extern double dVidCubicB;
+extern double dVidCubicC;
 extern int nVidScrnWidth, nVidScrnHeight;
 extern int nVidScrnDepth;
 
@@ -154,9 +185,11 @@ void VidSKillShortMsg();
 
 int VidSAddChatMsg(const TCHAR* pID, int nIDRGB, const TCHAR* pMain, int nMainRGB);
 
+#define MAX_CHAT_SIZE (128)
+
 extern int nVidSDisplayStatus;
 extern int nMaxChatFontSize;
 extern int nMinChatFontSize;
 extern bool bEditActive;
 extern bool bEditTextChanged;
-extern TCHAR EditText[64];
+extern TCHAR EditText[MAX_CHAT_SIZE + 1];

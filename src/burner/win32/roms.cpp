@@ -3,9 +3,8 @@
 
 HWND hRomsDlg = NULL;
 
-int* gameAv = NULL;
+char* gameAv = NULL;
 bool avOk = false;
-int bAvbOnly = 1;
 
 static DWORD dwScanThreadId = 0;
 static HANDLE hScanThread = NULL;
@@ -77,7 +76,7 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 			memset(&bInfo, 0, sizeof(bInfo));
 			bInfo.hwndOwner = hDlg;
 			bInfo.pszDisplayName = buffer;
-			bInfo.lpszTitle = _T("Select Directory:");
+			bInfo.lpszTitle = FBALoadStringEx(hAppInst, IDS_ROMS_SELECT_DIR, true);
 			bInfo.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS;
 
 			pItemIDList = SHBrowseForFolder(&bInfo);
@@ -114,7 +113,7 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 
 int RomsDirCreate()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hScrnWnd, DefInpProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hScrnWnd, DefInpProc);
 	return 1;
 }
 
@@ -291,7 +290,6 @@ static DWORD WINAPI AnalyzingRoms(LPVOID)					// LPVOID lParam
 			case 1:
 				gameAv[z] = 0;
 		}
-
 		BzipClose();
    }
 
@@ -342,13 +340,13 @@ static BOOL CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LP
 int CreateROMInfo()
 {
 	if (gameAv == NULL) {
-		gameAv = (int*)malloc(nBurnDrvCount * sizeof(int));
-		memset(gameAv, 0, nBurnDrvCount * sizeof(int));
+		gameAv = (char*)malloc(nBurnDrvCount);
+		memset(gameAv, 0, nBurnDrvCount);
 	}
 
 	if (gameAv) {
 		if (CheckGameAvb() || bRescanRoms) {
-			DialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hScrnWnd, WaitProc);
+			FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_WAIT), hScrnWnd, WaitProc);
 		}
 	}
 

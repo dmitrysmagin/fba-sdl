@@ -73,11 +73,11 @@ static bool nSoftFXEnlarge = 0;
 
 static bool MMXSupport()
 {
-	unsigned int eax = 0, ebx = 0, ecx = 0, edx = 0;
+	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nSignatureECX = 0, nSignatureEDX = 0;
 
-	CPUID(1, eax, ebx, ecx, edx);
+	CPUID(1, nSignatureEAX, nSignatureEBX, nSignatureECX, nSignatureEDX);
 
-	return (edx >> 23) & 1;								// bit 23 of edx ndicates MMX support
+	return (nSignatureEDX >> 23) & 1;						// bit 23 of edx ndicates MMX support
 }
 
 TCHAR* VidSoftFXGetEffect(int nEffect)

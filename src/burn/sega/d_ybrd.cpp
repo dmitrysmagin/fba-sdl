@@ -1356,15 +1356,6 @@ unsigned short __fastcall YBoard2ReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall YBoard2ReadByte(unsigned int a)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #2 Read Byte -> 0x%06X\n"), a);
-#endif
-
-	return 0xff;
-}
-
 void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
@@ -1379,13 +1370,6 @@ void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 #2 Write Word -> 0x%06X, 0x%04X\n"), a, d);
-#endif
-}
-
-void __fastcall YBoard2WriteByte(unsigned int a, unsigned char d)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #2 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
@@ -1448,13 +1432,6 @@ void __fastcall YBoard3WriteWord(unsigned int a, unsigned short d)
 
 #if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 #3 Write Word -> 0x%06X, 0x%04X\n"), a, d);
-#endif
-}
-
-void __fastcall YBoard3WriteByte(unsigned int a, unsigned char d)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 #3 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
@@ -1579,27 +1556,21 @@ unsigned char PdriftProcessAnalogControls(UINT16 value)
 
 unsigned char RchaseProcessAnalogControls(UINT16 value)
 {
-	float temp = 0;
-	
 	switch (value) {
 		case 0: {
-			temp = (float)((System16Gun1X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(0);
 		}
 		
 		case 1: {
-			temp = (float)((System16Gun1Y >> 8) + 8) / 224.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnY(0);
 		}
 		
 		case 2: {
-			temp = (float)((System16Gun2X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(1);
 		}
 		
 		case 3: {
-			temp = (float)((System16Gun2Y >> 8) + 8) / 224.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnY(1);
 		}
 	}
 	
@@ -1648,9 +1619,9 @@ static int PdriftInit()
 
 static int RchaseInit()
 {
-	System16ProcessAnalogControlsDo = RchaseProcessAnalogControls;
+	BurnGunInit(2, false);
 	
-	System16Gun = true;
+	System16ProcessAnalogControlsDo = RchaseProcessAnalogControls;
 	
 	int nRet = System16Init();
 	

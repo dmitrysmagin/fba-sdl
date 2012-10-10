@@ -245,6 +245,80 @@ static struct BurnInputInfo DunkshotInputList[] = {
 
 STDINPUTINFO(Dunkshot);
 
+static struct BurnInputInfo ExctleagInputList[] = {
+	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"      },
+	{"Start 1"           , BIT_DIGITAL   , System16InputPort0 + 4, "p1 start"     },
+	{"Coin 2"            , BIT_DIGITAL   , System16InputPort0 + 1, "p2 coin"      },
+	{"Start 2"           , BIT_DIGITAL   , System16InputPort0 + 5, "p2 start"     },
+
+	{"P1 Up"             , BIT_DIGITAL   , System16InputPort4 + 2, "p1 up"        },
+	{"P1 Down"           , BIT_DIGITAL   , System16InputPort4 + 3, "p1 down"      },
+	{"P1 Left"           , BIT_DIGITAL   , System16InputPort4 + 0, "p1 left"      },
+	{"P1 Right"          , BIT_DIGITAL   , System16InputPort4 + 1, "p1 right"     },
+	{"P1 Bant0"          , BIT_DIGITAL   , System16InputPort1 + 0, "p1 fire 1"    },
+	{"P1 Bant1"          , BIT_DIGITAL   , System16InputPort1 + 1, "p1 fire 2"    },
+	{"P1 Bant2"          , BIT_DIGITAL   , System16InputPort1 + 2, "p1 fire 3"    },
+	{"P1 Swing0"         , BIT_DIGITAL   , System16InputPort1 + 3, "p1 fire 4"    },
+	{"P1 Swing1"         , BIT_DIGITAL   , System16InputPort1 + 4, "p1 fire 5"    },
+	{"P1 Low"            , BIT_DIGITAL   , System16InputPort1 + 5, "p1 fire 6"    },
+	{"P1 Mid"            , BIT_DIGITAL   , System16InputPort1 + 6, "p1 fire 7"    },
+	{"P1 Hi"             , BIT_DIGITAL   , System16InputPort1 + 7, "p1 fire 8"    },
+	{"P1 Change"         , BIT_DIGITAL   , System16InputPort3 + 1, "p1 fire 9"    },
+	{"P1 Select"         , BIT_DIGITAL   , System16InputPort3 + 2, "p1 fire 10"   },
+	{"P1 Chase"          , BIT_DIGITAL   , System16InputPort3 + 0, "p1 fire 11"   },
+	
+	{"P2 Up"             , BIT_DIGITAL   , System16InputPort4 + 6, "p2 up"        },
+	{"P2 Down"           , BIT_DIGITAL   , System16InputPort4 + 7, "p2 down"      },
+	{"P2 Left"           , BIT_DIGITAL   , System16InputPort4 + 4, "p2 left"      },
+	{"P2 Right"          , BIT_DIGITAL   , System16InputPort4 + 5, "p2 right"     },
+	{"P2 Bant0"          , BIT_DIGITAL   , System16InputPort2 + 0, "p2 fire 1"    },
+	{"P2 Bant1"          , BIT_DIGITAL   , System16InputPort2 + 1, "p2 fire 2"    },
+	{"P2 Bant2"          , BIT_DIGITAL   , System16InputPort2 + 2, "p2 fire 3"    },
+	{"P2 Swing0"         , BIT_DIGITAL   , System16InputPort2 + 3, "p2 fire 4"    },
+	{"P2 Swing1"         , BIT_DIGITAL   , System16InputPort2 + 4, "p2 fire 5"    },
+	{"P2 Low"            , BIT_DIGITAL   , System16InputPort2 + 5, "p2 fire 6"    },
+	{"P2 Mid"            , BIT_DIGITAL   , System16InputPort2 + 6, "p2 fire 7"    },
+	{"P2 Hi"             , BIT_DIGITAL   , System16InputPort2 + 7, "p2 fire 8"    },
+	{"P2 Change"         , BIT_DIGITAL   , System16InputPort3 + 5, "p2 fire 9"    },
+	{"P2 Select"         , BIT_DIGITAL   , System16InputPort3 + 6, "p2 fire 10"   },
+	{"P2 Chase"          , BIT_DIGITAL   , System16InputPort3 + 4, "p2 fire 11"   },
+
+	{"Service"           , BIT_DIGITAL  , System16InputPort0 + 3 , "service"      },
+	{"Diagnostics"       , BIT_DIGITAL  , System16InputPort0 + 2 , "diag"         },
+	{"Reset"             , BIT_DIGITAL  , &System16Reset         , "reset"        },
+	{"Dip 1"             , BIT_DIPSWITCH, System16Dip + 0        , "dip"          },
+	{"Dip 2"             , BIT_DIPSWITCH, System16Dip + 1        , "dip"          },
+};
+
+STDINPUTINFO(Exctleag);
+
+static struct BurnInputInfo FpointblInputList[] = {
+	{"Coin 1"            , BIT_DIGITAL  , System16InputPort0 + 0, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL  , System16InputPort0 + 4, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL  , System16InputPort0 + 1, "p2 coin"   },
+	{"Start 2"           , BIT_DIGITAL  , System16InputPort0 + 5, "p2 start"  },
+
+	{"P1 Up"             , BIT_DIGITAL  , System16InputPort1 + 5, "p1 up"     },
+	{"P1 Down"           , BIT_DIGITAL  , System16InputPort1 + 4, "p1 down"   },
+	{"P1 Left"           , BIT_DIGITAL  , System16InputPort1 + 7, "p1 left"   },
+	{"P1 Right"          , BIT_DIGITAL  , System16InputPort1 + 6, "p1 right"  },
+	{"P1 Fire 1"         , BIT_DIGITAL  , System16InputPort1 + 2, "p1 fire 1" },
+
+	{"P2 Up"             , BIT_DIGITAL  , System16InputPort2 + 5, "p2 up"     },
+	{"P2 Down"           , BIT_DIGITAL  , System16InputPort2 + 4, "p2 down"   },
+	{"P2 Left"           , BIT_DIGITAL  , System16InputPort2 + 7, "p2 left"   },
+	{"P2 Right"          , BIT_DIGITAL  , System16InputPort2 + 6, "p2 right"  },
+	{"P2 Fire 1"         , BIT_DIGITAL  , System16InputPort2 + 2, "p2 fire 1" },
+
+	{"Service"           , BIT_DIGITAL  , System16InputPort0 + 3 , "service"  },
+	{"Diagnostics"       , BIT_DIGITAL  , System16InputPort0 + 2 , "diag"     },
+	{"Reset"             , BIT_DIGITAL  , &System16Reset         , "reset"    },
+	{"Dip 1"             , BIT_DIPSWITCH, System16Dip + 0        , "dip"      },
+	{"Dip 2"             , BIT_DIPSWITCH, System16Dip + 1        , "dip"      },
+};
+
+STDINPUTINFO(Fpointbl);
+
 static struct BurnInputInfo HwchampInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"   },
 	{"Start 1"           , BIT_DIGITAL   , System16InputPort0 + 4, "p1 start"  },
@@ -757,6 +831,45 @@ static struct BurnDIPInfo EswatDIPList[]=
 };
 
 STDDIPINFO(Eswat);
+
+static struct BurnDIPInfo ExctleagDIPList[]=
+{
+	// Default Values
+	{0x25, 0xff, 0xff, 0xfe, NULL                                 },
+	{0x26, 0xff, 0xff, 0xff, NULL                                 },
+
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                        },
+	{0x25, 0x01, 0x01, 0x01, "Off"                                },
+	{0x25, 0x01, 0x01, 0x00, "On"                                 },
+	
+	{0   , 0xfe, 0   , 8   , "Starting Points"                    },
+	{0x25, 0x01, 0x0e, 0x06, "2000"                               },
+	{0x25, 0x01, 0x0e, 0x0a, "3000"                               },
+	{0x25, 0x01, 0x0e, 0x0c, "4000"                               },
+	{0x25, 0x01, 0x0e, 0x0e, "5000"                               },	
+	{0x25, 0x01, 0x0e, 0x08, "6000"                               },	
+	{0x25, 0x01, 0x0e, 0x04, "7000"                               },
+	{0x25, 0x01, 0x0e, 0x02, "8000"                               },
+	{0x25, 0x01, 0x0e, 0x00, "9000"                               },
+	
+	{0   , 0xfe, 0   , 4   , "Difficulty"                         },
+	{0x25, 0x01, 0x30, 0x20, "Easy"                               },
+	{0x25, 0x01, 0x30, 0x30, "Normal"                             },
+	{0x25, 0x01, 0x30, 0x10, "Hard"                               },
+	{0x25, 0x01, 0x30, 0x00, "Hardest"                            },
+	
+	{0   , 0xfe, 0   , 4   , "Point Table"                        },
+	{0x25, 0x01, 0xc0, 0x80, "Easy"                               },
+	{0x25, 0x01, 0xc0, 0xc0, "Normal"                             },
+	{0x25, 0x01, 0xc0, 0x40, "Hard"                               },
+	{0x25, 0x01, 0xc0, 0x00, "Hardest"                            },
+	
+	// Dip 1
+	SYSTEM16B_COINAGE(0x26)
+};
+
+STDDIPINFO(Exctleag);
 
 static struct BurnDIPInfo FpointDIPList[]=
 {
@@ -1428,6 +1541,39 @@ STDDIPINFO(Wrestwar);
 /*====================================================
 Rom defs
 ====================================================*/
+
+static struct BurnRomInfo AceattacRomDesc[] = {
+	{ "epr11491.a4",    0x10000, 0xf3c19c36, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11489.a1",    0x10000, 0xbbe623c5, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11492.a5",    0x10000, 0xd8bd3139, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11490.a2",    0x10000, 0x38cb3a41, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "epr11493.b9",    0x10000, 0x654485d9, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11494.b10",   0x10000, 0xb67971ab, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11495.b11",   0x10000, 0xb687ab61, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr11501.b1",    0x10000, 0x09179ead, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11505.b5",    0x10000, 0xb67f1ecf, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11502.b2",    0x10000, 0xa3ee36b8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11506.b6",    0x10000, 0xb0104def, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11503.b3",    0x10000, 0x344c0692, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11507.b7",    0x10000, 0xa2af710a, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11504.b4",    0x10000, 0x7cae7920, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11508.b8",    0x10000, 0x5cbb833c, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "epr11496.a7",    0x08000, 0x82cb40a9, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11497.a8",    0x08000, 0xb04f62cc, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11498.a9",    0x08000, 0x97baf52b, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11499.a10",   0x08000, 0xea332866, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11500.a11",   0x08000, 0x2ddf1c31, SYS16_ROM_UPD7759DATA | BRF_SND },
+	
+	{ "317-0059.key",   0x02000, 0x00000000, SYS16_ROM_KEY | BRF_ESS | BRF_PRG | BRF_NODUMP },
+};
+
+
+STD_ROM_PICK(Aceattac);
+STD_ROM_FN(Aceattac);
 
 static struct BurnRomInfo AliensynRomDesc[] = {
 	{ "epr11083.a4",   0x08000, 0xcb2ad9b3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2110,6 +2256,32 @@ static struct BurnRomInfo Ddux1RomDesc[] = {
 STD_ROM_PICK(Ddux1);
 STD_ROM_FN(Ddux1);
 
+static struct BurnRomInfo DduxblRomDesc[] = {
+	{ "dduxb03.bin",   0x20000, 0xe7526012, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "dduxb05.bin",   0x20000, 0x459d1237, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "dduxb02.bin",   0x20000, 0xd8ed3132, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "dduxb04.bin",   0x20000, 0x30c6cb92, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "dduxb14.bin",   0x10000, 0x664bd135, SYS16_ROM_TILES | BRF_GRA },
+	{ "dduxb15.bin",   0x10000, 0xce0d2b30, SYS16_ROM_TILES | BRF_GRA },
+	{ "dduxb16.bin",   0x10000, 0x6de95434, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "dduxb10.bin",   0x10000, 0x0be3aee5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb06.bin",   0x10000, 0xb0079e99, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb11.bin",   0x10000, 0xcfb2af18, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb07.bin",   0x10000, 0x0217369c, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb12.bin",   0x10000, 0x28ce9b15, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb08.bin",   0x10000, 0x8844f336, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb13.bin",   0x10000, 0xefe57759, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "dduxb09.bin",   0x10000, 0x6b64f665, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "dduxb01.bin",   0x08000, 0x0dbef0d7, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Dduxbl);
+STD_ROM_FN(Dduxbl);
+
 static struct BurnRomInfo DunkshotRomDesc[] = {
 	{ "epr10470.a4",   0x08000, 0x8c60761f, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr10467.a1",   0x08000, 0x29774114, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2220,6 +2392,69 @@ static struct BurnRomInfo EswatuRomDesc[] = {
 STD_ROM_PICK(Eswatu);
 STD_ROM_FN(Eswatu);
 
+static struct BurnRomInfo EswatblRomDesc[] = {
+	{ "eswat_c.rom",   0x10000, 0x1028cc81, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "eswat_f.rom",   0x10000, 0xf7b2d388, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "eswat_b.rom",   0x10000, 0x87c6b1b5, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "eswat_e.rom",   0x10000, 0x937ddf9a, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "eswat_a.rom",   0x08000, 0x2af4fc62, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "eswat_d.rom",   0x08000, 0xb4751e19, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "mpr12624.b11",  0x40000, 0x375a5ec4, SYS16_ROM_TILES | BRF_GRA },
+	{ "mpr12625.b12",  0x40000, 0x3b8c757e, SYS16_ROM_TILES | BRF_GRA },
+	{ "mpr12626.b13",  0x40000, 0x3efca25c, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "mpr12618.b1",   0x40000, 0x0d1530bf, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12621.b4",   0x40000, 0x18ff0799, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12619.b2",   0x40000, 0x32069246, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12622.b5",   0x40000, 0xa3dfe436, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12620.b3",   0x40000, 0xf6b096e0, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr12623.b6",   0x40000, 0x6773fef6, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr12617.a13",  0x08000, 0x7efecf23, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "mpr12616.a11",  0x40000, 0x254347c2, SYS16_ROM_UPD7759DATA | BRF_SND },
+};
+
+
+STD_ROM_PICK(Eswatbl);
+STD_ROM_FN(Eswatbl);
+
+static struct BurnRomInfo ExctleagRomDesc[] = {
+	{ "epr11939.a04",   0x10000, 0x117dd98f, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11936.a01",   0x10000, 0x0863de60, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11940.a05",   0x10000, 0xdec83274, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11937.a02",   0x10000, 0x4ebda367, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11941.a06",   0x10000, 0x4df2d451, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11938.a03",   0x10000, 0x07c08d47, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "epr11942.b09",   0x10000, 0xeb70e827, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11943.b10",   0x10000, 0xd97c8982, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11944.b11",   0x10000, 0xa75cae80, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr11950.b01",   0x10000, 0xaf497849, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11954.b05",   0x10000, 0x5fa2106c, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11951.b02",   0x10000, 0xc04fa974, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11955.b06",   0x10000, 0x86a0c368, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11952.b03",   0x10000, 0xe64a9761, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11956.b07",   0x10000, 0xaff5c2fa, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11953.b04",   0x10000, 0x4cae3999, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11957.b08",   0x10000, 0x218f835b, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr11945.a07",   0x08000, 0xc2a83012, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11140.a08",   0x08000, 0xb297371b, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11141.a09",   0x08000, 0x19756aa6, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11142.a10",   0x08000, 0x25d26c66, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11143.a11",   0x08000, 0x848b7b77, SYS16_ROM_UPD7759DATA | BRF_SND },
+	
+	{ "317-0079.key",   0x02000, 0xeffefa1c, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Exctleag);
+STD_ROM_FN(Exctleag);
+
 static struct BurnRomInfo FpointRomDesc[] = {
 	{ "epr12599b.a4",  0x10000, 0x26e3f354, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr12598b.a1",  0x10000, 0xc0f2c97d, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2259,6 +2494,48 @@ static struct BurnRomInfo Fpoint1RomDesc[] = {
 
 STD_ROM_PICK(Fpoint1);
 STD_ROM_FN(Fpoint1);
+
+static struct BurnRomInfo FpointblRomDesc[] = {
+	{ "flpoint.003",   0x10000, 0x4d6df514, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "flpoint.002",   0x10000, 0x4dff2ee8, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "flpoint.006",   0x10000, 0xc539727d, SYS16_ROM_TILES | BRF_GRA },
+	{ "flpoint.005",   0x10000, 0x82c0b8b0, SYS16_ROM_TILES | BRF_GRA },
+	{ "flpoint.004",   0x10000, 0x522426ae, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "12596.bin",     0x10000, 0x4a4041f3, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "12597.bin",     0x10000, 0x6961e676, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "flpoint.001",   0x08000, 0xc5b8e0fe, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Fpointbl);
+STD_ROM_FN(Fpointbl);
+
+static struct BurnRomInfo FpointbjRomDesc[] = {
+	{ "boot2.003",     0x10000, 0x6c00d1b0, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "boot2.002",     0x10000, 0xc1fcd704, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "flpoint.006",   0x10000, 0xc539727d, SYS16_ROM_TILES | BRF_GRA },
+	{ "flpoint.005",   0x10000, 0x82c0b8b0, SYS16_ROM_TILES | BRF_GRA },
+	{ "flpoint.004",   0x10000, 0x522426ae, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "12596.bin",     0x10000, 0x4a4041f3, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "12597.bin",     0x10000, 0x6961e676, SYS16_ROM_SPRITES | BRF_GRA },
+	
+	{ "flpoint.001",   0x08000, 0xc5b8e0fe, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "82s129.1",      0x00100, 0xa7c22d96, BRF_OPT },
+	{ "82s123.2",      0x00020, 0x58bcf8bd, BRF_OPT },
+	{ "fpointbj_gal16v8_1.bin", 0x00117, 0xba7f292c, BRF_OPT },
+	{ "fpointbj_gal16v8_3.bin", 0x00117, 0xce1ab1e1, BRF_OPT },
+	{ "fpointbj_gal20v8.bin", 0x00400, 0x00000000, BRF_OPT | BRF_NODUMP },
+};
+
+
+STD_ROM_PICK(Fpointbj);
+STD_ROM_FN(Fpointbj);
 
 static struct BurnRomInfo GoldnaxeRomDesc[] = {
 	{ "epr12545.a2",   0x40000, 0xa97c4e4d, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2606,6 +2883,33 @@ static struct BurnRomInfo PassshtjRomDesc[] = {
 STD_ROM_PICK(Passshtj);
 STD_ROM_FN(Passshtj);
 
+static struct BurnRomInfo PassshtbRomDesc[] = {
+	{ "pass3_2p.bin",  0x10000, 0x26bb9299, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "pass4_2p.bin",  0x10000, 0x06ac6d5d, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "opr11854.b9",   0x10000, 0xd31c0b6c, SYS16_ROM_TILES | BRF_GRA },
+	{ "opr11855.b10",  0x10000, 0xb78762b4, SYS16_ROM_TILES | BRF_GRA },
+	{ "opr11856.b11",  0x10000, 0xea49f666, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "opr11862.b1",   0x10000, 0xb6e94727, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr11865.b5",   0x10000, 0x17e8d5d5, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr11863.b2",   0x10000, 0x3e670098, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr11866.b6",   0x10000, 0x50eb71cc, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr11864.b3",   0x10000, 0x05733ca8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "opr11867.b7",   0x10000, 0x81e49697, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr11857.a7",   0x08000, 0x789edc06, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11858.a8",   0x08000, 0x08ab0018, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11859.a9",   0x08000, 0x8673e01b, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11860.a10",  0x08000, 0x10263746, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11861.a11",  0x08000, 0x38b54a71, SYS16_ROM_UPD7759DATA | BRF_SND },
+};
+
+
+STD_ROM_PICK(Passshtb);
+STD_ROM_FN(Passshtb);
+
 static struct BurnRomInfo RiotcityRomDesc[] = {
 	{ "epr14612.bin",  0x20000, 0xa1b331ec, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr14610.bin",  0x20000, 0xcd4f2c50, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2888,6 +3192,41 @@ static struct BurnRomInfo SonicbomRomDesc[] = {
 STD_ROM_PICK(Sonicbom);
 STD_ROM_FN(Sonicbom);
 
+static struct BurnRomInfo SuprleagRomDesc[] = {
+	{ "epr11133.a04",   0x10000, 0xeed72f37, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11130.a01",   0x10000, 0xe2451676, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11134.a05",   0x10000, 0xccd857f5, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11131.a02",   0x10000, 0x9b78c2cc, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11135.a06",   0x10000, 0x3735e0e1, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr11132.a03",   0x10000, 0xff199325, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "epr11136.b09",   0x10000, 0xc3860ce4, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11137.b10",   0x10000, 0x92d96187, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr11138.b11",   0x10000, 0xc01dc773, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr11144.b01",   0x10000, 0xb31de51c, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11148.b05",   0x10000, 0x126e1309, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11145.b02",   0x10000, 0x4223d2c3, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11149.b06",   0x10000, 0x694d3765, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11146.b03",   0x10000, 0xbf0359b6, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11150.b07",   0x10000, 0x9fc0aded, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11147.b04",   0x10000, 0x3e592772, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr11151.b08",   0x10000, 0x9de95169, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr11139.a07",   0x08000, 0x9cbd99da, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr11140.a08",   0x08000, 0xb297371b, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11141.a09",   0x08000, 0x19756aa6, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11142.a10",   0x08000, 0x25d26c66, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "epr11143.a11",   0x08000, 0x848b7b77, SYS16_ROM_UPD7759DATA | BRF_SND },
+	
+	{ "317-0045.key",   0x02000, 0x0594cc2e, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Suprleag);
+STD_ROM_FN(Suprleag);
+
 static struct BurnRomInfo Tetris1RomDesc[] = {
 	{ "epr12164.a4",   0x08000, 0xb329cd6f, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr12163.a1",   0x08000, 0xd372d3f3, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -2927,6 +3266,24 @@ static struct BurnRomInfo Tetris2RomDesc[] = {
 
 STD_ROM_PICK(Tetris2);
 STD_ROM_FN(Tetris2);
+
+static struct BurnRomInfo TetrisblRomDesc[] = {
+	{ "rom2.bin",      0x10000, 0x4d165c38, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "rom1.bin",      0x10000, 0x1e912131, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+		
+	{ "epr12165.b9",   0x10000, 0x62640221, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12166.b10",  0x10000, 0x9abd183b, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr12167.b11",  0x10000, 0x2495fd4e, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "obj0-o.rom",    0x10000, 0x2fb38880, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "obj0-e.rom",    0x10000, 0xd6a02cba, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr12168.a7",   0x08000, 0xbd9ba01b, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Tetrisbl);
+STD_ROM_FN(Tetrisbl);
 
 static struct BurnRomInfo TimescanRomDesc[] = {
 	{ "epr10853.a4",   0x08000, 0x24d7c5fb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -3065,7 +3422,7 @@ static struct BurnRomInfo Wb3RomDesc[] = {
 
 	{ "epr12127.a10",  0x08000, 0x0bb901bb, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
 	
-	{ "317-0098.bin",  0x01000, 0x00000000, BRF_NODUMP }
+	{ "317-0098.bin",  0x01000, 0x00000000, BRF_NODUMP },
 };
 
 
@@ -3151,6 +3508,32 @@ static struct BurnRomInfo Wb34RomDesc[] = {
 
 STD_ROM_PICK(Wb34);
 STD_ROM_FN(Wb34);
+
+static struct BurnRomInfo Wb3bblRomDesc[] = {
+	{ "wb3_03",        0x10000, 0x0019ab3b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "wb3_05",        0x10000, 0x196e17ee, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "wb3_02",        0x10000, 0xc87350cb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "wb3_04",        0x10000, 0x565d5035, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	
+	{ "wb3_14",        0x10000, 0xd3f20bca, SYS16_ROM_TILES | BRF_GRA },
+	{ "wb3_15",        0x10000, 0x96ff9d52, SYS16_ROM_TILES | BRF_GRA },
+	{ "wb3_16",        0x10000, 0xafaf0d31, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr12090.b1",   0x10000, 0xaeeecfca, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12094.b5",   0x10000, 0x615e4927, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12091.b2",   0x10000, 0x8409a243, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12095.b6",   0x10000, 0xe774ec2c, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12092.b3",   0x10000, 0x5c2f0d90, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12096.b7",   0x10000, 0x0cd59d6e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12093.b4",   0x10000, 0x4891e7bb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr12097.b8",   0x10000, 0xe645902c, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr12127.a10",  0x08000, 0x0bb901bb, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Wb3bbl);
+STD_ROM_FN(Wb3bbl);
 
 static struct BurnRomInfo WrestwarRomDesc[] = {
 	{ "epr12372.a7",   0x20000, 0xeeaba126, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -3258,17 +3641,94 @@ STD_ROM_PICK(Wrestwa2);
 STD_ROM_FN(Wrestwa2);
 
 /*====================================================
-Memory Handlers
+Bootleg Z80 Handling
 ====================================================*/
 
-unsigned short __fastcall System16BReadWord(unsigned int a)
+unsigned char __fastcall BootlegZ80PortRead(unsigned short a)
 {
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
+	a &= 0xff;
+	
+	switch (a) {
+		case 0x01: {
+			return BurnYM2151ReadStatus();
+		}
+		
+		case 0x40:
+		case 0xc0: {
+			return System16SoundLatch;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Read Port -> %02X\n"), a);
 #endif
 
-	return 0xffff;
+	return 0;
 }
+
+void __fastcall BootlegZ80PortWrite(unsigned short a, unsigned char d)
+{
+	a &= 0xff;
+	d &= 0xff;
+	
+	switch (a) {
+		case 0x00: {
+			BurnYM2151SelectRegister(d);
+			return;
+		}
+		
+		case 0x01: {
+			BurnYM2151WriteRegister(d);
+			return;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Write Port -> %02X, %02X\n"), a, d);
+#endif
+}
+
+unsigned char __fastcall BootlegZ80Read(unsigned short a)
+{
+	switch (a) {
+		case 0xe000:
+		case 0xe800: {
+			return System16SoundLatch;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Read -> %04X\n"), a);
+#endif
+
+	return 0;
+}
+
+void __fastcall BootlegZ80Write(unsigned short a, unsigned char d)
+{
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
+#endif
+}
+
+void BootlegMapZ80()
+{
+	ZetMapArea(0x0000, 0x7fff, 0, System16Z80Rom);
+	ZetMapArea(0x0000, 0x7fff, 2, System16Z80Rom);
+
+	ZetMapArea(0xf800, 0xffff, 0, System16Z80Ram);
+	ZetMapArea(0xf800, 0xffff, 1, System16Z80Ram);
+	ZetMapArea(0xf800, 0xffff, 2, System16Z80Ram);
+	
+	ZetSetReadHandler(BootlegZ80Read);
+	ZetSetWriteHandler(BootlegZ80Write);
+	ZetSetInHandler(BootlegZ80PortRead);
+	ZetSetOutHandler(BootlegZ80PortWrite);
+}
+
+/*====================================================
+Memory Handlers
+====================================================*/
 
 unsigned char __fastcall System16BReadByte(unsigned int a)
 {
@@ -3298,18 +3758,11 @@ unsigned char __fastcall System16BReadByte(unsigned int a)
 		}
 	}
 	
-#if 0 && defined FBA_DEBUG
+#if 1 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 
 	return 0xff;
-}
-
-void __fastcall System16BWriteWord(unsigned int a, unsigned short d)
-{
-#if 0 && defined FBA_DEBUG
-	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
-#endif
 }
 
 void __fastcall System16BWriteByte(unsigned int a, unsigned char d)
@@ -3328,7 +3781,7 @@ void __fastcall System16BWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 0 && defined FBA_DEBUG
+#if 1 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
@@ -3510,7 +3963,7 @@ void __fastcall CottonWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 0 && defined FBA_DEBUG
+#if 1 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
@@ -3528,6 +3981,89 @@ void __fastcall DduxWriteByte(unsigned int a, unsigned char d)
 			return;
 		}
 	}
+}
+
+void __fastcall DduxblGfxWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0xc46021: {
+			BootlegFgPage[1] = d & 0xf;
+			BootlegBgPage[1] = (d >> 4) & 0xf;
+			return;
+		}
+		
+		case 0xc46023: {
+			BootlegFgPage[0] = d & 0xf;
+			BootlegBgPage[0] = (d >> 4) & 0xf;
+			return;
+		}
+		
+		case 0xc46025: {
+			BootlegFgPage[3] = d & 0xf;
+			BootlegBgPage[3] = (d >> 4) & 0xf;
+			return;
+		}
+		
+		case 0xc46027: {
+			BootlegFgPage[2] = d & 0xf;
+			BootlegBgPage[2] = (d >> 4) & 0xf;
+			return;
+		}
+	}
+	
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
+#endif
+}
+
+void __fastcall DduxblGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0xc46000: {
+			System16ScrollY[1] = d;
+			return;
+		}
+		
+		case 0xc46008: {
+			System16ScrollX[1] = (d ^ 0xffff) & 0x1ff;
+			return;
+		}
+		
+		case 0xc46010: {
+			System16ScrollY[0] = d;
+			return;
+		}
+		
+		case 0xc46018: {
+			System16ScrollX[0] = (d ^ 0xffff) & 0x1ff;
+			return;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
+#endif
+}
+
+void __fastcall DduxblWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0xc40001: {
+			System16VideoEnable = d & 0x20;
+			System16ScreenFlip = d & 0x40;
+			return;
+		}
+		
+		case 0xc40007: {
+			System16SoundLatch = d & 0xff;
+			ZetRaiseIrq(0);
+			return;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
+#endif
 }
 
 static short DunkshotTrack1X = 0;
@@ -3699,6 +4235,247 @@ void __fastcall EswatWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
+void __fastcall EswatblSoundWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0xc42007: {
+			System16SoundLatch = d & 0xff;
+			ZetRaiseIrq(0);
+			return;
+		}
+	}
+}
+
+void __fastcall EswatblGfxWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0x418031: {
+			System16TileBanks[1] = d & 7;
+			return;
+		}
+	}
+}
+
+void __fastcall EswatblGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0x418000: {
+			System16ScrollY[0] = d;
+			return;
+		}
+	
+		case 0x418008: {
+			System16ScrollX[0] = (d ^ 0xffff);
+			return;
+		}
+		
+		case 0x418010: {
+			System16ScrollY[1] = d;
+			return;
+		}
+		
+		case 0x418018: {
+			System16ScrollX[1] = (d ^ 0xffff);
+			return;
+		}
+		
+		case 0x418020: {
+			BootlegFgPage[3] = (d >> 12) & 0xf;
+			BootlegFgPage[2] = (d >> 8) & 0xf;
+			BootlegFgPage[1] = (d >> 4) & 0xf;
+			BootlegFgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+		
+		case 0x418028: {
+			BootlegBgPage[3] = (d >> 12) & 0xf;
+			BootlegBgPage[2] = (d >> 8) & 0xf;
+			BootlegBgPage[1] = (d >> 4) & 0xf;
+			BootlegBgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+	}
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
+#endif
+}
+
+static short ExctleagTrack1X = 0;
+static short ExctleagTrack1Y = 0;
+static short ExctleagTrack2X = 0;
+static short ExctleagTrack2Y = 0;
+
+void ExctleagMakeAnalogInputs()
+{
+	if (System16InputPort4[0]) ExctleagTrack1X += 0x1;
+	if (System16InputPort4[1]) ExctleagTrack1X -= 0x1;
+	if (ExctleagTrack1X >= 0x100) ExctleagTrack1X = 0;
+	if (ExctleagTrack1X < 0) ExctleagTrack1X = 0xff;
+	
+	if (System16InputPort4[2]) ExctleagTrack1Y -= 0x1;
+	if (System16InputPort4[3]) ExctleagTrack1Y += 0x1;
+	if (ExctleagTrack1Y >= 0x100) ExctleagTrack1Y = 0;
+	if (ExctleagTrack1Y < 0) ExctleagTrack1Y = 0xff;
+	
+	if (System16InputPort4[4]) ExctleagTrack2X += 0x4;
+	if (System16InputPort4[5]) ExctleagTrack2X -= 0x4;
+	if (ExctleagTrack2X >= 0x100) ExctleagTrack2X = 0;
+	if (ExctleagTrack2X < 0) ExctleagTrack2X = 0xfc;
+	
+	if (System16InputPort4[6]) ExctleagTrack2Y -= 0x4;
+	if (System16InputPort4[7]) ExctleagTrack2Y += 0x4;
+	if (ExctleagTrack2Y >= 0x100) ExctleagTrack2Y = 0;
+	if (ExctleagTrack2Y < 0) ExctleagTrack2Y = 0xfc;
+}
+
+unsigned char __fastcall ExctleagReadByte(unsigned int a)
+{
+	switch (a) {
+		case 0xc41001: {
+			return 0xff - System16Input[0];
+		}
+		
+		case 0xc41003: {
+			return 0xff - System16Input[1];
+		}
+		
+		case 0xc41005: {
+			return 0xff - System16Input[3];
+		}
+		
+		case 0xc41007: {
+			return 0xff - System16Input[2];
+		}
+		
+		case 0xc42001: {
+			return System16Dip[0];
+		}
+
+		case 0xc42003: {
+			return System16Dip[1];
+		}
+		
+		case 0xc43001:
+		case 0xc43003: {
+			return ExctleagTrack1X;
+		}
+		
+		case 0xc43005:
+		case 0xc43007: {
+			return ExctleagTrack1Y;
+		}
+		
+		case 0xc43009:
+		case 0xc4300b: {
+			return ExctleagTrack2X;
+		}
+		
+		case 0xc4300d:
+		case 0xc4300f: {
+			return ExctleagTrack2Y;
+		}
+	}
+
+	return 0xff;
+}
+
+unsigned char __fastcall FpointblReadByte(unsigned int a)
+{
+	switch (a) {
+		case 0x601001: {
+			return 0xff - System16Input[0];
+		}
+		
+		case 0x601003: {
+			return 0xff - System16Input[1];
+		}
+		
+		case 0x601005: {
+			return 0xff - System16Input[2];
+		}
+		
+		case 0x600001: {
+			return System16Dip[0];
+		}
+
+		case 0x600003: {
+			return System16Dip[1];
+		}
+	}
+	
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
+#endif
+
+	return 0xff;
+}
+
+void __fastcall FpointblWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0x600007: {
+			System16SoundLatch = d & 0xff;
+			ZetRaiseIrq(0);
+			return;
+
+		}
+		
+		case 0x843001: {
+			System16VideoEnable = d & 0x20;
+			System16ScreenFlip = d & 0x40;
+			return;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
+#endif
+}
+
+void __fastcall FpointblGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0xc46000: {
+			System16ScrollY[0] = d;
+			return;
+		}
+	
+		case 0xc46008: {
+			System16ScrollX[0] = (d ^ 0xffff);
+			return;
+		}
+		
+		case 0xc46010: {
+			System16ScrollY[1] = d + 2;
+			return;
+		}
+		
+		case 0xc46018: {
+			System16ScrollX[1] = (d ^ 0xffff);
+			return;
+		}
+		
+		case 0xc46022: {
+			BootlegFgPage[3] = (d >> 12) & 0xf;
+			BootlegFgPage[2] = (d >> 8) & 0xf;
+			BootlegFgPage[1] = (d >> 4) & 0xf;
+			BootlegFgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+		
+		case 0xc46026: {
+			BootlegBgPage[0] = (d >> 12) & 0xf;
+			BootlegBgPage[1] = (d >> 8) & 0xf;
+			BootlegBgPage[2] = (d >> 4) & 0xf;
+			BootlegBgPage[3] = (d >> 0) & 0xf;			
+			return;
+		}
+	}
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X, 0x%04X\n"), a, d, d ^ 0xffff);
+#endif
+}
+
 unsigned short __fastcall GoldnaxeMultiply0ReadWord(unsigned int a)
 {
 	return System16MultiplyChipRead(0, (a - 0x1f0000) >> 1);
@@ -3778,7 +4555,7 @@ unsigned short __fastcall HwchampCtrlReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall HwchampCtrlWriteWord(unsigned int a, unsigned short d)
+void __fastcall HwchampCtrlWriteWord(unsigned int a, unsigned short /*d*/)
 {
 	unsigned char temp = 0;
 	
@@ -3884,6 +4661,50 @@ unsigned char __fastcall PassshtaReadByte(unsigned int a)
 	}
 
 	return 0xff;
+}
+
+void __fastcall PassshtbGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0xc46000: {
+			System16ScrollY[0] = d;
+			return;
+		}
+	
+		case 0xc46002: {
+			System16ScrollX[0] = (d ^ 0xffff) & 0x1ff;
+			return;
+		}
+		
+		case 0xc46004: {
+			System16ScrollY[1] = d;
+			return;
+		}
+		
+		case 0xc46006: {
+			System16ScrollX[1] = (d ^ 0xffff) & 0x1ff;
+			return;
+		}
+		
+/*		case 0xc46022: {
+			BootlegFgPage[3] = (d >> 12) & 0xf;
+			BootlegFgPage[2] = (d >> 8) & 0xf;
+			BootlegFgPage[1] = (d >> 4) & 0xf;
+			BootlegFgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+		
+		case 0xc46026: {
+			BootlegBgPage[0] = (d >> 12) & 0xf;
+			BootlegBgPage[1] = (d >> 8) & 0xf;
+			BootlegBgPage[2] = (d >> 4) & 0xf;
+			BootlegBgPage[3] = (d >> 0) & 0xf;			
+			return;
+		}*/
+	}
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X, 0x%04X\n"), a, d, (d ^ 0xffff) & 0x1ff);
+#endif
 }
 
 unsigned char __fastcall RiotcityReadByte(unsigned int a)
@@ -4140,6 +4961,61 @@ void __fastcall SonicbomWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
+void __fastcall TetrisblGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0x418000: {
+			System16ScrollY[0] = d;
+			return;
+		}
+	
+		case 0x418008: {
+			System16ScrollX[0] = (d ^ 0xffff) & 0x3ff;
+			return;
+		}
+		
+		case 0x418010: {
+			System16ScrollY[1] = d;
+			return;
+		}
+		
+		case 0x418018: {
+			System16ScrollX[1] = ((d ^ 0xffff) & 0x3ff) + 2;
+			return;
+		}
+		
+		case 0x418020: {
+			BootlegFgPage[3] = (d >> 12) & 0xf;
+			BootlegFgPage[2] = (d >> 8) & 0xf;
+			BootlegFgPage[1] = (d >> 4) & 0xf;
+			BootlegFgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+		
+		case 0x418028: {
+			BootlegBgPage[0] = (d >> 12) & 0xf;
+			BootlegBgPage[1] = (d >> 8) & 0xf;
+			BootlegBgPage[2] = (d >> 4) & 0xf;
+			BootlegBgPage[3] = (d >> 0) & 0xf;			
+			return;
+		}
+	}
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X, 0x%04X\n"), a, d, (d ^ 0xffff) & 0x3ff);
+#endif
+}
+
+void __fastcall TetrisblSndWriteByte(unsigned int a, unsigned char d)
+{
+	switch (a) {
+		case 0xc42007: {
+			System16SoundLatch = d & 0xff;
+			ZetRaiseIrq(0);
+			return;
+		}
+	}
+}
+
 unsigned char __fastcall ToryumonReadByte(unsigned int a)
 {
 	switch (a) {
@@ -4233,6 +5109,50 @@ void __fastcall Wb3WriteByte(unsigned int a, unsigned char d)
 			return;
 		}
 	}
+}
+
+void __fastcall Wb3bblGfxWriteWord(unsigned int a, unsigned short d)
+{
+	switch (a) {
+		case 0xc46000: {
+			System16ScrollY[0] = d;
+			return;
+		}
+	
+		case 0xc46002: {
+			System16ScrollX[0] = (d ^ 0xffff) & 0x3ff;
+			return;
+		}
+		
+		case 0xc46004: {
+			System16ScrollY[1] = d;
+			return;
+		}
+		
+		case 0xc46006: {
+			System16ScrollX[1] = (d ^ 0xffff) & 0x3ff;
+			return;
+		}
+		
+/*		case 0xc46022: {
+			BootlegFgPage[3] = (d >> 12) & 0xf;
+			BootlegFgPage[2] = (d >> 8) & 0xf;
+			BootlegFgPage[1] = (d >> 4) & 0xf;
+			BootlegFgPage[0] = (d >> 0) & 0xf;
+			return;
+		}
+		
+		case 0xc46026: {
+			BootlegBgPage[0] = (d >> 12) & 0xf;
+			BootlegBgPage[1] = (d >> 8) & 0xf;
+			BootlegBgPage[2] = (d >> 4) & 0xf;
+			BootlegBgPage[3] = (d >> 0) & 0xf;			
+			return;
+		}*/
+	}
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X, 0x%04X\n"), a, d, d ^ 0xffff);
+#endif
 }
 
 void __fastcall WrestwarWriteByte(unsigned int a, unsigned char d)
@@ -4521,8 +5441,6 @@ void BayrouteMap68K()
 	SekMapMemory(System16TileRam       , 0x700000, 0x70ffff, SM_RAM);
 	SekMapMemory(System16TextRam       , 0x710000, 0x710fff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x800000, 0x800fff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, BayrouteReadByte);
 	SekSetWriteByteHandler(0, BayrouteWriteByte);
 	SekClose();
@@ -4573,8 +5491,6 @@ void CottonMap68K()
 	SekMapMemory(System16SpriteRam     , 0x300000, 0x3007ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x500000, 0x500fff, SM_RAM);
 	SekMapMemory(System16Ram           , 0x200000, 0x203fff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, CottonReadByte);
 	SekSetWriteByteHandler(0, CottonWriteByte);
 	SekClose();
@@ -4629,6 +5545,32 @@ static int Ddux1Init()
 		SekMapHandler(1, 0x3f0000, 0x3f0003, SM_WRITE);
 		SekSetWriteByteHandler(1, DduxWriteByte);
 		SekClose();
+	}
+	
+	return nRet;
+}
+
+static int DduxblInit()
+{
+	System16CustomLoadRomDo = CustomLoadRom40000;
+	
+	System16SpriteXOffset = 112;
+	
+	System16MapZ80Do = BootlegMapZ80;
+	
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekSetWriteByteHandler(0, DduxblWriteByte);
+		SekMapHandler(1, 0x3f0000, 0x3f0003, SM_WRITE);
+		SekSetWriteByteHandler(1, DduxWriteByte);
+		SekMapHandler(2, 0xc46000, 0xc46027, SM_WRITE);
+		SekSetWriteByteHandler(2, DduxblGfxWriteByte);
+		SekSetWriteWordHandler(2, DduxblGfxWriteWord);
+		SekClose();
+		
+		bSystem16BootlegRender = true;
 	}
 	
 	return nRet;
@@ -4719,8 +5661,6 @@ void EswatMap68K()
 	SekMapMemory(System16SpriteRam     , 0x440000, 0x4407ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x840000, 0x840fff, SM_RAM);
 	SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, System16BReadByte);
 	SekSetWriteByteHandler(0, System16BWriteByte);
 	SekClose();
@@ -4771,6 +5711,116 @@ static int EswatInit()
 	return nRet;
 }
 
+static int EswatblInit()
+{
+	System16Map68KDo = EswatMap68K;
+	
+	System16SpriteXOffset = 124;
+	
+	// Start off with some sprite rom and let the load routine add on the rest
+	System16SpriteRomSize = 0x1c0000 - 0x180000;
+	
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekMapHandler(1, 0x418000, 0x418031, SM_WRITE);
+		SekSetWriteWordHandler(1, EswatblGfxWriteWord);
+		SekSetWriteByteHandler(1, EswatblGfxWriteByte);
+		
+		SekMapHandler(2, 0xc42006, 0xc42007, SM_WRITE);
+		SekSetWriteByteHandler(2, EswatblSoundWriteByte);
+		
+		SekMapHandler(3, 0x3e2000, 0x3e2003, SM_WRITE);
+		SekSetWriteByteHandler(3, EswatWriteByte);
+
+		SekClose();
+		
+		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		if (pTemp) {
+			memcpy(pTemp, System16Sprites, 0x1c0000);
+			memset(System16Sprites, 0, 0x1c0000);
+			memcpy(System16Sprites + 0x000000, pTemp + 0x000000, 0x40000);
+			memcpy(System16Sprites + 0x100000, pTemp + 0x040000, 0x40000);
+			memcpy(System16Sprites + 0x040000, pTemp + 0x080000, 0x40000);
+			memcpy(System16Sprites + 0x140000, pTemp + 0x0c0000, 0x40000);
+			memcpy(System16Sprites + 0x080000, pTemp + 0x100000, 0x40000);
+			memcpy(System16Sprites + 0x180000, pTemp + 0x140000, 0x40000);
+		} else {
+			nRet = 1;
+		}
+		free(pTemp);
+		
+		bSystem16BootlegRender = true;
+	}
+	
+	return nRet;
+}
+
+static int ExctleagInit()
+{
+	System16MakeAnalogInputsDo = ExctleagMakeAnalogInputs;
+	
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekSetReadByteHandler(0, ExctleagReadByte);
+		SekClose();
+	}
+	
+	return nRet;
+}
+
+static int ExctleagExit()
+{
+	ExctleagTrack1X = 0;
+	ExctleagTrack1Y = 0;
+	ExctleagTrack2X = 0;
+	ExctleagTrack2Y = 0;
+
+	return System16Exit();
+}
+
+static int ExctleagScan(int nAction,int *pnMin)
+{
+	if (pnMin != NULL) {					// Return minimum compatible version
+		*pnMin =  0x029660;
+	}
+	
+	if (nAction & ACB_DRIVER_DATA) {
+		SCAN_VAR(ExctleagTrack1X);
+		SCAN_VAR(ExctleagTrack1Y);
+		SCAN_VAR(ExctleagTrack2X);
+		SCAN_VAR(ExctleagTrack2Y);
+	}
+	
+	return System16Scan(nAction, pnMin);;
+}
+
+static int FpointblInit()
+{
+	System16MapZ80Do = BootlegMapZ80;
+	
+	int nRet = System16Init();
+	
+	System16SpriteXOffset = 109;
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekSetReadByteHandler(0, FpointblReadByte);
+		SekSetWriteByteHandler(0, FpointblWriteByte);
+		
+		SekMapHandler(1, 0xc46000, 0xc46031, SM_WRITE);
+		SekSetWriteWordHandler(1, FpointblGfxWriteWord);
+		SekClose();
+		
+		bSystem16BootlegRender = true;
+	}
+	
+	return nRet;
+}
+
 void GoldnaxeMap68K()
 {
 	SekInit(0, 0x68000);
@@ -4788,9 +5838,7 @@ void GoldnaxeMap68K()
 	SekMapMemory(System16SpriteRam     , 0x900000, 0x9007ff, SM_RAM);
 	SekMapMemory(System16SpriteRam     , 0x600000, 0x6007ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x140000, 0x140fff, SM_RAM);
-	SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
+	SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);	
 	SekSetReadByteHandler(0, System16BReadByte);
 	SekSetWriteByteHandler(0, System16BWriteByte);
 	SekClose();
@@ -5117,6 +6165,30 @@ static int PassshtaInit()
 	return nRet;
 }
 
+static int PassshtbInit()
+{
+	int nRet = System16Init();
+	
+//	System16SpriteXOffset = 114;
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekMapHandler(1, 0xc46000, 0xc46031, SM_WRITE);
+		SekSetWriteWordHandler(1, PassshtbGfxWriteWord);
+		
+//		SekMapHandler(2, 0x842000, 0x842001, SM_READ);
+//		SekSetReadByteHandler(2, PassshtbReadByte);
+		
+//		SekMapHandler(2, 0xc42006, 0xc42007, SM_WRITE);
+//		SekSetWriteByteHandler(2, TetrisblSndWriteByte);
+		SekClose();
+		
+		bSystem16BootlegRender = true;
+	}
+	
+	return nRet;
+}
+
 void RiotcityMap68K()
 {
 	SekInit(0, 0x68000);
@@ -5128,8 +6200,6 @@ void RiotcityMap68K()
 	SekMapMemory(System16SpriteRam     , 0xf40000, 0xf407ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0xf60000, 0xf60fff, SM_RAM);
 	SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, RiotcityReadByte);
 	SekSetWriteByteHandler(0, RiotcityWriteByte);
 	SekClose();
@@ -5310,6 +6380,27 @@ static int SonicbomInit()
 	return nRet;
 }
 
+static int TetrisblInit()
+{
+	int nRet = System16Init();
+	
+	System16SpriteXOffset = 114;
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekMapHandler(1, 0x418000, 0x418031, SM_WRITE);
+		SekSetWriteWordHandler(1, TetrisblGfxWriteWord);
+		
+		SekMapHandler(2, 0xc42006, 0xc42007, SM_WRITE);
+		SekSetWriteByteHandler(2, TetrisblSndWriteByte);
+		SekClose();
+		
+		bSystem16BootlegRender = true;
+	}
+	
+	return nRet;
+}
+
 static int TimescanInit()
 {
 	System16BTileAlt = true;
@@ -5365,8 +6456,6 @@ void TturfMap68K()
 	SekMapMemory(System16SpriteRam     , 0x300000, 0x3007ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x500000, 0x500fff, SM_RAM);
 	SekMapMemory(System16Ram           , 0x200000, 0x203fff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, TturfReadByte);
 	SekSetWriteByteHandler(0, TturfWriteByte);
 	SekClose();
@@ -5508,6 +6597,38 @@ static int Wb33Init()
 	return nRet;
 }
 
+static int Wb3bblInit()
+{
+	// Start off with some sprite rom and let the load routine add on the rest
+	System16SpriteRomSize = 0xe0000 - 0x80000;
+
+	int nRet = System16Init();
+	
+	if (!nRet) {
+		SekOpen(0);
+		SekMapHandler(1, 0xc44000, 0xc46031, SM_WRITE);
+		SekSetWriteWordHandler(1, Wb3bblGfxWriteWord);
+		SekClose();
+		
+		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		if (pTemp) {
+			memcpy(pTemp, System16Sprites, 0x80000);
+			memset(System16Sprites, 0, 0xe0000);
+			memcpy(System16Sprites + 0x000000, pTemp + 0x00000, 0x20000);
+			memcpy(System16Sprites + 0x040000, pTemp + 0x20000, 0x20000);
+			memcpy(System16Sprites + 0x080000, pTemp + 0x40000, 0x20000);
+			memcpy(System16Sprites + 0x0c0000, pTemp + 0x60000, 0x20000);
+		} else {
+			nRet = 1;
+		}
+		free(pTemp);
+		
+		bSystem16BootlegRender = true;
+	}
+
+	return nRet;
+}
+
 void WrestwarMap68K()
 {
 	SekInit(0, 0x68000);
@@ -5519,8 +6640,6 @@ void WrestwarMap68K()
 	SekMapMemory(System16SpriteRam     , 0x200000, 0x2007ff, SM_RAM);
 	SekMapMemory(System16PaletteRam    , 0x300000, 0x300fff, SM_RAM);
 	SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);
-	SekSetReadWordHandler(0, System16BReadWord);
-	SekSetWriteWordHandler(0, System16BWriteWord);
 	SekSetReadByteHandler(0, System16BReadByte);
 	SekSetWriteByteHandler(0, System16BWriteByte);
 	SekMapHandler(1, 0x400000, 0x400003, SM_WRITE);
@@ -5566,6 +6685,16 @@ static int Wrestwa1Init()
 /*====================================================
 Driver defs
 ====================================================*/
+
+struct BurnDriver BurnDrvAceattac = {
+	"aceattac", NULL, NULL, "1988",
+	"Ace Attacker (FD1094 317-0059)\0", "Incomplete Sound", "Sega", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5358 | HARDWARE_SEGA_FD1094_ENC,
+	NULL, AceattacRomInfo, AceattacRomName, System16bDip3InputInfo, NULL,
+	System16Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 224, 320, 3, 4
+};
 
 struct BurnDriver BurnDrvAliensyn = {
 	"aliensyn", NULL, NULL, "1987",
@@ -5707,7 +6836,7 @@ struct BurnDriver BurnDrvBayrout1 = {
 	NULL, 320, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvBullet = {
+struct BurnDriver BurnDrvBullet = {
 	"bullet", NULL, NULL, "1987",
 	"Bullet (FD1094 317-0041)\0", "Incomplete Sound", "Sega", "System 16B",
 	NULL, NULL, NULL, NULL,
@@ -5767,6 +6896,16 @@ struct BurnDriver BurnDrvDdux1 = {
 	NULL, 320, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvDduxbl = {
+	"dduxbl", "ddux", NULL, "1989",
+	"Dynamite Dux (bootleg)\0", NULL, "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_INVERT_TILES | HARDWARE_SEGA_5358,
+	NULL, DduxblRomInfo, DduxblRomName, System16bInputInfo, DduxDIPInfo,
+	DduxblInit, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvDunkshot = {
 	"dunkshot", NULL, NULL, "1986",
 	"Dunk Shot (FD1089 317-0022)\0", NULL, "Sega", "System 16B",
@@ -5807,6 +6946,26 @@ struct BurnDriver BurnDrvEswatu = {
 	NULL, 320, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvEswatbl = {
+	"eswatbl", "eswat", NULL, "1989",
+	"E-Swat - Cyber Police (bootleg)\0", "Incomplete Sound", "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B,
+	NULL, EswatblRomInfo, EswatblRomName, System16bfire3InputInfo, EswatDIPInfo,
+	EswatblInit, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvExctleag = {
+	"exctleag", NULL, NULL, "1989",
+	"Excite League (FD1094 317-0079)\0", "Incomplete Sound", "Sega", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_5358,
+	NULL, ExctleagRomInfo, ExctleagRomName, ExctleagInputInfo, ExctleagDIPInfo,
+	ExctleagInit, ExctleagExit, System16BFrame, NULL, ExctleagScan,
+	NULL, 320, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvFpoint = {
 	"fpoint", NULL, NULL, "1989",
 	"Flash Point (set 2, Japan, FD1094 317-0127A)\0", NULL, "Sega", "System 16B",
@@ -5824,6 +6983,26 @@ struct BurnDriver BurnDrvFpoint1 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Fpoint1RomInfo, Fpoint1RomName, System16bfire1InputInfo, FpointDIPInfo,
 	System16Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvFpointbl = {
+	"fpointbl", "fpoint", NULL, "1989",
+	"Flash Point (World, bootleg)\0", NULL, "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_INVERT_TILES,
+	NULL, FpointblRomInfo, FpointblRomName, FpointblInputInfo, FpointDIPInfo,
+	FpointblInit, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvFpointbj = {
+	"fpointbj", "fpoint", NULL, "1989",
+	"Flash Point (Japan, bootleg)\0", NULL, "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_INVERT_TILES,
+	NULL, FpointbjRomInfo, FpointbjRomName, FpointblInputInfo, FpointDIPInfo,
+	FpointblInit, System16Exit, System16BFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };
 
@@ -5947,6 +7126,16 @@ struct BurnDriver BurnDrvPassshtj = {
 	NULL, 224, 320, 3, 4
 };
 
+struct BurnDriverD BurnDrvPassshtb = {
+	"passshtb", "passsht", NULL, "1988",
+	"Passing Shot (bootleg, 2 Players)\0", "Incomplete Sound", "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5358,
+	NULL, PassshtbRomInfo, PassshtbRomName, PassshtInputInfo, PassshtDIPInfo,
+	PassshtbInit, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 224, 320, 3, 4
+};
+
 struct BurnDriver BurnDrvRiotcity = {
 	"riotcity", NULL, NULL, "1991",
 	"Riot City (Japan)\0", "Incomplete Sound", "Sega / Westone", "System 16B",
@@ -6047,6 +7236,16 @@ struct BurnDriver BurnDrvSonicbom = {
 	NULL, 224, 320, 3, 4
 };
 
+struct BurnDriver BurnDrvSuprleag = {
+	"suprleag", NULL, NULL, "1987",
+	"Super League (FD1094 317-0045)\0", "Incomplete Sound", "Sega", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_5358,
+	NULL, SuprleagRomInfo, SuprleagRomName, ExctleagInputInfo, ExctleagDIPInfo,
+	ExctleagInit, ExctleagExit, System16BFrame, NULL, ExctleagScan,
+	NULL, 320, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvTetris1 = {
 	"tetris1", "tetris", NULL, "1988",
 	"Tetris (set 1, Japan, System 16B, FD1094 317-0091)\0", NULL, "Sega", "System 16B",
@@ -6064,6 +7263,16 @@ struct BurnDriver BurnDrvTetris2 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Tetris2RomInfo, Tetris2RomName, System16bfire1InputInfo, TetrisDIPInfo,
 	System16Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvTetrisbl = {
+	"tetrisbl", "tetris", NULL, "1988",
+	"Tetris (bootleg)\0", NULL, "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B,
+	NULL, TetrisblRomInfo, TetrisblRomName, System16bfire1InputInfo, TetrisDIPInfo,
+	TetrisblInit, System16Exit, System16BFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };
 
@@ -6144,6 +7353,16 @@ struct BurnDriver BurnDrvWb34 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_FD1094_ENC,
 	NULL, Wb34RomInfo, Wb34RomName, System16bInputInfo, Wb3DIPInfo,
 	Wb33Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 320, 224, 4, 3
+};
+
+struct BurnDriverD BurnDrvWb3bbl = {
+	"wb3bbl", "wb3", NULL, "1988",
+	"Wonder Boy III - Monster Lair (bootleg)\0", NULL, "bootleg", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_INVERT_TILES,
+	NULL, Wb3bblRomInfo, Wb3bblRomName, System16bInputInfo, Wb3DIPInfo,
+	Wb3bblInit, System16Exit, System16BFrame, NULL, System16Scan,
 	NULL, 320, 224, 4, 3
 };
 

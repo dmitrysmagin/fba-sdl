@@ -42,7 +42,7 @@ int ZipGetList(struct ZipEntry **pList,int *pnListCount)
   nRet=unzGoToFirstFile(Zip); if (nRet!=UNZ_OK) { unzClose(Zip); return 1; }
 
   // Step through all of the files, until we get to the end
-  
+
   for ( nCurrFile=0,          nNextRet=UNZ_OK;
         nCurrFile<nListLen && nNextRet==UNZ_OK;
         nCurrFile++,          nNextRet=unzGoToNextFile(Zip) )

@@ -568,18 +568,18 @@ static int BjDraw()
 				attrib=BjMap[pos4];
 				if (attrib&0x80)
 				{
-					Render8x8Tile_Mask((BjMap[pos3]<<2), (x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+1, (x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2), (x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+1, (x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
 
 				}
 				else
 				{
-					Render8x8Tile_Mask((BjMap[pos3]<<2),(x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+1,(x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
-					Render8x8Tile_Mask((BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2),(x<<4)+8,(y<<4), attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+1,(x<<4)+8,(y<<4)+8, attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+2,(x<<4),(y<<4), attrib, 3, 0, 0, tiles);
+					Render8x8Tile_Mask(pTransDraw, (BjMap[pos3]<<2)+3,(x<<4),(y<<4)+8, attrib, 3, 0, 0, tiles);
 				}
 				pos3++;
 				pos4++;
@@ -594,22 +594,22 @@ static int BjDraw()
 			{
 				if (BjColRam[pos2]&0x10)
 				{
-					Render8x8Tile_Mask(BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
 				}
 				else
 				{
-					Render8x8Tile_Mask(BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
 				}
 			}
 			else
 			{
 				if (BjColRam[pos2]&0x10)
 				{
-					Render8x8Tile_Mask(BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++]+256,(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
 				}
 				else
 				{
-					Render8x8Tile_Mask(BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
+					Render8x8Tile_Mask(pTransDraw, BjVidRam[pos++],(31-x)<<3,y<<3,BjColRam[pos2++]&15, 3, 0, 0, text);
 				}
 			}
 		}
@@ -631,118 +631,118 @@ static int BjDraw()
 			case 0:
 				if (!(BjSprRam[pos]&0x80))
 				{
-					Render8x8Tile_Mask((tile<<2)  , x+8, y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<2)+1, x+8, y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<2)+2, x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<2)+3, x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<2)  , x+8, y   ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<2)+1, x+8, y+8 ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<2)+2, x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<2)+3, x,y+8,colour, 3, 0, 0, sprites);
 				}
 				else
 				{
 					tile&=31;
 
-					Render8x8Tile_Mask((tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask((tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
 				}
 				break;
 			case 0x80:
 				if (!(BjSprRam[pos]&0x80))
 				{
-					Render8x8Tile_Mask_FlipX((tile<<2)+2, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<2)+3, x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<2), x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<2)+1, x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+2, x+8,y   ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+3, x+8,y+8 ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2), x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<2)+1, x,y+8,colour, 3, 0, 0, sprites);
 				}
 				else
 				{
 					tile&=31;
-					Render8x8Tile_Mask_FlipX((tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipX((tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
 				}
 				break;
 			case 0x40:
 				if (!(BjSprRam[pos]&0x80))
 				{
-					Render8x8Tile_Mask_FlipY((tile<<2)+1, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<2), x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<2)+3, x,y, 3,colour, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<2)+2, x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+1, x+8,y   ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2), x+8,y+8 ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+3, x,y, 3,colour, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<2)+2, x,y+8,colour, 3, 0, 0, sprites);
 				}
 				else
 				{
 					tile&=31;
-					Render8x8Tile_Mask_FlipY((tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipY((tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
 				}
 				break;
 			case 0xc0:
 				if (!(BjSprRam[pos]&0x80))
 				{
-					Render8x8Tile_Mask_FlipXY((tile<<2)+3, x+8,y   ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<2)+2, x+8,y+8 ,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<2)+1, x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<2), x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+3, x+8,y   ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+2, x+8,y+8 ,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2)+1, x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<2), x,y+8,colour, 3, 0, 0, sprites);
 				}
 				else
 				{
 					tile&=31;
-					Render8x8Tile_Mask_FlipXY((tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
-					Render8x8Tile_Mask_FlipXY((tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+512,x+8+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+513,x+8+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+514,x+16,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+515,x+16,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+516,x+8+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+517,x+8+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+518,x+16,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+519,x+16,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+520,x+8,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+521,x+8,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+522,x,y,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+523,x,y+8,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+524,x+8,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+525,x+8,y+8+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+526,x,y+16,colour, 3, 0, 0, sprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, (tile<<4)+527,x,y+8+16,colour, 3, 0, 0, sprites);
 				}
 				break;
 			default:

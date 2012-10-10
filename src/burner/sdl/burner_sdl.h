@@ -56,3 +56,14 @@ int InputMake(bool bCopy);
 //TODO:
 #define szAppBurnVer 1
 
+// stringset.cpp
+class StringSet {
+public:
+	TCHAR* szText;
+	int nLen;
+	// printf function to add text to the Bzip string
+	int __cdecl Add(TCHAR* szFormat, ...);
+	int Reset();
+	StringSet();
+	~StringSet();
+};

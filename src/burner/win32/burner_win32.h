@@ -1,6 +1,8 @@
 #define _WIN32_WINDOWS 0x0410
-#define _WIN32_WINNT 0x0400
-#define _WIN32_IE 0x0400
+//#define _WIN32_WINNT 0x0400
+#define _WIN32_IE 0x0500
+#define _WIN32_WINNT 0x0501
+#define WINVER 0x0501
 #define STRICT
 
 #if defined (_UNICODE)
@@ -8,6 +10,7 @@
 #endif
 
 #define WIN32_LEAN_AND_MEAN
+#define OEMRESOURCE
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
@@ -21,6 +24,7 @@
 #endif
 
 #include "resource.h"
+#include "resource_string.h"
 
 // ---------------------------------------------------------------------------
 
@@ -51,6 +55,10 @@
          HANDLE_##message((hwnd), (wParam), (lParam), (fn));	\
 		 break;
 
+// Macro used for re-initialiging video/sound/input
+// #define POST_INITIALISE_MESSAGE { dprintf(_T("*** (re-) initialising - %s %i\n"), _T(__FILE__), __LINE__); PostMessage(NULL, WM_APP + 0, 0, 0); }
+#define POST_INITIALISE_MESSAGE PostMessage(NULL, WM_APP + 0, 0, 0)
+
 // ---------------------------------------------------------------------------
 
 // main.cpp
@@ -79,16 +87,42 @@ extern OPENFILENAME ofn;
 /* const */ char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
 /* const */ TCHAR* ANSIToTCHAR(const char* pszString, TCHAR* pszOutString, int nOutSize);
 
-int dprintf(TCHAR* szFormat, ...);					// Use instead of printf() in the UI
+int dprintf(TCHAR* pszFormat, ...);					// Use instead of printf() in the UI
 
 void AppCleanup();
-int AppError(TCHAR* szText, int bWarning);
 int AppMessage(MSG* pMsg);
 bool AppProcessKeyboardInput();
 
 // localise.cpp
+extern bool bLocalisationActive;
+extern TCHAR szLocalisationTemplate[MAX_PATH];
+
 void FBALocaliseExit();
-int FBALocaliseInit();
+int FBALocaliseInit(TCHAR* pszTemplate);
+int FBALocaliseLoadTemplate();
+int FBALocaliseCreateTemplate();
+HMENU FBALoadMenu(HINSTANCE hInstance, LPTSTR lpMenuName);
+INT_PTR FBADialogBox(HINSTANCE hInstance, LPTSTR lpTemplate, HWND hWndParent, DLGPROC  lpDialogFunc);
+HWND FBACreateDialog(HINSTANCE hInstance, LPCTSTR lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc);
+int FBALoadString(HINSTANCE hInstance, UINT uID, LPTSTR lpBuffer, int nBufferMax);
+TCHAR* FBALoadStringEx(HINSTANCE hInstance, UINT uID, bool bTranslate);
+
+// popup_win32.cpp
+enum FBAPopupType { MT_NONE = 0, MT_ERROR, MT_WARNING, MT_INFO };
+
+#define PUF_TYPE_ERROR			(1)
+#define PUF_TYPE_WARNING		(2)
+#define PUF_TYPE_INFO			(3)
+#define PUF_TYPE_LOGONLY		(8)
+
+#define PUF_TEXT_TRANSLATE		(1 << 16)
+
+#define PUF_TEXT_NO_TRANSLATE	(0)
+#define PUF_TEXT_DEFAULT		(PUF_TEXT_TRANSLATE)
+
+int FBAPopupDisplay(int nFlags);
+int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...);
+int FBAPopupDestroyText();
 
 // sysinfo.cpp
 LONG CALLBACK ExceptionFilter(_EXCEPTION_POINTERS* pExceptionInfo);
@@ -106,7 +140,7 @@ int FirstUsageCreate();
 
 // media.cpp
 int MediaInit();
-int MediaExit(bool bRestart);
+int MediaExit();
 
 // misc_win32.cpp
 int AppDirectory();
@@ -146,7 +180,7 @@ extern int nWindowPosX, nWindowPosY;
 extern int nSavestateSlot;
 
 int ScrnInit();
-int ScrnExit(bool bRestart);
+int ScrnExit();
 int ScrnSize();
 int ScrnTitle();
 void SetPauseMode(bool bPause);
@@ -181,7 +215,6 @@ void MenuEnableItems();
 bool MenuHandleKeyboard(MSG*);
 
 // sel.cpp
-extern int bLoadMenuAutoExpand;
 extern int nLoadMenuShowX;
 int SelDialog();									// Choose a Burn driver
 
@@ -247,14 +280,13 @@ void ScanlineDialog();
 void PhosphorDialog();
 void ScreenAngleDialog();
 void CPUClockDialog();
-
+void CubicSharpnessDialog();
 // sfactd.cpp
 int SFactdCreate();
 
 // roms.cpp
-extern int* gameAv;
+extern char* gameAv;
 extern bool avOk;
-extern int bAvbOnly;
 int RomsDirCreate();
 int CreateROMInfo();
 void FreeROMInfo();

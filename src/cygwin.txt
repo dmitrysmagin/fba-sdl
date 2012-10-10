@@ -3,9 +3,9 @@ CONTENTS
  0 About this document
  1 Requirements for compiling
  2 Setting up Cygwin
- 4 Installing FBA
- 5 Additional setup
- 6 Compiling FBA
+ 3 Additional setup
+ 4 Installing the FBA sources
+ 5 Compiling FBA
 
 
 
@@ -21,7 +21,7 @@ you to set up your C/C++ programming environment and compile FBA.
 
 1 - REQUIREMENTS FOR COMPILING
 
-Besides the FB sources, you require the following to compile them:
+Besides the FBA sources, you require the following to compile them:
 
  - Cygwin;
  - libpng for MinGW;
@@ -75,7 +75,7 @@ and .x files to /usr/include/w32api.
 
 
 
-5 - INSTALLING THE FBA SOURCES
+4 - INSTALLING THE FBA SOURCES
 
 To install the FBA sources, simply unzip them to the directory where you want
 them to live.
@@ -87,7 +87,7 @@ to add the FBA directory to the Cygwin filesystem.
 
 
 
-6 - COMPILING THE FBA SOURCES
+5 - COMPILING THE FBA SOURCES
 
 To compile the FBA sources, change to the root directory of FBA, one level below
 where this file is located, and type <make> (do this from a Cygwin command

@@ -173,20 +173,17 @@ int VidSSetupGamma(IDirectDrawSurface7* pSurf)
 // ---------------------------------------------------------------------------
 // Fullscreen mode support routines
 
-static unsigned int nRequestedWidth, nRequestedHeight;
-static unsigned int nBestWidth, nBestHeight, nBestScore;
-
-static HRESULT WINAPI myEnumModesCallback(LPDDSURFACEDESC2 pSurfaceDesc, void*)
+int VidSScoreDisplayMode(VidSDisplayScoreInfo* pScoreInfo)
 {
 	// Continue if the resolution is too low
-	if (pSurfaceDesc->dwWidth < nRequestedWidth || pSurfaceDesc->dwHeight < nRequestedHeight) {
-		return DDENUMRET_OK;
+	if (pScoreInfo->nModeWidth < pScoreInfo->nRequestedWidth || pScoreInfo->nModeHeight < pScoreInfo->nRequestedHeight) {
+		return 0;
 	}
 
 	// Only test standard resolutions if below 512 x 384
-	if ((pSurfaceDesc->dwWidth == 320 && pSurfaceDesc->dwHeight == 240) || (pSurfaceDesc->dwWidth == 400 && pSurfaceDesc->dwHeight == 300) || (pSurfaceDesc->dwWidth >= 512 && pSurfaceDesc->dwHeight >= 384)) {
+	if ((pScoreInfo->nModeWidth == 320 && pScoreInfo->nModeHeight == 240) || (pScoreInfo->nModeWidth == 400 && pScoreInfo->nModeHeight == 300) || (pScoreInfo->nModeWidth >= 512 && pScoreInfo->nModeHeight >= 384)) {
 
-		if (nRequestedWidth == 0 || nRequestedHeight == 0) {
+		if (pScoreInfo->nRequestedWidth == 0 || pScoreInfo->nRequestedHeight == 0) {
 			RECT rect = {0, 0, 0, 0};
 			int nGameWidth = nVidImageWidth, nGameHeight = nVidImageHeight;
 			unsigned int nScore;
@@ -199,43 +196,95 @@ static HRESULT WINAPI myEnumModesCallback(LPDDSURFACEDESC2 pSurfaceDesc, void*)
 				}
 			}
 
-			nVidScrnWidth = rect.right = pSurfaceDesc->dwWidth;
-			nVidScrnHeight = rect.bottom = pSurfaceDesc->dwHeight;
+			nVidScrnWidth = rect.right = pScoreInfo->nModeWidth;
+			nVidScrnHeight = rect.bottom = pScoreInfo->nModeHeight;
 			VidImageSize(&rect, nGameWidth, nGameHeight);
 
 			// Continue if the resolution is too low
 			if (!bDrvOkay) {
-				if ((unsigned int)(rect.bottom - rect.top) < nRequestedHeight) {
-					return DDENUMRET_OK;
+				if ((unsigned int)(rect.bottom - rect.top) < pScoreInfo->nRequestedHeight) {
+					return 0;
 				}
 			} else {
 				if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
-					if ((unsigned int)(rect.right - rect.left) < nRequestedWidth) {
-						return DDENUMRET_OK;
+					if ((unsigned int)(rect.right - rect.left) < pScoreInfo->nRequestedWidth) {
+						return 0;
 					}
 				} else {
-					if ((unsigned int)(rect.bottom - rect.top) < nRequestedHeight) {
-						return DDENUMRET_OK;
+					if ((unsigned int)(rect.bottom - rect.top) < pScoreInfo->nRequestedHeight) {
+						return 0;
 					}
 				}
 			}
 
 			// Score resolutions based on how many pixels are unused and the pixel aspect
-			nScore = 65536 * (pSurfaceDesc->dwWidth - (unsigned)(rect.right - rect.left)) + (pSurfaceDesc->dwHeight - (unsigned)(rect.bottom - rect.top));
-			nScore = (int)((double)nScore * ((double)pSurfaceDesc->dwWidth * nVidScrnAspectY / pSurfaceDesc->dwHeight / nVidScrnAspectX));
-			if (nScore < nBestScore) {
-				nBestScore = nScore;
-				nBestWidth = pSurfaceDesc->dwWidth;
-				nBestHeight = pSurfaceDesc->dwHeight;
+			nScore = 65536 * (pScoreInfo->nModeWidth - (unsigned)(rect.right - rect.left)) + (pScoreInfo->nModeHeight - (unsigned)(rect.bottom - rect.top));
+			nScore = (int)((double)nScore * ((double)pScoreInfo->nModeWidth * nVidScrnAspectY / pScoreInfo->nModeHeight / nVidScrnAspectX));
+			if (nScore < pScoreInfo->nBestScore) {
+				pScoreInfo->nBestScore = nScore;
+				pScoreInfo->nBestWidth = pScoreInfo->nModeWidth;
+				pScoreInfo->nBestHeight = pScoreInfo->nModeHeight;
 			}
 		} else {
 			// Select the lowest resolution that will fit the image
-			if (pSurfaceDesc->dwWidth < nBestWidth && pSurfaceDesc->dwHeight < nBestHeight) {
-				nBestWidth = pSurfaceDesc->dwWidth;
-				nBestHeight = pSurfaceDesc->dwHeight;
+			if (pScoreInfo->nModeWidth < pScoreInfo->nBestWidth && pScoreInfo->nModeHeight < pScoreInfo->nBestHeight) {
+				pScoreInfo->nBestWidth = pScoreInfo->nModeWidth;
+				pScoreInfo->nBestHeight = pScoreInfo->nModeHeight;
 			}
 		}
 	}
+
+	return 0;
+}
+
+int VidSInitScoreInfo(VidSDisplayScoreInfo* pScoreInfo)
+{
+	int nGameWidth = nVidImageWidth, nGameHeight = nVidImageHeight;
+	int nGameAspectX = 4, nGameAspectY = 3;
+
+	pScoreInfo->nBestWidth = -1U;
+	pScoreInfo->nBestHeight = -1U;
+	pScoreInfo->nBestScore = -1U;
+
+	if (pScoreInfo->nRequestedZoom == 0) {
+		return 0;
+	}
+
+	pScoreInfo->nRequestedWidth = 0;
+	pScoreInfo->nRequestedHeight = 0;
+
+	if (bDrvOkay) {
+		if ((BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) && (nVidRotationAdjust & 1)) {
+			BurnDrvGetVisibleSize(&nGameHeight, &nGameWidth);
+			BurnDrvGetAspect(&nGameAspectY, &nGameAspectX);
+		} else {
+			BurnDrvGetVisibleSize(&nGameWidth, &nGameHeight);
+			BurnDrvGetAspect(&nGameAspectX, &nGameAspectY);
+		}
+	}
+
+	if (!bVidCorrectAspect || bVidFullStretch || (nVidSelect == 1 && (nVidBlitterOpt[1] & 0x07000000) == 0x07000000) || (nVidSelect == 2 && nVidBlitterOpt[2] & 0x00000100)) {
+		pScoreInfo->nRequestedWidth = nGameWidth * pScoreInfo->nRequestedZoom;
+		pScoreInfo->nRequestedHeight = nGameHeight * pScoreInfo->nRequestedZoom;
+	} else {
+		if (bDrvOkay) {
+			if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+				pScoreInfo->nRequestedWidth = nGameWidth * pScoreInfo->nRequestedZoom;
+			} else {
+				pScoreInfo->nRequestedHeight = nGameHeight * pScoreInfo->nRequestedZoom;
+			}
+		}
+	}
+
+	return 0;
+}
+
+static HRESULT WINAPI myEnumModesCallback(LPDDSURFACEDESC2 pSurfaceDesc, void* lpContext)
+{
+	((VidSDisplayScoreInfo*)lpContext)->nModeWidth = pSurfaceDesc->dwWidth;
+	((VidSDisplayScoreInfo*)lpContext)->nModeHeight = pSurfaceDesc->dwHeight;
+
+	VidSScoreDisplayMode((VidSDisplayScoreInfo*)lpContext);
 
 	return DDENUMRET_OK;
 }
@@ -281,40 +330,12 @@ int VidSEnterFullscreenMode(int nZoom, int nDepth)
 		}
 	} else {
 		if (nZoom) {
-			int nGameWidth = nVidImageWidth, nGameHeight = nVidImageHeight;
-			int nGameAspectX = 4, nGameAspectY = 3;
-
-			nRequestedWidth = 0;
-			nRequestedHeight = 0;
-
-			if (bDrvOkay) {
-				if ((BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) && (nVidRotationAdjust & 1)) {
-					BurnDrvGetVisibleSize(&nGameHeight, &nGameWidth);
-					BurnDrvGetAspect(&nGameAspectY, &nGameAspectX);
-				} else {
-					BurnDrvGetVisibleSize(&nGameWidth, &nGameHeight);
-					BurnDrvGetAspect(&nGameAspectX, &nGameAspectY);
-				}
-			}
-
-			if (!bVidCorrectAspect || bVidFullStretch || (nVidSelect == 1 && (nVidBlitterOpt[1] & 0x07000000) == 0x07000000) || (nVidSelect == 2 && nVidBlitterOpt[2] & 0x00000100)) {
-				nRequestedWidth = nGameWidth * nZoom;
-				nRequestedHeight = nGameHeight * nZoom;
-			} else {
-				if (bDrvOkay) {
-					if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
-						nRequestedWidth = nGameWidth * nZoom;
-					} else {
-						nRequestedHeight = nGameHeight * nZoom;
-					}
-				}
-			}
-
 			DDSURFACEDESC2 ddsd;
+			VidSDisplayScoreInfo ScoreInfo;
 
-			nBestWidth = -1U;
-			nBestHeight = -1U;
-			nBestScore = -1U;
+			memset(&ScoreInfo, 0, sizeof(VidSDisplayScoreInfo));
+			ScoreInfo.nRequestedZoom = nZoom;
+			VidSInitScoreInfo(&ScoreInfo);
 
 			memset(&ddsd, 0, sizeof(ddsd));
 			ddsd.dwSize = sizeof(ddsd);
@@ -323,19 +344,20 @@ int VidSEnterFullscreenMode(int nZoom, int nDepth)
 			ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
 			ddsd.ddpfPixelFormat.dwRGBBitCount = nDepth;
 
-			pDD->EnumDisplayModes(0, &ddsd, (void*)NULL, myEnumModesCallback);
+			pDD->EnumDisplayModes(0, &ddsd, (void*)&ScoreInfo, myEnumModesCallback);
 
-			if (nBestWidth == -1U) {
+			if (ScoreInfo.nBestWidth == -1U) {
 
 				VidSRestoreScreenMode();
 
-				AppError(_T("No appropriate display mode supported. Please adjust your full-screen settings."), 1);
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_FULL_NOMODE));
+				FBAPopupDisplay(PUF_TYPE_ERROR);
 
 				return 1;
 			}
 
-			nWidth = nBestWidth;
-			nHeight = nBestHeight;
+			nWidth = ScoreInfo.nBestWidth;
+			nHeight = ScoreInfo.nBestHeight;
 		} else {
 			nWidth = nVidWidth;
 			nHeight = nVidHeight;
@@ -347,16 +369,13 @@ int VidSEnterFullscreenMode(int nZoom, int nDepth)
 	}
 
 	if (FAILED(pDD->SetDisplayMode(nWidth, nHeight, nDepth, nVidRefresh, 0))) {
-		TCHAR szText[256] = _T("");
-
 		VidSRestoreScreenMode();
 
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_FULL_PROBLEM));
 		if (bVidArcaderes && (nWidth != 320 && nHeight != 240)) {
-			_stprintf(szText, _T("Error setting \"%dx%dx%dbpp (%dHz)\" display mode\n\nThis is not a standard VGA resolution; please make sure it is supported by your video card."), nWidth, nHeight, nDepth, nVidRefresh);
-		} else {
-			_stprintf(szText, _T("Error setting \"%dx%dx%dbpp (%dHz)\" display mode"), nWidth, nHeight, nDepth, nVidRefresh);
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_FULL_CUSTRES));
 		}
-		AppError(szText, 1);
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 
 		nVidScrnWidth = 0;
 		nVidScrnHeight = 0;
@@ -411,7 +430,6 @@ bool VidSGetArcaderes(int* pWidth, int* pHeight)
 
 	return true;
 }
-
 
 // This function takes a rectangle and scales it to either:
 // - The largest possible multiple of both X and Y;
@@ -583,7 +601,51 @@ static int nStatusFlags;
 
 bool bEditActive = false;
 bool bEditTextChanged = false;
-TCHAR EditText[64] = _T("");
+TCHAR EditText[MAX_CHAT_SIZE + 1] = _T("");
+
+static BOOL MyTextOut(HDC hdc, int nXStart, int nYStart, LPCTSTR lpString, int cbString, int nShadowOffset, int nColour)
+{
+	// Print a black shadow
+	SetTextColor(hdc, 0);
+	if (nShadowOffset >= 2) {
+		TextOut(hdc, nXStart + nShadowOffset, nYStart + nShadowOffset, lpString, cbString);
+	}
+	// Print a black outline
+	TextOut(hdc, nXStart - 1, nYStart - 1, lpString, cbString);
+	TextOut(hdc, nXStart + 0, nYStart - 1, lpString, cbString);
+	TextOut(hdc, nXStart + 1, nYStart - 1, lpString, cbString);
+	TextOut(hdc, nXStart + 1, nYStart + 0, lpString, cbString);
+	TextOut(hdc, nXStart + 1, nYStart + 1, lpString, cbString);
+	TextOut(hdc, nXStart + 0, nYStart + 1, lpString, cbString);
+	TextOut(hdc, nXStart - 1, nYStart + 1, lpString, cbString);
+	TextOut(hdc, nXStart - 1, nYStart + 0, lpString, cbString);
+	// Print the text on top
+	SetTextColor(hdc, nColour);
+
+	return TextOut(hdc, nXStart, nYStart, lpString, cbString);
+}
+
+static BOOL MyExtTextOut(HDC hdc, int X, int Y, UINT fuOptions, CONST RECT* lprc, LPCTSTR lpString, UINT cbCount, CONST INT* lpDx, int nShadowOffset, int nColour)
+{
+	// Print a black shadow
+	SetTextColor(hdc, 0);
+	if (nShadowOffset >= 2) {
+		ExtTextOut(hdc, X + nShadowOffset, Y + nShadowOffset, fuOptions, lprc, lpString, cbCount, lpDx);
+	}
+	// Print a black outline
+	ExtTextOut(hdc, X - 1, Y - 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X + 0, Y - 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X + 1, Y - 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X + 1, Y + 0, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X + 1, Y + 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X + 0, Y + 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X - 1, Y + 1, fuOptions, lprc, lpString, cbCount, lpDx);
+	ExtTextOut(hdc, X - 1, Y + 0, fuOptions, lprc, lpString, cbCount, lpDx);
+	// Print the text on top
+	SetTextColor(hdc, nColour);
+
+	return ExtTextOut(hdc, X, Y, fuOptions, lprc, lpString, cbCount, lpDx);
+}
 
 static void VidSExitShortMsg()
 {
@@ -742,7 +804,7 @@ static int VidSInitChat(int nFlags)
 		bChatInitialised = true;
 	}
 
-	nChatFontSize = nMaxChatFontSize - ((nMaxChatFontSize - nMinChatFontSize) / 4) * nFlags;
+	nChatFontSize = nMaxChatFontSize - ((nMaxChatFontSize - nMinChatFontSize) * nFlags) / 4;
 
 	ChatIDFont = CreateFont(nChatFontSize, 0, 0, 0, FW_BOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_SWISS, _T("Lucida"));
 	if (nChatFontSize > 20) {
@@ -752,8 +814,6 @@ static int VidSInitChat(int nFlags)
 	}
 
 	nChatShadowOffset = (nChatFontSize / 16) + 1;
-
-	nChatTimer = 0;
 	nChatOverFlow = 0;
 	bDrawChat = false;
 
@@ -786,6 +846,8 @@ static int VidSInitChat(int nFlags)
 
 	VidSClearSurface(pChatSurf, nKeyColour, NULL);
 
+	bDrawChat = true;
+
 	return 0;
 }
 
@@ -795,7 +857,7 @@ static int VidSInitEdit(int nFlags)
 
 	VidSExitEdit();
 
-	nEditSize = nMaxChatFontSize + 8 - ((nMaxChatFontSize - nMinChatFontSize) / 4) * nFlags;
+	nEditSize = nMaxChatFontSize + 8 - ((nMaxChatFontSize - nMinChatFontSize) * nFlags) / 4;
 
 	EditTextFont = CreateFont(nEditSize - 8, 0, 0, 0, FW_BOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_SWISS, _T("Lucida"));
 	EditCursorFont = CreateFont(nEditSize - 8, 0, 0, 0, FW_BOLD, 0, TRUE, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_SWISS, _T("Lucida"));
@@ -836,6 +898,10 @@ static int VidSInitEdit(int nFlags)
 
 int VidSInitOSD(int nFlags)
 {
+#ifdef PRINT_DEBUG_INFO
+//	dprintf(_T(" ** OSD initialised.\n"));
+#endif
+
 	if (pDD == NULL) {
 		return 1;
 	}
@@ -994,12 +1060,7 @@ static void VidSDisplayStatus(IDirectDrawSurface7* pSurf, RECT* pRect)
 			hFont = (HFONT)SelectObject(hDC, StatusFont);
 			SetTextAlign(hDC, TA_TOP | TA_RIGHT);
 
-			// Print a black shadow
-			SetTextColor(hDC, 0);
-			TextOut(hDC, 192, 2, szStatus, _tcslen(szStatus));
-			// Print the text on top
-			SetTextColor(hDC, RGB(0xFF, 0x3F, 0x3F));
-			TextOut(hDC, 192 - 2, 0, szStatus,  _tcslen(szStatus));
+			MyTextOut(hDC, 192 - 2, 0, szStatus, _tcslen(szStatus), 2, RGB(0xFF, 0x3F, 0x3F));
 
 			// Clean up
 			SelectObject(hDC, hFont);
@@ -1051,7 +1112,7 @@ static int VidSDrawChat(RECT* dest)
 
 	if (bContent) {
 
-		nChatTimer = nFramesEmulated + 300 ;
+		nChatTimer = nFramesEmulated + 300;
 
 		// Print the message
 		HDC hDC;
@@ -1081,12 +1142,7 @@ static int VidSDrawChat(RECT* dest)
 			if (VidSChatMessage[i].pIDText) {
 				SelectObject(hDC, ChatIDFont);
 				nStringLength =  _tcslen(VidSChatMessage[i].pIDText);
-				// Print a black shadow
-				SetTextColor(hDC, 0);
-				ExtTextOut(hDC, nChatShadowOffset, (i + nChatOverFlow) * nChatFontSize + nChatShadowOffset, ETO_CLIPPED, dest, VidSChatMessage[i].pIDText, nStringLength, NULL);
-				// Print the text on top
-				SetTextColor(hDC, VidSChatMessage[i].nIDColour);
-				ExtTextOut(hDC, 0, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, VidSChatMessage[i].pIDText, nStringLength, NULL);
+				MyExtTextOut(hDC, 0, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, VidSChatMessage[i].pIDText, nStringLength, NULL, nChatShadowOffset, VidSChatMessage[i].nIDColour);
 				GetTextExtentPoint32(hDC, VidSChatMessage[i].pIDText, nStringLength, &sizeID);
 			} else {
 				sizeID.cx = 0;
@@ -1104,31 +1160,15 @@ static int VidSDrawChat(RECT* dest)
 					}
 
 					nStringLength = nFit;
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, sizeID.cx + nChatShadowOffset, (i + nChatOverFlow) * nChatFontSize + nChatShadowOffset, ETO_CLIPPED, dest, VidSChatMessage[i].pMainText, nStringLength, NULL);
-					// Print the text on top
-					SetTextColor(hDC, VidSChatMessage[i].nMainColour);
-					ExtTextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, VidSChatMessage[i].pMainText, nStringLength, NULL);
+					MyExtTextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, VidSChatMessage[i].pMainText, nStringLength, NULL, nChatShadowOffset, VidSChatMessage[i].nMainColour);
 
 					nChatOverFlow++;
 
 					nStringLength =  _tcslen(&(VidSChatMessage[i].pMainText[nFit + 1]));
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, sizeID.cx + nChatShadowOffset, (i + nChatOverFlow) * nChatFontSize + nChatShadowOffset, ETO_CLIPPED, dest, &(VidSChatMessage[i].pMainText[nFit + 1]), nStringLength, NULL);
-					// Print the text on top
-					SetTextColor(hDC, VidSChatMessage[i].nMainColour);
-					ExtTextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, &(VidSChatMessage[i].pMainText[nFit + 1]), nStringLength, NULL);
+					MyExtTextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, ETO_CLIPPED, dest, &(VidSChatMessage[i].pMainText[nFit + 1]), nStringLength, NULL, nChatShadowOffset, VidSChatMessage[i].nMainColour);
 				} else {
 					SelectObject(hDC, ChatMainFont);
-					nStringLength =  _tcslen(VidSChatMessage[i].pMainText);
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					TextOut(hDC, sizeID.cx + nChatShadowOffset, (i + nChatOverFlow) * nChatFontSize + nChatShadowOffset, VidSChatMessage[i].pMainText, nStringLength);
-					// Print the text on top
-					SetTextColor(hDC, VidSChatMessage[i].nMainColour);
-					TextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, VidSChatMessage[i].pMainText, nStringLength);
+					MyTextOut(hDC, sizeID.cx, (i + nChatOverFlow) * nChatFontSize, VidSChatMessage[i].pMainText, nStringLength, nChatShadowOffset, VidSChatMessage[i].nMainColour);
 				}
 			}
 		}
@@ -1259,15 +1299,9 @@ static void VidSDisplayEdit(IDirectDrawSurface7* pSurf, RECT* pRect)
 				}
 			} while (nFit < nStart);
 
-
 			if (nStart == _tcslen(pText)) {
 				if (nStart) {
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, pText, nStart, NULL);
-					// Print the text on top
-					SetTextColor(hDC, RGB(0xDF, 0xDF, 0xFF));
-					ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText, nStart, NULL);
+					MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText, nStart, NULL, nEditShadowOffset, RGB(0xDF, 0xDF, 0xFF));
 				}
 
 				GetTextExtentPoint32(hDC, pText, nStart, &size);
@@ -1276,19 +1310,10 @@ static void VidSDisplayEdit(IDirectDrawSurface7* pSurf, RECT* pRect)
 				if (nCursorState) {
 					SelectObject(hDC, EditCursorFont);
 				}
-				SetTextColor(hDC, 0);
-				ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, Space, 1, NULL);
-				// Print the text on top
-				SetTextColor(hDC, RGB(0xFF, 0xFF, 0xFF));
-				ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, Space, 1, NULL);
+				MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, Space, 1, NULL, nEditShadowOffset, RGB(0xFF, 0xFF, 0xFF));
 			} else {
 				if (nStart) {
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, pText, nStart, NULL);
-					// Print the text on top
-					SetTextColor(hDC, RGB(0xDF, 0xDF, 0xFF));
-					ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText, nStart, NULL);
+					MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText, nStart, NULL, nEditShadowOffset, RGB(0xDF, 0xDF, 0xFF));
 				}
 
 				GetTextExtentPoint32(hDC, pText, nStart, &size);
@@ -1298,11 +1323,7 @@ static void VidSDisplayEdit(IDirectDrawSurface7* pSurf, RECT* pRect)
 					if (nCursorState) {
 						SelectObject(hDC, EditCursorFont);
 					}
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, pText + nStart, 1, NULL);
-					// Print the text on top
-					SetTextColor(hDC, RGB(0xFF, 0xFF, 0xFF));
-					ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nStart, 1, NULL);
+					MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nStart, 1, NULL, nEditShadowOffset, RGB(0xFF, 0xFF, 0xFF));
 
 					GetTextExtentPoint32(hDC, pText + nStart, 1, &size);
 					pos += size.cx;
@@ -1312,11 +1333,8 @@ static void VidSDisplayEdit(IDirectDrawSurface7* pSurf, RECT* pRect)
 				} else {
 					// Highlight selected characters
 					SelectObject(hDC, EditTextFont);
-					SetTextColor(hDC, RGB(0x7F, 0x1F, 0x1F));
-					ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, pText + nStart, nEnd - nStart, NULL);
-					// Print the text on top
-					SetTextColor(hDC, RGB(0xFF, 0xFF, 0xDF));
-					ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nStart, nEnd - nStart, NULL);
+					// SetTextColor(hDC, RGB(0x7F, 0x1F, 0x1F));
+					MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nStart, nEnd - nStart, NULL, nEditShadowOffset, RGB(0xFF, 0xFF, 0xDF));
 
 					GetTextExtentPoint32(hDC, pText + nStart, nEnd - nStart, &size);
 					pos += size.cx;
@@ -1324,12 +1342,7 @@ static void VidSDisplayEdit(IDirectDrawSurface7* pSurf, RECT* pRect)
 
 				if (nEnd < _tcslen(EditText)) {
 					SelectObject(hDC, EditTextFont);
-					// Print a black shadow
-					SetTextColor(hDC, 0);
-					ExtTextOut(hDC, pos + nEditShadowOffset + 3, nEditShadowOffset + 3, ETO_CLIPPED, &src, pText + nEnd, _tcslen(pText) - nEnd, NULL);
-					// Print the text on top
-					SetTextColor(hDC, RGB(0xDF, 0xDF, 0xFF));
-					ExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nEnd, _tcslen(pText) - nEnd, NULL);
+					MyExtTextOut(hDC, pos + 3, 3, ETO_CLIPPED, &src, pText + nEnd, _tcslen(pText) - nEnd, NULL, nEditShadowOffset, RGB(0xDF, 0xDF, 0xFF));
 				}
 			}
 
@@ -1401,12 +1414,7 @@ int VidSNewShortMsg(const TCHAR* pText, int nRGB, int nDuration, int nPriority)	
 		hFont = (HFONT)SelectObject(hDC, ShortMsgFont);
 		SetTextAlign(hDC, TA_TOP | TA_RIGHT);
 
-		// Print a black shadow
-		SetTextColor(hDC, 0);
-		TextOut(hDC, 192, 2, VidSShortMsg.pMsgText, _tcslen(VidSShortMsg.pMsgText));
-		// Print the text on top
-		SetTextColor(hDC, VidSShortMsg.nColour);
-		TextOut(hDC, 192 - 2, 0, VidSShortMsg.pMsgText, _tcslen(VidSShortMsg.pMsgText));
+		MyTextOut(hDC, 192 - 2, 0, VidSShortMsg.pMsgText, _tcslen(VidSShortMsg.pMsgText), 2, VidSShortMsg.nColour);
 
 		// Clean up
 		SelectObject(hDC, hFont);

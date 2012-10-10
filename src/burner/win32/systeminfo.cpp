@@ -1,4 +1,5 @@
 #include "burner.h"
+#include "build_details.h"
 #include <tlhelp32.h>
 #include <setupapi.h>
 #include <psapi.h>
@@ -13,6 +14,9 @@
 
 static _EXCEPTION_POINTERS* pExceptionPointers;
 
+static TCHAR* pszTextBuffer = NULL;
+static int nTextBufferSize = 0;
+
 static int nRecursion = 0;
 
 static HFONT hLogFont, hCodeFont;
@@ -20,37 +24,72 @@ static HBRUSH hCodeBGBrush;
 
 static const bool bPrintDriverInfo = false;
 
-static TCHAR* PrintInterfaceInfo(TCHAR* pText, InterfaceInfo* pInfo)
+static int AddLine(TCHAR* pszFormat, ...)
+{
+	TCHAR szString[128] = _T("");
+
+	va_list vaFormat;
+	va_start(vaFormat, pszFormat);
+
+	int nLen = _vsntprintf(szString, 70, pszFormat, vaFormat);
+	nLen = (nLen >= 0 && nLen < 70) ? nLen : 70;
+	nLen += _stprintf(szString + nLen, _T("\r\n"));
+	TCHAR* pszNewBuffer = (TCHAR*)realloc(pszTextBuffer, (nLen + nTextBufferSize + 1) * sizeof(TCHAR));
+	if (pszNewBuffer) {
+		pszTextBuffer = pszNewBuffer;
+		_tcsncpy(pszTextBuffer + nTextBufferSize, szString, nLen);
+		nTextBufferSize += nLen;
+		pszTextBuffer[nTextBufferSize] = 0;
+	}
+
+	va_end(vaFormat);
+
+	return 0;
+}
+
+static int AddText(TCHAR* pszFormat, ...)
+{
+	TCHAR szString[128] = _T("");
+
+	va_list vaFormat;
+	va_start(vaFormat, pszFormat);
+
+	int nLen = _vsntprintf(szString, 70, pszFormat, vaFormat);
+	nLen = (nLen >= 0 && nLen < 70) ? nLen : 70;
+	TCHAR* pszNewBuffer = (TCHAR*)realloc(pszTextBuffer, (nLen + nTextBufferSize + 1) * sizeof(TCHAR));
+	if (pszNewBuffer) {
+		pszTextBuffer = pszNewBuffer;
+		_tcsncpy(pszTextBuffer + nTextBufferSize, szString, nLen);
+		nTextBufferSize += nLen;
+		pszTextBuffer[nTextBufferSize] = 0;
+	}
+
+	va_end(vaFormat);
+
+	return 0;
+}
+
+static int PrintInterfaceInfo(InterfaceInfo* pInfo)
 {
 	if (pInfo == NULL) {
-		return pText;
+		return 1;
 	}
 
-	if (pInfo->pszPluginName) {
-		pText += _stprintf(pText, _T("    Selected module:    %s\r\n"), pInfo->pszPluginName);
+	if (pInfo->pszModuleName) {
+		AddLine(_T("    Selected module:    %s"), pInfo->pszModuleName);
 	}
-	for (int i = 0, j = 0; i < 8; i++) {
-		if (pInfo->ppszInterfaceSettings[i]) {
-			int nSize = _sntprintf(pText, 70, _T("    %s%s\r"), (j == 0) ? _T("Interface settings: ") : _T("                    "), pInfo->ppszInterfaceSettings[i]);
-			pText += (nSize >= 0 && nSize < 70) ? nSize : 70;
-			pText += _stprintf(pText, _T("\r\n"));
-			j++;
-		}
+	for (int i = 0; pInfo->ppszInterfaceSettings[i]; i++) {
+		AddLine(_T("    %s%s"), (i == 0) ? _T("Interface settings: ") : _T("                    "), pInfo->ppszInterfaceSettings[i]);
 	}
-	for (int i = 0, j = 0; i < 8; i++) {
-		if (pInfo->ppszPluginSettings[i]) {
-			int nSize = _sntprintf(pText, 70, _T("    %s%s\r"), (j == 0) ? _T("Module settings:    ") : _T("                    "), pInfo->ppszPluginSettings[i]);
-			pText += (nSize >= 0 && nSize < 70) ? nSize : 70;
-			pText += _stprintf(pText, _T("\r\n"));
-			j++;
-		}
+	for (int i = 0; pInfo->ppszModuleSettings[i]; i++) {
+		AddLine(_T("    %s%s"), (i == 0) ? _T("Module settings:    ") : _T("                    "), pInfo->ppszModuleSettings[i]);
 	}
 
-	return pText;
+	return 0;
 }
 
 // Print information about the exception
-TCHAR* PrintExceptionInfo(TCHAR* pText)
+int PrintExceptionInfo()
 {
 	static const struct { DWORD ExceptionCode; const TCHAR* szString; } ExceptionString[] = {
 
@@ -92,20 +131,20 @@ TCHAR* PrintExceptionInfo(TCHAR* pText)
 		}
 	}
 
-	pText += _stprintf(pText, _T("Exception 0x%08X (%s) thrown.\r\nEIP: 0x%p"), pExceptionPointers->ExceptionRecord->ExceptionCode, ExceptionString[i].szString, pExceptionPointers->ExceptionRecord->ExceptionAddress);
+	AddLine(_T("Exception 0x%08X (%s) thrown.\r\nEIP: 0x%p"), pExceptionPointers->ExceptionRecord->ExceptionCode, ExceptionString[i].szString, pExceptionPointers->ExceptionRecord->ExceptionAddress);
 	if (pExceptionPointers->ExceptionRecord->ExceptionCode ==  EXCEPTION_ACCESS_VIOLATION) {
-		pText += _stprintf(pText, _T(" (attempting to %s address 0x%p)"), pExceptionPointers->ExceptionRecord->ExceptionInformation[0] ? _T("write") : _T("read"), pExceptionPointers->ExceptionRecord->ExceptionInformation[1]);
+		AddLine(_T(" (attempting to %s address 0x%p)"), pExceptionPointers->ExceptionRecord->ExceptionInformation[0] ? _T("write") : _T("read"), pExceptionPointers->ExceptionRecord->ExceptionInformation[1]);
 	}
-	pText += _stprintf(pText, _T("\r\n\r\n"));
+	AddLine(_T(""));
 
-	pText += _stprintf(pText, _T("EAX: 0x%08X, EBX: 0x%08X, ECX: 0x%08X, EDX: 0x%08X\r\n"), (unsigned int)pExceptionPointers->ContextRecord->Eax, (unsigned int)pExceptionPointers->ContextRecord->Ebx, (unsigned int)pExceptionPointers->ContextRecord->Ecx, (unsigned int)pExceptionPointers->ContextRecord->Edx);
-	pText += _stprintf(pText, _T("ESI: 0x%08X, EDI: 0x%08X, ESP: 0x%08X, EBP: 0x%08X\r\n"), (unsigned int)pExceptionPointers->ContextRecord->Esi, (unsigned int)pExceptionPointers->ContextRecord->Edi, (unsigned int)pExceptionPointers->ContextRecord->Esp, (unsigned int)pExceptionPointers->ContextRecord->Ebp);
+	AddLine(_T("EAX: 0x%08X, EBX: 0x%08X, ECX: 0x%08X, EDX: 0x%08X"), (unsigned int)pExceptionPointers->ContextRecord->Eax, (unsigned int)pExceptionPointers->ContextRecord->Ebx, (unsigned int)pExceptionPointers->ContextRecord->Ecx, (unsigned int)pExceptionPointers->ContextRecord->Edx);
+	AddLine(_T("ESI: 0x%08X, EDI: 0x%08X, ESP: 0x%08X, EBP: 0x%08X"), (unsigned int)pExceptionPointers->ContextRecord->Esi, (unsigned int)pExceptionPointers->ContextRecord->Edi, (unsigned int)pExceptionPointers->ContextRecord->Esp, (unsigned int)pExceptionPointers->ContextRecord->Ebp);
 
-	return pText;
+	return 0;
 }
 
 // Print OS information
-TCHAR* PrintOSInfo(TCHAR* pText)
+int PrintOSInfo()
 {
 	OSVERSIONINFOEX osvi;
 
@@ -116,69 +155,69 @@ TCHAR* PrintOSInfo(TCHAR* pText)
 		GetVersionEx((OSVERSIONINFO*)&osvi);
 	}
 
-	pText += _stprintf(pText, _T("OS:  "));
+	AddText(_T("OS:  "));
 	{
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT) {
 			if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0) {
-				pText += _stprintf(pText, _T("Microsoft Windows 2000 "));
+				AddText(_T("Microsoft Windows 2000 "));
 			}
 			if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1) {
-				pText += _stprintf(pText, _T("Microsoft Windows XP "));
+				AddText(_T("Microsoft Windows XP "));
 			}
 			if (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2) {
-				pText += _stprintf(pText, _T("Microsoft Windows 2003 "));
+				AddText(_T("Microsoft Windows 2003 "));
 			}
 			if (osvi.dwMajorVersion != 5 || osvi.dwMinorVersion > 2) {
-				pText += _stprintf(pText, _T("Microsoft Windows NT %d.%d "), osvi.dwMajorVersion, osvi.dwMinorVersion);
+				AddText(_T("Microsoft Windows NT %d.%d "), osvi.dwMajorVersion, osvi.dwMinorVersion);
 			}
 
 			if (osvi.wProductType == VER_NT_WORKSTATION) {
 				if (osvi.wSuiteMask & VER_SUITE_PERSONAL) {
-					pText += _stprintf(pText, _T("Personal "));
+					AddText(_T("Personal "));
 				} else {
-					pText += _stprintf(pText, _T("Professional "));
+					AddText(_T("Professional "));
 				}
 			}
 			if (osvi.wProductType == VER_NT_SERVER) {
 				if (osvi.wSuiteMask & VER_SUITE_DATACENTER) {
-					pText += _stprintf(pText, _T("DataCenter Server "));
+					AddText(_T("DataCenter Server "));
 				} else {
 					if (osvi.wSuiteMask & VER_SUITE_DATACENTER) {
-						pText += _stprintf(pText, _T("Advanced Server "));
+						AddText(_T("Advanced Server "));
 					} else {
-						pText += _stprintf(pText, _T("Server "));
+						AddText(_T("Server "));
 					}
 				}
 			}
-			pText += _stprintf(pText, _T("%s (build %i)\r\n"), osvi.szCSDVersion, osvi.dwBuildNumber & 0xFFFF);
+			AddText(_T("%s (build %i)\r\n"), osvi.szCSDVersion, osvi.dwBuildNumber & 0xFFFF);
 		}
 		if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
 			if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion < 10) {
-				pText += _stprintf(pText, _T("Microsoft Windows 95"));
+				AddText(_T("Microsoft Windows 95"));
 				if (osvi.szCSDVersion[1] == _T('B') || osvi.szCSDVersion[1] == _T('C')) {
-					pText += _stprintf(pText, _T(" OSR2"));
+					AddText(_T(" OSR2"));
 				}
 			}
 			if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 10) {
-				pText += _stprintf(pText, _T("Microsoft Windows 98"));
+				AddText(_T("Microsoft Windows 98"));
 				if (osvi.szCSDVersion[1] == _T('A')) {
-					pText += _stprintf(pText, _T(" SE"));
+					AddText(_T(" SE"));
 				}
 			}
 			if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90) {
-				pText += _stprintf(pText, _T("Microsoft Windows Me"));
+				AddText(_T("Microsoft Windows Me"));
 			}
 			if (osvi.dwMajorVersion != 4 && osvi.dwMinorVersion < 10) {
-				pText += _stprintf(pText, _T("Microsoft Windows %d.%d "), osvi.dwMajorVersion, osvi.dwMinorVersion);
+				AddText(_T("Microsoft Windows %d.%d "), osvi.dwMajorVersion, osvi.dwMinorVersion);
 			}
-			pText += _stprintf(pText, _T("\r\n"));
+			AddText(_T("\r\n"));
 		}
 	}
 
-	return pText;
+	return 0;
 }
 
-TCHAR* PrintCPUInfo(TCHAR* pText)
+int PrintCPUInfo()
 {
 	// Determine the processor type using the CPUID instruction
 	SYSTEM_INFO si;
@@ -189,11 +228,11 @@ TCHAR* PrintCPUInfo(TCHAR* pText)
 	DWORD nSpeed = 0;
 	HKEY hKey;
 
-	pText += _stprintf(pText, _T("CPU: "));
+	AddText(_T("CPU: "));
 
 	CPUID(0, nVendorEAX, nVendorEBX, nVendorECX, nVendorEDX);
 	CPUID(0, nVendorEAX, nVendorEBX, nVendorECX, nVendorEDX);
-			
+
 	for (int n = 0; n < 4; n++) {
 		szCPUText[n + 0] = (nVendorEBX >> (n << 3)) & 255;
 		szCPUText[n + 4] = (nVendorEDX >> (n << 3)) & 255;
@@ -427,14 +466,14 @@ TCHAR* PrintCPUInfo(TCHAR* pText)
 						break;
 					case 0x080:
 						if (nSignatureEAX & 0x2000) {
-							szModel = _T("Athlon MP \"Thoroughbred\"");
+							szModel = _T("Sempron / Athlon MP \"Thoroughbred\"");
 						} else {
 							szModel = _T("Duron \"Applebred\" / Athon XP \"Thoroughbred\"");
 						}
 						break;
 					case 0x0A0:
 						if (nSignatureEAX & 0x2000) {
-							szModel = _T("Athlon MP \"Barton\"");
+							szModel = _T("Sempron \"Thorton\" / Athlon MP \"Barton\"");
 						} else {
 							// Thorton has 256KB cache, Barton has 512KB
 							szModel = _T("Athlon XP \"Thorton\" / Athon XP \"Barton\"");
@@ -504,34 +543,33 @@ TCHAR* PrintCPUInfo(TCHAR* pText)
 	}
 
 	// Finally, print out the info
-	pText += _stprintf(pText, _T("%12hs, "), szCPUText);
 	if (szModel) {
-		pText += _stprintf(pText, _T("%s\r\n"), szModel);
+		AddLine(_T("%12hs, %s"), szCPUText, szModel);
 	} else {
-		pText += _stprintf(pText, _T("Unknown CPU (CPUID 0x%08X:%08X)\r\n"), nSignatureEAX, nSignatureEBX);
+		AddLine(_T("%12hs, Unknown CPU (CPUID 0x%08X:%08X)"), szCPUText, nSignatureEAX, nSignatureEBX);
 	}
 
 	if (nSpeed) {
-		pText += _stprintf(pText, _T("     %i MHz"), nSpeed);
+		AddText(_T("     %i MHz"), nSpeed);
 	} else {
-		pText += _stprintf(pText, _T("     unknown speed"));
+		AddText(_T("     unknown speed"));
 	}
 	if (bMMX || bXMMI || bXMMI64) {
-		pText += _stprintf(pText, _T("%s%s%s"), bMMX ? _T(", MMX") : _T(""), bXMMI ? _T(", SSE") : _T(""), bXMMI64 ? _T(", SSE2") : _T(""));
+		AddText(_T("%s%s%s"), bMMX ? _T(", MMX") : _T(""), bXMMI ? _T(", SSE") : _T(""), bXMMI64 ? _T(", SSE2") : _T(""));
 	}
-	pText += _stprintf(pText, _T(" (%i system processor%s)\r\n"), si.dwNumberOfProcessors, si.dwNumberOfProcessors > 1 ? _T("s") : _T(""));
+	AddText(_T(" (%i system processor%s)\r\n"), si.dwNumberOfProcessors, si.dwNumberOfProcessors > 1 ? _T("s") : _T(""));
 
-	return pText;
+	return 0;
 }
 
 // Print global memory information
-TCHAR* PrintGlobalMemoryInfo(TCHAR* pText)
+int PrintGlobalMemoryInfo()
 {
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus(&stat);
 
-	pText += _stprintf(pText, _T("Physical RAM: %7i KB (%4i MB) total, %7i KB (%4i MB) avail\r\n"), stat.dwTotalPhys / 1024, stat.dwTotalPhys / (1024 * 1024), stat.dwAvailPhys / 1024, stat.dwAvailPhys / (1024 * 1024));
-	pText += _stprintf(pText, _T("Total RAM:    %7i KB (%4i MB) total, %7i KB (%4i MB) avail\r\n"), stat.dwTotalPageFile / 1024, stat.dwTotalPageFile / (1024 * 1024), stat.dwAvailPageFile / 1024, stat.dwAvailPageFile / (1024 * 1024));
+	AddLine(_T("Physical RAM: %7i KB (%4i MB) total, %7i KB (%4i MB) avail"), stat.dwTotalPhys / 1024, stat.dwTotalPhys / (1024 * 1024), stat.dwAvailPhys / 1024, stat.dwAvailPhys / (1024 * 1024));
+	AddLine(_T("Total RAM:    %7i KB (%4i MB) total, %7i KB (%4i MB) avail"), stat.dwTotalPageFile / 1024, stat.dwTotalPageFile / (1024 * 1024), stat.dwAvailPageFile / 1024, stat.dwAvailPageFile / (1024 * 1024));
 
 	// Information on FB Alpha memory usage
 	BOOL (WINAPI* pGetProcessMemoryInfo)(HANDLE, PPROCESS_MEMORY_COUNTERS, DWORD) = NULL;
@@ -544,22 +582,20 @@ TCHAR* PrintGlobalMemoryInfo(TCHAR* pText)
 			PROCESS_MEMORY_COUNTERS pmc;
 
 			if (pGetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+				TCHAR szLine[1024] = _T("");
 				int length = _tcslen(_T(APP_TITLE));
 				if (length > 12) {
 					length = 12;
 				}
-
-				_sntprintf(pText, 12, _T(APP_TITLE));
-				pText += length;
-				_sntprintf(pText, 14 - length, _T(":                 "));
-				pText += 14 - length;
-				pText += _stprintf(pText, _T("%7i KB in use (%i KB peak, %i KB virtual)\r\n"), pmc.WorkingSetSize / 1024, pmc.PeakWorkingSetSize / 1024, pmc.PagefileUsage / 1024);
+				_sntprintf(szLine, 12, _T(APP_TITLE));
+				_sntprintf(szLine + length, 14 - length, _T(":                 "));
+				AddLine(_T("%s%7i KB in use (%i KB peak, %i KB virtual)"), szLine, pmc.WorkingSetSize / 1024, pmc.PeakWorkingSetSize / 1024, pmc.PagefileUsage / 1024);
 			}
 		}
 		FreeLibrary(hPsapiDLL);
 	}
 
-	return pText;
+	return 0;
 }
 
 // Find the registry key for this display in the hardware area of the registry
@@ -572,7 +608,7 @@ HKEY FindMonitor(TCHAR* szHardwareID, TCHAR* szDriver)
 	FILETIME ftLastWriteTime;
 	HKEY hKey = NULL;
 	HKEY hMonitorKey = NULL;
-		
+
 	bool bFound = false;
 
 	// We need to enumerate all displays and all instances to check the values inside them
@@ -597,7 +633,7 @@ HKEY FindMonitor(TCHAR* szHardwareID, TCHAR* szDriver)
 
 			RegOpenKeyEx(hSubKey, szSubName, 0, KEY_READ, &hMonitorKey);
 
-			// Check if this instance is the one we're looking for			
+			// Check if this instance is the one we're looking for
 			nType = REG_SZ; nSize = sizeof(szKeyValue);
 			RegQueryValueEx(hMonitorKey, _T("HardwareID"), NULL, &nType, (BYTE*)szKeyValue, &nSize);
 			if (_tcsicmp(szKeyValue, szHardwareID)) {
@@ -631,32 +667,32 @@ HKEY FindMonitor(TCHAR* szHardwareID, TCHAR* szDriver)
 	return hMonitorKey;
 }
 
-TCHAR* ProcessEDID(HKEY hMonitorKey, TCHAR* pText)
+int ProcessEDID(HKEY hMonitorKey)
 {
 	HKEY hMonitorInfoKey = NULL;
 	BYTE EDIDData[1024]; DWORD nEDIDSize = sizeof(EDIDData);
 	DWORD nType;
 
 	if (hMonitorKey == NULL) {
-		return pText;
+		return 1;
 	}
 
 	RegOpenKeyEx(hMonitorKey, _T("Device Parameters"), 0, KEY_READ, &hMonitorInfoKey);
 	if (hMonitorInfoKey == NULL) {
-		return pText;
+		return 1;
 	}
 
 	// When Windows can't get valid EDID data from a Display, it creates a BAD_EDID value instead of EDID
 	// Thus we can forego ensuring the validity of the EDID data ourselves
 	nType = REG_BINARY; nEDIDSize = sizeof(EDIDData);
 	if (RegQueryValueEx(hMonitorInfoKey, _T("BAD_EDID"), NULL, &nType, EDIDData, &nEDIDSize) == 0) {
-		pText += _stprintf(pText, _T("        No EDID data present for this device\r\n"));
+		AddLine(_T("        No EDID data present for this device"));
 	}
 	nType = REG_BINARY; nEDIDSize = sizeof(EDIDData);
 	if (RegQueryValueEx(hMonitorInfoKey, _T("EDID"), NULL, &nType, EDIDData, &nEDIDSize) == 0) {
 
 		// Print some basic information about this display
-		pText += _stprintf(pText, _T("        Display size ~%d×%dcm, Gamma %1.2lf\r\n"), EDIDData[0x15], EDIDData[0x16], ((double)EDIDData[0x17] + 100.0) / 100.0);
+		AddLine(_T("        Display size ~%d×%dcm, Gamma %1.2lf"), EDIDData[0x15], EDIDData[0x16], ((double)EDIDData[0x17] + 100.0) / 100.0);
 
 		// Print the preferred mode for this display
 		if (EDIDData[0x18] & 2) {
@@ -675,8 +711,7 @@ TCHAR* ProcessEDID(HKEY hMonitorKey, TCHAR* pText)
 			// We need to calculate the refresh rate ourselves based on the other numbers
 			double dRefresh = 1.0 / ((double)(nActiveH + nBlankH) * (nActiveV + nBlankV) / nPixelClock);
 
-			pText += _stprintf(pText, _T("        Preferred mode %d×%d, %1.3lf Hz"), nActiveH, nActiveV, dRefresh);
-			pText += _stprintf(pText, _T(" (%d×%dmm, %1.3lf MHz)\r\n"), nSizeH, nSizeV, nPixelClock / 1000000.0);
+			AddLine(_T("        Preferred mode %d×%d, %1.3lf Hz (%d×%dmm, %1.3lf MHz)"), nActiveH, nActiveV, dRefresh, nSizeH, nSizeV, nPixelClock / 1000000.0);
 		}
 
 		{
@@ -693,41 +728,39 @@ TCHAR* ProcessEDID(HKEY hMonitorKey, TCHAR* pText)
 			}
 
 			if (nLimitsOffset) {
-				pText += _stprintf(pText, _T("        Max. bandwidth %d MHz"), EDIDData[nLimitsOffset + 0x09] * 10);
-				pText += _stprintf(pText, _T(", H sync %d-%d KHz"), EDIDData[nLimitsOffset + 0x07], EDIDData[nLimitsOffset + 0x08]);
-				pText += _stprintf(pText, _T(", V sync %d-%d Hz\r\n"), EDIDData[nLimitsOffset + 0x05], EDIDData[nLimitsOffset + 0x06]);
+				AddLine(_T("        Max. bandwidth %d MHz, H sync %d-%d KHz, V sync %d-%d Hz"), EDIDData[nLimitsOffset + 0x09] * 10, EDIDData[nLimitsOffset + 0x07], EDIDData[nLimitsOffset + 0x08], EDIDData[nLimitsOffset + 0x05], EDIDData[nLimitsOffset + 0x06]);
 			}
 		}
 
 #if 0
 		{
-		
+
 			// Print the raw data block
 			BYTE* pData = EDIDData;
 
-			pText += _stprintf(pText, _T("\r\n        Raw EDID data\r\n"));
+			AddText(_T("\r\n        Raw EDID data\r\n"));
 			for (int n = 0; n < 8; n++) {
-				pText += _stprintf(pText, _T("            "));
+				AddText(_T("            "));
 
 				for (int m = 0; m < 16; m++) {
-					pText += _stprintf(pText, _T("%02X "), *pData & 255);
+					AddText(_T("%02X "), *pData & 255);
 					pData++;
 				}
-				pText += _stprintf(pText, _T("\r\n"));
+				AddText(_T(""));
 			}
-			pText += _stprintf(pText, _T("\r\n"));
+			AddText(_T(""));
 		}
 #endif
 
 	}
 
 	RegCloseKey(hMonitorInfoKey);
-	
-	return pText;
+
+	return 0;
 }
 
 // Print info about displays and display adapters
-TCHAR* PrintDisplayInfo(TCHAR* pText)
+int PrintDisplayInfo()
 {
 	BOOL (WINAPI* pEnumDisplayDevices)(LPCTSTR, DWORD, PDISPLAY_DEVICE, DWORD) = NULL;
 	HINSTANCE hUser32DLL;
@@ -748,7 +781,7 @@ TCHAR* PrintDisplayInfo(TCHAR* pText)
 			ddDisplay.cb = sizeof(DISPLAY_DEVICE);
 
 			// Now that we've ensured we can use the EnumDisplayDevices() function, use it to enumerate the connected displays
-			pText += _stprintf(pText, _T("Installed displays and display adapters:\r\n"));
+			AddLine(_T("Installed displays and display adapters:"));
 
 			for (int i = 0; pEnumDisplayDevices(NULL, i, &ddAdapter, 0); i++) {
 
@@ -763,7 +796,7 @@ TCHAR* PrintDisplayInfo(TCHAR* pText)
 						TCHAR szDeviceDesc[1024] = _T(""); DWORD nDeviceDescSize = sizeof(szDeviceDesc);
 
 						// If the display is active, get the data about it
-						if (ddDisplay.StateFlags & DISPLAY_DEVICE_ACTIVE) {				
+						if (ddDisplay.StateFlags & DISPLAY_DEVICE_ACTIVE) {
 							if (!_tcsnicmp(ddDisplay.DeviceKey, _T("\\Registry\\Machine\\"), 18)) {
 								TCHAR szDriver[1024]; DWORD nSize = sizeof(szDriver);
 								DWORD nType = REG_SZ;
@@ -778,20 +811,20 @@ TCHAR* PrintDisplayInfo(TCHAR* pText)
 							}
 
 							// Print the information we've got so far
-							if (szMfg[0] && szDeviceDesc[0]) {
-								pText += _stprintf(pText, _T("    %s %s on %s"), szMfg, szDeviceDesc, ddAdapter.DeviceString);
-							} else {
-								pText += _stprintf(pText, _T("    %s on %s"), ddDisplay.DeviceString, ddAdapter.DeviceString);
-							}
+							TCHAR* pszStatus = _T("");
 							if (ddAdapter.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
-								pText += _stprintf(pText, _T(" (primary)"));
+								pszStatus = _T(" (primary)");
 							}
 							if (!(ddAdapter.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP)) {
-								pText += _stprintf(pText, _T(" (disabled)"));
+								pszStatus = _T(" (disabled)");
 							}
-							pText += _stprintf(pText, _T("\r\n"));
+							if (szMfg[0] && szDeviceDesc[0]) {
+								AddLine(_T("    %s %s on %s%s"), szMfg, szDeviceDesc, ddAdapter.DeviceString, pszStatus);
+							} else {
+								AddLine(_T("    %s on %s%s"), ddDisplay.DeviceString, ddAdapter.DeviceString, pszStatus);
+							}
 
-							pText = ProcessEDID(hMonitorKey, pText);
+							ProcessEDID(hMonitorKey);
 
 							if (hMonitorKey) {
 								RegCloseKey(hMonitorKey);
@@ -807,61 +840,85 @@ TCHAR* PrintDisplayInfo(TCHAR* pText)
 		FreeLibrary(hUser32DLL);
 	}
 
-	return pText;
+	return 0;
 }
 
 // Print FB Alpha settings
-TCHAR* PrintFBAInfo(TCHAR* pText)
+int PrintFBAInfo()
 {
 	InterfaceInfo* pInfo;
 
-	pText += _stprintf(pText, _T(APP_TITLE) _T(" information:\r\n\r\n"));
+	AddLine(_T(APP_TITLE) _T(" information:"));
+	AddLine(_T(""));
 
+	AddLine(_T("Built on ") _T(MAKE_STRING(BUILD_DATE)) _T(", ") _T(MAKE_STRING(BUILD_TIME))  _T(", using ") _T(MAKE_STRING(BUILD_COMP)) _T("."));
+	AddLine(_T("    Optimised for ") _T(MAKE_STRING(BUILD_CPU)) _T(" CPUs."));
 #if defined (_UNICODE)
-	pText += _stprintf(pText, _T("Using Unicode for all text.\r\n\r\n"));
+	AddLine(_T("    Using Unicode for all text."));
 #else
-	pText += _stprintf(pText, _T("Using multi-byte characters for all text, active codepage is %d.\r\n\r\n", GetACP()));
+	AddLine(_T("    Using multi-byte characters for all text, active codepage is %d."), GetACP());
 #endif
+#if defined (FBA_DEBUG)
+	AddLine(_T("    Debug functionality present."));
+#else
+	AddLine(_T("    Debug functionality absent."));
+#endif
+	AddLine(_T(""));
+
+	AddLine(_T("MMX optimisations %s."), bBurnUseMMX ? _T("enabled") : _T("disabled"));
+	if (bBurnUseASMCPUEmulation) {
+		AddLine(_T("A68K emulation core enabled for MC68000 emulation."));
+		AddLine(_T("Musashi emulation core enabled for MC68010/MC68EC020 emulation."));
+	} else {
+		AddLine(_T("Musashi emulation core enabled for MC680x0 family emulation."));
+	}
+	AddLine(_T("Doze emulation core enabled for Z80 emulation."));
+	AddLine(_T(""));
 
 	if (bDrvOkay) {
 		TCHAR szName[1024];
 
 		int n = _stprintf(szName, _T("Emulating %s (%hs)"), BurnDrvGetText(DRV_NAME), DecorateGameName(nBurnDrvSelect));
-		if (n <= 70) {
-			pText += _stprintf(pText, _T("%s"), szName);
-		} else {
-			_tcsncpy(pText, szName, 66);
-			_tcscpy(pText + 66, _T("...)"));
-			pText += 70;
+		if (n >= 70) {
+			_tcscpy(szName + 66, _T("...)"));
 		}
-		pText += _stprintf(pText, _T("\r\n\r\n"));
+		AddLine(_T("%s"), szName);
+		AddLine(_T("    Vertical refresh is %.2lf Hz."), (double)nBurnFPS / 100);
+		AddLine(_T("    CPU running at %i%% of normal frequency."), nBurnCPUSpeedAdjust * 100 / 256);
+		AddLine(_T(""));
 	} else {
-		pText += _stprintf(pText, _T("Not emulating any game.\r\n\r\n"));
+		AddLine(_T("Not emulating any game."));
+		AddLine(_T(""));
 	}
 
 	if ((pInfo = VidGetInfo()) != NULL) {
-		pText += _stprintf(pText, _T("Video settings:\r\n"));
-		pText = PrintInterfaceInfo(pText, pInfo);
+		AddLine(_T("Video settings:"));
+		PrintInterfaceInfo(pInfo);
 	}
-	pText += _stprintf(pText, _T("\r\n"));
+	AddLine(_T(""));
 
 	if ((pInfo = AudGetInfo()) != NULL) {
-		pText += _stprintf(pText, _T("Audio settings:\r\n"));
-		pText = PrintInterfaceInfo(pText, pInfo);
+		AddLine(_T("Audio settings:"));
+		PrintInterfaceInfo(pInfo);
 	}
-	pText += _stprintf(pText, _T("\r\n"));
+	AddLine(_T(""));
 
 	if ((pInfo = InputGetInfo()) != NULL) {
-		pText += _stprintf(pText, _T("Input settings:\r\n"));
-		pText = PrintInterfaceInfo(pText, pInfo);
+		AddLine(_T("Input settings:"));
+		PrintInterfaceInfo(pInfo);
 	}
-	
-	return pText;
+	AddLine(_T(""));
+
+	if ((pInfo = ProfileGetInfo()) != NULL) {
+		AddLine(_T("Profiling settings:"));
+		PrintInterfaceInfo(pInfo);
+	}
+
+	return 0;
 }
-		
 
 // Print process information
-TCHAR* PrintProcessInfo(TCHAR* pText)
+int PrintProcessInfo()
 {
 #if 1
 
@@ -870,14 +927,16 @@ TCHAR* PrintProcessInfo(TCHAR* pText)
 
 	hModuleSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
 	if (hModuleSnap == INVALID_HANDLE_VALUE) {
-		pText += _stprintf(pText, _T("Unable to retrieve detailed process information.\r\n"));
+		AddLine(_T("Unable to retrieve detailed process information."));
 	} else {
 		me32.dwSize = sizeof(MODULEENTRY32);
 		if(!Module32First(hModuleSnap, &me32)) {
-			pText += _stprintf(pText, _T("Unable to retrieve detailed process information.\r\n"));
+			AddLine(_T("Unable to retrieve detailed process information."));
 		} else {
-			pText += _stprintf(pText, _T("Detailed process information about %s:\r\n\r\n"), me32.szModule);
-			pText += _stprintf(pText, _T("%s (base address 0x%p, size %i KB)\r\n\r\n"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
+			AddLine(_T("Detailed process information about %s:"), me32.szModule);
+			AddLine(_T(""));
+			AddLine(_T("%s (base address 0x%p, size %i KB)"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
+			AddLine(_T(""));
 
 			if (pExceptionPointers) {
 				bool bFound = false;
@@ -885,21 +944,23 @@ TCHAR* PrintProcessInfo(TCHAR* pText)
 					if (me32.modBaseAddr <= pExceptionPointers->ExceptionRecord->ExceptionAddress && (me32.modBaseAddr + me32.modBaseSize) > pExceptionPointers->ExceptionRecord->ExceptionAddress) {
 						bFound = true;
 						break;
-					} 
+					}
 				} while (Module32Next(hModuleSnap, &me32));
-	
+
 				if (bFound) {
-					pText += _stprintf(pText, _T("Exception occurred in module %s:\r\n"), me32.szModule);
-					pText += _stprintf(pText, _T("    %20s (base address 0x%p, size %6i KB)\r\n\r\n"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
+					AddLine(_T("Exception occurred in module %s:"), me32.szModule);
+					AddLine(_T("    %20s (base address 0x%p, size %6i KB)"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
+					AddLine(_T(""));
 				} else {
-					pText += _stprintf(pText, _T("Unable to locate module in which exception occurred\r\n\r\n"));
+					AddLine(_T("Unable to locate module in which exception occurred"));
+					AddLine(_T(""));
 				}
 			}
 
 			Module32First(hModuleSnap, &me32);
-			pText += _stprintf(pText, _T("Modules loaded by %s:\r\n"), me32.szModule);
+			AddLine(_T("Modules loaded by %s:"), me32.szModule);
 			while (Module32Next(hModuleSnap, &me32)){
-				pText += _stprintf(pText, _T("    %20s (base address 0x%p, size %6i KB)\r\n"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
+				AddLine(_T("    %20s (base address 0x%p, size %6i KB)"), me32.szModule, me32.modBaseAddr, me32.modBaseSize / 1024);
 			}
 		}
 
@@ -908,11 +969,11 @@ TCHAR* PrintProcessInfo(TCHAR* pText)
 
 #endif
 
-	return pText;
+	return 0;
 }
 
 // Print information about installed devices
-TCHAR* PrintDeviceInfo(TCHAR* pText)
+int PrintDeviceInfo()
 {
 	// Get a list of all devices that are present and enabled
 	HDEVINFO hDevInfo = SetupDiGetClassDevs(NULL, NULL, NULL, DIGCF_ALLCLASSES | DIGCF_PRESENT | DIGCF_PROFILE);
@@ -939,7 +1000,8 @@ TCHAR* PrintDeviceInfo(TCHAR* pText)
 			pCloseServiceHandle = (BOOL (WINAPI*)(SC_HANDLE))GetProcAddress(hAdvapi32DLL, "CloseServiceHandle");
 		}
 
-		pText += _stprintf(pText, _T("Installed devices (partial list):\r\n\r\n"));
+		AddLine(_T("Installed devices (partial list):"));
+		AddLine(_T(""));
 
 		// Enumerate all devices in the list
 		did.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
@@ -1025,15 +1087,11 @@ TCHAR* PrintDeviceInfo(TCHAR* pText)
 
 					// Print the information
 					if (j < 2 || szImagePath[0]) {
-						pText += _stprintf(pText, _T("    %s\r\n"), szName);
-						pText += _stprintf(pText, _T("        %s\r\n"), szImagePath[0] ? szImagePath : _T("no driver needed"));
+						AddLine(_T("    %s"), szName);
+						AddLine(_T("        %s"), szImagePath[0] ? szImagePath : _T("no driver needed"));
 
 						if (szDriverVersion[0]) {
-							pText += _stprintf(pText, _T("        version %s"), szDriverVersion);
-							if (szDriverDate[0]) {
-								pText += _stprintf(pText, _T(" (%s)"), szDriverDate);
-							}
-							pText += _stprintf(pText, _T("\r\n"));
+							AddLine(_T("        version %s (%s)"), szDriverVersion, szDriverDate[0] ? szDriverDate : _T("no date"));
 						}
 					}
 
@@ -1047,7 +1105,7 @@ TCHAR* PrintDeviceInfo(TCHAR* pText)
 		SetupDiDestroyDeviceInfoList(hDevInfo);
 	}
 
-	return pText;
+	return 0;
 }
 
 static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
@@ -1056,12 +1114,13 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 
 	switch (Msg) {
 		case WM_INITDIALOG: {
-			TCHAR szText[65536];
-			TCHAR* pText = szText;
 		    time_t nTime;
 			tm* tmTime;
 
 			nReturnCode = 0;
+
+			pszTextBuffer = NULL;
+			nTextBufferSize = 0;
 
 			time(&nTime);
 			tmTime = localtime(&nTime);
@@ -1072,6 +1131,7 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 			hCodeFont = NULL;
 
 			if (pExceptionPointers) {
+				TCHAR szText[1024] = _T("");
 				hCodeBGBrush = CreateSolidBrush(RGB(0,0,0));
 				hCodeFont = CreateFont(22, 0, 0, 0, FW_BOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_MODERN, _T("Lucida Console"));
 				SendDlgItemMessage(hDlg, IDC_SYSINFO_CODE, WM_SETFONT, (WPARAM)hCodeFont, (LPARAM)0);
@@ -1079,57 +1139,64 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 				_stprintf(szText, _T("Guru Meditation #%08X.%08X"), pExceptionPointers->ExceptionRecord->ExceptionCode, (unsigned int)pExceptionPointers->ExceptionRecord->ExceptionAddress);
 				SendDlgItemMessage(hDlg, IDC_SYSINFO_CODE, WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
 
-				pText += _stprintf(pText, _T(APP_TITLE) _T(" v%.20s fatal exception report (%s).\r\n"), szAppBurnVer, _tasctime(tmTime));
+				AddLine(_T(APP_TITLE) _T(" v%.20s fatal exception report (%s)."), szAppBurnVer, _tasctime(tmTime));
 
-				pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\r\n"));
+				AddLine(_T(""));
+				AddLine(_T("----------------------------------------------------------------------"));
 
 				// Exception
-				PrintExceptionInfo(pText);
+				PrintExceptionInfo();
 			} else {
-				pText += _stprintf(pText, _T(APP_TITLE) _T(" v%.20s system information (%s).\r\n"), szAppBurnVer, _tasctime(tmTime));
+				AddLine(_T(APP_TITLE) _T(" v%.20s system information (%s)."), szAppBurnVer, _tasctime(tmTime));
 			}
 
-			pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\r\n"));
+			AddLine(_T(""));
+			AddLine(_T("----------------------------------------------------------------------"));
 
-			pText += _stprintf(pText, _T("System information:\r\n\r\n"));
+			AddLine(_T("System information:"));
+			AddLine(_T(""));
 
 			// OS information
-			pText = PrintOSInfo(pText);
+			PrintOSInfo();
 
 			// CPU information
-			pText = PrintCPUInfo(pText);
+			PrintCPUInfo();
 
-			pText += _stprintf(pText, _T("\r\n"));
+			AddLine(_T(""));
 
 			// Global memory information
-			pText = PrintGlobalMemoryInfo(pText);
-			
-			pText += _stprintf(pText, _T("\r\n"));
+			PrintGlobalMemoryInfo();
+
+			AddLine(_T(""));
 
 			// Displays and display adapters
-			pText = PrintDisplayInfo(pText);
+			PrintDisplayInfo();
 
-			pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\r\n"));
+			AddLine(_T(""));
+			AddLine(_T("----------------------------------------------------------------------"));
 
-			pText = PrintFBAInfo(pText);
+			PrintFBAInfo();
 
-			pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\r\n"));
+			AddLine(_T(""));
+			AddLine(_T("----------------------------------------------------------------------"));
 
 			// Process information
-			pText = PrintProcessInfo(pText);
+			PrintProcessInfo();
 
-			pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\r\n"));
+			AddLine(_T(""));
+			AddLine(_T("----------------------------------------------------------------------"));
 
 			if (bPrintDriverInfo) {
 				// Device information
-				pText = PrintDeviceInfo(pText);
+				PrintDeviceInfo();
 
-				pText += _stprintf(pText, _T("\r\n----------------------------------------------------------------------\0"));
+				AddLine(_T(""));
+				AddLine(_T("----------------------------------------------------------------------"));
 			}
 
 			SendDlgItemMessage(hDlg, IDC_SYSINFO_EDIT, WM_SETFONT, (WPARAM)hLogFont, (LPARAM)0);
 			SendDlgItemMessage(hDlg, IDC_SYSINFO_EDIT, EM_SETMARGINS, (WPARAM)EC_LEFTMARGIN, (LPARAM)3);
-			SendDlgItemMessage(hDlg, IDC_SYSINFO_EDIT, WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
+			SendDlgItemMessage(hDlg, IDC_SYSINFO_EDIT, WM_SETTEXT, (WPARAM)0, (LPARAM)pszTextBuffer);
 
 			WndInMid(hDlg, hScrnWnd);
 
@@ -1137,6 +1204,10 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 		}
 
 		case WM_CLOSE: {
+			free(pszTextBuffer);
+			pszTextBuffer = NULL;
+			nTextBufferSize = 0;
+
 			DeleteObject(hLogFont);
 			if (hCodeFont) {
 				DeleteObject(hCodeFont);
@@ -1194,17 +1265,23 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 
 						EnableWindow(GetDlgItem(hDlg, IDC_SYSINFO_LOG), FALSE);
 					} else {
+						TCHAR szFilter[1024];
+
+						_stprintf(szFilter, FBALoadStringEx(hAppInst, IDS_DISK_TEXT, true));
+						memcpy(szFilter + _tcslen(szFilter), _T(" (*.txt)\0*.txt\0\0"), 16 * sizeof(TCHAR));
+
 						_stprintf(szChoice, _T("%s system information.txt"), szAppExeName);
 
 						memset(&ofn, 0, sizeof(ofn));
 						ofn.lStructSize = sizeof(ofn);
 						ofn.hwndOwner = hDlg;
-						ofn.lpstrFilter = _T("Text files (*.txt)\0*.txt\0\0");
+						ofn.lpstrFilter = szFilter;
 						ofn.lpstrFile = szChoice;
 						ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
+						ofn.lpstrInitialDir = _T(".");
 						ofn.Flags = OFN_NOCHANGEDIR | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 						ofn.lpstrDefExt = _T("txt");
-						ofn.lpstrTitle = _T("Save system information report");
+						ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_DISK_SAVEREPORT, true);
 
 						if (GetSaveFileName(&ofn)) {
 							fp = _tfopen(szChoice, _T("wb"));
@@ -1226,7 +1303,7 @@ static BOOL CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 						if (nSize && szText) {
 							SendDlgItemMessage(hDlg, IDC_SYSINFO_EDIT, WM_GETTEXT, (WPARAM)(nSize + 1) * sizeof(TCHAR), (LPARAM)szText);
 							fwrite(szText, sizeof(TCHAR), nSize, fp);
-							_ftprintf(fp, _T("\r\n"));
+							_ftprintf(fp, _T(""));
 						}
 						free(szText);
 						fclose(fp);
@@ -1261,7 +1338,7 @@ LONG CALLBACK ExceptionFilter(_EXCEPTION_POINTERS* pExceptionInfo)
 
 	pExceptionPointers = pExceptionInfo;
 
-	nRet = DialogBox(hAppInst, MAKEINTRESOURCE(IDD_EXCEPTION), hScrnWnd, SysInfoProc);
+	nRet = FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_EXCEPTION), hScrnWnd, SysInfoProc);
 
 	switch (nRet) {
 		case 1:
@@ -1275,8 +1352,8 @@ LONG CALLBACK ExceptionFilter(_EXCEPTION_POINTERS* pExceptionInfo)
 int SystemInfoCreate()
 {
 	pExceptionPointers = NULL;
-	
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_SYSINFO), hScrnWnd, SysInfoProc);
+
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SYSINFO), hScrnWnd, SysInfoProc);
 
 	return 0;
 }

@@ -576,7 +576,7 @@ int PrehisleInit()
 
 	BurnYM3812Init(4000000, &prehisleFMIRQHandler, &prehisleSynchroniseStream);
 	BurnTimerAttachZet(4000000);
-
+	
 	GenericTilesInit();
 
 	// Reset the driver
@@ -621,15 +621,15 @@ void PrehisleRenderBack2TileLayer()
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
 				if (!Flipx) {
-					Render16x16Tile(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				} else {
-					Render16x16Tile_FlipX(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_FlipX(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Clip(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				} else {
-					Render16x16Tile_FlipX_Clip(Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
+					Render16x16Tile_FlipX_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 768, PrehisleBack2Tiles);
 				}
 			}
 
@@ -659,15 +659,15 @@ void PrehisleRenderBack1TileLayer()
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
 				if (!Flipy) {
-					Render16x16Tile_Mask(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				} else {
-					Render16x16Tile_Mask_FlipY(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				}
 			} else {
 				if (!Flipy) {
-					Render16x16Tile_Mask_Clip(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				} else {
-					Render16x16Tile_Mask_FlipY_Clip(Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Tile & 0x7ff, x, y, Colour, 4, 0x0f, 512, PrehisleBack1Tiles);
 				}
 			}
 
@@ -701,29 +701,29 @@ void PrehisleRenderSpriteLayer()
 		if (x > 15 && x < 240 && y > 15 && y < 208) {
 			if (!Flipy) {
 				if (!Flipx) {
-					Render16x16Tile_Mask(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipX(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Mask_FlipY(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipY(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipXY(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			}
 		} else {
 			if (!Flipy) {
 				if (!Flipx) {
-					Render16x16Tile_Mask_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipX_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			} else {
 				if (!Flipx) {
-					Render16x16Tile_Mask_FlipY_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				} else {
-					Render16x16Tile_Mask_FlipXY_Clip(Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
+					Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Sprite, x, y, Colour, 4, 0x0f, 256, PrehisleSprites);
 				}
 			}
 		}
@@ -749,9 +749,9 @@ void PrehisleRenderTextLayer()
 		y -= 16;
 
 		if (x > 7 && x < 248 && y > 7 && y < 216) {
-			Render8x8Tile_Mask(Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
+			Render8x8Tile_Mask(pTransDraw, Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
 		} else {
-			Render8x8Tile_Mask_Clip(Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
+			Render8x8Tile_Mask_Clip(pTransDraw, Tile & 0xfff, x, y, Colour, 4, 0x0f, 0, PrehisleTextTiles);
 		}
 	}
 }
@@ -819,7 +819,7 @@ int PrehisleFrame()
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
 	BurnYM3812Update(nBurnSoundLen);
-
+	
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
 

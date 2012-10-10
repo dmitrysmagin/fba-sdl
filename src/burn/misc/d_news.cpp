@@ -316,9 +316,9 @@ void NewsRenderBgLayer()
 			y -= 16;
 
 			if (x > 7 && x < 248 && y > 7 && y < 216) {
-				Render8x8Tile(Code, x, y, Colour, 4, 0, NewsTiles);
+				Render8x8Tile(pTransDraw, Code, x, y, Colour, 4, 0, NewsTiles);
 			} else {
-				Render8x8Tile_Clip(Code, x, y, Colour, 4, 0, NewsTiles);
+				Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 4, 0, NewsTiles);
 			}
 
 			TileIndex++;
@@ -340,9 +340,9 @@ void NewsRenderFgLayer()
 			y -= 16;
 
 			if (x > 7 && x < 248 && y > 7 && y < 216) {
-				Render8x8Tile_Mask(Code, x, y, Colour, 4, 0, 0, NewsTiles);
+				Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 0, NewsTiles);
 			} else {
-				Render8x8Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 0, NewsTiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, NewsTiles);
 			}
 
 			TileIndex++;

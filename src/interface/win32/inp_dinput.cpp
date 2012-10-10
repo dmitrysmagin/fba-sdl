@@ -95,7 +95,7 @@ static int DinpKeyboardInitMaster()
 		didi.dwSize = sizeof(didi);
 		memset(&didcl, 0, sizeof(didcl));
 		didcl.dwSize = sizeof(didcl);
-		
+
 		DinpKeyboardProperties[0].lpdid->GetDeviceInfo(&didi);
 		DinpKeyboardProperties[0].lpdid->GetCapabilities(&didcl);
 		dprintf(_T("  * System keyboard: %s\n"), didi.tszProductName);
@@ -528,7 +528,7 @@ int DinpInit()
 	}
 
 #if defined LIST_DEVICES && defined FBA_DEBUG
-	dprintf(_T(" ** Enumerating input devices\n"));
+	dprintf(_T("*** Enumerating input devices\n"));
 #endif
 
 	// Set up the keyboard

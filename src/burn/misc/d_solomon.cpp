@@ -555,29 +555,29 @@ void SolomonRenderBgLayer()
 		if (sx >= 0 && sx < 247 && sy >= 0 && sy < 215) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipX(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipXY(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipX_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				} else {
-					Render8x8Tile_Mask_FlipXY_Clip(Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 128, SolomonBgTiles);
 				}
 			}
 		}
@@ -605,15 +605,15 @@ void SolomonRenderFgLayer()
 
 		if (sx >= 0 && sx < 247 && sy >= 0 && sy < 215) {
 			if (!SolomonFlipScreen) {
-				Render8x8Tile_Mask(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			} else {
-				Render8x8Tile_Mask_FlipXY(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			}
 		} else {
 			if (!SolomonFlipScreen) {
-				Render8x8Tile_Mask_Clip(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			} else {
-				Render8x8Tile_Mask_FlipXY_Clip(Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
+				Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, SolomonFgTiles);
 			}
 		}
 	}
@@ -645,53 +645,53 @@ void SolomonRenderSpriteLayer()
 		if (sx >= 0 && sx < 239 && sy >= 0 && sy < 207) {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask(Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask(Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask(pTransDraw, Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask(pTransDraw, Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask(pTransDraw, Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask(pTransDraw, Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipX(Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX(Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX(pTransDraw, Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY(Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY(Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY(pTransDraw, Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipXY(Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY(Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY(pTransDraw, Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
 				}
 			}
 		} else {
 			if (!FlipY) {
 				if (!FlipX) {
-					Render8x8Tile_Mask_Clip(Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_Clip(Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code + 2, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code + 0, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code + 3, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_Clip(pTransDraw, Code + 1, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipX_Clip(Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipX_Clip(Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code + 2, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code + 0, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code + 3, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code + 1, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
 				}
 			} else {
 				if (!FlipX) {
-					Render8x8Tile_Mask_FlipY_Clip(Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipY_Clip(Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code + 2, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code + 0, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code + 3, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code + 1, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
 				} else {
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
-					Render8x8Tile_Mask_FlipXY_Clip(Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code + 2, sx + 8, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code + 0, sx + 8, sy + 8, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code + 3, sx + 0, sy + 0, Colour, 4, 0, 0, SolomonSprites);
+					Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code + 1, sx + 0, sy + 8, Colour, 4, 0, 0, SolomonSprites);
 				}
 			}
 		}

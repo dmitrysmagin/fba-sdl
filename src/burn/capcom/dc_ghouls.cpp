@@ -216,8 +216,7 @@ static struct BurnRomInfo GhoulsRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ghouls)
-STD_ROM_FN(Ghouls)
+STD_ROM_PICK(Ghouls); STD_ROM_FN(Ghouls);
 
 struct BurnDriver BurnDrvCpsGhouls = {
 	"ghouls", NULL, NULL, "1988",
@@ -270,8 +269,7 @@ static struct BurnRomInfo GhoulsuRomDesc[] = {
 };
 
 
-STD_ROM_PICK(Ghoulsu)
-STD_ROM_FN(Ghoulsu)
+STD_ROM_PICK(Ghoulsu); STD_ROM_FN(Ghoulsu);
 struct BurnDriver BurnDrvCpsGhoulsu = {
 	"ghoulsu", "ghouls", NULL, "1988",
 	"Ghouls'n Ghosts (US)\0", NULL, "Capcom", "CPS1",
@@ -323,8 +321,7 @@ static struct BurnRomInfo daimakaiRomDesc[] = {
 };
 
 
-STD_ROM_PICK(daimakai)
-STD_ROM_FN(daimakai)
+STD_ROM_PICK(daimakai); STD_ROM_FN(daimakai);
 
 struct BurnDriver BurnDrvCpsDaimakai = {
 	"daimakai", "ghouls", NULL, "1988",

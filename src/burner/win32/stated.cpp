@@ -3,18 +3,21 @@
 
 int bDrvSaveAll = 0;
 
-static int MakeOfn()
+static void MakeOfn(TCHAR* pszFilter)
 {
+	_stprintf(pszFilter, FBALoadStringEx(hAppInst, IDS_DISK_FILE_STATE, true), _T(APP_TITLE));
+	memcpy(pszFilter + _tcslen(pszFilter), _T(" (*.fs, *.fr)\0*.fs;*.fr\0\0"), 25 * sizeof(TCHAR));
+
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hScrnWnd;
-	ofn.lpstrFilter = _T("FB Alpha Save States (*.fs, *.fr)\0*.fs;*.fr\0\0");
+	ofn.lpstrFilter = pszFilter;
 	ofn.lpstrFile = szChoice;
 	ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
 	ofn.lpstrInitialDir = _T(".\\savestates");
 	ofn.Flags = OFN_NOCHANGEDIR | OFN_HIDEREADONLY;
 	ofn.lpstrDefExt = _T("fs");
-	return 0;
+	return;
 }
 
 // The automatic save
@@ -44,6 +47,7 @@ static void CreateStateName(int nSlot)
 
 int StatedLoad(int nSlot)
 {
+	TCHAR szFilter[1024];
 	int nRet;
 	int bOldPause;
 
@@ -55,8 +59,8 @@ int StatedLoad(int nSlot)
 		} else {
 			_stprintf(szChoice, _T("savestate"));
 		}
-		MakeOfn();
-		ofn.lpstrTitle = _T("Load State");
+		MakeOfn(szFilter);
+		ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_STATE_LOAD, true);
 
 		bOldPause = bRunPause;
 		bRunPause = 1;
@@ -70,21 +74,33 @@ int StatedLoad(int nSlot)
 
 	nRet = BurnStateLoad(szChoice, 1, &DrvInitCallback);
 
+	if (nSlot) {
+		return nRet;
+	}
+
 	// Describe any possible errors:
 	if (nRet == 3) {
-		AppError(_T("The save state is for the wrong game."), 0);
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_STATE));
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_UNAVAIL));
 	} else {
 		if (nRet == 4) {
-			AppError(_T("This state is too old and cannot be loaded."), 0);
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_STATE));
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_TOOOLD), _T(APP_TITLE));
 		} else {
 			if (nRet == 5) {
-				AppError(_T("Emulator is too old to load this state."), 0);
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_THIS_STATE));
+				FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_TOONEW), _T(APP_TITLE));
 			} else {
 				if (nRet && !nSlot) {
-					AppError(_T("Error loading state"), 0);
+					FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_LOAD));
+					FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_STATE));
 				}
 			}
 		}
+	}
+
+	if (nRet) {
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 	}
 
 	return nRet;
@@ -92,6 +108,7 @@ int StatedLoad(int nSlot)
 
 int StatedSave(int nSlot)
 {
+	TCHAR szFilter[1024];
 	int nRet;
 	int bOldPause;
 
@@ -103,8 +120,8 @@ int StatedSave(int nSlot)
 		CreateStateName(nSlot);
 	} else {
 		_stprintf(szChoice, _T("%.8s"), BurnDrvGetText(DRV_NAME));
-		MakeOfn();
-		ofn.lpstrTitle = _T("Save State");
+		MakeOfn(szFilter);
+		ofn.lpstrTitle = FBALoadStringEx(hAppInst, IDS_STATE_SAVE, true);
 		ofn.Flags |= OFN_OVERWRITEPROMPT;
 
 		bOldPause = bRunPause;
@@ -120,7 +137,9 @@ int StatedSave(int nSlot)
 	nRet = BurnStateSave(szChoice, 1);
 
 	if (nRet && !nSlot) {
-		AppError(_T("Error saving state"), 1);
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_CREATE));
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_STATE));
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 	}
 
 	return nRet;

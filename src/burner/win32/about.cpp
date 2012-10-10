@@ -97,7 +97,7 @@ static bool AboutDrawStrings(unsigned int nControlID, LPDRAWITEMSTRUCT pdis)
 		case IDC_SPECIALSTRING: {
 
 #ifdef SPECIALBUILD
-			char* szSpecialBuild = MAKE_STRING(SPECIALBUILD);
+			TCHAR* szSpecialBuild = _T(MAKE_STRING(SPECIALBUILD));
 
 			myDrawText(pdis->hDC, &pdis->rcItem, szSpecialBuild, -1, RGB(0xFF, 0xCF, 0x7F), DT_CENTER);
 #else
@@ -113,8 +113,19 @@ static bool AboutDrawStrings(unsigned int nControlID, LPDRAWITEMSTRUCT pdis)
 			return true;
 		}
 	}
-	
+
 	return false;
+}
+
+// ----------------------------------------------------------------------------
+
+void AddLicenseText(HWND hDlg, unsigned int nControlID)
+{
+	HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(ID_LICENSE), MAKEINTRESOURCE(256));
+	HGLOBAL hglobal = LoadResource(NULL, hrsrc);
+	char* pszLicense = (char*)LockResource(hglobal);
+
+	SendDlgItemMessageA(hDlg, nControlID, WM_SETTEXT, (WPARAM)0, (LPARAM)pszLicense);
 }
 
 // ----------------------------------------------------------------------------
@@ -143,22 +154,7 @@ static BOOL CALLBACK AboutProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 		SendDlgItemMessage(hDlg, IDC_LICENSE, EM_SETMARGINS, EC_LEFTMARGIN, 3);
 //		SendDlgItemMessage(hDlg, IDC_LICENSE, EM_SETTYPOGRAPHYOPTIONS, TO_ADVANCEDTYPOGRAPHY, TO_ADVANCEDTYPOGRAPHY);
 
-		{
-			TCHAR* pszLicense = NULL;
-			int nSize = 1024;
-
-			do {
-				nSize <<= 1;
-				free(pszLicense);
-				pszLicense = (TCHAR*)malloc(nSize * sizeof(TCHAR));
-			} while (pszLicense && LoadString(hAppInst, ID_LICENSE, pszLicense, nSize) == nSize - 1);
-
-			if (pszLicense) {
-				SendDlgItemMessage(hDlg, IDC_LICENSE, WM_SETTEXT, (WPARAM)0, (LPARAM)pszLicense);
-			}
-
-			free(pszLicense);
-		}
+		AddLicenseText(hDlg, IDC_LICENSE);
 
 		MapDialogRect(hDlg, &rect);
 		int nSize = rect.bottom;
@@ -181,7 +177,7 @@ static BOOL CALLBACK AboutProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 
 int AboutCreate()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, AboutProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ABOUT), hScrnWnd, AboutProc);
 
 	return 0;
 }
@@ -190,29 +186,33 @@ int AboutCreate()
 
 static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-	static bool bLicenseDisplayed;
+	static bool bLicenseDisplayed, bLicenseAccepted;
 
 	if (Msg == WM_INITDIALOG) {
-		TCHAR szWarningString[1024];
+		TCHAR szWarningString[4096];
 
-		WndInMid(hDlg, NULL);
 		bLicenseDisplayed = false;
+		bLicenseAccepted = false;
 
 		SendDlgItemMessage(hDlg, IDC_LICENSE, EM_SETMARGINS, EC_LEFTMARGIN, 3);
 //		SendDlgItemMessage(hDlg, IDC_LICENSE, EM_SETTYPOGRAPHYOPTIONS, TO_ADVANCEDTYPOGRAPHY, TO_ADVANCEDTYPOGRAPHY);
 
-		_stprintf(szWarningString, _T("This appears to be the first time you run ") _T(APP_TITLE) _T(" v%.20s.\n\n"), szAppBurnVer);
-
+		_stprintf(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN1, true), _T(APP_TITLE), szAppBurnVer);
+		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN2, true));
  #if VER_ALPHA > 0 && (VER_ALPHA < 90 || VER_BETA < 99)
-		_stprintf(szWarningString + _tcslen(szWarningString), _T("Note that this is alpha quality software. As such, it likely will exhibit problems, including audio/video options not behaving correctly, the emulation of some games misses some features, and may exhibit stability problems. CAVEAT LECTOR!\n\n"));
+		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN3A, true));
  #elif VER_BETA > 0 && VER_BETA < 99
-		_stprintf(szWarningString + _tcslen(szWarningString), _T("Note that this is beta quality software. As such, it likely may be missing some features, or exhibit some problems with your system.\n\n"));
+		_tcscat(szWarningString, FBALoadStringEx(hAppInst, IDS_FIRSTRUN3B, true));
  #endif
-		_stprintf(szWarningString + _tcslen(szWarningString), _T("Please take some time to match the audio/video settings to your system capabilities and personal preferences. If you continue to use and/or distribute this software, you must agree to be bound by the terms of license agreement, which is always accessible via the about dialog."));
 
 		SendDlgItemMessage(hDlg, IDC_LICENSE, WM_SETTEXT, (WPARAM)0, (LPARAM)szWarningString);
 
 		ShowWindow(GetDlgItem(hDlg, IDC_ACCEPTLICENSE), SW_HIDE);
+
+		SetForegroundWindow(hDlg);
+		WndInMid(hDlg, NULL);
+		
+		SplashDestroy(1);
 
 		return TRUE;
 	}
@@ -228,7 +228,9 @@ static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 	if (Msg == WM_COMMAND && HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDOK) {
 
 		if (bLicenseDisplayed) {
-			SendMessage(hDlg, WM_CLOSE, 0, 0);
+			if (bLicenseAccepted) {
+				SendMessage(hDlg, WM_CLOSE, 0, 0);
+			}
 			return 0;
 		}
 
@@ -238,37 +240,24 @@ static BOOL CALLBACK FirstProc(HWND hDlg ,UINT Msg, WPARAM wParam, LPARAM lParam
 		ShowWindow(GetDlgItem(hDlg, IDC_ACCEPTLICENSE), SW_SHOW);
 		SendMessage(hDlg, WM_NEXTDLGCTL, (WPARAM)GetDlgItem(hDlg, IDC_ACCEPTLICENSE), TRUE);
 
-		{
-			TCHAR* pszLicense = NULL;
-			int nSize = 1024;
-
-			do {
-				nSize <<= 1;
-				free(pszLicense);
-				pszLicense = (TCHAR*)malloc(nSize * sizeof(TCHAR));
-			} while (pszLicense && LoadString(hAppInst, ID_LICENSE, pszLicense, nSize) == nSize - 1);
-
-			if (pszLicense) {
-				SendDlgItemMessage(hDlg, IDC_LICENSE, WM_SETTEXT, (WPARAM)0, (LPARAM)pszLicense);
-			}
-
-			free(pszLicense);
-		}
+		AddLicenseText(hDlg, IDC_LICENSE);
 
 		return 0;
 	}
 	if (Msg == WM_COMMAND && LOWORD(wParam) == IDC_ACCEPTLICENSE) {
 		if (SendDlgItemMessage(hDlg, IDC_ACCEPTLICENSE, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+			bLicenseAccepted = true;
 			EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
 		} else {
+			bLicenseAccepted = false;
 			EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
 		}
 	}
 
 	if (Msg == WM_CLOSE) {
-		EndDialog(hDlg,0);
-	}
-	if (Msg == WM_COMMAND && HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDOK) {
+		if (bLicenseAccepted) {
+			EndDialog(hDlg, 0);
+		}
 	}
 
 	return 0;

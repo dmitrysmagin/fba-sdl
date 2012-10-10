@@ -21,6 +21,7 @@ extern "C" {
 
 	/* SrcOPN should have left channel data at SrcOPN, right channel at SrcOPN + 4096, SrcPSG should have all summed channels */
 	void __cdecl BurnSoundCopy_FM_OPN_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
+	void __cdecl BurnSoundCopy_FM_OPN_Add_A(short* SrcOPN, int* SrcPSG, short* Dest, int Len, int VolPSGL, int VolPSGR);
 }
 
 void BurnSoundCopyClamp_C(int* Src, short* Dest, int Len);

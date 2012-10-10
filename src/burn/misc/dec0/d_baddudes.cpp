@@ -417,7 +417,7 @@ static int baddudesScan(int nAction,int *pnMin)
 	return 0;
 }
 
-struct BurnDriver BurnDrvbaddudes = {
+struct BurnDriverD BurnDrvbaddudes = {
 	"baddudes", NULL, NULL, "1988",
 		"Bad Dudes vs. Dragonninja (US)\0", NULL, "Data East USA", "DEC0",
 		NULL, NULL, NULL, NULL,

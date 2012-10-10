@@ -176,15 +176,15 @@ static int InpdListBegin()
 	LvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 
 	LvCol.cx = 0x90;
-	LvCol.pszText = _T("Game Input");
+	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_INPUT, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 0, (LPARAM)&LvCol);
 
 	LvCol.cx = 0x90;
-	LvCol.pszText = _T("Mapped to");
+	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_MAPPING, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 1, (LPARAM)&LvCol);
 
 	LvCol.cx = 0x28;
-	LvCol.pszText = _T("State");
+	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_STATE, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 2, (LPARAM)&LvCol);
 
 	return 0;
@@ -266,22 +266,24 @@ static void DisablePresets()
 
 static void InitComboboxes()
 {
+	TCHAR szLabel[1024];
 	HANDLE search;
 	WIN32_FIND_DATA findData;
 
-	SendMessage(hInpdGi, CB_ADDSTRING, 0, (LPARAM)_T("Player 1"));
-	SendMessage(hInpdGi, CB_ADDSTRING, 0, (LPARAM)_T("Player 2"));
-	SendMessage(hInpdGi, CB_ADDSTRING, 0, (LPARAM)_T("Player 3"));
-	SendMessage(hInpdGi, CB_ADDSTRING, 0, (LPARAM)_T("Player 4"));
+	for (int i = 0; i < 4; i++) {
+		_stprintf(szLabel, FBALoadStringEx(hAppInst, IDS_INPUT_INP_PLAYER, true), i + 1);
+		SendMessage(hInpdGi, CB_ADDSTRING, 0, (LPARAM)szLabel);
+	}
 
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("Keyboard"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("Joystick 0"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("Joystick 1"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("Joystick 2"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("X-Arcade (left side)"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("X-Arcade (right side)"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("HotRod (left side)"));
-	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)_T("HotRod (right side)"));
+	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_KEYBOARD, true));
+	for (int i = 0; i < 3; i++) {
+		_stprintf(szLabel, FBALoadStringEx(hAppInst, IDS_INPUT_INP_JOYSTICK, true), i);
+		SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)szLabel);
+	}
+	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_XARCADEL, true));
+	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_XARCADER, true));
+	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_HOTRODL, true));
+	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_HOTRODR, true));
 
 	// Scan presets directory for .ini files and add them to the list
 	if ((search = FindFirstFile(_T("config\\presets\\*.ini"), &findData)) != INVALID_HANDLE_VALUE) {
@@ -566,14 +568,14 @@ static int InitAnalogOptions(int nGi, int nPci)
 	SendMessage(hInpdAnalog, CB_RESETCONTENT, 0, 0);
 	if (nPci >= 1 && nPci <= 3) {
 		// Absolute mode only for joysticks
-		SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)_T("Absolute"));
+		SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)(LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_ANALOG_ABS, true));
 	} else {
 		if (nAnalog > 0) {
 			nAnalog--;
 		}
 	}
-	SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)_T("Auto-center"));
-	SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)_T("Normal"));
+	SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)(LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_ANALOG_AUTO, true));
+	SendMessage(hInpdAnalog, CB_ADDSTRING, 0, (LPARAM)(LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_ANALOG_NORMAL, true));
 
 	SendMessage(hInpdAnalog, CB_SETCURSEL, (WPARAM)nAnalog, 0);
 
@@ -677,7 +679,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		}
 		if (Id == IDCANCEL && Notify == BN_CLICKED) {
 			SendMessage(hDlg, WM_CLOSE, 0, 0);
-			 return 0;
+			return 0;
 		}
 
 		if (Id == IDC_INPD_NEWMACRO && Notify == BN_CLICKED) {
@@ -846,7 +848,7 @@ int InpdCreate()
 
 	DestroyWindow(hInpdDlg);										// Make sure exitted
 
-	hInpdDlg = CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPD), hScrnWnd, DialogProc);
+	hInpdDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPD), hScrnWnd, DialogProc);
 	if (hInpdDlg == NULL) {
 		return 1;
 	}

@@ -658,9 +658,9 @@ void Wc90RenderBgLayer()
 			if (x > 968) x -= 1024;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile(Code, x, y, Colour, 4, 768, Wc90BgTiles);
+				Render16x16Tile(pTransDraw, Code, x, y, Colour, 4, 768, Wc90BgTiles);
 			} else {
-				Render16x16Tile_Clip(Code, x, y, Colour, 4, 768, Wc90BgTiles);
+				Render16x16Tile_Clip(pTransDraw, Code, x, y, Colour, 4, 768, Wc90BgTiles);
 			}
 
 			TileIndex++;
@@ -691,9 +691,9 @@ void Wc90tRenderBgLayer()
 			if (x > 968) x -= 1024;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile(Code, x, y, Colour, 4, 768, Wc90BgTiles);
+				Render16x16Tile(pTransDraw, Code, x, y, Colour, 4, 768, Wc90BgTiles);
 			} else {
-				Render16x16Tile_Clip(Code, x, y, Colour, 4, 768, Wc90BgTiles);
+				Render16x16Tile_Clip(pTransDraw, Code, x, y, Colour, 4, 768, Wc90BgTiles);
 			}
 
 			TileIndex++;
@@ -725,9 +725,9 @@ void Wc90RenderFgLayer()
 			if (x > 968) x -= 1024;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
 			}
 
 			TileIndex++;
@@ -758,9 +758,9 @@ void Wc90tRenderFgLayer()
 			if (x > 968) x -= 1024;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512, Wc90FgTiles);
 			}
 
 			TileIndex++;
@@ -790,9 +790,9 @@ void Wc90RenderCharLayer()
 			y -= 16;
 
 			if (x > 7 && x < 248 && y > 7 && y < 216) {
-				Render8x8Tile_Mask(Code, x, y, Colour, 4, 0, 256, Wc90CharTiles);
+				Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 256, Wc90CharTiles);
 			} else {
-				Render8x8Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 256, Wc90CharTiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 256, Wc90CharTiles);
 			}
 
 			TileIndex++;
@@ -806,29 +806,29 @@ void Wc90RenderSprite(int Code, int Colour, int FlipX, int FlipY, int x, int y)
 	if (x > 15 && x < 240 && y > 15 && y < 208) {
 		if (!FlipY) {
 			if (!FlipX) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			} else {
-				Render16x16Tile_Mask_FlipX(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipX(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			}
 		} else {
 			if (!FlipX) {
-				Render16x16Tile_Mask_FlipY(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipY(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			} else {
-				Render16x16Tile_Mask_FlipXY(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipXY(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			}
 		}
 	} else {
 		if (!FlipY) {
 			if (!FlipX) {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			} else {
-				Render16x16Tile_Mask_FlipX_Clip(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipX_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			}
 		} else {
 			if (!FlipX) {
-				Render16x16Tile_Mask_FlipY_Clip(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			} else {
-				Render16x16Tile_Mask_FlipXY_Clip(Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
+				Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, Wc90Sprites);
 			}
 		}
 	}

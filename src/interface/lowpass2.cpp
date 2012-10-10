@@ -12,6 +12,7 @@
 
 #include <math.h>
 #include "lowpass2.h"
+#include "burner.h"
 
 #define PI 3.141592653589793238462643383279502884197169399375105820974944592307816
 #define FixBits 15
@@ -58,7 +59,8 @@ void LowPass2::Filter(signed short int *Buff, int Tam)
       o2b = o1b;
       o1b = Tmp2;
 
-      Buff[a] = (short)SATURATE(-32768, 32767, Tmp + Tmp2);
+     // Buff[a] = (short)SATURATE(-32768, 32767, Tmp + Tmp2);
+      Buff[a] = (short)SATURATE(-32768, 32767, Tmp + Tmp2)*(1-bRunPause);
     }
 }
 

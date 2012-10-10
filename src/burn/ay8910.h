@@ -37,6 +37,6 @@ int AY8910InitYM(int chip, int clock, int sample_rate,
 		write8_handler portAwrite, write8_handler portBwrite,
 		void (*update_callback)(void));
 
-int AY9810Scan(int nAction, int* pnMin);
+int AY8910Scan(int nAction, int* pnMin);
 
 #endif

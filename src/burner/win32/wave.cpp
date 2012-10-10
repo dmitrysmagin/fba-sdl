@@ -5,12 +5,15 @@
 FILE *WaveLog=NULL; // wave log file
 
 
-static void MakeOfn()
+static void MakeOfn(TCHAR* pszFilter)
 {
+	_stprintf(pszFilter, FBALoadStringEx(hAppInst, IDS_DISK_FILE_SOUND, true), _T(APP_TITLE));
+	memcpy(pszFilter + _tcslen(pszFilter), _T(" (*.wav)\0*.wav\0\0"), 16 * sizeof(TCHAR));
+
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hScrnWnd;
-	ofn.lpstrFilter = _T("Wave Files (*.wav)\0*.wav\0\0");
+	ofn.lpstrFilter = pszFilter;
 	ofn.lpstrFile = szChoice;
 	ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
 	ofn.lpstrInitialDir = _T(".\\wav");
@@ -65,12 +68,13 @@ static int WaveLogHeaderFillIn(FILE *Hand)
 
 int WaveLogStart()
 {
+	TCHAR szFilter[1024];
 	int nRet;
 	int bOldPause;
 
 	WaveLogStop(); // make sure old log is closed
 
-	MakeOfn();
+	MakeOfn(szFilter);
 	bOldPause = bRunPause;
 	bRunPause = 1;
 	nRet = GetSaveFileName(&ofn);
@@ -82,10 +86,12 @@ int WaveLogStart()
 	{
 		WaveLog=_tfopen(szChoice,_T("wb"));
 		if (WaveLog==NULL)
-			{
-			AppError(_T("Error Creating File"), 1);
+		{
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_DISK_CREATE));
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_DISK_SOUND));
+			FBAPopupDisplay(PUF_TYPE_ERROR);
 			return 1;
-			}
+		}
 		WaveLogHeaderStart(WaveLog,nAudSampleRate);
 
 	}

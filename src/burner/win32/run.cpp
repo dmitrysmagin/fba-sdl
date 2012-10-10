@@ -52,7 +52,7 @@ static void DisplayFPS()
 	TCHAR fpsstring[8];
 	time_t temptime = clock();
 	double fps = (double)(nFramesRendered - nPreviousFrames) * CLOCKS_PER_SEC / (temptime - fpstimer);
-	_stprintf(fpsstring, _T("%2.2lf"), fps);
+	_sntprintf(fpsstring, 7, _T("%2.2lf"), fps);
 	VidSNewShortMsg(fpsstring, 0xDFDFFF, 480, 0);
 
 	fpstimer = temptime;
@@ -266,37 +266,15 @@ static int RunExit()
 int RunMessageLoop()
 {
 	int bRestartVideo;
+	MSG Msg;
 
 	do {
 		bRestartVideo = 0;
 
-		MediaInit();
-
-		if (!bVidOkay) {
-
-			// Reinit the video plugin
-			VidInit();
-			if (!bVidOkay && nVidFullscreen) {
-
-				nVidFullscreen = 0;
-
-				MediaExit(bRestartVideo);
-				MediaInit();
-				VidInit();
-			}
-			if (!nVidFullscreen) {
-				ScrnSize();
-			}
-
-			if (!bVidOkay && (bDrvOkay || bVidUsePlaceholder)) {
-				// Maske sure the error will be visible
-				SplashDestroy(1);
-
-				AppError(_T("VidInit Failed"), 0);
-			}
-
-			if (bVidOkay && (bRunPause || !bDrvOkay)) {
-				VidRedraw();
+		// Remove pending initialisation messages from the queue
+		while (PeekMessage(&Msg, NULL, WM_APP + 0, WM_APP + 0, PM_NOREMOVE)) {
+			if (Msg.message != WM_QUIT)	{
+				PeekMessage(&Msg, NULL, WM_APP + 0, WM_APP + 0, PM_REMOVE);
 			}
 		}
 
@@ -311,7 +289,6 @@ int RunMessageLoop()
 		GameInpCheckMouse();															// Hide the cursor
 
 		while (1) {
-			MSG Msg;
 			if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
 				// A message is waiting to be processed
 				if (Msg.message == WM_QUIT)	{											// Quit program
@@ -333,6 +310,7 @@ int RunMessageLoop()
 						// An Alt/AltGr-key was pressed
 						switch (Msg.wParam) {
 
+#if defined (FBA_DEBUG)
 							case 'C': {
 								static int count = 0;
 								if (count == 0) {
@@ -341,10 +319,10 @@ int RunMessageLoop()
 								}
 								break;
 							}
+#endif
 
 							case VK_OEM_PLUS: {
 								TCHAR buffer[15];
-								TCHAR* noCtrl = _T("No volume control");
 
 								nAudVolume += 100;
 								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
@@ -355,16 +333,15 @@ int RunMessageLoop()
 									nAudVolume = 10000;
 								}
 								if (AudSoundSetVolume() == 0) {
-									VidSNewShortMsg(noCtrl);
+									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
 								} else {
-									_stprintf(buffer, _T("volume %03i %%"), nAudVolume / 100);
+									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
 									VidSNewShortMsg(buffer);
 								}
 								break;
 							}
 							case VK_OEM_MINUS: {
 								TCHAR buffer[15];
-								TCHAR *noCtrl = _T("No volume control");
 
 								nAudVolume -= 100;
 								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
@@ -375,9 +352,9 @@ int RunMessageLoop()
 									nAudVolume = 0;
 								}
 								if (AudSoundSetVolume() == 0) {
-									VidSNewShortMsg(noCtrl);
+									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
 								} else {
-									_stprintf(buffer, _T("volume %03i %%"), nAudVolume / 100);
+									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
 									VidSNewShortMsg(buffer);
 								}
 								break;
@@ -389,7 +366,7 @@ int RunMessageLoop()
 					} else {
 						switch (Msg.wParam) {
 
-#ifdef FBA_DEBUG
+#if defined (FBA_DEBUG)
 							case 'N':
 								counter--;
 								bprintf(PRINT_IMPORTANT, _T("*** New counter value: %04X.\n"), counter);
@@ -408,7 +385,7 @@ int RunMessageLoop()
 									} else {
 										if (nVidFullscreen) {
 											nVidFullscreen = 0;
-											PostMessage(NULL, WM_APP + 0, 0, 0);
+											POST_INITIALISE_MESSAGE;
 										}
 									}
 								}
@@ -431,7 +408,7 @@ int RunMessageLoop()
 								}
 								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
 									bMenuEnabled = !bMenuEnabled;
-									PostMessage(NULL, WM_APP + 0, 0, 0);
+									POST_INITIALISE_MESSAGE;
 
 									break;
 								}
@@ -501,8 +478,10 @@ int RunMessageLoop()
 		}
 
 		RunExit();
-
-		MediaExit(bRestartVideo);
+		MediaExit();
+		if (bRestartVideo) {
+			MediaInit();
+		}
 	} while (bRestartVideo);
 
 	return 0;

@@ -19,28 +19,26 @@ static bool SkipComma(TCHAR** s)
 
 static void CheatError(TCHAR* pszFilename, int nLineNumber, CheatInfo* pCheat, TCHAR* pszInfo, TCHAR* pszLine)
 {
-	TCHAR szText[1024] = _T("");
-
-	_stprintf(szText, _T("Cheat file %s is malformed.\nPlease remove or repair the file.\n\n"), pszFilename);
+	FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Cheat file %s is malformed.\nPlease remove or repair the file.\n\n"), pszFilename);
 	if (pCheat) {
-		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i, in cheat \"%s\".\n"), nLineNumber, pCheat->szCheatName);
+		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Parse error at line %i, in cheat \"%s\".\n"), nLineNumber, pCheat->szCheatName);
 	} else {
-		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i.\n"), nLineNumber);
+		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Parse error at line %i.\n"), nLineNumber);
 	}
 
 	if (pszInfo) {
-		_stprintf(szText + _tcslen(szText), _T("Problem:\t%s.\n"), pszInfo);
+		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Problem:\t%s.\n"), pszInfo);
 	}
 	if (pszLine) {
-		_stprintf(szText + _tcslen(szText), _T("Text:\t%s\n"), pszLine);
+		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Text:\t%s\n"), pszLine);
 	}
 
-	AppError(szText, 1);
+	FBAPopupDisplay(PUF_TYPE_ERROR);
 }
 
 static int ConfigParseFile(TCHAR* pszFilename)
 {
-#define INSIDE_NOTHING (0xFFFF)
+#define INSIDE_NOTHING (0xFFFF & (1 << (sizeof(TCHAR) * 8) - 1))
 
 	TCHAR szLine[1024];
 	TCHAR* s;

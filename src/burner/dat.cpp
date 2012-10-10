@@ -194,19 +194,29 @@ int write_datfile(int nDatType, FILE* fDat)
 				if (nDatType==0)
 				{
 					// Selectable BIOS meta info
-					if (nPass==0 && nMerged&2 && ri.nType&0x40)
-						fprintf(fDat, "\tbiosset ( name %d description \"%s\" %s)\n", i - 128, szPossibleName, ri.nType & 0x80 ? "" : "default yes ");
+					if (nPass==0 && nMerged&2 && ri.nType&BRF_SELECT)
+						fprintf(fDat, "\tbiosset ( name %d description \"%s\" %s)\n", i - 128, szPossibleName, ri.nType & BRF_OPT ? "" : "default yes ");
 					// File info
-					if (nPass==1 && !nMerged)
-						fprintf(fDat, "\trom ( name %s size %d crc %08x )\n", szPossibleName, ri.nLen, ri.nCrc);
+					if (nPass==1 && !nMerged) {
+						if (ri.nType & BRF_NODUMP) {
+							fprintf(fDat, "\trom ( name %s size %d flags nodump )\n", szPossibleName, ri.nLen);
+						} else {
+							fprintf(fDat, "\trom ( name %s size %d crc %08x )\n", szPossibleName, ri.nLen, ri.nCrc);
+						}
+					}
 					if (nPass==1 && nMerged)
 					{
 						// Selectable BIOS file info
-						if (nMerged&2 && ri.nType&0x40)
+						if (nMerged&2 && ri.nType&BRF_SELECT)
 							fprintf(fDat, "\trom ( name %s merge %s bios %d size %d crc %08x )\n", szPossibleName, szPossibleName, i - 128, ri.nLen, ri.nCrc);
 						// Files from parent/boardROMs
-						else
-							fprintf(fDat, "\trom ( name %s merge %s size %d crc %08x )\n", szPossibleName, szPossibleName, ri.nLen, ri.nCrc);
+						else {
+							if (ri.nType & BRF_NODUMP) {
+								fprintf(fDat, "\trom ( name %s merge %s size %d flags nodump )\n", szPossibleName, szPossibleName, ri.nLen);
+							} else {
+								fprintf(fDat, "\trom ( name %s merge %s size %d crc %08x )\n", szPossibleName, szPossibleName, ri.nLen, ri.nCrc);
+							}
+						}
 					}
 				}
 				else
@@ -295,12 +305,12 @@ int write_datfile(int nDatType, FILE* fDat)
 					{
 						if (nPass==0)
 						{
-							if (ri.nType&0x40)
+							if (ri.nType&BRF_SELECT)
 								fprintf(fDat, "\tbiosset ( name %d description \"%s\" %s)\n", i, szPossibleName, ri.nType & 0x80 ? "" : "default yes ");
 						}
 						else
 						{
-							if (ri.nType&0x40)
+							if (ri.nType&BRF_SELECT)
 								fprintf(fDat, "\trom ( name %s bios %d size %d crc %08x )\n", szPossibleName, i, ri.nLen, ri.nCrc);
 							else
 								fprintf(fDat, "\trom ( name %s size %d crc %08x )\n", szPossibleName, ri.nLen, ri.nCrc);

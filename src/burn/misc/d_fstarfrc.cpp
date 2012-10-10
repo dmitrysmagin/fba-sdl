@@ -3,8 +3,9 @@
 #include "burn_ym2151.h"
 
 static unsigned char  FstarfrcInputPort0[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static unsigned char  FstarfrcInputPort1[6]  = {0, 0, 0, 0, 0, 0};
 static unsigned char  FstarfrcDip[2]         = {0, 0};
-static unsigned short FstarfrcInput[1]       = {0x00};
+static unsigned short FstarfrcInput[2]       = {0x00, 0x00};
 static unsigned char  FstarfrcReset          = 0;
 
 static unsigned char  *Mem                   = NULL;
@@ -36,6 +37,7 @@ static int Scroll2X;
 static int Scroll2Y;
 
 static int Ginkun = 0;
+static int Riot = 0;
 
 static int FstarfrcSoundLatch;
 
@@ -69,10 +71,39 @@ static struct BurnInputInfo FstarfrcInputList[] = {
 
 STDINPUTINFO(Fstarfrc);
 
+static struct BurnInputInfo RiotInputList[] = {
+	{"Coin 1"            , BIT_DIGITAL  , FstarfrcInputPort0 + 14, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL  , FstarfrcInputPort0 +  6, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL  , FstarfrcInputPort0 + 15, "p2 coin"   },
+	{"Start 2"           , BIT_DIGITAL  , FstarfrcInputPort0 +  7, "p2 start"  },
+
+	{"P1 Up"             , BIT_DIGITAL  , FstarfrcInputPort0 +  3, "p1 up"     },
+	{"P1 Down"           , BIT_DIGITAL  , FstarfrcInputPort0 +  2, "p1 down"   },
+	{"P1 Left"           , BIT_DIGITAL  , FstarfrcInputPort0 +  1, "p1 left"   },
+	{"P1 Right"          , BIT_DIGITAL  , FstarfrcInputPort0 +  0, "p1 right"  },
+	{"P1 Fire 1"         , BIT_DIGITAL  , FstarfrcInputPort1 +  1, "p1 fire 1" },
+	{"P1 Fire 2"         , BIT_DIGITAL  , FstarfrcInputPort0 +  4, "p1 fire 2" },
+	{"P1 Fire 3"         , BIT_DIGITAL  , FstarfrcInputPort0 +  5, "p1 fire 3" },
+
+	{"P2 Up"             , BIT_DIGITAL  , FstarfrcInputPort0 + 11, "p2 up"     },
+	{"P2 Down"           , BIT_DIGITAL  , FstarfrcInputPort0 + 10, "p2 down"   },
+	{"P2 Left"           , BIT_DIGITAL  , FstarfrcInputPort0 +  9, "p2 left"   },
+	{"P2 Right"          , BIT_DIGITAL  , FstarfrcInputPort0 +  8, "p2 right"  },
+	{"P2 Fire 1"         , BIT_DIGITAL  , FstarfrcInputPort1 +  5, "p2 fire 1" },
+	{"P2 Fire 2"         , BIT_DIGITAL  , FstarfrcInputPort0 + 12, "p2 fire 2" },
+	{"P2 Fire 3"         , BIT_DIGITAL  , FstarfrcInputPort0 + 13, "p2 fire 3" },
+
+	{"Reset"             , BIT_DIGITAL  , &FstarfrcReset         , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH, FstarfrcDip + 0        , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH, FstarfrcDip + 1        , "dip"       },
+};
+
+STDINPUTINFO(Riot);
+
 inline void FstarfrcMakeInputs()
 {
 	// Reset Inputs
-	FstarfrcInput[0] = 0x3fff;
+	FstarfrcInput[0] = FstarfrcInput[1] = 0x3fff;
 
 	// Compile Digital Inputs
 	for (int i = 0; i < 14; i++) {
@@ -81,6 +112,10 @@ inline void FstarfrcMakeInputs()
 
 	for (int i = 14; i < 16; i++) {
 		FstarfrcInput[0] |= (FstarfrcInputPort0[i] & 1) << i;
+	}
+
+	for (int i = 0; i < 6; i++) {
+		FstarfrcInput[1] -= (FstarfrcInputPort1[i] & 1) << i;
 	}
 }
 
@@ -101,7 +136,7 @@ static struct BurnDIPInfo FstarfrcDIPList[]=
 	{0x11, 0x01, 0x0c, 0x00, "4 Coins 1 Credit"       },
 	{0x11, 0x01, 0x0c, 0x04, "3 Coins 1 Credit"       },
 	{0x11, 0x01, 0x0c, 0x08, "2 Coins 1 Credit"       },
-	{0x11, 0x01, 0x0c, 0x0c, "1 Coin  1 Credit"       },
+	{0x11, 0x01, 0x0c, 0x0c, "1 Coin 1 Credit"        },
 
 	{0   , 0xfe, 0   , 2   , "Screen Reverse"         },
 	{0x11, 0x01, 0x10, 0x10, "Off"                    },
@@ -147,6 +182,102 @@ static struct BurnDIPInfo FstarfrcDIPList[]=
 
 STDDIPINFO(Fstarfrc);
 
+static struct BurnDIPInfo GinkunDIPList[]=
+{
+	// Default Values
+	{0x11, 0xff, 0xff, 0xff, NULL                     },
+	{0x12, 0xff, 0xff, 0xff, NULL                     },
+
+	// Dip 1
+	{0   , 0xfe, 0   , 4   , "Coin SW 1"              },
+	{0x11, 0x01, 0x03, 0x03, "1 Coin 1 Credit"        },
+	{0x11, 0x01, 0x03, 0x02, "1 Coin 2 Credits"       },
+	{0x11, 0x01, 0x03, 0x01, "1 Coin 3 Credits"       },
+	{0x11, 0x01, 0x03, 0x00, "1 Coin 4 Credits"       },
+
+	{0   , 0xfe, 0   , 4   , "Coin SW 2"              },
+	{0x11, 0x01, 0x0c, 0x00, "4 Coins 1 Credit"       },
+	{0x11, 0x01, 0x0c, 0x04, "3 Coins 1 Credit"       },
+	{0x11, 0x01, 0x0c, 0x08, "2 Coins 1 Credit"       },
+	{0x11, 0x01, 0x0c, 0x0c, "1 Coin 1 Credit"        },
+
+	{0   , 0xfe, 0   , 2   , "Continue Plus 1up"      },
+	{0x11, 0x01, 0x10, 0x10, "Off"                    },
+	{0x11, 0x01, 0x10, 0x00, "On"                     },
+
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x12, 0x01, 0x03, 0x00, "2"                      },
+	{0x12, 0x01, 0x03, 0x03, "3"                      },
+	{0x12, 0x01, 0x03, 0x02, "4"                      },
+	{0x12, 0x01, 0x03, 0x01, "5"                      },
+
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x12, 0x01, 0x0c, 0x08, "Easy"                   },
+	{0x12, 0x01, 0x0c, 0x0c, "Normal"                 },
+	{0x12, 0x01, 0x0c, 0x04, "Hard"                   },
+	{0x12, 0x01, 0x0c, 0x00, "Hardest"                },
+
+	{0   , 0xfe, 0   , 2   , "Flip Screen"            },
+	{0x12, 0x01, 0x10, 0x10, "Off"                    },
+	{0x12, 0x01, 0x10, 0x00, "On"                     },
+
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x12, 0x01, 0x20, 0x00, "Off"                    },
+	{0x12, 0x01, 0x20, 0x20, "On"                     },
+};
+
+STDDIPINFO(Ginkun);
+
+static struct BurnDIPInfo RiotDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfc, NULL                     },
+
+	// Dip 1
+	{0   , 0xfe, 0   , 8   , "Coin A"                 },
+	{0x13, 0x01, 0x07, 0x00, "5 Coins 1 Credit"       },
+	{0x13, 0x01, 0x07, 0x01, "4 Coins 1 Credit"       },
+	{0x13, 0x01, 0x07, 0x02, "3 Coins 1 Credit"       },
+	{0x13, 0x01, 0x07, 0x04, "2 Coins 1 Credit"       },
+	{0x13, 0x01, 0x07, 0x07, "1 Coin 1 Credit"        },
+	{0x13, 0x01, 0x07, 0x06, "1 Coin 2 Credits"       },
+	{0x13, 0x01, 0x07, 0x05, "1 Coin 3 Credits"       },
+	{0x13, 0x01, 0x07, 0x03, "1 Coin 4 Credits"       },
+
+	{0   , 0xfe, 0   , 8   , "Coin B"                 },
+	{0x13, 0x01, 0x38, 0x00, "5 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x08, "4 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x10, "3 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x20, "2 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x38, "1 Coin 1 Credit"        },
+	{0x13, 0x01, 0x38, 0x30, "2 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x28, "3 Coins 1 Credit"       },
+	{0x13, 0x01, 0x38, 0x18, "4 Coins 1 Credit"       },
+
+	{0   , 0xfe, 0   , 2   , "Starting Coins"         },
+	{0x13, 0x01, 0x40, 0x40, "1"                      },
+	{0x13, 0x01, 0x40, 0x00, "2"                      },
+
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x03, 0x03, "1"                      },
+	{0x14, 0x01, 0x03, 0x02, "2"                      },
+	{0x14, 0x01, 0x03, 0x01, "3"                      },
+	{0x14, 0x01, 0x03, 0x00, "4"                      },
+
+	{0   , 0xfe, 0   , 2   , "Flip Screen"            },
+	{0x14, 0x01, 0x10, 0x10, "Off"                    },
+	{0x14, 0x01, 0x10, 0x00, "On"                     },
+
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x20, 0x00, "Off"                    },
+	{0x14, 0x01, 0x20, 0x20, "On"                     },
+};
+
+STDDIPINFO(Riot);
+
 static struct BurnRomInfo FstarfrcRomDesc[] = {
 	{ "fstarf01.rom",  0x40000, 0x94c71de6, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "fstarf02.rom",  0x40000, 0xb1a07761, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
@@ -157,7 +288,7 @@ static struct BurnRomInfo FstarfrcRomDesc[] = {
 	{ "fstarf09.rom",  0x80000, 0xd51341d2, BRF_GRA },			 //  5
 	{ "fstarf06.rom",  0x80000, 0x07e40e87, BRF_GRA },			 //  6
 
-	{ "fstarf07.rom",  0x10000, 0xe0ad5de1, BRF_SND },			 //  7	Z80 Program Code
+	{ "fstarf07.rom",  0x10000, 0xe0ad5de1, BRF_PRG | BRF_SND }, //  7	Z80 Program Code
 
 	{ "fstarf08.rom",  0x20000, 0xf0ad5693, BRF_SND },			 //  8	Samples
 };
@@ -176,7 +307,7 @@ static struct BurnRomInfo GinkunRomDesc[] = {
 	{ "ginkun09.i22",  0x80000, 0x233384b9, BRF_GRA },			 //  5
 	{ "ginkun06.i16",  0x80000, 0xf8589184, BRF_GRA },			 //  6
 
-	{ "ginkun07.i17",  0x10000, 0x8836b1aa, BRF_SND },			 //  7	Z80 Program Code
+	{ "ginkun07.i17",  0x10000, 0x8836b1aa, BRF_PRG | BRF_SND },	//  7	Z80 Program Code
 
 	{ "ginkun08.i18",  0x20000, 0x8b7583c7, BRF_SND },			 //  8	Samples
 };
@@ -184,6 +315,25 @@ static struct BurnRomInfo GinkunRomDesc[] = {
 
 STD_ROM_PICK(Ginkun);
 STD_ROM_FN(Ginkun);
+
+static struct BurnRomInfo RiotRomDesc[] = {
+	{ "1.ic1",  0x40000, 0x9ef4232e, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "2.ic2",  0x40000, 0xf2c6fbbf, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	
+	{ "3.ic3",  0x20000, 0xf60f5c96, BRF_GRA }, //  2
+	{ "5.ic9",  0x80000, 0x056fce78, BRF_GRA }, //  3
+	{ "4.ic5",  0x80000, 0x0894e7b4, BRF_GRA }, //  4
+	{ "9.ic22", 0x80000, 0x0ead54f3, BRF_GRA }, //  5
+	{ "6.ic16", 0x80000, 0x96ef61da, BRF_GRA }, //  6
+
+	{ "7.ic17", 0x10000, 0x0a95b8f3, BRF_PRG | BRF_SND },	//  7	Z80 Program Code
+	
+	{ "8.ic18", 0x20000, 0x4b70e266, BRF_SND }, //  8	Samples
+};
+
+
+STD_ROM_PICK(Riot);
+STD_ROM_FN(Riot);
 
 void FstarfrcDecode8x8Tiles(unsigned char *pTile, int Num)
 {
@@ -297,9 +447,11 @@ unsigned short __fastcall FstarfrcReadWord(unsigned int a)
 unsigned char __fastcall FstarfrcReadByte(unsigned int a)
 {
 	switch (a) {
+		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
+		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
 		}
@@ -357,6 +509,10 @@ void __fastcall FstarfrcWriteByte(unsigned int a, unsigned char d)
 unsigned short __fastcall GinkunReadWord(unsigned int a)
 {
 	switch (a) {
+		case 0x150020: {
+			return FstarfrcInput[1];
+		}
+
 		case 0x150030: {
 			SEK_DEF_READ_WORD(0, a);
 		}
@@ -370,7 +526,7 @@ unsigned short __fastcall GinkunReadWord(unsigned int a)
 		}
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Read Word -> %06X\n"), a);
+//	bprintf(PRINT_NORMAL, _T("Read Word -> %06X\n"), a);
 
 	return 0;
 }
@@ -378,15 +534,17 @@ unsigned short __fastcall GinkunReadWord(unsigned int a)
 unsigned char __fastcall GinkunReadByte(unsigned int a)
 {
 	switch (a) {
+		case 0x150030:
 		case 0x150031: {
 			return FstarfrcDip[1];
-		}
+		}
+		case 0x150040:
 		case 0x150041: {
 			return FstarfrcDip[0];
 		}
-	}
-	
-	bprintf(PRINT_NORMAL, _T("Read Byte -> %06X\n"), a);
+	}	
+
+//	bprintf(PRINT_NORMAL, _T("Read Byte -> %06X\n"), a);
 
 	return 0;
 }
@@ -438,7 +596,7 @@ void __fastcall GinkunWriteWord(unsigned int a, unsigned short d)
 		}
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Write Word -> %06X, %04X\n"), a, d);
+//	bprintf(PRINT_NORMAL, _T("Write Word -> %06X, %04X\n"), a, d);
 }
 
 void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
@@ -447,7 +605,7 @@ void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
 		case 0x150001: {
 			return;	// Flipscreen
 		}
-		
+
 		case 0x150021: {
 			return;	// NOP
 		}
@@ -463,7 +621,7 @@ void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Write Byte -> %06X, %02X\n"), a, d);
+//	bprintf(PRINT_NORMAL, _T("Write Byte -> %06X, %02X\n"), a, d);
 }
 
 unsigned char __fastcall FstarfrcZ80Read(unsigned short a)
@@ -515,12 +673,21 @@ static int FstarfrcMemIndex()
 
 	RamStart = Next;
 
+	if (Ginkun || Riot) {
+	FstarfrcRam          = Next; Next += 0x05000;
+	FstarfrcCharRam      = Next; Next += 0x01000;
+	FstarfrcVideoRam     = Next; Next += 0x01000;
+	FstarfrcColourRam    = Next; Next += 0x01000;
+	FstarfrcVideo2Ram    = Next; Next += 0x01000;
+	FstarfrcColour2Ram   = Next; Next += 0x01000;
+	} else {
 	FstarfrcRam          = Next; Next += 0x0a000;
 	FstarfrcCharRam      = Next; Next += 0x01000;
 	FstarfrcVideoRam     = Next; Next += 0x00800;
 	FstarfrcColourRam    = Next; Next += 0x00800;
 	FstarfrcVideo2Ram    = Next; Next += 0x00800;
 	FstarfrcColour2Ram   = Next; Next += 0x00800;
+	}
 	FstarfrcSpriteRam    = Next; Next += 0x01000;
 	FstarfrcPaletteRam   = Next; Next += 0x02000;
 	FstarfrcZ80Ram       = Next; Next += 0x0c002;
@@ -539,6 +706,10 @@ static int FstarfrcMemIndex()
 int FstarfrcInit()
 {
 	int nRet = 0, nLen;
+
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "ginkun")) Ginkun = 1;
+
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "riot")) Riot = 1;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
@@ -582,6 +753,7 @@ int FstarfrcInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "fstarfrc")) {
 	SekMapMemory(FstarfrcRom         , 0x000000, 0x07ffff, SM_ROM);
 	SekMapMemory(FstarfrcRam         , 0x100000, 0x103fff, SM_RAM);
 	SekMapMemory(FstarfrcCharRam     , 0x110000, 0x110fff, SM_RAM);
@@ -596,17 +768,21 @@ int FstarfrcInit()
 	SekSetWriteWordHandler(0, FstarfrcWriteWord);
 	SekSetReadByteHandler(0, FstarfrcReadByte);
 	SekSetWriteByteHandler(0, FstarfrcWriteByte);
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "fstarfrc")) {
-		SekSetReadWordHandler(0, FstarfrcReadWord);
-		SekSetWriteWordHandler(0, FstarfrcWriteWord);
-		SekSetReadByteHandler(0, FstarfrcReadByte);
-		SekSetWriteByteHandler(0, FstarfrcWriteByte);
 	} else {
-		SekSetReadWordHandler(0, GinkunReadWord);
-		SekSetWriteWordHandler(0, GinkunWriteWord);
-		SekSetReadByteHandler(0, GinkunReadByte);
-		SekSetWriteByteHandler(0, GinkunWriteByte);
+	SekMapMemory(FstarfrcRom         , 0x000000, 0x07ffff, SM_ROM);
+	SekMapMemory(FstarfrcRam         , 0x100000, 0x103fff, SM_RAM);
+	SekMapMemory(FstarfrcCharRam     , 0x110000, 0x110fff, SM_RAM);
+	SekMapMemory(FstarfrcVideoRam    , 0x120000, 0x120fff, SM_RAM);
+	SekMapMemory(FstarfrcColourRam   , 0x121000, 0x121fff, SM_RAM);
+	SekMapMemory(FstarfrcVideo2Ram   , 0x122000, 0x122fff, SM_RAM);
+	SekMapMemory(FstarfrcColour2Ram  , 0x123000, 0x123fff, SM_RAM);
+	SekMapMemory(FstarfrcRam + 0x4000, 0x124000, 0x124fff, SM_RAM);
+	SekMapMemory(FstarfrcSpriteRam   , 0x130000, 0x130fff, SM_RAM);
+	SekMapMemory(FstarfrcPaletteRam  , 0x140000, 0x141fff, SM_RAM);
+	SekSetReadWordHandler(0, GinkunReadWord);
+	SekSetWriteWordHandler(0, GinkunWriteWord);
+	SekSetReadByteHandler(0, GinkunReadByte);
+	SekSetWriteByteHandler(0, GinkunWriteByte);
 	}
 	SekClose();
 
@@ -632,8 +808,6 @@ int FstarfrcInit()
 	MSM6295Init(0, 7575, 40, 1);
 
 	GenericTilesInit();
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "ginkun")) Ginkun = 1;
 
 	// Reset the driver
 	FstarfrcDoReset();
@@ -655,6 +829,7 @@ int FstarfrcExit()
 	Mem = NULL;
 	
 	Ginkun = 0;
+	Riot = 0;
 
 	return 0;
 }
@@ -683,9 +858,9 @@ void GinkunRenderBgLayer()
 			y -= 16;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
 			}
 
 			TileIndex += 2;
@@ -717,9 +892,9 @@ void FstarfrcRenderBgLayer()
 			y -= 16;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512 + (0x10 << 4), FstarfrcLayerTiles);
 			}
 
 			TileIndex += 2;
@@ -751,9 +926,9 @@ void GinkunRenderFgLayer()
 			y -= 16;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
 			}
 
 			TileIndex += 2 ;
@@ -785,9 +960,9 @@ void FstarfrcRenderFgLayer()
 			y -= 16;
 
 			if (x > 15 && x < 240 && y > 15 && y < 208) {
-				Render16x16Tile_Mask(Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
+				Render16x16Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
 			} else {
-				Render16x16Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
+				Render16x16Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 512, FstarfrcLayerTiles);
 			}
 
 			TileIndex += 2 ;
@@ -815,9 +990,9 @@ void FstarfrcRenderTextLayer()
 			y &= 0x0ff;
 
 			if (x > 7 && x < 248 && y > 7 && y < 216) {
-				Render8x8Tile_Mask(Code, x, y, Colour, 4, 0, 256, FstarfrcCharTiles);
+				Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 256, FstarfrcCharTiles);
 			} else {
-				Render8x8Tile_Mask_Clip(Code, x, y, Colour, 4, 0, 256, FstarfrcCharTiles);
+				Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 256, FstarfrcCharTiles);
 			}
 
 			TileIndex += 2 ;
@@ -853,6 +1028,9 @@ static void draw_sprites(int layerpriority)
 			code = pFstarfrcSpriteRam[offs+1];
 			color = (pFstarfrcSpriteRam[offs+2] & 0xf0) >> 4;
 			sizex = 1 << ((pFstarfrcSpriteRam[offs+2] & 0x03) >> 0);
+			if(Riot)
+				sizey = sizex;
+			else
 			sizey = 1 << ((pFstarfrcSpriteRam[offs+2] & 0x0c) >> 2);
 			if (sizex >= 2) code &= ~0x01;
 			if (sizey >= 2) code &= ~0x02;
@@ -884,29 +1062,29 @@ static void draw_sprites(int layerpriority)
 					if (sx > 7 && sx < 248 && sy > 7 && sy < 216) {
 						if (!flipx) {
 							if (!flipy) {
-								Render8x8Tile_Mask(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							} else {
-								Render8x8Tile_Mask_FlipY(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipY(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							}
 						} else {
 							if (!flipy) {
-								Render8x8Tile_Mask_FlipX(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipX(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							} else {
-								Render8x8Tile_Mask_FlipXY(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipXY(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							}
 						}
 					} else {
 						if (!flipx) {
 							if (!flipy) {
-								Render8x8Tile_Mask_Clip(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_Clip(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							} else {
-								Render8x8Tile_Mask_FlipY_Clip(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipY_Clip(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							}
 						} else {
 							if (!flipy) {
-								Render8x8Tile_Mask_FlipX_Clip(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipX_Clip(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							} else {
-								Render8x8Tile_Mask_FlipXY_Clip(code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
+								Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code + layout[y][x], sx, sy, color, 4, 0, 0, FstarfrcSpriteTiles);
 							}
 						}
 					}
@@ -937,7 +1115,7 @@ int FstarfrcCalcPalette()
 	unsigned short* ps;
 	unsigned int* pd;
 
-	for (i = 0, ps = (unsigned short*)FstarfrcPaletteRam, pd = FstarfrcPalette; i < 0x800; i++, ps++, pd++) {
+	for (i = 0, ps = (unsigned short*)FstarfrcPaletteRam, pd = FstarfrcPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
@@ -1030,7 +1208,7 @@ int FstarfrcFrame()
 	}
 
 	if (pBurnDraw) {
-		if (Ginkun) {
+		if (Ginkun || Riot) {
 			GinkunRender();
 		} else {
 			FstarfrcRender();
@@ -1090,14 +1268,22 @@ struct BurnDriver BurnDrvFstarfrc = {
 	NULL, 224, 256, 3, 4
 };
 
-/*
 struct BurnDriver BurnDrvGinkun = {
 	"ginkun", NULL, NULL, "1995",
-	"Gunbare Ginkun\0", NULL, "Tecmo", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
+	"Ganbare Ginkun\0", "Imperfect GFX", "Tecmo", "Miscellaneous",
+	L"\u304C\u3093\u3070\u308C \u30AE\u30F3\u304F\u3093\0Ganbare Ginkun\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
-	NULL, GinkunRomInfo, GinkunRomName, FstarfrcInputInfo, NULL,
+	NULL, GinkunRomInfo, GinkunRomName, FstarfrcInputInfo, GinkunDIPInfo,
 	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
 	NULL, 256, 224, 4, 3
 };
-*/
+
+struct BurnDriver BurnDrvRiot = {
+	"riot", NULL, NULL, "1992",
+	"Riot\0", NULL, "NMK", "Miscellaneous",
+	L"\u96F7\u8ECB\u6597 Riot\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_MISC,
+	NULL, RiotRomInfo, RiotRomName, RiotInputInfo, RiotDIPInfo,
+	FstarfrcInit, FstarfrcExit, FstarfrcFrame, NULL, FstarfrcScan,
+	NULL, 256, 224, 4, 3
+};

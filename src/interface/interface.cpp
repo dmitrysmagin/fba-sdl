@@ -45,7 +45,7 @@ int IntInfoInit(InterfaceInfo* pInfo)
 int IntInfoAddStringInterface(InterfaceInfo* pInfo, TCHAR* szString)
 {
 	int i;
-	
+
 	for (i = 0; pInfo->ppszInterfaceSettings[i] && i < INT_INFO_STRINGS; i++) { }
 
 	if (i >= INT_INFO_STRINGS) {
@@ -65,7 +65,7 @@ int IntInfoAddStringInterface(InterfaceInfo* pInfo, TCHAR* szString)
 int IntInfoAddStringModule(InterfaceInfo* pInfo, TCHAR* szString)
 {
 	int i;
-	
+
 	for (i = 0; pInfo->ppszModuleSettings[i] && i < INT_INFO_STRINGS; i++) { }
 
 	if (i >= INT_INFO_STRINGS) {

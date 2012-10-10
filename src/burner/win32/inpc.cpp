@@ -9,7 +9,8 @@ static struct GameInp* pgi = NULL;					// Current GameInp
 
 static int InpcInit()
 {
-	TCHAR szText[128];
+	TCHAR szOldTitle[1024] = _T("");
+	TCHAR szNewTitle[1024] = _T("");
 	int nCurrent = 0;
 
 	struct BurnInputInfo bii;						// Info about the input
@@ -24,8 +25,9 @@ static int InpcInit()
 	}
 
 	// Set the dialog title
-	_stprintf(szText, _T("Edit %.100hs"), bii.szName, NULL, 0);
-	SetWindowText(hInpcDlg, szText);
+	GetWindowText(hInpcDlg, szOldTitle, 1024);
+	_sntprintf(szNewTitle, 1024, _T(APP_TITLE) _T(SEPERATOR_1) _T("%s %hs"), szOldTitle, bii.szName);
+	SetWindowText(hInpcDlg, szNewTitle);
 
 	pgi = NULL;
 	if (nInpcInput >= nGameInpCount) {				// input out of range
@@ -36,8 +38,8 @@ static int InpcInit()
 	// Get current constant
 	if (pgi->nInput == GIT_CONSTANT) {
 	nCurrent=pgi->Input.Constant.nConst; }
-	_stprintf(szText, _T("0x%.2X"), nCurrent);
-	SetWindowText(hValue, szText);
+	_stprintf(szNewTitle, _T("0x%.2X"), nCurrent);
+	SetWindowText(hValue, szNewTitle);
 
 	return 0;
 }
@@ -112,7 +114,7 @@ int InpcCreate()
 	DestroyWindow(hInpcDlg);
 	hInpcDlg = NULL;
 
-	hInpcDlg = CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPC), hInpdDlg, DialogProc);
+	hInpcDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPC), hInpdDlg, DialogProc);
 	if (hInpcDlg == NULL) {
 		return 1;
 	}

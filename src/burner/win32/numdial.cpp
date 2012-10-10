@@ -10,6 +10,7 @@ static TCHAR* frDial = _T("Number of Frames");
 static int nExitStatus;
 
 // -----------------------------------------------------------------------------
+
 static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 {
  	int nRet = 0;
@@ -45,13 +46,14 @@ static BOOL CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)
 
 int NumDialCreate(int)
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_VALUE), hScrnWnd, DefInpProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_VALUE), hScrnWnd, DefInpProc);
 
 	return 1;
 }
 
 // -----------------------------------------------------------------------------
 // Gamma dialog
+
 static BOOL CALLBACK GammaProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static double nPrevGamma;
@@ -210,11 +212,12 @@ static BOOL CALLBACK GammaProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LP
 
 void GammaDialog()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_GAMMA), hScrnWnd, GammaProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_GAMMA), hScrnWnd, GammaProc);
 }
 
 // -----------------------------------------------------------------------------
 // Scanline intensity dialog
+
 static BOOL CALLBACK ScanlineProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	static int nPrevIntensity;
@@ -350,7 +353,7 @@ static BOOL CALLBACK ScanlineProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	//
 
 void ScanlineDialog()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, ScanlineProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, ScanlineProc);
 }
 
 // -----------------------------------------------------------------------------
@@ -529,7 +532,7 @@ static BOOL CALLBACK PhosphorProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 
 void PhosphorDialog()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_PHOSPHOR), hScrnWnd, PhosphorProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_PHOSPHOR), hScrnWnd, PhosphorProc);
 }
 
 // -----------------------------------------------------------------------------
@@ -716,11 +719,12 @@ static BOOL CALLBACK ScreenAngleProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 
 void ScreenAngleDialog()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCREENANGLE), hScrnWnd, ScreenAngleProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCREENANGLE), hScrnWnd, ScreenAngleProc);
 }
 
 // -----------------------------------------------------------------------------
 // CPU clock dialog
+
 static BOOL CALLBACK CPUClockProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
 {
 	switch (Msg) {
@@ -853,6 +857,157 @@ static BOOL CALLBACK CPUClockProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	//
 
 void CPUClockDialog()
 {
-	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_CPUCLOCK), hScrnWnd, CPUClockProc);
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_CPUCLOCK), hScrnWnd, CPUClockProc);
+}
+
+// -----------------------------------------------------------------------------
+// Cubic filter quality dialog
+
+static BOOL CALLBACK CubicProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)	// LPARAM lParam
+{
+	static double dPrevB, dPrevC;
+
+	switch (Msg) {
+		case WM_INITDIALOG: {
+			TCHAR szText[16];
+			dPrevB = dVidCubicB;
+			dPrevC = dVidCubicC;
+			nExitStatus = 0;
+
+			WndInMid(hDlg, hScrnWnd);
+
+			// Initialise slider
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETRANGE, (WPARAM)0, (LPARAM)MAKELONG(0, 10000));
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETLINESIZE, (WPARAM)0, (LPARAM)100);
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETPAGESIZE, (WPARAM)0, (LPARAM)500);
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETTIC, (WPARAM)0, (LPARAM)3333);
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETTIC, (WPARAM)0, (LPARAM)5000);
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETTIC, (WPARAM)0, (LPARAM)7500);
+
+			// Set slider to current value
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETPOS, (WPARAM)true, (LPARAM)((1.0 - dVidCubicB) * 10000));
+
+			// Set the edit control to current value
+			_stprintf(szText, _T("%.3lf"), 1.0 - dVidCubicB);
+			SendDlgItemMessage(hDlg, IDC_SCANLINE_EDIT, WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
+
+			SetWindowText(hDlg, _T("Select desired filter sharpness"));
+
+			// Update the screen
+			if (bDrvOkay) {
+				VidPaint(2);
+			}
+
+			return TRUE;
+		}
+		case WM_COMMAND: {
+			switch (HIWORD(wParam)) {
+				case BN_CLICKED: {
+					if (LOWORD(wParam) == IDOK) {
+						nExitStatus = 1;
+						SendMessage(hDlg, WM_CLOSE, 0, 0);
+					}
+					if (LOWORD(wParam) == IDCANCEL) {
+						nExitStatus = -1;
+						SendMessage(hDlg, WM_CLOSE, 0, 0);
+					}
+					break;
+				}
+				case EN_UPDATE: {
+					if (nExitStatus == 0) {
+						TCHAR szText[16] = _T("");
+						bool bPoint = 0;
+						bool bValid = 1;
+
+						if (SendDlgItemMessage(hDlg, IDC_SCANLINE_EDIT, WM_GETTEXTLENGTH, (WPARAM)0, (LPARAM)0) < 16) {
+							SendDlgItemMessage(hDlg, IDC_SCANLINE_EDIT, WM_GETTEXT, (WPARAM)16, (LPARAM)szText);
+						}
+
+						// Scan string in the edit control for illegal characters
+						for (int i = 0; szText[i]; i++) {
+							if (szText[i] == _T('.')) {
+								if (bPoint) {
+									bValid = 0;
+									break;
+								}
+							} else {
+								if (!_istdigit(szText[i])) {
+									bValid = 0;
+									break;
+								}
+							}
+						}
+
+						if (bValid) {
+							dVidCubicB = 1.0 - _tcstod(szText, NULL);
+							if (dVidCubicB < 0.0) {
+								dVidCubicB = 0.0;
+							} else {
+								if (dVidCubicB > 1.0) {
+									dVidCubicB = 1.0;
+								}
+							}
+
+							// Set slider to current value
+							SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_SETPOS, (WPARAM)true, (LPARAM)((1.0 - dVidCubicB) * 10000));
+
+							// Update the screen
+							if (bVidOkay) {
+								VidPaint(2);
+							}
+						}
+					}
+					break;
+				}
+			}
+			break;
+		}
+
+		case WM_HSCROLL: {
+			switch (LOWORD(wParam)) {
+				case TB_BOTTOM:
+				case TB_ENDTRACK:
+				case TB_LINEDOWN:
+				case TB_LINEUP:
+				case TB_PAGEDOWN:
+				case TB_PAGEUP:
+				case TB_THUMBPOSITION:
+				case TB_THUMBTRACK:
+				case TB_TOP: {
+					if (nExitStatus == 0) {
+						TCHAR szText[16];
+
+						// Update the contents of the edit control
+						dVidCubicB = 1.0 - (double)SendDlgItemMessage(hDlg, IDC_SCANLINE_SLIDER, TBM_GETPOS, (WPARAM)0, (LPARAM)0) / 10000;
+						_stprintf(szText, _T("%.3lf"), 1.0 - dVidCubicB);
+						SendDlgItemMessage(hDlg, IDC_SCANLINE_EDIT, WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
+
+						// Update the screen
+						if (bVidOkay) {
+//							VidRedraw();
+							VidPaint(2);
+						}
+					}
+					break;
+				}
+			}
+			break;
+		}
+
+		case WM_CLOSE:
+			if (nExitStatus != 1) {
+				dVidCubicB = dPrevB;
+				dVidCubicC = dPrevC;
+			}
+			EndDialog(hDlg, 0);
+			break;
+	}
+
+	return 0;
+}
+
+void CubicSharpnessDialog()
+{
+	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SCANLINE), hScrnWnd, CubicProc);
 }
 

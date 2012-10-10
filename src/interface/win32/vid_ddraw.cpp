@@ -214,21 +214,7 @@ static int DtosInit()
 
 	VidSScaleImage(&rect, nGameWidth, nGameHeight, bVidScanRotate);
 
-	if (DtoBack) {
-		int nFlags = 0;
-		if (rect.right - rect.left < 1280) {
-			nFlags++;
-			if (rect.right - rect.left < 800) {
-				nFlags++;
-				if (rect.right - rect.left < 640) {
-					nFlags++;
-				}
-			}
-		}
-		VidSInitOSD(nFlags);
-	} else {
-		VidSInitOSD(0);
-	}
+	VidSInitOSD(4);
 
 	return 0;
 }
@@ -1069,38 +1055,21 @@ static int vidScale(RECT* pRect, int nWidth, int nHeight)
 
 static int vidGetSettings(InterfaceInfo* pInfo)
 {
-	{
-		pInfo->ppszPluginSettings[0] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[0] == NULL) {
-			return 1;
-		}
-		if (nVidFullscreen && DtoBack) {
-			_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using a triple buffer"));
-		} else {
-			_sntprintf(pInfo->ppszPluginSettings[0], MAX_PATH, _T("Using Blt() to transfer the image"));
-		}
+	if (nVidFullscreen && DtoBack) {
+		IntInfoAddStringModule(pInfo, _T("Using a triple buffer"));
+	} else {
+		IntInfoAddStringModule(pInfo, _T("Using Blt() to transfer the image"));
 	}
 
-	{
-		pInfo->ppszPluginSettings[1] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[1] == NULL) {
-			return 1;
-		}
-
-		if (nUseSys) {
-			_sntprintf(pInfo->ppszPluginSettings[1], MAX_PATH, _T("Using system memory"));
-		} else {
-			_sntprintf(pInfo->ppszPluginSettings[1], MAX_PATH, _T("Using video memory for the final blit"));
-		}
+	if (nUseSys) {
+		IntInfoAddStringModule(pInfo, _T("Using system memory"));
+	} else {
+		IntInfoAddStringModule(pInfo, _T("Using video memory for the final blit"));
 	}
 
 	if (nRotateGame) {
 		TCHAR* pszEffect[8] = { _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T("") };
-
-		pInfo->ppszPluginSettings[2] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[2] == NULL) {
-			return 1;
-		}
+		TCHAR szString[MAX_PATH] = _T("");
 
 		pszEffect[0] = _T("Using ");
 		if (nRotateGame & 1) {
@@ -1114,16 +1083,13 @@ static int vidGetSettings(InterfaceInfo* pInfo)
 		}
 		pszEffect[4] = _T(", ");
 
-		_sntprintf(pInfo->ppszPluginSettings[2], MAX_PATH, _T("%s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		_sntprintf(szString, MAX_PATH, _T("%s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		IntInfoAddStringModule(pInfo, szString);
 	}
 
 	if (bDtosScan) {
 		TCHAR* pszEffect[8] = { _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T(""), _T("") };
-
-		pInfo->ppszPluginSettings[3] = (TCHAR*)malloc(MAX_PATH * sizeof(TCHAR));
-		if (pInfo->ppszPluginSettings[3] == NULL) {
-			return 1;
-		}
+		TCHAR szString[MAX_PATH] = _T("");
 
 		pszEffect[0] = _T("Applying ");
 		if (bVidScanHalf) {
@@ -1134,7 +1100,8 @@ static int vidGetSettings(InterfaceInfo* pInfo)
 		}
 		pszEffect[3] = _T("scanlines");
 
-		_sntprintf(pInfo->ppszPluginSettings[3], MAX_PATH, _T("%s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		_sntprintf(szString, MAX_PATH, _T("%s%s%s%s%s%s%s%s"), pszEffect[0], pszEffect[1], pszEffect[2], pszEffect[3], pszEffect[4], pszEffect[5], pszEffect[6], pszEffect[7]);
+		IntInfoAddStringModule(pInfo, szString);
 	}
 
 	return 0;

@@ -700,7 +700,7 @@ int AY8910InitYM(int chip, int clock, int sample_rate,
 	return val;
 }
 
-int AY9810Scan(int nAction, int* pnMin)
+int AY8910Scan(int nAction, int* pnMin)
 {
 	struct BurnArea ba;
 	int i;

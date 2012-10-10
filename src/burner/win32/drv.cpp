@@ -3,7 +3,7 @@
 
 int bDrvOkay = 0;						// 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
 
-TCHAR szAppRomPaths[DIRS_MAX][MAX_PATH] = {{_T("roms\\")}, };
+TCHAR szAppRomPaths[DIRS_MAX][MAX_PATH] = { { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("roms\\") } };
 
 static bool bSaveRAM = false;
 
@@ -13,31 +13,31 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	BzipOpen(FALSE);
 
-	// If there is an error with the romset, report it
-	if (nBzipError) {
-		TCHAR *szTitle;
-		int nIcon, nButton;
-
-		// Make the correct title and icon
-		if (nBzipError & 1) {
-			nIcon = MB_ICONERROR;
-			szTitle = _T(APP_TITLE) _T(" Error");
-		} else {
-			nIcon = MB_ICONWARNING;
-			szTitle = _T(APP_TITLE) _T(" Warning");
+	// If there is a problem with the romset, report it
+	switch (BzipStatus()) {
+		case BZIP_STATUS_BADDATA: {
+			FBAPopupDisplay(PUF_TYPE_WARNING);
+			break;
 		}
+		case BZIP_STATUS_ERROR: {
+			FBAPopupDisplay(PUF_TYPE_ERROR);
 
-		if (nBzipError & 0x08) {
-			nButton = MB_OK;		// no data at all - pretty basic!
-		} else {
-			BzipText.Add(_T("\nWould you like more detailed information?\n(For experts only!)\n"));
-			nButton = MB_DEFBUTTON2 | MB_YESNO;
+#if 0 || !defined FBA_DEBUG
+			// Don't even bother trying to start the game if we know it won't work
+			BzipClose();
+			return 1;
+#endif
+
+			break;
 		}
+		default: {
 
-		// We can't use AppError, so use MessageBox directly
-		if (MessageBox(hScrnWnd, BzipText.szText, szTitle, nButton | nIcon | MB_SETFOREGROUND) == IDYES) {
-			// Give the more detailed information string
-			MessageBox(hScrnWnd, BzipDetail.szText, szTitle, MB_OK | nIcon | MB_SETFOREGROUND);
+#if 0 && defined FBA_DEBUG
+			FBAPopupDisplay(PUF_TYPE_INFO);
+#else
+			FBAPopupDisplay(PUF_TYPE_INFO | PUF_TYPE_LOGONLY);
+#endif
+
 		}
 	}
 
@@ -50,7 +50,7 @@ static int DoLibInit()					// Do Init of Burn library driver
 	ProgressDestroy();
 
 	if (nRet) {
-		return 1;
+		return 3;
 	} else {
 		return 0;
 	}
@@ -65,12 +65,11 @@ static int __cdecl DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 	BzipOpen(FALSE);
 
 	if ((nRet = BurnExtLoadRom(Dest, pnWrote, i)) != 0) {
-		TCHAR szText[256] = _T("");
 		char* pszFilename;
 
 		BurnDrvGetRomName(&pszFilename, i, 0);
-		_stprintf(szText, _T("Error loading %hs, requested by %s.\nThe emulation will likely suffer problems."), pszFilename, BurnDrvGetText(DRV_NAME));
-		AppError(szText, 0);
+		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_REQUEST), pszFilename, BurnDrvGetText(DRV_NAME));
+		FBAPopupDisplay(PUF_TYPE_ERROR);
 	}
 
 	BzipClose();
@@ -84,12 +83,14 @@ static int __cdecl DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 
 int DrvInit(int nDrvNum, bool bRestore)
 {
-	DrvExit();						// Make sure exitted
+	int nStatus;
 
-	MediaExit(true);
-	MediaInit();
+	DrvExit();						// Make sure exitted
+	MediaExit();
 
 	nBurnDrvSelect = nDrvNum;		// Set the driver number
+
+	MediaInit();
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
 	nMaxPlayers = BurnDrvGetMaxPlayers();
@@ -104,16 +105,18 @@ int DrvInit(int nDrvNum, bool bRestore)
 		nBurnCPUSpeedAdjust = 0x0100;
 	}
 
-	if (DoLibInit()) {				// Init the Burn library's driver
-		TCHAR szTemp[512];
+	nStatus = DoLibInit();			// Init the Burn library's driver
+	if (nStatus) {
+		if (nStatus & 2) {
+			BurnDrvExit();			// Exit the driver
 
-		BurnDrvExit();				// Exit the driver
+			ScrnTitle();
 
-		ScrnTitle();
-		_stprintf (szTemp, _T("There was an error starting '%s'.\n"), BurnDrvGetText(DRV_FULLNAME));
-		AppError(szTemp, 0);
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_BURN_INIT), BurnDrvGetText(DRV_FULLNAME));
+			FBAPopupDisplay(PUF_TYPE_WARNING);
+		}
 
-		PostMessage(NULL, WM_APP + 0, 0, 0);
+		POST_INITIALISE_MESSAGE;
 		return 1;
 	}
 
@@ -139,7 +142,8 @@ int DrvInit(int nDrvNum, bool bRestore)
 	// Reset the speed throttling code, so we don't 'jump' after the load
 	RunReset();
 
-	PostMessage(NULL, WM_APP + 0, 0, 0);
+	VidExit();
+	POST_INITIALISE_MESSAGE;
 
 	return 0;
 }

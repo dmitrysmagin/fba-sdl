@@ -14,12 +14,12 @@
 #define MNS_NOTIFYBYPOS     	(0x08000000)
 #define MNS_CHECKORBMP      	(0x04000000)
 
-#define MIM_MAXHEIGHT			(0x00000001)
-#define MIM_BACKGROUND			(0x00000002)
-#define MIM_HELPID				(0x00000004)
-#define MIM_MENUDATA			(0x00000008)
-#define MIM_STYLE				(0x00000010)
-#define MIM_APPLYTOSUBMENUS		(0x80000000)
+//#define MIM_MAXHEIGHT			(0x00000001)
+//#define MIM_BACKGROUND			(0x00000002)
+//#define MIM_HELPID				(0x00000004)
+//#define MIM_MENUDATA			(0x00000008)
+//#define MIM_STYLE				(0x00000010)
+//#define MIM_APPLYTOSUBMENUS		(0x80000000)
 
 #define WM_UNINITMENUPOPUP		(0x0125)
 
@@ -36,7 +36,7 @@ typedef struct _settextex
 	UINT	codepage;
 } SETTEXTEX;
 
-// Macros used for handling Window Messages
+// Macro used for handling Window Messages
 #define HANDLE_WM_DISPLAYCHANGE(hwnd, wParam, lParam, fn)		\
     ((fn)((hwnd), (UINT)(wParam), (UINT)LOWORD(lParam), (UINT)HIWORD(wParam)), 0L)
 

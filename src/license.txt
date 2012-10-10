@@ -13,6 +13,7 @@ Musashi MC68000/MC68010/MC68EC020 core by Karl Stenerud (http://www.mame.net/).
 A68K MC68000 core by Mike Coates & Darren Olafson (http://www.mame.net/).
 YM3812 core by Jarek Burczynski & Tatsuyuki Satoh (http://www.mame.net/).
 YM2151 core by Jarek Burczynski (http://www.mame.net/).
+YMF278B core by R. Belmont & O.Galibert (http://www.mame.net/).
 YM2608/YM2610 cores by Jarek Burczynski & Tatsuyuki Satoh (http://www.mame.net/).
 AY8910/YM2149 core by various authors (http://www.mame.net/).
 Z80 emulation core by Dave, modifications by Team FB Alpha (http://www.finalburn.com/).

@@ -16,7 +16,7 @@
 #define MAKE_STRING_2(s) #s
 #define MAKE_STRING(s) MAKE_STRING_2(s)
 
-#define BZIP_MAX (4)								// Maximum zip files to search through
+#define BZIP_MAX (8)								// Maximum zip files to search through
 #define DIRS_MAX (8)								// Maximum number of directories to search
 
 #include "title.h"
@@ -29,8 +29,6 @@
  #include "burner_win32.h"
 #elif defined (BUILD_SDL)
  #include "burner_sdl.h"
-#elif defined (BUILD_WXW)
- #include "burner_wxw.h"
 #endif
 
 // ---------------------------------------------------------------------------
@@ -76,7 +74,7 @@ extern int nPlayerDefaultControls[4];
 extern TCHAR szPlayerDefaultIni[4][MAX_PATH];
 
 // cong.cpp
-extern const int nMinVersion;						// Minimum version of application for which input files are valid
+extern const int nConfigMinVersion;					// Minimum version of application for which input files are valid
 extern bool bSaveInputs;
 int ConfigGameLoad(bool bOverWrite);				// char* lpszName = NULL
 int ConfigGameSave(bool bSave);
@@ -93,8 +91,8 @@ int GamcPlayerHotRod(struct GameInp* pgi, char* szi, int nPlayer, int nFlags, in
 
 // misc.cpp
 #define QUOTE_MAX (128)															// Maximum length of "quoted strings"
-int QuoteRead(TCHAR** pszQuote, TCHAR** pszEnd, TCHAR* szSrc);					// Read a quoted string from szSrc and point to the end
-TCHAR* LabelCheck(TCHAR* s, TCHAR* szLabel);
+int QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc);					// Read a quoted string from szSrc and point to the end
+TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel);
 
 extern int bDoGamma;
 extern int bHardwareGammaOnly;
@@ -129,23 +127,14 @@ int ZipClose();
 int ZipGetList(struct ZipEntry** pList, int* pnListCount);
 int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry);
 
-// stringset.cpp
-class StringSet {
-public:
-	TCHAR* szText;
-	int nLen;
-	// printf function to add text to the Bzip string
-	int __cdecl Add(TCHAR* szFormat, ...);
-	int Reset();
-	StringSet();
-	~StringSet();
-};
-
 // bzip.cpp
-extern int nBzipError;								// Non-zero if there is a problem with the opened romset
-extern StringSet BzipText;							// Text which describes any problems with loading the zip
-extern StringSet BzipDetail;						// Text which describes in detail any problems with loading the zip
+
+#define BZIP_STATUS_OK		(0)
+#define BZIP_STATUS_BADDATA	(1)
+#define BZIP_STATUS_ERROR	(2)
+
 int BzipOpen(bool);
 int BzipClose();
 int BzipInit();
 int BzipExit();
+int BzipStatus();

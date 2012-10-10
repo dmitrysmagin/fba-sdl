@@ -30,8 +30,6 @@ extern unsigned char *PC080SN_word_0,*PC080SN_yscroll_word_0;
 extern unsigned char *PC080SN_xscroll_word_0,*PC080SN_ctrl_word_0;
 void PC080SN_bg();
 void PC080SN_fg();
-void draw_gun(int x, int y);
-void init_gun();
 extern int p1scrollx,p2scrollx;
 extern int p1scrolly,p2scrolly;
 

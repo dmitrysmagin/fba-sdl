@@ -53,11 +53,11 @@ static int InpDIPSWListBegin()
 	// Make column headers
 	memset(&LvCol, 0, sizeof(LvCol));
 	LvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-	LvCol.cx = 128;
-	LvCol.pszText = _T("DIPswitch group");
+	LvCol.cx = 158;
+	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_DIP_GROUP, true);
 	SendMessage(hInpDIPSWList, LVM_INSERTCOLUMN, 0, (LPARAM)&LvCol);
-	LvCol.cx = 156;
-	LvCol.pszText = _T("Setting");
+	LvCol.cx = 215;
+	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_DIP_SETTING, true);
 	SendMessage(hInpDIPSWList, LVM_INSERTCOLUMN, 1, (LPARAM)&LvCol);
 
 	return 0;
@@ -352,7 +352,7 @@ int InpDIPSWCreate()
 
 	DestroyWindow(hInpDIPSWDlg);							// Make sure exitted
 
-	hInpDIPSWDlg = CreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, DialogProc);
+	hInpDIPSWDlg = FBACreateDialog(hAppInst, MAKEINTRESOURCE(IDD_INPDIP), hScrnWnd, DialogProc);
 	if (hInpDIPSWDlg == NULL) {
 		return 1;
 	}

@@ -35,8 +35,8 @@ typedef unsigned long long UINT64;
 #define HAS_YM2608  1
 #define HAS_YM2610  1
 #define HAS_YM2610B 1
-#define HAS_YM2612  0
-#define HAS_YM3438  0
+#define HAS_YM2612  1
+#define HAS_YM3438  1
 /* OPL */
 #define HAS_YM3812  1
 #define HAS_YM3526  0

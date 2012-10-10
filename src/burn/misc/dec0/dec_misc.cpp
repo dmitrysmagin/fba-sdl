@@ -102,23 +102,32 @@ void dec_ctrl_writeword(unsigned int a, unsigned short d)
 
 void DecMakeInputs()
 {
-	// Reset Inputs
-	dec_input[0] = dec_input[1] = dec_input[2] = 0xFFFF;
-	// Compile Digital Inputs
-	dec_input[0] -= (dec_inputbits0[0] & 1) << 0;
-	dec_input[0] -= (dec_inputbits0[1] & 1) << 1;
-	dec_input[0] -= (dec_inputbits0[2] & 1) << 2;
-	dec_input[0] -= (dec_inputbits0[3] & 1) << 3;
-	dec_input[0] -= (dec_inputbits0[4] & 1) << 4;
-	dec_input[0] -= (dec_inputbits0[5] & 1) << 5;
-	dec_input[0] -= (1) << 6;
-	dec_input[0] -= (1) << 7;
-	dec_input[0] -= (dec_inputbits1[0] & 1) << 8;
-	dec_input[0] -= (dec_inputbits1[1] & 1) << 9;
-	dec_input[0] -= (dec_inputbits1[2] & 1) << 10;
-	dec_input[0] -= (dec_inputbits1[3] & 1) << 11;
-	dec_input[0] -= (dec_inputbits1[4] & 1) << 12;
-	dec_input[0] -= (dec_inputbits1[5] & 1) << 13;
-	dec_input[0] -= (1) << 14;
-	dec_input[0] -= (1) << 15;
+   // Reset Inputs
+   dec_input[0] = dec_input[1] = dec_input[2] = 0xFFFF;
+   // Compile Digital Inputs
+   dec_input[0] -= (dec_inputbits0[0] & 1) << 0;
+   dec_input[0] -= (dec_inputbits0[1] & 1) << 1;
+   dec_input[0] -= (dec_inputbits0[2] & 1) << 2;
+   dec_input[0] -= (dec_inputbits0[3] & 1) << 3;
+   dec_input[0] -= (dec_inputbits0[4] & 1) << 4;
+   dec_input[0] -= (dec_inputbits0[5] & 1) << 5;
+   dec_input[0] -= (0) << 6;
+   dec_input[0] -= (0) << 7;
+   dec_input[0] -= (dec_inputbits1[0] & 1) << 8;
+   dec_input[0] -= (dec_inputbits1[1] & 1) << 9;
+   dec_input[0] -= (dec_inputbits1[2] & 1) << 10;
+   dec_input[0] -= (dec_inputbits1[3] & 1) << 11;
+   dec_input[0] -= (dec_inputbits1[4] & 1) << 12;
+   dec_input[0] -= (dec_inputbits1[5] & 1) << 13;
+   dec_input[0] -= (0) << 14;
+   dec_input[0] -= (0) << 15;
+
+   dec_input[1] -= (0) << 0;
+   dec_input[1] -= (0) << 1;
+   dec_input[1] -= (dec_inputbits2[2] & 1) << 2;
+   dec_input[1] -= (dec_inputbits2[3] & 1) << 3;
+   dec_input[1] -= (dec_inputbits2[4] & 1) << 4;
+   dec_input[1] -= (dec_inputbits2[5] & 1) << 5;
+   dec_input[1] -= (0) << 6;
+   dec_input[1] -= (1) << 7;
 }

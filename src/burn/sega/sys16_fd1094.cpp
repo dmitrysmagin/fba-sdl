@@ -12,6 +12,7 @@ static UINT16* fd1094_cacheregion[S16_NUMCACHE]; // a cache region where S16_NUM
 static int fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
 static int fd1094_current_cacheposition; // current position in cache array
 
+bool System18Banking;
 
 static void *fd1094_get_decrypted_base(void)
 {
@@ -24,7 +25,7 @@ static void *fd1094_get_decrypted_base(void)
    if it is then it copies the cached data to the user region where code is
    executed from, if its not cached then it gets decrypted to the current
    cache position using the functions in fd1094.c */
-inline static void fd1094_setstate_and_decrypt(int state)
+static void fd1094_setstate_and_decrypt(int state)
 {
 	int i;
 	UINT32 addr;
@@ -43,7 +44,8 @@ inline static void fd1094_setstate_and_decrypt(int state)
 			/* copy cached state */
 			fd1094_userregion=fd1094_cacheregion[i];
 			SekOpen(0);
-			SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x07ffff, SM_FETCH);
+			SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+			if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 			SekClose();
 
 			return;
@@ -63,7 +65,8 @@ inline static void fd1094_setstate_and_decrypt(int state)
 	/* copy newly decrypted data to user region */
 	fd1094_userregion=fd1094_cacheregion[fd1094_current_cacheposition];
 	SekOpen(0);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x07ffff, SM_FETCH);
+	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
 
 	fd1094_current_cacheposition++;
@@ -111,7 +114,8 @@ void fd1094_kludge_reset_values(void)
 	}
 		
 	SekOpen(0);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x07ffff, SM_FETCH);
+	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
 }
 
@@ -149,6 +153,19 @@ void fd1094_driver_init()
 
 	/* flush the cached state array */
 	for (i=0;i<S16_NUMCACHE;i++) fd1094_cached_states[i] = -1;
+	
+	fd1094_current_cacheposition = 0;
+	
+	if (System16RomSize > 0x0fffff) System18Banking = true;
+}
+
+void fd1094_exit()
+{
+	System18Banking = false;
+	
+	for (int i = 0; i < S16_NUMCACHE; i++) {
+		free(fd1094_cacheregion[i]);
+	}
 	
 	fd1094_current_cacheposition = 0;
 }

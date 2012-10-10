@@ -158,29 +158,29 @@ char* DecorateGameName(unsigned int nBurnDrv)
 // ---------------------------------------------------------------------------
 // config file parsing
 
-TCHAR* LabelCheck(TCHAR* s, TCHAR* szLabel)
+TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel)
 {
 	int nLen;
 	if (s == NULL) {
 		return NULL;
 	}
-	if (szLabel == NULL) {
+	if (pszLabel == NULL) {
 		return NULL;
 	}
-	nLen = _tcslen(szLabel);
+	nLen = _tcslen(pszLabel);
 
 	SKIP_WS(s);													// Skip whitespace
 
-	if (_tcsncmp(s, szLabel, nLen)){							// Doesn't match
+	if (_tcsncmp(s, pszLabel, nLen)){							// Doesn't match
 		return NULL;
 	}
 	return s + nLen;
 }
 
-int QuoteRead(TCHAR** pszQuote, TCHAR** pszEnd, TCHAR* szSrc)	// Read a (quoted) string from szSrc and point to the end
+int QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc)	// Read a (quoted) string from szSrc and point to the end
 {
 	static TCHAR szQuote[QUOTE_MAX];
-	TCHAR* s = szSrc;
+	TCHAR* s = pszSrc;
 	TCHAR* e;
 
 	// Skip whitespace
@@ -205,11 +205,11 @@ int QuoteRead(TCHAR** pszQuote, TCHAR** pszEnd, TCHAR* szSrc)	// Read a (quoted)
 		szQuote[e - s] = _T('\0');
 	}
 
-	if (pszQuote) {
-		*pszQuote = szQuote;
+	if (ppszQuote) {
+		*ppszQuote = szQuote;
 	}
-	if (pszEnd)	{
-		*pszEnd = e;
+	if (ppszEnd)	{
+		*ppszEnd = e;
 	}
 
 	return 0;

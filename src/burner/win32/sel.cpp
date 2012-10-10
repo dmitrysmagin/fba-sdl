@@ -4,10 +4,395 @@
 #include "burner.h"
 #include "png.h"
 
+//==[START OWNERDRAW BUTTONS FUNCTIONS][Note: SOME ARE NOT USED AND ARE WIP][ by CaptainCPS-X ]====================================
+#if defined (_UNICODE)
+
+// XP specific stuff
+#include <uxtheme.h>
+#include <tmschema.h>
+//#include <commctrl.h>
+
+#ifndef WM_THEMECHANGED
+#define WM_THEMECHANGED 0x031A 
+#endif
+
+#ifndef ODS_NOFOCUSRECT
+#define ODS_NOFOCUSRECT 0x0200 
+#endif
+
+#define ICON_HEIGHT 16
+#define ICON_WIDTH 16
+
+static HICON hIcon = NULL;
+static HICON hOwnerDrawIcon_Cancel = NULL;
+static HICON hOwnerDrawIcon_Play = NULL;
+static HICON hOwnerDrawIcon_Scan = NULL;
+static HICON hOwnerDrawIcon_Romdirs = NULL;
+
+HWND ghDlgCurrent = NULL;
+
+// XP Themes
+BOOL Themed = FALSE;
+BOOL ThemeLibLoaded = FALSE;
+
+typedef HRESULT(__stdcall *PFNCLOSETHEMEDATA)(HTHEME hTheme);
+typedef HRESULT(__stdcall *PFNDRAWTHEMEBACKGROUND)(HTHEME hTheme, HDC hdc,int iPartId, int iStateId, const RECT *pRect,  const RECT *pClipRect);
+typedef HTHEME(__stdcall *PFNOPENTHEMEDATA)(HWND hwnd, LPCWSTR pszClassList);
+typedef HRESULT(__stdcall *PFNDRAWTHEMETEXT)(HTHEME hTheme, HDC hdc, int iPartId,int iStateId, LPCWSTR pszText, int iCharCount, DWORD dwTextFlags,DWORD dwTextFlags2, const RECT *pRect);
+typedef HRESULT (__stdcall *PFNGETTHEMEBACKGROUNDCONTENTRECT)(HTHEME hTheme,  HDC hdc,int iPartId, int iStateId,  const RECT *pBoundingRect,RECT *pContentRect);
+
+PFNOPENTHEMEDATA zOpenThemeData = NULL;
+PFNDRAWTHEMEBACKGROUND zDrawThemeBackground = NULL;
+PFNCLOSETHEMEDATA zCloseThemeData = NULL;
+PFNDRAWTHEMETEXT zDrawThemeText = NULL;
+PFNGETTHEMEBACKGROUNDCONTENTRECT zGetThemeBackgroundContentRect = NULL;
+
+static HMODULE hModThemes = NULL;
+
+void InitThemes() {
+
+#if defined (_UNICODE)
+	hModThemes = LoadLibrary(L"UXTHEME.DLL");
+#else
+	hModThemes = LoadLibrary("UXTHEME.DLL");
+#endif
+	if(hModThemes) {
+		zOpenThemeData = (PFNOPENTHEMEDATA)GetProcAddress(hModThemes, "OpenThemeData");
+		zDrawThemeBackground = (PFNDRAWTHEMEBACKGROUND)GetProcAddress(hModThemes, "DrawThemeBackground");
+		zCloseThemeData = (PFNCLOSETHEMEDATA)GetProcAddress(hModThemes, "CloseThemeData");
+		zDrawThemeText = (PFNDRAWTHEMETEXT)GetProcAddress(hModThemes, "DrawThemeText");
+		zGetThemeBackgroundContentRect = (PFNGETTHEMEBACKGROUNDCONTENTRECT)GetProcAddress(hModThemes, "GetThemeBackgroundContentRect");
+
+		if(zOpenThemeData && zDrawThemeBackground && zCloseThemeData && zDrawThemeText && zGetThemeBackgroundContentRect) {
+			ThemeLibLoaded = TRUE;			
+		} else {
+			FreeLibrary(hModThemes);
+			hModThemes = NULL;
+		}
+	}
+}
+
+void FinThemes() {
+	FreeLibrary(hModThemes);
+	hModThemes = NULL;
+	ThemeLibLoaded = FALSE;
+	Themed = FALSE;
+}
+
+
+void PrepareImageRect(HWND hButtonWnd, BOOL bHasTitle, RECT* rpItem, RECT* rpTitle, BOOL bIsPressed, DWORD dwWidth, DWORD dwHeight, RECT* rpImage) {
+	RECT rBtn;
+	CopyRect(rpImage, rpItem);
+
+	GetClientRect(hButtonWnd, &rBtn);
+	if (bHasTitle == FALSE)	{
+		// Center image horizontally
+		LONG rpImageWidth = rpImage->right - rpImage->left;
+		rpImage->left += ((rpImageWidth - (long)dwWidth)/2);
+	} else {
+		// Image must be placed just inside the focus rect
+		LONG rpTitleWidth = rpTitle->right - rpTitle->left;
+		rpTitle->right = rpTitleWidth - dwWidth - 10;
+		rpTitle->left = 10;
+		rpImage->left = rBtn.right - dwWidth - 10;
+		// Center image vertically
+		LONG rpImageHeight = rpImage->bottom - rpImage->top;
+		rpImage->top += ((rpImageHeight - (long)dwHeight)/2)+1;
+	}
+		
+	// If button is pressed then press image also
+	if (bIsPressed && !Themed)
+		OffsetRect(rpImage, 1, 1);
+} // End of PrepareImageRect
+
+static LONG prev_proc[7];	// Cancel
+ 
+// Message handler for wizard button
+static BOOL bMouseOverButton = FALSE;
+
+LRESULT CALLBACK ButtWindProc_IDCANCEL(HWND hWnd,INT Msg,WPARAM wParam,LPARAM lParam) {
+	switch (Msg)
+		{
+		case WM_LBUTTONDBLCLK:
+			PostMessage(hWnd, WM_LBUTTONDOWN, wParam, lParam);
+			break;
+		case WM_MOUSEMOVE:
+			{
+			// check to see if the left mousr button is pressed
+			if(!bMouseOverButton) {
+				bMouseOverButton = TRUE;
+				InvalidateRect(hWnd, NULL, FALSE);
+				}
+			return (0);
+			}
+			break;
+		}
+	// Any messages we don't process must be passed onto the original window function
+	return CallWindowProc((WNDPROC)prev_proc[1], hWnd, Msg, wParam, lParam);
+	}
+
+LRESULT CALLBACK ButtWindProc_IDOK(HWND hWnd,INT Msg,WPARAM wParam,LPARAM lParam) {
+	switch (Msg)
+		{
+		case WM_LBUTTONDBLCLK:
+			PostMessage(hWnd, WM_LBUTTONDOWN, wParam, lParam);
+			break;
+		case WM_MOUSEMOVE:
+			{
+			// check to see if the left mousr button is pressed
+			if(!bMouseOverButton)
+				{
+				bMouseOverButton = TRUE;
+				InvalidateRect(hWnd, NULL, FALSE);
+				}
+			return (0);
+			}
+			break;
+		}
+	// Any messages we don't process must be passed onto the original window function
+	return CallWindowProc((WNDPROC)prev_proc[2], hWnd, Msg, wParam, lParam);
+	}
+
+LRESULT CALLBACK ButtWindProc_IDRESCAN(HWND hWnd,INT Msg,WPARAM wParam,LPARAM lParam) {
+	switch (Msg)
+		{
+		case WM_LBUTTONDBLCLK:
+			PostMessage(hWnd, WM_LBUTTONDOWN, wParam, lParam);
+			break;
+		case WM_MOUSEMOVE:
+			{
+			// check to see if the left mousr button is pressed
+			if(!bMouseOverButton) {
+				bMouseOverButton = TRUE;
+				InvalidateRect(hWnd, NULL, FALSE);
+				}
+			return (0);
+			}
+			break;
+		}
+	// Any messages we don't process must be passed onto the original window function
+	return CallWindowProc((WNDPROC)prev_proc[3], hWnd, Msg, wParam, lParam);
+}
+
+LRESULT CALLBACK ButtWindProc_IDROM(HWND hWnd,INT Msg,WPARAM wParam,LPARAM lParam) {
+	switch (Msg)
+		{
+		case WM_LBUTTONDBLCLK:
+			PostMessage(hWnd, WM_LBUTTONDOWN, wParam, lParam);
+			break;
+		case WM_MOUSEMOVE:
+			{
+			// check to see if the left mousr button is pressed
+			if(!bMouseOverButton) {
+				bMouseOverButton = TRUE;
+				InvalidateRect(hWnd, NULL, FALSE);
+				}
+			return (0);
+			}
+			break;
+		}
+	// Any messages we don't process must be passed onto the original window function
+	return CallWindowProc((WNDPROC)prev_proc[4], hWnd, Msg, wParam, lParam);
+}
+
+void ThemeChanged(HWND hDlg, int hControl, HTHEME hTheme) {
+
+	if(ThemeLibLoaded) {
+		if(hTheme)
+			zCloseThemeData(hTheme);
+		FinThemes();					
+		}
+	InitThemes();
+
+	if(ThemeLibLoaded) {
+		hTheme = zOpenThemeData(GetDlgItem(hDlg, hControl), L"Button");
+	}
+
+	if(hTheme) {
+		Themed = TRUE;
+	}
+}
+
+void DrawTheIcon(HWND hButtonWnd, HDC* dc, BOOL bHasTitle, RECT* rpItem, RECT* rpTitle, BOOL bIsPressed, BOOL bIsDisabled, HICON hOwnerDrawIconB)
+{
+	RECT	rImage;
+	PrepareImageRect(hButtonWnd, bHasTitle, rpItem, rpTitle, bIsPressed, 16, 16, &rImage);
+
+	// Ole'!
+	DrawState(*dc,NULL,NULL,(LPARAM)hOwnerDrawIconB,0,rImage.left,rImage.top,(rImage.right - rImage.left),(rImage.bottom - rImage.top),(bIsDisabled ? DSS_DISABLED : DSS_NORMAL) | DST_ICON);
+} // End of DrawTheIcon
+/*
+void InitOwnerDrawButtonsIcons(HINSTANCE hAppInst, HWND hDlg, HTHEME hTheme, int hControl) {
+
+	ghDlgCurrent = hDlg; // This is the only dialog!
+
+	InitThemes();
+	if(hIcon == NULL)
+		hIcon = LoadIcon(hAppInst, MAKEINTRESOURCE(IDI_APP));
+
+	if(hOwnerDrawIcon == NULL)
+		hOwnerDrawIcon = (HICON)LoadImage(hAppInst, 
+								MAKEINTRESOURCE(hCIcon), 
+								IMAGE_ICON, 
+								16,
+								16,
+								0);
+
+
+	// subclass the Wizard button so we can know when the mouse has moved over it
+	prev_proc = SetWindowLongPtr(GetDlgItem(hDlg, hControl), GWLP_WNDPROC, (LONG)ButtWindProc);
+
+	if(ThemeLibLoaded)
+		{
+		hTheme = zOpenThemeData(GetDlgItem(hDlg, hControl), L"Button");
+		if(hTheme)
+			Themed = TRUE;
+		}
+
+	SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+	
+}
+*/
+
+int DrawButtons(int hControl, HTHEME hTheme, LPDRAWITEMSTRUCT lpDIS, RECT itemRect, HWND hDlg, HDC dc, HICON hOwnerDrawIcon) {
+
+	// button state
+	BOOL bIsPressed =	(lpDIS->itemState & ODS_SELECTED);
+	BOOL bIsFocused  = (lpDIS->itemState & ODS_FOCUS);
+	BOOL bIsDisabled = (lpDIS->itemState & ODS_DISABLED);
+	BOOL bDrawFocusRect = !(lpDIS->itemState & ODS_NOFOCUSRECT);
+
+	itemRect = lpDIS->rcItem;
+
+	SetBkMode(dc, TRANSPARENT);
+
+	// Prepare draw... paint button background
+	if(Themed) {
+		DWORD state = (bIsPressed)?PBS_PRESSED:PBS_NORMAL;
+		
+		if(state == PBS_NORMAL){
+			if(bIsFocused)
+				state = PBS_DEFAULTED;
+			if(bMouseOverButton)
+				state = PBS_HOT;
+			}
+		zDrawThemeBackground(hTheme, dc, BP_PUSHBUTTON, state, &itemRect, NULL);
+	} else {
+		if (bIsFocused)	{
+			HBRUSH br = CreateSolidBrush(RGB(0,0,0));  
+			FrameRect(dc, &itemRect, br);
+			InflateRect(&itemRect, -1, -1);
+			DeleteObject(br);
+			} // if		
+
+		COLORREF crColor = GetSysColor(COLOR_BTNFACE);
+		HBRUSH	brBackground = CreateSolidBrush(crColor);
+		FillRect(dc, &itemRect, brBackground);
+		DeleteObject(brBackground);
+
+		// Draw pressed button
+		if (bIsPressed){
+			HBRUSH brBtnShadow = CreateSolidBrush(GetSysColor(COLOR_BTNSHADOW));
+			FrameRect(dc, &itemRect, brBtnShadow);
+			DeleteObject(brBtnShadow);
+		} 
+		else // ...else draw non pressed button
+		{
+			UINT uState = DFCS_BUTTONPUSH | ((bMouseOverButton) ? DFCS_HOT : 0) | ((bIsPressed) ? DFCS_PUSHED : 0);
+
+			DrawFrameControl(dc, &itemRect, DFC_BUTTON, uState);
+
+		} // else
+
+	}
+
+	// Read the button's title
+#if defined (_UNICODE)
+	TCHAR sTitle[100];
+	GetWindowText(GetDlgItem(hDlg, hControl), sTitle, 100);
+#else
+	char sTitle[100];
+	GetWindowText(GetDlgItem(hDlg, hControl), sTitle, 100);
+#endif
+
+	RECT captionRect = lpDIS->rcItem;
+
+	// Draw the icon
+	BOOL bHasTitle = (sTitle[0] != '\0');
+
+	DrawTheIcon(GetDlgItem(hDlg, hControl), &dc, bHasTitle, &lpDIS->rcItem, &captionRect, bIsPressed, bIsDisabled, hOwnerDrawIcon);
+
+	// Write the button title (if any)
+	if (bHasTitle){ 
+		// Draw the button's title
+		// If button is pressed then "press" title also
+		if (bIsPressed && !Themed) {
+			OffsetRect(&captionRect, 1, 1);
+		}
+		// Center text
+		RECT centerRect = captionRect;
+		DrawText(dc, sTitle, -1, &captionRect, DT_WORDBREAK | DT_CENTER | DT_CALCRECT);
+		LONG captionRectWidth = captionRect.right - captionRect.left;
+		LONG captionRectHeight = captionRect.bottom - captionRect.top;
+		LONG centerRectWidth = centerRect.right - centerRect.left;
+		LONG centerRectHeight = centerRect.bottom - centerRect.top;
+		OffsetRect(&captionRect, (centerRectWidth - captionRectWidth)/2, (centerRectHeight - captionRectHeight)/2);
+
+		if(Themed) {
+#if defined (_UNICODE)
+			if(sTitle) {
+				zDrawThemeText(	hTheme, dc, BP_PUSHBUTTON, PBS_NORMAL, sTitle, wcslen(sTitle), DT_CENTER | DT_VCENTER | DT_SINGLELINE, 0, &captionRect);
+			}
+#else
+		//convert title to UNICODE. 
+		int nTextLen = strlen(sTitle); 
+		int mlen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char *)sTitle, nTextLen + 1, NULL, 0); 
+		WCHAR* output = new WCHAR[mlen];
+			if(sTitle) {
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, (char *)sTitle, nTextLen + 1, output, mlen);
+				zDrawThemeText(	hTheme, dc, BP_PUSHBUTTON, PBS_NORMAL, output, wcslen(output), DT_CENTER | DT_VCENTER | DT_SINGLELINE, 0, &captionRect);
+				delete output;
+			}	
+#endif
+		} else {
+			SetBkMode(dc, TRANSPARENT);
+
+			if (bIsDisabled) {
+				OffsetRect(&captionRect, 1, 1);
+				SetTextColor(dc, ::GetSysColor(COLOR_3DHILIGHT));
+				DrawText(dc, sTitle, -1, &captionRect, DT_WORDBREAK | DT_CENTER);
+				OffsetRect(&captionRect, -1, -1);
+				SetTextColor(dc, ::GetSysColor(COLOR_3DSHADOW));
+				DrawText(dc, sTitle, -1, &captionRect, DT_WORDBREAK | DT_CENTER);
+				} else {
+				SetTextColor(dc, ::GetSysColor(COLOR_BTNTEXT));
+				SetBkColor(dc, ::GetSysColor(COLOR_BTNFACE));
+				DrawText(dc, sTitle, -1, &captionRect, DT_WORDBREAK | DT_CENTER);
+				} 
+			} 
+	}
+	// Draw the focus rect
+	if (bIsFocused && bDrawFocusRect) {
+		RECT focusRect = itemRect;
+		InflateRect(&focusRect, -3, -3);
+		DrawFocusRect(dc, &focusRect);
+		} 
+	return (TRUE);
+}
+//==[END OWNERDRAW BUTTONS FUNCTIONS]===========================================================================================
+#else
+#endif
+
 // Disable selecting non-available sets
 #define DISABLE_NON_AVAILABLE_SELECT 0
+
 // Preview directory
 #define PREVIEW_DIRECTORY _T("previews\\")
+// Ingame Preview directory
+#define TITLE_PREVIEW_DIRECTORY _T("titles\\")
+// Game Flyer directory
+#define FLYER_DIRECTORY _T("flyers\\")
+
 // Prompt user on loading non-working sets
 #define NON_WORKING_PROMPT_ON_LOAD 1
 
@@ -15,10 +400,21 @@ static HWND hSelDlg = NULL;
 static HWND hSelList = NULL;
 static int nDialogSelect = -1;									// The driver which this dialog selected
 
+//==============================================
+
+bool bDrvSelected = false;
+static HWND hTabControl  = NULL;
+
+// the preview we're looking at
+int nViewPreview = 1; // Ingame (default)
+int nPrevType = 1;
+
+//==============================================
+
 static HBITMAP hBmp = NULL;
 static HBITMAP hPreview = NULL;
-static HWND hInfoLabel[4] = { NULL, NULL, NULL, NULL };			// 4 things in our Info-box
-static HWND hInfoText[4] = {NULL, NULL, NULL, NULL};			// 4 things in our Info-box
+static HWND hInfoLabel[5] = { NULL, NULL, NULL, NULL, NULL };			// 4 things in our Info-box
+static HWND hInfoText[5] = {NULL, NULL, NULL, NULL, NULL};			// 4 things in our Info-box
 
 static HBRUSH hWhiteBGBrush;
 
@@ -28,16 +424,20 @@ static HICON hNotWorking, hNotFoundEss, hNotFoundNonEss;
 static char TreeBuilding = 0;									// if 1, ignore TVN_SELCHANGED messages
 
 #define MASKCPS		(1 << (HARDWARE_PREFIX_CAPCOM	>> 24))
+#define MASKCPS2	(1 << (HARDWARE_PREFIX_CPS2		>> 24))
 #define MASKNEOGEO	(1 << (HARDWARE_PREFIX_SNK		>> 24))
 #define MASKSEGA	(1 << (HARDWARE_PREFIX_SEGA		>> 24))
-#define MASKTOAPLAN (1 << (HARDWARE_PREFIX_TOAPLAN	>> 24))
+#define MASKTOAPLAN 	(1 << (HARDWARE_PREFIX_TOAPLAN	>> 24))
 #define MASKCAVE	(1 << (HARDWARE_PREFIX_CAVE		>> 24))
 #define MASKMISC	(1 << (HARDWARE_PREFIX_MISC		>> 24))
-#define MASKALL		(MASKCPS | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE)
+#define MASKPGM		(1 << (HARDWARE_PREFIX_IGS_PGM		>> 24))
+#define MASKALL		(MASKCPS | MASKCPS2 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM)
 
-#define SHOWSHORT	(1 << 16)
+#define AVAILONLY	(1 << 16)
+#define AUTOEXPAND	(1 << 17)
+#define SHOWSHORT	(1 << 18)
+#define ASCIIONLY	(1 << 19)
 
-int bLoadMenuAutoExpand = 0;
 int nLoadMenuShowX = 0;
 
 static int bImageOrientation;
@@ -69,6 +469,7 @@ static TCHAR* MangleGamename(const TCHAR* szOldName, bool bRemoveArticle)
 {
 	static TCHAR szNewName[256] = _T("");
 
+#if 0
 	TCHAR* pszName = szNewName;
 
 	if (_tcsnicmp(szOldName, _T("the "), 4) == 0) {
@@ -93,6 +494,11 @@ static TCHAR* MangleGamename(const TCHAR* szOldName, bool bRemoveArticle)
 	} else {
 		_tcscpy(pszName, szOldName);
 	}
+#endif
+
+#if 1
+	_tcscpy(szNewName, szOldName);
+#endif	
 
 	return szNewName;
 }
@@ -118,7 +524,7 @@ static int SelListMake()
 	for (i = 0; i < nBurnDrvCount; i++) {
 		TV_INSERTSTRUCT TvItem;
 
-		nBurnDrvSelect = i;													// Switch to driver i
+		nBurnDrvSelect = i;																// Switch to driver i
 
 		if (BurnDrvGetFlags() & BDF_BOARDROM) {
 			continue;
@@ -126,7 +532,7 @@ static int SelListMake()
 		if (BurnDrvGetText(DRV_PARENT) != NULL && (BurnDrvGetFlags() & BDF_CLONE)) {	// Skip clones
 			continue;
 		}
-		if (avOk && bAvbOnly && !gameAv[i])	{								// Skip non-available games if needed
+		if (avOk && (nLoadMenuShowX & AVAILONLY) && !gameAv[i])	{						// Skip non-available games if needed
 			continue;
 		}
 
@@ -151,7 +557,7 @@ static int SelListMake()
 	for (i = 0; i < nBurnDrvCount; i++) {
 		TV_INSERTSTRUCT TvItem;
 
-		nBurnDrvSelect = i;													// Switch to driver i
+		nBurnDrvSelect = i;																// Switch to driver i
 
 		if (BurnDrvGetFlags() & BDF_BOARDROM) {
 			continue;
@@ -160,7 +566,7 @@ static int SelListMake()
 		if (BurnDrvGetTextA(DRV_PARENT) == NULL || !(BurnDrvGetFlags() & BDF_CLONE)) {	// Skip parents
 			continue;
 		}
-		if (avOk && bAvbOnly && !gameAv[i])	{								// Skip non-available games if needed
+		if (avOk && (nLoadMenuShowX & AVAILONLY) && !gameAv[i])	{						// Skip non-available games if needed
 			continue;
 		}
 
@@ -221,7 +627,7 @@ static int SelListMake()
 	for (i = 0; i < nTmpDrvCount; i++) {
 
 		// See if we need to expand the branch of an unavailable or non-working parent
-		if (nBurnDrv[i].bIsParent && (bLoadMenuAutoExpand || !gameAv[nBurnDrv[i].nBurnDrvNo] || !CheckWorkingStatus(nBurnDrv[i].nBurnDrvNo))) {
+		if (nBurnDrv[i].bIsParent && ((nLoadMenuShowX & AUTOEXPAND) || !gameAv[nBurnDrv[i].nBurnDrvNo] || !CheckWorkingStatus(nBurnDrv[i].nBurnDrvNo))) {
 			for (j = 0; j < nTmpDrvCount; j++) {
 
 				// Expand the branch only if a working clone is available
@@ -237,6 +643,12 @@ static int SelListMake()
 			}
 		}
 	}
+	
+	// Update the status info
+	TCHAR szRomsAvailableInfo[100] = _T("");
+	
+	_sntprintf(szRomsAvailableInfo, 100, _T("Showing %i of %i sets"), nTmpDrvCount, nBurnDrvCount - 2);
+	SendDlgItemMessage(hSelDlg, IDC_DRVCOUNT, WM_SETTEXT, 0, (LPARAM)(LPCTSTR)szRomsAvailableInfo);
 
 	return 0;
 }
@@ -332,29 +744,35 @@ static void RefreshPanel()
 
 	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hPreview);
 	SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+	//RestoreDlg(); // Restore the dialog size
 
 	// Clear the things in our Info-box
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)_T(""));
 		EnableWindow(hInfoLabel[i], FALSE);
 	}
 
-	CheckDlgButton(hSelDlg, IDC_CHECKCPS, nLoadMenuShowX & MASKCPS ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKCPS1, nLoadMenuShowX & MASKCPS ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKCPS2, nLoadMenuShowX & MASKCPS2 ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKNEOGEO, nLoadMenuShowX & MASKNEOGEO ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKSEGA, nLoadMenuShowX & MASKSEGA ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKTOAPLAN, nLoadMenuShowX & MASKTOAPLAN ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKCAVE, nLoadMenuShowX & MASKCAVE ? BST_UNCHECKED : BST_CHECKED);
 	CheckDlgButton(hSelDlg, IDC_CHECKMISC, nLoadMenuShowX & MASKMISC ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKPGM, nLoadMenuShowX & MASKPGM ? BST_UNCHECKED : BST_CHECKED);
 
-	CheckDlgButton(hSelDlg, IDC_CHECKAUTOEXPAND, bLoadMenuAutoExpand ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(hSelDlg, IDC_CHECKAVAILABLEONLY, bAvbOnly ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKAUTOEXPAND, (nLoadMenuShowX & AUTOEXPAND) ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(hSelDlg, IDC_CHECKAVAILABLEONLY, (nLoadMenuShowX & AVAILONLY) ? BST_CHECKED : BST_UNCHECKED);
 
 	CheckDlgButton(hSelDlg, IDC_SEL_SHORTNAME, nLoadMenuShowX & SHOWSHORT ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(hSelDlg, IDC_SEL_ASCIIONLY, nLoadMenuShowX & ASCIIONLY ? BST_CHECKED : BST_UNCHECKED);
 };
 
 static void RebuildEverything()
 {
 	RefreshPanel();
+
+	bDrvSelected = false;
 
 	TreeBuilding = 1;
 	SendMessage(hSelList, WM_SETREDRAW, (WPARAM)FALSE,(LPARAM)TVI_ROOT);	// disable redraw
@@ -363,7 +781,7 @@ static void RebuildEverything()
 	SendMessage(hSelList, WM_SETREDRAW, (WPARAM)TRUE, (LPARAM)TVI_ROOT);	// enable redraw
 
 	// Clear the things in our Info-box
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)_T(""));
 		EnableWindow(hInfoLabel[i], FALSE);
 	}
@@ -372,8 +790,8 @@ static void RebuildEverything()
 }
 
 #define PNG_SIG_CHECK_BYTES 8
-#define PNG_XSIZE_HORI 160
-#define PNG_YSIZE_HORI 120
+#define PNG_XSIZE_HORI 300
+#define PNG_YSIZE_HORI 225
 #define PNG_XSIZE_VERT PNG_YSIZE_HORI
 #define PNG_YSIZE_VERT PNG_XSIZE_HORI
 
@@ -417,8 +835,8 @@ static int img_resize(IMAGE* img)
 	IMAGE new_img;
 
 	memset(&new_img, 0, sizeof(IMAGE));
-	new_img.width = bImageOrientation ? 120 : 160;
-	new_img.height = bImageOrientation ? 160 : 120;
+	new_img.width = bImageOrientation ? PNG_YSIZE_HORI : PNG_XSIZE_HORI;
+	new_img.height = bImageOrientation ? PNG_XSIZE_HORI : PNG_YSIZE_HORI;
 	img_alloc(&new_img);
 
 	for (int y = 0; y < new_img.height; y++) {
@@ -558,7 +976,12 @@ static HBITMAP LoadPNG(HWND hDlg, FILE* fp)
 	return hNewBmp;
 }
 
-static int UpdatePreview(bool bReset)
+// Update Preview / Title / Flyer [compact function]
+#if defined (_UNICODE)
+static int UpdatePreview(bool bReset, wchar_t *szPreviewDir, int nPreviewType)
+#else
+static int UpdatePreview(bool bReset, char *szPreviewDir, int nPreviewType)
+#endif
 {
 	static int nIndex;
 	int nOldIndex;
@@ -588,7 +1011,7 @@ static int UpdatePreview(bool bReset)
 
 	do {
 		// Try to load a .PNG preview image
-		_tcscpy(szBaseName, PREVIEW_DIRECTORY);
+		_tcscpy(szBaseName, szPreviewDir);
 		_tcscat(szBaseName, BurnDrvGetText(DRV_NAME));
 		if (nIndex == 1) {
 			_stprintf(szFileName, _T("%s.png"), szBaseName);
@@ -600,7 +1023,7 @@ static int UpdatePreview(bool bReset)
 		}
 
 		if (!fp && BurnDrvGetText(DRV_PARENT)) {						// Try the parent
-			_tcscpy(szBaseName, PREVIEW_DIRECTORY);
+			_tcscpy(szBaseName, szPreviewDir);
 			_tcscat(szBaseName, BurnDrvGetText(DRV_PARENT));
 			if (nIndex == 1) {
 				_stprintf(szFileName, _T("%s.png"), szBaseName);
@@ -611,7 +1034,7 @@ static int UpdatePreview(bool bReset)
 				fp = _tfopen(szFileName, _T("rb"));
 			}
 		}
-		
+
 		if (nIndex == 1) {
 			break;
 		}
@@ -631,12 +1054,19 @@ static int UpdatePreview(bool bReset)
 		DeleteObject((HGDIOBJ)hBmp);
 		hBmp = hNewImage;
 
-		if (bImageOrientation == 0) {
-			SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBmp);
-			SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
-		} else {
-			SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
-			SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBmp);
+		// If type is 3 its a Flyer so its vertical
+		if(nPreviewType == 3){
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBmp);
+		} else {		
+			if (bImageOrientation == 0) {
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBmp);
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+			} else {
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_H, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
+				SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBmp);
+			}
+
 		}
 
 		nTimer = SetTimer(hSelDlg, 1, 2500, NULL);
@@ -653,16 +1083,143 @@ static int UpdatePreview(bool bReset)
 			SendDlgItemMessage(hSelDlg, IDC_SCREENSHOT_V, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)NULL);
 		}
 	}
-	
+	nPrevType = nPreviewType;
 	return 0;
 }
 
+//=========================================================
+
 static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+	InitCommonControls();
+
+#if defined (_UNICODE)
+	//=====================================================
+	static HTHEME hTheme;	// Cancel Button Theme
+	static HTHEME hTheme2;	// PLAY! Button Theme
+	static HTHEME hTheme3;	// Scan ROMs Button Theme
+	static HTHEME hTheme4;	// ROMs Dirs... Button Theme
+
+	if (Msg == WM_THEMECHANGED) {
+	// THEME CHANGED
+	//	ThemeChanged(hDlg, IDCANCEL, hTheme);
+	//	ThemeChanged(hDlg, IDOK, hTheme2);
+
+		if(ThemeLibLoaded) {
+				if(hTheme || hTheme2 || hTheme3 || hTheme4)
+					zCloseThemeData(hTheme);
+					zCloseThemeData(hTheme2);
+					zCloseThemeData(hTheme3);
+					zCloseThemeData(hTheme4);
+				FinThemes();					
+				}
+
+			InitThemes();
+			if(ThemeLibLoaded)	{
+				hTheme = zOpenThemeData(GetDlgItem(hDlg, IDCANCEL), L"Button");
+				hTheme2 = zOpenThemeData(GetDlgItem(hDlg, IDOK), L"Button");
+				hTheme3 = zOpenThemeData(GetDlgItem(hDlg, IDRESCAN), L"Button");
+				hTheme4 = zOpenThemeData(GetDlgItem(hDlg, IDROM), L"Button");
+			}
+
+			if(hTheme || hTheme2 || hTheme3 || hTheme4) {
+				Themed = TRUE;
+			}
+			
+	}
+	//====================================================
+#else
+#endif
+
 	if (Msg == WM_INITDIALOG) {
 
-		TCHAR szOldTitle[1024] = _T("");;
-		TCHAR szNewTitle[1024] = _T("");;
+		HWND hTabControl_t = GetDlgItem(hDlg, IDC_TAB1);
+
+        // Insert Tabs
+        TC_ITEM TCI; 
+        TCI.mask = TCIF_TEXT; 
+
+#if defined (_UNICODE)
+        TCI.pszText = L"Title"; // INGAME PREVIEW TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 0, (LPARAM) &TCI);        
+		TCI.pszText = L"Ingame"; // TITLE SCREEN PREVIEW TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 1, (LPARAM) &TCI);        
+        TCI.pszText = L"Flyer"; // GAME FLYER TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 2, (LPARAM) &TCI);
+#else
+        TCI.pszText = "Title"; // INGAME PREVIEW TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 0, (LPARAM) &TCI);        
+		TCI.pszText = "Ingame"; // TITLE SCREEN PREVIEW TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 1, (LPARAM) &TCI);        
+        TCI.pszText = "Flyer"; // GAME FLYER TAB
+        SendMessage(hTabControl_t, TCM_INSERTITEM, (WPARAM) 2, (LPARAM) &TCI);
+#endif
+
+#if defined (_UNICODE)
+		// INIT BUTTON ICONS
+		//InitOwnerDrawButtonsIcons(hAppInst, hDlg, hTheme,IDCANCEL, IDI_CANCEL);
+		//InitOwnerDrawButtonsIcons(hAppInst, hDlg, hTheme2,IDOK, IDI_PLAY);
+
+			ghDlgCurrent = hDlg;
+
+			InitThemes();
+			if(hIcon == NULL)
+				hIcon = LoadIcon(hAppInst, MAKEINTRESOURCE(IDI_APP));
+
+			if(hOwnerDrawIcon_Cancel == NULL)
+				hOwnerDrawIcon_Cancel = (HICON)LoadImage(hAppInst, 
+										MAKEINTRESOURCE(IDI_CANCEL), 
+										IMAGE_ICON, 
+										16,
+										16,
+										0);
+
+			if(hOwnerDrawIcon_Play == NULL)
+				hOwnerDrawIcon_Play = (HICON)LoadImage(hAppInst, 
+										MAKEINTRESOURCE(IDI_PLAY), 
+										IMAGE_ICON, 
+										16,
+										16,
+										0);
+
+			if(hOwnerDrawIcon_Scan == NULL)
+				hOwnerDrawIcon_Scan = (HICON)LoadImage(hAppInst, 
+										MAKEINTRESOURCE(IDI_SCAN), 
+										IMAGE_ICON, 
+										16,
+										16,
+										0);
+
+			if(hOwnerDrawIcon_Romdirs == NULL)
+				hOwnerDrawIcon_Romdirs = (HICON)LoadImage(hAppInst, 
+										MAKEINTRESOURCE(IDI_ROMDIRS), 
+										IMAGE_ICON, 
+										16,
+										16,
+										0);
+
+			// subclass the Wizard button so we can know when the mouse has moved over it
+			prev_proc[1] = SetWindowLongPtr(GetDlgItem(hDlg, IDCANCEL), GWLP_WNDPROC, (LONG)ButtWindProc_IDCANCEL);
+			prev_proc[2] = SetWindowLongPtr(GetDlgItem(hDlg, IDOK), GWLP_WNDPROC, (LONG)ButtWindProc_IDOK);
+			prev_proc[3] = SetWindowLongPtr(GetDlgItem(hDlg, IDRESCAN), GWLP_WNDPROC, (LONG)ButtWindProc_IDRESCAN);
+			prev_proc[4] = SetWindowLongPtr(GetDlgItem(hDlg, IDROM), GWLP_WNDPROC, (LONG)ButtWindProc_IDROM);
+
+			if(ThemeLibLoaded) {
+				hTheme = zOpenThemeData(GetDlgItem(hDlg, IDCANCEL), L"Button");
+				hTheme2 = zOpenThemeData(GetDlgItem(hDlg, IDOK), L"Button");
+				hTheme3 = zOpenThemeData(GetDlgItem(hDlg, IDRESCAN), L"Button");
+				hTheme4 = zOpenThemeData(GetDlgItem(hDlg, IDROM), L"Button");
+
+				if(hTheme)
+					Themed = TRUE;
+				}
+			SendMessage(hDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon); // Set the Dialog Icon
+
+	//======================================================================================
+#else
+#endif
+		TCHAR szOldTitle[1024] = _T("");
+		TCHAR szNewTitle[1024] = _T("");
 
 		hSelDlg = hDlg;
 
@@ -682,19 +1239,27 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 		GetWindowText(hSelDlg, szOldTitle, 1024);
 		_sntprintf(szNewTitle, 1024, _T(APP_TITLE) _T(SEPERATOR_1) _T("%s"), szOldTitle);
 		SetWindowText(hSelDlg, szNewTitle);
-		
+
 		hSelList = GetDlgItem(hSelDlg, IDC_TREE1);
 		hInfoLabel[0] = GetDlgItem(hSelDlg, IDC_LABELROMNAME);
 		hInfoLabel[1] = GetDlgItem(hSelDlg, IDC_LABELROMINFO);
 		hInfoLabel[2] = GetDlgItem(hSelDlg, IDC_LABELSYSTEM);
 		hInfoLabel[3] = GetDlgItem(hSelDlg, IDC_LABELCOMMENT);
+		hInfoLabel[4] = GetDlgItem(hSelDlg, IDC_LABELNOTES);
 		hInfoText[0] = GetDlgItem(hSelDlg, IDC_TEXTROMNAME);
 		hInfoText[1] = GetDlgItem(hSelDlg, IDC_TEXTROMINFO);
 		hInfoText[2] = GetDlgItem(hSelDlg, IDC_TEXTSYSTEM);
 		hInfoText[3] = GetDlgItem(hSelDlg, IDC_TEXTCOMMENT);
+		hInfoText[4] = GetDlgItem(hSelDlg, IDC_TEXTNOTES);
 
-#if 0 && !defined FBA_DEBUG
-		EnableWindow(GetDlgItem(hDlg, IDC_CHECKSEGA), FALSE);
+		hTabControl = GetDlgItem(hSelDlg, IDC_TAB1);
+
+#if 1 && !defined FBA_DEBUG
+//		EnableWindow(GetDlgItem(hDlg, IDC_CHECKSEGA), FALSE);
+#endif
+
+#if !defined _UNICODE
+		EnableWindow(GetDlgItem(hDlg, IDC_SEL_ASCIIONLY), FALSE);
 #endif
 
 		bool bFoundROMs = false;
@@ -746,8 +1311,12 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					SendMessage(hDlg, WM_CLOSE, 0, 0);
 					return 0;
 
-				case IDC_CHECKCPS:
+				case IDC_CHECKCPS1:
 					nLoadMenuShowX ^= MASKCPS;
+					RebuildEverything();
+					break;
+				case IDC_CHECKCPS2:
+					nLoadMenuShowX ^= MASKCPS2;
 					RebuildEverything();
 					break;
 				case IDC_CHECKNEOGEO:
@@ -770,18 +1339,25 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					nLoadMenuShowX ^= MASKMISC;
 					RebuildEverything();
 					break;
+				case IDC_CHECKPGM:
+					nLoadMenuShowX ^= MASKPGM;
+					RebuildEverything();
+					break;
 
 				case IDC_CHECKAVAILABLEONLY:
-					bAvbOnly = !bAvbOnly;
+					nLoadMenuShowX ^= AVAILONLY;
 					RebuildEverything();
 					break;
 				case IDC_CHECKAUTOEXPAND:
-					bLoadMenuAutoExpand = !bLoadMenuAutoExpand;
+					nLoadMenuShowX ^= AUTOEXPAND;
 					RebuildEverything();
 					break;
-
 				case IDC_SEL_SHORTNAME:
 					nLoadMenuShowX ^= SHOWSHORT;
+					RebuildEverything();
+					break;
+				case IDC_SEL_ASCIIONLY:
+					nLoadMenuShowX ^= ASCIIONLY;
 					RebuildEverything();
 					break;
 			}
@@ -796,12 +1372,32 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 	}
 
 	if (Msg == WM_TIMER) {
-		UpdatePreview(false);
+		switch(nPrevType)
+		{
+			//Title
+			case 1:
+			{
+				UpdatePreview(false, TITLE_PREVIEW_DIRECTORY, 1);
+				break;
+			}
+			//Ingame
+			case 2:
+			{
+				UpdatePreview(false, PREVIEW_DIRECTORY, 2);
+				break;
+			}
+			//Flyer
+			case 3:
+			{
+				UpdatePreview(false, FLYER_DIRECTORY, 3);
+				break;
+			}
+		}
 		return 0;
-	}	
+	}
 
 	if (Msg == WM_CTLCOLORSTATIC) {
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 			if ((HWND)lParam == hInfoLabel[i]) {
 				return (BOOL)hWhiteBGBrush;
 			}
@@ -810,8 +1406,117 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 			}
 		}
 	}
+
+#if defined (_UNICODE)
+	//========================================================
+	if (Msg == WM_MOUSEMOVE) {
+
+			if(bMouseOverButton) {
+				bMouseOverButton = FALSE;
+				InvalidateRect(GetDlgItem(hSelDlg, IDCANCEL), NULL, TRUE);
+				InvalidateRect(GetDlgItem(hSelDlg, IDOK), NULL, TRUE);
+				InvalidateRect(GetDlgItem(hSelDlg, IDRESCAN), NULL, TRUE);
+				InvalidateRect(GetDlgItem(hSelDlg, IDROM), NULL, TRUE);
+				}
+	}
+
+		if (Msg == WM_DRAWITEM) {
+
+			// DRAW THE OWNER DRAW BUTTONS
+			LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
+			
+			if(lpDIS->CtlID != IDCANCEL && lpDIS->CtlID != IDOK && lpDIS->CtlID != IDRESCAN && lpDIS->CtlID != IDROM )
+				return (0);
+
+			//RECT itemRect = lpDIS->rcItem;
+
+			switch(lpDIS->CtlID) 
+			{
+				// CANCEL BUTTON
+				case IDCANCEL:
+				{	
+					DrawButtons(IDCANCEL,hTheme, lpDIS, lpDIS->rcItem, hDlg, lpDIS->hDC, hOwnerDrawIcon_Cancel);
+				}
+				break;
+
+				// PLAY! BUTTON (OK)
+				case IDOK:
+				{
+					DrawButtons(IDOK, hTheme2, lpDIS, lpDIS->rcItem, hDlg, lpDIS->hDC, hOwnerDrawIcon_Play);
+				}
+				break;
+
+				// Scan ROMs BUTTON
+				case IDRESCAN:
+				{
+					DrawButtons(IDRESCAN, hTheme3, lpDIS, lpDIS->rcItem, hDlg, lpDIS->hDC, hOwnerDrawIcon_Scan);
+				}
+				break;
+
+				// ROMs Dirs... BUTTON
+				case IDROM:
+				{
+					DrawButtons(IDROM, hTheme4, lpDIS, lpDIS->rcItem, hDlg, lpDIS->hDC, hOwnerDrawIcon_Romdirs);
+				}
+				break;
+			}
+
+	}
+
+	if (Msg == WM_SETICON) {
+		DefWindowProc(hSelDlg, Msg, wParam, lParam);
+	}
+
+	if (Msg == WM_SYSCOMMAND) {
+		DefWindowProc(hSelDlg, Msg, wParam, lParam);
+	}
+	//========================================================
+#else
+#endif
+
 	if (Msg == WM_NOTIFY) {
+
 		NMHDR* pNmHdr = (NMHDR*)lParam;
+
+		if (pNmHdr->code == TCN_SELCHANGE) {
+
+                    // get index of selected tab 
+                    int iPage= SendMessage(hTabControl, TCM_GETCURSEL, 0, 0);
+
+                    // Preview Tabs and their job... 
+                    switch(iPage)
+                    { 
+					case 0: // TITLE
+						if (bDrvSelected==true) {
+							UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+							nViewPreview = 1;
+						}
+						break;
+
+					case 1: // INGAME
+						if (bDrvSelected==true) {
+							UpdatePreview(true, PREVIEW_DIRECTORY, 2);
+							nViewPreview = 2;
+						}
+						break;
+
+					case 2: // FLYER
+						if (bDrvSelected==true) {
+							UpdatePreview(true, FLYER_DIRECTORY, 3);
+							nViewPreview = 3;
+						}
+						break;
+
+					default: // DEFAULT (TITLE) 
+						if (bDrvSelected==true) {
+							UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+							nViewPreview = 1;
+						}
+						break;					
+                    } 
+
+			return FALSE;
+		}
 
 		if (pNmHdr->code == NM_DBLCLK) {
 			SelOkay();
@@ -824,6 +1529,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 		if (pNmHdr->code == NM_CUSTOMDRAW && LOWORD(wParam) == IDC_TREE1) {
 			LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
+			int nGetTextFlags = nLoadMenuShowX & ASCIIONLY ? DRV_ASCIIONLY : 0;
 			HTREEITEM hSelectHandle;
 
 			switch (lplvcd->nmcd.dwDrawStage) {
@@ -863,7 +1569,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					rect.right = lplvcd->nmcd.rc.right;
 					rect.top = lplvcd->nmcd.rc.top;
 					rect.bottom = lplvcd->nmcd.rc.bottom;
-					
+
 					hBackBrush = CreateSolidBrush(lplvcd->clrTextBk);
 
 					nBurnDrvSelect = ((NODEINFO*)TvItem.lParam)->nBurnDrvNo;
@@ -873,7 +1579,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 
 						FillRect(lplvcd->nmcd.hdc, &lplvcd->nmcd.rc, hBackBrush);
 					}
-					
+
 					{
 						// Draw plus and minus buttons
 						if (((NODEINFO*)TvItem.lParam)->bIsParent) {
@@ -885,7 +1591,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 								}
 							}
 						}
-						
+
 						rect.left += 24;
 					}
 
@@ -917,7 +1623,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 									DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundEss, 16, 16, 0, NULL, DI_NORMAL);
 									rect.left += 20;
 								} else {
-									if (!(gameAv[((NODEINFO*)TvItem.lParam)->nBurnDrvNo] & 2)) {
+									if (!(nLoadMenuShowX & AVAILONLY) && !(gameAv[((NODEINFO*)TvItem.lParam)->nBurnDrvNo] & 2)) {
 										DrawIconEx(lplvcd->nmcd.hdc, rect.left, rect.top, hNotFoundNonEss, 16, 16, 0, NULL, DI_NORMAL);
 										rect.left += 20;
 									}
@@ -925,7 +1631,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 							}
 						}
 
-						_tcsncpy(szText, MangleGamename(BurnDrvGetText(DRV_FULLNAME), false), 1024);
+						_tcsncpy(szText, MangleGamename(BurnDrvGetText(nGetTextFlags | DRV_FULLNAME), false), 1024);
 						szText[1023] = _T('\0');
 
 						GetTextExtentPoint32(lplvcd->nmcd.hdc, szText, _tcslen(szText), &size);
@@ -935,8 +1641,8 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						// Display extra info if needed
 						szText[0] = _T('\0');
 
-						pszName = BurnDrvGetText(DRV_FULLNAME);
-						while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
+						pszName = BurnDrvGetText(nGetTextFlags | DRV_FULLNAME);
+						while ((pszName = BurnDrvGetText(nGetTextFlags | DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
 							if (pszPosition + _tcslen(pszName) - 1024 > szText) {
 								break;
 							}
@@ -948,7 +1654,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 							unsigned int r = ((lplvcd->clrText >> 16 & 255) * 2 + (lplvcd->clrTextBk >> 16 & 255)) / 3;
 							unsigned int g = ((lplvcd->clrText >>  8 & 255) * 2 + (lplvcd->clrTextBk >>  8 & 255)) / 3;
 							unsigned int b = ((lplvcd->clrText >>  0 & 255) * 2 + (lplvcd->clrTextBk >>  0 & 255)) / 3;
-						
+
 							rect.left += size.cx;
 							SetTextColor(lplvcd->nmcd.hdc, (r << 16) | (g <<  8) | (b <<  0));
 							DrawText(lplvcd->nmcd.hdc, szText, -1, &rect, DT_NOPREFIX | DT_SINGLELINE | DT_LEFT | DT_VCENTER);
@@ -956,7 +1662,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					}
 
 					DeleteObject(hBackBrush);
-					
+
 					SetWindowLong(hSelDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
 					return 1;
 				}
@@ -983,11 +1689,12 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					break;
 				}
 			}
-			
+
 			nDialogSelect = nBurnDrvSelect;
 
 			// Get the text from the drivers via BurnDrvGetText()
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 5; i++) {
+				int nGetTextFlags = nLoadMenuShowX & ASCIIONLY ? DRV_ASCIIONLY : 0;
 				TCHAR szItemText[256];
 				szItemText[0] = _T('\0');
 
@@ -1051,7 +1758,7 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						break;
 					}
 					case 2: {
-						_stprintf(szItemText, _T("%s (%s, %s hardware)"), BurnDrvGetTextA(DRV_MANUFACTURER) ? BurnDrvGetText(DRV_MANUFACTURER) : _T("unknown"), BurnDrvGetText(DRV_DATE), BurnDrvGetText(DRV_SYSTEM));
+						_stprintf(szItemText, _T("%s (%s, %s hardware)"), BurnDrvGetTextA(DRV_MANUFACTURER) ? BurnDrvGetText(nGetTextFlags | DRV_MANUFACTURER) : _T("unknown"), BurnDrvGetText(DRV_DATE), BurnDrvGetText(nGetTextFlags | DRV_SYSTEM));
 						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
 						EnableWindow(hInfoLabel[i], TRUE);
 						break;
@@ -1059,19 +1766,16 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 					case 3: {
 						TCHAR szText[1024] = _T("");
 						TCHAR* pszPosition = szText;
-						TCHAR* pszName = BurnDrvGetText(DRV_FULLNAME);
+						TCHAR* pszName = BurnDrvGetText(nGetTextFlags | DRV_FULLNAME);
 
 						pszPosition += _sntprintf(szText, 1024, pszName);
 
-						pszName = BurnDrvGetText(DRV_FULLNAME);
-						while ((pszName = BurnDrvGetText(DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
+						pszName = BurnDrvGetText(nGetTextFlags | DRV_FULLNAME);
+						while ((pszName = BurnDrvGetText(nGetTextFlags | DRV_NEXTNAME | DRV_FULLNAME)) != NULL) {
 							if (pszPosition + _tcslen(pszName) - 1024 > szText) {
 								break;
 							}
 							pszPosition += _stprintf(pszPosition, _T(SEPERATOR_2) _T("%s"), pszName);
-						}
-						if (BurnDrvGetText(DRV_COMMENT)) {
-							pszPosition += _sntprintf(pszPosition, szText + 1024 - pszPosition, _T(" (%s)"), BurnDrvGetText(DRV_COMMENT));
 						}
 						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
 						if (szText[0]) {
@@ -1079,24 +1783,46 @@ static BOOL CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPara
 						} else {
 							EnableWindow(hInfoLabel[i], FALSE);
 						}
+						break;
+					}
+					case 4: {
+						_stprintf(szItemText, _T("%s"), BurnDrvGetTextA(DRV_COMMENT) ? BurnDrvGetText(nGetTextFlags | DRV_COMMENT) : _T(""));
+						SendMessage(hInfoText[i], WM_SETTEXT, (WPARAM)0, (LPARAM)szItemText);
+						EnableWindow(hInfoLabel[i], TRUE);
+						break;
 					}
 				}
 			}
 
-			UpdatePreview(true);
+			switch(nViewPreview)
+			{
+			case 1:
+				UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+				break;
+			case 2: 
+				UpdatePreview(true, PREVIEW_DIRECTORY, 2);
+				break;
+			case 3:
+				UpdatePreview(true, FLYER_DIRECTORY, 3);
+				break;
+			default:
+				UpdatePreview(true, TITLE_PREVIEW_DIRECTORY, 1);
+				break;
+			}
+
+			bDrvSelected=true;
 		}
 	}
 
 	return 0;
 }
 
-INT_PTR FBADialogBox(HINSTANCE, LPTSTR, HWND, DLGPROC);
-
 int SelDialog()
 {
-//	DialogBox(hAppInst, MAKEINTRESOURCE(IDD_SELNEW), hScrnWnd, DialogProc);
-
 	int nOldSelect = nBurnDrvSelect;
+
+	InitCommonControls();
+	nViewPreview = 1; // Set to view INGAME each time the dialog comes up
 
 	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_SELNEW), hScrnWnd, DialogProc);
 

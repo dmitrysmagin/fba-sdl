@@ -5,10 +5,10 @@
 
 // #define USE_SDL					// define if SDL is used
 // #define DONT_DISPLAY_SPLASH		// Prevent Splash screen from being displayed
-// #define APP_DEBUG_LOG			// log debug messages to zzBurnDebug.txt
+#define APP_DEBUG_LOG			// log debug messages to zzBurnDebug.html
 
 #ifdef USE_SDL
- #include <SDL.h>
+ #include "SDL.h"
 #endif
 
 #include "burner.h"
@@ -104,12 +104,12 @@ OPENFILENAME ofn;
 #endif
 
 // Debug printf to a file
-static int __cdecl AppDebugPrintf(int nStatus, TCHAR* szFormat, ...)
+static int __cdecl AppDebugPrintf(int nStatus, TCHAR* pszFormat, ...)
 {
 #if defined (FBA_DEBUG)
 	va_list vaFormat;
 
-	va_start(vaFormat, szFormat);
+	va_start(vaFormat, pszFormat);
 
 	if (DebugLog) {
 
@@ -125,35 +125,33 @@ static int __cdecl AppDebugPrintf(int nStatus, TCHAR* szFormat, ...)
 					_ftprintf(DebugLog, _T("</font><font color=#009F00>"));
 			}
 		}
-		_vftprintf(DebugLog, szFormat, vaFormat);
+		_vftprintf(DebugLog, pszFormat, vaFormat);
 		fflush(DebugLog);
 	}
 
 	if (!DebugLog || bEchoLog) {
-		_vsntprintf(szConsoleBuffer, 1024, szFormat, vaFormat);
+		_vsntprintf(szConsoleBuffer, 1024, pszFormat, vaFormat);
 
 		if (nStatus != nPrevConsoleStatus) {
 			switch (nStatus) {
 				case PRINT_UI:
-					SetConsoleTextAttribute(DebugBuffer, FOREGROUND_INTENSITY);
+					SetConsoleTextAttribute(DebugBuffer,                                                       FOREGROUND_INTENSITY);
 					break;
 				case PRINT_IMPORTANT:
 					SetConsoleTextAttribute(DebugBuffer, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 					break;
 				case PRINT_ERROR:
-					SetConsoleTextAttribute(DebugBuffer, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+					SetConsoleTextAttribute(DebugBuffer, FOREGROUND_RED | FOREGROUND_GREEN |                   FOREGROUND_INTENSITY);
 					break;
 				default:
-					SetConsoleTextAttribute(DebugBuffer, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+					SetConsoleTextAttribute(DebugBuffer,                  FOREGROUND_GREEN |                   FOREGROUND_INTENSITY);
 			}
 		}
 
 		WriteConsole(DebugBuffer, szConsoleBuffer, _tcslen(szConsoleBuffer), NULL, NULL);
 	}
 
-	if (nStatus != nPrevConsoleStatus) {
-		nPrevConsoleStatus = nStatus;
-	}
+	nPrevConsoleStatus = nStatus;
 
 	va_end(vaFormat);
 #endif
@@ -161,13 +159,13 @@ static int __cdecl AppDebugPrintf(int nStatus, TCHAR* szFormat, ...)
 	return 0;
 }
 
-int dprintf(TCHAR* szFormat, ...)
+int dprintf(TCHAR* pszFormat, ...)
 {
 #if defined (FBA_DEBUG)
 	va_list vaFormat;
-	va_start(vaFormat, szFormat);
+	va_start(vaFormat, pszFormat);
 
-	_vsntprintf(szConsoleBuffer, 1024, szFormat, vaFormat);
+	_vsntprintf(szConsoleBuffer, 1024, pszFormat, vaFormat);
 
 	if (nPrevConsoleStatus != PRINT_UI) {
 		if (DebugLog) {
@@ -184,7 +182,7 @@ int dprintf(TCHAR* szFormat, ...)
 	WriteConsole(DebugBuffer, szConsoleBuffer, _tcslen(szConsoleBuffer), NULL, NULL);
 	va_end(vaFormat);
 #else
-	(void)szFormat;
+	(void)pszFormat;
 #endif
 
 	return 0;
@@ -194,18 +192,18 @@ void CloseDebugLog()
 {
 #if defined (FBA_DEBUG)
 	if (DebugLog) {
-	
+
 		_ftprintf(DebugLog, _T("</pre></body></html>"));
-	
+
 		fclose(DebugLog);
 		DebugLog = NULL;
 	}
 
-	if (DebugBuffer) {	
+	if (DebugBuffer) {
 		CloseHandle(DebugBuffer);
 		DebugBuffer = NULL;
 	}
-	
+
 	FreeConsole();
 #endif
 }
@@ -253,7 +251,7 @@ int OpenDebugLog()
 		COORD DebugBufferSize = { 80, 1000 };
 
 		{
-		
+
 			// Since AttachConsole is only present in Windows XP, import it manually
 
 #if _WIN32_WINNT >= 0x0500 && defined (_MSC_VER)
@@ -266,6 +264,7 @@ int OpenDebugLog()
 
 			BOOL (WINAPI* pAttachConsole)(DWORD dwProcessId) = NULL;
 			HINSTANCE hKernel32DLL = LoadLibrary(_T("kernel32.dll"));
+
 			if (hKernel32DLL) {
 				pAttachConsole = (BOOL (WINAPI*)(DWORD))GetProcAddress(hKernel32DLL, "AttachConsole");
 			}
@@ -307,6 +306,8 @@ int OpenDebugLog()
 		WriteConsole(DebugBuffer, szConsoleBuffer, _tcslen(szConsoleBuffer), NULL, NULL);
 	}
 
+	nPrevConsoleStatus = -1;
+
 	bprintf = AppDebugPrintf;							// Redirect Burn library debug to our function
 #endif
 
@@ -327,18 +328,6 @@ bool SetNumLock(bool bState)
 	return keyState[VK_NUMLOCK] & 1;
 }
 
-// Show a message box with an error message
-int AppError(TCHAR* szText, int bWarning)
-{
-	SplashDestroy(1);
-
-	AudSoundStop();
-	MessageBox(hScrnWnd, szText, (bWarning ? _T(APP_TITLE) _T(" Warning") : _T(APP_TITLE) _T(" Error")), MB_OK | (bWarning ? MB_ICONWARNING : MB_ICONERROR) | MB_SETFOREGROUND);
-	AudSoundPlay();
-
-	return 0;
-}
-
 static int AppInit()
 {
 
@@ -353,20 +342,21 @@ static int AppInit()
 	// Create a handle to the main thread of execution
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, false, DUPLICATE_SAME_ACCESS);
 
+	// Load config for the application
+	ConfigAppLoad();
+
+	FBALocaliseInit(szLocalisationTemplate);
+
 	kailleraInit();
 
-	// Load config for the application
-	if (ConfigAppLoad()) {
-		ConfigAppSave();			// create initial config file
-	}
-
-	FBALocaliseInit();
-	
 #if 1 || !defined (FBA_DEBUG)
 	// print a warning if we're running for the 1st time
 	if (nIniVersion < nBurnVer) {
-		SplashDestroy(1);
+		ScrnInit();
+		//SplashDestroy(1);
 		FirstUsageCreate();
+
+		ConfigAppSave();								// Create initial config file
 	}
 #endif
 
@@ -384,10 +374,20 @@ static int AppInit()
 
 	ComputeGammaLUT();
 
+	if (VidSelect(nVidSelect)) {
+		nVidSelect = 0;
+		VidSelect(nVidSelect);
+	}
+
 	hAccel = LoadAccelerators(hAppInst, MAKEINTRESOURCE(IDR_ACCELERATOR));
 
 	// Build the ROM information
 	CreateROMInfo();
+	
+	// Write a clrmame dat file if we are verifying roms
+#if defined (ROM_VERIFY)
+	create_datfile(_T("fba.dat"), 0);
+#endif
 
 	bNumlockStatus = SetNumLock(false);
 
@@ -400,7 +400,7 @@ static int AppExit()
 
 	DrvExit();						// Make sure any game driver is exitted
 	FreeROMInfo();
-	MediaExit(true);
+	MediaExit();
 	BurnLibExit();					// Exit the Burn library
 
 #ifdef USE_SDL
@@ -435,13 +435,13 @@ void AppCleanup()
 
 int AppMessage(MSG *pMsg)
 {
-	if (IsDialogMessage(hInpdDlg, pMsg)) return 0;
+	if (IsDialogMessage(hInpdDlg, pMsg))	 return 0;
 	if (IsDialogMessage(hInpCheatDlg, pMsg)) return 0;
 	if (IsDialogMessage(hInpDIPSWDlg, pMsg)) return 0;
-	if (IsDialogMessage(hDbgDlg, pMsg)) return 0;
+	if (IsDialogMessage(hDbgDlg, pMsg))		 return 0;
 
-	if (IsDialogMessage(hInpsDlg, pMsg)) return 0;
-	if (IsDialogMessage(hInpcDlg, pMsg)) return 0;
+	if (IsDialogMessage(hInpsDlg, pMsg))	 return 0;
+	if (IsDialogMessage(hInpcDlg, pMsg))	 return 0;
 
 	return 1; // Didn't process this message
 }
@@ -460,7 +460,7 @@ int ProcessCmdLine()
 	unsigned int i;
 	int nOptX = 0, nOptY = 0, nOptD = 0;
 	int nOpt1Size;
-	TCHAR szOpt2[2] = _T("");
+	TCHAR szOpt2[3] = _T("");
 	TCHAR szName[MAX_PATH];
 
 	if (szCmdLine[0] == _T('\"')) {
@@ -526,7 +526,7 @@ int ProcessCmdLine()
 			if (BurnStateLoad(szName, 1, &DrvInitCallback)) {
 				return 1;
 			} else {
-				bRunPause = 1;
+//				bRunPause = 1;
 			}
 		} else {
 			if (_tcscmp(&szName[_tcslen(szName) - 3], _T(".fr")) == 0) {
@@ -543,14 +543,15 @@ int ProcessCmdLine()
 					}
 				}
 				if (i == nBurnDrvCount) {
-					TCHAR szErrorString[128];
-					_stprintf(szErrorString, _T("%s is not supported by ") _T(APP_TITLE) _T("."), szName);
-					AppError(szErrorString, 0);
+					FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_UI_NOSUPPORT), szName, _T(APP_TITLE));
+					FBAPopupDisplay(PUF_TYPE_ERROR);
 					return 1;
 				}
 			}
 		}
 	}
+
+	POST_INITIALISE_MESSAGE;
 
 	if (!nVidFullscreen) {
 		MenuEnableItems();
@@ -587,26 +588,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	// Make sure there are roms and cfg subdirectories
 	CreateDirectory(_T("config"), NULL);
 	CreateDirectory(_T("config\\games"), NULL);
+	CreateDirectory(_T("config\\localisation"), NULL);
 	CreateDirectory(_T("config\\presets"), NULL);
 	CreateDirectory(_T("savestates"), NULL);
 	CreateDirectory(_T("cheats"), NULL);
+	CreateDirectory(_T("flyers"), NULL);
 	CreateDirectory(_T("previews"), NULL);
 	CreateDirectory(_T("recordings"), NULL);
 	CreateDirectory(_T("ROMs"), NULL);
 	CreateDirectory(_T("screenshots"), NULL);
+	CreateDirectory(_T("titles"), NULL);
 
 	{
 		INITCOMMONCONTROLSEX initCC = {
 			sizeof(INITCOMMONCONTROLSEX),
 			ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_LISTVIEW_CLASSES | ICC_PROGRESS_CLASS | ICC_TREEVIEW_CLASSES,
 		};
-
-		if (!InitCommonControlsEx(&initCC)) {
-			TCHAR szErrorString[] = _T("Sorry, ") _T(APP_TITLE) _T(" cannot run on this system.");
-			AppError(szErrorString, 0);
-
-			return 0;
-		}
+		InitCommonControlsEx(&initCC);
 	}
 
 	if (lpCmdLine) {
@@ -615,6 +613,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 
 	if (!(AppInit())) {							// Init the application
 		if (!(ProcessCmdLine())) {
+//			if (!bDrvOkay) {
+				MediaInit();
+//			}
+
 			RunMessageLoop();					// Run the application message loop
 		}
 	}

@@ -47,7 +47,7 @@ static struct BurnInputInfo DrvInputList[] =
   {"Dip C"         , BIT_DIPSWITCH, &Cpi01E    , "dip"      },
 };
 
-STDINPUTINFO(Drv)
+STDINPUTINFO(Drv);
 
 static struct BurnDIPInfo captcommDIPList[]=
 {
@@ -140,7 +140,7 @@ static struct BurnDIPInfo captcommDIPList[]=
 	{0x25, 0x01, 0x40, 0x40, "On"                     },
 };
 
-STDDIPINFO(captcomm)
+STDDIPINFO(captcomm);
 
 
 static int DrvInit()

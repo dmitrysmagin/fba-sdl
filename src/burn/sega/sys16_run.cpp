@@ -12,6 +12,8 @@ int            System16AnalogPort0    = 0;
 int            System16AnalogPort1    = 0;
 int            System16AnalogPort2    = 0;
 int            System16AnalogPort3    = 0;
+int            System16AnalogPort4    = 0;
+int            System16AnalogPort5    = 0;
 int            System16AnalogSelect   = 0;
 unsigned char  System16Dip[3]         = {0, 0, 0};
 unsigned char  System16Input[7]       = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -34,6 +36,7 @@ unsigned char  *System167751Data      = NULL;
 unsigned char  *System16UPD7759Data   = NULL;
 unsigned char  *System16PCMData       = NULL;
 unsigned char  *System16PCM2Data      = NULL;
+unsigned char  *System16RF5C68Data    = NULL;
 unsigned char  *System16Prom          = NULL;
 unsigned char  *System16Key           = NULL;
 unsigned char  *System16Ram           = NULL;
@@ -93,6 +96,8 @@ unsigned int System16PCMDataSize = 0;
 unsigned int System16PCMDataNum = 0;
 unsigned int System16PCM2DataSize = 0;
 unsigned int System16PCM2DataNum = 0;
+unsigned int System16RF5C68DataSize = 0;
+unsigned int System16RF5C68DataNum = 0;
 unsigned int System16PromSize = 0;
 unsigned int System16PromNum = 0;
 unsigned int System16KeySize = 0;
@@ -115,10 +120,6 @@ bool System16BTileAlt = false;
 bool Shangon = false;
 bool Hangon = false;
 
-bool System16Gun = false;
-int System16Gun1X = 160 << 8, System16Gun1Y = 112 << 8;
-int System16Gun2X = 160 << 8, System16Gun2Y = 112 << 8;
-
 int nSystem16CyclesDone[4];
 static int nCyclesTotal[4];
 static int nCyclesSegment;
@@ -130,6 +131,7 @@ static bool bUseAsm68KCoreOldValue = false;
 
 Sim8751 Simulate8751;
 System16Map68K System16Map68KDo;
+System16MapZ80 System16MapZ80Do;
 System16CustomLoadRom System16CustomLoadRomDo;
 System16CustomDecryptOpCode System16CustomDecryptOpCodeDo;
 System16ProcessAnalogControls System16ProcessAnalogControlsDo;
@@ -200,40 +202,9 @@ inline static void PdriftMakeInputs()
 
 static void System16GunMakeInputs()
 {
-	// Reset Inputs
-	System16Input[0] = System16Input[1] = 0;
-	
-	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
-		System16Input[0] |= (System16InputPort0[i] & 1) << i;
-		System16Input[1] |= (System16InputPort1[i] & 1) << i;
-	}
-	
-	// Gun
-	const int GunMinX = -8 * 0x100;
-	const int GunMinY = -8 * 0x100;
-	System16Gun1X += (short)System16AnalogPort0;
-	System16Gun1Y += (short)System16AnalogPort1;
-	System16Gun2X += (short)System16AnalogPort2;
-	System16Gun2Y += (short)System16AnalogPort3;
-	
-	if (System16Gun1X < GunMinX)
-		System16Gun1X = GunMinX;
-	if (System16Gun1X > GunMinX + 320 * 0x100)
-		System16Gun1X = GunMinX + 320 * 0x100;
-	if (System16Gun1Y < GunMinY)
-		System16Gun1Y = GunMinY;
-	if (System16Gun1Y > GunMinY + 224 * 0x100)
-		System16Gun1Y = GunMinY + 224 * 0x100;
-		
-	if (System16Gun2X < GunMinX)
-		System16Gun2X = GunMinX;
-	if (System16Gun2X > GunMinX + 320 * 0x100)
-		System16Gun2X = GunMinX + 320 * 0x100;
-	if (System16Gun2Y < GunMinY)
-		System16Gun2Y = GunMinY;
-	if (System16Gun2Y > GunMinY + 224 * 0x100)
-		System16Gun2Y = GunMinY + 224 * 0x100;
+	if (nBurnGunNumPlayers) BurnGunMakeInputs(0, (short)System16AnalogPort0, (short)System16AnalogPort1);
+	if (nBurnGunNumPlayers >= 1) BurnGunMakeInputs(1, (short)System16AnalogPort2, (short)System16AnalogPort3);
+	if (nBurnGunNumPlayers >= 2) BurnGunMakeInputs(2, (short)System16AnalogPort4, (short)System16AnalogPort5);
 }
 
 /*====================================================
@@ -278,10 +249,15 @@ static int System16DoReset()
 	
 	ZetReset();
 	
-	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-		BurnYM2203Reset();
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+		BurnYM3438Reset();
+		RF5C68PCMReset();
 	} else {
-		BurnYM2151Reset();
+		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
+			BurnYM2203Reset();
+		} else {
+			BurnYM2151Reset();
+		}
 	}
 	
 	// Reset Variables
@@ -289,6 +265,8 @@ static int System16DoReset()
 		System16Page[i] = 0;
 		System16ScrollX[i] = 0;
 		System16ScrollY[i] = 0;
+		BootlegBgPage[i] = 0;
+		BootlegFgPage[i] = 0;
 	}
 	
 	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_5358) {
@@ -314,13 +292,15 @@ static int System16DoReset()
 		}
 	}
 	
-	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16B || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_OUTRUN || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEMX) {
-		for (i = 0; i < 2; i++) {
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16B || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18 || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_OUTRUN || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEMX) {
+		for (i = 0; i < 8; i++) {
 			System16TileBanks[i] = i;
 		}
 	}
 	
 	System16VideoEnable = 0;
+	System18VdpEnable = 0;
+	System18VdpMixing = 0;
 	System16VideoControl = 0;
 	System16ScreenFlip = 0;
 	System16SoundLatch = 0;
@@ -517,6 +497,125 @@ void __fastcall System16Z802203Write(unsigned short a, unsigned char d)
 #endif
 }
 
+unsigned char __fastcall System18Z80PortRead(unsigned short a)
+{
+	a &= 0xff;
+	
+	switch (a) {
+		case 0x80: {
+			return BurnYM3438Read(0, 0);
+		}
+		
+		case 0xc0: {
+			return System16SoundLatch;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Read Port -> %02X\n"), a);
+#endif
+
+	return 0;
+}
+
+void __fastcall System18Z80PortWrite(unsigned short a, unsigned char d)
+{
+	a &= 0xff;
+	d &= 0xff;
+	
+	switch (a) {
+		case 0x80: {
+			BurnYM3438Write(0, 0, d);
+			return;
+		}
+		
+		case 0x81: {
+			BurnYM3438Write(0, 1, d);
+			return;
+		}
+		
+		case 0x82: {
+			BurnYM3438Write(0, 2, d);
+			return;
+		}
+		
+		case 0x83: {
+			BurnYM3438Write(0, 3, d);
+			return;			
+		}
+		
+		case 0x90: {
+			BurnYM3438Write(1, 0, d);
+			return;
+		}
+		
+		case 0x91: {
+			BurnYM3438Write(1, 1, d);
+			return;
+		}
+		
+		case 0x92: {
+			BurnYM3438Write(1, 2, d);
+			return;
+		}
+		
+		case 0x93: {
+			BurnYM3438Write(1, 3, d);
+			return;
+		}
+		
+		case 0xa0: {
+			unsigned int BankAddress = d * 0x2000;
+			if (BankAddress < 0x80000) {
+				ZetMapArea(0xa000, 0xbfff, 0, System16Z80Rom + BankAddress);
+				ZetMapArea(0xa000, 0xbfff, 2, System16Z80Rom + BankAddress);
+			} else {
+				ZetMapArea(0xa000, 0xbfff, 0, System16RF5C68Data + BankAddress - 0x80000);
+				ZetMapArea(0xa000, 0xbfff, 2, System16RF5C68Data + BankAddress - 0x80000);
+			}
+			return;
+		}
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Write Port -> %02X, %02X\n"), a, d);
+#endif
+}
+
+unsigned char __fastcall System18Z80Read(unsigned short a)
+{
+	if (a >= 0xc000 && a <= 0xc00f) {
+		return RF5C68PCMRead(a - 0xc000);
+	}
+	
+	if (a >= 0xd000 && a <= 0xdfff) {
+		return RF5C68PCMRead(a - 0xd000);
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Read -> %04X\n"), a);
+#endif
+
+	return 0;
+}
+
+void __fastcall System18Z80Write(unsigned short a, unsigned char d)
+{
+	if (a >= 0xc000 && a <= 0xc00f) {
+		RF5C68PCMRegWrite(a - 0xc000, d);
+		return;
+	}
+	
+	if (a >= 0xd000 && a <= 0xdfff) {
+		RF5C68PCMWrite(a - 0xd000, d);
+		return;
+	}
+
+#if 1 && defined FBA_DEBUG
+	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
+#endif
+}
+
 /*====================================================
 Allocate Memory
 ====================================================*/
@@ -538,6 +637,14 @@ static int System16MemIndex()
 	bool SpriteBuffer = false;
 	bool HasRoad = false;
 	bool UseTempDraw = false;
+	int Z80RomSize = 0x10000;
+	int Z80RamSize = 0x00800;
+	
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+		Z80RomSize = 0x80000;
+		Z80RamSize = 0x2000;
+		UseTempDraw = true;
+	}
 	
 	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_HANGON) {
 		System16ExtraRamSize = 0x4000;
@@ -581,11 +688,11 @@ static int System16MemIndex()
 		UseTempDraw = true;
 	}
 	
-	System16Rom          = Next; Next += 0x100000;
-	System16Code         = Next; Next += 0x100000;
+	System16Rom          = Next; Next += (System16RomSize > 0x100000) ? System16RomSize : 0x100000;
+	System16Code         = Next; Next += (System16RomSize > 0x100000) ? System16RomSize : 0x100000;
 	System16Rom2         = Next; (System16Rom2Size) ? Next += 0x080000 : Next += 0;
 	System16Rom3         = Next; (System16Rom3Size) ? Next += 0x080000 : Next += 0;
-	System16Z80Rom       = Next; Next += 0x010000;
+	System16Z80Rom       = Next; Next += Z80RomSize;
 	System16Z80Rom2      = Next; Next += System16Z80Rom2Size;
 	System16Z80Rom3      = Next; Next += System16Z80Rom3Size;
 	System16Z80Rom4      = Next; Next += System16Z80Rom4Size;
@@ -594,6 +701,7 @@ static int System16MemIndex()
 	System16UPD7759Data  = Next; Next += System16UPD7759DataSize;
 	System16PCMData      = Next; Next += System16PCMDataSize;
 	System16PCM2Data     = Next; Next += System16PCM2DataSize;
+	System16RF5C68Data   = Next; Next += System16RF5C68DataSize;
 	System16Key          = Next; Next += System16KeySize;
 	System16Prom         = Next; Next += System16PromSize;
 	
@@ -620,7 +728,7 @@ static int System16MemIndex()
 	System16BackupRam    = Next; Next += System16BackupRamSize;
 	System16BackupRam2   = Next; Next += System16BackupRam2Size;
 	
-	System16Z80Ram       = Next; Next += 0x00800;
+	System16Z80Ram       = Next; Next += Z80RamSize;
 
 	RamEnd = Next;
 
@@ -632,7 +740,7 @@ static int System16MemIndex()
 		System16Roads        = Next; Next += 0x40000;
 	}
 	
-	System16Palette      = (unsigned int*)Next; Next += System16PaletteEntries * 3 * sizeof(unsigned int);
+	System16Palette      = (unsigned int*)Next; Next += System16PaletteEntries * 3 * sizeof(unsigned int) + (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) ? (0x40 * sizeof(unsigned int)) : 0);
 	
 	if (UseTempDraw) pTempDraw = (unsigned short*)Next; Next += (512 * 512 * sizeof(unsigned short));
 	
@@ -659,75 +767,79 @@ static int System16LoadRoms(bool bLoad)
 			ri.nLen = 0;
 			ri.nType = 0;
 			BurnDrvGetRomInfo(&ri, ++nOffset);
-			if (ri.nType & SYS16_ROM_PROG) {
+			if ((ri.nType & 0xff) == SYS16_ROM_PROG) {
 				System16RomSize += ri.nLen;
 				System16RomNum++;
 			}
-			if (ri.nType & SYS16_ROM_PROG2) {
+			if ((ri.nType & 0xff) == SYS16_ROM_PROG2) {
 				System16Rom2Size += ri.nLen;
 				System16Rom2Num++;
 			}
-			if (ri.nType & SYS16_ROM_PROG3) {
+			if ((ri.nType & 0xff) == SYS16_ROM_PROG3) {
 				System16Rom3Size += ri.nLen;
 				System16Rom3Num++;
 			}
-			if (ri.nType & SYS16_ROM_TILES) {
+			if ((ri.nType & 0xff) == SYS16_ROM_TILES) {
 				System16TileRomSize += ri.nLen;
 				System16TileRomNum++;
 			}
-			if (ri.nType & SYS16_ROM_SPRITES) {
+			if ((ri.nType & 0xff) == SYS16_ROM_SPRITES) {
 				System16SpriteRomSize += ri.nLen;
 				System16SpriteRomNum++;
 			}
-			if (ri.nType & SYS16_ROM_SPRITES2) {
+			if ((ri.nType & 0xff) == SYS16_ROM_SPRITES2) {
 				System16Sprite2RomSize += ri.nLen;
 				System16Sprite2RomNum++;
 			}
-			if (ri.nType & SYS16_ROM_ROAD) {
+			if ((ri.nType & 0xff) == SYS16_ROM_ROAD) {
 				System16RoadRomSize += ri.nLen;
 				System16RoadRomNum++;
 			}
-			if (ri.nType & SYS16_ROM_Z80PROG) {
+			if ((ri.nType & 0xff) == SYS16_ROM_Z80PROG) {
 				System16Z80RomSize += ri.nLen;
 				System16Z80RomNum++;
 			}
-			if (ri.nType & SYS16_ROM_Z80PROG2) {
+			if ((ri.nType & 0xff) == SYS16_ROM_Z80PROG2) {
 				System16Z80Rom2Size += ri.nLen;
 				System16Z80Rom2Num++;
 			}
-			if (ri.nType & SYS16_ROM_Z80PROG3) {
+			if ((ri.nType & 0xff) == SYS16_ROM_Z80PROG3) {
 				System16Z80Rom3Size += ri.nLen;
 				System16Z80Rom3Num++;
 			}
-			if (ri.nType & SYS16_ROM_Z80PROG4) {
+			if ((ri.nType & 0xff) == SYS16_ROM_Z80PROG4) {
 				System16Z80Rom4Size += ri.nLen;
 				System16Z80Rom4Num++;
 			}
-			if (ri.nType & SYS16_ROM_7751PROG) {
+			if ((ri.nType & 0xff) == SYS16_ROM_7751PROG) {
 				System167751ProgSize += ri.nLen;
 				System167751ProgNum++;
 			}
-			if (ri.nType & SYS16_ROM_7751DATA) {
+			if ((ri.nType & 0xff) == SYS16_ROM_7751DATA) {
 				System167751DataSize += ri.nLen;
 				System167751DataNum++;
 			}
-			if (ri.nType & SYS16_ROM_UPD7759DATA) {
+			if ((ri.nType & 0xff) == SYS16_ROM_UPD7759DATA) {
 				System16UPD7759DataSize += ri.nLen;
 				System16UPD7759DataNum++;
 			}
-			if (ri.nType & SYS16_ROM_PCMDATA) {
+			if ((ri.nType & 0xff) == SYS16_ROM_PCMDATA) {
 				System16PCMDataSize += ri.nLen;
 				System16PCMDataNum++;
 			}
-			if (ri.nType & SYS16_ROM_PCM2DATA) {
+			if ((ri.nType & 0xff) == SYS16_ROM_PCM2DATA) {
 				System16PCM2DataSize += ri.nLen;
 				System16PCM2DataNum++;
 			}
-			if (ri.nType & SYS16_ROM_PROM) {
+			if ((ri.nType & 0xff) == SYS16_ROM_RF5C68DATA) {
+				System16RF5C68DataSize += 0x80000;
+				System16RF5C68DataNum++;
+			}
+			if ((ri.nType & 0xff) == SYS16_ROM_PROM) {
 				System16PromSize += ri.nLen;
 				System16PromNum++;
 			}
-			if (ri.nType & SYS16_ROM_KEY) {
+			if ((ri.nType & 0xff) == SYS16_ROM_KEY) {
 				System16KeySize += ri.nLen;
 			}
 		} while (ri.nLen);
@@ -751,6 +863,7 @@ static int System16LoadRoms(bool bLoad)
 		if (System16UPD7759DataSize) bprintf(PRINT_NORMAL, _T("UPD7759 Data Size: 0x%X (%i roms)\n"), System16UPD7759DataSize, System16UPD7759DataNum);
 		if (System16PCMDataSize) bprintf(PRINT_NORMAL, _T("PCM Data Size: 0x%X (%i roms)\n"), System16PCMDataSize, System16PCMDataNum);
 		if (System16PCM2DataSize) bprintf(PRINT_NORMAL, _T("PCM Data #2 Size: 0x%X (%i roms)\n"), System16PCM2DataSize, System16PCM2DataNum);
+		if (System16RF5C68DataSize) bprintf(PRINT_NORMAL, _T("RF5C68 Data Size: 0x%X (%i roms)\n"), System16RF5C68DataSize, System16RF5C68DataNum);
 		if (System16PromSize) bprintf(PRINT_NORMAL, _T("PROM Rom Size: 0x%X (%i roms)\n"), System16PromSize, System16PromNum);
 		if (System16KeySize) bprintf(PRINT_NORMAL, _T("Encryption Key Size: 0x%X\n"), System16KeySize);
 #endif
@@ -807,6 +920,11 @@ static int System16LoadRoms(bool bLoad)
 			
 			BurnDrvGetRomInfo(&ri, i + 0);
 			Offset += ri.nLen;
+		}
+		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_INVERT_TILES) {
+			for (i = 0; i < System16TileRomSize; i++) {
+				System16TempGfx[i] ^= 0xff;
+			}	
 		}
 		System16Decode8x8Tiles(System16Tiles, System16NumTiles, System16TileRomSize * 2 / 3, System16TileRomSize * 1 / 3, 0);
 		free(System16TempGfx);
@@ -895,9 +1013,7 @@ static int System16LoadRoms(bool bLoad)
 			nRet = BurnLoadRom(System16Z80Rom + Offset, i, 1);
 			if (nRet) {
 				// Fill with 0xff
-				for (int j = 0; j < 0x8000; j++) {
-					System16Z80Rom[j] = 0xff;
-				}
+				memset(System16Z80Rom, 0xff, System16Z80RomSize);
 				
 				nRet = 0;
 			}
@@ -965,7 +1081,13 @@ static int System16LoadRoms(bool bLoad)
 		if (System16UPD7759DataSize) {
 			Offset = 0;
 			for (i = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum; i++) {
-				nRet = BurnLoadRom(System16UPD7759Data + Offset, i, 1); if (nRet) return 1;
+				nRet = BurnLoadRom(System16UPD7759Data + Offset, i, 1);
+				
+				if (nRet) {
+					memset(System16UPD7759Data, 0xff, System16UPD7759DataSize); 
+					
+					nRet = 0;
+				}
 				
 				BurnDrvGetRomInfo(&ri, i + 0);
 				Offset += ri.nLen;
@@ -994,10 +1116,21 @@ static int System16LoadRoms(bool bLoad)
 			}
 		}
 		
+		// RF5C68 Data Roms
+		if (System16RF5C68DataSize) {
+			Offset = 0;
+			for (i = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16RF5C68DataNum; i++) {
+				nRet = BurnLoadRom(System16RF5C68Data + Offset, i, 1); if (nRet) return 1;
+				
+				BurnDrvGetRomInfo(&ri, i + 0);
+				Offset += 0x80000;
+			}
+		}
+		
 		// PROMs
 		if (System16PromSize) {
 			Offset = 0;
-			for (i = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16PromNum; i++) {
+			for (i = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16RF5C68DataNum; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16RF5C68DataNum + System16PromNum; i++) {
 				nRet = BurnLoadRom(System16Prom + Offset, i, 1); if (nRet) return 1;
 				
 				BurnDrvGetRomInfo(&ri, i + 0);
@@ -1007,7 +1140,7 @@ static int System16LoadRoms(bool bLoad)
 		
 		// Encryption Key
 		if (System16KeySize) {
-			Offset = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16PromNum;
+			Offset = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum + System16Z80RomNum + System16Z80Rom2Num + System16Z80Rom3Num + System16Z80Rom4Num + System167751ProgNum + System167751DataNum + System16UPD7759DataNum + System16PCMDataNum + System16PCM2DataNum + System16RF5C68DataNum + System16PromNum;
 			nRet = BurnLoadRom(System16Key, Offset, 1); if (nRet) return 1;
 		}
 	}
@@ -1089,6 +1222,16 @@ inline static int System16SynchroniseStream(int nSoundRate)
 inline static double System16GetTime()
 {
 	return (double)ZetTotalCycles() / 4000000;
+}
+
+inline static int System18SynchroniseStream(int nSoundRate)
+{
+	return (long long)ZetTotalCycles() * nSoundRate / 8000000;
+}
+
+inline static double System18GetTime()
+{
+	return (double)ZetTotalCycles() / 8000000;
 }
 
 /*====================================================
@@ -1412,7 +1555,7 @@ int System16Init()
 	if (System16CustomLoadRomDo) { nRet = System16CustomLoadRomDo(); if (nRet) return 1; }
 	
 	// Copy the first 68000 rom to code (FETCH)
-	memcpy(System16Code, System16Rom, 0x100000);
+	memcpy(System16Code, System16Rom, System16RomSize);
 	
 	// Handle any op-code decryption
 	if (System16CustomDecryptOpCodeDo) { nRet = System16CustomDecryptOpCodeDo(); if (nRet) return 1; }
@@ -1458,12 +1601,32 @@ int System16Init()
 			}
 	
 			if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16B) {
-				SekSetReadWordHandler(0, System16BReadWord);
-				SekSetWriteWordHandler(0, System16BWriteWord);
 				SekSetReadByteHandler(0, System16BReadByte);
 				SekSetWriteByteHandler(0, System16BWriteByte);
 				SekClose();
 			}
+		}
+	}
+	
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+		if (System16Map68KDo) {
+			System16Map68KDo();
+		} else {
+			SekInit(0, 0x68000);
+			SekOpen(0);
+			SekMapMemory(System16Rom           , 0x000000, 0x0fffff, SM_READ);
+			SekMapMemory(System16Code          , 0x000000, 0x0fffff, SM_FETCH);
+			SekMapMemory(System16TileRam       , 0x400000, 0x40ffff, SM_RAM);
+			SekMapMemory(System16TextRam       , 0x410000, 0x410fff, SM_RAM);
+			SekMapMemory(System16SpriteRam     , 0x440000, 0x4407ff, SM_RAM);
+			SekMapMemory(System16PaletteRam    , 0x840000, 0x840fff, SM_RAM);
+			SekMapMemory(System16Ram           , 0xffc000, 0xffffff, SM_RAM);
+			
+			SekSetReadWordHandler(0, System18ReadWord);
+			SekSetWriteWordHandler(0, System18WriteWord);
+			SekSetReadByteHandler(0, System18ReadByte);
+			SekSetWriteByteHandler(0, System18WriteByte);
+			SekClose();
 		}
 	}
 	
@@ -1512,7 +1675,6 @@ int System16Init()
 		SekMapMemory(System16Ram           , 0x260000, 0x267fff, SM_RAM);
 		SekMapMemory(System16RoadRam       , 0x280000, 0x280fff, SM_RAM);
 		SekSetResetCallback(OutrunResetCallback);
-		SekSetReadWordHandler(0, OutrunReadWord);
 		SekSetWriteWordHandler(0, OutrunWriteWord);
 		SekSetReadByteHandler(0, OutrunReadByte);
 		SekSetWriteByteHandler(0, OutrunWriteByte);
@@ -1524,7 +1686,6 @@ int System16Init()
 		SekMapMemory(System16Rom2          , 0x000000, 0x03ffff, SM_FETCH);
 		SekMapMemory(System16Ram           , 0x060000, 0x067fff, SM_RAM);
 		SekMapMemory(System16RoadRam       , 0x080000, 0x080fff, SM_RAM);
-		SekSetReadWordHandler(0, Outrun2ReadWord);
 		SekSetWriteWordHandler(0, Outrun2WriteWord);
 		SekSetReadByteHandler(0, Outrun2ReadByte);
 		SekSetWriteByteHandler(0, Outrun2WriteByte);
@@ -1617,8 +1778,6 @@ int System16Init()
 		SekMapMemory(System16BackupRam     , 0xffc000, 0xffffff, SM_RAM);
 		SekSetReadWordHandler(0, YBoard2ReadWord);
 		SekSetWriteWordHandler(0, YBoard2WriteWord);
-		SekSetReadByteHandler(0, YBoard2ReadByte);
-		SekSetWriteByteHandler(0, YBoard2WriteByte);
 		SekClose();
 		
 		SekInit(2, 0x68000);
@@ -1633,60 +1792,87 @@ int System16Init()
 		SekSetReadWordHandler(0, YBoard3ReadWord);
 		SekSetWriteWordHandler(0, YBoard3WriteWord);
 		SekSetReadByteHandler(0, YBoard3ReadByte);
-		SekSetWriteByteHandler(0, YBoard3WriteByte);
 		SekClose();
 		
 		YBoardIrq2Scanline = 170;
 	}
 	
 	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_MC8123_ENC) {
-		mc8123_decrypt_rom(1, System16Key, 0, 0);
+		mc8123_decrypt_rom(System16Key, 0);
 	}
 	
 	// Setup the Z80 emulation
 	ZetInit(1);
-	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-		ZetMapArea(0x0000, 0x7fff, 0, System16Z80Rom);
-		ZetMapArea(0x0000, 0x7fff, 2, System16Z80Rom);
-	
-		ZetMapArea(0xc000, 0xc7ff, 0, System16Z80Ram);
-		ZetMapArea(0xc000, 0xc7ff, 1, System16Z80Ram);
-		ZetMapArea(0xc000, 0xc7ff, 2, System16Z80Ram);
-		ZetMemEnd();
-		
-		ZetSetReadHandler(System16Z802203Read);
-		ZetSetWriteHandler(System16Z802203Write);
-		ZetSetInHandler(System16Z802203PortRead);
+	if (System16MapZ80Do) {
+		System16MapZ80Do();
 	} else {
-		ZetMapArea(0x0000, 0xefff, 0, System16Z80Rom);
-		ZetMapArea(0x0000, 0xefff, 2, System16Z80Rom);
+		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
+			ZetMapArea(0x0000, 0x7fff, 0, System16Z80Rom);
+			ZetMapArea(0x0000, 0x7fff, 2, System16Z80Rom);
 	
-		ZetMapArea(0xf800, 0xffff, 0, System16Z80Ram);
-		ZetMapArea(0xf800, 0xffff, 1, System16Z80Ram);
-		ZetMapArea(0xf800, 0xffff, 2, System16Z80Ram);
-		ZetMemEnd();
+			ZetMapArea(0xc000, 0xc7ff, 0, System16Z80Ram);
+			ZetMapArea(0xc000, 0xc7ff, 1, System16Z80Ram);
+			ZetMapArea(0xc000, 0xc7ff, 2, System16Z80Ram);
+			ZetMemEnd();
 		
-		if (System16PCMDataSize) {
-			ZetSetReadHandler(System16Z80PCMRead);
-			ZetSetWriteHandler(System16Z80PCMWrite);
+			ZetSetReadHandler(System16Z802203Read);
+			ZetSetWriteHandler(System16Z802203Write);
+			ZetSetInHandler(System16Z802203PortRead);
 		} else {
-			ZetSetReadHandler(System16Z80Read);
-			ZetSetWriteHandler(System16Z80Write);
-		}		
-		ZetSetInHandler(System16Z80PortRead);
-		ZetSetOutHandler(System16Z80PortWrite);
+			if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+				ZetMapArea(0x0000, 0x9fff, 0, System16Z80Rom);
+				ZetMapArea(0x0000, 0x9fff, 2, System16Z80Rom);
+			
+				ZetMapArea(0xa000, 0xbfff, 0, System16Z80Rom/* + 0xa000*/);
+				ZetMapArea(0xa000, 0xbfff, 2, System16Z80Rom/* + 0xa000*/);
+			
+				ZetMapArea(0xe000, 0xffff, 0, System16Z80Ram);
+				ZetMapArea(0xe000, 0xffff, 1, System16Z80Ram);
+				ZetMapArea(0xe000, 0xffff, 2, System16Z80Ram);
+				ZetMemEnd();
+		
+				ZetSetReadHandler(System18Z80Read);
+				ZetSetWriteHandler(System18Z80Write);
+				ZetSetInHandler(System18Z80PortRead);
+				ZetSetOutHandler(System18Z80PortWrite);
+			} else {
+				ZetMapArea(0x0000, 0xefff, 0, System16Z80Rom);
+				ZetMapArea(0x0000, 0xefff, 2, System16Z80Rom);
+	
+				ZetMapArea(0xf800, 0xffff, 0, System16Z80Ram);
+				ZetMapArea(0xf800, 0xffff, 1, System16Z80Ram);
+				ZetMapArea(0xf800, 0xffff, 2, System16Z80Ram);
+				ZetMemEnd();
+		
+				if (System16PCMDataSize) {
+					ZetSetReadHandler(System16Z80PCMRead);
+					ZetSetWriteHandler(System16Z80PCMWrite);
+				} else {
+					ZetSetReadHandler(System16Z80Read);
+					ZetSetWriteHandler(System16Z80Write);
+				}		
+				ZetSetInHandler(System16Z80PortRead);
+				ZetSetOutHandler(System16Z80PortWrite);
+			}
+		}
 	}
 		
 	ZetClose();
 	
 	// Setup the FM emulation
-	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-		BurnYM2203Init(4000000, &System16YM2203IRQHandler, System16SynchroniseStream, System16GetTime);
-		BurnTimerAttachZet(4000000);
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+		BurnYM3438Init(2, 8000000, NULL, System18SynchroniseStream, System18GetTime);
+		BurnTimerAttachZet(8000000);
+		RF5C68PCMInit(10000000);
 	} else {
-		BurnYM2151Init(4000000, 25.0);
-		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_HANGON || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEMY) {
-			BurnYM2151SetIrqHandler(&System16YM2151IRQHandler);
+		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
+			BurnYM2203Init(4000000, &System16YM2203IRQHandler, System16SynchroniseStream, System16GetTime);
+			BurnTimerAttachZet(4000000);
+		} else {
+			BurnYM2151Init(4000000, 25.0);
+			if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_HANGON || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEMY) {
+				BurnYM2151SetIrqHandler(&System16YM2151IRQHandler);
+			}
 		}
 	}
 	
@@ -1743,7 +1929,21 @@ int System16Init()
 		ppi8255_init(2);
 	}
 	
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {	
+		System16TileBankSize = 0x400;
+		
+		StartGenesisVDP(0, System16Palette);
+		GenesisPaletteBase = 0x1800;
+		GenesisBgPalLookup[0] = GenesisSpPalLookup[0] = 0x1800;
+		GenesisBgPalLookup[1] = GenesisSpPalLookup[1] = 0x1810;
+		GenesisBgPalLookup[2] = GenesisSpPalLookup[2] = 0x1820;
+		GenesisBgPalLookup[3] = GenesisSpPalLookup[3] = 0x1830;
+	} else {
+		System16TileBankSize = 0x1000;
+	}
+	
 	GenericTilesInit();
+	bSystem16BootlegRender = false;
 	
 	// Reset the driver
 	System16DoReset();
@@ -1759,18 +1959,24 @@ int System16Exit()
 {
 	int i;
 	
-	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-		BurnYM2203Exit();
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+		BurnYM3438Exit();
 	} else {
-		BurnYM2151Exit();
+		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
+			BurnYM2203Exit();
+		} else {
+			BurnYM2151Exit();
+		}
 	}
 	
 	SekExit();
 	ZetExit();
-	
+		
 	PcmExit();
 	
 	ppi8255_exit();
+	
+	BurnGunExit();
 	
 	GenericTilesExit();
 
@@ -1782,6 +1988,8 @@ int System16Exit()
 		System16Page[i] = 0;
 		System16ScrollX[i] = 0;
 		System16ScrollY[i] = 0;
+		BootlegBgPage[i] = 0;
+		BootlegFgPage[i] = 0;
 	}
 	
 	for (i = 0; i < 16; i++) {
@@ -1793,8 +2001,11 @@ int System16Exit()
 	}
 	
 	System16VideoEnable = 0;
+	System18VdpEnable = 0;
+	System18VdpMixing = 0;
 	System16ScreenFlip = 0;
 	System16SpriteShadow = 0;
+	System16SpriteXOffset = 0;
 	System16VideoControl = 0;
 	System16SoundLatch = 0;
 	System16ColScroll = 0;
@@ -1822,16 +2033,12 @@ int System16Exit()
  	System16SpriteRam2Size = 0;
  	System16RotateRamSize = 0;
  	System16TilemapColorOffset = 0;
+	System16TileBankSize = 0;
 	
 	System16BTileAlt = false;
 	Shangon = false;
 	Hangon = false;
-	System16Gun = false;
-	
-	System16Gun1X = 160 << 8;
- 	System16Gun1Y = 112 << 8;
- 	System16Gun2X = 160 << 8;
- 	System16Gun2Y = 112 << 8;
+	bSystem16BootlegRender = false;
  	
  	YBoardIrq2Scanline = 0;
 	
@@ -1868,12 +2075,15 @@ int System16Exit()
  	System16PCMDataNum = 0;
  	System16PCM2DataSize = 0;
  	System16PCM2DataNum = 0;
+ 	System16RF5C68DataSize = 0;
+	System16RF5C68DataNum = 0;
  	System16PromSize = 0;
 	System16PromNum = 0;
  	System16KeySize = 0;
  	
  	Simulate8751 = NULL;
  	System16Map68KDo = NULL;
+ 	System16MapZ80Do = NULL;
  	System16CustomLoadRomDo = NULL;
  	System16CustomDecryptOpCodeDo = NULL;
  	System16ProcessAnalogControlsDo = NULL;
@@ -1885,6 +2095,8 @@ int System16Exit()
  	memset(compare_timer, 0, sizeof(compare_timer));
  	
  	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_FD1094_ENC) {
+		fd1094_exit();
+		
 		// Switch back CPU core if needed
 		if (bUseAsm68KCoreOldValue) {
 #if 1 && defined FBA_DEBUG
@@ -1894,7 +2106,7 @@ int System16Exit()
 			bBurnUseASMCPUEmulation = true;
 		}
 	}
- 	
+	
 	return 0;
 }
 
@@ -2026,10 +2238,57 @@ int System16BFrame()
 		if (System16BTileAlt) {
 			System16BAltRender();
 		} else {
-			System16BRender();
+			if (bSystem16BootlegRender) {
+				System16BootlegRender();
+			} else {
+				System16BRender();
+			}
 		}
 	}
 
+	return 0;
+}
+
+int System18Frame()
+{
+	int nInterleave = 10;
+
+	if (System16Reset) System16DoReset();
+
+	System16MakeInputs();
+	
+	if (nBurnGunNumPlayers) System16GunMakeInputs();
+	
+	nCyclesTotal[0] = 10000000 / 60;
+	nCyclesTotal[1] = 8000000 / 60;
+	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = 0;
+
+	SekNewFrame();
+	ZetNewFrame();
+
+	SekOpen(0);
+	for (int i = 0; i < nInterleave; i++) {
+		int nCurrentCPU, nNext;
+
+		// Run 68000
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nSystem16CyclesDone[nCurrentCPU];
+		nSystem16CyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+	}
+
+	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	SekClose();
+	
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnYM3438Update(nBurnSoundLen);
+	nSystem16CyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
+	RF5C68PCMUpdate(pBurnSoundOut, nBurnSoundLen);
+	
+	if (pBurnDraw) {
+		System18Render();
+	}
+	
 	return 0;
 }
 
@@ -2264,11 +2523,9 @@ int XBoardFrame()
 
 	if (System16Reset) System16DoReset();
 
-	if (System16Gun) {
-		System16GunMakeInputs();
-	} else {
-		System16MakeInputs();
-	}
+	System16MakeInputs();
+	
+	if (nBurnGunNumPlayers) System16GunMakeInputs();
 	
 	nCyclesTotal[0] = (50000000 / 4) / 60;
 	nCyclesTotal[1] = (50000000 / 4) / 60;
@@ -2346,12 +2603,10 @@ int YBoardFrame()
 	if (System16HasGears) {
 		PdriftMakeInputs();
 	} else {
-		if (System16Gun) {
-			System16GunMakeInputs();
-		} else {
-			System16MakeInputs();
-		}
+		System16MakeInputs();
 	}
+	
+	if (nBurnGunNumPlayers) System16GunMakeInputs();
 
 	nCyclesTotal[0] = (50000000 / 4) / 60;
 	nCyclesTotal[1] = (50000000 / 4) / 60;
@@ -2467,7 +2722,7 @@ int System16Scan(int nAction,int *pnMin)
 			}
 		}
 		
-		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_OUTRUN || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16B || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16A) {
+		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_OUTRUN || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16B || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM16A || (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
 			memset(&ba, 0, sizeof(ba));
 			ba.Data = System16Ram;
 			ba.nLen = System16RamSize;
@@ -2488,11 +2743,16 @@ int System16Scan(int nAction,int *pnMin)
 		SekScan(nAction);					// Scan 68000
 		ZetScan(nAction);					// Scan Z80
 		ppi8255_scan();
-
-		if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
-			BurnYM2203Scan(nAction, pnMin);
+		BurnGunScan();
+		
+		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
+			BurnYM3438Scan(nAction, pnMin);
 		} else {
-			BurnYM2151Scan(nAction);
+			if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2203) {
+				BurnYM2203Scan(nAction, pnMin);
+			} else {
+				BurnYM2151Scan(nAction);
+			}
 		}
 
 		// Scan critical driver variables
@@ -2508,15 +2768,13 @@ int System16Scan(int nAction,int *pnMin)
 		SCAN_VAR(System16SpriteBanks);
 		SCAN_VAR(System16TileBanks);
 		SCAN_VAR(System16Page);
+		SCAN_VAR(BootlegBgPage);
+		SCAN_VAR(BootlegFgPage);
 		SCAN_VAR(System16AnalogSelect);
 		SCAN_VAR(System16LastGear);
 		SCAN_VAR(nSystem16CyclesDone);
 		SCAN_VAR(nCyclesSegment);
 		SCAN_VAR(System16RoadControl);
-		SCAN_VAR(System16Gun1X);
-		SCAN_VAR(System16Gun1Y);
-		SCAN_VAR(System16Gun2X);
-		SCAN_VAR(System16Gun2Y);
 		SCAN_VAR(multiply);
 		SCAN_VAR(divide);
 		SCAN_VAR(compare_timer);

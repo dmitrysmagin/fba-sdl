@@ -1,6 +1,9 @@
 // Driver Init module
 #include "burner.h"
 
+// extern in ../bzip.cpp
+extern int nBzipError; 
+
 int bDrvOkay = 0;						// 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
 
 char szAppRomPaths[DIRS_MAX][MAX_PATH] = {{"/usr/local/share/roms/"},{"roms/"}, };

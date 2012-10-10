@@ -1877,29 +1877,21 @@ unsigned char GpriderProcessAnalogControls(UINT16 value)
 
 unsigned char LoffireProcessAnalogControls(UINT16 value)
 {
-	float temp = 0;
-	
 	switch (value) {
 		case 0: {
-			temp = (float)((System16Gun1X >> 8) + 8) / 320.0 * 0xff;
-//			bprintf(PRINT_NORMAL, _T("x -> %x\n"), (unsigned char)temp);
-			return (unsigned char)temp;
+			return BurnGunReturnX(0);
 		}
 		
 		case 1: {
-			temp = (float)((System16Gun1Y >> 8) + 8) / 224.0 * 0xff;
-//			bprintf(PRINT_NORMAL, _T("y -> %x\n"), (unsigned char)temp);
-			return ~(unsigned char)temp;
+			return ~BurnGunReturnY(0);
 		}
 		
 		case 2: {
-			temp = (float)((System16Gun2X >> 8) + 8) / 320.0 * 0xff;
-			return (unsigned char)temp;
+			return BurnGunReturnX(1);
 		}
 		
 		case 3: {
-			temp = (float)((System16Gun2Y >> 8) + 8) / 224.0 * 0xff;
-			return ~(unsigned char)temp;
+			return ~BurnGunReturnY(1);
 		}
 	}
 	
@@ -2014,7 +2006,7 @@ static int GpriderInit()
 
 static int LoffireInit()
 {
-	System16Gun = true;
+	BurnGunInit(2, true);
 	
 	System16ProcessAnalogControlsDo = LoffireProcessAnalogControls;
 	

@@ -39,6 +39,8 @@ global _BurnSoundCopy_FM_Add_A
 
 global _BurnSoundCopy_FM_OPN_A
 global BurnSoundCopy_FM_OPN_A
+global _BurnSoundCopy_FM_OPN_Add_A
+global BurnSoundCopy_FM_OPN_Add_A
 
 extern _Precalc
 
@@ -659,6 +661,81 @@ BurnSoundCopy_FM_OPN_A:
 	pop			EBP
 	ret
 
+_BurnSoundCopy_FM_OPN_Add_A:
+BurnSoundCopy_FM_OPN_Add_A:
+
+	push		EBP
+	mov			EBP, ESP
+	push		EBX
+
+	movq		mm4, Volumes
+	packssdw	mm4, Volumes
+
+	mov			EBX, BufSrcOPN		; EBX = Buff Src (OPN)
+	mov			ECX, BufSrcPSG		; ECX = Buff Src (PSG)
+	mov			EDX, BufDest		; EDX = Buff Dest
+
+	mov			EAX, Len			; EAX = Length
+	shr			EAX, 1
+	je			.LastSample
+
+.Loop:
+	movq		mm0, [ECX]			; Hi(mm0) = Sample2, Low(mm0) = Sample1
+	add			ECX, byte 8			; ECX -> next samples
+
+	packssdw	mm0, mm0
+
+	movd		mm1, [EBX]			; OPN sample left
+
+	punpcklwd	mm0, mm0
+
+	; mm0 now has SrcPSGR2 - SrcPSGL2 - SrcPSGR1 - SrcPSGL1
+
+	punpcklwd	mm1, [EBX + 8192]	; OPN sample right
+
+	; mm1 now has SrcOPNR2 - SrcOPNL2 - SrcOPNR1 - SrcOPNL1
+
+	pmulhw		mm0, mm4			; Multiply mm0 with volumes
+
+	add			EBX, byte 4			; EBX -> next samples
+
+	paddsw		mm0, mm1
+
+	paddsw		mm0, [EDX]		; Add to the contents of the buffer
+
+	dec			EAX					; 2 samples less left
+
+	movq		[EDX], mm0			; Save the result
+
+	lea			EDX, [EDX + 8]		; EDX -> next sample
+	jnz			.Loop				; Continue if there are more samples
+
+.LastSample:
+	mov			EAX, Len			; EAX = Length
+	test		EAX, 1
+	je			.End
+
+	; We need to handle an odd amount of samples.
+	; Handle the last sample here
+
+	movd		mm0, [ECX]
+	packssdw	mm0, mm0
+	movd		mm1, [EBX]
+	punpcklwd	mm0, mm0
+	punpcklwd	mm1, [EBX + 8192]
+	pmulhw		mm0, mm4
+	paddsw		mm0, mm1
+
+	movd		mm1, [EDX]
+	paddsw		mm0, mm1		; Add to the contents of the buffer
+
+	movd		[EDX], mm0
+
+.End:
+	emms							; Done with MMX
+	pop			EBX
+	pop			EBP
+	ret
 
 
 section	.data
