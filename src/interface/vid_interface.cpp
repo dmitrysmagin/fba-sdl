@@ -12,8 +12,10 @@
 	extern struct VidOut VidOutDDrawFX;
 	extern struct VidOut VidOutDX9;
 #elif defined (BUILD_SDL)
-	extern struct VidOut VidOutSDLOpenGL;
 	extern struct VidOut VidOutSDLFX;
+	extern struct VidOut VidOutSDLOpenGL;
+#elif defined (BUILD_WXW)
+	extern struct VidOut VidOutWXWOpenGL;
 #endif
 
 static struct VidOut *pVidOut[] = {
@@ -23,8 +25,10 @@ static struct VidOut *pVidOut[] = {
 	&VidOutDDrawFX,
 	&VidOutDX9,
 #elif defined (BUILD_SDL)
-	&VidOutSDLOpenGL,
 	&VidOutSDLFX,
+	&VidOutSDLOpenGL,
+#elif defined (BUILD_WXW)
+	&VidOutWXWOpenGL,
 #endif
 };
 
@@ -384,7 +388,11 @@ const TCHAR* VidGetModuleName()
 		return pszName;
 	}
 
+#if defined (BUILD_WIN32)
 	return FBALoadStringEx(hAppInst, IDS_ERR_UNKNOWN, true);
+#else
+	return "There was an error with the video";
+#endif
 }
 
 InterfaceInfo* VidGetInfo()

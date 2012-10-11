@@ -1,6 +1,6 @@
 #include "SDL.h"
 
-//#ifndef _WIN32
+// defines to override various #ifndef _WIN32
 typedef struct tagRECT {
 	int left;
 	int top;
@@ -8,7 +8,8 @@ typedef struct tagRECT {
 	int bottom;
 } RECT,*PRECT,*LPRECT;
 typedef const RECT *LPCRECT;
-//#endif
+
+typedef unsigned long DWORD;
 
 #ifndef MAX_PATH
 #define MAX_PATH 511

@@ -190,11 +190,10 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 		unzip.o cong.o dat.o gamc.o gami.o \
 		sshot.o state.o statec.o zipfn.o \
 		\
-		aud_sdl.o inp_sdl.o vid_interface_sdl.o vid_sdlfx.o vid_sdlopengl.o \
+		aud_sdl.o inp_sdl.o  vid_sdlfx.o vid_sdlopengl.o \
 		\
-		aud_dsp.o aud_interface.o inp_interface.o interface.o vid_softfx_sdl.o \
-		lowpass2.o \
-		vid_support.o \
+		aud_dsp.o aud_interface.o inp_interface.o interface.o \
+		lowpass2.o vid_interface.o vid_softfx.o vid_support.o \
 		\
 		adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o gzwrite.o infback.o \
 		inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o \
