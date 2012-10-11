@@ -51,7 +51,11 @@ ifndef	CPUTYPE
 	CPUTYPE	= i686
 endif
 
-MMX	= 1
+ifdef BUILD_X86_ASM
+	MMX	= 1
+else
+	MMX = 0
+endif
 
 ifdef	DEBUG
 	NAME := $(NAME)d
@@ -248,8 +252,12 @@ depobj := bzip_sdl.o conc_sdl.o config.o drv.o inpdipsw.o main.o run.o stated.o 
 			\
 
 
-autobj += $(depobj) burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o 
+autobj += $(depobj)
 
+ifdef	BUILD_X86_ASM
+autobj += burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o superscale.o
+endif
+ 
 autdep	= $(depobj:.o=.d)
 
 #app_windres.rc = $(srcdir)depend/generated/app_windres.rc
@@ -317,9 +325,12 @@ ifdef	DEBUG
 	DEF	:= $(DEF) -D_DEBUG
 endif
 
+ifdef BUILD_X86_ASM
+	DEF := $(DEF) -DBUILD_X86_ASM
+endif
+
 ifdef	MMX
 	DEF	+= -DMMX
-	CFLAGS += -mmmx
 endif
 
 DEF    := $(DEF) -DFILENAME=$(NAME)
@@ -328,6 +339,11 @@ ifdef PROFILE
 	CFLAGS	+= -pg
 else
 	LDFLAGS	=
+endif
+
+ifdef BUILD_X86_ASM
+	CFLAGS	 += -mmmx
+	CXXFLAGS += -mmmx
 endif
 
 CFLAGS += $(DEF) $(incdir)

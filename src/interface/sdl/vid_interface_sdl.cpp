@@ -10,6 +10,7 @@
 	extern struct VidOut VidOutDDraw;
 	extern struct VidOut VidOutD3D;
 	extern struct VidOut VidOutDDrawFX;
+	extern struct VidOut VidOutDX9;
 #elif defined (BUILD_SDL)
 	extern struct VidOut VidOutSDLFX;
 	extern struct VidOut VidOutSDLOpenGL;
@@ -22,6 +23,7 @@ static struct VidOut *pVidOut[] = {
 	&VidOutDDraw,
 	&VidOutD3D,
 	&VidOutDDrawFX,
+	&VidOutDX9,
 #elif defined (BUILD_SDL)
 	&VidOutSDLFX,
 	&VidOutSDLOpenGL,
@@ -36,15 +38,20 @@ long long nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (
 
 static InterfaceInfo VidInfo = { NULL, NULL, NULL };
 
-unsigned int nVidSelect =0;					// Which video output is selected
+unsigned int nVidSelect = 0;					// Which video output is selected
 static unsigned int nVidActive = 0;
 
 bool bVidOkay = false;
 
-int nVidWidth = 640, nVidHeight = 480, nVidDepth = 16, nVidRefresh = 0;
+int nVidWidth		= 640, nVidHeight		= 480, nVidDepth = 16, nVidRefresh = 0;
+
+int nVidHorWidth	= 640, nVidHorHeight	= 480;	// Default Horizontal oritated resolution
+int nVidVerWidth	= 640, nVidVerHeight	= 480;	// Default Vertical oriented resoultion
+
 int nVidFullscreen = 0;
 int bVidFullStretch = 0;						// 1 = stretch to fill the entire window/screen
 int bVidCorrectAspect = 1;						// 1 = stretch to fill the window/screen while maintaining the correct aspect ratio
+int bVidVSync = 0;								// 1 = sync blits/pageflips/presents to the screen
 int bVidTripleBuffer = 0;						// 1 = use triple buffering
 int bVidBilinear = 1;							// 1 = enable bi-linear filtering (D3D blitter)
 int bVidScanlines = 0;							// 1 = draw scanlines
@@ -56,7 +63,12 @@ int bVidScanDelay = 0;							// Blend the previous image with the current one
 int nVidFeedbackIntensity = 0x40;				// Blend factor for previous frame (D3D blitter)
 int nVidFeedbackOverSaturation = 0x00;			// Add this to the current frame blend factor
 int bVidUseHardwareGamma = 1;					// Use the video hardware when correcting gamma
+int bVidAutoSwitchFull = 0;						// 1 = auto switch to fullscreen on loading driver
 int bVidArcaderes = 0;							// Use game resolution for fullscreen modes
+
+int bVidArcaderesHor = 0;
+int bVidArcaderesVer = 0;
+
 int nVidRotationAdjust = 0;						// & 1: do not rotate the graphics for vertical games,  & 2: Reverse flipping for vertical games
 int bVidForce16bit = 1;							// Emulate the game in 16-bit even when the screen is 32-bit (D3D blitter)
 int nVidTransferMethod = -1;					// How to transfer the game image to video memory and/or a texture --
@@ -65,6 +77,8 @@ int nVidTransferMethod = -1;					// How to transfer the game image to video memo
 												// -1 = autodetect for ddraw, equals 1 for d3d
 float fVidScreenAngle = 0.174533f;				// The angle at which to tilt the screen backwards (in radians, D3D blitter)
 float fVidScreenCurvature = 0.698132f;			// The angle of the maximum screen curvature (in radians, D3D blitter)
+double dVidCubicB = 0.0;						// Paremeters for the cubic filter (default is the CAtmull-Rom spline, DX9 blitter)
+double dVidCubicC = 0.5;						//
 
 #ifdef BUILD_WIN32
  HWND hVidWnd = NULL;							// Actual window used for video
@@ -87,9 +101,6 @@ static bool bVidRecalcPalette;
 
 static unsigned char* pVidTransImage = NULL;
 static unsigned int* pVidTransPalette = NULL;
-
-bool bVidUsePlaceholder = true;					// Use a placeholder image when no game is loaded
-TCHAR szPlaceHolder[MAX_PATH] = _T("");
 
 static unsigned int __cdecl HighCol15(int r, int g, int b, int  /* i */)
 {
@@ -125,12 +136,10 @@ int VidInit()
 	VidExit();
 
 #if defined (BUILD_WIN32) && defined (ENABLE_PREVIEW)
-	if (!bDrvOkay && bVidUsePlaceholder) {
-		if (_tcslen(szPlaceHolder)) {
-			hbitmap = (HBITMAP)LoadImage(hAppInst, szPlaceHolder, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		} else {
-			hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 0, 0, 0);
-		}
+	if (!bDrvOkay) {
+		//hbitmap = (HBITMAP)LoadImage(hAppInst, _T("BMP_SPLASH"), IMAGE_BITMAP, 304, 224, 0);
+		hbitmap = (HBITMAP)LoadImage(hAppInst, MAKEINTRESOURCE(BMP_SPLASH), IMAGE_BITMAP, 304, 224, 0);
+		
 		GetObject(hbitmap, sizeof(BITMAP), &bitmap);
 
 		nVidImageWidth = bitmap.bmWidth; nVidImageHeight = bitmap.bmHeight;
@@ -180,8 +189,7 @@ int VidInit()
 			bitmapinfo.bmiHeader.biPlanes = 1;
 			bitmapinfo.bmiHeader.biBitCount = 24;
 			bitmapinfo.bmiHeader.biCompression = BI_RGB;
-
-
+			
 			for (int y = 0; y < nVidImageHeight; y++) {
 				unsigned char* pd = pVidImage + y * nVidImagePitch;
 				unsigned char* ps = pLineBuffer;
@@ -255,7 +263,7 @@ int VidExit()
 static int VidDoFrame(bool bRedraw)
 {
 	int nRet;
-
+	
 	if (pVidTransImage) {
 		unsigned short* pSrc = (unsigned short*)pVidTransImage;
 		unsigned char* pDest = pVidImage;
@@ -314,6 +322,14 @@ static int VidDoFrame(bool bRedraw)
 	return nRet;
 }
 
+int VidReInitialise()
+{
+	free(pVidTransImage);
+	pVidTransImage = (unsigned char*)malloc(nVidImageWidth * nVidImageHeight * sizeof(short));
+	
+	return 0;
+}
+
 int VidFrame()
 {
 	if (bVidOkay && bDrvOkay) {
@@ -357,7 +373,24 @@ int VidImageSize(RECT* pRect, int nGameWidth, int nGameHeight)
 		return pVidOut[nVidSelect]->ImageSize(pRect, nGameWidth, nGameHeight);
 	}
 }
+#if 0
+const TCHAR* VidGetModuleName()
+{
+	const TCHAR* pszName = NULL;
 
+	if (bVidOkay) {
+		pszName = pVidOut[nVidActive]->szModuleName;
+	} else {
+		pszName = pVidOut[nVidSelect]->szModuleName;
+	}
+
+	if (pszName) {
+		return pszName;
+	}
+
+	return FBALoadStringEx(hAppInst, IDS_ERR_UNKNOWN, true);
+}
+#endif
 InterfaceInfo* VidGetInfo()
 {
 	if (IntInfoInit(&VidInfo)) {
@@ -375,9 +408,9 @@ InterfaceInfo* VidGetInfo()
 		GetClientScreenRect(hVidWnd, &rect);
 		if (nVidFullscreen == 0) {
 			rect.top += nMenuHeight;
-			_sntprintf(szString, MAX_PATH, _T("Running in windowed mode, %i×%i, %ibpp"), rect.right - rect.left, rect.bottom - rect.top, nVidScrnDepth);
+			_sntprintf(szString, MAX_PATH, _T("Running in windowed mode, $ix%i, %ibpp"), rect.right - rect.left, rect.bottom - rect.top, nVidScrnDepth);
 		} else {
-			_sntprintf(szString, MAX_PATH, _T("Running fullscreen, %i×%i, %ibpp"), nVidScrnWidth, nVidScrnHeight, nVidScrnDepth);
+			_sntprintf(szString, MAX_PATH, _T("Running fullscreen, $ix$i, %ibpp"), nVidScrnWidth, nVidScrnHeight, nVidScrnDepth);
 		}
 #elif defined (BUILD_SDL)
 		_sntprintf(szString, MAX_PATH, _T("Filler for fullscreen/windowed mode & image size"));
@@ -385,7 +418,7 @@ InterfaceInfo* VidGetInfo()
 
 		IntInfoAddStringInterface(&VidInfo, szString);
 
-		_sntprintf(szString, MAX_PATH, _T("Source image %i×%i, %ibpp"), nVidImageWidth, nVidImageHeight, nVidImageDepth);
+		_sntprintf(szString, MAX_PATH, _T("Source image %ix%i, %ibpp"), nVidImageWidth, nVidImageHeight, nVidImageDepth);
 		IntInfoAddStringInterface(&VidInfo, szString);
 
 		if (pVidTransImage) {
