@@ -17,8 +17,9 @@ static bool SkipComma(TCHAR** s)
 	return false;
 }
 
-static void CheatError(TCHAR* pszFilename, int nLineNumber, CheatInfo* pCheat, TCHAR* pszInfo, TCHAR* pszLine)
+static void CheatError(TCHAR* pszFilename, INT32 nLineNumber, CheatInfo* pCheat, TCHAR* pszInfo, TCHAR* pszLine)
 {
+#if defined (BUILD_WIN32)
 	FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Cheat file %s is malformed.\nPlease remove or repair the file.\n\n"), pszFilename);
 	if (pCheat) {
 		FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Parse error at line %i, in cheat \"%s\".\n"), nLineNumber, pCheat->szCheatName);
@@ -34,18 +35,37 @@ static void CheatError(TCHAR* pszFilename, int nLineNumber, CheatInfo* pCheat, T
 	}
 
 	FBAPopupDisplay(PUF_TYPE_ERROR);
+#elif defined(BUILD_SDL)
+	TCHAR szText[1024] = _T("");
+
+	_stprintf(szText, _T("Cheat file %s is malformed.\nPlease remove or repair the file.\n\n"), pszFilename);
+	if (pCheat) {
+		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i, in cheat \"%s\".\n"), nLineNumber, pCheat->szCheatName);
+	} else {
+		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i.\n"), nLineNumber);
+	}
+
+	if (pszInfo) {
+		_stprintf(szText + _tcslen(szText), _T("Problem:\t%s.\n"), pszInfo);
+	}
+	if (pszLine) {
+		_stprintf(szText + _tcslen(szText), _T("Text:\t%s\n"), pszLine);
+	}
+
+	AppError(szText, 1);
+#endif
 }
 
-static int ConfigParseFile(TCHAR* pszFilename)
+static INT32 ConfigParseFile(TCHAR* pszFilename)
 {
 #define INSIDE_NOTHING (0xFFFF & (1 << ((sizeof(TCHAR) * 8) - 1)))
 
-	TCHAR szLine[1024];
+	TCHAR szLine[8192];
 	TCHAR* s;
 	TCHAR* t;
-	int nLen;
+	INT32 nLen;
 
-	int nLine = 0;
+	INT32 nLine = 0;
 	TCHAR nInside = INSIDE_NOTHING;
 
 	CheatInfo* pCurrentCheat = NULL;
@@ -173,7 +193,7 @@ static int ConfigParseFile(TCHAR* pszFilename)
 			continue;
 		}
 
-		int n = _tcstol(s, &t, 0);
+		INT32 n = _tcstol(s, &t, 0);
 		if (t != s) {				   								// New option
 
 			if (nInside == INSIDE_NOTHING || pCurrentCheat == NULL) {
@@ -201,10 +221,10 @@ static int ConfigParseFile(TCHAR* pszFilename)
 
 				memcpy(pCurrentCheat->pOption[n]->szOptionName, szQuote, QUOTE_MAX * sizeof(TCHAR));
 
-				int nCurrentAddress = 0;
+				INT32 nCurrentAddress = 0;
 				bool bOK = true;
 				while (nCurrentAddress < CHEAT_MAX_ADDRESS) {
-					int nCPU = 0, nAddress = 0, nValue = 0;
+					INT32 nCPU = 0, nAddress = 0, nValue = 0;
 
 					if (SkipComma(&s)) {
 						nCPU = _tcstol(s, &t, 0);		// CPU number
@@ -284,15 +304,19 @@ static int ConfigParseFile(TCHAR* pszFilename)
 	return 0;
 }
 
-static int ConfigParseNebulaFile(TCHAR* pszFilename)
+
+//TODO: make cross platform
+static INT32 ConfigParseNebulaFile(TCHAR* pszFilename)
 {
+
+#if defined (BUILD_WIN32)
 	FILE *fp = _tfopen(pszFilename, _T("rt"));
 	if (fp == NULL) {
 		return 1;
 	}
 
-	int nLen;
-	int i, j, n = 0;
+	INT32 nLen;
+	INT32 i, j, n = 0;
 	TCHAR tmp[32];
 	TCHAR szLine[1024];
 
@@ -303,7 +327,7 @@ static int ConfigParseNebulaFile(TCHAR* pszFilename)
 		if (_fgetts(szLine, 1024, fp) == NULL)
 			break;
 
-		nLen = lstrlen(szLine);
+		nLen = _tcslen(szLine);
 
 		if (nLen < 3 || szLine[0] == '[') continue;
 
@@ -364,7 +388,7 @@ static int ConfigParseNebulaFile(TCHAR* pszFilename)
 			i++;
 		}
 
-		int nAddress = -1, nValue = 0, nCurrentAddress = 0;
+		INT32 nAddress = -1, nValue = 0, nCurrentAddress = 0;
 		while (nCurrentAddress < CHEAT_MAX_ADDRESS)
 		{
 			if (i == nLen) break;
@@ -395,16 +419,19 @@ static int ConfigParseNebulaFile(TCHAR* pszFilename)
 	}
 
 	fclose (fp);
-
+#endif
 	return 0;
 }
 
-static int ConfigParseMAMEFile()
+
+//TODO: make cross platform
+static INT32 ConfigParseMAMEFile()
 {
+#if defined (BUILD_WIN32)
 
 #define AddressInfo()	\
-	int k = (flags >> 20) & 3;	\
-	for (int i = 0; i < k+1; i++) {	\
+	INT32 k = (flags >> 20) & 3;	\
+	for (INT32 i = 0; i < k+1; i++) {	\
 		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nCPU = 0;	\
 		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nAddress = nAddress + i;	\
 		pCurrentCheat->pOption[n]->AddressInfo[nCurrentAddress].nValue = (nValue >> ((k*8)-(i*8))) & 0xff;	\
@@ -434,14 +461,14 @@ static int ConfigParseMAMEFile()
 	TCHAR gName[64];
 	TCHAR szLine[1024];
 
-	int nLen;
-	int n = 0;
-	int menu = 0;
-	int nFound = 0;
-	int nCurrentAddress = 0;
-	unsigned int flags = 0;
-	unsigned int nAddress = 0;
-	unsigned int nValue = 0;
+	INT32 nLen;
+	INT32 n = 0;
+	INT32 menu = 0;
+	INT32 nFound = 0;
+	INT32 nCurrentAddress = 0;
+	UINT32 flags = 0;
+	UINT32 nAddress = 0;
+	UINT32 nValue = 0;
 
 	CheatInfo* pCurrentCheat = NULL;
 	_stprintf(gName, _T(":%s:"), BurnDrvGetText(DRV_NAME));
@@ -451,7 +478,7 @@ static int ConfigParseMAMEFile()
 		if (_fgetts(szLine, 1024, fz) == NULL)
 			break;
 
-		nLen = lstrlen (szLine);
+		nLen = _tcslen (szLine);
 
 		if (szLine[0] == ';') continue;
 
@@ -462,8 +489,8 @@ static int ConfigParseMAMEFile()
 
 		nFound = 1;
 
-		int c0[16], c1 = 0;					// find colons / break
-		for (int i = 0; i < nLen; i++)
+		INT32 c0[16], c1 = 0;					// find colons / break
+		for (INT32 i = 0; i < nLen; i++)
 			if (szLine[i] == ':' || szLine[i] == '\n')
 				c0[c1++] = i;
 
@@ -548,12 +575,12 @@ static int ConfigParseMAMEFile()
 	}
 
 	fclose (fz);
-
+#endif
 	return 0;
 }
 
 
-int ConfigCheatLoad()
+INT32 ConfigCheatLoad()
 {
 	TCHAR szFilename[MAX_PATH] = _T("");
 
@@ -568,7 +595,7 @@ int ConfigCheatLoad()
 	}
 
 	if (pCheatInfo) {
-		int nCurrentCheat = 0;
+		INT32 nCurrentCheat = 0;
 		while (CheatEnable(nCurrentCheat, -1) == 0) {
 			nCurrentCheat++;
 		}

@@ -189,7 +189,8 @@ TCHAR* DecorateGenreInfo()
 	
 	_stprintf(szDecoratedGenre, _T(""));
 	_stprintf(szFamily, _T(""));
-	
+
+#ifdef BUILD_WIN32 
 	if (nGenre) {
 		if (nGenre & GBF_HORSHOOT) {
 			_stprintf(szDecoratedGenre, _T("%s%s, "), szDecoratedGenre, FBALoadStringEx(hAppInst, IDS_GENRE_HORSHOOT, true));
@@ -316,7 +317,7 @@ TCHAR* DecorateGenreInfo()
 		szFamily[_tcslen(szFamily) - 2] = _T(')');
 		szFamily[_tcslen(szFamily) - 1] = _T('\0');
 	}
-	
+#endif
 	_stprintf(szDecoratedGenre, _T("%s%s"), szDecoratedGenre, szFamily);
 	
 	return szDecoratedGenre;
