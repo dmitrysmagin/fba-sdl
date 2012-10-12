@@ -54,6 +54,14 @@ int main(int argc, char *argv[])
 	SDL_WM_SetCaption( "FBA, SDL port.", "FBA, SDL port.");
 	SDL_ShowCursor(SDL_DISABLE);
 
+	if (argc < 2)
+	{
+		int c;
+		printf ("Usage: fbasdl <romname>\n   ie: fbasdl uopoko\n Note: no extension.\n\n");
+
+		return 0;
+	}
+
 	if (argc == 2)
 	{
 		for (i = 0; i < nBurnDrvCount; i++) {
