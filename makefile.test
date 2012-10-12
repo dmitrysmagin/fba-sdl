@@ -81,28 +81,33 @@ srcdir	= src/
 
 alldir	= burn \
 		burn/devices \
-		burn/drivers \
-		burn/drivers/atari \
-		burn/drivers/capcom \
-		burn/drivers/cave \
-		burn/drivers/cps3 \
-		burn/drivers/galaxian \
-		burn/drivers/konami \
-		burn/drivers/megadrive \
-		burn/drivers/misc_post90s \
-		burn/drivers/misc_pre90s \
-		burn/drivers/neogeo \
-		burn/drivers/pgm \
-		burn/drivers/psikyo \
-		burn/drivers/sega \
-		burn/drivers/taito \
-		burn/drivers/toaplan \
-		burn/sound \
+		burn/drv \
+		burn/drv/atari \
+		burn/drv/capcom \
+		burn/drv/cave \
+		burn/drv/cps3 \
+		burn/drv/galaxian \
+		burn/drv/konami \
+		burn/drv/megadrive \
+		burn/drv/neogeo \
+		burn/drv/pgm \
+		burn/drv/pre90s \
+		burn/drv/psikyo \
+		burn/drv/pst90s \
+		burn/drv/sega \
+		burn/drv/taito \
+		burn/drv/toaplan \
+		burn/snd \
 		burner \
 		burner/sdl \
-		interface \
-		interface/scalers \
-		interface/sdl \
+		intf \
+		intf/audio \
+		intf/audio/sdl \
+		intf/input \
+		intf/input/sdl \
+		intf/video \
+		intf/video/sdl \
+		intf/video/scalers \
 		cpu \
 		cpu/arm \
 		cpu/arm7 \
@@ -118,15 +123,15 @@ alldir	= burn \
 		cpu/s2650 \
 		cpu/sh2 \
 		cpu/z80 \
-		depend/kaillera/client \
-		depend/libs/libpng \
-		depend/libs/zlib \
-		depend/mingw/include \
-		depend/scripts \
-		depend/vc/include \
-		depend/generated
+		dep/kaillera/client \
+		dep/libs/libpng \
+		dep/libs/zlib \
+		dep/mingw/include \
+		dep/scripts \
+		dep/vc/include \
+		dep/generated
 
-incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I/local/include -I/include/SDL
+incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
 lib	=  -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lmingw32 -lSDL -lz -lopengl32 -lglu32
 
@@ -259,16 +264,16 @@ endif
  
 autdep	= $(depobj:.o=.d)
 
-#app_windres.rc = $(srcdir)depend/generated/app_windres.rc
-#license.rc = $(srcdir)depend/generated/license.rc
-driverlist.h = $(srcdir)depend/generated/driverlist.h
-ctv.h	= $(srcdir)depend/generated/ctv.h
-toa_gp9001_func.h = $(srcdir)depend/generated/toa_gp9001_func.h
-neo_sprite_func.h = $(srcdir)depend/generated/neo_sprite_func.h
-cave_tile_func.h = $(srcdir)depend/generated/cave_tile_func.h
-cave_sprite_func.h = $(srcdir)depend/generated/cave_sprite_func.h
-psikyo_tile_func.h = $(srcdir)depend/generated/psikyo_tile_func.h
-build_details.h = $(srcdir)depend/generated/build_details.h
+#app_windres.rc = $(srcdir)dep/generated/app_windres.rc
+#license.rc = $(srcdir)dep/generated/license.rc
+driverlist.h = $(srcdir)dep/generated/driverlist.h
+ctv.h	= $(srcdir)dep/generated/ctv.h
+toa_gp9001_func.h = $(srcdir)dep/generated/toa_gp9001_func.h
+neo_sprite_func.h = $(srcdir)dep/generated/neo_sprite_func.h
+cave_tile_func.h = $(srcdir)dep/generated/cave_tile_func.h
+cave_sprite_func.h = $(srcdir)dep/generated/cave_sprite_func.h
+psikyo_tile_func.h = $(srcdir)dep/generated/psikyo_tile_func.h
+build_details.h = $(srcdir)dep/generated/build_details.h
 
 allobj	= $(objdir)cpu/m68k/m68kcpu.o $(objdir)cpu/m68k/m68kopnz.o $(objdir)cpu/m68k/m68kopdm.o $(objdir)cpu/m68k/m68kopac.o $(objdir)cpu/m68k/m68kops.o \
 	  $(foreach file,$(autobj:.o=.c), \
@@ -426,9 +431,9 @@ endif
 
 burn.o burn.d:	driverlist.h
 
-$(driverlist.h): $(drvobj) $(srcdir)depend/scripts/gamelist.pl
+$(driverlist.h): $(drvobj) $(srcdir)dep/scripts/gamelist.pl
 ifdef	PERL
-	@perl $(srcdir)depend/scripts/gamelist.pl -o $@ -l gamelist.txt \
+	@perl $(srcdir)dep/scripts/gamelist.pl -o $@ -l gamelist.txt \
 		$(filter %.cpp,$(foreach file,$(drvobj:.o=.cpp),$(foreach dir,$(alldir), \
 		$(firstword $(wildcard $(srcdir)$(dir)/$(file))))))
 else
@@ -446,11 +451,11 @@ endif
 
 resource.o resource.d:	$(app_windres.rc) version.rc version.h
 
-$(license.rc): $(srcdir)license.txt $(srcdirdepend/)scripts/license2rtf.pl $(srcdir)depend/scripts/license2rc.pl
+$(license.rc): $(srcdir)license.txt $(srcdir)dep/scripts/license2rtf.pl $(srcdir)dep/scripts/license2rc.pl
 
 ifdef	PERL
-	@perl $(srcdir)depend/scripts/license2rtf.pl $< -o $(srcdir)depend/generated/$(@F:.rc=.rtf)
-	@perl $(srcdir)depend/scripts/license2rc.pl $(srcdir)depend/generated/$(@F:.rc=.rtf) -o $@
+	@perl $(srcdir)dep/scripts/license2rtf.pl $< -o $(srcdir)dep/generated/$(@F:.rc=.rtf)
+	@perl $(srcdir)dep/scripts/license2rc.pl $(srcdir)dep/generated/$(@F:.rc=.rtf) -o $@
 else
 ifeq ($(MAKELEVEL),1)
 	@echo
@@ -460,10 +465,10 @@ ifeq ($(MAKELEVEL),1)
 endif
 endif
 
-$(app_windres.rc): app.rc $(license.rc) $(srcdir)depend/scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
+$(app_windres.rc): app.rc $(license.rc) $(srcdir)dep/scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
 
 ifdef	PERL
-	@perl $(srcdir)depend/scripts/fixrc.pl $< -o $@
+	@perl $(srcdir)dep/scripts/fixrc.pl $< -o $@
 else
 ifeq ($(MAKELEVEL),1)
 	@echo
@@ -477,28 +482,28 @@ endif
 #	Compile Musashi 68000 cores
 #
 
-$(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)depend/generated/m68kops.h $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)dep/generated/m68kops.h $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kcpu.c\)...
 	@$(CC) $(CFLAGS) -c $(srcdir)cpu/m68k/m68kcpu.c -o $(objdir)cpu/m68k/m68kcpu.o
 
-$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kops.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
+	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
 
-$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopac.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
+	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
 
-$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopdm.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
+	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
 
-$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)depend/generated/m68kops.h $(objdir)depend/generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopnz.c\)...
-	@$(CC) $(CFLAGS) -c $(objdir)depend/generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
+	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
 
-$(objdir)depend/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
-	$(objdir)/cpu/m68k/m68kmake $(objdir)depend/generated/ $(srcdir)cpu/m68k/m68k_in.c
+$(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
+	$(objdir)/cpu/m68k/m68kmake $(objdir)dep/generated/ $(srcdir)cpu/m68k/m68k_in.c
 
 $(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
@@ -511,7 +516,7 @@ $(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
 ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
-	@echo Generating $(srcdir)depend/generated/$(@F)...
+	@echo Generating $(srcdir)dep/generated/$(@F)...
 	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
 		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
 	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
@@ -522,8 +527,8 @@ $(ctv.h):	ctv_make.cpp
 
 toa_bcu2.d toa_bcu2.o toa_gp9001.d toa_gp9001.o: $(toa_gp9001_func.h)
 
-$(toa_gp9001_func.h):	$(srcdir)depend/scripts/toa_gp9001_func.pl
-	@$(srcdir)depend/scripts/toa_gp9001_func.pl -o $(toa_gp9001_func.h)
+$(toa_gp9001_func.h):	$(srcdir)dep/scripts/toa_gp9001_func.pl
+	@$(srcdir)dep/scripts/toa_gp9001_func.pl -o $(toa_gp9001_func.h)
 
 #
 #	Extra rules for generated header file neo_sprite_func.h, needed by neo_sprite.cpp
@@ -531,8 +536,8 @@ $(toa_gp9001_func.h):	$(srcdir)depend/scripts/toa_gp9001_func.pl
 
 neo_sprite.d neo_sprite.o: $(neo_sprite_func.h)
 
-$(neo_sprite_func.h):	$(srcdir)depend/scripts/neo_sprite_func.pl
-	@$(srcdir)depend/scripts/neo_sprite_func.pl -o $(neo_sprite_func.h)
+$(neo_sprite_func.h):	$(srcdir)dep/scripts/neo_sprite_func.pl
+	@$(srcdir)dep/scripts/neo_sprite_func.pl -o $(neo_sprite_func.h)
 
 #
 #	Extra rules for generated header file cave_tile_func.h, needed by cave_tile.cpp
@@ -540,8 +545,8 @@ $(neo_sprite_func.h):	$(srcdir)depend/scripts/neo_sprite_func.pl
 
 cave_tile.d cave_tile.o: $(cave_tile_func.h)
 
-$(cave_tile_func.h):	$(srcdir)depend/scripts/cave_tile_func.pl
-	@$(srcdir)depend/scripts/cave_tile_func.pl -o $(cave_tile_func.h)
+$(cave_tile_func.h):	$(srcdir)dep/scripts/cave_tile_func.pl
+	@$(srcdir)dep/scripts/cave_tile_func.pl -o $(cave_tile_func.h)
 
 #
 #	Extra rules for generated header file cave_sprite_func.h, needed by cave_sprite.cpp
@@ -549,8 +554,8 @@ $(cave_tile_func.h):	$(srcdir)depend/scripts/cave_tile_func.pl
 
 cave_sprite.d cave_sprite.o: $(cave_sprite_func.h)
 
-$(cave_sprite_func.h):	$(srcdir)depend/scripts/cave_sprite_func.pl
-	@$(srcdir)depend/scripts/cave_sprite_func.pl -o $(cave_sprite_func.h)
+$(cave_sprite_func.h):	$(srcdir)dep/scripts/cave_sprite_func.pl
+	@$(srcdir)dep/scripts/cave_sprite_func.pl -o $(cave_sprite_func.h)
 
 #
 #	Extra rules for generated header file psikyo_tile_func.h / psikyo_sprite_func.h, needed by psikyo_tile.cpp / psikyo_sprite.cpp
@@ -558,8 +563,8 @@ $(cave_sprite_func.h):	$(srcdir)depend/scripts/cave_sprite_func.pl
 
 psikyo_tile.d psikyo_tile.o psikyosprite.d psikyo_sprite.o: $(psikyo_tile_func.h)
 
-$(psikyo_tile_func.h):	$(srcdir)depend/scripts/psikyo_tile_func.pl
-	@perl $(srcdir)depend/scripts/psikyo_tile_func.pl -o $(psikyo_tile_func.h)
+$(psikyo_tile_func.h):	$(srcdir)dep/scripts/psikyo_tile_func.pl
+	@perl $(srcdir)dep/scripts/psikyo_tile_func.pl -o $(psikyo_tile_func.h)
 
 
 ifeq ($(MAKELEVEL),1)
@@ -650,7 +655,7 @@ else
 endif
 	@echo
 	@mkdir -p $(foreach dir, $(alldir),$(objdir)$(dir))
-	@mkdir -p $(srcdir)depend/generated
+	@mkdir -p $(srcdir)dep/generated
 
 cleandep:
 	@echo Removing depend files from $(objdir)...
