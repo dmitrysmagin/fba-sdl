@@ -5,9 +5,9 @@
 #define   BANK_MASKF    (0xf0<<16)
 #define   BANK_MASKF8   (0xf8<<16)
 
-extern void SegaPCMUpdate(short* pSoundBuf, int nLength);
-extern void SegaPCMInit(int clock, int bank, UINT8 *pPCMData, int PCMDataSize);
-extern void SegaPCMExit();
-extern int SegaPCMScan(int nAction,int *pnMin);
-extern unsigned char SegaPCMRead(unsigned int Offset);
-extern void SegaPCMWrite(unsigned int Offset, unsigned char Data);
+void SegaPCMUpdate(INT16* pSoundBuf, INT32 nLength);
+void SegaPCMInit(INT32 clock, INT32 bank, UINT8 *pPCMData, INT32 PCMDataSize);
+void SegaPCMExit();
+INT32 SegaPCMScan(INT32 nAction,INT32 *pnMin);
+UINT8 SegaPCMRead(UINT32 Offset);
+void SegaPCMWrite(UINT32 Offset, UINT8 Data);

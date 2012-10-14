@@ -4,34 +4,34 @@
 #define K053247_CUSTOMSHADOW	0x20000000
 #define K053247_SHDSHIFT		20
 
-static unsigned char  K053246Regs[8];
-static unsigned char  K053246_OBJCHA_line;
-static unsigned char *K053247Ram;
-static unsigned short K053247Regs[16];
+static UINT8  K053246Regs[8];
+static UINT8  K053246_OBJCHA_line;
+static UINT8 *K053247Ram;
+static UINT16 K053247Regs[16];
 
-static unsigned char *K053246Gfx;
-static unsigned int   K053246Mask;
+static UINT8 *K053246Gfx;
+static UINT32   K053246Mask;
 
-static unsigned short *K053247Temp = NULL;
+static UINT16 *K053247Temp = NULL;
 
-static int K053247_dx;
-static int K053247_dy;
-static int K053247_wraparound;
+static INT32 K053247_dx;
+static INT32 K053247_dy;
+static INT32 K053247_wraparound;
 
-static int K053247Flags;
+static INT32 K053247Flags;
 
-static void (*K053247Callback)(int *code, int *color, int *priority);
+static void (*K053247Callback)(INT32 *code, INT32 *color, INT32 *priority);
 
 void K053247Reset()
 {
 	memset (K053247Ram,  0, 0x1000);
-	memset (K053247Regs, 0, 16 * sizeof (short));
+	memset (K053247Regs, 0, 16 * sizeof (UINT16));
 	memset (K053246Regs, 0, 8);
 
 	K053246_OBJCHA_line = 0; // clear
 }
 
-void K053247Scan(int nAction)
+void K053247Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -43,7 +43,7 @@ void K053247Scan(int nAction)
 		BurnAcb(&ba);
 
 		ba.Data	  = K053247Regs;
-		ba.nLen	  = 0x0010 * sizeof(short);
+		ba.nLen	  = 0x0010 * sizeof(UINT16);
 		ba.szName = "K053247 Regs";
 		BurnAcb(&ba);
 
@@ -57,9 +57,9 @@ void K053247Scan(int nAction)
 	}
 }
 
-void K053247Init(unsigned char *gfxrom, int gfxlen, void (*Callback)(int *code, int *color, int *priority), int flags)
+void K053247Init(UINT8 *gfxrom, INT32 gfxlen, void (*Callback)(INT32 *code, INT32 *color, INT32 *priority), INT32 flags)
 {
-	K053247Ram = (unsigned char*)malloc(0x1000);
+	K053247Ram = (UINT8*)BurnMalloc(0x1000);
 
 	K053246Gfx = gfxrom;
 	K053246Mask = gfxlen;
@@ -71,9 +71,9 @@ void K053247Init(unsigned char *gfxrom, int gfxlen, void (*Callback)(int *code, 
 	K053247_wraparound = 1;
 
 	if (konami_temp_screen == NULL) {
-		int width, height;
+		INT32 width, height;
 		BurnDrvGetVisibleSize(&width, &height);
-		konami_temp_screen = (unsigned short*)malloc(width * height * 2);
+		konami_temp_screen = (UINT16*)BurnMalloc(width * height * 2);
 	}
 
 	K053247Temp = konami_temp_screen;
@@ -87,17 +87,14 @@ void K053247Exit()
 {
 	K053247Temp = NULL;
 
-	if (K053247Ram) {
-		free (K053247Ram);
-		K053247Ram = NULL;
-	}
+	BurnFree (K053247Ram);
 
 	K053247Flags = 0;
 
-	memset (K053247Regs, 0, 16 * sizeof(short));
+	memset (K053247Regs, 0, 16 * sizeof(UINT16));
 }
 
-void K053247Export(unsigned char **ram, unsigned char **gfx, void (**callback)(int *, int *, int *), int *dx, int *dy)
+void K053247Export(UINT8 **ram, UINT8 **gfx, void (**callback)(INT32 *, INT32 *, INT32 *), INT32 *dx, INT32 *dy)
 {
 	if (ram) *ram = K053247Ram;
 	if (gfx) *gfx = K053246Gfx;
@@ -108,46 +105,46 @@ void K053247Export(unsigned char **ram, unsigned char **gfx, void (**callback)(i
 	if(callback) *callback = K053247Callback;
 }
 
-void K053247GfxDecode(unsigned char *src, unsigned char *dst, int len) // 16x16
+void K053247GfxDecode(UINT8 *src, UINT8 *dst, INT32 len) // 16x16
 {
-	for (int i = 0; i < len; i++)
+	for (INT32 i = 0; i < len; i++)
 	{
-		int t = src[i^1];
+		INT32 t = src[i^1];
 		dst[(i << 1) + 0] = t >> 4;
 		dst[(i << 1) + 1] = t & 0x0f;
 	}
 }
 
-void K053247SetSpriteOffset(int offsx, int offsy)
+void K053247SetSpriteOffset(INT32 offsx, INT32 offsy)
 {
 	K053247_dx = offsx;
 	K053247_dy = offsy;
 }
 
-void K053247WrapEnable(int status)
+void K053247WrapEnable(INT32 status)
 {
 	K053247_wraparound = status;
 }
 
-unsigned char K053247Read(int offset)
+UINT8 K053247Read(INT32 offset)
 {
 	return K053247Ram[offset & 0xfff];
 }
 
-void K053247Write(int offset, int data)
+void K053247Write(INT32 offset, INT32 data)
 {
 	if (data & 0x10000) { // use word
-		*((unsigned short*)(K053247Ram + (offset & 0xffe))) = data;
+		*((UINT16*)(K053247Ram + (offset & 0xffe))) = BURN_ENDIAN_SWAP_INT16(data);
 	} else {
 		K053247Ram[offset & 0xfff] = data;
 	}
 }
 
-unsigned char K053246Read(int offset)
+UINT8 K053246Read(INT32 offset)
 {
 	if (K053246_OBJCHA_line) // assert_line
 	{
-		int addr;
+		INT32 addr;
 
 		addr = (K053246Regs[6] << 17) | (K053246Regs[7] << 9) | (K053246Regs[4] << 1) | ((offset & 1) ^ 1);
 		addr &= K053246Mask;
@@ -160,57 +157,57 @@ unsigned char K053246Read(int offset)
 	}
 }
 
-void K053246Write(int offset, int data)
+void K053246Write(INT32 offset, INT32 data)
 {
 	if (data & 0x10000) { // handle it as a word
-		*((unsigned short*)(K053246Regs + (offset & 6))) = data;
+		*((UINT16*)(K053246Regs + (offset & 6))) = BURN_ENDIAN_SWAP_INT16(data);
 	} else {
 		K053246Regs[offset & 7] = data;
 	}
 }
 
-void K053246_set_OBJCHA_line(int state)
+void K053246_set_OBJCHA_line(INT32 state)
 {
 	K053246_OBJCHA_line = state;
 }
 
-int K053246_is_IRQ_enabled()
+INT32 K053246_is_IRQ_enabled()
 {
 	return K053246Regs[5] & 0x10;
 }
 
-static void RenderZoomedShadowTile(unsigned char *gfx, int code, int color, unsigned char *t, int sx, int sy, int fx, int fy, int width, int height, int zoomx, int zoomy, int highlight)
+static void RenderZoomedShadowTile(UINT8 *gfx, INT32 code, INT32 color, UINT8 *t, INT32 sx, INT32 sy, INT32 fx, INT32 fy, INT32 width, INT32 height, INT32 zoomx, INT32 zoomy, INT32 highlight)
 {
-	int h = ((zoomy << 4) + 0x8000) >> 16;
-	int w = ((zoomx << 4) + 0x8000) >> 16;
+	INT32 h = ((zoomy << 4) + 0x8000) >> 16;
+	INT32 w = ((zoomx << 4) + 0x8000) >> 16;
 
 	if (!h || !w || sx + w < 0 || sy + h < 0 || sx >= nScreenWidth || sy >= nScreenHeight) return;
 
 	if (fy) fy  = (height-1)*width;
 	if (fx) fy |= (width-1);
 
-	int hz = (height << 12) / h;
-	int wz = (width << 12) / w;
+	INT32 hz = (height << 12) / h;
+	INT32 wz = (width << 12) / w;
 
-	int starty = 0, startx = 0, endy = h, endx = w;
+	INT32 starty = 0, startx = 0, endy = h, endx = w;
 	if (sy < 0) starty = 0 - sy;
 	if (sx < 0) startx = 0 - sx;
 	if (sy + h >= nScreenHeight) endy -= (h + sy) - nScreenHeight;
 	if (sx + w >= nScreenWidth ) endx -= (w + sx) - nScreenWidth;
 
-	unsigned char  *src = gfx + (code * width * height);
-	unsigned short *dst = K053247Temp + (sy + starty) * nScreenWidth + sx;
-	unsigned short *pTemp = pTransDraw + (sy + starty) * nScreenWidth + sx;
+	UINT8  *src = gfx + (code * width * height);
+	UINT16 *dst = K053247Temp + (sy + starty) * nScreenWidth + sx;
+	UINT16 *pTemp = pTransDraw + (sy + starty) * nScreenWidth + sx;
 
-	int or1 = 0x8000 >> highlight;
+	INT32 or1 = 0x8000 >> highlight;
 
-	for (int y = starty; y < endy; y++)
+	for (INT32 y = starty; y < endy; y++)
 	{
-		int zy = ((y * hz) >> 12) * width;
+		INT32 zy = ((y * hz) >> 12) * width;
 
-		for (int x = startx; x < endx; x++)
+		for (INT32 x = startx; x < endx; x++)
 		{
-			int pxl = src[(zy + ((x * wz) >> 12)) ^ fy];
+			INT32 pxl = src[(zy + ((x * wz) >> 12)) ^ fy];
 
 			if (pxl) {
 				if (t[pxl] == 2) {
@@ -227,35 +224,35 @@ static void RenderZoomedShadowTile(unsigned char *gfx, int code, int color, unsi
 	}
 }
 
-void K053247SpritesRender(unsigned char *gfxbase, int priority)
+void K053247SpritesRender(UINT8 *gfxbase, INT32 priority)
 {
 #define NUM_SPRITES 256
 
-	unsigned char dtable[256];
-	unsigned char stable[256];
-	unsigned char *wtable;
+	UINT8 dtable[256];
+	UINT8 stable[256];
+	UINT8 *wtable;
 
 	memset(dtable, 1, 256);
 	dtable[0] = 0;
 	memset(stable, 2, 256);
 	stable[0] = 0;
 
-	static const int xoffset[8] = { 0, 1, 4, 5, 16, 17, 20, 21 };
-	static const int yoffset[8] = { 0, 2, 8, 10, 32, 34, 40, 42 };
+	static const INT32 xoffset[8] = { 0, 1, 4, 5, 16, 17, 20, 21 };
+	static const INT32 yoffset[8] = { 0, 2, 8, 10, 32, 34, 40, 42 };
 
-	int sortedlist[NUM_SPRITES];
-	int offs,zcode;
-	int ox,oy,color,code,size,w,h,x,y,xa,ya,flipx,flipy,mirrorx,mirrory,shadow,zoomx,zoomy,primask;
-	int nozoom,count,temp,shdmask;
+	INT32 sortedlist[NUM_SPRITES];
+	INT32 offs,zcode;
+	INT32 ox,oy,color,code,size,w,h,x,y,xa,ya,flipx,flipy,mirrorx,mirrory,shadow,zoomx,zoomy,primask;
+	INT32 nozoom,count,temp,shdmask;
 
-	int flipscreenx = K053246Regs[5] & 0x01;
-	int flipscreeny = K053246Regs[5] & 0x02;
-	int offx = (short)((K053246Regs[0] << 8) | K053246Regs[1]);
-	int offy = (short)((K053246Regs[2] << 8) | K053246Regs[3]);
+	INT32 flipscreenx = K053246Regs[5] & 0x01;
+	INT32 flipscreeny = K053246Regs[5] & 0x02;
+	INT32 offx = (INT16)((K053246Regs[0] << 8) | K053246Regs[1]);
+	INT32 offy = (INT16)((K053246Regs[2] << 8) | K053246Regs[3]);
 
-	unsigned short *SprRam = (unsigned short*)K053247Ram;
+	UINT16 *SprRam = (UINT16*)K053247Ram;
 
-	int screen_width = nScreenWidth-1;
+	INT32 screen_width = nScreenWidth-1;
 
 	if (K053247Flags & 1) {
 		if (K053247Flags & 2) {
@@ -274,12 +271,12 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 	if (zcode == -1)
 	{
 		for (; offs<0x800; offs+=8)
-			if (SprRam[offs] & 0x8000) sortedlist[count++] = offs;
+			if (BURN_ENDIAN_SWAP_INT16(SprRam[offs]) & 0x8000) sortedlist[count++] = offs;
 	}
 	else
 	{
 		for (; offs<0x800; offs+=8)
-			if ((SprRam[offs] & 0x8000) && ((SprRam[offs] & 0xff) != zcode)) sortedlist[count++] = offs;
+			if ((BURN_ENDIAN_SWAP_INT16(SprRam[offs]) & 0x8000) && ((BURN_ENDIAN_SWAP_INT16(SprRam[offs]) & 0xff) != zcode)) sortedlist[count++] = offs;
 	}
 
 	w = count;
@@ -292,11 +289,11 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 		for (y=0; y<h; y++)
 		{
 			offs = sortedlist[y];
-			zcode = SprRam[offs] & 0xff;
+			zcode = BURN_ENDIAN_SWAP_INT16(SprRam[offs]) & 0xff;
 			for (x=y+1; x<w; x++)
 			{
 				temp = sortedlist[x];
-				code = SprRam[temp] & 0xff;
+				code = BURN_ENDIAN_SWAP_INT16(SprRam[temp]) & 0xff;
 				if (zcode <= code) { zcode = code; sortedlist[x] = offs; sortedlist[y] = offs = temp; }
 			}
 		}
@@ -307,29 +304,29 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 		for (y=0; y<h; y++)
 		{
 			offs = sortedlist[y];
-			zcode = SprRam[offs] & 0xff;
+			zcode = BURN_ENDIAN_SWAP_INT16(SprRam[offs]) & 0xff;
 			for (x=y+1; x<w; x++)
 			{
 				temp = sortedlist[x];
-				code = SprRam[temp] & 0xff;
+				code = BURN_ENDIAN_SWAP_INT16(SprRam[temp]) & 0xff;
 				if (zcode >= code) { zcode = code; sortedlist[x] = offs; sortedlist[y] = offs = temp; }
 			}
 		}
 	}
 
-	for (int i = 0; i <= count; i++)
+	for (INT32 i = 0; i <= count; i++)
 	{
 		offs = sortedlist[i];
 
-		code = SprRam[offs+1];
-		shadow = color = SprRam[offs+6];
+		code = BURN_ENDIAN_SWAP_INT16(SprRam[offs+1]);
+		shadow = color = BURN_ENDIAN_SWAP_INT16(SprRam[offs+6]);
 		primask = 0;
 
 		(*K053247Callback)(&code,&color,&primask);
 
 		if (primask != priority) continue;	//--------------------------------------- fix me!
 
-		temp = SprRam[offs];
+		temp = BURN_ENDIAN_SWAP_INT16(SprRam[offs]);
 
 		size = (temp & 0x0f00) >> 8;
 		w = 1 << (size & 0x03);
@@ -347,8 +344,8 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 		if (code & 0x20) ya += 4;
 		code &= ~0x3f;
 
-		oy = (short)SprRam[offs+2];
-		ox = (short)SprRam[offs+3];
+		oy = (INT16)BURN_ENDIAN_SWAP_INT16(SprRam[offs+2]);
+		ox = (INT16)BURN_ENDIAN_SWAP_INT16(SprRam[offs+3]);
 
 		if (K053247_wraparound)
 		{
@@ -358,11 +355,11 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 			ox &= 0x3ff;
 		}
 
-		y = zoomy = SprRam[offs+4] & 0x3ff;
+		y = zoomy = BURN_ENDIAN_SWAP_INT16(SprRam[offs+4]) & 0x3ff;
 		if (zoomy) zoomy = (0x400000+(zoomy>>1)) / zoomy; else zoomy = 0x800000;
 		if (!(temp & 0x4000))
 		{
-			x = zoomx = SprRam[offs+5] & 0x3ff;
+			x = zoomx = BURN_ENDIAN_SWAP_INT16(SprRam[offs+5]) & 0x3ff;
 			if (zoomx) zoomx = (0x400000+(zoomx>>1)) / zoomx;
 			else zoomx = 0x800000;
 		}
@@ -384,7 +381,7 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 		if (mirrorx) flipx = 0; // documented and confirmed
 		mirrory = shadow & 0x8000;
 
-		int highlight = 0;
+		INT32 highlight = 0;
 
 		wtable = dtable;
 		if (color == -1)
@@ -450,14 +447,14 @@ void K053247SpritesRender(unsigned char *gfxbase, int priority)
 
 		for (y = 0;y < h;y++)
 		{
-			int sx,sy,zw,zh;
+			INT32 sx,sy,zw,zh;
 
 			sy = oy + ((zoomy * y + (1<<11)) >> 12);
 			zh = (oy + ((zoomy * (y+1) + (1<<11)) >> 12)) - sy;
 
 			for (x = 0;x < w;x++)
 			{
-				int c,fx,fy;
+				INT32 c,fx,fy;
 
 				sx = ox + ((zoomx * x + (1<<11)) >> 12);
 				zw = (ox + ((zoomx * (x+1) + (1<<11)) >> 12)) - sx;

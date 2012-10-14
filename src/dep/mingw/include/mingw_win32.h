@@ -62,8 +62,9 @@ typedef struct _settextex
 #endif
 
 // Macro used for handling Window Messages
-#define HANDLE_WM_DISPLAYCHANGE(hwnd, wParam, lParam, fn)		\
-    ((fn)((hwnd), (UINT)(wParam), (UINT)LOWORD(lParam), (UINT)HIWORD(wParam)), 0L)
+#if not defined HANDLE_WM_DISPLAYCHANGE
+ #define HANDLE_WM_DISPLAYCHANGE(hwnd, wParam, lParam, fn)		((fn)((hwnd), (UINT)(wParam), (UINT)LOWORD(lParam), (UINT)HIWORD(wParam)), 0L)
+#endif
 
 #if _WIN32_WINNT < 0x0500
  #define VK_OEM_PLUS	0xBB

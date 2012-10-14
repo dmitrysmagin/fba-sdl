@@ -1,17 +1,17 @@
-#include "M6800.h"
+#include "m6800.h"
 
-typedef unsigned char (*pReadByteHandler)(unsigned short a);
-typedef void (*pWriteByteHandler)(unsigned short a, unsigned char d);
-typedef unsigned char (*pReadOpHandler)(unsigned short a);
-typedef unsigned char (*pReadOpArgHandler)(unsigned short a);
-typedef unsigned char (*pReadPortHandler)(unsigned short a);
-typedef void (*pWritePortHandler)(unsigned short a, unsigned char d);
+typedef UINT8 (*pReadByteHandler)(UINT16 a);
+typedef void (*pWriteByteHandler)(UINT16 a, UINT8 d);
+typedef UINT8 (*pReadOpHandler)(UINT16 a);
+typedef UINT8 (*pReadOpArgHandler)(UINT16 a);
+typedef UINT8 (*pReadPortHandler)(UINT16 a);
+typedef void (*pWritePortHandler)(UINT16 a, UINT8 d);
 
 struct M6800Ext {
 
 	m6800_Regs reg;
 	
-	unsigned char* pMemMap[0x100 * 3];
+	UINT8* pMemMap[0x100 * 3];
 
 	pReadByteHandler ReadByte;
 	pWriteByteHandler WriteByte;
@@ -20,9 +20,9 @@ struct M6800Ext {
 	pReadPortHandler ReadPort;
 	pWritePortHandler WritePort;
 	
-	int nCyclesTotal;
-	int nCyclesSegment;
-	int nCyclesLeft;
+	INT32 nCyclesTotal;
+	INT32 nCyclesSegment;
+	INT32 nCyclesLeft;
 };
 
 #define M6800_IRQSTATUS_NONE	0
@@ -86,9 +86,9 @@ struct M6800Ext {
 #define CPU_TYPE_M6803		3
 #define CPU_TYPE_M6801		4
 
-extern int nM6800Count;
+extern INT32 nM6800Count;
 
-extern int nM6800CyclesTotal;
+extern INT32 nM6800CyclesTotal;
 
 void M6800Reset();
 #define HD63701Reset		M6800Reset
@@ -100,25 +100,25 @@ void M6800NewFrame();
 #define M6803NewFrame		M6800NewFrame
 #define M6801NewFrame		M6800NewFrame
 
-int M6800CoreInit(int num, int type);
-int M6800Init(int num);
-int HD63701Init(int num);
-int M6803Init(int num);
-int M6801Init(int num);
+INT32 M6800CoreInit(INT32 num, INT32 type);
+INT32 M6800Init(INT32 num);
+INT32 HD63701Init(INT32 num);
+INT32 M6803Init(INT32 num);
+INT32 M6801Init(INT32 num);
 
 void M6800Exit();
 #define HD63701Exit		M6800Exit
 #define M6803Exit		M6800Exit
 #define M6801Exit		M6800Exit
 
-void M6800SetIRQ(int vector, int status);
-void HD63701SetIRQ(int vector, int status);
-void M6803SetIRQ(int vector, int status);
-void M6801SetIRQ(int vector, int status);
+void M6800SetIRQ(INT32 vector, INT32 status);
+void HD63701SetIRQ(INT32 vector, INT32 status);
+void M6803SetIRQ(INT32 vector, INT32 status);
+void M6801SetIRQ(INT32 vector, INT32 status);
 
-int M6800Run(int cycles);
-int HD63701Run(int cycles);
-int M6803Run(int cycles);
+INT32 M6800Run(INT32 cycles);
+INT32 HD63701Run(INT32 cycles);
+INT32 M6803Run(INT32 cycles);
 #define M6801Run(nCycles)	M6803Run(nCycles)
 
 void M6800RunEnd();
@@ -126,54 +126,58 @@ void M6800RunEnd();
 #define M6803RunEnd		M6800RunEnd
 #define M6801RunEnd		M6800RunEnd
 
-int M6800GetPC();
+INT32 M6800GetPC();
 #define HD63701GetPC		M6800GetPC
 #define M6803GetPC		M6800GetPC
 #define M6801GetPC		M6800GetPC
 
-int M6800MapMemory(unsigned char* pMemory, unsigned short nStart, unsigned short nEnd, int nType);
+INT32 M6800MapMemory(UINT8* pMemory, UINT16 nStart, UINT16 nEnd, INT32 nType);
 #define HD63701MapMemory	M6800MapMemory
 #define M6803MapMemory		M6800MapMemory
 #define M6801MapMemory		M6800MapMemory
 
-void M6800SetReadByteHandler(unsigned char (*pHandler)(unsigned short));
+void M6800SetReadByteHandler(UINT8 (*pHandler)(UINT16));
 #define HD63701SetReadByteHandler	M6800SetReadByteHandler
 #define M6803SetReadByteHandler		M6800SetReadByteHandler
 #define M6801SetReadByteHandler		M6800SetReadByteHandler
 
-void M6800SetWriteByteHandler(void (*pHandler)(unsigned short, unsigned char));
+void M6800SetWriteByteHandler(void (*pHandler)(UINT16, UINT8));
 #define HD63701SetWriteByteHandler	M6800SetWriteByteHandler
 #define M6803SetWriteByteHandler	M6800SetWriteByteHandler
 #define M6801SetWriteByteHandler	M6800SetWriteByteHandler
 
-void M6800SetReadOpHandler(unsigned char (*pHandler)(unsigned short));
+void M6800SetReadOpHandler(UINT8 (*pHandler)(UINT16));
 #define HD63701SetReadOpHandler		M6800SetReadOpHandler
 #define M6803SetReadOpHandler		M6800SetReadOpHandler
 #define M6801SetReadOpHandler		M6800SetReadOpHandler
 
-void M6800SetReadOpArgHandler(unsigned char (*pHandler)(unsigned short));
+void M6800SetReadOpArgHandler(UINT8 (*pHandler)(UINT16));
 #define HD63701SetReadOpArgHandler	M6800SetReadOpArgHandler
 #define M6803SetReadOpArgHandler	M6800SetReadOpArgHandler
 #define M6801SetReadOpArgHandler	M6800SetReadOpArgHandler
 
-void M6800SetReadPortHandler(unsigned char (*pHandler)(unsigned short));
+void M6800SetReadPortHandler(UINT8 (*pHandler)(UINT16));
 #define HD63701SetReadPortHandler	M6800SetReadPortHandler
 #define M6803SetReadPortHandler		M6800SetReadPortHandler
 #define M6801SetReadPortHandler		M6800SetReadPortHandler
 
-void M6800SetWritePortHandler(void (*pHandler)(unsigned short, unsigned char));
+void M6800SetWritePortHandler(void (*pHandler)(UINT16, UINT8));
 #define HD63701SetWritePortHandler	M6800SetWritePortHandler
 #define M6803SetWritePortHandler	M6800SetWritePortHandler
 #define M6801SetWritePortHandler	M6800SetWritePortHandler
 
-int M6800Scan(int nAction);
+INT32 M6800Scan(INT32 nAction);
 #define HD63701Scan		M6800Scan
 #define M6803Scan		M6800Scan
 #define M6801Scan		M6800Scan
 
-void M6800WriteRom(unsigned short Address, unsigned char Data);
+void M6800WriteRom(UINT32 Address, UINT8 Data);
 
-inline static int M6800TotalCycles()
+inline static INT32 M6800TotalCycles()
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_M6800Initted) bprintf(PRINT_ERROR, _T("M6800TotalCycles called without init\n"));
+#endif
+
 	return nM6800CyclesTotal;
 }

@@ -1,7 +1,7 @@
 // Burner Input module
 #include "burner.h"
 
-unsigned int nInputSelect = 0;
+UINT32 nInputSelect = 0;
 bool bInputOkay = false;
 
 static bool bCinpOkay;
@@ -10,6 +10,8 @@ static bool bCinpOkay;
 	extern struct InputInOut InputInOutDInput;
 #elif defined (BUILD_SDL)
 	extern struct InputInOut InputInOutSDL;
+#elif defined (_XBOX)
+	extern struct InputInOut InputInOutXInput2;
 #endif
 
 static struct InputInOut *pInputInOut[]=
@@ -18,6 +20,8 @@ static struct InputInOut *pInputInOut[]=
 	&InputInOutDInput,
 #elif defined (BUILD_SDL)
 	&InputInOutSDL,
+#elif defined (_XBOX)
+	&InputInOutXInput2,
 #endif
 };
 
@@ -25,7 +29,7 @@ static struct InputInOut *pInputInOut[]=
 
 static InterfaceInfo InpInfo = { NULL, NULL, NULL };
 
-inline int CinpState(const int nCode)
+inline INT32 CinpState(const INT32 nCode)
 {
 	// Return off for keyboard inputs if current input is turned off
 	if (nCode < 0x4000 && !bCinpOkay) {
@@ -37,27 +41,27 @@ inline int CinpState(const int nCode)
 }
 
 // Read an axis of a joystick
-inline int CinpJoyAxis(const int i, const int nAxis)
+inline INT32 CinpJoyAxis(const INT32 i, const INT32 nAxis)
 {
 	// Read from Direct Input
 	return pInputInOut[nInputSelect]->ReadJoyAxis(i, nAxis);
 }
 
 // Read an axis of a mouse
-inline int CinpMouseAxis(const int i, const int nAxis)
+inline INT32 CinpMouseAxis(const INT32 i, const INT32 nAxis)
 {
 	// Read from Direct Input
 	return pInputInOut[nInputSelect]->ReadMouseAxis(i, nAxis);
 }
 
 // Do one frames worth of keyboard input sliders
-static int InputTick()
+static INT32 InputTick()
 {
 	struct GameInp *pgi;
-	unsigned int i;
+	UINT32 i;
 
 	for (i = 0, pgi = GameInp; i < nGameInpCount; i++, pgi++) {
-		int nAdd = 0;
+		INT32 nAdd = 0;
 		if ((pgi->nInput &  GIT_GROUP_SLIDER) == 0) {				// not a slider
 			continue;
 		}
@@ -85,7 +89,7 @@ static int InputTick()
 		nAdd /= 0x100;
 
 		if (pgi->Input.Slider.nSliderCenter) {						// Attact to center
-			int v = pgi->Input.Slider.nSliderValue - 0x8000;
+			INT32 v = pgi->Input.Slider.nSliderValue - 0x8000;
 			v *= (pgi->Input.Slider.nSliderCenter - 1);
 			v /= pgi->Input.Slider.nSliderCenter;
 			v += 0x8000;
@@ -104,9 +108,9 @@ static int InputTick()
 	return 0;
 }
 
-int InputInit()
+INT32 InputInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	bInputOkay = false;
 
@@ -121,7 +125,7 @@ int InputInit()
 	return nRet;
 }
 
-int InputExit()
+INT32 InputExit()
 {
 	IntInfoFree(&InpInfo);
 
@@ -138,7 +142,7 @@ int InputExit()
 //  - bExcusive = 1   - Request exclusive access to inputs (this may apply to only the mouse or all input, depending on the API)
 //                      This function will show or hide the mouse cursor as appropriate
 //  - bForeground = 1 - Request input processing only if application is in foreground (this may not be supported by all APIs)
-int InputSetCooperativeLevel(const bool bExclusive, const bool bForeground)
+INT32 InputSetCooperativeLevel(const bool bExclusive, const bool bForeground)
 {
 	if (!bInputOkay || nInputSelect >= INPUT_LEN) {
 		return 1;
@@ -151,10 +155,10 @@ int InputSetCooperativeLevel(const bool bExclusive, const bool bForeground)
 }
 
 // This will process all PC-side inputs and optionally update the emulated game side.
-int InputMake(bool bCopy)
+INT32 InputMake(bool bCopy)
 {
 	struct GameInp* pgi;
-	unsigned int i;
+	UINT32 i;
 
 	if (!bInputOkay || nInputSelect >= INPUT_LEN) {
 		return 1;
@@ -182,7 +186,7 @@ int InputMake(bool bCopy)
 				}
 				break;
 			case GIT_SWITCH: {						// Digital input
-				int s = CinpState(pgi->Input.Switch.nCode);
+				INT32 s = CinpState(pgi->Input.Switch.nCode);
 
 				if (pgi->nType & BIT_GROUP_ANALOG) {
 					// Set analog controls to full
@@ -210,26 +214,26 @@ int InputMake(bool bCopy)
 			}
 			case GIT_KEYSLIDER:						// Keyboard slider
 			case GIT_JOYSLIDER:	{					// Joystick slider
-				int nSlider = pgi->Input.Slider.nSliderValue;
+				INT32 nSlider = pgi->Input.Slider.nSliderValue;
 				if (pgi->nType == BIT_ANALOG_REL) {
 					nSlider -= 0x8000;
 					nSlider >>= 4;
 				}
 
-				pgi->Input.nVal = (unsigned short)nSlider;
+				pgi->Input.nVal = (UINT16)nSlider;
 				if (bCopy) {
 					*(pgi->Input.pShortVal) = pgi->Input.nVal;
 				}
 				break;
 			}
 			case GIT_MOUSEAXIS:						// Mouse axis
-				pgi->Input.nVal = (unsigned short)(CinpMouseAxis(pgi->Input.MouseAxis.nMouse, pgi->Input.MouseAxis.nAxis) * nAnalogSpeed);
+				pgi->Input.nVal = (UINT16)(CinpMouseAxis(pgi->Input.MouseAxis.nMouse, pgi->Input.MouseAxis.nAxis) * nAnalogSpeed);
 				if (bCopy) {
 					*(pgi->Input.pShortVal) = pgi->Input.nVal;
 				}
 				break;
 			case GIT_JOYAXIS_FULL:	{				// Joystick axis
-				int nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
+				INT32 nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
 
 				if (pgi->nType == BIT_ANALOG_REL) {
 					nJoy *= nAnalogSpeed;
@@ -255,7 +259,7 @@ int InputMake(bool bCopy)
 					}
 				}
 
-				pgi->Input.nVal = (unsigned short)nJoy;
+				pgi->Input.nVal = (UINT16)nJoy;
 				if (bCopy) {
 					*(pgi->Input.pShortVal) = pgi->Input.nVal;
 				}
@@ -263,7 +267,7 @@ int InputMake(bool bCopy)
 				break;
 			}
 			case GIT_JOYAXIS_NEG:	{				// Joystick axis Lo
-				int nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
+				INT32 nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
 				if (nJoy < 32767) {
 					nJoy = -nJoy;
 
@@ -274,7 +278,7 @@ int InputMake(bool bCopy)
 						nJoy = 0xFFFF;
 					}
 
-					pgi->Input.nVal = (unsigned short)nJoy;
+					pgi->Input.nVal = (UINT16)nJoy;
 				} else {
 					pgi->Input.nVal = 0;
 				}
@@ -285,7 +289,7 @@ int InputMake(bool bCopy)
 				break;
 			}
 			case GIT_JOYAXIS_POS:	{				// Joystick axis Hi
-				int nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
+				INT32 nJoy = CinpJoyAxis(pgi->Input.JoyAxis.nJoy, pgi->Input.JoyAxis.nAxis);
 				if (nJoy > 32767) {
 
 					if (nJoy < 0x0000) {
@@ -295,7 +299,7 @@ int InputMake(bool bCopy)
 						nJoy = 0xFFFF;
 					}
 
-					pgi->Input.nVal = (unsigned short)nJoy;
+					pgi->Input.nVal = (UINT16)nJoy;
 				} else {
 					pgi->Input.nVal = 0;
 				}
@@ -311,7 +315,7 @@ int InputMake(bool bCopy)
 	for (i = 0; i < nMacroCount; i++, pgi++) {
 		if (pgi->Macro.nMode) {						// Macro is defined
 			if (bCopy && CinpState(pgi->Macro.Switch.nCode)) {
-				for (int j = 0; j < 4; j++) {
+				for (INT32 j = 0; j < 4; j++) {
 					if (pgi->Macro.pVal[j]) {
 						*(pgi->Macro.pVal[j]) = pgi->Macro.nVal[j];
 					}
@@ -332,11 +336,11 @@ int InputMake(bool bCopy)
 //     Use this to handle analog controls correctly
 //
 // Call with nFlags & 1 to indicate that controls need to be polled (when normal input processing is disabled)
-int InputFind(const int nFlags)
+INT32 InputFind(const INT32 nFlags)
 {
-	static int nInputCode, nDelay, nJoyPrevPos;
+	static INT32 nInputCode, nDelay, nJoyPrevPos;
 
-	int nFind;
+	INT32 nFind;
 
 	if (nInputSelect >= INPUT_LEN) {
 		return 1;
@@ -368,8 +372,8 @@ int InputFind(const int nFlags)
 			// Treat joystick axes specially
 			// Wait until the axis reports no movement for some time
 			if ((nInputCode & 0x4000) && (nInputCode & 0xFF) < 0x10) {
-				int nJoyPos = CinpJoyAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
-				int nJoyDelta = nJoyPrevPos - nJoyPos;
+				INT32 nJoyPos = CinpJoyAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
+				INT32 nJoyDelta = nJoyPrevPos - nJoyPos;
 
 				nJoyPrevPos = nJoyPos;
 
@@ -393,7 +397,7 @@ int InputFind(const int nFlags)
 			// Treat mouse axes specially
 			// Wait until the axis reports no movement/movement in the same direction for some time
 			if ((nInputCode & 0x8000) && (nInputCode & 0xFF) < 0x06) {
-				int nMouseDelta = CinpMouseAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
+				INT32 nMouseDelta = CinpMouseAxis((nInputCode >> 8) & 0x3F, (nInputCode >> 1) & 0x07);
 				if (nFind == -1 || ((nInputCode & 1) ? nMouseDelta > 0 : nMouseDelta < 0)) {
 					nDelay++;
 					if (nDelay > 128) {
@@ -416,7 +420,7 @@ int InputFind(const int nFlags)
 
 // Get the name of a control and/or the device it's on (not all API's may support this)
 // Either parameter can be passed as NULL
-int InputGetControlName(int nCode, TCHAR* pszDeviceName, TCHAR* pszControlName)
+INT32 InputGetControlName(INT32 nCode, TCHAR* pszDeviceName, TCHAR* pszControlName)
 {
 	if (!bInputOkay || nInputSelect >= INPUT_LEN) {
 		return 1;
@@ -442,11 +446,11 @@ InterfaceInfo* InputGetInfo()
 			pInputInOut[nInputSelect]->GetPluginSettings(&InpInfo);
 		}
 
-		for (int nType = 0; nType < 3; nType++) {
-			int nDeviceTypes[] = { 0x0000, 0x8000, 0x4000 };
+		for (INT32 nType = 0; nType < 3; nType++) {
+			INT32 nDeviceTypes[] = { 0x0000, 0x8000, 0x4000 };
 			TCHAR nDeviceTypeNames[][16] = { _T("keyboard"), _T("mouse   "), _T("joystick") };
 			TCHAR nDeviceName[MAX_PATH] = _T("");
-			int nActiveDevice = 0;
+			INT32 nActiveDevice = 0;
 
 			while (nActiveDevice < 16 && pInputInOut[nInputSelect]->GetControlName(nDeviceTypes[nType] | (nActiveDevice << 8), nDeviceName, NULL) == 0 && nDeviceName[0]) {
 				TCHAR szString[MAX_PATH] = _T("");

@@ -193,11 +193,14 @@ int VidSoftFXCheckDepth(int nEffect, int nDepth)
 
 void VidSoftFXExit()
 {
-	free(pSoftFXXBuffer);
-	pSoftFXXBuffer = NULL;
+	if (pSoftFXXBuffer) {
+		free(pSoftFXXBuffer);
+		pSoftFXXBuffer = NULL;
+	}
 
 	if (nSoftFXRotate) {
 		free(pSoftFXImage);
+		pSoftFXImage = NULL;
 	}
 	pSoftFXImage = NULL;
 
@@ -927,3 +930,15 @@ int VidSoftFXApplyEffectSDL(SDL_Surface* pSurf)
 }
 
 #endif
+
+int VidFilterApplyEffect(unsigned char* pd, int pitch)
+{
+	if (!pd) {
+		return 1;
+	}
+
+	VidSoftFXRotate();
+	VidSoftFXApplyEffect(pSoftFXImage, pd, pitch);
+
+	return 0;
+}

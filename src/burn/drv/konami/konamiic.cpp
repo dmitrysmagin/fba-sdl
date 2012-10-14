@@ -1,22 +1,22 @@
 #include "tiles_generic.h"
 #include "konamiic.h"
 
-unsigned int KonamiIC_K051960InUse = 0;
-unsigned int KonamiIC_K052109InUse = 0;
-unsigned int KonamiIC_K051316InUse = 0;
-unsigned int KonamiIC_K053245InUse = 0;
-unsigned int KonamiIC_K053247InUse = 0;
-unsigned int KonamiIC_K053936InUse = 0;
+UINT32 KonamiIC_K051960InUse = 0;
+UINT32 KonamiIC_K052109InUse = 0;
+UINT32 KonamiIC_K051316InUse = 0;
+UINT32 KonamiIC_K053245InUse = 0;
+UINT32 KonamiIC_K053247InUse = 0;
+UINT32 KonamiIC_K053936InUse = 0;
 
-unsigned short *konami_temp_screen = NULL;
-int K05324xZRejection = -1;
+UINT16 *konami_temp_screen = NULL;
+INT32 K05324xZRejection = -1;
 
-void K05324xSetZRejection(int z)
+void K05324xSetZRejection(INT32 z)
 {
 	K05324xZRejection = z;
 }
 
-unsigned char K052109_051960_r(int offset)
+UINT8 K052109_051960_r(INT32 offset)
 {
 	if (K052109RMRDLine == 0)
 	{
@@ -30,7 +30,7 @@ unsigned char K052109_051960_r(int offset)
 	else return K052109Read(offset);
 }
 
-void K052109_051960_w(int offset, int data)
+void K052109_051960_w(INT32 offset, INT32 data)
 {
 	if (offset >= 0x3800 && offset < 0x3808)
 		K051937Write(offset - 0x3800,data);
@@ -40,15 +40,15 @@ void K052109_051960_w(int offset, int data)
 		K051960Write(offset - 0x3c00,data);
 }
 
-static void shuffle(unsigned short *buf, int len)
+static void shuffle(UINT16 *buf, INT32 len)
 {
 	if (len == 2 || len & 3) return;
 
 	len >>= 1;
 
-	for (int i = 0; i < len/2; i++)
+	for (INT32 i = 0; i < len/2; i++)
 	{
-		int t = buf[len/2 + i];
+		INT32 t = buf[len/2 + i];
 		buf[len/2 + i] = buf[len + i];
 		buf[len + i] = t;
 	}
@@ -57,24 +57,24 @@ static void shuffle(unsigned short *buf, int len)
 	shuffle(buf + len, len);
 }
 
-void konami_rom_deinterleave_2(unsigned char *src, int len)
+void konami_rom_deinterleave_2(UINT8 *src, INT32 len)
 {
-	shuffle((unsigned short*)src,len/2);
+	shuffle((UINT16*)src,len/2);
 }
 
-void konami_rom_deinterleave_4(unsigned char *src, int len)
+void konami_rom_deinterleave_4(UINT8 *src, INT32 len)
 {
 	konami_rom_deinterleave_2(src, len);
 	konami_rom_deinterleave_2(src, len);
 }
 
 // xbbbbbgggggrrrrr (used mostly by Konami-custom cpu games)
-void KonamiRecalcPal(unsigned char *src, unsigned int *dst, int len)
+void KonamiRecalcPal(UINT8 *src, UINT32 *dst, INT32 len)
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)src;
-	for (int i = 0; i < len / 2; i++) {
-		unsigned short d = (p[i] << 8) | (p[i] >> 8);
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)src;
+	for (INT32 i = 0; i < len / 2; i++) {
+		UINT16 d = BURN_ENDIAN_SWAP_INT16((p[i] << 8) | (p[i] >> 8));
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -105,10 +105,7 @@ void KonamiICReset()
 
 void KonamiICExit()
 {
-	if (konami_temp_screen) {
-		free (konami_temp_screen);
-		konami_temp_screen = NULL;
-	}
+	BurnFree (konami_temp_screen);
 
 	if (KonamiIC_K051960InUse) K051960Exit();
 	if (KonamiIC_K052109InUse) K052109Exit();
@@ -126,7 +123,7 @@ void KonamiICExit()
 	K05324xZRejection = -1;
 }
 
-void KonamiICScan(int nAction)
+void KonamiICScan(INT32 nAction)
 {
 	if (KonamiIC_K051960InUse) K051960Scan(nAction);
 	if (KonamiIC_K052109InUse) K052109Scan(nAction);
@@ -146,24 +143,24 @@ void KonamiICScan(int nAction)
 	* highlights are right? where is this used?
 	* also, has a limitation of 0x4000 colors, some games may need more.
 */
-void KonamiBlendCopy(unsigned int *palette /* 32-bit color */, unsigned int *drvpalette /* n-bit color */)
+void KonamiBlendCopy(UINT32 *palette /* 32-bit color */, UINT32 *drvpalette /* n-bit color */)
 {
-	unsigned char *dst = pBurnDraw;
+	UINT8 *dst = pBurnDraw;
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++)
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++)
 	{
 		if (pTransDraw[i] >= 0x4000)		// shadow & highlight
 		{
-			unsigned int source = palette[pTransDraw[i] & 0x3fff];
-			unsigned int blend = palette[konami_temp_screen[i] & 0x3fff];
+			UINT32 source = palette[pTransDraw[i] & 0x3fff];
+			UINT32 blend = palette[konami_temp_screen[i] & 0x3fff];
 
-			int a = 0x99; // shadow (255 * 0.60)
+			INT32 a = 0x99; // shadow (255 * 0.60)
 			if (pTransDraw[i] & 0x4000) a = 0xa9; // highlight (255 * (1 / 0.60)) & 0xff; (0x1a9 otherwise) right?
 
-			int ad = 256 - a;
+			INT32 ad = 256 - a;
 
 			// ripped from MAME...
-			unsigned int p = ((((source & 0x0000ff) * a + (blend & 0x0000ff) * ad) >> 8)) |
+			UINT32 p = ((((source & 0x0000ff) * a + (blend & 0x0000ff) * ad) >> 8)) |
 		  			 ((((source & 0x00ff00) * a + (blend & 0x00ff00) * ad) >> 8) & 0x00ff00) |
 		  			 ((((source & 0xff0000) * a + (blend & 0xff0000) * ad) >> 8) & 0xff0000);
 

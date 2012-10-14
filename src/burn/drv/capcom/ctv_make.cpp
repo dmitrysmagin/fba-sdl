@@ -31,10 +31,10 @@ int main()
 			{
               printf ("#define CU_FLIPX (%d)\n",nCuFlipX);
 
-			  if ((nCuRows && (nCuSize != 16) || (nCuRows && nCuMask))) {
+			  if (((nCuRows && (nCuSize != 16)) || (nCuRows && nCuMask))) {
 				  printf("// Invalid combination of capabilities.\n");
 			  }	else {
-				printf ("static int ");
+				printf ("static INT32 ");
 				printf ("CtvDo");
 				printf ("%d",nCuBpp);
 				printf ("%.2d",nCuSize);
@@ -64,7 +64,7 @@ int main()
   printf ("\n\n");
 
   printf ("// Filler function\n");
-  printf ("static int CtvDo_______() { return 0; }\n\n\n\n");
+  printf ("static INT32 CtvDo_______() { return 0; }\n\n\n\n");
 
   for (nCuMask=0; nCuMask<=2; nCuMask++)
   {

@@ -191,6 +191,8 @@ int YM2608TimerOver(int n, int c );
 int YM2610Init(int num, int baseclock, int rate,
                void **pcmroma,int *pcmasize,void **pcmromb,int *pcmbsize,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
+void YM2610SetRom(int num,
+				void *pcmroma,int pcmsizea,void *pcmromb,int pcmsizeb);
 void YM2610Shutdown(void);
 void YM2610ResetChip(int num);
 void YM2610UpdateOne(int num, INT16 **buffer, int length);

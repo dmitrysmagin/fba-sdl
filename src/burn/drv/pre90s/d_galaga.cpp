@@ -1,56 +1,55 @@
 #include "tiles_generic.h"
+#include "zet.h"
 #include "namco_snd.h"
+#include "samples.h"
 
-// Namco sound scan
-// Remove commented code
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[3]        = {0, 0, 0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[3]        = {0, 0, 0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvZ80Rom1          = NULL;
+static UINT8 *DrvZ80Rom2          = NULL;
+static UINT8 *DrvZ80Rom3          = NULL;
+static UINT8 *DrvVideoRam         = NULL;
+static UINT8 *DrvSharedRam1       = NULL;
+static UINT8 *DrvSharedRam2       = NULL;
+static UINT8 *DrvSharedRam3       = NULL;
+static UINT8 *DrvPromPalette      = NULL;
+static UINT8 *DrvPromCharLookup   = NULL;
+static UINT8 *DrvPromSpriteLookup = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette          = NULL;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvZ80Rom1          = NULL;
-static unsigned char *DrvZ80Rom2          = NULL;
-static unsigned char *DrvZ80Rom3          = NULL;
-static unsigned char *DrvVideoRam         = NULL;
-static unsigned char *DrvSharedRam1       = NULL;
-static unsigned char *DrvSharedRam2       = NULL;
-static unsigned char *DrvSharedRam3       = NULL;
-static unsigned char *DrvPromPalette      = NULL;
-static unsigned char *DrvPromCharLookup   = NULL;
-static unsigned char *DrvPromSpriteLookup = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 DrvCPU1FireIRQ;
+static UINT8 DrvCPU2FireIRQ;
+static UINT8 DrvCPU3FireIRQ;
+static UINT8 DrvCPU2Halt;
+static UINT8 DrvCPU3Halt;
+static UINT8 DrvFlipScreen;
+static UINT8 DrvStarControl[6];
+static UINT32  DrvStarScrollX;
+static UINT32  DrvStarScrollY;
 
-static unsigned char DrvCPU1FireIRQ;
-static unsigned char DrvCPU2FireIRQ;
-static unsigned char DrvCPU3FireIRQ;
-static unsigned char DrvCPU2Halt;
-static unsigned char DrvCPU3Halt;
-static unsigned char DrvFlipScreen;
-static unsigned char DrvStarControl[6];
-static unsigned int  DrvStarScrollX;
-static unsigned int  DrvStarScrollY;
+static UINT8 IOChipCustomCommand;
+static UINT8 IOChipCPU1FireIRQ;
+static UINT8 IOChipMode;
+static UINT8 IOChipCredits;
+static UINT8 IOChipCoinPerCredit;
+static UINT8 IOChipCreditPerCoin;
+static UINT8 IOChipCustom[16];
+static UINT8 PrevInValue;
 
-static unsigned char IOChipCustomCommand;
-static unsigned char IOChipCPU1FireIRQ;
-static unsigned char IOChipMode;
-static unsigned char IOChipCredits;
-static unsigned char IOChipCoinPerCredit;
-static unsigned char IOChipCreditPerCoin;
-static unsigned char IOChipCustom[16];
-static unsigned char PrevInValue;
-
-static int nCyclesDone[3], nCyclesTotal[3];
-static int nCyclesSegment;
+static INT32 nCyclesDone[3], nCyclesTotal[3];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo DrvInputList[] =
 {
@@ -84,7 +83,7 @@ static inline void DrvMakeInputs()
 	DrvInput[2] = 0xff;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] -= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] -= (DrvInputPort2[i] & 1) << i;
@@ -377,9 +376,20 @@ static struct BurnRomInfo GallagRomDesc[] = {
 STD_ROM_PICK(Gallag)
 STD_ROM_FN(Gallag)
 
-static int MemIndex()
+static struct BurnSampleInfo GalagaSampleDesc[] = {
+#if !defined (ROM_VERIFY)
+   { "bang.wav", SAMPLE_NOLOOP },
+   { "bang.wav", SAMPLE_NOLOOP },
+#endif
+   { "", 0 }
+};
+
+STD_SAMPLE_PICK(Galaga)
+STD_SAMPLE_FN(Galaga)
+
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvZ80Rom1             = Next; Next += 0x04000;
 	DrvZ80Rom2             = Next; Next += 0x04000;
@@ -401,20 +411,22 @@ static int MemIndex()
 
 	DrvChars               = Next; Next += 0x100 * 8 * 8;
 	DrvSprites             = Next; Next += 0x080 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 576 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 576 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
 	}
+	
+	BurnSampleReset();
 	
 	DrvCPU1FireIRQ = 0;
 	DrvCPU2FireIRQ = 0;
@@ -422,7 +434,7 @@ static int DrvDoReset()
 	DrvCPU2Halt = 0;
 	DrvCPU3Halt = 0;
 	DrvFlipScreen = 0;
-	for (int i = 0; i < 6; i++) {
+	for (INT32 i = 0; i < 6; i++) {
 		DrvStarControl[i] = 0;
 	}
 	DrvStarScrollX = 0;
@@ -434,14 +446,108 @@ static int DrvDoReset()
 	IOChipCredits = 0;
 	IOChipCoinPerCredit = 0;
 	IOChipCreditPerCoin = 0;
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		IOChipCustom[i] = 0;
 	}
 
 	return 0;
 }
 
-unsigned char __fastcall GalagaZ80ProgRead(unsigned short a)
+static void Namco54XXWrite(INT32 Data)
+{
+	static INT32 Fetch;
+	static INT32 FetchMode;
+	static UINT8 Config1[4], Config2[4], Config3[5];
+	
+	if (Fetch) {
+		switch (FetchMode) {
+			default:
+			case 1:
+				Config1[4 - (Fetch--)] = Data;
+				break;
+
+			case 2:
+				Config2[4 - (Fetch--)] = Data;
+				break;
+
+			case 3:
+				Config3[5 - (Fetch--)] = Data;
+				break;
+		}
+	} else {			
+		switch (Data & 0xf0) {
+			case 0x00:	// nop
+				break;
+
+			case 0x10:	// output sound on pins 4-7 only
+				if (memcmp(Config1,"\x40\x00\x02\xdf",4) == 0)
+					// bosco
+					// galaga
+					// xevious
+					BurnSamplePlay(0);
+//				else if (memcmp(Config1,"\x10\x00\x80\xff",4) == 0)
+					// xevious
+//					sample_start(0, 1, 0);
+//				else if (memcmp(Config1,"\x80\x80\x01\xff",4) == 0)
+					// xevious
+//					sample_start(0, 2, 0);
+				break;
+
+			case 0x20:	// output sound on pins 8-11 only
+//				if (memcmp(Config2,"\x40\x40\x01\xff",4) == 0)
+					// xevious
+//					sample_start(1, 3, 0);
+//					BurnSamplePlay(1);
+				/*else*/ if (memcmp(Config2,"\x30\x30\x03\xdf",4) == 0)
+					// bosco
+					// galaga
+					BurnSamplePlay(1);
+//				else if (memcmp(Config2,"\x60\x30\x03\x66",4) == 0)
+					// polepos
+//					sample_start( 0, 0, 0 );
+				break;
+
+			case 0x30:
+				Fetch = 4;
+				FetchMode = 1;
+				break;
+
+			case 0x40:
+				Fetch = 4;
+				FetchMode = 2;
+				break;
+
+			case 0x50:	// output sound on pins 17-20 only
+//				if (memcmp(Config3,"\x08\x04\x21\x00\xf1",5) == 0)
+					// bosco
+//					sample_start(2, 2, 0);
+				break;
+
+			case 0x60:
+				Fetch = 5;
+				FetchMode = 3;
+				break;
+
+			case 0x70:
+				// polepos
+				/* 0x7n = Screech sound. n = pitch (if 0 then no sound) */
+				/* followed by 0x60 command? */
+				if (( Data & 0x0f ) == 0) {
+//					if (sample_playing(1))
+//						sample_stop(1);
+				} else {
+//					INT32 freq = (INT32)( ( 44100.0f / 10.0f ) * (float)(Data & 0x0f) );
+
+//					if (!sample_playing(1))
+//						sample_start(1, 1, 1);
+//					sample_set_freq(1, freq);
+				}
+				break;
+		}
+	}
+}
+
+UINT8 __fastcall GalagaZ80ProgRead(UINT16 a)
 {
 	switch (a) {
 		case 0x6800:
@@ -452,9 +558,9 @@ unsigned char __fastcall GalagaZ80ProgRead(unsigned short a)
 		case 0x6805:
 		case 0x6806:
 		case 0x6807: {
-			int Offset = a - 0x6800;
-			int Bit0 = (DrvDip[2] >> Offset) & 0x01;
-			int Bit1 = (DrvDip[1] >> Offset) & 0x01;
+			INT32 Offset = a - 0x6800;
+			INT32 Bit0 = (DrvDip[2] >> Offset) & 0x01;
+			INT32 Bit1 = (DrvDip[1] >> Offset) & 0x01;
 
 			return Bit0 | (Bit1 << 1);
 		}
@@ -475,7 +581,7 @@ unsigned char __fastcall GalagaZ80ProgRead(unsigned short a)
 		case 0x700d:
 		case 0x700e:
 		case 0x700f: {
-			int Offset = a - 0x7000;
+			INT32 Offset = a - 0x7000;
 			
 			switch (IOChipCustomCommand) {
 				case 0x71:
@@ -484,8 +590,8 @@ unsigned char __fastcall GalagaZ80ProgRead(unsigned short a)
 						if (IOChipMode) {
 							return DrvInput[0] | DrvDip[0];
 						} else {
-							unsigned char In;
-							static unsigned char CoinInserted;
+							UINT8 In;
+							static UINT8 CoinInserted;
 							
 							In = DrvInput[0] | DrvDip[0];
 							if (In != PrevInValue) {
@@ -536,7 +642,7 @@ unsigned char __fastcall GalagaZ80ProgRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall GalagaZ80ProgWrite(unsigned short a, unsigned char d)
+void __fastcall GalagaZ80ProgWrite(UINT16 a, UINT8 d)
 {
 	if (a >= 0x6800 && a <= 0x681f) { NamcoSoundWrite(a - 0x6800, d); return; }
 	
@@ -564,7 +670,7 @@ void __fastcall GalagaZ80ProgWrite(unsigned short a, unsigned char d)
 		
 		case 0x6823: {
 			if (!(d & 0x01)) {
-				int nActive = ZetGetActive();
+				INT32 nActive = ZetGetActive();
 				ZetClose();
 				ZetOpen(1);
 				ZetReset();
@@ -603,8 +709,9 @@ void __fastcall GalagaZ80ProgWrite(unsigned short a, unsigned char d)
 		case 0x700d:
 		case 0x700e:
 		case 0x700f: {
-			int Offset = a - 0x7000;
+			INT32 Offset = a - 0x7000;
 			IOChipCustom[Offset] = d;
+			Namco54XXWrite(d);
 			
 			switch (IOChipCustomCommand) {
 				case 0xe1: {
@@ -666,16 +773,16 @@ void __fastcall GalagaZ80ProgWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[2]   = { 0, 4 };
-static int CharXOffsets[8]       = { 64, 65, 66, 67, 0, 1, 2, 3 };
-static int CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int SpritePlaneOffsets[2] = { 0, 4 };
-static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195 };
-static int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312 };
+static INT32 CharPlaneOffsets[2]   = { 0, 4 };
+static INT32 CharXOffsets[8]       = { 64, 65, 66, 67, 0, 1, 2, 3 };
+static INT32 CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 SpritePlaneOffsets[2] = { 0, 4 };
+static INT32 SpriteXOffsets[16]    = { 0, 1, 2, 3, 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195 };
+static INT32 SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312 };
 
 static void MachineInit()
 {
-	ZetInit(3);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(GalagaZ80ProgRead);
 	ZetSetWriteHandler(GalagaZ80ProgWrite);
@@ -696,6 +803,7 @@ static void MachineInit()
 	ZetMemEnd();
 	ZetClose();
 	
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetReadHandler(GalagaZ80ProgRead);
 	ZetSetWriteHandler(GalagaZ80ProgWrite);
@@ -716,6 +824,7 @@ static void MachineInit()
 	ZetMemEnd();
 	ZetClose();
 	
+	ZetInit(2);
 	ZetOpen(2);
 	ZetSetReadHandler(GalagaZ80ProgRead);
 	ZetSetWriteHandler(GalagaZ80ProgWrite);
@@ -737,6 +846,7 @@ static void MachineInit()
 	ZetClose();
 	
 	NamcoSoundInit(18432000 / 6 / 32);
+	BurnSampleInit(80, 0);
 
 	GenericTilesInit();
 
@@ -744,19 +854,19 @@ static void MachineInit()
 	DrvDoReset();
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x02000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x02000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -786,26 +896,26 @@ static int DrvInit()
 	nRet = BurnLoadRom(DrvPromSpriteLookup,  11, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       12, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
 	return 0;
 }
 
-static int GallagInit()
+static INT32 GallagInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x02000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x02000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -835,21 +945,21 @@ static int GallagInit()
 	nRet = BurnLoadRom(DrvPromSpriteLookup,  12, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       13, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	NamcoSoundExit();
+	BurnSampleExit();
 	ZetExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	DrvCPU1FireIRQ = 0;
 	DrvCPU2FireIRQ = 0;
@@ -857,7 +967,7 @@ static int DrvExit()
 	DrvCPU2Halt = 0;
 	DrvCPU3Halt = 0;
 	DrvFlipScreen = 0;
-	for (int i = 0; i < 6; i++) {
+	for (INT32 i = 0; i < 6; i++) {
 		DrvStarControl[i] = 0;
 	}
 	DrvStarScrollX = 0;
@@ -869,7 +979,7 @@ static int DrvExit()
 	IOChipCredits = 0;
 	IOChipCoinPerCredit = 0;
 	IOChipCreditPerCoin = 0;
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		IOChipCustom[i] = 0;
 	}
 
@@ -878,11 +988,11 @@ static int DrvExit()
 
 static void DrvCalcPalette()
 {
-	int i;
-	unsigned int Palette[96];
+	INT32 i;
+	UINT32 Palette[96];
 	
 	for (i = 0; i < 32; i++) {
-		int bit0, bit1, bit2, r, g, b;
+		INT32 bit0, bit1, bit2, r, g, b;
 		
 		bit0 = (DrvPromPalette[i] >> 0) & 0x01;
 		bit1 = (DrvPromPalette[i] >> 1) & 0x01;
@@ -901,8 +1011,8 @@ static void DrvCalcPalette()
 	}
 	
 	for (i = 0; i < 64; i++) {
-		int bits, r, g, b;
-		static const int map[4] = { 0x00, 0x47, 0x97, 0xde };
+		INT32 bits, r, g, b;
+		static const INT32 map[4] = { 0x00, 0x47, 0x97, 0xde };
 		
 		bits = (i >> 0) & 0x03;
 		r = map[bits];
@@ -928,8 +1038,8 @@ static void DrvCalcPalette()
 }
 
 struct Star {
-	unsigned short x, y;
-	unsigned char Colour, Set;
+	UINT16 x, y;
+	UINT8 Colour, Set;
 };
 
 const struct Star StarSeedTab[252] = {
@@ -1197,14 +1307,14 @@ const struct Star StarSeedTab[252] = {
 static void DrvRenderStars()
 {
 	if (DrvStarControl[5] == 1) {
-  		int StarCounter;
-		int SetA, SetB;
+  		INT32 StarCounter;
+		INT32 SetA, SetB;
 
 		SetA = DrvStarControl[3];
 		SetB = DrvStarControl[4] | 0x02;
 
 		for (StarCounter = 0; StarCounter < 252; StarCounter++) {
-			int x, y;
+			INT32 x, y;
 
 			if ((SetA == StarSeedTab[StarCounter].Set) || (SetB == StarSeedTab[StarCounter].Set)) {
 				x = (StarSeedTab[StarCounter].x + DrvStarScrollX) % 256 + 16;
@@ -1221,7 +1331,7 @@ static void DrvRenderStars()
 
 static void DrvRenderTilemap()
 {
-	int mx, my, Code, Colour, x, y, TileIndex, Row, Col;
+	INT32 mx, my, Code, Colour, x, y, TileIndex, Row, Col;
 
 	for (mx = 0; mx < 28; mx++) {
 		for (my = 0; my < 36; my++) {
@@ -1263,23 +1373,23 @@ static void DrvRenderTilemap()
 
 static void DrvRenderSprites()
 {
-	unsigned char *SpriteRam1 = DrvSharedRam1 + 0x380;
-	unsigned char *SpriteRam2 = DrvSharedRam2 + 0x380;
-	unsigned char *SpriteRam3 = DrvSharedRam3 + 0x380;
+	UINT8 *SpriteRam1 = DrvSharedRam1 + 0x380;
+	UINT8 *SpriteRam2 = DrvSharedRam2 + 0x380;
+	UINT8 *SpriteRam3 = DrvSharedRam3 + 0x380;
 	
-	for (int Offset = 0; Offset < 0x80; Offset += 2) {
-		static const int GfxOffset[2][2] = {
+	for (INT32 Offset = 0; Offset < 0x80; Offset += 2) {
+		static const INT32 GfxOffset[2][2] = {
 			{ 0, 1 },
 			{ 2, 3 }
 		};
-		int Sprite = SpriteRam1[Offset + 0] & 0x7f;
-		int Colour = SpriteRam1[Offset + 1] & 0x3f;
-		int sx = SpriteRam2[Offset + 1] - 40 + (0x100 * (SpriteRam3[Offset + 1] & 0x03));
-		int sy = 256 - SpriteRam2[Offset + 0] + 1;
-		int xFlip = (SpriteRam3[Offset + 0] & 0x01);
-		int yFlip = (SpriteRam3[Offset + 0] & 0x02) >> 1;
-		int xSize = (SpriteRam3[Offset + 0] & 0x04) >> 2;
-		int ySize = (SpriteRam3[Offset + 0] & 0x08) >> 3;
+		INT32 Sprite = SpriteRam1[Offset + 0] & 0x7f;
+		INT32 Colour = SpriteRam1[Offset + 1] & 0x3f;
+		INT32 sx = SpriteRam2[Offset + 1] - 40 + (0x100 * (SpriteRam3[Offset + 1] & 0x03));
+		INT32 sy = 256 - SpriteRam2[Offset + 0] + 1;
+		INT32 xFlip = (SpriteRam3[Offset + 0] & 0x01);
+		INT32 yFlip = (SpriteRam3[Offset + 0] & 0x02) >> 1;
+		INT32 xSize = (SpriteRam3[Offset + 0] & 0x04) >> 2;
+		INT32 ySize = (SpriteRam3[Offset + 0] & 0x08) >> 3;
 
 		sy -= 16 * ySize;
 		sy = (sy & 0xff) - 32;
@@ -1289,11 +1399,11 @@ static void DrvRenderSprites()
 			yFlip = !yFlip;
 		}
 
-		for (int y = 0; y <= ySize; y++) {
-			for (int x = 0; x <= xSize; x++) {
-				int Code = Sprite + GfxOffset[y ^ (ySize * yFlip)][x ^ (xSize * xFlip)];
-				int xPos = sx + 16 * x;
-				int yPos = sy + 16 * y;
+		for (INT32 y = 0; y <= ySize; y++) {
+			for (INT32 x = 0; x <= xSize; x++) {
+				INT32 Code = Sprite + GfxOffset[y ^ (ySize * yFlip)][x ^ (xSize * xFlip)];
+				INT32 xPos = sx + 16 * x;
+				INT32 yPos = sy + 16 * y;
 				
 				if (xPos > 16 && xPos < 272 && yPos > 16 && yPos < 208) {
 					if (xFlip) {
@@ -1339,15 +1449,15 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = nBurnSoundLen;
+	INT32 nInterleave = nBurnSoundLen;
 	
 	if (DrvReset) DrvDoReset();
 
 	DrvMakeInputs();
 	
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	nCyclesTotal[0] = (18432000 / 6) / 60;
 	nCyclesTotal[1] = (18432000 / 6) / 60;
@@ -1356,18 +1466,19 @@ static int DrvFrame()
 	
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 		
-		// Run Z80 #1
 		nCurrentCPU = 0;
 		ZetOpen(nCurrentCPU);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == (nInterleave - 1) && DrvCPU1FireIRQ) ZetRaiseIrq(0);
-		if ((i == (nInterleave / 4) || i == (nInterleave / 4 * 2) || i == (nInterleave / 4 * 3)) && IOChipCPU1FireIRQ) {
+		if (i == (nInterleave - 1) && DrvCPU1FireIRQ) {
+			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		}
+		if ((i == 0 || i == (nInterleave / 3) || i == (nInterleave / 3 * 2)) && IOChipCPU1FireIRQ) {
 			ZetNmi();
 		}
 		ZetClose();
@@ -1380,7 +1491,7 @@ static int DrvFrame()
 			nCyclesSegment = ZetRun(nCyclesSegment);
 			nCyclesDone[nCurrentCPU] += nCyclesSegment;
 			if (i == (nInterleave - 1) && DrvCPU2FireIRQ) {
-				ZetRaiseIrq(0);
+				ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 			}
 			ZetClose();
 		}
@@ -1399,35 +1510,37 @@ static int DrvFrame()
 		}
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (nSegmentLength) {
 				NamcoSoundUpdate(pSoundBuf, nSegmentLength);
+				BurnSampleRender(pSoundBuf, nSegmentLength);
 			}
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			NamcoSoundUpdate(pSoundBuf, nSegmentLength);
+			BurnSampleRender(pSoundBuf, nSegmentLength);
 		}
 	}
 
 	if (pBurnDraw) DrvDraw();
 	
-	static const int Speeds[8] = { -1, -2, -3, 0, 3, 2, 1, 0 };
+	static const INT32 Speeds[8] = { -1, -2, -3, 0, 3, 2, 1, 0 };
 
 	DrvStarScrollX += Speeds[DrvStarControl[0] + (DrvStarControl[1] * 2) + (DrvStarControl[2] * 4)];
 
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1465,10 +1578,10 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(IOChipCoinPerCredit);
 		SCAN_VAR(IOChipCreditPerCoin);
 		SCAN_VAR(PrevInValue);
-		for (int i = 0; i < 6; i++) {
+		for (INT32 i = 0; i < 6; i++) {
 			SCAN_VAR(DrvStarControl[i]);
 		}
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			SCAN_VAR(IOChipCustom[i]);
 		}		
 		SCAN_VAR(DrvDip);
@@ -1479,61 +1592,61 @@ static int DrvScan(int nAction, int *pnMin)
 }
 
 struct BurnDriver BurnDrvGalaga = {
-	"galaga", NULL, NULL, NULL, "1981",
+	"galaga", NULL, NULL, "galaga", "1981",
 	"Galaga (Namco rev. B)\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, DrvRomInfo, DrvRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, DrvRomInfo, DrvRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };
 
 struct BurnDriver BurnDrvGalagao = {
-	"galagao", "galaga", NULL, NULL, "1981",
+	"galagao", "galaga", NULL, "galaga", "1981",
 	"Galaga (Namco)\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, GalagaoRomInfo, GalagaoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, GalagaoRomInfo, GalagaoRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };
 
 struct BurnDriver BurnDrvGalagamw = {
-	"galagamw", "galaga", NULL, NULL, "1981",
+	"galagamw", "galaga", NULL, "galaga", "1981",
 	"Galaga (Midway set 1)\0", NULL, "Namco (Midway License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, GalagamwRomInfo, GalagamwRomName, NULL, NULL, DrvInputInfo, GalagamwDIPInfo,
+	NULL, GalagamwRomInfo, GalagamwRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, GalagamwDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };
 
 struct BurnDriver BurnDrvGalagamk = {
-	"galagamk", "galaga", NULL, NULL, "1981",
+	"galagamk", "galaga", NULL, "galaga", "1981",
 	"Galaga (Midway set 2)\0", NULL, "Namco (Midway License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, GalagamkRomInfo, GalagamkRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, GalagamkRomInfo, GalagamkRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };
 
 struct BurnDriver BurnDrvGalagamf = {
-	"galagamf", "galaga", NULL, NULL, "1981",
+	"galagamf", "galaga", NULL, "galaga", "1981",
 	"Galaga (Midway set 1 with fast shoot hack)\0", NULL, "Namco (Midway License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, GalagamfRomInfo, GalagamfRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, GalagamfRomInfo, GalagamfRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };
 
 struct BurnDriver BurnDrvGallag = {
-	"gallag", "galaga", NULL, NULL, "1981",
+	"gallag", "galaga", NULL, "galaga", "1981",
 	"Gallag\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
-	NULL, GallagRomInfo, GallagRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, GallagRomInfo, GallagRomName, GalagaSampleInfo, GalagaSampleName, DrvInputInfo, DrvDIPInfo,
 	GallagInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 576, 224, 288, 3, 4
 };

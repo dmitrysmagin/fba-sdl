@@ -5,24 +5,24 @@
 // If bAll=1 save/load all ram to .fs
 
 // ------------ State len --------------------
-static int nTotalLen = 0;
+static INT32 nTotalLen = 0;
 
-static int __cdecl StateLenAcb(struct BurnArea* pba)
+static INT32 __cdecl StateLenAcb(struct BurnArea* pba)
 {
 	nTotalLen += pba->nLen;
 
 	return 0;
 }
 
-static int StateInfo(int* pnLen, int* pnMinVer, int bAll)
+static INT32 StateInfo(INT32* pnLen, INT32* pnMinVer, INT32 bAll)
 {
-	int nMin = 0;
+	INT32 nMin = 0;
 	nTotalLen = 0;
 	BurnAcb = StateLenAcb;
 
 	BurnAreaScan(ACB_NVRAM, &nMin);						// Scan nvram
 	if (bAll) {
-		int m;
+		INT32 m;
 		BurnAreaScan(ACB_MEMCARD, &m);					// Scan memory card
 		if (m > nMin) {									// Up the minimum, if needed
 			nMin = m;
@@ -39,19 +39,19 @@ static int StateInfo(int* pnLen, int* pnMinVer, int bAll)
 }
 
 // State load
-int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
+INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)())
 {
 	const char* szHeader = "FS1 ";						// Chunk identifier
 
-	int nLen = 0;
-	int nMin = 0, nFileVer = 0, nFileMin = 0;
-	int t1 = 0, t2 = 0;
+	INT32 nLen = 0;
+	INT32 nMin = 0, nFileVer = 0, nFileMin = 0;
+	INT32 t1 = 0, t2 = 0;
 	char ReadHeader[4];
 	char szForName[33];
-	int nChunkSize = 0;
-	unsigned char *Def = NULL;
-	int nDefLen = 0;									// Deflated version
-	int nRet = 0;
+	INT32 nChunkSize = 0;
+	UINT8 *Def = NULL;
+	INT32 nDefLen = 0;									// Deflated version
+	INT32 nRet = 0;
 
 	if (nOffset >= 0) {
 		fseek(fp, nOffset, SEEK_SET);
@@ -74,7 +74,7 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 		return -1;
 	}
 
-	int nChunkData = ftell(fp);
+	INT32 nChunkData = ftell(fp);
 
 	fread(&nFileVer, 1, 4, fp);							// Version of FB that this file was saved from
 
@@ -100,7 +100,7 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 	{
 		bool bLoadGame = false;
 
-		if (nBurnDrvSelect < nBurnDrvCount) {
+		if (nBurnDrvActive < nBurnDrvCount) {
 			if (strcmp(szForName, BurnDrvGetTextA(DRV_NAME))) {	// The save state is for the wrong game
 				bLoadGame = true;
 			}
@@ -109,16 +109,16 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 		}
 
 		if (bLoadGame) {
-			unsigned int nCurrentGame = nBurnDrvSelect;
-			unsigned int i;
+			UINT32 nCurrentGame = nBurnDrvActive;
+			UINT32 i;
 			for (i = 0; i < nBurnDrvCount; i++) {
-				nBurnDrvSelect = i;
+				nBurnDrvActive = i;
 				if (strcmp(szForName, BurnDrvGetTextA(DRV_NAME)) == 0) {
 					break;
 				}
 			}
 			if (i == nBurnDrvCount) {
-				nBurnDrvSelect = nCurrentGame;
+				nBurnDrvActive = nCurrentGame;
 				return -3;
 			} else {
 				if (pLoadGame == NULL) {
@@ -145,7 +145,7 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 	fread(&nCurrentFrame, 1, 4, fp);					//
 
 	fseek(fp, 0x0C, SEEK_CUR);							// Move file pointer to the start of the compressed block
-	Def = (unsigned char*)malloc(nDefLen);
+	Def = (UINT8*)malloc(nDefLen);
 	if (Def == NULL) {
 		return -1;
 	}
@@ -153,7 +153,10 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 	fread(Def, 1, nDefLen, fp);							// Read in deflated block
 
 	nRet = BurnStateDecompress(Def, nDefLen, bAll);		// Decompress block into driver
-	free(Def);											// free deflated block
+	if (Def) {
+		free(Def);											// free deflated block
+		Def = NULL;
+	}
 
 	fseek(fp, nChunkData + nChunkSize, SEEK_SET);
 
@@ -165,11 +168,11 @@ int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)())
 }
 
 // State load
-int BurnStateLoad(TCHAR* szName, int bAll, int (*pLoadGame)())
+INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)())
 {
 	const char szHeader[] = "FB1 ";						// File identifier
 	char szReadHeader[4] = "";
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	FILE* fp = _tfopen(szName, _T("rb"));
 	if (fp == NULL) {
@@ -193,17 +196,17 @@ int BurnStateLoad(TCHAR* szName, int bAll, int (*pLoadGame)())
 // nOffset is the absolute offset from the beginning of the file
 // -1: Append at current position
 // -2: Append at EOF
-int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll)
+INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll)
 {
 	const char* szHeader = "FS1 ";						// Chunk identifier
 
-	int nLen = 0;
-	int nNvMin = 0, nAMin = 0;
-	int nZero = 0;
+	INT32 nLen = 0;
+	INT32 nNvMin = 0, nAMin = 0;
+	INT32 nZero = 0;
 	char szGame[33];
-	unsigned char *Def = NULL;
-	int nDefLen = 0;									// Deflated version
-	int nRet = 0;
+	UINT8 *Def = NULL;
+	INT32 nDefLen = 0;									// Deflated version
+	INT32 nRet = 0;
 
 	if (fp == NULL) {
 		return -1;
@@ -230,7 +233,7 @@ int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll)
 	}
 
 	fwrite(szHeader, 1, 4, fp);							// Chunk identifier
-	int nSizeOffset = ftell(fp);						// Reserve space to write the size of this chunk
+	INT32 nSizeOffset = ftell(fp);						// Reserve space to write the size of this chunk
 	fwrite(&nZero, 1, 4, fp);							//
 
 	fwrite(&nBurnVer, 1, 4, fp);						// Version of FB this was saved from
@@ -255,7 +258,10 @@ int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll)
 	}
 
 	nRet = fwrite(Def, 1, nDefLen, fp);					// Write block to disk
-	free(Def);											// free deflated block and close file
+	if (Def) {
+		free(Def);											// free deflated block and close file
+		Def = NULL;
+	}
 
 	if (nRet != nDefLen) {								// error writing block to disk
 		return -1;
@@ -279,11 +285,11 @@ int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll)
 }
 
 // State save
-int BurnStateSave(TCHAR* szName, int bAll)
+INT32 BurnStateSave(TCHAR* szName, INT32 bAll)
 {
 	const char szHeader[] = "FB1 ";						// File identifier
-	int nLen = 0, nVer = 0;
-	int nRet = 0;
+	INT32 nLen = 0, nVer = 0;
+	INT32 nRet = 0;
 
 	if (bAll) {											// Get amount of data
 		StateInfo(&nLen, &nVer, 1);

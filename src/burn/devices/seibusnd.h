@@ -1,22 +1,21 @@
-
 #include "burn_ym3812.h"
 #include "burn_ym2151.h"
 #include "burn_ym2203.h"
 #include "msm6295.h"
 
-extern unsigned char *SeibuZ80DecROM;
-extern unsigned char *SeibuZ80ROM;
-extern unsigned char *SeibuZ80RAM;
+extern UINT8 *SeibuZ80DecROM;
+extern UINT8 *SeibuZ80ROM;
+extern UINT8 *SeibuZ80RAM;
 
-extern int seibu_coin_input;
+extern INT32 seibu_coin_input;
 
-unsigned char seibu_main_word_read(int offset);
-void seibu_main_word_write(int offset, unsigned char data);
-void seibu_sound_mustb_write_word(int offset, unsigned char data);
+unsigned char seibu_main_word_read(INT32 offset);
+void seibu_main_word_write(INT32 offset, UINT8 data);
+void seibu_sound_mustb_write_word(INT32 offset, UINT8 data);
 
 void seibu_sound_reset();
 
-void seibu_sound_update(short *pbuf, int nLen);
+void seibu_sound_update(INT16 *pbuf, INT32 nLen);
 
 /*
 	Type 0 - YM3812
@@ -27,7 +26,7 @@ void seibu_sound_update(short *pbuf, int nLen);
 	add 4 to init a second oki6295
 */
 
-void seibu_sound_init(int type, int encrypted_len, int freq0 /*cpu*/, int freq1 /*ym*/, int freq2 /*oki*/);
+void seibu_sound_init(INT32 type, INT32 encrypted_len, INT32 freq0 /*cpu*/, INT32 freq1 /*ym*/, INT32 freq2 /*oki*/);
 void seibu_sound_exit();
 
-void seibu_sound_scan(int *pnMin, int nAction);
+void seibu_sound_scan(INT32 *pnMin, INT32 nAction);

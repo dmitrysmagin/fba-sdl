@@ -2,62 +2,62 @@
 // CPS - Read/Write
 
 // Input bits
-#define INP(nnn) unsigned char CpsInp##nnn[8];
+#define INP(nnn) UINT8 CpsInp##nnn[8];
 CPSINPSET
 #undef  INP
 
 // Bytes to return from ports
-#define INP(nnn) unsigned char Inp##nnn;
+#define INP(nnn) UINT8 Inp##nnn;
 CPSINPSET
 #undef  INP
 
-unsigned short CpsInp055 = 0;
-unsigned short CpsInp05d = 0;
-unsigned short CpsInpPaddle1 = 0;
-unsigned short CpsInpPaddle2 = 0;
-static int ReadPaddle = 0;
-int CpsPaddle1Value = 0;
-int CpsPaddle2Value = 0;
-int CpsPaddle1 = 0;
-int CpsPaddle2 = 0;
-static int nDial055, nDial05d;
+UINT16 CpsInp055 = 0;
+UINT16 CpsInp05d = 0;
+UINT16 CpsInpPaddle1 = 0;
+UINT16 CpsInpPaddle2 = 0;
+static INT32 ReadPaddle = 0;
+INT32 CpsPaddle1Value = 0;
+INT32 CpsPaddle2Value = 0;
+INT32 CpsPaddle1 = 0;
+INT32 CpsPaddle2 = 0;
+static INT32 nDial055, nDial05d;
 
-int PangEEP = 0;
-int Forgottn = 0;
-int Cps1QsHack = 0;
-int Kodh = 0;
-int Cawingb = 0;
-int Wofh = 0;
-int Sf2thndr = 0;
-int Pzloop2 = 0;
-int Ssf2tb = 0;
-int Dinopic = 0;
-int Dinohunt = 0;
-int Port6SoundWrite = 0;
+INT32 PangEEP = 0;
+INT32 Forgottn = 0;
+INT32 Cps1QsHack = 0;
+INT32 Kodh = 0;
+INT32 Cawingb = 0;
+INT32 Wofh = 0;
+INT32 Sf2thndr = 0;
+INT32 Pzloop2 = 0;
+INT32 Ssf2tb = 0;
+INT32 Dinopic = 0;
+INT32 Dinohunt = 0;
+INT32 Port6SoundWrite = 0;
 
-static int nCalc[2] = {0, 0};
+static INT32 nCalc[2] = {0, 0};
 
 static const bool nCPSExtraNVRAM = false;
-static int n664001;
+static INT32 n664001;
 
-#define INP(nnnn) unsigned char CpsInp##nnnn[8];
+#define INP(nnnn) UINT8 CpsInp##nnnn[8];
 CPSINPEX
 #undef  INP
 
-#define INP(nnnn) static unsigned char Inp##nnnn;
+#define INP(nnnn) static UINT8 Inp##nnnn;
 CPSINPEX
 #undef  INP
 
 
 // Read input port 0x000-0x1ff
-static unsigned char CpsReadPort(const unsigned int ia)
+static UINT8 CpsReadPort(const UINT32 ia)
 {
-	unsigned char d = 0xFF;
+	UINT8 d = 0xFF;
 	
 //	bprintf(PRINT_NORMAL, _T("Read Port %x\n"), ia);
 	
 	if (ia == 0x000) {
-		d = (unsigned char)~Inp000;
+		d = (UINT8)~Inp000;
 		if (Pzloop2) {
 			if (ReadPaddle) {
 				d -= CpsPaddle2Value;
@@ -68,7 +68,7 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		return d;
 	}
 	if (ia == 0x001) {
-		d = (unsigned char)~Inp001;
+		d = (UINT8)~Inp001;
 		if (Pzloop2) {
 			if (ReadPaddle) {
 				d -= CpsPaddle1Value;
@@ -79,46 +79,46 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		return d;
 	}
 	if (ia == 0x010) {
-		d = (unsigned char)~Inp010;
+		d = (UINT8)~Inp010;
 		return d;
 	}
 	if (ia == 0x011) {
-		d = (unsigned char)~Inp011;
+		d = (UINT8)~Inp011;
 		return d;
 	}
 	if (ia == 0x012) {
-		d = (unsigned char)~Inp012;
+		d = (UINT8)~Inp012;
 		return d;
 	}
 	if (ia == 0x018) {
-		d = (unsigned char)~Inp018;
+		d = (UINT8)~Inp018;
 		return d;
 	}
 	if (ia == 0x019) {
-		d = (unsigned char)~Inp019;
+		d = (UINT8)~Inp019;
 		return d;
 	}
 	if (ia == 0x01A) {
-		d = (unsigned char)~Cpi01A;
+		d = (UINT8)~Cpi01A;
 		return d;
 	}
 	if (ia == 0x01C) {
-		d = (unsigned char)~Cpi01C;
+		d = (UINT8)~Cpi01C;
 		return d;
 	}
 	if (ia == 0x01E) {
-		d = (unsigned char)~Cpi01E;
+		d = (UINT8)~Cpi01E;
 		return d;
 	}
 
 	if (Cps == 2) {
 		// Used on CPS2 only I think
 		if (ia == 0x020) {
-			d = (unsigned char)~Inp020;
+			d = (UINT8)~Inp020;
 			return d;
 		}
 		if (ia == 0x021) {
-			d = (unsigned char)~Inp021;
+			d = (UINT8)~Inp021;
 			d &= 0xFE;
 			d |= EEPROMRead();
 			return d;
@@ -139,7 +139,7 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		}
 
 		if (ia >= 0x0100 && ia < 0x0200) {
-			static int nRasterLine;
+			static INT32 nRasterLine;
 
 //			bprintf(PRINT_NORMAL, _T("  - port 0x%02X (%3i)\n"), ia & 255, SekCurrentScanline());
 
@@ -165,30 +165,34 @@ static unsigned char CpsReadPort(const unsigned int ia)
 	} else {
 		// Board ID
 		if (ia == 0x100 + CpsBID[0]) {
-			d = (unsigned char)CpsBID[1];
+			d = (UINT8)CpsBID[1];
 			return d;
 		}
 		if (ia == 0x100 + (CpsBID[0] + 1)) {
-			d = (unsigned char)CpsBID[2];
+			d = (UINT8)CpsBID[2];
 			return d;
 		}
 		
 		if (Sf2thndr) {
 			// this reads the B-ID from here on startup as well as the normal location in-game
 			if (ia == 0x1c8) {
-				d = (unsigned char)CpsBID[1];
+				d = (UINT8)CpsBID[1];
 				return d;
 			}
 		
 			if (ia == 0x1c9) {
-				d = (unsigned char)CpsBID[2];
+				d = (UINT8)CpsBID[2];
 				return d;
 			}
 		}
 		
 		// CPS1 EEPROM read
 		if (ia == 0xC007) {
-			return EEPROMRead();
+			if (Cps1Qs) {
+				return EEPROMRead();
+			} else {
+				return 0;
+			}
 		}
 		
 		// Pang3 EEPROM
@@ -200,55 +204,55 @@ static unsigned char CpsReadPort(const unsigned int ia)
 		
 		// Extra Input ports (move from game-to-game)
 		if (ia == 0x006) {
-			d = (unsigned char)~Inp006;
+			d = (UINT8)~Inp006;
 			return d;
 		}
 		if (ia == 0x007) {
-			d = (unsigned char)~Inp007;
+			d = (UINT8)~Inp007;
 			return d;
 		}
 		if (ia == 0x008) {
-			d = (unsigned char)~Inp008;
+			d = (UINT8)~Inp008;
 			return d;
 		}
 		if (ia == 0x029) {
-			d = (unsigned char)~Inp029;
+			d = (UINT8)~Inp029;
 			return d;
 		}		
 		if (ia == 0x176) {
-			d = (unsigned char)~Inp176;
+			d = (UINT8)~Inp176;
 			return d;
 		}
 		if (ia == 0x177) {
-			d = (unsigned char)~Inp177;
+			d = (UINT8)~Inp177;
 			return d;
 		}		
 		if (ia == 0x179) {
-			d = (unsigned char)~Inp179;
+			d = (UINT8)~Inp179;
 			return d;
 		}
 		if (ia == 0x186) {
-			d = (unsigned char)~Inp186;
+			d = (UINT8)~Inp186;
 			return d;
 		}		
 		if (ia == 0x1fd) {
-			d = (unsigned char)~Inp1fd;
+			d = (UINT8)~Inp1fd;
 			return d;
 		}		
 		if (ia == 0xC000) {
-			d = (unsigned char)~Inpc000;
+			d = (UINT8)~Inpc000;
 			return d;
 		}
 		if (ia == 0xC001) {
-			d = (unsigned char)~Inpc001;
+			d = (UINT8)~Inpc001;
 			return d;
 		}
 		if (ia == 0xC002) {
-			d = (unsigned char)~Inpc002;
+			d = (UINT8)~Inpc002;
 			return d;
 		}
 		if (ia == 0xC003) {
-			d = (unsigned char)~Inpc003;
+			d = (UINT8)~Inpc003;
 			return d;
 		}
 		
@@ -273,12 +277,12 @@ static unsigned char CpsReadPort(const unsigned int ia)
 }
 
 // Write output port 0x000-0x1ff
-static void CpsWritePort(const unsigned int ia, unsigned char d)
+static void CpsWritePort(const UINT32 ia, UINT8 d)
 {
 	if ((Cps & 1) && Cps1Qs == 0) {
 		// CPS1 sound code
 		if (ia == 0x181 || (Port6SoundWrite && (ia == 0x006 || ia == 0x007))) {
-			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 
 			PsndCode = d;
 			return;
@@ -286,7 +290,7 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 
 		// CPS1 sound fade
 		if (ia == 0x189) {
-			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 
 			PsndFade = d;
 			return;
@@ -315,6 +319,11 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 			return;
 		}
 		CpsReg[(ia ^ 1) & 0xFF] = d;
+		
+		if (ia == 0x10b) {
+			GetPalette(0, 6);
+			CpsPalUpdate(CpsSavePal);
+		}
 		return;
 	}
 
@@ -346,7 +355,7 @@ static void CpsWritePort(const unsigned int ia, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CpsReadByte(unsigned int a)
+UINT8 __fastcall CpsReadByte(UINT32 a)
 {
 	// Input ports mirrored between 0x800000 and 0x807fff
 	if ((a & 0xFF8000) == 0x800000) {
@@ -367,14 +376,14 @@ unsigned char __fastcall CpsReadByte(unsigned int a)
 		return CpsReadPort(a & 0xC00F);
 	}
 	
-	if (Dinohunt && a == 0xfc0001) return (unsigned char)~Inpc001;
+	if (Dinohunt && a == 0xfc0001) return (UINT8)~Inpc001;
 	
 //	bprintf(PRINT_NORMAL, _T("Read Byte %x\n"), a);
 	
 	return 0x00;
 }
 
-void __fastcall CpsWriteByte(unsigned int a,unsigned char d)
+void __fastcall CpsWriteByte(UINT32 a,UINT8 d)
 {
 	// Output ports mirrored between 0x800000 and 0x807fff
 	if ((a & 0xFF8000) == 0x800000) {
@@ -411,14 +420,14 @@ void __fastcall CpsWriteByte(unsigned int a,unsigned char d)
 //	bprintf(PRINT_NORMAL, _T("Write Byte %x, %x\n"), a, d);
 }
 
-unsigned short __fastcall CpsReadWord(unsigned int a)
+UINT16 __fastcall CpsReadWord(UINT32 a)
 {
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[3]) {
-		return (unsigned short)((nCalc[0] * nCalc[1]) >> 16);
+		return (UINT16)((nCalc[0] * nCalc[1]) >> 16);
 	}
 	// ports mirrored between 0x800000 and 0x807fff
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[2]) {
-		return (unsigned short)((nCalc[0] * nCalc[1]));
+		return (UINT16)((nCalc[0] * nCalc[1]));
 	}
 	
 //	bprintf(PRINT_NORMAL, _T("Read Word %x\n"), a);
@@ -426,7 +435,7 @@ unsigned short __fastcall CpsReadWord(unsigned int a)
 	SEK_DEF_READ_WORD(0, a);
 }
 
-void __fastcall CpsWriteWord(unsigned int a, unsigned short d)
+void __fastcall CpsWriteWord(UINT32 a, UINT16 d)
 {
 	// ports mirrored between 0x800000 and 0x807fff
 	if ((a & 0xFF8FFF) == 0x800100 + CpsMProt[0])
@@ -452,7 +461,7 @@ void __fastcall CpsWriteWord(unsigned int a, unsigned short d)
 }
 
 // Reset all inputs to zero
-static int InpBlank()
+static INT32 InpBlank()
 {
 #define INP(nnn) Inp##nnn = 0; memset(CpsInp##nnn, 0, sizeof(CpsInp##nnn));
 	CPSINPSET
@@ -467,19 +476,19 @@ static int InpBlank()
 	return 0;
 }
 
-int CpsRwInit()
+INT32 CpsRwInit()
 {
 	InpBlank();
 	return 0;
 }
 
-int CpsRwExit()
+INT32 CpsRwExit()
 {
 	InpBlank();
 	return 0;
 }
 
-inline static void StopOpposite(unsigned char* pInput)
+inline static void StopOpposite(UINT8* pInput)
 {
 	if ((*pInput & 0x03) == 0x03) {
 		*pInput &= ~0x03;
@@ -489,26 +498,26 @@ inline static void StopOpposite(unsigned char* pInput)
 	}
 }
 
-int CpsRwGetInp()
+INT32 CpsRwGetInp()
 {
 	// Compile separate buttons into Inpxxx
 #define INP(nnn) \
-  { int i = 0; Inp##nnn = 0; \
+  { INT32 i = 0; Inp##nnn = 0; \
     for (i = 0; i < 8; i++) { Inp##nnn |= (CpsInp##nnn[i] & 1) << i; }  }
 	CPSINPSET
 #undef INP
 
 
 #define INP(nnnn) \
-  { int i = 0; Inp##nnnn = 0; \
+  { INT32 i = 0; Inp##nnnn = 0; \
     for (i = 0; i < 8; i++) { Inp##nnnn |= (CpsInp##nnnn[i] & 1) << i; }  }
 	CPSINPEX
 #undef INP
 
 	if (Forgottn) {
 		// Handle analog controls
-		nDial055 += (int)((short)CpsInp055);
-		nDial05d += (int)((short)CpsInp05d);
+		nDial055 += (INT32)((INT16)CpsInp055);
+		nDial05d += (INT32)((INT16)CpsInp05d);
 	}
 	
 	if (Pzloop2) {
@@ -545,7 +554,7 @@ int CpsRwGetInp()
 
 	// Ghouls uses a 4-way stick
 	if (Ghouls) {
-		static unsigned char nPrevInp000, nPrevInp001;
+		static UINT8 nPrevInp000, nPrevInp001;
 
 		if ((Inp000 & 0x03) && (Inp000 & 0x0C)) {
 			Inp000 ^= (nPrevInp000 & 0x0F);

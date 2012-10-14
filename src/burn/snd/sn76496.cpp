@@ -10,7 +10,7 @@
 
 struct SN76496
 {
-	unsigned int UpdateStep;
+	UINT32 UpdateStep;
 	INT32 VolTable[16];	/* volume table         */
 	INT32 Register[8];	/* registers */
 	INT32 LastRegister;	/* last register written */
@@ -23,20 +23,26 @@ struct SN76496
 	INT32 Period[4];
 	INT32 Count[4];
 	INT32 Output[4];
-	int bSignalAdd;
+	INT32 bSignalAdd;
+	INT32 nVolShift;
 };
 
-static int NumChips;
+static INT32 NumChips;
 static struct SN76496 *Chip0 = NULL;
 static struct SN76496 *Chip1 = NULL;
 static struct SN76496 *Chip2 = NULL;
 static struct SN76496 *Chip3 = NULL;
 static struct SN76496 *Chip4 = NULL;
 
-void SN76496Update(int Num, short* pSoundBuf, int Length)
+void SN76496Update(INT32 Num, INT16* pSoundBuf, INT32 Length)
 {
-	int i;
-	int Temp;
+#if defined FBA_DEBUG
+	if (!DebugSnd_SN76496Initted) bprintf(PRINT_ERROR, _T("SN76496Update called without init\n"));
+	if (Num > NumChips) bprintf(PRINT_ERROR, _T("SN76496Update called with invalid chip %x\n"), Num);
+#endif
+
+	INT32 i;
+	INT32 Temp;
 	struct SN76496 *R = Chip0;
 	
 	if (Num >= MAX_SN76496_CHIPS) return;
@@ -60,9 +66,9 @@ void SN76496Update(int Num, short* pSoundBuf, int Length)
 
 	while (Length > 0)
 	{
-		int Vol[4];
-		unsigned int Out;
-		int Left;
+		INT32 Vol[4];
+		UINT32 Out;
+		INT32 Left;
 
 
 		/* vol[] keeps track of how long each square wave stays */
@@ -99,7 +105,7 @@ void SN76496Update(int Num, short* pSoundBuf, int Length)
 		Left = STEP;
 		do
 		{
-			int NextEvent;
+			INT32 NextEvent;
 
 
 			if (R->Count[3] < Left) NextEvent = R->Count[3];
@@ -150,6 +156,8 @@ void SN76496Update(int Num, short* pSoundBuf, int Length)
 
 		Out /= STEP;
 		
+		Out >>= R->nVolShift;
+		
 		if (R->bSignalAdd) {
 			Temp = pSoundBuf[0] + Out;
 			if (Temp > 32767) Temp = 32767;
@@ -171,10 +179,15 @@ void SN76496Update(int Num, short* pSoundBuf, int Length)
 	}
 }
 
-void SN76496Write(int Num, int Data)
+void SN76496Write(INT32 Num, INT32 Data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_SN76496Initted) bprintf(PRINT_ERROR, _T("SN76496Write called without init\n"));
+	if (Num > NumChips) bprintf(PRINT_ERROR, _T("SN76496Write called with invalid chip %x\n"), Num);
+#endif
+
 	struct SN76496 *R = Chip0;
-	int n, r, c;
+	INT32 n, r, c;
 	
 	if (Num >= MAX_SN76496_CHIPS) return;
 	
@@ -231,9 +244,9 @@ void SN76496Write(int Num, int Data)
 	}
 }
 
-static void SN76496SetGain(struct SN76496 *R,int Gain)
+static void SN76496SetGain(struct SN76496 *R,INT32 Gain)
 {
-	int i;
+	INT32 i;
 	double Out;
 
 	Gain &= 0xff;
@@ -255,11 +268,11 @@ static void SN76496SetGain(struct SN76496 *R,int Gain)
 	R->VolTable[15] = 0;
 }
 
-static void SN76496Init(struct SN76496 *R, int Clock)
+static void SN76496Init(struct SN76496 *R, INT32 Clock)
 {
-	int i;
+	INT32 i;
 	
-	R->UpdateStep = (unsigned int)(((double)STEP * nBurnSoundRate * 16) / Clock);
+	R->UpdateStep = (UINT32)(((double)STEP * nBurnSoundRate * 16) / Clock);
 		
 	for (i = 0; i < 4; i++) R->Volume[i] = 0;
 	
@@ -282,8 +295,10 @@ static void SN76496Init(struct SN76496 *R, int Clock)
 	R->Output[3] = R->RNG & 1;
 }
 
-static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, int NoiseInvert, int SignalAdd)
+static void GenericStart(INT32 Num, INT32 Clock, INT32 FeedbackMask, INT32 NoiseTaps, INT32 NoiseInvert, INT32 SignalAdd)
 {
+	DebugSnd_SN76496Initted = 1;
+	
 	if (Num >= MAX_SN76496_CHIPS) return;
 	
 	NumChips = Num;
@@ -299,6 +314,7 @@ static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, in
 		Chip0->WhitenoiseTaps = NoiseTaps;
 		Chip0->WhitenoiseInvert = NoiseInvert;
 		Chip0->bSignalAdd = SignalAdd;
+		Chip0->nVolShift = 0;
 	}
 	
 	if (Num == 1) {
@@ -312,6 +328,7 @@ static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, in
 		Chip1->WhitenoiseTaps = NoiseTaps;
 		Chip1->WhitenoiseInvert = NoiseInvert;
 		Chip1->bSignalAdd = SignalAdd;
+		Chip1->nVolShift = 0;
 	}
 	
 	if (Num == 2) {
@@ -325,6 +342,7 @@ static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, in
 		Chip2->WhitenoiseTaps = NoiseTaps;
 		Chip2->WhitenoiseInvert = NoiseInvert;
 		Chip2->bSignalAdd = SignalAdd;
+		Chip2->nVolShift = 0;
 	}
 	
 	if (Num == 3) {
@@ -338,6 +356,7 @@ static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, in
 		Chip3->WhitenoiseTaps = NoiseTaps;
 		Chip3->WhitenoiseInvert = NoiseInvert;
 		Chip3->bSignalAdd = SignalAdd;
+		Chip3->nVolShift = 0;
 	}
 	
 	if (Num == 4) {
@@ -351,31 +370,36 @@ static void GenericStart(int Num, int Clock, int FeedbackMask, int NoiseTaps, in
 		Chip4->WhitenoiseTaps = NoiseTaps;
 		Chip4->WhitenoiseInvert = NoiseInvert;
 		Chip4->bSignalAdd = SignalAdd;
+		Chip4->nVolShift = 0;
 	}
 }
 
-void SN76489Init(int Num, int Clock, int SignalAdd)
+void SN76489Init(INT32 Num, INT32 Clock, INT32 SignalAdd)
 {
 	return GenericStart(Num, Clock, 0x4000, 0x03, 1, SignalAdd);
 }
 
-void SN76489AInit(int Num, int Clock, int SignalAdd)
+void SN76489AInit(INT32 Num, INT32 Clock, INT32 SignalAdd)
 {
 	return GenericStart(Num, Clock, 0x8000, 0x06, 0, SignalAdd);
 }
 
-void SN76494Init(int Num, int Clock, int SignalAdd)
+void SN76494Init(INT32 Num, INT32 Clock, INT32 SignalAdd)
 {
 	return GenericStart(Num, Clock, 0x8000, 0x06, 0, SignalAdd);
 }
 
-void SN76496Init(int Num, int Clock, int SignalAdd)
+void SN76496Init(INT32 Num, INT32 Clock, INT32 SignalAdd)
 {
 	return GenericStart(Num, Clock, 0x8000, 0x06, 0, SignalAdd);
 }
 
 void SN76496Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_SN76496Initted) bprintf(PRINT_ERROR, _T("SN76496Exit called without init\n"));
+#endif
+
 	NumChips = 0;
 	
 	if (Chip0!=NULL)
@@ -403,62 +427,70 @@ void SN76496Exit()
 		free(Chip4);
 		Chip4 = NULL;
 	}
+	
+	DebugSnd_SN76496Initted = 0;
 }
 
-int SN76496Scan(int nAction,int *pnMin)
+void SN76496SetVolShift(INT32 Num, INT32 nVolShift)
 {
-	struct BurnArea ba;
+#if defined FBA_DEBUG
+	if (!DebugSnd_SN76496Initted) bprintf(PRINT_ERROR, _T("SN76496SetVolShift called without init\n"));
+	if (Num > NumChips) bprintf(PRINT_ERROR, _T("SN76496SetVolShift called with invalid chip %x\n"), Num);
+#endif
+	
+	if (Num == 0) Chip0->nVolShift = nVolShift;
+	if (Num == 1) Chip1->nVolShift = nVolShift;
+	if (Num == 2) Chip2->nVolShift = nVolShift;
+	if (Num == 3) Chip3->nVolShift = nVolShift;
+	if (Num == 4) Chip4->nVolShift = nVolShift;
+}
+
+INT32 SN76496Scan(INT32 nAction,INT32 *pnMin)
+{
+#if defined FBA_DEBUG
+	if (!DebugSnd_SN76496Initted) bprintf(PRINT_ERROR, _T("SN76496Scan called without init\n"));
+#endif
+
 	char szName[16];
 	
-	if ((nAction & ACB_DRIVER_DATA) == 0) {
-		return 1;
-	}
-	
 	if (pnMin != NULL) {
-		*pnMin = 0x029675;
+		*pnMin = 0x029719;
 	}
 	
-	sprintf(szName, "SN76496 #0");
-	ba.Data		= &Chip0;
-	ba.nLen		= sizeof(struct SN76496);
-	ba.nAddress = 0;
-	ba.szName	= szName;
-	BurnAcb(&ba);
-	
-	if (NumChips >= 1) {
-		sprintf(szName, "SN76496 #1");
-		ba.Data		= &Chip1;
-		ba.nLen		= sizeof(struct SN76496);
-		ba.nAddress = 0;
-		ba.szName	= szName;
-		BurnAcb(&ba);
-	}
-	
-	if (NumChips >= 2) {
-		sprintf(szName, "SN76496 #2");
-		ba.Data		= &Chip2;
-		ba.nLen		= sizeof(struct SN76496);
-		ba.nAddress = 0;
-		ba.szName	= szName;
-		BurnAcb(&ba);
-	}
-	
-	if (NumChips >= 3) {
-		sprintf(szName, "SN76496 #3");
-		ba.Data		= &Chip3;
-		ba.nLen		= sizeof(struct SN76496);
-		ba.nAddress = 0;
-		ba.szName	= szName;
-		BurnAcb(&ba);
-	}
-	
-	if (NumChips >= 4) {
-		sprintf(szName, "SN76496 #4");
-		ba.Data		= &Chip4;
-		ba.nLen		= sizeof(struct SN76496);
-		ba.nAddress = 0;
-		ba.szName	= szName;
-		BurnAcb(&ba);
+	if (nAction & ACB_DRIVER_DATA) {
+		for (INT32 i = 0; i < NumChips; i++) {
+			SN76496 *Chip = Chip0;
+			if (i == 1) Chip = Chip1;
+			if (i == 2) Chip = Chip2;
+			if (i == 3) Chip = Chip3;
+			if (i == 4) Chip = Chip4;
+			
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iVolTable", i);
+			ScanVar(Chip->VolTable, 16 * sizeof(INT32), szName);
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iRegisters", i);
+			ScanVar(Chip->Register, 8 * sizeof(INT32), szName);
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iVolume", i);
+			ScanVar(Chip->Volume, 4 * sizeof(INT32), szName);
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iPeriod", i);
+			ScanVar(Chip->Period, 4 * sizeof(INT32), szName);
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iCount", i);
+			ScanVar(Chip->Count, 4 * sizeof(INT32), szName);
+			memset(szName, 0, 16);
+			sprintf(szName, "Chip%iOutput", i);
+			ScanVar(Chip->Output, 4 * sizeof(INT32), szName);
+			
+			SCAN_VAR(Chip->LastRegister);
+			SCAN_VAR(Chip->RNG);
+			SCAN_VAR(Chip->NoiseMode);
+			SCAN_VAR(Chip->FeedbackMask);
+			SCAN_VAR(Chip->WhitenoiseTaps);
+			SCAN_VAR(Chip->WhitenoiseInvert);
+		}
 	}
 	
 	return 0;

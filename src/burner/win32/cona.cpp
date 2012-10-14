@@ -23,7 +23,7 @@ struct VidPresetDataVer VidPresetVer[4] = {
 
 static void CreateConfigName(TCHAR* szConfig)
 {
-	_stprintf(szConfig, _T("config\\%s.ini"), szAppExeName);
+	_stprintf(szConfig, _T("config/%s.ini"), szAppExeName);
 	return;
 }
 
@@ -62,6 +62,10 @@ int ConfigAppLoad()
   if (szValue) x = _tcstod(szValue, NULL); }
 #define STR(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x) _T(" "));	\
   if (szValue) _tcscpy(x,szValue); }
+#define PAT(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x) _T(" "));	\
+	if (szValue) { _tcscpy(x, szValue); UpdatePath(x); } }
+#define DRV(x) { TCHAR* szValue = LabelCheck(szLine,_T(#x) _T(" "));	\
+  if (szValue) x = NameToDriver(szValue); }
 
 		VAR(nIniVersion);
 
@@ -118,9 +122,11 @@ int ConfigAppLoad()
 		VAR64(nVidBlitterOpt[1]);
 		VAR(nVidBlitterOpt[2]);
 		VAR(nVidBlitterOpt[3]);
+		VAR(nVidBlitterOpt[4]);
 
 		// DirectDraw blitter
 		VAR(bVidScanHalf);
+		VAR(bVidForceFlip);
 
 		// Direct3D blitter
 		VAR(bVidBilinear);
@@ -137,6 +143,11 @@ int ConfigAppLoad()
 		// DirectX Graphics blitter
 		FLT(dVidCubicB);
 		FLT(dVidCubicC);
+		
+		// DirectX Graphics 9 Alt blitter
+		VAR(bVidDX9Bilinear);
+		VAR(bVidHardwareVertex);
+		VAR(bVidMotionBlur);
 
 		// Sound
 		VAR(nAudSelect);
@@ -150,6 +161,8 @@ int ConfigAppLoad()
 
 		// Other
 		STR(szLocalisationTemplate);
+		STR(szGamelistLocalisationTemplate);
+		VAR(nGamelistLocalisationActive);
 
 		VAR(nVidSDisplayStatus);
 		VAR(nMinChatFontSize);
@@ -164,7 +177,12 @@ int ConfigAppLoad()
 		VAR(bAlwaysProcessKeyboardInput);
 		VAR(bAutoPause);
 		VAR(bSaveInputs);
+		
+		VAR(nCDEmuSelect);
+		PAT(CDEmuImage);
 
+		VAR(nSelDlgWidth);
+		VAR(nSelDlgHeight);
 		VAR(nLoadMenuShowX);
 		VAR(nLoadMenuBoardTypeFilter);
 		VAR(nLoadMenuGenreFilter);
@@ -178,16 +196,38 @@ int ConfigAppLoad()
 		STR(szAppRomPaths[5]);
 		STR(szAppRomPaths[6]);
 		STR(szAppRomPaths[7]);
+		STR(szAppRomPaths[8]);
+		STR(szAppRomPaths[9]);
+		STR(szAppRomPaths[10]);
+		STR(szAppRomPaths[11]);
+		STR(szAppRomPaths[12]);
+		STR(szAppRomPaths[13]);
+		STR(szAppRomPaths[14]);
+		STR(szAppRomPaths[15]);
+		STR(szAppRomPaths[16]);
+		STR(szAppRomPaths[17]);
+		STR(szAppRomPaths[18]);
+		STR(szAppRomPaths[19]);
+		
+		STR(szNeoCDGamesDir);
 		
 		STR(szAppPreviewsPath);
 		STR(szAppTitlesPath);
 		STR(szAppCheatsPath);
 		STR(szAppHiscorePath);
 		STR(szAppSamplesPath);
+		STR(szAppIpsPath);
+		STR(szAppIconsPath);
+		STR(szNeoCDCoverDir);
 
 		VAR(bNoChangeNumLock);
 		
 		VAR(EnableHiscores);
+		
+		VAR(nIpsSelectedLanguage);
+		
+		VAR(bEnableIcons);
+		VAR(nIconsSize);
 		
 		STR(szPrevGames[0]);
 		STR(szPrevGames[1]);
@@ -199,6 +239,17 @@ int ConfigAppLoad()
 		STR(szPrevGames[7]);
 		STR(szPrevGames[8]);
 		STR(szPrevGames[9]);
+		
+		// MVS cartridges
+		DRV(nBurnDrvSelect[0]);
+		DRV(nBurnDrvSelect[1]);
+		DRV(nBurnDrvSelect[2]);
+		DRV(nBurnDrvSelect[3]);
+		DRV(nBurnDrvSelect[4]);
+		DRV(nBurnDrvSelect[5]);
+		
+		VAR(bNeoCDListScanSub);
+		VAR(bNeoCDListScanOnlyISO);
 
 		// Default Controls
 		VAR(nPlayerDefaultControls[0]);
@@ -210,6 +261,8 @@ int ConfigAppLoad()
 		VAR(nPlayerDefaultControls[3]);
 		STR(szPlayerDefaultIni[3]);
 
+#undef DRV
+#undef PAT
 #undef STR
 #undef FLT
 #undef VAR
@@ -249,6 +302,7 @@ int ConfigAppSave()
 #define VAR64(x) _ftprintf(h, _T(#x) _T(" %lf\n"),  (float)x)
 #define FLT(x) _ftprintf(h, _T(#x) _T(" %lf\n"), x)
 #define STR(x) _ftprintf(h, _T(#x) _T(" %s\n"),  x)
+#define DRV(x) _ftprintf(h, _T(#x) _T(" %s\n"),  DriverToName(x))
 
 	_ftprintf(h, _T("\n// The application version this file was saved from\n"));
 	// We can't use the macros for this!
@@ -336,6 +390,7 @@ int ConfigAppSave()
 	VAR64(nVidBlitterOpt[1]);
 	VAR(nVidBlitterOpt[2]);
 	VAR(nVidBlitterOpt[3]);
+	VAR(nVidBlitterOpt[4]);
 	_ftprintf(h, _T("\n// If non-zero, attempt to auto-detect the monitor aspect ratio\n"));
 	VAR(bMonitorAutoCheck);
 	_ftprintf(h, _T("\n// The aspect ratio of the monitor\n"));
@@ -350,6 +405,8 @@ int ConfigAppSave()
 	_ftprintf(h, _T("// --- DirectDraw blitter module settings -------------------------------------\n"));
 	_ftprintf(h, _T("\n// If non-zero, draw scanlines at 50%% intensity\n"));
 	VAR(bVidScanHalf);
+	_ftprintf(h, _T("\n// If non-zero, force flipping for games that need it\n"));
+	VAR(bVidForceFlip);
 	_ftprintf(h, _T("\n"));
 	_ftprintf(h, _T("// --- Direct3D 7 blitter module settings -------------------------------------\n"));
 	_ftprintf(h, _T("\n// If non-zero, use bi-linear filtering to display the image\n"));
@@ -373,6 +430,14 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// The filter parameters for the cubic filter\n"));
 	FLT(dVidCubicB);
 	FLT(dVidCubicC);
+	_ftprintf(h, _T("\n"));
+	_ftprintf(h, _T("// --- DirectX Graphics 9 Alt blitter module settings -------------------------\n"));
+	_ftprintf(h, _T("\n// If non-zero, use bi-linear filtering to display the image\n"));
+	VAR(bVidDX9Bilinear);
+	_ftprintf(h, _T("\n// If non-zero, use hardware vertex to display the image\n"));
+	VAR(bVidHardwareVertex);
+	_ftprintf(h, _T("\n// If non-zero, use motion blur to display the image\n"));
+	VAR(bVidMotionBlur);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- Sound ------------------------------------------------------------------\n"));
@@ -403,6 +468,12 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// Filename of the active UI translation template\n"));
 	STR(szLocalisationTemplate);
 	
+	_ftprintf(h, _T("\n// Filename of the active gamelist translation template\n"));
+	STR(szGamelistLocalisationTemplate);
+	
+	_ftprintf(h, _T("\n// If non-zero, enable gamelist localisation\n"));
+	VAR(nGamelistLocalisationActive);
+	
 	_ftprintf(h, _T("\n// 1 = display pause/record/replay/kaillera icons in the upper right corner of the display\n"));
 	VAR(nVidSDisplayStatus);
 	_ftprintf(h, _T("\n// Minimum height (in pixels) of the font used for the Kaillera chat function (used for arcade resolution)\n"));
@@ -426,8 +497,20 @@ int ConfigAppSave()
 	VAR(bAutoPause);
 	_ftprintf(h, _T("\n// If non-zero, save the inputs for each game\n"));
 	VAR(bSaveInputs);
-	_ftprintf(h, _T("\n"));
-	_ftprintf(h, _T("// --- Load Game Dialog -------------------------------------------------------\n"));
+	
+	_ftprintf(h, _T("\n\n\n"));
+	_ftprintf(h, _T("// --- CD emulation -----------------------------------------------------------\n"));
+	_ftprintf(h, _T("\n // The selected CD emulation module\n"));
+	VAR(nCDEmuSelect);
+	_ftprintf(h, _T("\n // The path to the CD image to use (.cue or .iso)\n"));
+	STR(CDEmuImage);
+	
+	_ftprintf(h, _T("\n\n\n"));
+	_ftprintf(h, _T("// --- Load Game Dialogs ------------------------------------------------------\n"));
+	_ftprintf(h, _T("\n// Load game dialog dimensions (in win32 client co-ordinates)\n"));
+	VAR(nSelDlgWidth);
+	VAR(nSelDlgHeight);
+	
 	_ftprintf(h, _T("\n// Load game dialog options\n"));
 	VAR(nLoadMenuShowX);
 	
@@ -449,6 +532,21 @@ int ConfigAppSave()
 	STR(szAppRomPaths[5]);
 	STR(szAppRomPaths[6]);
 	STR(szAppRomPaths[7]);
+	STR(szAppRomPaths[8]);
+	STR(szAppRomPaths[9]);
+	STR(szAppRomPaths[10]);
+	STR(szAppRomPaths[11]);
+	STR(szAppRomPaths[12]);
+	STR(szAppRomPaths[13]);
+	STR(szAppRomPaths[14]);
+	STR(szAppRomPaths[15]);
+	STR(szAppRomPaths[16]);
+	STR(szAppRomPaths[17]);
+	STR(szAppRomPaths[18]);
+	STR(szAppRomPaths[19]);
+	
+	_ftprintf(h, _T("\n// The path to search for Neo Geo CDZ isos\n"));
+	STR(szNeoCDGamesDir);
 	
 	_ftprintf(h, _T("\n// The paths to search for support files (include trailing backslash)\n"));
 	STR(szAppPreviewsPath);
@@ -456,6 +554,21 @@ int ConfigAppSave()
 	STR(szAppCheatsPath);
 	STR(szAppHiscorePath);
 	STR(szAppSamplesPath);
+	STR(szAppIpsPath);
+	STR(szAppIconsPath);
+	STR(szNeoCDCoverDir);
+	
+	_ftprintf(h, _T("\n// The cartridges to use for emulation of an MVS system\n"));
+	DRV(nBurnDrvSelect[0]);
+	DRV(nBurnDrvSelect[1]);
+	DRV(nBurnDrvSelect[2]);
+	DRV(nBurnDrvSelect[3]);
+	DRV(nBurnDrvSelect[4]);
+	DRV(nBurnDrvSelect[5]);
+	
+	_ftprintf(h, _T("\n// Neo Geo CD Load Game Dialog options\n"));
+	VAR(bNeoCDListScanSub);
+	VAR(bNeoCDListScanOnlyISO);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- miscellaneous ---------------------------------------------------------\n"));
@@ -465,6 +578,15 @@ int ConfigAppSave()
 	
 	_ftprintf(h, _T("\n// If non-zero, enable high score saving support.\n"));
 	VAR(EnableHiscores);
+	
+	_ftprintf(h, _T("\n// The language index to use for the IPS Patch Manager dialog.\n"));
+	VAR(nIpsSelectedLanguage);
+	
+	_ftprintf(h, _T("\n// If non-zero, display drivers icons.\n"));
+	VAR(bEnableIcons);
+
+	_ftprintf(h, _T("\n// Specify icons display size, 0 = 16x16 , 1 = 24x24, 2 = 32x32.\n"));
+	VAR(nIconsSize);
 	
 	_ftprintf(h, _T("\n// Previous games list.\n"));
 	STR(szPrevGames[0]);
@@ -490,9 +612,11 @@ int ConfigAppSave()
 
 	_ftprintf(h, _T("\n\n\n"));
 
+#undef DRV
 #undef STR
 #undef FLT
 #undef VAR
+#undef VAR64
 
 	fclose(h);
 	return 0;

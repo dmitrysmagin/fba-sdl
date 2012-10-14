@@ -1,17 +1,19 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "taito.h"
 #include "taito_ic.h"
 #include "eeprom.h"
 #include "es5506.h"
 
 
-static unsigned char *TaitoF3SoundRam = NULL;
-static unsigned char *TaitoF3SharedRam = NULL;
-static unsigned char *TaitoES5510DSPRam = NULL;
-static int TaitoF3Counter;
-static int TaitoF3VectorReg;
-static int M68681IMR;
-static int IMRStatus;
+static UINT8 *TaitoF3SoundRam = NULL;
+static UINT8 *TaitoF3SharedRam = NULL;
+static UINT8 *TaitoES5510DSPRam = NULL;
+static INT32 TaitoF3Counter;
+static INT32 TaitoF3VectorReg;
+static INT32 M68681IMR;
+static INT32 IMRStatus;
 static UINT32 TaitoES5510GPRLatch;
 static UINT32 *TaitoES5510GPR = NULL;
 
@@ -22,9 +24,9 @@ static UINT32 TaitoF3SoundTriggerIRQPulseCycleCounter = 0;
 #define IRQ_TRIGGER_OFF		0
 #define IRQ_TRIGGER_ONCE	1
 #define IRQ_TRIGGER_PULSE	2
-static int TaitoF3SoundTriggerIRQCyclesMode = 0;
+static INT32 TaitoF3SoundTriggerIRQCyclesMode = 0;
 
-static int __fastcall TaitoF3SoundIRQCallback(int /*irq*/)
+static INT32 __fastcall TaitoF3SoundIRQCallback(INT32 /*irq*/)
 {
 	return TaitoF3VectorReg;
 }
@@ -44,10 +46,10 @@ static void TaitoF3SoundReset()
 	SekClose();
 }
 
-unsigned char __fastcall TaitoF3Sound68KReadByte(unsigned int a)
+UINT8 __fastcall TaitoF3Sound68KReadByte(UINT32 a)
 {
 	if (a >= 0x140000 && a <= 0x140fff) {
-		int Offset = (a - 0x140000) >> 1;
+		INT32 Offset = (a - 0x140000) >> 1;
 		UINT32 *Ram = (UINT32*)TaitoF3SharedRam;
 		if ((Offset&3)==0) return (Ram[Offset/4]&0xff000000)>>16;
 		if ((Offset&3)==1) return (Ram[Offset/4]&0x00ff0000)>>8;
@@ -56,7 +58,7 @@ unsigned char __fastcall TaitoF3Sound68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x260000 && a <= 0x2601ff) {
-		int Offset = (a - 0x260000) >> 1;
+		INT32 Offset = (a - 0x260000) >> 1;
 		UINT16 *Ram = (UINT16*)TaitoES5510DSPRam;
 		
 		if (Offset == 0x12) return 0;
@@ -66,10 +68,10 @@ unsigned char __fastcall TaitoF3Sound68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x280000 && a <= 0x28001f) {
-		int Offset = (a - 0x280000) >> 1;
+		INT32 Offset = (a - 0x280000) >> 1;
 		
 		if (Offset == 0x05) {
-			int Ret = IMRStatus;
+			INT32 Ret = IMRStatus;
 			IMRStatus = 0;
 			return Ret;
 		}
@@ -93,10 +95,10 @@ unsigned char __fastcall TaitoF3Sound68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall TaitoF3Sound68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall TaitoF3Sound68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x260000 && a <= 0x2601ff) {
-		int Offset = (a - 0x260000) >> 1;
+		INT32 Offset = (a - 0x260000) >> 1;
 		UINT16 *Ram = (UINT16*)TaitoES5510DSPRam;
 		Ram[Offset] = d;
 
@@ -150,7 +152,7 @@ void __fastcall TaitoF3Sound68KWriteByte(unsigned int a, unsigned char d)
 	}
 	
 	if (a >= 0x280000 && a <= 0x28001f) {
-		int Offset = (a - 0x280000) >> 1;
+		INT32 Offset = (a - 0x280000) >> 1;
 		
 		switch (Offset) {
 			case 0x04: {
@@ -235,7 +237,7 @@ void __fastcall TaitoF3Sound68KWriteByte(unsigned int a, unsigned char d)
 	
 	if (a >= 0x300000 && a <= 0x30003f) {
 		UINT32 MaxBanks = (TaitoES5505RomSize / 0x200000) - 1;
-		int Offset = (a - 0x300000) >> 1;
+		INT32 Offset = (a - 0x300000) >> 1;
 		
 		d &= MaxBanks;
 		es5505_voice_bank_w(Offset, d << 20);
@@ -256,10 +258,10 @@ void __fastcall TaitoF3Sound68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall TaitoF3Sound68KReadWord(unsigned int a)
+UINT16 __fastcall TaitoF3Sound68KReadWord(UINT32 a)
 {
 	if (a >= 0x200000 && a <= 0x20001f) {
-		int Offset = (a - 0x200000) >> 1;
+		INT32 Offset = (a - 0x200000) >> 1;
 		// es5505_r
 		return ES5505Read(Offset);
 	}
@@ -273,10 +275,10 @@ unsigned short __fastcall TaitoF3Sound68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall TaitoF3Sound68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall TaitoF3Sound68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x200000 && a <= 0x20001f) {
-		int Offset = (a - 0x200000) >> 1;
+		INT32 Offset = (a - 0x200000) >> 1;
 		// es5505_w
 		ES5505Write(Offset, d);
 		return;
@@ -295,22 +297,22 @@ void __fastcall TaitoF3Sound68KWriteWord(unsigned int a, unsigned short d)
 
 
 struct SpriteEntry {
-	int Code;
-	int x;
-	int y;
-	int Colour;
-	int xFlip;
-	int yFlip;
-	int xZoom;
-	int yZoom;
-	int Priority;
+	INT32 Code;
+	INT32 x;
+	INT32 y;
+	INT32 Colour;
+	INT32 xFlip;
+	INT32 yFlip;
+	INT32 xZoom;
+	INT32 yZoom;
+	INT32 Priority;
 };
 
 static struct SpriteEntry *SpriteList;
 
-static unsigned char SuperchsCoinWord;
-static unsigned short SuperchsCpuACtrl;
-static unsigned int SuperchsSteer = 0;
+static UINT8 SuperchsCoinWord;
+static UINT16 SuperchsCpuACtrl;
+static UINT32 SuperchsSteer = 0;
 
 static struct BurnInputInfo SuperchsInputList[] =
 {
@@ -339,7 +341,7 @@ static void SuperchsMakeInputs()
 	TaitoInput[1] = 0xff;
 	TaitoInput[2] = 0xe7;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TaitoInput[0] -= (TaitoInputPort0[i] & 1) << i;
 		TaitoInput[1] -= (TaitoInputPort1[i] & 1) << i;
 		TaitoInput[2] -= (TaitoInputPort2[i] & 1) << i;
@@ -347,30 +349,30 @@ static void SuperchsMakeInputs()
 }
 
 static struct BurnRomInfo SuperchsRomDesc[] = {
-	{ "d46-35.27",          0x040000, 0x1575c9a7, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
-	{ "d46-34.25",          0x040000, 0xc72a4d2b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
-	{ "d46-33.23",          0x040000, 0x3094bcd0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
-	{ "d46-31.21",          0x040000, 0x38b983a3, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-35.ic27",        0x040000, 0x1575c9a7, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-34.ic25",        0x040000, 0xc72a4d2b, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-33.ic23",        0x040000, 0x3094bcd0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-31.ic21",        0x040000, 0x38b983a3, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
 	
-	{ "d46-24.127",         0x020000, 0xa006baa1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
-	{ "d46-23.112",         0x020000, 0x9a69dbd0, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "d46-24.ic127",       0x020000, 0xa006baa1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "d46-23.ic112",       0x020000, 0x9a69dbd0, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "d46-37.8up",         0x020000, 0x60b51b91, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
-	{ "d46-36.7lo",         0x020000, 0x8f7aa276, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
+	{ "d46-37.ic8",         0x020000, 0x60b51b91, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
+	{ "d46-36.ic7",         0x020000, 0x8f7aa276, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
 	
-	{ "d46-05.87",          0x100000, 0x150d0e4c, BRF_GRA | TAITO_CHARS_BYTESWAP },
-	{ "d46-06.88",          0x100000, 0x321308be, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	{ "d46-05.ic87",        0x100000, 0x150d0e4c, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	{ "d46-06.ic88",        0x100000, 0x321308be, BRF_GRA | TAITO_CHARS_BYTESWAP },
 	
-	{ "d46-04.67",          0x200000, 0x832769a9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "d46-03.66",          0x200000, 0xe0e9cbfd, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "d46-02.65",          0x200000, 0xa83ca82e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "d46-01.64",          0x200000, 0x5c2ae92d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-04.ic67",        0x200000, 0x832769a9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-03.ic66",        0x200000, 0xe0e9cbfd, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-02.ic65",        0x200000, 0xa83ca82e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-01.ic64",        0x200000, 0x5c2ae92d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "d46-07.34",          0x080000, 0xc3b8b093, BRF_GRA | TAITO_SPRITEMAP },
+	{ "d46-07.ic34",        0x080000, 0xc3b8b093, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "d46-10.2",           0x200000, 0x306256be, BRF_SND | TAITO_ES5505_BYTESWAP },
-	{ "d46-12.4",           0x200000, 0xa24a53a8, BRF_SND | TAITO_ES5505_BYTESWAP },
-	{ "d46-11.5",           0x200000, 0xd4ea0f56, BRF_SND | TAITO_ES5505_BYTESWAP },	
+	{ "d46-10.ic2",         0x200000, 0x306256be, BRF_SND | TAITO_ES5505_BYTESWAP },
+	{ "d46-12.ic4",         0x200000, 0xa24a53a8, BRF_SND | TAITO_ES5505_BYTESWAP },
+	{ "d46-11.ic5",         0x200000, 0xd4ea0f56, BRF_SND | TAITO_ES5505_BYTESWAP },	
 	
 	{ "eeprom-superchs.bin",0x000080, 0x230f0753, BRF_PRG | TAITO_DEFAULT_EEPROM },
 };
@@ -378,9 +380,41 @@ static struct BurnRomInfo SuperchsRomDesc[] = {
 STD_ROM_PICK(Superchs)
 STD_ROM_FN(Superchs)
 
-static int MemIndex()
+static struct BurnRomInfo SuperchsjRomDesc[] = {
+	{ "d46-28+.ic27",       0x040000, 0x5c33784f, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-27+.ic25",       0x040000, 0xe81125b8, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-26+.ic23",       0x040000, 0x2aaba1b0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	{ "d46-25+.ic21",       0x040000, 0x4241e97a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP32 },
+	
+	{ "d46-24.ic127",       0x020000, 0xa006baa1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "d46-23.ic112",       0x020000, 0x9a69dbd0, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "d46-30.ic8",         0x020000, 0x88f8a421, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
+	{ "d46-29.ic7",         0x020000, 0x04501fa5, BRF_ESS | BRF_PRG | TAITO_68KROM3_BYTESWAP },
+	
+	{ "d46-05.ic87",        0x100000, 0x150d0e4c, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	{ "d46-06.ic88",        0x100000, 0x321308be, BRF_GRA | TAITO_CHARS_BYTESWAP },
+	
+	{ "d46-04.ic67",        0x200000, 0x832769a9, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-03.ic66",        0x200000, 0xe0e9cbfd, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-02.ic65",        0x200000, 0xa83ca82e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "d46-01.ic64",        0x200000, 0x5c2ae92d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "d46-07.ic34",        0x080000, 0xc3b8b093, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "d46-10.ic2",         0x200000, 0x306256be, BRF_SND | TAITO_ES5505_BYTESWAP },
+	{ "d46-09.ic4",         0x200000, 0x0acb8bc7, BRF_SND | TAITO_ES5505_BYTESWAP },
+	{ "d46-08.ic5",         0x200000, 0x4677e820, BRF_SND | TAITO_ES5505_BYTESWAP },
+	
+	{ "eeprom-superchs.bin",0x000080, 0x230f0753, BRF_PRG | TAITO_DEFAULT_EEPROM },
+};
+
+STD_ROM_PICK(Superchsj)
+STD_ROM_FN(Superchsj)
+
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                    = Next; Next += Taito68KRom1Size;
 	Taito68KRom2                    = Next; Next += Taito68KRom2Size;
@@ -405,7 +439,7 @@ static int MemIndex()
 
 	TaitoChars                      = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
 	TaitoSpritesA                   = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                    = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	TaitoPalette                    = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 	SpriteList                      = (SpriteEntry*)Next; Next += 0x4000 * sizeof(SpriteEntry);
 
 	TaitoMemEnd                     = Next;
@@ -413,7 +447,7 @@ static int MemIndex()
 	return 0;
 }
 
-static int SuperchsDoReset()
+static INT32 SuperchsDoReset()
 {
 	TaitoDoReset();
 	
@@ -426,7 +460,7 @@ static int SuperchsDoReset()
 	return 0;
 }
 
-unsigned char __fastcall Superchs68K1ReadByte(unsigned int a)
+UINT8 __fastcall Superchs68K1ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300000: {
@@ -450,8 +484,8 @@ unsigned char __fastcall Superchs68K1ReadByte(unsigned int a)
 		}
 		
 		case 0x340000: {
-			int Delta;
-			unsigned int Goal = 0x80;
+			INT32 Delta;
+			UINT32 Goal = 0x80;
 			if (TaitoInputPort3[1]) Goal = 0xff;
 			if (TaitoInputPort3[2]) Goal = 0x0;
 
@@ -488,7 +522,7 @@ unsigned char __fastcall Superchs68K1ReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall Superchs68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Superchs68K1WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x300000: {
@@ -534,7 +568,7 @@ void __fastcall Superchs68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Superchs68K1ReadWord(unsigned int a)
+UINT16 __fastcall Superchs68K1ReadWord(UINT32 a)
 {
 	switch (a) {	
 		default: {
@@ -545,11 +579,11 @@ unsigned short __fastcall Superchs68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Superchs68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Superchs68K1WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x140000 && a <= 0x141fff) {
 		UINT16 *Ram = (UINT16*)TaitoSpriteRam;
-		int Offset = (a - 0x140000) >> 1;
+		INT32 Offset = (a - 0x140000) >> 1;
 		
 		Ram[Offset] = d;
 		return;
@@ -583,7 +617,7 @@ void __fastcall Superchs68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned int __fastcall Superchs68K1ReadLong(unsigned int a)
+UINT32 __fastcall Superchs68K1ReadLong(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -594,14 +628,14 @@ unsigned int __fastcall Superchs68K1ReadLong(unsigned int a)
 	return 0;
 }
 
-void __fastcall Superchs68K1WriteLong(unsigned int a, unsigned int d)
+void __fastcall Superchs68K1WriteLong(UINT32 a, UINT32 d)
 {
 	if (a >= 0x140000 && a <= 0x141fff) {
 		UINT16 *Ram = (UINT16*)TaitoSpriteRam;
-		int Offset = (a - 0x140000) >> 1;
+		INT32 Offset = (a - 0x140000) >> 1;
 		
-		Ram[Offset + 0] = d & 0xffff;
-		Ram[Offset + 1] = d >> 16;
+		Ram[Offset + 0] = BURN_ENDIAN_SWAP_INT32(d) & 0xffff;
+		Ram[Offset + 1] = BURN_ENDIAN_SWAP_INT32(d) >> 16;
 		return;
 	}
 	
@@ -612,7 +646,7 @@ void __fastcall Superchs68K1WriteLong(unsigned int a, unsigned int d)
 	}
 }
 
-unsigned char __fastcall Superchs68K2ReadByte(unsigned int a)
+UINT8 __fastcall Superchs68K2ReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -623,7 +657,7 @@ unsigned char __fastcall Superchs68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Superchs68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Superchs68K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -632,7 +666,7 @@ void __fastcall Superchs68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Superchs68K2ReadWord(unsigned int a)
+UINT16 __fastcall Superchs68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -643,7 +677,7 @@ unsigned short __fastcall Superchs68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Superchs68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Superchs68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		default: {
@@ -652,12 +686,12 @@ void __fastcall Superchs68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int CharXOffsets[16]      = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
-static int CharYOffsets[16]      = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int SpritePlaneOffsets[4] = { 0, 8, 16, 24 };
-static int SpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[16]      = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
+static INT32 CharYOffsets[16]      = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 SpritePlaneOffsets[4] = { 0, 8, 16, 24 };
+static INT32 SpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
 
 static const eeprom_interface superchs_eeprom_interface =
 {
@@ -672,9 +706,9 @@ static const eeprom_interface superchs_eeprom_interface =
 	0,
 };
 
-static int SuperchsInit()
+static INT32 SuperchsInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	GenericTilesInit();
 	
@@ -710,8 +744,8 @@ static int SuperchsInit()
 
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -719,14 +753,15 @@ static int SuperchsInit()
 	
 	TC0480SCPInit(TaitoNumChar, 0, 0x20, 8, -1, 0, 0);
 	
-	unsigned char *pTemp;
-	pTemp = (unsigned char*)malloc(0xc00000);
+	UINT8 *pTemp;
+	pTemp = (UINT8*)BurnMalloc(0xc00000);
 	memcpy(pTemp, TaitoES5505Rom, 0xc00000);
 	memset(TaitoES5505Rom, 0, TaitoES5505RomSize);
 	memcpy(TaitoES5505Rom + 0xc00000, pTemp + 0x000000, 0x400000);
 	memcpy(TaitoES5505Rom + 0x000000, pTemp + 0x400000, 0x400000);
 	memcpy(TaitoES5505Rom + 0x400000, pTemp + 0x400000, 0x400000);
 	memcpy(TaitoES5505Rom + 0x800000, pTemp + 0x800000, 0x400000);
+	BurnFree(pTemp);
 	
 	SekInit(0, 0x68EC020);
 	SekOpen(0);
@@ -785,6 +820,7 @@ static int SuperchsInit()
 static int SuperchsExit()
 {
 	TaitoExit();
+	ES5506Exit();
 	
 	SuperchsCoinWord = 0;
 	SuperchsCpuACtrl = 0;
@@ -795,18 +831,18 @@ static int SuperchsExit()
 
 inline static UINT32 CalcCol(UINT32 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
-	r = (nColour & 0x000000ff) >> 0;
-	b = (nColour & 0x00ff0000) >> 16;
-	g = (nColour & 0xff000000) >> 24;
+	r = (BURN_ENDIAN_SWAP_INT32(nColour) & 0x000000ff) >> 0;
+	b = (BURN_ENDIAN_SWAP_INT32(nColour) & 0x00ff0000) >> 16;
+	g = (BURN_ENDIAN_SWAP_INT32(nColour) & 0xff000000) >> 24;
 
 	return BurnHighCol(r, g, b, 0);
 }
 
 static void SuperchsCalcPalette()
 {
-	int i;
+	INT32 i;
 	UINT32* ps;
 	UINT32* pd;
 
@@ -815,12 +851,12 @@ static void SuperchsCalcPalette()
 	}
 }
 
-static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, int yFlip, int xScale, int yScale, unsigned char* pSource)
+static void RenderSpriteZoom(INT32 Code, INT32 sx, INT32 sy, INT32 Colour, INT32 xFlip, INT32 yFlip, INT32 xScale, INT32 yScale, UINT8* pSource)
 {
 	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x200);
 	
@@ -830,14 +866,14 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}	
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
-		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
+		INT32 dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		INT32 dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (xFlip) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -854,37 +890,37 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth) {
-			int Pixels = ex - nScreenWidth;
+			INT32 Pixels = ex - nScreenWidth;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight) {
-			int Pixels = ey - nScreenHeight;
+			INT32 Pixels = ey - nScreenHeight;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x < ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						pPixel[x] = c | Colour;
 					}
@@ -897,33 +933,33 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}
 }
 
-static void SuperchsMakeSpriteList(int xOffset, int yOffset)
+static void SuperchsMakeSpriteList(INT32 xOffset, INT32 yOffset)
 {
 	UINT32 *SpriteRam = (UINT32*)TaitoSpriteRam;
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
-	int Offset, Data, TileNum, Colour, xFlip, yFlip;
-	int x, y, Priority, DblSize, xCur, yCur;
-	int SpritesFlipscreen = 0;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
-	int Dimension, TotalChunks, BadChunks;
+	INT32 Offset, Data, TileNum, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, DblSize, xCur, yCur;
+	INT32 SpritesFlipscreen = 0;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Dimension, TotalChunks, BadChunks;
 
 	struct SpriteEntry *SpritePtr = SpriteList;
 	
 	memset(SpriteList, 0, 0x4000 * sizeof(SpriteEntry));
 
 	for (Offset = ((0x2000 / 4) - 4); Offset >= 0; Offset -= 4) {
-		Data     = SpriteRam[Offset + 0];
+		Data     = BURN_ENDIAN_SWAP_INT32(SpriteRam[Offset + 0]);
 		xFlip    = (Data & 0x00800000) >> 23;
 		xZoom    = (Data & 0x007f0000) >> 16;
 		TileNum  = (Data & 0x00007fff);
 		
-		Data     = SpriteRam[Offset + 2];
+		Data     = BURN_ENDIAN_SWAP_INT32(SpriteRam[Offset + 2]);
 		Priority = (Data & 0x000c0000) >> 18;
 		Colour   = (Data & 0x0003fc00) >> 10;
 		x        = (Data & 0x000003ff);
 
-		Data     = SpriteRam[Offset + 3];
+		Data     = BURN_ENDIAN_SWAP_INT32(SpriteRam[Offset + 3]);
 		DblSize  = (Data & 0x00040000) >> 18;
 		yFlip    = (Data & 0x00020000) >> 17;
 		yZoom    = (Data & 0x0001fc00) >> 10;
@@ -959,7 +995,7 @@ static void SuperchsMakeSpriteList(int xOffset, int yOffset)
 			if (xFlip)  px = Dimension - 1 - k;
 			if (yFlip)  py = Dimension - 1 - j;
 
-			Code = SpriteMap[MapOffset + px + (py << (DblSize + 1))];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << (DblSize + 1))]);
 
 			if (Code == 0xffff) {
 				BadChunks += 1;
@@ -994,9 +1030,9 @@ static void SuperchsMakeSpriteList(int xOffset, int yOffset)
 	}
 }
 
-static void SuperchsRenderSpriteList(int SpritePriorityLevel)
+static void SuperchsRenderSpriteList(INT32 SpritePriorityLevel)
 {
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		if (SpriteList[i].Priority == SpritePriorityLevel) RenderSpriteZoom(SpriteList[i].Code, SpriteList[i].x, SpriteList[i].y, SpriteList[i].Colour, SpriteList[i].xFlip, SpriteList[i].yFlip, SpriteList[i].xZoom, SpriteList[i].yZoom, TaitoSpritesA);
 	}
 }
@@ -1028,10 +1064,10 @@ static void SuperchsDraw()
 	BurnTransferCopy(TaitoPalette);
 }
 
-static int SuperchsFrame()
+static INT32 SuperchsFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 	
 	if (TaitoReset) SuperchsDoReset();
 
@@ -1041,8 +1077,8 @@ static int SuperchsFrame()
 
 	SekNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		SekOpen(0);
@@ -1093,16 +1129,16 @@ static int SuperchsFrame()
 		SekClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ES5505Update(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ES5505Update(pSoundBuf, nSegmentLength);
 		}
@@ -1115,7 +1151,7 @@ static int SuperchsFrame()
 	return 0;
 }
 
-static int SuperchsScan(int nAction, int *pnMin)
+static INT32 SuperchsScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1146,6 +1182,16 @@ struct BurnDriver BurnDrvSuperchs = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_RACING, 0,
 	NULL, SuperchsRomInfo, SuperchsRomName, NULL, NULL, SuperchsInputInfo, NULL,
+	SuperchsInit, SuperchsExit, SuperchsFrame, NULL, SuperchsScan,
+	NULL, 0x2000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvSuperchsj = {
+	"superchsj", "superchs", NULL, NULL, "1992",
+	"Super Chase - Criminal Termintation (Japan)\0", "No Sound", "Taito Corporation", "Taito Misc",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_RACING, 0,
+	NULL, SuperchsjRomInfo, SuperchsjRomName, NULL, NULL, SuperchsInputInfo, NULL,
 	SuperchsInit, SuperchsExit, SuperchsFrame, NULL, SuperchsScan,
 	NULL, 0x2000, 320, 240, 4, 3
 };

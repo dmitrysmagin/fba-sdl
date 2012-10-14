@@ -2,15 +2,15 @@
 typedef struct _eeprom_interface eeprom_interface;
 struct _eeprom_interface
 {
-	int address_bits;	/* EEPROM has 2^address_bits cells */
-	int data_bits;		/* every cell has this many bits (8 or 16) */
+	INT32 address_bits;	/* EEPROM has 2^address_bits cells */
+	INT32 data_bits;		/* every cell has this many bits (8 or 16) */
 	const char *cmd_read;	/*   read command string, e.g. "0110" */
 	const char *cmd_write;	/*  write command string, e.g. "0111" */
 	const char *cmd_erase;	/*  erase command string, or 0 if n/a */
 	const char *cmd_lock;	/*   lock command string, or 0 if n/a */
 	const char *cmd_unlock;	/* unlock command string, or 0 if n/a */
-	int enable_multi_read;  /* set to 1 to enable multiple values to be read from one read command */
-	int reset_delay;	/* number of times eeprom_read_bit() should return 0 after a reset, */
+	INT32 enable_multi_read;  /* set to 1 to enable multiple values to be read from one read command */
+	INT32 reset_delay;	/* number of times eeprom_read_bit() should return 0 after a reset, */
 				/* before starting to return 1. */
 };
 
@@ -36,14 +36,14 @@ void EEPROMInit(const eeprom_interface *interface);
 void EEPROMReset();
 void EEPROMExit();
 
-int EEPROMAvailable(); // are we loading an eeprom file?
+INT32 EEPROMAvailable(); // are we loading an eeprom file?
 
-int EEPROMRead();
+INT32 EEPROMRead();
 
 // Write each individually
-void EEPROMWriteBit(int bit);
-void EEPROMSetCSLine(int state);
-void EEPROMSetClockLine(int state);
+void EEPROMWriteBit(INT32 bit);
+void EEPROMSetCSLine(INT32 state);
+void EEPROMSetClockLine(INT32 state);
 
 // Or all at once
 #define EEPROMWrite(clock, cs, bit)		\
@@ -51,6 +51,6 @@ void EEPROMSetClockLine(int state);
 	EEPROMSetCSLine(cs ? EEPROM_CLEAR_LINE : EEPROM_ASSERT_LINE);	\
 	EEPROMSetClockLine(clock ? EEPROM_ASSERT_LINE : EEPROM_CLEAR_LINE)
 
-void EEPROMFill(const unsigned char *data, int offset, int length);
+void EEPROMFill(const UINT8 *data, INT32 offset, INT32 length);
 
-void EEPROMScan(int nAction, int* pnMin);
+void EEPROMScan(INT32 nAction, INT32* pnMin);

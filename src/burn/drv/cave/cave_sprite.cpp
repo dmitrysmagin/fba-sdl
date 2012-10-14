@@ -1,49 +1,49 @@
 // Cave hardware sprites
 #include "cave.h"
 
-int CaveSpriteVisibleXOffset;
+INT32 CaveSpriteVisibleXOffset;
 
-unsigned char* CaveSpriteROM = NULL;
-unsigned char* CaveSpriteRAM = NULL;
+UINT8* CaveSpriteROM = NULL;
+UINT8* CaveSpriteRAM = NULL;
 
-int nCaveSpriteBank;
-int nCaveSpriteBankDelay;
+INT32 nCaveSpriteBank;
+INT32 nCaveSpriteBankDelay;
 
-static int nSpriteAddressMask;
+static INT32 nSpriteAddressMask;
 
 struct CaveSprite {
-	char flip;
-	char priority;
-	short palette;
-	int x; int y;
-	int xsize; int ysize;
-	int xzoom; int yzoom;
-	int address;
+	INT8 flip;
+	INT8 priority;
+	INT16 palette;
+	INT32 x; INT32 y;
+	INT32 xsize; INT32 ysize;
+	INT32 xzoom; INT32 yzoom;
+	INT32 address;
 };
 
 static CaveSprite* pSpriteList = NULL;
 
-int (*CaveSpriteBuffer)();
+INT32 (*CaveSpriteBuffer)();
 
-static unsigned char* pRow;
-static unsigned char* pPixel;
-static unsigned int* pSpriteData;
-static unsigned int* pSpritePalette;
+static UINT8* pRow;
+static UINT8* pPixel;
+static UINT32* pSpriteData;
+static UINT32* pSpritePalette;
 
-static unsigned short* pZBuffer = NULL;
-static unsigned short* pZRow;
-static unsigned short* pZPixel;
+static UINT16* pZBuffer = NULL;
+static UINT16* pZRow;
+static UINT16* pZPixel;
 
-static int nSpriteRow, nSpriteRowSize;
-static int nXPos, nYPos, nZPos;
-static int nXSize, nYSize;
-static int nSpriteXZoomSize, nSpriteYZoomSize;
-static int nSpriteXOffset, nSpriteYOffset;
+static INT32 nSpriteRow, nSpriteRowSize;
+static INT32 nXPos, nYPos, nZPos;
+static INT32 nXSize, nYSize;
+static INT32 nSpriteXZoomSize, nSpriteYZoomSize;
+static INT32 nSpriteXOffset, nSpriteYOffset;
 
-static int nFirstSprite[4], nLastSprite[4];
+static INT32 nFirstSprite[4], nLastSprite[4];
 
-static int nTopSprite;
-static int nZOffset;
+static INT32 nTopSprite;
+static INT32 nZOffset;
 
 typedef void (*RenderSpriteFunction)();
 static RenderSpriteFunction* RenderSprite;
@@ -51,16 +51,16 @@ static RenderSpriteFunction* RenderSprite;
 // Include the sprite rendering functions
 #include "cave_sprite_func.h"
 
-int CaveSpriteRender(int nLowPriority, int nHighPriority)
+INT32 CaveSpriteRender(INT32 nLowPriority, INT32 nHighPriority)
 {
-	static int nMaskLeft, nMaskRight, nMaskTop, nMaskBottom;
+	static INT32 nMaskLeft, nMaskRight, nMaskTop, nMaskBottom;
 	CaveSprite* pBuffer;
 
-	int nPriorityMask = 0;
-	int nMaxZPos = -1;
-	int nCurrentZPos = 0x00010000;
-	int nUseBuffer = 0x00010000;
-	int nFunction;
+	INT32 nPriorityMask = 0;
+	INT32 nMaxZPos = -1;
+	INT32 nCurrentZPos = 0x00010000;
+	INT32 nUseBuffer = 0x00010000;
+	INT32 nFunction;
 
 	if (nLowPriority == 0) {
 		nZPos = -1;
@@ -75,14 +75,14 @@ int CaveSpriteRender(int nLowPriority, int nHighPriority)
 	}
 
 	if (nHighPriority < 3) {
-		for (int i = nHighPriority + 1; i < 4; i++) {
+		for (INT32 i = nHighPriority + 1; i < 4; i++) {
 			if (nUseBuffer > nFirstSprite[i]) {
 				nUseBuffer = nFirstSprite[i];
 			}
 		}
 	}
 
-	for (int i = nLowPriority; i <= nHighPriority; i++) {
+	for (INT32 i = nLowPriority; i <= nHighPriority; i++) {
 		if (nCurrentZPos > nFirstSprite[i]) {
 			nCurrentZPos = nFirstSprite[i];
 		}
@@ -106,7 +106,7 @@ int CaveSpriteRender(int nLowPriority, int nHighPriority)
 		nXPos = pBuffer->x;
 		nYPos = pBuffer->y;
 
-		pSpriteData = (unsigned int*)(CaveSpriteROM + ((pBuffer->address << 8) & nSpriteAddressMask));
+		pSpriteData = (UINT32*)(CaveSpriteROM + ((pBuffer->address << 8) & nSpriteAddressMask));
 		pSpritePalette = CavePalette + pBuffer->palette;
 
 		nXSize = pBuffer->xsize;
@@ -326,7 +326,7 @@ int CaveSpriteRender(int nLowPriority, int nHighPriority)
 		if (nZPos >= 0) {
 			nZOffset += nTopSprite;
 			if (nZOffset > 0xFC00) {
-				memset(pZBuffer, 0, nCaveXSize * nCaveYSize * sizeof(short));
+				memset(pZBuffer, 0, nCaveXSize * nCaveYSize * sizeof(UINT16));
 				nZOffset = 0;
 			}
 		}
@@ -336,11 +336,11 @@ int CaveSpriteRender(int nLowPriority, int nHighPriority)
 }
 
 // Donpachi/DoDonpachi sprite format (no zooming)
-static int CaveSpriteBuffer_NoZoom()
+static INT32 CaveSpriteBuffer_NoZoom()
 {
-	unsigned short* pSprite = (unsigned short*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
+	UINT16* pSprite = (UINT16*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
 	CaveSprite* pBuffer = pSpriteList;
-	int nPriority;
+	INT32 nPriority;
 
 	nFirstSprite[0] = 0x00010000;
 	nFirstSprite[1] = 0x00010000;
@@ -352,12 +352,12 @@ static int CaveSpriteBuffer_NoZoom()
 	nLastSprite[2] = -1;
 	nLastSprite[3] = -1;
 
-	short word;
-	int x, y, xs, ys;
+	INT16 word;
+	INT32 x, y, xs, ys;
 
-	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
+	for (INT32 i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
-		word = pSprite[4];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[4]);
 
 		xs = (word >> 4) & 0x01F0;
 		ys = (word << 4) & 0x01F0;
@@ -366,9 +366,9 @@ static int CaveSpriteBuffer_NoZoom()
 		}
 
 #if 0
-		x = (pSprite[2] + nCaveExtraXOffset) & 0x03FF;
+		x = (BURN_ENDIAN_SWAP_INT16(pSprite[2]) + nCaveExtraXOffset) & 0x03FF;
 #else
-		x = (pSprite[2] + CaveSpriteVisibleXOffset) & 0x03FF;
+		x = (BURN_ENDIAN_SWAP_INT16(pSprite[2]) + CaveSpriteVisibleXOffset) & 0x03FF;
 #endif
 		if (x >= 320) {
 			if (x + xs <= 0x0400) {
@@ -377,9 +377,9 @@ static int CaveSpriteBuffer_NoZoom()
 		}
 
 #if 0
-		y = (pSprite[3] + nCaveExtraYOffset) & 0x03FF;
+		y = (BURN_ENDIAN_SWAP_INT16(pSprite[3]) + nCaveExtraYOffset) & 0x03FF;
 #else
-		y = pSprite[3] & 0x03FF;
+		y = BURN_ENDIAN_SWAP_INT16(pSprite[3]) & 0x03FF;
 #endif
 		if (y >= 240) {
 			if (y + ys <= 0x0400) {
@@ -389,7 +389,7 @@ static int CaveSpriteBuffer_NoZoom()
 
 		// Sprite is both active and onscreen, so add it to the buffer
 
-		word = pSprite[0];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[0]);
 
 		nPriority = (word >> 4) & 0x03;
 		if (nLastSprite[nPriority] == -1) {
@@ -402,7 +402,7 @@ static int CaveSpriteBuffer_NoZoom()
 		pBuffer->flip = (word >> 2) & 0x03;
 		pBuffer->palette = word & 0x3F00;
 
-		pBuffer->address = pSprite[1] | ((word & 3) << 16);
+		pBuffer->address = BURN_ENDIAN_SWAP_INT16(pSprite[1]) | ((word & 3) << 16);
 
 		pBuffer->x = x;
 		pBuffer->y = y;
@@ -418,11 +418,11 @@ static int CaveSpriteBuffer_NoZoom()
 }
 
 // Normal sprite format (zooming)
-static int CaveSpriteBuffer_ZoomA()
+static INT32 CaveSpriteBuffer_ZoomA()
 {
-	unsigned short* pSprite = (unsigned short*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
+	UINT16* pSprite = (UINT16*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
 	CaveSprite* pBuffer = pSpriteList;
-	int nPriority;
+	INT32 nPriority;
 
 	nFirstSprite[0] = 0x00010000;
 	nFirstSprite[1] = 0x00010000;
@@ -434,12 +434,12 @@ static int CaveSpriteBuffer_ZoomA()
 	nLastSprite[2] = -1;
 	nLastSprite[3] = -1;
 
-	short word;
-	int x, y, xs, ys;
+	INT16 word;
+	INT32 x, y, xs, ys;
 
-	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
+	for (INT32 i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
-		word = pSprite[6];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[6]);
 
 		xs = (word >> 4) & 0x01F0;
 		ys = (word << 4) & 0x01F0;
@@ -447,18 +447,18 @@ static int CaveSpriteBuffer_ZoomA()
 			continue;
 		}
 
-		word = pSprite[2];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[2]);
 
 		nPriority = (word >> 4) & 0x03;
 
-		x = ((pSprite[0] >> 6) + CaveSpriteVisibleXOffset) & 0x03FF;
+		x = ((BURN_ENDIAN_SWAP_INT16(pSprite[0]) >> 6) + CaveSpriteVisibleXOffset) & 0x03FF;
 #if 0
-		y = ((pSprite[1] >> 6) + nCaveExtraYOffset) & 0x03FF;
+		y = ((BURN_ENDIAN_SWAP_INT16(pSprite[1]) >> 6) + nCaveExtraYOffset) & 0x03FF;
 #else
-		y = (pSprite[1] >> 6) & 0x03FF;
+		y = (BURN_ENDIAN_SWAP_INT16(pSprite[1]) >> 6) & 0x03FF;
 #endif
 
-		if (pSprite[4] <= 0x0100 && pSprite[5] <= 0x0100) {
+		if (BURN_ENDIAN_SWAP_INT16(pSprite[4]) <= 0x0100 && BURN_ENDIAN_SWAP_INT16(pSprite[5]) <= 0x0100) {
 			if (x >= 320) {
 				if (x + xs <= 0x0400) {
 					continue;
@@ -480,8 +480,8 @@ static int CaveSpriteBuffer_ZoomA()
 
 		pBuffer->priority = 8 >> nPriority;
 
-		pBuffer->xzoom = pSprite[4];
-		pBuffer->yzoom = pSprite[5];
+		pBuffer->xzoom = BURN_ENDIAN_SWAP_INT16(pSprite[4]);
+		pBuffer->yzoom = BURN_ENDIAN_SWAP_INT16(pSprite[5]);
 
 		pBuffer->xsize = xs;
 		pBuffer->ysize = ys;
@@ -492,7 +492,7 @@ static int CaveSpriteBuffer_ZoomA()
 		pBuffer->flip = (word >> 2) & 0x03;
 		pBuffer->palette = word & 0x3F00;
 
-		pBuffer->address = pSprite[3] | ((word & 3) << 16);
+		pBuffer->address = BURN_ENDIAN_SWAP_INT16(pSprite[3]) | ((word & 3) << 16);
 
 		pBuffer++;
 		z++;
@@ -502,11 +502,11 @@ static int CaveSpriteBuffer_ZoomA()
 }
 
 // Normal sprite format (zooming, alternate position handling)
-static int CaveSpriteBuffer_ZoomB()
+static INT32 CaveSpriteBuffer_ZoomB()
 {
-	unsigned short* pSprite = (unsigned short*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
+	UINT16* pSprite = (UINT16*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
 	CaveSprite* pBuffer = pSpriteList;
-	int nPriority;
+	INT32 nPriority;
 
 	nFirstSprite[0] = 0x00010000;
 	nFirstSprite[1] = 0x00010000;
@@ -518,12 +518,12 @@ static int CaveSpriteBuffer_ZoomB()
 	nLastSprite[2] = -1;
 	nLastSprite[3] = -1;
 
-	short word;
-	int x, y, xs, ys;
+	INT16 word;
+	INT32 x, y, xs, ys;
 	
-	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
+	for (INT32 i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
-		word = pSprite[6];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[6]);
 
 		xs = (word >> 4) & 0x01F0;
 		ys = (word << 4) & 0x01F0;
@@ -531,22 +531,22 @@ static int CaveSpriteBuffer_ZoomB()
 			continue;
 		}
 
-		word = pSprite[2];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[2]);
 
 		nPriority = (word >> 4) & 0x03;
 
 #if 0
-		x = (pSprite[0] + nCaveExtraXOffset) & 0x03FF;
+		x = (BURN_ENDIAN_SWAP_INT16(pSprite[0]) + nCaveExtraXOffset) & 0x03FF;
 # else
-		x = (pSprite[0] + CaveSpriteVisibleXOffset) & 0x03FF;
+		x = (BURN_ENDIAN_SWAP_INT16(pSprite[0]) + CaveSpriteVisibleXOffset) & 0x03FF;
 #endif
 #if 0
-		y = (pSprite[1] + nCaveExtraYOffset) & 0x03FF;
+		y = (BURN_ENDIAN_SWAP_INT16(pSprite[1]) + nCaveExtraYOffset) & 0x03FF;
 #else
-		y = pSprite[1] & 0x03FF;
+		y = BURN_ENDIAN_SWAP_INT16(pSprite[1]) & 0x03FF;
 #endif
 
-		if (pSprite[4] <= 0x0100 && pSprite[5] <= 0x0100) {
+		if (BURN_ENDIAN_SWAP_INT16(pSprite[4]) <= 0x0100 && BURN_ENDIAN_SWAP_INT16(pSprite[5]) <= 0x0100) {
 			if (x >= nCaveXSize) {
 				if (x + xs <= 0x0400) {
 					continue;
@@ -568,8 +568,8 @@ static int CaveSpriteBuffer_ZoomB()
 
 		pBuffer->priority = 8 >> nPriority;
 
-		pBuffer->xzoom = pSprite[4];
-		pBuffer->yzoom = pSprite[5];
+		pBuffer->xzoom = BURN_ENDIAN_SWAP_INT16(pSprite[4]);
+		pBuffer->yzoom = BURN_ENDIAN_SWAP_INT16(pSprite[5]);
 
 		pBuffer->xsize = xs;
 		pBuffer->ysize = ys;
@@ -580,7 +580,7 @@ static int CaveSpriteBuffer_ZoomB()
 		pBuffer->flip = (word >> 2) & 0x03;
 		pBuffer->palette = word & 0x3F00;
 
-		pBuffer->address = pSprite[3] | ((word & 3) << 16);
+		pBuffer->address = BURN_ENDIAN_SWAP_INT16(pSprite[3]) | ((word & 3) << 16);
 
 		pBuffer++;
 		z++;
@@ -590,11 +590,11 @@ static int CaveSpriteBuffer_ZoomB()
 }
 
 // Power Instinct 2 sprite format (no zooming)
-static int CaveSpriteBuffer_PowerInstinct()
+static INT32 CaveSpriteBuffer_PowerInstinct()
 {
-	unsigned short* pSprite = (unsigned short*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
+	UINT16* pSprite = (UINT16*)(CaveSpriteRAM + (nCaveSpriteBank << 14));
 	CaveSprite* pBuffer = pSpriteList;
-	int nPriority;
+	INT32 nPriority;
 
 	nFirstSprite[0] = 0x00010000;
 	nFirstSprite[1] = 0x00010000;
@@ -606,12 +606,12 @@ static int CaveSpriteBuffer_PowerInstinct()
 	nLastSprite[2] = -1;
 	nLastSprite[3] = -1;
 
-	short word;
-	int x, y, xs, ys;
+	INT16 word;
+	INT32 x, y, xs, ys;
 
-	for (int i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
+	for (INT32 i = 0, z = 0; i < 0x0400; i++, pSprite += 8) {
 
-		word = pSprite[4];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[4]);
 
 		xs = (word >> 4) & 0x01F0;
 		ys = (word << 4) & 0x01F0;
@@ -619,14 +619,14 @@ static int CaveSpriteBuffer_PowerInstinct()
 			continue;
 		}
 
-		x = (pSprite[2] + nCaveExtraXOffset) & 0x03FF;
+		x = (BURN_ENDIAN_SWAP_INT16(pSprite[2]) + nCaveExtraXOffset) & 0x03FF;
 		if (x >= 320) {
 			if (x + xs <= 0x0400) {
 				continue;
 			}
 		}
 
-		y = (pSprite[3] + nCaveExtraYOffset) & 0x03FF;
+		y = (BURN_ENDIAN_SWAP_INT16(pSprite[3]) + nCaveExtraYOffset) & 0x03FF;
 		if (y >= 240) {
 			if (y + ys <= 0x0400) {
 				continue;
@@ -635,7 +635,7 @@ static int CaveSpriteBuffer_PowerInstinct()
 
 		// Sprite is both active and onscreen, so add it to the buffer
 
-		word = pSprite[0];
+		word = BURN_ENDIAN_SWAP_INT16(pSprite[0]);
 
 		nPriority = ((word >> 4) & 0x01) | 2;
 		if (nLastSprite[nPriority] == -1) {
@@ -648,7 +648,7 @@ static int CaveSpriteBuffer_PowerInstinct()
 		pBuffer->flip = (word >> 2) & 0x03;
 		pBuffer->palette = ((word >> 4) & 0x03F0) + ((word << 5) & 0xC00);
 
-		pBuffer->address = pSprite[1] | ((word & 3) << 16);
+		pBuffer->address = BURN_ENDIAN_SWAP_INT16(pSprite[1]) | ((word & 3) << 16);
 
 		pBuffer->x = x;
 		pBuffer->y = y;
@@ -665,43 +665,44 @@ static int CaveSpriteBuffer_PowerInstinct()
 
 void CaveSpriteExit()
 {
-	free(pSpriteList);
-	pSpriteList = NULL;
-
-	free(pZBuffer);
-	pZBuffer = NULL;
+	BurnFree(pSpriteList);
+	BurnFree(pZBuffer);
 	
 	CaveSpriteVisibleXOffset = 0;
 
 	return;
 }
 
-int CaveSpriteInit(int nType, int nROMSize)
+INT32 CaveSpriteInit(INT32 nType, INT32 nROMSize)
 {
-	free(pSpriteList);
-	pSpriteList = (CaveSprite*)malloc(0x0401 * sizeof(CaveSprite));
+	if (pSpriteList) {
+		BurnFree(pSpriteList);
+	}
+	pSpriteList = (CaveSprite*)BurnMalloc(0x0401 * sizeof(CaveSprite));
 	if (pSpriteList == NULL) {
 		CaveSpriteExit();
 		return 1;
 	}
 
-	for (int i = 0; i < 0x0400; i++) {
+	for (INT32 i = 0; i < 0x0400; i++) {
 		pSpriteList[i].xzoom = 0x0100;
 		pSpriteList[i].yzoom = 0x0100;
 	}
-	for (int i = 0; i < 4; i++) {
+	for (INT32 i = 0; i < 4; i++) {
 		nFirstSprite[i] = 0x00010000;
 		nLastSprite[i] = -1;
 	}
 
-	free(pZBuffer);
-	pZBuffer = (unsigned short*)malloc(nCaveXSize * nCaveYSize * sizeof(short));
+	if (pZBuffer) {
+		BurnFree(pZBuffer);
+	}
+	pZBuffer = (UINT16*)BurnMalloc(nCaveXSize * nCaveYSize * sizeof(UINT16));
 	if (pZBuffer == NULL) {
 		CaveSpriteExit();
 		return 1;
 	}
 
-	memset(pZBuffer, 0, nCaveXSize * nCaveYSize * sizeof(short));
+	memset(pZBuffer, 0, nCaveXSize * nCaveYSize * sizeof(UINT16));
 	nZOffset = 0;
 
 	for (nSpriteAddressMask = 1; nSpriteAddressMask < nROMSize; nSpriteAddressMask <<= 1) {}

@@ -4,25 +4,30 @@ extern "C" {
 }
 #include "timer.h"
 
-int BurnTimerUpdateY8950(int nCycles);
-void BurnTimerEndFrameY8950(int nCycles);
+INT32 BurnTimerUpdateY8950(INT32 nCycles);
+void BurnTimerEndFrameY8950(INT32 nCycles);
 void BurnTimerUpdateEndY8950();
-int BurnTimerAttachSekY8950(int nClockspeed);
-int BurnTimerAttachZetY8950(int nClockspeed);
-int BurnTimerAttachM6809Y8950(int nClockspeed);
-int BurnTimerAttachHD6309Y8950(int nClockspeed);
-int BurnTimerAttachM6800Y8950(int nClockspeed);
-int BurnTimerAttachHD63701Y8950(int nClockspeed);
-int BurnTimerAttachM6803Y8950(int nClockspeed);
-int BurnTimerAttachM6502Y8950(int nClockspeed);
+INT32 BurnTimerAttachSekY8950(INT32 nClockspeed);
+INT32 BurnTimerAttachZetY8950(INT32 nClockspeed);
+INT32 BurnTimerAttachM6809Y8950(INT32 nClockspeed);
+INT32 BurnTimerAttachHD6309Y8950(INT32 nClockspeed);
+INT32 BurnTimerAttachM6800Y8950(INT32 nClockspeed);
+INT32 BurnTimerAttachHD63701Y8950(INT32 nClockspeed);
+INT32 BurnTimerAttachM6803Y8950(INT32 nClockspeed);
+INT32 BurnTimerAttachM6502Y8950(INT32 nClockspeed);
 
 extern "C" void BurnY8950UpdateRequest();
 
-int BurnY8950Init(int nClockFrequency, unsigned char* Y8950ADPCMROM, int nY8950ADPCMSize, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int), int bAddSignal);
+INT32 BurnY8950Init(INT32 nClockFrequency, UINT8* Y8950ADPCMROM, INT32 nY8950ADPCMSize, OPL_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), INT32 bAddSignal);
 void BurnY8950Reset();
 void BurnY8950Exit();
-extern void (*BurnY8950Update)(short* pSoundBuf, int nSegmentEnd);
-void BurnY8950Scan(int nAction, int* pnMin);
+extern void (*BurnY8950Update)(INT16* pSoundBuf, INT32 nSegmentEnd);
+void BurnY8950Scan(INT32 nAction, INT32* pnMin);
 
-#define BurnY8950Write(a, n) Y8950Write(0, a, n)
 #define BurnY8950Read(a) Y8950Read(0, a)
+
+#if defined FBA_DEBUG
+	#define BurnY8950Write(a, n) if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("BurnY8950Write called without init\n")); Y8950Write(0, a, n)
+#else
+	#define BurnY8950Write(a, n) Y8950Write(0, a, n)
+#endif

@@ -1,4 +1,6 @@
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 
 // General
 enum {
@@ -8,37 +10,37 @@ enum {
 	PSIKYO_HW_TENGAI
 };
 
-extern int PsikyoHardwareVersion;
+extern INT32 PsikyoHardwareVersion;
 
 // palette
-int PsikyoPalInit();
-int PsikyoPalExit();
-int PsikyoPalUpdate();
+INT32 PsikyoPalInit();
+INT32 PsikyoPalExit();
+INT32 PsikyoPalUpdate();
 
-void PsikyoPalWriteByte(unsigned int nAddress, unsigned char byteValue);
-void PsikyoPalWriteWord(unsigned int nAddress, unsigned short wordValue);
+void PsikyoPalWriteByte(UINT32 nAddress, UINT8 byteValue);
+void PsikyoPalWriteWord(UINT32 nAddress, UINT16 wordValue);
 
-extern unsigned char* PsikyoPalSrc;
-extern unsigned char PsikyoRecalcPalette;
-extern unsigned int* PsikyoPalette;
+extern UINT8* PsikyoPalSrc;
+extern UINT8 PsikyoRecalcPalette;
+extern UINT32* PsikyoPalette;
 
 // Tile rendering
-int PsikyoTileRender();
-void PsikyoSetTileBank(int nLayer, int nBank);
-int PsikyoTileInit(unsigned int nROMSize);
+INT32 PsikyoTileRender();
+void PsikyoSetTileBank(INT32 nLayer, INT32 nBank);
+INT32 PsikyoTileInit(UINT32 nROMSize);
 void PsikyoTileExit();
 
-extern unsigned char* PsikyoTileROM;
-extern unsigned char* PsikyoTileRAM[3];
+extern UINT8* PsikyoTileROM;
+extern UINT8* PsikyoTileRAM[3];
 
 extern bool bPsikyoClearBackground;
 
 // Sprite rendering
-int PsikyoSpriteInit(int nROMSize);
+INT32 PsikyoSpriteInit(INT32 nROMSize);
 void PsikyoSpriteExit();
-int PsikyoSpriteBuffer();
-int PsikyoSpriteRender(int nLowPriority, int nHighPriority);
+INT32 PsikyoSpriteBuffer();
+INT32 PsikyoSpriteRender(INT32 nLowPriority, INT32 nHighPriority);
 
-extern unsigned char* PsikyoSpriteROM;
-extern unsigned char* PsikyoSpriteRAM;
-extern unsigned char* PsikyoSpriteLUT;
+extern UINT8* PsikyoSpriteROM;
+extern UINT8* PsikyoSpriteRAM;
+extern UINT8* PsikyoSpriteLUT;

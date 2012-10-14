@@ -1,22 +1,22 @@
 
 #include "burnint.h"
 
-static unsigned char K054000Ram[0x20];
+static UINT8 K054000Ram[0x20];
 
 void K054000Reset()
 {
 	memset (K054000Ram, 0, 0x20);
 }
 
-void K054000Write(int offset, int data)
+void K054000Write(INT32 offset, INT32 data)
 {
 	K054000Ram[offset & 0x1f] = data;
 }
 
-unsigned char K054000Read(int offset)
+UINT8 K054000Read(INT32 offset)
 {
-	int Acx,Acy,Aax,Aay;
-	int Bcx,Bcy,Bax,Bay;
+	INT32 Acx,Acy,Aax,Aay;
+	INT32 Bcx,Bcy,Bax,Bay;
 
 	offset &= 0x1f;
 	if (offset != 0x18) return 0;
@@ -41,7 +41,7 @@ unsigned char K054000Read(int offset)
 	return 0;
 }
 
-void K054000Scan(int nAction)
+void K054000Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

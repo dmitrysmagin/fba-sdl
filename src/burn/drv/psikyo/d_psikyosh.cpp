@@ -11,33 +11,33 @@
 #include "eeprom.h"
 #include "sh2.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvSh2ROM;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvEEPROM;
-static unsigned char *DrvSh2RAM;
-static unsigned char *DrvZoomRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvVidRegs;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvSh2ROM;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvEEPROM;
+static UINT8 *DrvSh2RAM;
+static UINT8 *DrvZoomRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvVidRegs;
 
-static int sample_offs;
+static INT32 sample_offs;
 
-static int graphics_min_max[2];
-static int previous_graphics_bank;
+static INT32 graphics_min_max[2];
+static INT32 previous_graphics_bank;
 
-static unsigned int speedhack_address = ~0;
-static unsigned int speedhack_pc[4] = { 0, 0, 0, 0 };
+static UINT32 speedhack_address = ~0;
+static UINT32 speedhack_pc[4] = { 0, 0, 0, 0 };
 
-static unsigned char DrvReset;
-static unsigned int DrvInputs;
-static unsigned char DrvDips[2];
-static unsigned char DrvJoy1[32];
+static UINT8 DrvReset;
+static UINT32 DrvInputs;
+static UINT8 DrvDips[2];
+static UINT8 DrvJoy1[32];
 
 static struct BurnInputInfo Common2ButtonInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -266,9 +266,20 @@ STDDIPINFO(Tgm2)
 
 //-------------------------------------------------------------------------------------
 
+#ifndef LSB_FIRST
+static void le_to_be(unsigned char * p, int size)
+{
+        unsigned char c;
+        for(int i=0; i<size; i+=4, p+=4) {
+                c = *(p+0);     *(p+0) = *(p+3);        *(p+3) = c;
+                c = *(p+1);     *(p+1) = *(p+2);        *(p+2) = c;
+        }
+}
+#endif
+
 static void graphics_bank()
 {
-	int bank = (*((unsigned int*)(DrvVidRegs + 0x10)) & 0x1ff) * 0x20000;
+	INT32 bank = (*((UINT32*)(DrvVidRegs + 0x10)) & 0x1ff) * 0x20000;
 
 	if (bank != previous_graphics_bank)
 	{
@@ -279,39 +290,45 @@ static void graphics_bank()
 		if (bank < 0 || bank >= graphics_min_max[1])
 			bank = graphics_min_max[1] - graphics_min_max[0];
 
-		Sh2MapMemory(pPsikyoshTiles + bank, 0x3060000, 0x307ffff, SM_ROM);
-		Sh2MapMemory(pPsikyoshTiles + bank, 0x4060000, 0x407ffff, SM_ROM);
+		Sh2MapMemory(pPsikyoshTiles + bank, 0x3060000, 0x307ffff, SH2_ROM);
+		Sh2MapMemory(pPsikyoshTiles + bank, 0x4060000, 0x407ffff, SH2_ROM);
 	}
 }
 
-void __fastcall psx_write_long(unsigned int , unsigned int)
+void __fastcall psx_write_long(UINT32 , UINT32)
 {
 	// Keep sh2 from crashing with Space Bomber
 }
 
-void __fastcall ps3v1_write_word(unsigned int address, unsigned short data)
+void __fastcall ps3v1_write_word(UINT32 address, UINT16 data)
 {
 	address &= 0xc7ffffff;
+#ifdef LSB_FIRST
 	address ^= 2;
+#endif
 
 	if ((address & 0xfffffe00) == 0x3050000) {
-		*((unsigned short *)(DrvZoomRAM + (address & 0x1fe))) = data;
+		*((UINT16 *)(DrvZoomRAM + (address & 0x1fe))) = data;
 		return;
 	}
 }
 
-void __fastcall ps3v1_write_byte(unsigned int address, unsigned char data)
+void __fastcall ps3v1_write_byte(UINT32 address, UINT8 data)
 {
 	address &= 0xc7ffffff;
 
 	if ((address & 0xfffffe00) == 0x3050000) {
+#ifdef LSB_FIRST
 		address ^= 3;
+#endif
 		DrvZoomRAM[address & 0x1ff] = data;
 		return;
 	}
 
 	if ((address & 0xffffffe0) == 0x305ffe0) {
+#ifdef LSB_FIRST
 		address ^= 3;
+#endif
 		DrvVidRegs[address & 0x1f] = data;
 		DrvZoomRAM[address & 0xffff] = data;
 
@@ -346,7 +363,7 @@ void __fastcall ps3v1_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall ps3v1_read_byte(unsigned int address)
+UINT8 __fastcall ps3v1_read_byte(UINT32 address)
 {
 	address &= 0xc7ffffff;
 
@@ -373,29 +390,35 @@ unsigned char __fastcall ps3v1_read_byte(unsigned int address)
 
 //-----------------------------------------------------------------------------------------
 
-void __fastcall ps5_write_word(unsigned int address, unsigned short data)
+void __fastcall ps5_write_word(UINT32 address, UINT16 data)
 {
 	address &= 0xc7ffffff;
+#ifdef LSB_FIRST
 	address ^= 2;
+#endif
 
 	if ((address & 0xfffffe00) == 0x4050000) {
-		*((unsigned short *)(DrvZoomRAM + (address & 0x1fe))) = data;
+		*((UINT16 *)(DrvZoomRAM + (address & 0x1fe))) = data;
 		return;
 	}
 }
 
-void __fastcall ps5_write_byte(unsigned int address, unsigned char data)
+void __fastcall ps5_write_byte(UINT32 address, UINT8 data)
 {
 	address &= 0xc7ffffff;
 
 	if ((address & 0xfffffe00) == 0x4050000) {
+#ifdef LSB_FIRST
 		address ^= 3;
+#endif
 		DrvZoomRAM[address & 0x1ff] = data;
 		return;
 	}
 
 	if ((address & 0xffffffe0) == 0x405ffe0) {
+#ifdef LSB_FIRST
 		address ^= 3;
+#endif
 		DrvVidRegs[address & 0x1f] = data;
 		DrvZoomRAM[address & 0xffff] = data;
 
@@ -432,7 +455,7 @@ void __fastcall ps5_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall ps5_read_byte(unsigned int address)
+UINT8 __fastcall ps5_read_byte(UINT32 address)
 {
 	address &= 0xc7ffffff;
 
@@ -460,12 +483,12 @@ unsigned char __fastcall ps5_read_byte(unsigned int address)
 //-------------------------------------------------------------------------------------
 // Some hackery to eat up some idle cycles. 
 
-unsigned int __fastcall hack_read_long(unsigned int a)
+UINT32 __fastcall hack_read_long(UINT32 a)
 {
 	a &= 0xfffff;
 
 	if (a == speedhack_address) {
-		unsigned int pc = Sh2GetPC(0);
+		UINT32 pc = Sh2GetPC(0);
 
 		if (pc == speedhack_pc[0]) {
 			Sh2StopRun();
@@ -478,27 +501,35 @@ unsigned int __fastcall hack_read_long(unsigned int a)
 		}
 	}
 
-	return *((unsigned int*)(DrvSh2RAM + a));
+	return *((UINT32*)(DrvSh2RAM + a));
 }
 
-unsigned short __fastcall hack_read_word(unsigned int a)
+UINT16 __fastcall hack_read_word(UINT32 a)
 {
-	return *((unsigned short *)(DrvSh2RAM + ((a & 0xfffff) ^ 2)));
+#ifdef LSB_FIRST
+	return *((UINT16 *)(DrvSh2RAM + ((a & 0xfffff) ^ 2)));
+#else
+	return *((UINT16 *)(DrvSh2RAM + ((a & 0xfffff))));
+#endif
 }
 
-unsigned char __fastcall hack_read_byte(unsigned int a)
+UINT8 __fastcall hack_read_byte(UINT32 a)
 {
+#ifdef LSB_FIRST
 	return DrvSh2RAM[(a & 0xfffff) ^ 3];
+#else
+	return DrvSh2RAM[(a & 0xfffff)];
+#endif
 }
 
 //-------------------------------------------------------------------------------------
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)Sh2TotalCycles() * nSoundRate / 28636350;
+	return (INT64)Sh2TotalCycles() * nSoundRate / 28636350;
 }
 
-static void DrvIRQCallback(int, int nStatus)
+static void DrvIRQCallback(INT32, INT32 nStatus)
 {
 	if (nStatus)
 		Sh2SetIRQLine(12, SH2_IRQSTATUS_AUTO);
@@ -506,9 +537,9 @@ static void DrvIRQCallback(int, int nStatus)
 		Sh2SetIRQLine(12, SH2_IRQSTATUS_NONE);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
-	Sh2Reset( *(unsigned int *)(DrvSh2ROM + 0), *(unsigned int *)(DrvSh2ROM + 4) );
+	Sh2Reset();
 
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -524,9 +555,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex(int gfxsize)
+static INT32 MemIndex(INT32 gfxsize)
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvSh2ROM		= Next; Next += 0x0200000;
 
@@ -547,15 +578,15 @@ static int MemIndex(int gfxsize)
 
 	RamEnd			= Next;
 
-	pBurnDrvPalette		= (unsigned int  *)Next; Next += 0x1400 * sizeof(int);
+	pBurnDrvPalette		= (UINT32  *)Next; Next += 0x1400 * sizeof(UINT32);
 
 	DrvBgRAM		= DrvSprRAM + 0x004000;
 
-	pPsikyoshPalRAM		= (unsigned int*)DrvPalRAM;
-	pPsikyoshSpriteBuffer	= (unsigned int*)DrvSprBuf;
-	pPsikyoshBgRAM		= (unsigned int*)DrvBgRAM;
-	pPsikyoshVidRegs	= (unsigned int*)DrvVidRegs;
-	pPsikyoshZoomRAM	= (unsigned int*)DrvZoomRAM;
+	pPsikyoshPalRAM		= (UINT32*)DrvPalRAM;
+	pPsikyoshSpriteBuffer	= (UINT32*)DrvSprBuf;
+	pPsikyoshBgRAM		= (UINT32*)DrvBgRAM;
+	pPsikyoshVidRegs	= (UINT32*)DrvVidRegs;
+	pPsikyoshZoomRAM	= (UINT32*)DrvZoomRAM;
 
 	MemEnd			= Next;
 
@@ -575,21 +606,21 @@ static const eeprom_interface eeprom_interface_93C56 =
 	0
 };
 
-static void BurnSwap32(unsigned char *src, int len)
+static void BurnSwap32(UINT8 *src, INT32 len)
 {
-	for (int i = 0; i < len; i+=4) {
-		int t = src[i+1];
+	for (INT32 i = 0; i < len; i+=4) {
+		INT32 t = src[i+1];
 		src[i+1] = src[i+2];
 		src[i+2] = t;
 	}
 }
 
-static void BurnSwapEndian(int len)
+static void BurnSwapEndian(INT32 len)
 {
 	BurnByteswap(DrvSh2ROM, 0x200000);
 
-	for (int i = 0; i < len; i+=4) {
-		int t = DrvSh2ROM[i + 0];
+	for (INT32 i = 0; i < len; i+=4) {
+		INT32 t = DrvSh2ROM[i + 0];
 		DrvSh2ROM[i + 0] = DrvSh2ROM[i+3];
 		DrvSh2ROM[i + 3] = t;
 		t = DrvSh2ROM[i + 1];
@@ -598,7 +629,7 @@ static void BurnSwapEndian(int len)
 	}
 }
 
-static void DrvGfxDecode(int size)
+static void DrvGfxDecode(INT32 size)
 {
 	BurnSwap32(pPsikyoshTiles, size);
 
@@ -607,12 +638,12 @@ static void DrvGfxDecode(int size)
 	}
 }
 
-static int DrvInit(int (*LoadCallback)(), int type, int gfx_max, int gfx_min)
+static INT32 DrvInit(INT32 (*LoadCallback)(), INT32 type, INT32 gfx_max, INT32 gfx_min)
 {
 	AllMem = NULL;
 	MemIndex(gfx_max - gfx_min);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex(gfx_max - gfx_min);
 
@@ -622,6 +653,9 @@ static int DrvInit(int (*LoadCallback)(), int type, int gfx_max, int gfx_min)
 		}
 
 		BurnSwap32(DrvSh2ROM, 0x100000);
+#ifndef LSB_FIRST
+		le_to_be(DrvSh2ROM,0x200000);
+#endif
 		BurnSwapEndian(0x200000);
 		DrvGfxDecode(gfx_max - gfx_min);
 		graphics_min_max[0] = gfx_min;
@@ -632,12 +666,12 @@ static int DrvInit(int (*LoadCallback)(), int type, int gfx_max, int gfx_min)
 	{
 		Sh2Init(1);
 		Sh2Open(0);
-		Sh2MapMemory(DrvSh2ROM,			0x00000000, 0x000fffff, SM_ROM);
-		Sh2MapMemory(DrvSh2ROM + 0x100000,	0x02000000, 0x020fffff, SM_ROM);
-		Sh2MapMemory(DrvSprRAM,			0x03000000, 0x0300ffff, SM_RAM);
-		Sh2MapMemory(DrvPalRAM,			0x03040000, 0x0304ffff, SM_RAM);
-		Sh2MapMemory(DrvZoomRAM,		0x03050000, 0x0305ffff, SM_ROM);
-		Sh2MapMemory(DrvSh2RAM,			0x06000000, 0x060fffff, SM_RAM);
+		Sh2MapMemory(DrvSh2ROM,			0x00000000, 0x000fffff, SH2_ROM);
+		Sh2MapMemory(DrvSh2ROM + 0x100000,	0x02000000, 0x020fffff, SH2_ROM);
+		Sh2MapMemory(DrvSprRAM,			0x03000000, 0x0300ffff, SH2_RAM);
+		Sh2MapMemory(DrvPalRAM,			0x03040000, 0x0304ffff, SH2_RAM);
+		Sh2MapMemory(DrvZoomRAM,		0x03050000, 0x0305ffff, SH2_ROM);
+		Sh2MapMemory(DrvSh2RAM,			0x06000000, 0x060fffff, SH2_RAM);
 		Sh2SetReadByteHandler (0,		ps3v1_read_byte);
 		Sh2SetWriteByteHandler(0,		ps3v1_write_byte);
 		Sh2SetWriteWordHandler(0,		ps3v1_write_word);
@@ -645,19 +679,19 @@ static int DrvInit(int (*LoadCallback)(), int type, int gfx_max, int gfx_min)
 	} else {
 		Sh2Init(1);
 		Sh2Open(0);
-		Sh2MapMemory(DrvSh2ROM,			0x00000000, 0x000fffff, SM_ROM);
-		Sh2MapMemory(DrvSprRAM,			0x04000000, 0x0400ffff, SM_RAM);
-		Sh2MapMemory(DrvPalRAM,			0x04040000, 0x0404ffff, SM_RAM);
-		Sh2MapMemory(DrvZoomRAM,		0x04050000, 0x0405ffff, SM_ROM);
-		Sh2MapMemory(DrvSh2ROM + 0x100000,	0x05000000, 0x0507ffff, SM_ROM);
-		Sh2MapMemory(DrvSh2RAM,			0x06000000, 0x060fffff, SM_RAM);
+		Sh2MapMemory(DrvSh2ROM,			0x00000000, 0x000fffff, SH2_ROM);
+		Sh2MapMemory(DrvSprRAM,			0x04000000, 0x0400ffff, SH2_RAM);
+		Sh2MapMemory(DrvPalRAM,			0x04040000, 0x0404ffff, SH2_RAM);
+		Sh2MapMemory(DrvZoomRAM,		0x04050000, 0x0405ffff, SH2_ROM);
+		Sh2MapMemory(DrvSh2ROM + 0x100000,	0x05000000, 0x0507ffff, SH2_ROM);
+		Sh2MapMemory(DrvSh2RAM,			0x06000000, 0x060fffff, SH2_RAM);
 		Sh2SetReadByteHandler (0,		ps5_read_byte);
 		Sh2SetWriteByteHandler(0,		ps5_write_byte);
 		Sh2SetWriteWordHandler(0,		ps5_write_word);
 		Sh2SetWriteLongHandler(0,		psx_write_long);
 	}
 
-	Sh2MapHandler(1, 0x06000000 | speedhack_address, 0x0600ffff | speedhack_address, SM_ROM);
+	Sh2MapHandler(1, 0x06000000 | speedhack_address, 0x0600ffff | speedhack_address, SH2_ROM);
 	Sh2SetReadByteHandler (1,		hack_read_byte);
 	Sh2SetReadWordHandler (1,		hack_read_word);
 	Sh2SetReadLongHandler (1,		hack_read_long);
@@ -674,7 +708,7 @@ static int DrvInit(int (*LoadCallback)(), int type, int gfx_max, int gfx_min)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	PsikyoshVideoExit();
 
@@ -683,16 +717,15 @@ static int DrvExit()
 
 	EEPROMExit();
 
-	free(AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	speedhack_address = ~0;
-	memset (speedhack_pc, 0, 4 * sizeof(int));
+	memset (speedhack_pc, 0, 4 * sizeof(UINT32));
 
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -702,7 +735,7 @@ static int DrvFrame()
 
 	{
 		DrvInputs = ~0x60 | (DrvDips[0] & 0x60);
-		for (int i = 0; i < 32; i++) {
+		for (INT32 i = 0; i < 32; i++) {
 			DrvInputs ^= (DrvJoy1[i] & 1) << i;
 		}
 	}
@@ -724,7 +757,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -792,7 +825,7 @@ static int SoldividLoadCallback()
 	return 0;
 }
 
-static int SoldividInit()
+static INT32 SoldividInit()
 {
 	speedhack_address = 0x00000c;
 	speedhack_pc[0] = 0x0001AFAC;
@@ -835,12 +868,12 @@ static struct BurnRomInfo s1945iiRomDesc[] = {
 STD_ROM_PICK(s1945ii)
 STD_ROM_FN(s1945ii)
 
-static const unsigned char factory_eeprom[16]  = {
+static const UINT8 factory_eeprom[16]  = {
 	0x00, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static int S1945iiLoadCallback()
+static INT32 S1945iiLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -861,7 +894,7 @@ static int S1945iiLoadCallback()
 	return 0;
 }
 
-static int S1945iiInit()
+static INT32 S1945iiInit()
 {
 	speedhack_address = 0x00000c;
 	speedhack_pc[0] = 0x0609fc6a;
@@ -912,12 +945,12 @@ static struct BurnRomInfo darakuRomDesc[] = {
 STD_ROM_PICK(daraku)
 STD_ROM_FN(daraku)
 
-static const unsigned char daraku_eeprom[16] = {
+static const UINT8 daraku_eeprom[16] = {
 	0x03, 0x02, 0x00, 0x48, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static int DarakuLoadCallback()
+static INT32 DarakuLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -945,7 +978,7 @@ static int DarakuLoadCallback()
 	return 0;
 }
 
-static int DarakuInit()
+static INT32 DarakuInit()
 {
 	speedhack_address = 0x00000c;
 	speedhack_pc[0] = 0x0004761c;
@@ -1013,7 +1046,7 @@ static struct BurnRomInfo sbomberaRomDesc[] = {
 STD_ROM_PICK(sbombera)
 STD_ROM_FN(sbombera)
 
-static int SbomberLoadCallback()
+static INT32 SbomberLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1036,7 +1069,7 @@ static int SbomberLoadCallback()
 	return 0;
 }
 
-static int SbomberInit()
+static INT32 SbomberInit()
 {
 	speedhack_address = 0x00000c;
 	speedhack_pc[0] = 0x060A10EE;
@@ -1091,7 +1124,7 @@ static struct BurnRomInfo gunbird2RomDesc[] = {
 STD_ROM_PICK(gunbird2)
 STD_ROM_FN(gunbird2)
 
-static int Gunbird2LoadCallback()
+static INT32 Gunbird2LoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1113,7 +1146,7 @@ static int Gunbird2LoadCallback()
 	return 0;
 }
 
-static int Gunbird2Init()
+static INT32 Gunbird2Init()
 {
 	speedhack_address = 0x004000c;
 	speedhack_pc[0] = 0x06028be6;
@@ -1158,14 +1191,14 @@ static struct BurnRomInfo s1945iiiRomDesc[] = {
 STD_ROM_PICK(s1945iii)
 STD_ROM_FN(s1945iii)
 
-static const unsigned char s1945iii_eeprom[16] = {
+static const UINT8 s1945iii_eeprom[16] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x11, 0x70,
 	0x25, 0x25, 0x25, 0x00, 0x01, 0x00, 0x11, 0xe0
 };
 
-static int S1945iiiLoadCallback()
+static INT32 S1945iiiLoadCallback()
 {
-	int nRet = Gunbird2LoadCallback();
+	INT32 nRet = Gunbird2LoadCallback();
 
 	memcpy (DrvEEPROM + 0x00, factory_eeprom,  0x10);
 	memcpy (DrvEEPROM + 0xf0, s1945iii_eeprom, 0x10);
@@ -1173,7 +1206,7 @@ static int S1945iiiLoadCallback()
 	return nRet;
 }
 
-static int S1945iiiInit()
+static INT32 S1945iiiInit()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x0602b464;
@@ -1230,12 +1263,12 @@ static struct BurnRomInfo dragnblzRomDesc[] = {
 STD_ROM_PICK(dragnblz)
 STD_ROM_FN(dragnblz)
 
-static const unsigned char dragnblz_eeprom[16] = {
+static const UINT8 dragnblz_eeprom[16] = {
 	0x00, 0x01, 0x11, 0x70, 0x25, 0x25, 0x25, 0x00,
 	0x01, 0x00, 0x11, 0xe0, 0x00, 0x00, 0x00, 0x00
 };
 
-static int DragnblzLoadCallback()
+static INT32 DragnblzLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1269,7 +1302,7 @@ static int DragnblzLoadCallback()
 	return 0;
 }
 
-static int DragnblzInit()
+static INT32 DragnblzInit()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x06027440;
@@ -1314,12 +1347,12 @@ static struct BurnRomInfo gnbarichRomDesc[] = {
 STD_ROM_PICK(gnbarich)
 STD_ROM_FN(gnbarich)
 
-static const unsigned char gnbarich_eeprom[16] = {
+static const UINT8 gnbarich_eeprom[16] = {
 	0x00, 0x0f, 0x42, 0x40, 0x08, 0x0a, 0x00, 0x00,
 	0x01, 0x06, 0x42, 0x59, 0x00, 0x00, 0x00, 0x00
 };
 
-static int GnbarichLoadCallback()
+static INT32 GnbarichLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1341,7 +1374,7 @@ static int GnbarichLoadCallback()
 	return 0;
 }
 
-static int GnbarichInit()
+static INT32 GnbarichInit()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x0602CAE8;
@@ -1386,12 +1419,12 @@ static struct BurnRomInfo mjgtasteRomDesc[] = {
 STD_ROM_PICK(mjgtaste)
 STD_ROM_FN(mjgtaste)
 
-static const unsigned char mjgtaste_eeprom[16] = {
+static const UINT8 mjgtaste_eeprom[16] = {
 	0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01,
 	0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00
 };
 
-static int MjgtasteLoadCallback()
+static INT32 MjgtasteLoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1413,7 +1446,7 @@ static int MjgtasteLoadCallback()
 	return 0;
 }
 
-static int MjgtasteInit()
+static INT32 MjgtasteInit()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x06031f04;
@@ -1464,7 +1497,7 @@ static struct BurnRomInfo tgm2RomDesc[] = {
 STD_ROM_PICK(tgm2)
 STD_ROM_FN(tgm2)
 
-static int Tgm2LoadCallback()
+static INT32 Tgm2LoadCallback()
 {
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000001,  0, 2)) return 1;
 	if (BurnLoadRom(DrvSh2ROM  + 0x0000000,  1, 2)) return 1;
@@ -1493,7 +1526,7 @@ static int Tgm2LoadCallback()
 	return 0;
 }
 
-static int Tgm2Init()
+static INT32 Tgm2Init()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x0602895a;
@@ -1546,7 +1579,7 @@ static struct BurnRomInfo tgm2pRomDesc[] = {
 STD_ROM_PICK(tgm2p)
 STD_ROM_FN(tgm2p)
 
-static int Tgm2pInit()
+static INT32 Tgm2pInit()
 {
 	speedhack_address = 0x6000c;
 	speedhack_pc[0] = 0x0602ae5a;

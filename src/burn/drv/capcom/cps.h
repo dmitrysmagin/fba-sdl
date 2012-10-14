@@ -1,5 +1,7 @@
 // CPS ----------------------------------
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 
 #include "msm6295.h"
 #include "eeprom.h"
@@ -8,42 +10,43 @@
 // Maximum number of beam-synchronized interrupts to check
 #define MAX_RASTER 10
 
-extern unsigned int CpsMProt[4];									// Mprot changes
-extern unsigned int CpsBID[3];										// Board ID changes
+extern UINT32 CpsMProt[4];									// Mprot changes
+extern UINT32 CpsBID[3];										// Board ID changes
 
 // cps.cpp
-extern int Cps;														// 1 = CPS1, 2 = CPS2, 3 = CPS CHanger
-extern int Cps1Qs;
-extern int Cps1Pic;
-extern int nCPS68KClockspeed;
-extern int nCpsCycles;												// Cycles per frame
-extern int nCpsZ80Cycles;
-extern unsigned char *CpsGfx;  extern unsigned int nCpsGfxLen;		// All the graphics
-extern unsigned char *CpsRom;  extern unsigned int nCpsRomLen;		// Program Rom (as in rom)
-extern unsigned char *CpsCode; extern unsigned int nCpsCodeLen;		// Program Rom (decrypted)
-extern unsigned char *CpsZRom; extern unsigned int nCpsZRomLen;		// Z80 Roms
-extern          char *CpsQSam; extern unsigned int nCpsQSamLen;		// QSound Sample Roms
-extern unsigned char *CpsAd;   extern unsigned int nCpsAdLen;		// ADPCM Data
-extern unsigned int nCpsGfxScroll[4];								// Offset to Scroll tiles
-extern unsigned int nCpsGfxMask;									// Address mask
-extern unsigned char* CpsStar;
-int CpsInit();
-int Cps2Init();
-int CpsExit();
-int CpsLoadTiles(unsigned char *Tile,int nStart);
-int CpsLoadTilesByte(unsigned char *Tile,int nStart);
-int CpsLoadTilesForgottnAlt(unsigned char* Tile, int nStart);
-int CpsLoadTilesPang(unsigned char *Tile,int nStart);
-int CpsLoadTilesHack160(unsigned char *Tile,int nStart);
-int CpsLoadTilesBootleg(unsigned char *Tile, int nStart);
-int CpsLoadTilesCaptcomb(unsigned char *Tile, int nStart);
-int CpsLoadTilesPunipic2(unsigned char *Tile, int nStart);
-int CpsLoadTilesSf2ebbl(unsigned char *Tile, int nStart);
-int CpsLoadStars(unsigned char *pStar, int nStart);
-int CpsLoadStarsByte(unsigned char *pStar, int nStart);
-int CpsLoadStarsForgottnAlt(unsigned char *pStar, int nStart);
-int Cps2LoadTiles(unsigned char *Tile,int nStart);
-int Cps2LoadTilesSIM(unsigned char *Tile,int nStart);
+extern INT32 Cps;														// 1 = CPS1, 2 = CPS2, 3 = CPS CHanger
+extern INT32 Cps1Qs;
+extern INT32 Cps1Pic;
+extern INT32 nCPS68KClockspeed;
+extern INT32 nCpsCycles;												// Cycles per frame
+extern INT32 nCpsZ80Cycles;
+extern UINT8 *CpsGfx;  extern UINT32 nCpsGfxLen;		// All the graphics
+extern UINT8 *CpsRom;  extern UINT32 nCpsRomLen;		// Program Rom (as in rom)
+extern UINT8 *CpsCode; extern UINT32 nCpsCodeLen;		// Program Rom (decrypted)
+extern UINT8 *CpsZRom; extern UINT32 nCpsZRomLen;		// Z80 Roms
+extern          INT8 *CpsQSam; extern UINT32 nCpsQSamLen;		// QSound Sample Roms
+extern UINT8 *CpsAd;   extern UINT32 nCpsAdLen;		// ADPCM Data
+extern UINT32 nCpsGfxScroll[4];								// Offset to Scroll tiles
+extern UINT32 nCpsGfxMask;									// Address mask
+extern UINT8* CpsStar;
+INT32 CpsInit();
+INT32 Cps2Init();
+INT32 CpsExit();
+INT32 CpsLoadTiles(UINT8 *Tile,INT32 nStart);
+INT32 CpsLoadTilesByte(UINT8 *Tile,INT32 nStart);
+INT32 CpsLoadTilesForgottn(INT32 nStart);
+INT32 CpsLoadTilesForgottnu(INT32 nStart);
+INT32 CpsLoadTilesPang(UINT8 *Tile,INT32 nStart);
+INT32 CpsLoadTilesHack160(UINT8 *Tile,INT32 nStart);
+INT32 CpsLoadTilesBootleg(UINT8 *Tile, INT32 nStart);
+INT32 CpsLoadTilesCaptcomb(UINT8 *Tile, INT32 nStart);
+INT32 CpsLoadTilesPunipic2(UINT8 *Tile, INT32 nStart);
+INT32 CpsLoadTilesSf2ebbl(UINT8 *Tile, INT32 nStart);
+INT32 CpsLoadStars(UINT8 *pStar, INT32 nStart);
+INT32 CpsLoadStarsByte(UINT8 *pStar, INT32 nStart);
+INT32 CpsLoadStarsForgottnAlt(UINT8 *pStar, INT32 nStart);
+INT32 Cps2LoadTiles(UINT8 *Tile,INT32 nStart);
+INT32 Cps2LoadTilesSIM(UINT8 *Tile,INT32 nStart);
 
 // cps_config.h
 #define CPS_B_01		0
@@ -125,47 +128,58 @@ int Cps2LoadTilesSIM(unsigned char *Tile,int nStart);
 #define mapper_sfzch		39
 #define mapper_cps2		40
 #define mapper_frog		41
-extern void SetGfxMapper(int MapperId);
-extern int GfxRomBankMapper(int Type, int Code);
-extern void SetCpsBId(int CpsBId, int bStars);
+extern void SetGfxMapper(INT32 MapperId);
+extern INT32 GfxRomBankMapper(INT32 Type, INT32 Code);
+extern void SetCpsBId(INT32 CpsBId, INT32 bStars);
 
 // cps_pal.cpp
-extern unsigned int* CpsPal;										// Hicolor version of palette
-extern unsigned int* CpsObjPal;										// Pointer to lagged obj palette
-extern int nLagObjectPalettes;										// Lag object palettes by one frame if non-zero
-int CpsPalInit();
-int CpsPalExit();
-int CpsPalUpdate(unsigned char *pNewPal,int bRecalcAll);
-int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll);
+extern UINT32* CpsPal;										// Hicolor version of palette
+extern INT32 nCpsPalCtrlReg;
+extern INT32 bCpsUpdatePalEveryFrame;
+INT32 CpsPalInit();
+INT32 CpsPalExit();
+INT32 CpsPalUpdate(UINT8 *pNewPal);
 
 // cps_mem.cpp
-extern unsigned char *CpsRam90;
-extern unsigned char *CpsZRamC0,*CpsZRamF0;
-extern unsigned char *CpsSavePal;
-extern unsigned char *CpsRam708,*CpsReg,*CpsFrg;
-extern unsigned char *CpsSaveReg[MAX_RASTER + 1];
-extern unsigned char *CpsSaveFrg[MAX_RASTER + 1];
-extern unsigned char *CpsRamFF;
-void CpsMapObjectBanks(int nBank);
-int CpsMemInit();
-int CpsMemExit();
-int CpsAreaScan(int nAction,int *pnMin);
+extern UINT8 *CpsRam90;
+extern UINT8 *CpsZRamC0,*CpsZRamF0;
+extern UINT8 *CpsSavePal;
+extern UINT8 *CpsRam708,*CpsReg,*CpsFrg;
+extern UINT8 *CpsSaveReg[MAX_RASTER + 1];
+extern UINT8 *CpsSaveFrg[MAX_RASTER + 1];
+extern UINT8 *CpsRamFF;
+void CpsMapObjectBanks(INT32 nBank);
+INT32 CpsMemInit();
+INT32 CpsMemExit();
+INT32 CpsAreaScan(INT32 nAction,INT32 *pnMin);
 
 // cps_run.cpp
-extern unsigned char CpsReset;
-extern unsigned char Cpi01A, Cpi01C, Cpi01E;
-extern int nIrqLine50, nIrqLine52;								// The scanlines at which the interrupts are triggered
-extern int CpsDrawSpritesInReverse;
-int CpsRunInit();
-int CpsRunExit();
-int Cps1Frame();
-int Cps2Frame();
+extern UINT8 CpsReset;
+extern UINT8 Cpi01A, Cpi01C, Cpi01E;
+extern INT32 nIrqLine50, nIrqLine52;								// The scanlines at which the interrupts are triggered
+extern INT32 nCpsNumScanlines;
+extern INT32 CpsDrawSpritesInReverse;
+INT32 CpsRunInit();
+INT32 CpsRunExit();
+INT32 Cps1Frame();
+INT32 Cps2Frame();
 
-inline static unsigned char* CpsFindGfxRam(int nAddr,int nLen)
+inline static UINT8* CpsFindGfxRam(INT32 nAddr,INT32 nLen)
 {
   nAddr&=0xffffff; // 24-bit bus
   if (nAddr>=0x900000 && nAddr+nLen<=0x930000) return CpsRam90+nAddr-0x900000;
   return NULL;
+}
+
+inline static void GetPalette(INT32 nStart, INT32 nCount)
+{
+	// Update Palette (Ghouls points to the wrong place on boot up I think)
+	INT32 nPal = (BURN_ENDIAN_SWAP_INT16(*((UINT16*)(CpsReg + 0x0A))) << 8) & 0xFFFC00;
+	
+	UINT8* Find = CpsFindGfxRam(nPal, 0xc00 << 1);
+	if (Find) {
+		memcpy(CpsSavePal + (nStart << 10), Find + (nStart << 10), nCount << 10);
+	}
 }
 
 // cps_rw.cpp
@@ -173,94 +187,94 @@ inline static unsigned char* CpsFindGfxRam(int nAddr,int nLen)
 #define CPSINPSET INP(000) INP(001) INP(006) INP(007) INP(008) INP(010) INP(011) INP(012) INP(018) INP(019) INP(020) INP(021) INP(029) INP(176) INP(177) INP(179) INP(186) INP(1fd)
 
 // prototype for input bits
-#define INP(nnn) extern unsigned char CpsInp##nnn[8];
+#define INP(nnn) extern UINT8 CpsInp##nnn[8];
 CPSINPSET
 #undef  INP
 
-#define INP(nnn) extern unsigned char Inp##nnn;
+#define INP(nnn) extern UINT8 Inp##nnn;
 CPSINPSET
 #undef  INP
 
 #define CPSINPEX INP(c000) INP(c001) INP(c002) INP(c003)
 
-#define INP(nnnn) extern unsigned char CpsInp##nnnn[8];
+#define INP(nnnn) extern UINT8 CpsInp##nnnn[8];
 CPSINPEX
 #undef  INP
 
 // For the Forgotten Worlds analog controls
-extern unsigned short CpsInp055, CpsInp05d;
-extern unsigned short CpsInpPaddle1, CpsInpPaddle2;
+extern UINT16 CpsInp055, CpsInp05d;
+extern UINT16 CpsInpPaddle1, CpsInpPaddle2;
 
-extern int PangEEP;
-extern int Forgottn;
-extern int Cps1QsHack;
-extern int Kodh;
-extern int Cawingb;
-extern int Wofh;
-extern int Sf2thndr;
-extern int Pzloop2;
-extern int Ssf2tb;
-extern int Dinopic;
-extern int Dinohunt;
-extern int Port6SoundWrite;
+extern INT32 PangEEP;
+extern INT32 Forgottn;
+extern INT32 Cps1QsHack;
+extern INT32 Kodh;
+extern INT32 Cawingb;
+extern INT32 Wofh;
+extern INT32 Sf2thndr;
+extern INT32 Pzloop2;
+extern INT32 Ssf2tb;
+extern INT32 Dinopic;
+extern INT32 Dinohunt;
+extern INT32 Port6SoundWrite;
 
-extern unsigned char* CpsEncZRom;
+extern UINT8* CpsEncZRom;
 
-int CpsRwInit();
-int CpsRwExit();
-int CpsRwGetInp();
-unsigned char __fastcall CpsReadByte(unsigned int a);
-void __fastcall CpsWriteByte(unsigned int a, unsigned char d);
-unsigned short __fastcall CpsReadWord(unsigned int a);
-void __fastcall CpsWriteWord(unsigned int a, unsigned short d);
+INT32 CpsRwInit();
+INT32 CpsRwExit();
+INT32 CpsRwGetInp();
+UINT8 __fastcall CpsReadByte(UINT32 a);
+void __fastcall CpsWriteByte(UINT32 a, UINT8 d);
+UINT16 __fastcall CpsReadWord(UINT32 a);
+void __fastcall CpsWriteWord(UINT32 a, UINT16 d);
 
 // cps_draw.cpp
-extern unsigned char CpsRecalcPal;				// Flag - If it is 1, recalc the whole palette
-extern int nCpsLcReg;							// Address of layer controller register
-extern int CpsLayEn[6];							// bits for layer enable
-extern int nStartline, nEndline;				// specify the vertical slice of the screen to render
-extern int nRasterline[MAX_RASTER + 2];			// The lines at which an interrupt occurs
-extern int MaskAddr[4];
-extern int CpsLayer1XOffs;
-extern int CpsLayer2XOffs;
-extern int CpsLayer3XOffs;
-extern int CpsLayer1YOffs;
-extern int CpsLayer2YOffs;
-extern int CpsLayer3YOffs;
+extern UINT8 CpsRecalcPal;				// Flag - If it is 1, recalc the whole palette
+extern INT32 nCpsLcReg;							// Address of layer controller register
+extern INT32 CpsLayEn[6];							// bits for layer enable
+extern INT32 nStartline, nEndline;				// specify the vertical slice of the screen to render
+extern INT32 nRasterline[MAX_RASTER + 2];			// The lines at which an interrupt occurs
+extern INT32 MaskAddr[4];
+extern INT32 CpsLayer1XOffs;
+extern INT32 CpsLayer2XOffs;
+extern INT32 CpsLayer3XOffs;
+extern INT32 CpsLayer1YOffs;
+extern INT32 CpsLayer2YOffs;
+extern INT32 CpsLayer3YOffs;
 void DrawFnInit();
-int  CpsDraw();
-int  CpsRedraw();
+INT32  CpsDraw();
+INT32  CpsRedraw();
 
-int QsndInit();
+INT32 QsndInit();
 void QsndExit();
 void QsndReset();
 void QsndNewFrame();
 void QsndEndFrame();
 void QsndSyncZ80();
-int QsndScan(int nAction);
+INT32 QsndScan(INT32 nAction);
 
 // qs_z.cpp
-int QsndZInit();
-int QsndZExit();
-int QsndZScan(int nAction);
+INT32 QsndZInit();
+INT32 QsndZExit();
+INT32 QsndZScan(INT32 nAction);
 
 // qs_c.cpp
-int QscInit(int nRate, int nVolumeShift);
+INT32 QscInit(INT32 nRate, INT32 nVolumeShift);
 void QscReset();
 void QscExit();
-int QscScan(int nAction);
+INT32 QscScan(INT32 nAction);
 void QscNewFrame();
-void QscWrite(int a, int d);
-int QscUpdate(int nEnd);
+void QscWrite(INT32 a, INT32 d);
+INT32 QscUpdate(INT32 nEnd);
 
 // cps_tile.cpp
-extern unsigned int* CpstPal;
-extern unsigned int nCpstType; extern int nCpstX,nCpstY;
-extern unsigned int nCpstTile; extern int nCpstFlip;
+extern UINT32* CpstPal;
+extern UINT32 nCpstType; extern INT32 nCpstX,nCpstY;
+extern UINT32 nCpstTile; extern INT32 nCpstFlip;
 extern short* CpstRowShift;
-extern unsigned int CpstPmsk; // Pixel mask
+extern UINT32 CpstPmsk; // Pixel mask
 
-inline static void CpstSetPal(int nPal)
+inline static void CpstSetPal(INT32 nPal)
 {
 	nPal <<= 4;
 	nPal &= 0x7F0;
@@ -268,22 +282,22 @@ inline static void CpstSetPal(int nPal)
 }
 
 // ctv.cpp
-extern int nBgHi;
-extern unsigned short  ZValue;
-extern unsigned short *ZBuf;
-extern unsigned short *pZVal;
-extern unsigned int    nCtvRollX,nCtvRollY;
-extern unsigned char  *pCtvTile;					// Pointer to tile data
-extern int             nCtvTileAdd;					// Amount to add after each tile line
-extern unsigned char  *pCtvLine;					// Pointer to output bitmap
-typedef int (*CtvDoFn)();
-typedef int (*CpstOneDoFn)();
+extern INT32 nBgHi;
+extern UINT16  ZValue;
+extern UINT16 *ZBuf;
+extern UINT16 *pZVal;
+extern UINT32    nCtvRollX,nCtvRollY;
+extern UINT8  *pCtvTile;					// Pointer to tile data
+extern INT32             nCtvTileAdd;					// Amount to add after each tile line
+extern UINT8  *pCtvLine;					// Pointer to output bitmap
+typedef INT32 (*CtvDoFn)();
+typedef INT32 (*CpstOneDoFn)();
 extern CtvDoFn CtvDoX[0x20];
 extern CtvDoFn CtvDoXM[0x20];
 extern CtvDoFn CtvDoXB[0x20];
 extern CpstOneDoFn CpstOneDoX[3];
 extern CpstOneDoFn CpstOneObjDoX[2];
-int CtvReady();
+INT32 CtvReady();
 
 // nCpstType constants
 // To get size do (nCpstType & 24) + 8
@@ -295,84 +309,84 @@ int CtvReady();
 #define CTT_32X32 (24)
 
 // cps_obj.cpp
-extern int nCpsObjectBank;
+extern INT32 nCpsObjectBank;
 
-extern unsigned char *BootlegSpriteRam;
+extern UINT8 *BootlegSpriteRam;
 
-extern int Sf2Hack;
+extern INT32 Sf2Hack;
 
-int  CpsObjInit();
-int  CpsObjExit();
-int  CpsObjGet();
+INT32  CpsObjInit();
+INT32  CpsObjExit();
+INT32  CpsObjGet();
 void CpsObjDrawInit();
-int  Cps1ObjDraw(int nLevelFrom,int nLevelTo);
-int  Cps2ObjDraw(int nLevelFrom,int nLevelTo);
+INT32  Cps1ObjDraw(INT32 nLevelFrom,INT32 nLevelTo);
+INT32  Cps2ObjDraw(INT32 nLevelFrom,INT32 nLevelTo);
 
 // cps_scr.cpp
 #define SCROLL_2 0
 #define SCROLL_3 1
-extern int Ghouls;
-extern int Mercs;
-extern int Sf2jc;
-extern int Ssf2t;
-extern int Qad;
-extern int Xmcota;
+extern INT32 Ghouls;
+extern INT32 Mercs;
+extern INT32 Sf2jc;
+extern INT32 Ssf2t;
+extern INT32 Qad;
+extern INT32 Xmcota;
 
-extern int Scroll1TileMask;
-extern int Scroll2TileMask;
-extern int Scroll3TileMask;
-int Cps1Scr1Draw(unsigned char *Base,int sx,int sy);
-int Cps1Scr3Draw(unsigned char *Base,int sx,int sy);
-int Cps2Scr1Draw(unsigned char *Base,int sx,int sy);
-int Cps2Scr3Draw(unsigned char *Base,int sx,int sy);
+extern INT32 Scroll1TileMask;
+extern INT32 Scroll2TileMask;
+extern INT32 Scroll3TileMask;
+INT32 Cps1Scr1Draw(UINT8 *Base,INT32 sx,INT32 sy);
+INT32 Cps1Scr3Draw(UINT8 *Base,INT32 sx,INT32 sy);
+INT32 Cps2Scr1Draw(UINT8 *Base,INT32 sx,INT32 sy);
+INT32 Cps2Scr3Draw(UINT8 *Base,INT32 sx,INT32 sy);
 
 // cpsr.cpp
-extern unsigned char *CpsrBase;						// Tile data base
-extern int nCpsrScrX,nCpsrScrY;						// Basic scroll info
-extern unsigned short *CpsrRows;					// Row scroll table, 0x400 words long
-extern int nCpsrRowStart;							// Start of row scroll (can wrap?)
+extern UINT8 *CpsrBase;						// Tile data base
+extern INT32 nCpsrScrX,nCpsrScrY;						// Basic scroll info
+extern UINT16 *CpsrRows;					// Row scroll table, 0x400 words long
+extern INT32 nCpsrRowStart;							// Start of row scroll (can wrap?)
 
 // Information needed to draw a line
 struct CpsrLineInfo {
-	int nStart;										// 0-0x3ff - where to start drawing tiles from
-	int nWidth;										// 0-0x400 - width of scroll shifts
+	INT32 nStart;										// 0-0x3ff - where to start drawing tiles from
+	INT32 nWidth;										// 0-0x400 - width of scroll shifts
 													// e.g. for no rowscroll at all, nWidth=0
-	int nTileStart;									// Range of tiles which are visible onscreen
-	int nTileEnd;									// (e.g. 0x20 -> 0x50 , wraps around to 0x10)
-	short Rows[16];									// 16 row scroll values for this line
-	int nMaxLeft, nMaxRight;						// Maximum row shifts left and right
+	INT32 nTileStart;									// Range of tiles which are visible onscreen
+	INT32 nTileEnd;									// (e.g. 0x20 -> 0x50 , wraps around to 0x10)
+	INT16 Rows[16];									// 16 row scroll values for this line
+	INT32 nMaxLeft, nMaxRight;						// Maximum row shifts left and right
 };
 extern struct CpsrLineInfo CpsrLineInfo[15];
-int Cps1rPrepare();
-int Cps2rPrepare();
+INT32 Cps1rPrepare();
+INT32 Cps2rPrepare();
 
 // cpsrd.cpp
-int Cps1rRender();
-int Cps2rRender();
+INT32 Cps1rRender();
+INT32 Cps2rRender();
 
 // dc_input.cpp
 extern struct BurnInputInfo CpsFsi[0x1B];
 
 // ps.cpp
-extern unsigned char PsndCode, PsndFade;			// Sound code/fade sent to the z80 program
-int PsndInit();
-int PsndExit();
+extern UINT8 PsndCode, PsndFade;			// Sound code/fade sent to the z80 program
+INT32 PsndInit();
+INT32 PsndExit();
 void PsndNewFrame();
-int PsndSyncZ80(int nCycles);
-int PsndScan(int nAction);
+INT32 PsndSyncZ80(INT32 nCycles);
+INT32 PsndScan(INT32 nAction);
 
 // ps_z.cpp
-int PsndZInit();
-int PsndZExit();
-int PsndZScan(int nAction);
-extern int Kodb;
+INT32 PsndZInit();
+INT32 PsndZExit();
+INT32 PsndZScan(INT32 nAction);
+extern INT32 Kodb;
 
 // ps_m.cpp
-extern int bPsmOkay;								// 1 if the module is okay
-int PsmInit();
-int PsmExit();
+extern INT32 bPsmOkay;								// 1 if the module is okay
+INT32 PsmInit();
+INT32 PsmExit();
 void PsmNewFrame();
-int PsmUpdate(int nEnd);
+INT32 PsmUpdate(INT32 nEnd);
 
 // kabuki.cpp
 void wof_decode();

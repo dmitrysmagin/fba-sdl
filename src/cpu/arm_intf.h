@@ -1,12 +1,11 @@
-
 // use these in arm.cpp
-void Arm_program_write_byte_32le(unsigned int addr, unsigned char data);
-void Arm_program_write_dword_32le(unsigned int addr, unsigned int data);
-unsigned char  Arm_program_read_byte_32le(unsigned int addr);
-unsigned int   Arm_program_read_dword_32le(unsigned int addr);
-unsigned int   Arm_program_opcode_dword_32le(unsigned int addr);
+void Arm_program_write_byte_32le(UINT32 addr, UINT8 data);
+void Arm_program_write_dword_32le(UINT32 addr, UINT32 data);
+UINT8  Arm_program_read_byte_32le(UINT32 addr);
+UINT32  Arm_program_read_dword_32le(UINT32 addr);
+UINT32  Arm_program_opcode_dword_32le(UINT32 addr);
 
-void arm_set_irq_line(int irqline, int state);
+void arm_set_irq_line(INT32 irqline, INT32 state);
 
 // use these everywhere else
 #define ARM_READ		1
@@ -16,18 +15,18 @@ void arm_set_irq_line(int irqline, int state);
 #define ARM_ROM		(ARM_READ | ARM_FETCH)
 #define ARM_RAM		(ARM_READ | ARM_FETCH | ARM_WRITE)
 
-void ArmMapMemory(unsigned char *src, int start, int finish, int type);
+void ArmMapMemory(UINT8 *src, INT32 start, INT32 finish, INT32 type);
 
-void ArmSetWriteByteHandler(void (*write)(unsigned int, unsigned char));
-void ArmSetWriteLongHandler(void (*write)(unsigned int, unsigned int));
-void ArmSetReadByteHandler(unsigned char (*read)(unsigned int));
-void ArmSetReadLongHandler(unsigned int (*read)(unsigned int));
+void ArmSetWriteByteHandler(void (*write)(UINT32, UINT8));
+void ArmSetWriteLongHandler(void (*write)(UINT32, UINT32));
+void ArmSetReadByteHandler(UINT8 (*read)(UINT32));
+void ArmSetReadLongHandler(UINT32 (*read)(UINT32));
 
-void ArmInit(int);
-void ArmOpen(int );
+void ArmInit(INT32);
+void ArmOpen(INT32);
 void ArmReset();
-int ArmRun(int cycles);
-int ArmScan(int nAction, int *);
+INT32 ArmRun(INT32 cycles);
+INT32 ArmScan(INT32 nAction, INT32 *);
 
 #define ARM_IRQ_LINE		0
 #define ARM_FIRQ_LINE		1
@@ -36,24 +35,24 @@ int ArmScan(int nAction, int *);
 #define ARM_ASSERT_LINE		1
 #define ARM_HOLD_LINE		2
 
-void ArmSetIRQLine(int line, int state);
+void ArmSetIRQLine(INT32 line, INT32 state);
 
 void ArmExit();
 void ArmClose();
 
-extern unsigned int ArmSpeedHackAddress;
-void ArmIdleCycles(int cycles);
-void ArmSetSpeedHack(unsigned int address, void (*pCallback)());
+extern UINT32 ArmSpeedHackAddress;
+void ArmIdleCycles(INT32 cycles);
+void ArmSetSpeedHack(UINT32 address, void (*pCallback)());
 
-unsigned int ArmGetPc();
+UINT32 ArmGetPc();
 
-unsigned int ArmRemainingCycles();
-unsigned int ArmGetTotalCycles();
+UINT32 ArmRemainingCycles();
+INT32 ArmGetTotalCycles();
 void ArmRunEnd();
 void ArmNewFrame();
 
 // for cheat handling
-void Arm_write_rom_byte(unsigned int addr, unsigned char data);
+void Arm_write_rom_byte(UINT32 addr, UINT8 data);
 
 
 
@@ -62,14 +61,14 @@ void Arm_write_rom_byte(unsigned int addr, unsigned char data);
 
 #define Write16Long(ram, a, b)							\
 	if (address >= a && address <= b) {					\
-		*((unsigned short*)(ram + (((address - a) & ~3)/2))) = data;	\
+		*((UINT16*)(ram + (((address - a) & ~3)/2))) = data;	\
 		return;								\
 	}
 
 #define Write16Byte(ram, a, b)							\
 	if (address >= a && address <= b) {					\
 		if (~address & 2) {						\
-			int offset = address - a;				\
+			INT32 offset = address - a;				\
 			ram[(offset & 1) | ((offset & ~3) / 2)] = data;		\
 		}								\
 		return;								\
@@ -77,13 +76,13 @@ void Arm_write_rom_byte(unsigned int addr, unsigned char data);
 
 #define Read16Long(ram, a, b)							\
 	if (address >= a && address <= b) {					\
-		return *((unsigned short*)(ram + (((address - a) & ~3)/2))) | ~0xffff;	\
+		return *((UINT16*)(ram + (((address - a) & ~3)/2))) | ~0xffff;	\
 	}
 
 #define Read16Byte(ram, a, b)							\
 	if (address >= a && address <= b) {					\
 		if (~address & 2) {						\
-			int offset = address - a;				\
+			INT32 offset = address - a;				\
 			return ram[(offset & 1) | ((offset & ~3) / 2)];		\
 		} else {							\
 			return 0xff;						\

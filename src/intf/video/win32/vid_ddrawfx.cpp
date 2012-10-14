@@ -1,10 +1,20 @@
 // Software blitter effects via DirectDraw
 #include "burner.h"
+
+#if !defined BUILD_X64_EXE
 // #include "vid_directx_support.h"
-#include "vid_softfx.h"
+ #include "vid_softfx.h"
+#endif
 
 #include <InitGuid.h>
 #define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
+
+#if defined BUILD_X64_EXE
+// #include "vid_directx_support.h"
+ #include "vid_softfx.h"
+#endif
+
+#include "ddraw_core.h"
 
 static IDirectDraw7* BlitFXDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* BlitFXPrim = NULL;		// Primary surface
@@ -251,7 +261,7 @@ static int Init()
 	nUseBlitter = nVidBlitterOpt[nVidSelect] & 0xFF;
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(NULL, (void**)&BlitFXDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(NULL, (void**)&BlitFXDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(BlitFXDD);
 
@@ -561,4 +571,3 @@ static int GetSettings(InterfaceInfo* pInfo)
 
 // The Video Output plugin:
 struct VidOut VidOutDDrawFX = { Init, Exit, Frame, Paint, vidScale, GetSettings, _T("DirectDraw7 Software Effects video output") };
-

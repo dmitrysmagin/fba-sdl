@@ -2,43 +2,45 @@
 // Based on MAME driver by Manuel Abadia
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
 #include "konamiic.h"
 
-static unsigned char *AllMem;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvGfxROMExp2;
-static unsigned char *DrvGfxROMExp3;
-static unsigned char *DrvSndROM;
-static unsigned char *AllRam;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *soundlatch;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
+static UINT8 *AllMem;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvGfxROMExp2;
+static UINT8 *DrvGfxROMExp3;
+static UINT8 *DrvSndROM;
+static UINT8 *AllRam;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *soundlatch;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static int bank0;
-static int bank1;
-static int bank2;
+static INT32 bank0;
+static INT32 bank1;
+static INT32 bank2;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned char DrvInputs[3];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT8 DrvInputs[3];
 
 static struct BurnInputInfo UltramanInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 coin"	},
@@ -136,7 +138,7 @@ static struct BurnDIPInfo UltramanDIPList[]=
 
 STDDIPINFO(Ultraman)
 
-void __fastcall ultraman_write_byte(unsigned int address, unsigned char data)
+void __fastcall ultraman_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -217,7 +219,7 @@ void __fastcall ultraman_write_byte(unsigned int address, unsigned char data)
 
 }
 
-unsigned char __fastcall ultraman_read_byte(unsigned int address)
+UINT8 __fastcall ultraman_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -260,7 +262,7 @@ unsigned char __fastcall ultraman_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall ultraman_sound_write(unsigned short address, unsigned char data)
+void __fastcall ultraman_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -281,7 +283,7 @@ void __fastcall ultraman_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall ultraman_sound_read(unsigned short address)
+UINT8 __fastcall ultraman_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -299,32 +301,32 @@ unsigned char __fastcall ultraman_sound_read(unsigned short address)
 	return 0;
 }
 
-static void K051960Callback(int *, int *color, int *priority, int *shadow)
+static void K051960Callback(INT32 *, INT32 *color, INT32 *priority, INT32 *shadow)
 {
 	*priority = (*color & 0x80) >> 7;
 	*color = 0xc0 + ((*color & 0x7e) >> 1);
 	*shadow = 0;
 }
 
-static void K051316Callback0(int *code, int *color, int *)
+static void K051316Callback0(INT32 *code, INT32 *color, INT32 *)
 {
 	*code |= ((*color & 0x07) << 8) | (bank0 << 11);
 	*color = ((*color & 0xf8) >> 3);
 }
 
-static void K051316Callback1(int *code, int *color, int *)
+static void K051316Callback1(INT32 *code, INT32 *color, INT32 *)
 {
 	*code |= ((*color & 0x07) << 8) | (bank1 << 11);
 	*color = 0x40 + ((*color & 0xf8) >> 3);
 }
 
-static void K051316Callback2(int *code, int *color, int *)
+static void K051316Callback2(INT32 *code, INT32 *color, INT32 *)
 {
 	*code |= ((*color & 0x07) << 8) | (bank2 << 11);
 	*color = 0x80 + ((*color & 0xf8) >> 3);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -348,9 +350,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x040000;
 	DrvZ80ROM	= Next; Next += 0x010000;
@@ -367,7 +369,7 @@ static int MemIndex()
 	MSM6295ROM	= Next;
 	DrvSndROM	= Next; Next += 0x040000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x2000 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x2000 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -384,17 +386,17 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane0[4]  = { 0x000, 0x008, 0x010, 0x018 };
-	int XOffs0[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	INT32 Plane0[4]  = { 0x000, 0x008, 0x010, 0x018 };
+	INT32 XOffs0[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 			   0x100, 0x101, 0x102, 0x103, 0x104, 0x105, 0x106, 0x107 };
-	int YOffs0[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	INT32 YOffs0[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			   0x200, 0x220, 0x240, 0x260, 0x280, 0x2a0, 0x2c0, 0x2e0 };
-	int Plane1[4]  = { 0x000, 0x001, 0x002, 0x003 };
-	int XOffs1[16] = { 0x000, 0x004, 0x008, 0x00c, 0x010, 0x014, 0x018, 0x01c,
+	INT32 Plane1[4]  = { 0x000, 0x001, 0x002, 0x003 };
+	INT32 XOffs1[16] = { 0x000, 0x004, 0x008, 0x00c, 0x010, 0x014, 0x018, 0x01c,
 			   0x020, 0x024, 0x028, 0x02c, 0x030, 0x034, 0x038, 0x03c };
-	int YOffs1[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
+	INT32 YOffs1[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 			   0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, 0x100000);
@@ -407,12 +409,12 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -454,7 +456,7 @@ static int DrvInit()
 	SekSetReadByteHandler(0,	ultraman_read_byte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -490,7 +492,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -502,17 +504,16 @@ static int DrvExit()
 	BurnYM2151Exit();
 	MSM6295Exit(0);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x4000 / 2; i++) {
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x4000 / 2; i++) {
 		r = (p[i] >> 10) & 0x1f;
 		g = (p[i] >>  5) & 0x1f;
 		b = (p[i] >>  0) & 0x1f;
@@ -525,7 +526,7 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
@@ -544,7 +545,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -555,7 +556,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 8; i++) { 
+		for (INT32 i = 0; i < 8; i++) { 
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -568,16 +569,16 @@ static int DrvFrame()
 		if ((DrvInputs[2] & 0x06) == 0) DrvInputs[2] |= 0x06;
 	}
 
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 12000000 / 60, 4000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 12000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCyclesSegment = nCyclesTotal[0] / nInterleave;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCyclesSegment = nCyclesTotal[0] / nInterleave;
 
 		nCyclesDone[0] += SekRun(nCyclesSegment);
 
@@ -586,8 +587,8 @@ static int DrvFrame()
 		nCyclesDone[1] += ZetRun(nCyclesSegment);
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -597,9 +598,9 @@ static int DrvFrame()
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		if (nSegmentLength) {
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 		}
@@ -615,7 +616,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -686,7 +687,7 @@ struct BurnDriver BurnDrvUltraman = {
 	"ultraman", NULL, NULL, NULL, "1991",
 	"Ultraman (Japan)\0", NULL, "Banpresto / Bandai", "GX910",
 	L"\uFEFF\u30A6\u30EB\u30c8\u30E9\u30DE\u30f3  \u7A7A\u60F3\u7279\u64AE\u30B7\u30EA\u30FC\u30BA (Japan)\0Ultraman\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_KONAMI, GBF_VSFIGHT, 0,
 	NULL, ultramanRomInfo, ultramanRomName, NULL, NULL, UltramanInputInfo, UltramanDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x2000,
 	288, 224, 4, 3

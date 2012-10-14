@@ -4,69 +4,73 @@
 #include "ymz280b.h"
 #include "burn_sound.h"
 
-static int nYMZ280BSampleRate;
+static INT32 nYMZ280BSampleRate;
 
-unsigned char* YMZ280BROM;
-void (*pYMZ280BRAMWrite)(int offset, int nValue) = NULL;
-int (*pYMZ280BRAMRead)(int offset) = NULL;
+UINT8* YMZ280BROM;
+void (*pYMZ280BRAMWrite)(INT32 offset, INT32 nValue) = NULL;
+INT32 (*pYMZ280BRAMRead)(INT32 offset) = NULL;
 
-unsigned int nYMZ280BStatus;
-unsigned int nYMZ280BRegister;
+UINT32 nYMZ280BStatus;
+UINT32 nYMZ280BRegister;
 
 static bool bYMZ280BEnable;
 
 static bool bYMZ280BIRQEnable;
-static int nYMZ280BIRQMask;
-static int nYMZ280BIRQStatus;
-void (*YMZ280BIRQCallback)(int nStatus) = NULL;
+static INT32 nYMZ280BIRQMask;
+static INT32 nYMZ280BIRQStatus;
+void (*YMZ280BIRQCallback)(INT32 nStatus) = NULL;
 
-static int* pBuffer = NULL;
-static int nOutputChannels;
+static INT32* pBuffer = NULL;
+static INT32 nOutputChannels;
 
 static double nYMZ280BFrequency;
 
-static int YMZ280BDeltaTable[16];
+static INT32 YMZ280BDeltaTable[16];
 
-static int YMZ280BStepShift[8] = {0x0E6, 0x0E6, 0x0E6, 0x0E6, 0x133, 0x199, 0x200, 0x266};
+static INT32 YMZ280BStepShift[8] = {0x0E6, 0x0E6, 0x0E6, 0x0E6, 0x133, 0x199, 0x200, 0x266};
 
 struct sYMZ280BChannelInfo {
 	bool bEnabled;
 	bool bPlaying;
 	bool bLoop;
-	int nMode;
-	int nFrequency;
-	int nSample;
-	int nLoopSample;
-	unsigned int nSampleSize;
-	unsigned int nPosition;
-	int nFractionalPosition;
-	int nStep;
-	int nLoopStep;
-	unsigned int nSampleStart;
-	unsigned int nSampleStop;
-	unsigned int nLoopStart;
-	unsigned int nLoopStop;
-	int nVolume;
-	int nVolumeLeft;
-	int nVolumeRight;
-	int nPan;
+	INT32 nMode;
+	INT32 nFrequency;
+	INT32 nSample;
+	INT32 nLoopSample;
+	UINT32 nSampleSize;
+	UINT32 nPosition;
+	INT32 nFractionalPosition;
+	INT32 nStep;
+	INT32 nLoopStep;
+	UINT32 nSampleStart;
+	UINT32 nSampleStop;
+	UINT32 nLoopStart;
+	UINT32 nLoopStop;
+	INT32 nVolume;
+	INT32 nVolumeLeft;
+	INT32 nVolumeRight;
+	INT32 nPan;
 
-	int nOutput;
-	int nPreviousOutput;
+	INT32 nOutput;
+	INT32 nPreviousOutput;
 
-	int nBufPos;
+	INT32 nBufPos;
 };
 
-static int nActiveChannel, nDelta, nSample, nCount, nRamReadAddress;
-static int* buf;
+static INT32 nActiveChannel, nDelta, nSample, nCount, nRamReadAddress;
+static INT32* buf;
 
 sYMZ280BChannelInfo YMZ280BChannelInfo[8];
 static sYMZ280BChannelInfo* channelInfo;
 
-static int* YMZ280BChannelData[8];
+static INT32* YMZ280BChannelData[8];
 
 void YMZ280BReset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BReset called without init\n"));
+#endif
+
 	memset(&YMZ280BChannelInfo[0], 0, sizeof(YMZ280BChannelInfo));
 
 	nYMZ280BIRQMask = 0;
@@ -75,24 +79,28 @@ void YMZ280BReset()
 	bYMZ280BEnable = false;
 	nRamReadAddress = 0;
 
-	for (int j = 0; j < 8; j++) {
-		memset(YMZ280BChannelData[j], 0, 0x1000 * sizeof(int));
+	for (INT32 j = 0; j < 8; j++) {
+		memset(YMZ280BChannelData[j], 0, 0x1000 * sizeof(INT32));
 		YMZ280BChannelInfo[j].nBufPos = 4;
 	}
 
 	return;
 }
 
-inline void YMZ280BSetSampleSize(const int nChannel)
+inline void YMZ280BSetSampleSize(const INT32 nChannel)
 {
 	double rate = (double)(YMZ280BChannelInfo[nChannel].nFrequency + 1) * nYMZ280BFrequency * 512;
 	rate /= nYMZ280BSampleRate * 3;
 
-	YMZ280BChannelInfo[nChannel].nSampleSize = (unsigned int)rate;
+	YMZ280BChannelInfo[nChannel].nSampleSize = (UINT32)rate;
 }
 
-int YMZ280BScan()
+INT32 YMZ280BScan()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BScan called without init\n"));
+#endif
+
 	SCAN_VAR(nYMZ280BStatus);
 	SCAN_VAR(nYMZ280BRegister);
 
@@ -103,7 +111,7 @@ int YMZ280BScan()
 	SCAN_VAR(nYMZ280BIRQStatus);
 	SCAN_VAR(nRamReadAddress);
 
-	for (int j = 0; j < 8; j++) {
+	for (INT32 j = 0; j < 8; j++) {
 		SCAN_VAR(YMZ280BChannelInfo[j]);
 		YMZ280BSetSampleSize(j);
 	}
@@ -111,8 +119,10 @@ int YMZ280BScan()
 	return 0;
 }
 
-int YMZ280BInit(int nClock, void (*IRQCallback)(int), int nChannels)
+INT32 YMZ280BInit(INT32 nClock, void (*IRQCallback)(INT32), INT32 nChannels)
 {
+	DebugSnd_YMZ280BInitted = 1;
+	
 	nYMZ280BFrequency = nClock;
 
 	if (nBurnSoundRate > 0) {
@@ -122,7 +132,7 @@ int YMZ280BInit(int nClock, void (*IRQCallback)(int), int nChannels)
 	}
 
 	// Compute sample deltas
-	for (int n = 0; n < 16; n++) {
+	for (INT32 n = 0; n < 16; n++) {
 		nDelta = (n & 7) * 2 + 1;
 		if (n & 8) {
 			nDelta = -nDelta;
@@ -132,11 +142,14 @@ int YMZ280BInit(int nClock, void (*IRQCallback)(int), int nChannels)
 
 	YMZ280BIRQCallback = IRQCallback;
 
-	free(pBuffer);
-	pBuffer = (int*)malloc(nYMZ280BSampleRate *  2 * sizeof(int));
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
+	pBuffer = (INT32*)malloc(nYMZ280BSampleRate *  2 * sizeof(INT32));
 
-	for (int j = 0; j < 8; j++) {
-		YMZ280BChannelData[j] = (int*)malloc(0x1000 * sizeof(int));
+	for (INT32 j = 0; j < 8; j++) {
+		YMZ280BChannelData[j] = (INT32*)malloc(0x1000 * sizeof(INT32));
 	}
 
 	nOutputChannels = nChannels;
@@ -148,12 +161,20 @@ int YMZ280BInit(int nClock, void (*IRQCallback)(int), int nChannels)
 
 void YMZ280BExit()
 {
-	free(pBuffer);
-	pBuffer = NULL;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BExit called without init\n"));
+#endif
+
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
 
 	YMZ280BIRQCallback = NULL;
 	pYMZ280BRAMWrite = NULL;
 	pYMZ280BRAMRead = NULL;
+	
+	DebugSnd_YMZ280BInitted = 0;
 }
 
 inline static void UpdateIRQStatus()
@@ -189,7 +210,7 @@ inline static void RampChannel()
 #if 1
 	if (channelInfo->nSample != 0) {
 		if (channelInfo->nSample > 0) {
-			int nRamp = 64 * 32678 / nYMZ280BSampleRate;
+			INT32 nRamp = 64 * 32678 / nYMZ280BSampleRate;
 			while (nCount-- && channelInfo->nSample > nRamp) {
 				channelInfo->nSample -= nRamp;
 				*buf++ += channelInfo->nSample * channelInfo->nVolumeLeft;
@@ -199,7 +220,7 @@ inline static void RampChannel()
 				channelInfo->nSample = 0;
 			}
 		} else {
-			int nRamp = 0 - 64 * 32678 / nYMZ280BSampleRate;
+			INT32 nRamp = 0 - 64 * 32678 / nYMZ280BSampleRate;
 			while (nCount-- && channelInfo->nSample < nRamp) {
 				channelInfo->nSample -= nRamp;
 				*buf++ += channelInfo->nSample * channelInfo->nVolumeLeft;
@@ -249,13 +270,13 @@ inline static void decode_pcm8()
 {
 	nDelta = YMZ280BROM[channelInfo->nPosition >> 1];
 
-	channelInfo->nSample = (char)nDelta * 256;
+	channelInfo->nSample = (INT8)nDelta * 256;
 	channelInfo->nPosition+=2;
 }
 
 inline static void decode_pcm16()
 {
-	nDelta = (short)((YMZ280BROM[channelInfo->nPosition / 2 + 1] << 8) + YMZ280BROM[channelInfo->nPosition / 2]);
+	nDelta = (INT16)((YMZ280BROM[channelInfo->nPosition / 2 + 1] << 8) + YMZ280BROM[channelInfo->nPosition / 2]);
 
 	channelInfo->nSample = nDelta;
 	channelInfo->nPosition+=4;
@@ -434,9 +455,13 @@ inline static void RenderADPCMLoop_Cubic()
 	}
 }
 
-int YMZ280BRender(short* pSoundBuf, int nSegmentLength)
+INT32 YMZ280BRender(INT16* pSoundBuf, INT32 nSegmentLength)
 {
-	memset(pBuffer, 0, nSegmentLength * 2 * sizeof(int));
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BRender called without init\n"));
+#endif
+
+	memset(pBuffer, 0, nSegmentLength * 2 * sizeof(INT32));
 
 	for (nActiveChannel = 0; nActiveChannel < 8; nActiveChannel++) {
 		nCount = nSegmentLength;
@@ -478,8 +503,8 @@ int YMZ280BRender(short* pSoundBuf, int nSegmentLength)
 					}
 				}
 
-				*pSoundBuf++ = (short)nSample;
-				*pSoundBuf++ = (short)nSample;
+				*pSoundBuf++ = (INT16)nSample;
+				*pSoundBuf++ = (INT16)nSample;
 			}
 			break;
 		}
@@ -499,10 +524,14 @@ int YMZ280BRender(short* pSoundBuf, int nSegmentLength)
 	return 0;
 }
 
-void YMZ280BWriteRegister(unsigned char nValue)
+void YMZ280BWriteRegister(UINT8 nValue)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BWriteRegister called without init\n"));
+#endif
+
 	if (nYMZ280BRegister < 0x80) {
-		int nWriteChannel = (nYMZ280BRegister >> 2) & 0x07;
+		INT32 nWriteChannel = (nYMZ280BRegister >> 2) & 0x07;
 
 		switch (nYMZ280BRegister & 0x63) {
 
@@ -670,13 +699,13 @@ void YMZ280BWriteRegister(unsigned char nValue)
 	
 					if (bYMZ280BEnable && !(nValue & 0x80)) {
 						bYMZ280BEnable = false;
-						for (int n = 0; n < 8; n++) {
+						for (INT32 n = 0; n < 8; n++) {
 							YMZ280BChannelInfo[n].bPlaying = false;
 						}
 					} else {
 						if (!bYMZ280BEnable && (nValue & 0x80)) {
 							bYMZ280BEnable = true;
-							for (int n = 0; n < 8; n++) {
+							for (INT32 n = 0; n < 8; n++) {
 								if (YMZ280BChannelInfo[n].bEnabled && YMZ280BChannelInfo[n].bLoop) {
 									YMZ280BChannelInfo[n].bPlaying = true;
 								}
@@ -689,9 +718,13 @@ void YMZ280BWriteRegister(unsigned char nValue)
 	}
 }
 
-unsigned int YMZ280BReadStatus()
+UINT32 YMZ280BReadStatus()
 {
-	unsigned int nStatus = nYMZ280BStatus;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BReadStatus called without init\n"));
+#endif
+
+	UINT32 nStatus = nYMZ280BStatus;
 	nYMZ280BStatus = 0;
 
 	UpdateIRQStatus();
@@ -699,12 +732,15 @@ unsigned int YMZ280BReadStatus()
 	return nStatus;
 }
 
-unsigned int YMZ280BReadRAM()
+UINT32 YMZ280BReadRAM()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMZ280BInitted) bprintf(PRINT_ERROR, _T("YMZ280BReadRAM called without init\n"));
+#endif
+	
 	if (pYMZ280BRAMRead) {
 		return pYMZ280BRAMRead(nRamReadAddress++ - 1);
 	}
 
 	return 0;
 }
-

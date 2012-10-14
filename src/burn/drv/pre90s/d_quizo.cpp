@@ -2,19 +2,21 @@
 // Based on MAME driver by Tomasz Slanina
 
 #include "burnint.h"
+#include "zet.h"
+
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 #include "bitswap.h"
 
-static unsigned char *Mem, *Rom, *Prom, *RomBank, *VideoRam, *framebuffer;
-static unsigned char DrvJoy[8], DrvDips, DrvReset;
-static unsigned int *Palette;
-static unsigned char port60 = 0, port70 = 0, dirty = 0;
+static UINT8 *Mem, *Rom, *Prom, *RomBank, *VideoRam, *framebuffer;
+static UINT8 DrvJoy[8], DrvDips, DrvReset;
+static UINT32 *Palette;
+static UINT8 port60 = 0, port70 = 0, dirty = 0;
 
-static short* pAY8910Buffer[3];
-static short *pFMBuffer = NULL;
+static INT16* pAY8910Buffer[3];
+static INT16 *pFMBuffer = NULL;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1",		BIT_DIGITAL,	DrvJoy + 0,	"p1 coin"   },
@@ -53,11 +55,11 @@ STDDIPINFO(Drv)
 
 static void quizo_palette_init()
 {
-	int i;	unsigned char *color_prom = Prom;
+	INT32 i;	UINT8 *color_prom = Prom;
 
 	for (i = 0;i < 16;i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = 0;
 		bit1 = (*color_prom >> 0) & 0x01;
@@ -80,10 +82,10 @@ static void quizo_palette_init()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	int x,y;
-	unsigned int *src = (unsigned int *)framebuffer;
+	INT32 x,y;
+	UINT32 *src = (UINT32 *)framebuffer;
 
 	if(dirty)
 	{
@@ -91,9 +93,9 @@ static int DrvDraw()
 		{
 			for(x=0;x<80;x++)
 			{
-				int data=VideoRam[y*80+x];
-				int data1=VideoRam[y*80+x+0x4000];
-				int pix;
+				INT32 data=VideoRam[y*80+x];
+				INT32 data1=VideoRam[y*80+x+0x4000];
+				INT32 pix;
 
 				pix=(data&1)|(((data>>4)&1)<<1)|((data1&1)<<2)|(((data1>>4)&1)<<3);
 				src[((x*4+3) + (y * 320))] = Palette[pix&15];
@@ -122,9 +124,9 @@ static int DrvDraw()
 }
 
 
-void port60_w(unsigned short, unsigned char data)
+void port60_w(UINT16, UINT8 data)
 {
-	static const unsigned char rombankLookup[]={ 2, 3, 4, 4, 4, 4, 4, 5, 0, 1};
+	static const UINT8 rombankLookup[]={ 2, 3, 4, 4, 4, 4, 4, 5, 0, 1};
 
 	if (data > 9)
 	{
@@ -137,17 +139,17 @@ void port60_w(unsigned short, unsigned char data)
 	ZetMapArea(0x8000, 0xbfff, 2, RomBank + rombankLookup[data] * 0x4000);
 }
 
-void __fastcall quizo_write(unsigned short a, unsigned char data)
+void __fastcall quizo_write(UINT16 a, UINT8 data)
 {
 	if (a >= 0xc000) {
-		int bank = (port70 & 8) ? 1 : 0;
+		INT32 bank = (port70 & 8) ? 1 : 0;
 		VideoRam[(a & 0x3fff) + bank * 0x4000] = data;
 		dirty=1;
 		return;
 	}
 }
 
-void __fastcall quizo_out_port(unsigned short a, unsigned char d)
+void __fastcall quizo_out_port(UINT16 a, UINT8 d)
 {
 	switch (a & 0xff)
 	{
@@ -169,7 +171,7 @@ void __fastcall quizo_out_port(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall quizo_in_port(unsigned short a)
+UINT8 __fastcall quizo_in_port(UINT16 a)
 {
 	switch (a & 0xff)
 	{
@@ -186,7 +188,7 @@ unsigned char __fastcall quizo_in_port(unsigned short a)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	dirty = 1;
 	port70 = port60 = 0;
@@ -207,14 +209,14 @@ static int DrvDoReset()
 }
 
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x30000 + 0x20 + 0x40 + 0x3e800);
+	Mem = (UINT8*)BurnMalloc(0x30000 + 0x20 + (0x10 * sizeof(INT32)) + 0x3e800);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -223,7 +225,7 @@ static int DrvInit()
 	RomBank  = Mem + 0x10000;
 	VideoRam = Mem + 0x28000;
 	Prom     = Mem + 0x30000;
-	Palette  = (unsigned int*)(Mem + 0x30020);
+	Palette  = (UINT32*)(Mem + 0x30020);
 	framebuffer = Mem + 0x30060;
 
 	if (BurnLoadRom(Rom, 0, 1)) return 1;
@@ -237,7 +239,7 @@ static int DrvInit()
 
 	quizo_palette_init();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetWriteHandler(quizo_write);
 	ZetSetInHandler(quizo_in_port);
@@ -261,11 +263,11 @@ static int DrvInit()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) DrvDoReset();
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	ZetOpen(0);
 	ZetRun(4000000 / 60);
@@ -273,25 +275,19 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -305,21 +301,22 @@ static int DrvFrame()
 }
 
 
-static int DrvExit()
+static INT32 DrvExit()
 {
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
+	
 	Mem = Rom = Prom = RomBank = VideoRam = framebuffer = NULL;
 	Palette = NULL;
 	pFMBuffer = NULL;
 	AY8910Exit(0);
 	ZetExit();
-	free (Mem);
-	free (pFMBuffer);
 
 	return 0;
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

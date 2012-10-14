@@ -4,27 +4,27 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0, 0};
-static unsigned char DrvDip[2] = { 0, 0 };
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0, 0};
+static UINT8 DrvDip[2] = { 0, 0 };
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01;
 
-static unsigned char DrvReset;
+static UINT8 DrvReset;
 static bool bVBlank;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
-static char nIRQPending;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
+static INT8 nIRQPending;
 
-static int nPrevCoinHack = 0;
-static int watchdog;
-static int tjumpman_hopper;
+static INT32 nPrevCoinHack = 0;
+static INT32 watchdog;
+static INT32 tjumpman_hopper;
 
 static struct BurnInputInfo TjumpmanInputList[] = {
 	{"Coin",		BIT_DIGITAL,	DrvJoy2 + 6,	"p1 coin"	},
@@ -64,12 +64,12 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-static int tjumpman_hopper_read()
+static INT32 tjumpman_hopper_read()
 {
 	return (tjumpman_hopper && !(nCurrentFrame % 10)) ? 0 : 1;
 }
 
-unsigned char __fastcall tjumpmanReadByte(unsigned int sekAddress)
+UINT8 __fastcall tjumpmanReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -87,19 +87,19 @@ unsigned char __fastcall tjumpmanReadByte(unsigned int sekAddress)
 
 		case 0x700000:
 		case 0x700001: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ  | (bVBlank ? 4 : 0);
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ  | (bVBlank ? 4 : 0);
 			return nRet;
 		}
 
 		case 0x700002:
 		case 0x700003: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 
 		case 0x700004:
 		case 0x700005: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -107,7 +107,7 @@ unsigned char __fastcall tjumpmanReadByte(unsigned int sekAddress)
 
 		case 0x700006:
 		case 0x700007: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -123,7 +123,7 @@ unsigned char __fastcall tjumpmanReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall tjumpmanReadWord(unsigned int sekAddress)
+UINT16 __fastcall tjumpmanReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -134,24 +134,24 @@ unsigned short __fastcall tjumpmanReadWord(unsigned int sekAddress)
 			return (DrvInput[1] ^ 0xFFF7) | (DrvDip[1] & 8);
 
 		case 0x700000: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ  | (bVBlank ? 4 : 0);
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ  | (bVBlank ? 4 : 0);
 			return nRet;
 		}
 
 		case 0x700002: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 
 		case 0x700004: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 
 		case 0x700006: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -167,7 +167,7 @@ unsigned short __fastcall tjumpmanReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall tjumpmanWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall tjumpmanWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress)
 	{
@@ -192,7 +192,7 @@ void __fastcall tjumpmanWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall tjumpmanWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall tjumpmanWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress)
 	{
@@ -240,17 +240,17 @@ void __fastcall tjumpmanWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-void __fastcall tjumpmanWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall tjumpmanWriteBytePalette(UINT32 sekAddress, UINT8 byteValue)
 {
 	CavePalWriteByte(sekAddress & 0xFFFF, byteValue);
 }
 
-void __fastcall tjumpmanWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall tjumpmanWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	CavePalWriteWord(sekAddress & 0xFFFF, wordValue);
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 	
@@ -268,7 +268,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -291,7 +291,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	CaveSpriteBuffer();
 	CavePalUpdate8Bit(0, 128);
@@ -302,20 +302,20 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
 
-	int nCyclesTotal[1];
-	int nCyclesDone[1];
+	INT32 nCyclesTotal[1];
+	INT32 nCyclesDone[1];
 
-	int nCyclesSegment;
+	INT32 nCyclesSegment;
 
 	watchdog++;
 	if (DrvReset || (watchdog > 180)) {
@@ -324,7 +324,7 @@ static int DrvFrame()
 
 	DrvInput[0] = 0;
 	DrvInput[1] = 0;
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -336,17 +336,17 @@ static int DrvFrame()
 
 	nPrevCoinHack = DrvInput[1] & 0x0040;
 
-	nCyclesTotal[0] = (int)((long long)14000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)14000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCyclesDone[0] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
 	SekOpen(0);
 
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU = 0;
-		int nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU = 0;
+		INT32 nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
 
 		// See if we need to trigger the VBlank interrupt
 		if (!bVBlank && nNext > nCyclesVBlank) {
@@ -384,9 +384,9 @@ static int DrvFrame()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next;
+	UINT8* Next;
 
 	Next 			= Mem;
 
@@ -410,12 +410,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -423,11 +423,11 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap4(unsigned char* pData, int nLen)
+static void NibbleSwap4(UINT8* pData, INT32 nLen)
 {
-	for (int i = 0; i < nLen; i++, pData += 2) {
-		unsigned char n1 = pData[0];
-		unsigned char n2 = pData[1];
+	for (INT32 i = 0; i < nLen; i++, pData += 2) {
+		UINT8 n1 = pData[0];
+		UINT8 n2 = pData[1];
 
 		pData[1] = (n2 << 4) | (n1 & 0x0F);
 		pData[0] = (n2 & 0xF0) | (n1 >> 4);
@@ -436,7 +436,7 @@ static void NibbleSwap4(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	BurnLoadRom(Rom01, 0, 1);
 
@@ -453,7 +453,7 @@ static int LoadRoms()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -495,26 +495,26 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	EEPROMInit(&eeprom_interface_93C46);
-
 	if (LoadRoms()) {
 		return 1;
 	}
+	
+	EEPROMInit(&eeprom_interface_93C46);
 
 	{
 		SekInit(0, 0x68000);

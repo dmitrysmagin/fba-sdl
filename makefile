@@ -15,7 +15,7 @@ export
 #	Flags. Uncomment any of these declarations to enable their function.
 #
 
-# Inluclude Unicode support
+# Include Unicode support
 UNICODE = 1
 
 # Build A68K ASM 68000 core
@@ -24,8 +24,11 @@ BUILD_A68K = 1
 # Include x86 Assembly routines
 BUILD_X86_ASM = 1
 
-# Build for x64 targets (MSVC environment only)
+# Build for x64 targets (MinGW64 and MSVC only, this will undefine BUILD_A68K and BUILD_X86_ASM)
 #BUILD_X64_EXE = 1
+
+# Include 7-zip support
+INCLUDE_7Z_SUPPORT = 1
 
 # Include symbols and other debug information in the executable
 #SYMBOL = 1
@@ -48,16 +51,25 @@ FASTCALL = 1
 # Perl is available
 PERL = 1
 
+# Endianness
+LSB_FIRST = 1
+
+# Include png.h from burner.h
+INCLUDE_LIB_PNGH = 1
+
 
 #
 #	execute an appropriate system-specific makefile
 #
 
 mingw345: FORCE
-	@$(MAKE) -s -f makefile.mingw345
-	
+	@$(MAKE) -s -f makefile.mingw GCC345=1
+
 mingw452: FORCE
-	@$(MAKE) -s -f makefile.mingw452
+	@$(MAKE) -s -f makefile.mingw GCC452=1
+	
+mingw461: FORCE
+	@$(MAKE) -s -f makefile.mingw GCC461=1
 
 sdl: FORCE
 	@$(MAKE) -s -f makefile.sdl

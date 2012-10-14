@@ -5,15 +5,15 @@ extern "C" {
 
 #include "timer.h"
 
-void BurnYMF278BSelectRegister(int nRegister, unsigned char nValue);
-void BurnYMF278BWriteRegister(int nRegister, unsigned char nValue);
-unsigned char BurnYMF278BReadStatus();
-unsigned char BurnYMF278BReadData();
+void BurnYMF278BSelectRegister(INT32 nRegister, UINT8 nValue);
+void BurnYMF278BWriteRegister(INT32 nRegister, UINT8 nValue);
+UINT8 BurnYMF278BReadStatus();
+UINT8 BurnYMF278BReadData();
 
-int BurnYMF278BInit(int nClockFrequency, unsigned char* YMF278BROM, void (*IRQCallback)(int, int), int (*StreamCallback)(int));
+INT32 BurnYMF278BInit(INT32 nClockFrequency, UINT8* YMF278BROM, void (*IRQCallback)(INT32, INT32), INT32 (*StreamCallback)(INT32));
 void BurnYMF278BReset();
 void BurnYMF278BExit();
-void BurnYMF278BUpdate(int nSegmentEnd);
-void BurnYMF278BScan(int nAction, int* pnMin);
+void BurnYMF278BUpdate(INT32 nSegmentEnd);
+void BurnYMF278BScan(INT32 nAction, INT32* pnMin);
 
 

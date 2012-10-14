@@ -13,52 +13,54 @@
  ********************************************************************************/
 
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-static unsigned char *Rom68K;
-static unsigned char *RomZ80;
-static unsigned char *RomGfx01;
-static unsigned char *RomGfx02;
-static unsigned char *RomGfx03;
+static UINT8 *Rom68K;
+static UINT8 *RomZ80;
+static UINT8 *RomGfx01;
+static UINT8 *RomGfx02;
+static UINT8 *RomGfx03;
 
-static unsigned char *Ram68K;
-static unsigned short *RamBg00;
-static unsigned short *RamBg01;
-static unsigned short *RamFg;
-static unsigned short *RamSpr;
-static unsigned short *RamPal;
-static unsigned char *RamZ80;
+static UINT8 *Ram68K;
+static UINT16 *RamBg00;
+static UINT16 *RamBg01;
+static UINT16 *RamFg;
+static UINT16 *RamSpr;
+static UINT16 *RamPal;
+static UINT8 *RamZ80;
 
-static unsigned short *RamCurPal;
-static unsigned char *RamPri;
+static UINT16 *RamCurPal;
+static UINT8 *RamPri;
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDipBtn[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDipBtn[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-static unsigned char DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvReset = 0;
-static unsigned char nBrightness = 0xFF;
+static UINT8 DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvReset = 0;
+static UINT8 nBrightness = 0xFF;
 
-static unsigned char bVBlink = 0;
-static unsigned short bg0scrollx, bg0scrolly, bg1scrollx, bg1scrolly;
-static unsigned char nSoundlatch = 0;
-static unsigned char bRecalcPalette = 0;
+static UINT8 bVBlink = 0;
+static UINT16 bg0scrollx, bg0scrolly, bg1scrollx, bg1scrolly;
+static UINT8 nSoundlatch = 0;
+static UINT8 bRecalcPalette = 0;
 
-static int nZ80Cycles;
+static INT32 nZ80Cycles;
 
-inline static void CalcCol(int idx)
+inline static void CalcCol(INT32 idx)
 {
 	/* xBBBBBGGGGGRRRRR */
-	unsigned short nColour = RamPal[idx];
-	int r = (nColour & 0x001F) << 3;	r |= r >> 5;	// Red
-	int g = (nColour & 0x03E0) >> 2;	g |= g >> 5;	// Green
-	int b = (nColour & 0x7C00) >> 7;	b |= b >> 5;	// Blue
+	UINT16 nColour = RamPal[idx];
+	INT32 r = (nColour & 0x001F) << 3;	r |= r >> 5;	// Red
+	INT32 g = (nColour & 0x03E0) >> 2;	g |= g >> 5;	// Green
+	INT32 b = (nColour & 0x7C00) >> 7;	b |= b >> 5;	// Blue
 	r = (r * nBrightness) >> 8;
 	g = (g * nBrightness) >> 8;
 	b = (b * nBrightness) >> 8;
@@ -241,9 +243,9 @@ static struct BurnRomInfo shadfrcjv2RomDesc[] = {
 STD_ROM_PICK(shadfrcjv2)
 STD_ROM_FN(shadfrcjv2)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom68K 		= Next; Next += 0x100000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x010000;			// Z80 ROM
 	RomGfx01	= Next; Next += 0x020000 / 4 * 8;	// fg 8x8x4
@@ -252,23 +254,23 @@ static int MemIndex()
 	MSM6295ROM	= Next; Next += 0x080000;
 	
 	RamStart	= Next;
-	RamBg00		= (unsigned short *) Next; Next += 0x002000;
-	RamBg01		= (unsigned short *) Next; Next += 0x002000;
-	RamFg		= (unsigned short *) Next; Next += 0x002000;
-	RamSpr		= (unsigned short *) Next; Next += 0x002000;
-	RamPal		= (unsigned short *) Next; Next += 0x008000;
+	RamBg00		= (UINT16 *) Next; Next += 0x001000 * sizeof(UINT16);
+	RamBg01		= (UINT16 *) Next; Next += 0x001000 * sizeof(UINT16);
+	RamFg		= (UINT16 *) Next; Next += 0x001000 * sizeof(UINT16);
+	RamSpr		= (UINT16 *) Next; Next += 0x001000 * sizeof(UINT16);
+	RamPal		= (UINT16 *) Next; Next += 0x004000 * sizeof(UINT16);
 	Ram68K		= Next; Next += 0x010000;
 	RamZ80		= Next; Next += 0x001800;
 	RamEnd		= Next;
 	
-	RamCurPal	= (unsigned short *) Next; Next += 0x008000;
+	RamCurPal	= (UINT16 *) Next; Next += 0x004000 * sizeof(UINT16);
 	RamPri		= Next; Next += 0x014000;			// 320x256 Priority Buffer
 	
 	MemEnd		= Next;
 	return 0;
 }
 
-unsigned char __fastcall shadfrceReadByte(unsigned int sekAddress)
+UINT8 __fastcall shadfrceReadByte(UINT32 sekAddress)
 {
 /*
 	INP0 : --AABBBB CCCCCCCC :  DIP2-8 DIP2-7,  coin 1 coin 2 service 1 , player 1
@@ -304,7 +306,7 @@ unsigned char __fastcall shadfrceReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall shadfrceReadWord(unsigned int sekAddress)
+UINT16 __fastcall shadfrceReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x1D0020:
@@ -321,7 +323,7 @@ unsigned short __fastcall shadfrceReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall shadfrceWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall shadfrceWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x1C000B:
@@ -335,7 +337,7 @@ void __fastcall shadfrceWriteByte(unsigned int sekAddress, unsigned char byteVal
 		case 0x1D000D:
 			//bprintf(PRINT_NORMAL, _T("Brightness set to %02x\n"), byteValue);
 			nBrightness = byteValue;
-			for(int i=0;i<0x4000;i++) CalcCol(i);
+			for(INT32 i=0;i<0x4000;i++) CalcCol(i);
 			break;
 
 		case 0x1C0009:
@@ -353,7 +355,7 @@ void __fastcall shadfrceWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall shadfrceWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall shadfrceWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x1C0000: bg0scrollx = wordValue & 0x1FF; break;
@@ -382,14 +384,14 @@ void __fastcall shadfrceWriteWord(unsigned int sekAddress, unsigned short wordVa
 }
 
 /*
-void __fastcall shadfrceWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall shadfrceWriteBytePalette(UINT32 sekAddress, UINT8 byteValue)
 {
 	//CavePalWriteByte(sekAddress & 0xFFFF, byteValue);
 	bprintf(PRINT_NORMAL, _T("Attempt to write byte value %x to palette %x\n"), byteValue, sekAddress);
 }
 */
 
-void __fastcall shadfrceWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall shadfrceWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	sekAddress &= 0x7FFF;
 	sekAddress >>= 1;
@@ -397,7 +399,7 @@ void __fastcall shadfrceWriteWordPalette(unsigned int sekAddress, unsigned short
 	CalcCol(sekAddress);
 }
 
-unsigned char __fastcall shadfrceZRead(unsigned short a)
+UINT8 __fastcall shadfrceZRead(UINT16 a)
 {
 	switch (a) {
 	case 0xC801:	// YM2151_status_port_0_r
@@ -415,7 +417,7 @@ unsigned char __fastcall shadfrceZRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall shadfrceZWrite(unsigned short a, unsigned char d)
+void __fastcall shadfrceZWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 	case 0xC800:	// YM2151_register_port_0_w
@@ -438,7 +440,7 @@ void __fastcall shadfrceZWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static void shadfrceYM2151IRQHandler(int nStatus)
+static void shadfrceYM2151IRQHandler(INT32 nStatus)
 {
 	if (nStatus) {
 		//ZetRaiseIrq(255);
@@ -449,7 +451,7 @@ static void shadfrceYM2151IRQHandler(int nStatus)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
     SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
@@ -466,7 +468,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int loadDecodeGfx01()
+static INT32 loadDecodeGfx01()
 {
 /*
 	8,8,
@@ -477,20 +479,20 @@ static int loadDecodeGfx01()
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
 	32*8
 */	
-	unsigned char *buf = NULL;
+	UINT8 *buf = NULL;
 	
-	if ((buf = (unsigned char*)malloc(0x20000)) == NULL) {
+	if ((buf = (UINT8*)BurnMalloc(0x20000)) == NULL) {
 	    return 1;
     }	
 	
 	memset(buf, 0, 0x20000);
 	BurnLoadRom(buf,  5, 1);	
 	
-	unsigned char *tmp = buf;
-	unsigned char *pgfx = RomGfx01;
+	UINT8 *tmp = buf;
+	UINT8 *pgfx = RomGfx01;
 	
-	for (int i=0; i<(0x20000/32); i++) {
-		for( int y=0;y<8;y++) {
+	for (INT32 i=0; i<(0x20000/32); i++) {
+		for( INT32 y=0;y<8;y++) {
 			
 			pgfx[0] = (((tmp[ 0]>>0)&1)<<0) | (((tmp[ 0]>>2)&1)<<1) | (((tmp[ 0]>>4)&1)<<2) | (((tmp[ 0]>>6)&1)<<3);
 			pgfx[1] = (((tmp[ 0]>>1)&1)<<0) | (((tmp[ 0]>>3)&1)<<1) | (((tmp[ 0]>>5)&1)<<2) | (((tmp[ 0]>>7)&1)<<3);
@@ -507,11 +509,11 @@ static int loadDecodeGfx01()
 		tmp += 24;
 	}
 	
-	free(buf);
+	BurnFree(buf);
 	return 0;
 }
 
-static int loadDecodeGfx02()
+static INT32 loadDecodeGfx02()
 {
 /*
 	16,16,
@@ -522,9 +524,9 @@ static int loadDecodeGfx02()
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8, 8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 },
 	16*16
 */	
-	unsigned char *buf = NULL;
+	UINT8 *buf = NULL;
 	
-	if ((buf = (unsigned char*)malloc(0xA00000)) == NULL) {
+	if ((buf = (UINT8*)BurnMalloc(0xA00000)) == NULL) {
 	    return 1;
     }	
 	memset(buf, 0, 0xA00000);	
@@ -535,21 +537,21 @@ static int loadDecodeGfx02()
 	BurnLoadRom(buf + 0x600000,  9, 1);
 	BurnLoadRom(buf + 0x800000, 10, 1);
 	
-	unsigned char *tmp1 = buf;
-	unsigned char *tmp2 = tmp1 + 0x200000;
-	unsigned char *tmp3 = tmp2 + 0x200000;
-	unsigned char *tmp4 = tmp3 + 0x200000;
-	unsigned char *tmp5 = tmp4 + 0x200000;
-	unsigned char *pgfx = RomGfx02;
+	UINT8 *tmp1 = buf;
+	UINT8 *tmp2 = tmp1 + 0x200000;
+	UINT8 *tmp3 = tmp2 + 0x200000;
+	UINT8 *tmp4 = tmp3 + 0x200000;
+	UINT8 *tmp5 = tmp4 + 0x200000;
+	UINT8 *pgfx = RomGfx02;
 
 //	TODO: be lazy to research how BurnProgresser work, so ...
 
 //	BurnSetProgressRange(1.0);
 	
-	for (int i=0; i<(0x200000/32); i++) {
-		for( int y=0;y<16;y++) {
+	for (INT32 i=0; i<(0x200000/32); i++) {
+		for( INT32 y=0;y<16;y++) {
 			
-			for(int x=0;x<8;x++) {
+			for(INT32 x=0;x<8;x++) {
 				pgfx[(7-x)+0] =	(((tmp1[ 0] >> x) & 0x01) << 0) | 
 								(((tmp2[ 0] >> x) & 0x01) << 1) | 
 								(((tmp3[ 0] >> x) & 0x01) << 2) | 
@@ -579,11 +581,11 @@ static int loadDecodeGfx02()
 		tmp5 += 16;
 	}
 
-	free(buf);
+	BurnFree(buf);
 	return 0;
 }
 
-static int loadDecodeGfx03()
+static INT32 loadDecodeGfx03()
 {
 /*
 	16,16,
@@ -594,9 +596,9 @@ static int loadDecodeGfx03()
 	{ 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16,9*16,10*16,11*16,12*16,13*16,14*16,15*16 },
 	64*8
 */	
-	unsigned char *buf = NULL;
+	UINT8 *buf = NULL;
 	
-	if ((buf = (unsigned char*)malloc(0x300000)) == NULL) {
+	if ((buf = (UINT8*)BurnMalloc(0x300000)) == NULL) {
 	    return 1;
     }	
 	memset(buf, 0, 0x300000);	
@@ -605,15 +607,15 @@ static int loadDecodeGfx03()
 	BurnLoadRom(buf + 0x100000, 12, 1);
 	BurnLoadRom(buf + 0x200000, 13, 1);
 	
-	unsigned char *tmp1 = buf;
-	unsigned char *tmp2 = tmp1 + 0x100000;
-	unsigned char *tmp3 = tmp2 + 0x100000;	
-	unsigned char *pgfx = RomGfx03;
+	UINT8 *tmp1 = buf;
+	UINT8 *tmp2 = tmp1 + 0x100000;
+	UINT8 *tmp3 = tmp2 + 0x100000;	
+	UINT8 *pgfx = RomGfx03;
 	
-	for (int i=0; i<(0x100000/64); i++) {
-		for( int y=0;y<16;y++) {
+	for (INT32 i=0; i<(0x100000/64); i++) {
+		for( INT32 y=0;y<16;y++) {
 			
-			for(int x=0;x<8;x++) {
+			for(INT32 x=0;x<8;x++) {
 				pgfx[(7-x)+0] =	(((tmp3[ 0] >> x) & 0x01) << 0) | (((tmp3[ 1] >> x) & 0x01) << 1) | 
 								(((tmp2[ 0] >> x) & 0x01) << 2) | (((tmp2[ 1] >> x) & 0x01) << 3) | 
 								(((tmp1[ 0] >> x) & 0x01) << 4) | (((tmp1[ 1] >> x) & 0x01) << 5);
@@ -631,19 +633,19 @@ static int loadDecodeGfx03()
 		tmp3 += 32;
 	}
 	
-	free(buf);
+	BurnFree(buf);
 	
 	return 0;
 }
 
-static int shadfrceInit()
+static INT32 shadfrceInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();	
 	
@@ -668,15 +670,15 @@ static int shadfrceInit()
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x0FFFFF, SM_ROM);	// CPU 0 ROM
 
-		SekMapMemory((unsigned char *)RamBg00,
+		SekMapMemory((UINT8 *)RamBg00,
 									0x100000, 0x101FFF, SM_RAM);	// b ground 0
-		SekMapMemory((unsigned char *)RamBg01,		
+		SekMapMemory((UINT8 *)RamBg01,		
 									0x102000, 0x103FFF, SM_RAM);	// b ground 1
-		SekMapMemory((unsigned char *)RamFg,			
+		SekMapMemory((UINT8 *)RamFg,			
 									0x140000, 0x141FFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x142000, 0x143FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x180000, 0x187FFF, SM_ROM);	// palette
 		SekMapMemory(Ram68K,		0x1F0000, 0x1FFFFF, SM_RAM);	// 68K RAM
 
@@ -695,7 +697,7 @@ static int shadfrceInit()
 	}
 
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 	
 		ZetSetReadHandler(shadfrceZRead);
@@ -729,7 +731,7 @@ static int shadfrceInit()
 	return 0;
 }
 
-static int shadfrceExit()
+static INT32 shadfrceExit()
 {
 	MSM6295Exit(0);
 	BurnYM2151Exit();
@@ -737,8 +739,7 @@ static int shadfrceExit()
 	SekExit();
 	ZetExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	return 0;
 }
@@ -835,8 +836,8 @@ static void tileBackground_0()
 {
 	/* ---- ----  YXcc CCCC  --TT TTTT TTTT TTTT */
 	
-	unsigned short * pal = RamCurPal + 0x2000;
-	int offs, mx, my, x, y;
+	UINT16 * pal = RamCurPal + 0x2000;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -858,23 +859,23 @@ static void tileBackground_0()
 		else 
 		if ( x >=0 && x <= (320-16) && y >= 0 && y <= (256-16)) {
 
-			unsigned int tileno = RamBg00[offs+1] & 0x3FFF;
+			UINT32 tileno = RamBg00[offs+1] & 0x3FFF;
 			if (tileno == 0) continue;
 			
- 			unsigned int c = (RamBg00[offs] & 0x1F);
+ 			UINT32 c = (RamBg00[offs] & 0x1F);
  			if (c & 0x10) c ^= 0x30;	// skip hole 
  			c <<= 6;
  			
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx03 + (tileno << 8);
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx03 + (tileno << 8);
 			
-			unsigned char * pp = RamPri + y * 320 + x;
+			UINT8 * pp = RamPri + y * 320 + x;
 			
 			if (RamBg00[offs] & 0x0080) {
 				p += 320 * 15;
 				pp += 320 * 15;
 				if (RamBg00[offs] & 0x0040) {
-	 				for (int k=0;k<16;k++) {
+	 				for (INT32 k=0;k<16;k++) {
 	 					
 		 				TILE_BG0_FLIPX_LINE
 		
@@ -883,7 +884,7 @@ static void tileBackground_0()
 		 				pp -= 320;
 		 			}
 	 			} else {
-					for (int k=0;k<16;k++) {
+					for (INT32 k=0;k<16;k++) {
 		 				
 		 				TILE_BG0_LINE
 		
@@ -894,7 +895,7 @@ static void tileBackground_0()
 	 			}
  			} else {
  				if (RamBg00[offs] & 0x0040) {
-	 				for (int k=0;k<16;k++) {
+	 				for (INT32 k=0;k<16;k++) {
 	 					
 		 				TILE_BG0_FLIPX_LINE
 		
@@ -903,7 +904,7 @@ static void tileBackground_0()
 		 				pp += 320;
 		 			}
 	 			} else {
-					for (int k=0;k<16;k++) {
+					for (INT32 k=0;k<16;k++) {
 						
 		 				TILE_BG0_LINE
 
@@ -916,22 +917,22 @@ static void tileBackground_0()
  			
 		} else {
 
-			unsigned int tileno = RamBg00[offs+1] & 0x3FFF;
+			UINT32 tileno = RamBg00[offs+1] & 0x3FFF;
 			if (tileno == 0) continue;
 			
- 			unsigned int c = (RamBg00[offs] & 0x1F);
+ 			UINT32 c = (RamBg00[offs] & 0x1F);
  			if (c & 0x10) c ^= 0x30;	// skip hole
  			c <<= 6;
  			
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx03 + (tileno << 8);
-			unsigned char * pp = RamPri + y * 320 + x;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx03 + (tileno << 8);
+			UINT8 * pp = RamPri + y * 320 + x;
 			
 			if (RamBg00[offs] & 0x0080) {
 				p += 320 * 15;
 				pp += 320 * 15;
 				if (RamBg00[offs] & 0x0040) {
-	 				for (int k=0;k<16;k++) {
+	 				for (INT32 k=0;k<16;k++) {
 	 					
 		 				TILE_BG0_FLIPX_LINE_E
 		 						
@@ -940,7 +941,7 @@ static void tileBackground_0()
 		 				pp -= 320;
 		 			}
 	 			} else {
-					for (int k=0;k<16;k++) {
+					for (INT32 k=0;k<16;k++) {
 		 				
 		 				TILE_BG0_LINE_E
 		
@@ -951,7 +952,7 @@ static void tileBackground_0()
 	 			}
  			} else {
  				if (RamBg00[offs] & 0x0040) {
-	 				for (int k=0;k<16;k++) {
+	 				for (INT32 k=0;k<16;k++) {
 	 					
 		 				TILE_BG0_FLIPX_LINE_E
 		
@@ -960,7 +961,7 @@ static void tileBackground_0()
 		 				pp += 320;
 		 			}
 	 			} else {
-					for (int k=0;k<16;k++) {
+					for (INT32 k=0;k<16;k++) {
 						
 		 				TILE_BG0_LINE_E
 
@@ -980,8 +981,8 @@ static void tileBackground_1()
 {
 	/* cccc TTTT TTTT TTTT */
 	
-	unsigned short * pal = RamCurPal + 0x2000;
-	int offs, mx, my, x, y;
+	UINT16 * pal = RamCurPal + 0x2000;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -1003,12 +1004,12 @@ static void tileBackground_1()
 		else
 		if ( x >=0 && x <= (320-16) && y >= 0 && y <= (256-16)) {
 
-			unsigned int tileno = RamBg01[offs] & 0x0FFF;
- 			unsigned int c = ((RamBg01[offs] & 0xF000) >> 6) + (64 << 6);
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx03 + (tileno << 8);
+			UINT32 tileno = RamBg01[offs] & 0x0FFF;
+ 			UINT32 c = ((RamBg01[offs] & 0xF000) >> 6) + (64 << 6);
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx03 + (tileno << 8);
 			
-			for (int k=0;k<16;k++) {
+			for (INT32 k=0;k<16;k++) {
  				p[ 0] = pal[ d[ 0] | c ];
  				p[ 1] = pal[ d[ 1] | c ];
  				p[ 2] = pal[ d[ 2] | c ];
@@ -1030,12 +1031,12 @@ static void tileBackground_1()
  				p += 320;
  			}
 		} else {
-			unsigned int tileno = RamBg01[offs] & 0x0FFF;
- 			unsigned int c = ((RamBg01[offs] & 0xF000) >> 6) + (64 << 6);
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx03 + (tileno << 8);
+			UINT32 tileno = RamBg01[offs] & 0x0FFF;
+ 			UINT32 c = ((RamBg01[offs] & 0xF000) >> 6) + (64 << 6);
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx03 + (tileno << 8);
 			
-			for (int k=0;k<16;k++) {
+			for (INT32 k=0;k<16;k++) {
 				if ( (y+k)>=0 && (y+k)<256 ) {
 	 				if ((x +  0) >= 0 && (x +  0)<320) p[ 0] = pal[ d[ 0] | c ];
 	 				if ((x +  1) >= 0 && (x +  1)<320) p[ 1] = pal[ d[ 1] | c ];
@@ -1065,8 +1066,8 @@ static void tileForeground()
 {
 	/* ---- ----  tttt tttt  ---- ----  pppp TTTT */
 	
-	unsigned short * pal = RamCurPal;
-	int offs, mx, my, x, y;
+	UINT16 * pal = RamCurPal;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -1085,14 +1086,14 @@ static void tileForeground()
 		else
 		if ( x >=0 && x < (320-8) && y >= 0 && y < (256-8)) {
 
-			unsigned int tileno = (RamFg[offs] & 0x00FF) | ((RamFg[offs+1] & 0x000F) << 8);
+			UINT32 tileno = (RamFg[offs] & 0x00FF) | ((RamFg[offs+1] & 0x000F) << 8);
 			if (tileno == 0) continue;
 			
- 			unsigned int c = (RamFg[offs+1] & 0x00F0) << 2;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx01 + (tileno << 6);
+ 			UINT32 c = (RamFg[offs+1] & 0x00F0) << 2;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx01 + (tileno << 6);
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				if (d[0]) p[0] = pal[d[0]|c];
  				if (d[1]) p[1] = pal[d[1]|c];
  				if (d[2]) p[2] = pal[d[2]|c];
@@ -1107,14 +1108,14 @@ static void tileForeground()
  			}
 		} else {
 
-			unsigned int tileno = (RamFg[offs] & 0x00FF) | ((RamFg[offs+1] & 0x000F) << 8);
+			UINT32 tileno = (RamFg[offs] & 0x00FF) | ((RamFg[offs+1] & 0x000F) << 8);
 			if (tileno == 0) continue;
 			
- 			unsigned int c = (RamFg[offs+1] & 0x00F0) << 2;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
-			unsigned char *d = RomGfx01 + (tileno << 6);
+ 			UINT32 c = (RamFg[offs+1] & 0x00F0) << 2;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
+			UINT8 *d = RomGfx01 + (tileno << 6);
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<256 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<320) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<320) p[1] = pal[ d[1] | c ];
@@ -1216,12 +1217,12 @@ static void tileForeground()
 	TILE_SPR_FLIP_X_E(14)				\
 	TILE_SPR_FLIP_X_E(15)
 
-static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,int pri)
+static void pdrawgfx(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy,INT32 pri)
 {
-	unsigned short * p	= (unsigned short *) pBurnDraw;
-	unsigned char * pp = RamPri;
-	unsigned char * q	= RomGfx02 + (code << 8);
-	unsigned short *pal	= RamCurPal + 0x1000;
+	UINT16 * p	= (UINT16 *) pBurnDraw;
+	UINT8 * pp = RamPri;
+	UINT8 * q	= RomGfx02 + (code << 8);
+	UINT16 *pal	= RamCurPal + 0x1000;
 
 	p += sy * 320 + sx;
 	pp += sy * 320 + sx;
@@ -1238,7 +1239,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 			
 			if (flipx) {
 			
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<256)) {
 						
 						TILE_SPR_FLIP_X_LINE_E
@@ -1251,7 +1252,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 			
 			} else {
 	
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<256)) {
 						
 						TILE_SPR_NORMAL_LINE_E
@@ -1267,7 +1268,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 			
 			if (flipx) {
 			
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<256)) {
 						
 						TILE_SPR_FLIP_X_LINE_E
@@ -1280,7 +1281,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 			
 			} else {
 	
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<256)) {
 
 						TILE_SPR_NORMAL_LINE_E
@@ -1305,7 +1306,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				
 				TILE_SPR_FLIP_X_LINE
 	
@@ -1316,7 +1317,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				
 				TILE_SPR_NORMAL_LINE
 	
@@ -1330,7 +1331,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				
 				TILE_SPR_FLIP_X_LINE
 	
@@ -1341,7 +1342,7 @@ static void pdrawgfx(unsigned int code,unsigned int color,int flipx,int flipy,in
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				
 				TILE_SPR_NORMAL_LINE
 	
@@ -1361,20 +1362,20 @@ static void drawSprites()
 	/* | ---- ---- hhhf Fe-Y | ---- ---- yyyy yyyy | ---- ---- TTTT TTTT | ---- ---- tttt tttt |
        | ---- ---- -pCc cccX | ---- ---- xxxx xxxx | ---- ---- ---- ---- | ---- ---- ---- ---- | */
 
-	unsigned short * finish = RamSpr;
-	unsigned short * source = finish + 0x2000/2 - 8;
-	int hcount;
+	UINT16 * finish = RamSpr;
+	UINT16 * source = finish + 0x2000/2 - 8;
+	INT32 hcount;
 	
 	while( source>=finish ) {
-		int ypos = 0x100 - (((source[0] & 0x0003) << 8) | (source[1] & 0x00ff));
-		int xpos = (((source[4] & 0x0001) << 8) | (source[5] & 0x00ff)) + 1;
-		int tile = ((source[2] & 0x00ff) << 8) | (source[3] & 0x00ff);
-		int height = (source[0] & 0x00e0) >> 5;
-		int enable = ((source[0] & 0x0004));
-		int flipx = ((source[0] & 0x0010) >> 4);
-		int flipy = ((source[0] & 0x0008) >> 3);
-		int pal = ((source[4] & 0x003e));
-		int pri_mask = (source[4] & 0x0040) ? 0x02 : 0x00;
+		INT32 ypos = 0x100 - (((source[0] & 0x0003) << 8) | (source[1] & 0x00ff));
+		INT32 xpos = (((source[4] & 0x0001) << 8) | (source[5] & 0x00ff)) + 1;
+		INT32 tile = ((source[2] & 0x00ff) << 8) | (source[3] & 0x00ff);
+		INT32 height = (source[0] & 0x00e0) >> 5;
+		INT32 enable = ((source[0] & 0x0004));
+		INT32 flipx = ((source[0] & 0x0010) >> 4);
+		INT32 flipy = ((source[0] & 0x0008) >> 3);
+		INT32 pal = ((source[4] & 0x003e));
+		INT32 pri_mask = (source[4] & 0x0040) ? 0x02 : 0x00;
 			
 //		if ( (1 << pri_mask) & nSpriteEnable) {
 			
@@ -1413,20 +1414,20 @@ static void DrvDraw()
 	tileForeground();
 }
 
-static int shadfrceFrame()
+static INT32 shadfrceFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
 		
 	if (bRecalcPalette) {
-		for(int i=0;i<0x4000;i++) CalcCol(i);
+		for(INT32 i=0;i<0x4000;i++) CalcCol(i);
 		bRecalcPalette = 0;
 	}
 
 	DrvInput[0] = 0x00;													// Joy1
 	DrvInput[2] = 0x00;													// Joy2
 	DrvInput[4] = 0x00;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[4] |= (DrvButton[i] & 1) << i;
@@ -1460,15 +1461,15 @@ static int shadfrceFrame()
 	
  */			
  	
- 	int nSoundBufferPos = 0;
+ 	INT32 nSoundBufferPos = 0;
  	
 	bVBlink = 1;
 	SekRun(3500000 / 60);
 	
 	ZetRun(nZ80Cycles >> 2);
 	if (pBurnSoundOut) {
-		int nSegmentLength = (nBurnSoundLen * 1 / 4) - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = (nBurnSoundLen * 1 / 4) - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		BurnYM2151Render(pSoundBuf, nSegmentLength);
 		MSM6295Render(0, pSoundBuf, nSegmentLength);
 		nSoundBufferPos += nSegmentLength;
@@ -1480,8 +1481,8 @@ static int shadfrceFrame()
 
 	ZetRun(nZ80Cycles >> 2);
 	if (pBurnSoundOut) {
-		int nSegmentLength = (nBurnSoundLen * 2 / 4) - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = (nBurnSoundLen * 2 / 4) - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		BurnYM2151Render(pSoundBuf, nSegmentLength);
 		MSM6295Render(0, pSoundBuf, nSegmentLength);
 		nSoundBufferPos += nSegmentLength;
@@ -1492,8 +1493,8 @@ static int shadfrceFrame()
 	
 	ZetRun(nZ80Cycles >> 2);
 	if (pBurnSoundOut) {
-		int nSegmentLength = (nBurnSoundLen * 3 / 4) - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = (nBurnSoundLen * 3 / 4) - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		BurnYM2151Render(pSoundBuf, nSegmentLength);
 		MSM6295Render(0, pSoundBuf, nSegmentLength);
 		nSoundBufferPos += nSegmentLength;
@@ -1506,8 +1507,8 @@ static int shadfrceFrame()
 	
 	ZetRun(nZ80Cycles >> 2);
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		BurnYM2151Render(pSoundBuf, nSegmentLength);
 		MSM6295Render(0, pSoundBuf, nSegmentLength);
 		nSoundBufferPos += nSegmentLength;
@@ -1532,7 +1533,7 @@ static int shadfrceFrame()
 	return 0;
 }
 
-static int shadfrceScan(int nAction,int *pnMin)
+static INT32 shadfrceScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1565,7 +1566,7 @@ static int shadfrceScan(int nAction,int *pnMin)
 	
 	if (nAction & ACB_WRITE) {
 		// recalc palette and brightness
-		for(int i=0;i<0x4000;i++) CalcCol(i);
+		for(INT32 i=0;i<0x4000;i++) CalcCol(i);
 	}
 	
 	return 0;
@@ -1573,9 +1574,9 @@ static int shadfrceScan(int nAction,int *pnMin)
 
 struct BurnDriver BurnDrvShadfrce = {
 	"shadfrce", NULL, NULL, NULL, "1993",
-	"Shadow Force (US Version 2)\0", NULL, "Technos Japan", "misc",
+	"Shadow Force (US Version 2)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY, 2, HARDWARE_TECHNOS, GBF_SCRFIGHT, 0,
 	NULL, shadfrceRomInfo, shadfrceRomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
 	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 0x8000,
 	320, 256, 4, 3
@@ -1583,9 +1584,9 @@ struct BurnDriver BurnDrvShadfrce = {
 
 struct BurnDriver BurnDrvShadfrcj = {
 	"shadfrcej", "shadfrce", NULL, NULL, "1993",
-	"Shadow Force (Japan Version 3)\0", NULL, "Technos Japan", "misc",
+	"Shadow Force (Japan Version 3)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_TECHNOS, GBF_SCRFIGHT, 0,
 	NULL, shadfrcjRomInfo, shadfrcjRomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
 	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 0x8000,
 	320, 256, 4, 3
@@ -1593,9 +1594,9 @@ struct BurnDriver BurnDrvShadfrcj = {
 
 struct BurnDriver BurnDrvShadfrcjv2 = {
 	"shadfrcejv2", "shadfrce", NULL, NULL, "1993",
-	"Shadow Force (Japan Version 2)\0", NULL, "Technos Japan", "misc",
+	"Shadow Force (Japan Version 2)\0", NULL, "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_CLONE, 2, HARDWARE_TECHNOS, GBF_SCRFIGHT, 0,
 	NULL, shadfrcjv2RomInfo, shadfrcjv2RomName, NULL, NULL, shadfrceInputInfo, shadfrceDIPInfo,
 	shadfrceInit, shadfrceExit, shadfrceFrame, NULL, shadfrceScan, &bRecalcPalette, 0x8000,
 	320, 256, 4, 3

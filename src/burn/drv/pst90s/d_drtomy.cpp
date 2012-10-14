@@ -1,15 +1,15 @@
-
 #include "tiles_generic.h"
+#include "sek.h"
 #include "msm6295.h"
 
-static unsigned char *Mem, *MemEnd, *RamStart, *RamEnd;
-static unsigned char *Rom, *Gfx0, *Gfx1, *Snd;
-static unsigned char *VidRam, *PalRam, *SprRam, *WorkRam;
-static unsigned int *Palette, *DrvPalette;
-static unsigned char DrvRecalc;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvInputs[2], DrvReset;
+static UINT8 *Mem, *MemEnd, *RamStart, *RamEnd;
+static UINT8 *Rom, *Gfx0, *Gfx1, *Snd;
+static UINT8 *VidRam, *PalRam, *SprRam, *WorkRam;
+static UINT32 *Palette, *DrvPalette;
+static UINT8 DrvRecalc;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvInputs[2], DrvReset;
 
-static int m6295bank;
+static INT32 m6295bank;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -97,17 +97,17 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-static inline void drtomy_okibank_w(unsigned char data)
+static inline void drtomy_okibank_w(UINT8 data)
 {
 	m6295bank = data & 3;
 	memcpy (Snd + 0x20000, Snd + 0x40000 + m6295bank * 0x20000, 0x20000);
 }
 
-static inline void set_palette(unsigned short pal, int offset)
+static inline void set_palette(UINT16 pal, INT32 offset)
 {
-	int r = (pal >> 10) & 0x1f;
-	int g = (pal >>  5) & 0x1f;
-	int b = (pal >>  0) & 0x1f;
+	INT32 r = (pal >> 10) & 0x1f;
+	INT32 g = (pal >>  5) & 0x1f;
+	INT32 b = (pal >>  0) & 0x1f;
 
 	    r = (r << 3) | (r >> 2);
 	    g = (g << 3) | (g >> 2);
@@ -117,7 +117,7 @@ static inline void set_palette(unsigned short pal, int offset)
 	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
 }
 
-unsigned char __fastcall drtomy_read_byte(unsigned int address)
+UINT8 __fastcall drtomy_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -140,12 +140,12 @@ unsigned char __fastcall drtomy_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall drtomy_read_word(unsigned int)
+UINT16 __fastcall drtomy_read_word(UINT32)
 {
 	return 0;
 }
 
-void __fastcall drtomy_write_byte(unsigned int address, unsigned char data)
+void __fastcall drtomy_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -161,10 +161,10 @@ void __fastcall drtomy_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall drtomy_write_word(unsigned int address, unsigned short data)
+void __fastcall drtomy_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff800) == 0x200000) {
-		unsigned short *pal = (unsigned short*)(PalRam + (address & 0x7fe));
+		UINT16 *pal = (UINT16*)(PalRam + (address & 0x7fe));
 
 		*pal = data;
 
@@ -174,7 +174,7 @@ void __fastcall drtomy_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -196,15 +196,15 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	static int Planes[4] = { 0x000000, 0x200000, 0x400000, 0x600000 };
-	static int XOffs[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	static INT32 Planes[4] = { 0x000000, 0x200000, 0x400000, 0x600000 };
+	static INT32 XOffs[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 				 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 };
-	static int YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
+	static INT32 YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 				 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -214,21 +214,21 @@ static int DrvGfxDecode()
 	GfxDecode(0x8000, 4,  8,  8, Planes, XOffs, YOffs, 0x040, tmp, Gfx0);
 	GfxDecode(0x2000, 4, 16, 16, Planes, XOffs, YOffs, 0x100, tmp, Gfx1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom		= Next; Next += 0x040000;
 	Gfx0		= Next; Next += 0x200000;
 	Gfx1		= Next; Next += 0x200000;
 	Snd		= Next; Next += 0x0c0000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	DrvPalette	= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	RamStart	= Next;
 
@@ -237,7 +237,7 @@ static int MemIndex()
 	SprRam		= Next; Next += 0x001000;
 	WorkRam		= Next; Next += 0x004000;
 
-	Palette		= (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Palette		= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	RamEnd		= Next;
 
@@ -246,14 +246,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -261,7 +261,7 @@ static int DrvInit()
 		if (BurnLoadRom(Rom + 0x000000, 0, 2)) return 1;
 		if (BurnLoadRom(Rom + 0x000001, 1, 2)) return 1;
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(Gfx0 + i * 0x40000, i + 2, 1)) return 1;
 		}
 
@@ -296,13 +296,14 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 	GenericTilesExit();
 	MSM6295Exit(0);
 
-	free (Mem);
+	BurnFree (Mem);
+	
 	MSM6295ROM = NULL;
 
 	return 0;
@@ -311,23 +312,23 @@ static int DrvExit()
 
 static void draw_sprites()
 {
-	int i, x, y, ex, ey;
+	INT32 i, x, y, ex, ey;
 
-	static const int x_offset[2] = {0x0,0x2};
-	static const int y_offset[2] = {0x0,0x1};
+	static const INT32 x_offset[2] = {0x0,0x2};
+	static const INT32 y_offset[2] = {0x0,0x1};
 
-	unsigned short *spriteram = (unsigned short*)SprRam;
+	UINT16 *spriteram = (UINT16*)SprRam;
 
 	for (i = 3; i < 0x1000/2; i+=4){
-		int sx = spriteram[i+2] & 0x01ff;
-		int sy = (240 - (spriteram[i] & 0x00ff)) & 0x00ff;
-		int number = spriteram[i+3];
-		int color = (spriteram[i+2] & 0x1e00) >> 9;
-		int attr = (spriteram[i] & 0xfe00) >> 9;
+		INT32 sx = BURN_ENDIAN_SWAP_INT16(spriteram[i+2]) & 0x01ff;
+		INT32 sy = (240 - (BURN_ENDIAN_SWAP_INT16(spriteram[i]) & 0x00ff)) & 0x00ff;
+		INT32 number = BURN_ENDIAN_SWAP_INT16(spriteram[i+3]);
+		INT32 color = (BURN_ENDIAN_SWAP_INT16(spriteram[i+2]) & 0x1e00) >> 9;
+		INT32 attr = (BURN_ENDIAN_SWAP_INT16(spriteram[i]) & 0xfe00) >> 9;
 
-		int xflip = attr & 0x20;
-		int yflip = attr & 0x40;
-		int spr_size;
+		INT32 xflip = attr & 0x20;
+		INT32 yflip = attr & 0x40;
+		INT32 spr_size;
 
 		if (attr & 0x04){
 			spr_size = 1;
@@ -342,12 +343,12 @@ static void draw_sprites()
 				ex = xflip ? (spr_size-1-x) : x;
 				ey = yflip ? (spr_size-1-y) : y;
 
-				int sxx = sx-0x09+x*8;
-				int syy = sy+y*8;
+				INT32 sxx = sx-0x09+x*8;
+				INT32 syy = sy+y*8;
 
 				syy -= 0x10;
 
-				int code = number + x_offset[ex] + y_offset[ey];
+				INT32 code = number + x_offset[ex] + y_offset[ey];
 
 				if (yflip) {
 					if (xflip) {
@@ -367,21 +368,21 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x300; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x300; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
 
 	{
-		unsigned short *bg_ram = (unsigned short*)(VidRam + 0x1000);
-		unsigned short *fg_ram = (unsigned short*)(VidRam + 0x0000);
+		UINT16 *bg_ram = (UINT16*)(VidRam + 0x1000);
+		UINT16 *fg_ram = (UINT16*)(VidRam + 0x0000);
 
-		for (int offs = 0; offs < 0x400 >> 1; offs++) {
-			int code, color, sx, sy;
+		for (INT32 offs = 0; offs < 0x400 >> 1; offs++) {
+			INT32 code, color, sx, sy;
 
 			sx = (offs << 4) & 0x1f0;
 			sy = (offs >> 1) & 0x1f0;
@@ -390,14 +391,14 @@ static int DrvDraw()
 			sy -= 0x10;
 
 			// background
-			code  = bg_ram[offs] & 0xfff;
-			color = bg_ram[offs] >> 12;
+			code  = BURN_ENDIAN_SWAP_INT16(bg_ram[offs]) & 0xfff;
+			color = BURN_ENDIAN_SWAP_INT16(bg_ram[offs]) >> 12;
 
 			Render16x16Tile_Clip(pTransDraw, code, sx, sy, color, 4, 0, Gfx1);
 
 			// foreground
-			code  = fg_ram[offs] & 0xfff;
-			color = fg_ram[offs] >> 12;
+			code  = BURN_ENDIAN_SWAP_INT16(fg_ram[offs]) & 0xfff;
+			color = BURN_ENDIAN_SWAP_INT16(fg_ram[offs]) >> 12;
 
 			if (!code) continue;
 
@@ -416,13 +417,13 @@ static inline void makeInputs()
 {
 	DrvInputs[0] = DrvInputs[1] = 0xff;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 	}
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -447,7 +448,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

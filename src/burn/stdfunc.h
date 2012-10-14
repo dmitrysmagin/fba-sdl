@@ -2,7 +2,7 @@
 
 // A function to pick a rom, or return NULL if i is out of range
 #define STD_ROM_PICK(Name)												\
-static struct BurnRomInfo* Name##PickRom(unsigned int i)				\
+static struct BurnRomInfo* Name##PickRom(UINT32 i)						\
 {																		\
 	if (i >= sizeof(Name##RomDesc) / sizeof(Name##RomDesc[0])) {		\
 		return NULL;													\
@@ -11,7 +11,7 @@ static struct BurnRomInfo* Name##PickRom(unsigned int i)				\
 }
 
 #define STDROMPICKEXT(Name, Info1, Info2)								\
-static struct BurnRomInfo* Name##PickRom(unsigned int i)				\
+static struct BurnRomInfo* Name##PickRom(UINT32 i)						\
 {																		\
 	if (i >= 0x80) {													\
 		i &= 0x7F;														\
@@ -29,7 +29,7 @@ static struct BurnRomInfo* Name##PickRom(unsigned int i)				\
 
 // Standard rom functions for returning Length, Crc, Type and one one Name
 #define STD_ROM_FN(Name)												\
-static int Name##RomInfo(struct BurnRomInfo* pri, unsigned int i)		\
+static INT32 Name##RomInfo(struct BurnRomInfo* pri, UINT32 i)			\
 {																		\
 	struct BurnRomInfo* por = Name##PickRom(i);							\
 	if (por == NULL) {													\
@@ -43,7 +43,7 @@ static int Name##RomInfo(struct BurnRomInfo* pri, unsigned int i)		\
 	return 0;															\
 }																		\
 																		\
-static int Name##RomName(char** pszName, unsigned int i, int nAka)		\
+static INT32 Name##RomName(char** pszName, UINT32 i, INT32 nAka)		\
 {											   		 					\
 	struct BurnRomInfo *por = Name##PickRom(i);							\
 	if (por == NULL) {													\
@@ -57,7 +57,7 @@ static int Name##RomName(char** pszName, unsigned int i, int nAka)		\
 }
 
 #define STDINPUTINFO(Name)												\
-static int Name##InputInfo(struct BurnInputInfo* pii, unsigned int i)	\
+static INT32 Name##InputInfo(struct BurnInputInfo* pii, UINT32 i)		\
 {																		\
 	if (i >= sizeof(Name##InputList) / sizeof(Name##InputList[0])) {	\
 		return 1;														\
@@ -69,7 +69,7 @@ static int Name##InputInfo(struct BurnInputInfo* pii, unsigned int i)	\
 }
 
 #define STDINPUTINFOSPEC(Name, Info1)									\
-static int Name##InputInfo(struct BurnInputInfo* pii, unsigned int i)	\
+static INT32 Name##InputInfo(struct BurnInputInfo* pii, UINT32 i)		\
 {																		\
 	if (i >= sizeof(Info1) / sizeof(Info1[0])) {						\
 		return 1;														\
@@ -81,7 +81,7 @@ static int Name##InputInfo(struct BurnInputInfo* pii, unsigned int i)	\
 }
 
 #define STDDIPINFO(Name)												\
-static int Name##DIPInfo(struct BurnDIPInfo* pdi, unsigned int i)		\
+static INT32 Name##DIPInfo(struct BurnDIPInfo* pdi, UINT32 i)			\
 {																		\
 	if (i >= sizeof(Name##DIPList) / sizeof(Name##DIPList[0])) {		\
 		return 1;														\
@@ -93,7 +93,7 @@ static int Name##DIPInfo(struct BurnDIPInfo* pdi, unsigned int i)		\
 }
 
 #define STDDIPINFOEXT(Name, Info1, Info2)								\
-static int Name##DIPInfo(struct BurnDIPInfo* pdi, unsigned int i)		\
+static INT32 Name##DIPInfo(struct BurnDIPInfo* pdi, UINT32 i)			\
 {																		\
 	if (i >= sizeof(Info1##DIPList) / sizeof(Info1##DIPList[0])) {		\
 		i -= sizeof(Info1##DIPList) / sizeof(Info1##DIPList[0]);		\
@@ -112,31 +112,31 @@ static int Name##DIPInfo(struct BurnDIPInfo* pdi, unsigned int i)		\
 }
 
 // sample support
-#define STD_SAMPLE_PICK(Name)												\
-static struct BurnSampleInfo* Name##PickSample(unsigned int i)				\
+#define STD_SAMPLE_PICK(Name)											\
+static struct BurnSampleInfo* Name##PickSample(UINT32 i)				\
 {																		\
-	if (i >= sizeof(Name##SampleDesc) / sizeof(Name##SampleDesc[0])) {		\
+	if (i >= sizeof(Name##SampleDesc) / sizeof(Name##SampleDesc[0])) {	\
 		return NULL;													\
 	}																	\
-	return Name##SampleDesc + i;											\
+	return Name##SampleDesc + i;										\
 }
 
 #define STD_SAMPLE_FN(Name)												\
-static int Name##SampleInfo(struct BurnSampleInfo* pri, unsigned int i)		\
+static INT32 Name##SampleInfo(struct BurnSampleInfo* pri, UINT32 i)		\
 {																		\
-	struct BurnSampleInfo* por = Name##PickSample(i);							\
+	struct BurnSampleInfo* por = Name##PickSample(i);					\
 	if (por == NULL) {													\
 		return 1;														\
 	}																	\
 	if (pri) {															\
-		pri->nFlags = por->nFlags;											\
+		pri->nFlags = por->nFlags;										\
 	}																	\
 	return 0;															\
 }																		\
-															\
-static int Name##SampleName(char** pszName, unsigned int i, int nAka)		\
+																		\
+static INT32 Name##SampleName(char** pszName, UINT32 i, INT32 nAka)		\
 {											   		 					\
-	struct BurnSampleInfo *por = Name##PickSample(i);							\
+	struct BurnSampleInfo *por = Name##PickSample(i);					\
 	if (por == NULL) {													\
 		return 1;														\
 	}																	\

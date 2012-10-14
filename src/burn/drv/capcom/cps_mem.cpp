@@ -1,25 +1,25 @@
 #include "cps.h"
 // CPS - Memory
 
-unsigned int CpsMProt[4];
-unsigned int CpsBID[3];
+UINT32 CpsMProt[4];
+UINT32 CpsBID[3];
 
-static unsigned char *CpsMem=NULL,*CpsMemEnd=NULL;
-unsigned char *CpsRam90=NULL;
-unsigned char *CpsZRamC0=NULL,*CpsZRamF0=NULL,*CpsEncZRom=NULL;
-unsigned char *CpsSavePal=NULL;
-unsigned char *CpsSaveReg[MAX_RASTER + 1];
-unsigned char *CpsSaveFrg[MAX_RASTER + 1];
-static unsigned char *CpsSaveRegData = NULL;
-static unsigned char *CpsSaveFrgData = NULL;
-unsigned char *CpsRam660=NULL,*CpsRam708=NULL,*CpsReg=NULL,*CpsFrg=NULL;
-unsigned char *CpsRamFF=NULL;
+static UINT8 *CpsMem=NULL,*CpsMemEnd=NULL;
+UINT8 *CpsRam90=NULL;
+UINT8 *CpsZRamC0=NULL,*CpsZRamF0=NULL,*CpsEncZRom=NULL;
+UINT8 *CpsSavePal=NULL;
+UINT8 *CpsSaveReg[MAX_RASTER + 1];
+UINT8 *CpsSaveFrg[MAX_RASTER + 1];
+static UINT8 *CpsSaveRegData = NULL;
+static UINT8 *CpsSaveFrgData = NULL;
+UINT8 *CpsRam660=NULL,*CpsRam708=NULL,*CpsReg=NULL,*CpsFrg=NULL;
+UINT8 *CpsRamFF=NULL;
 
 // This routine is called first to determine how much memory is needed
 // and then to set up all the pointers.
-static int CpsMemIndex()
+static INT32 CpsMemIndex()
 {
-	unsigned char*  Next; Next =  CpsMem;
+	UINT8*  Next; Next =  CpsMem;
 
 	CpsRam90	  = Next; Next += 0x030000;							// Video Ram
 	CpsRamFF	  = Next; Next += 0x010000;							// Work Ram
@@ -37,12 +37,12 @@ static int CpsMemIndex()
 		CpsRam708 = Next; Next += 0x010000;							// Obj Ram
 		CpsFrg    = Next; Next += 0x000010;							// 'Four' Registers (Registers at 0x400000)
 
-		ZBuf      = (unsigned short*)Next; Next += 384 * 224 * 2;	// Sprite Masking Z buffer
+		ZBuf      = (UINT16*)Next; Next += 384 * 224 * 2;	// Sprite Masking Z buffer
 
 		CpsSaveRegData = Next; Next += 0x0100 * (MAX_RASTER + 1);	// Draw Copy of registers
 		CpsSaveFrgData = Next; Next += 0x0010 * (MAX_RASTER + 1);	// Draw Copy of 'Four' Registers
 
-		for (int i = 0; i < MAX_RASTER + 1; i++) {
+		for (INT32 i = 0; i < MAX_RASTER + 1; i++) {
 			CpsSaveReg[i] = CpsSaveRegData + i * 0x0100;
 			CpsSaveFrg[i] = CpsSaveFrgData + i * 0x0010;
 		}
@@ -60,15 +60,15 @@ static int CpsMemIndex()
 	return 0;
 }
 
-static int AllocateMemory()
+static INT32 AllocateMemory()
 {
-	int nLen;
+	INT32 nLen;
 
 	CpsMem = NULL;													// Find out how much memory is needed
 	CpsMemIndex();
-	nLen = CpsMemEnd - (unsigned char*)0;
+	nLen = CpsMemEnd - (UINT8*)0;
 
-	if ((CpsMem = (unsigned char*)malloc(nLen)) == NULL) {
+	if ((CpsMem = (UINT8*)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 
@@ -79,7 +79,7 @@ static int AllocateMemory()
 }
 
 // Map the correct bank of obj memory to the 68000 address space (including mirrors).
-void CpsMapObjectBanks(int nBank)
+void CpsMapObjectBanks(INT32 nBank)
 {
 	if (nBank != nCpsObjectBank) {
 		nCpsObjectBank = nBank;
@@ -98,7 +98,7 @@ void CpsMapObjectBanks(int nBank)
 	}
 }
 
-int __fastcall CPSResetCallback()
+INT32 __fastcall CPSResetCallback()
 {
 	// Reset instruction on 68000
 	if (!Cps1Pic) ZetReset();						// Reset Z80 (CPU #1)
@@ -108,7 +108,7 @@ int __fastcall CPSResetCallback()
 
 // ----------------------------------------------------------------------------
 
-unsigned char __fastcall CPSQSoundC0ReadByte(unsigned int sekAddress)
+UINT8 __fastcall CPSQSoundC0ReadByte(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("    QS %06X read\n"), sekAddress);
 
@@ -122,7 +122,7 @@ unsigned char __fastcall CPSQSoundC0ReadByte(unsigned int sekAddress)
 	return CpsZRamC0[sekAddress >> 1];
 }
 
-void __fastcall CPSQSoundC0WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall CPSQSoundC0WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 //	bprintf(PRINT_NORMAL, _T("    QS %06X -> %02X\n"), sekAddress, byteValue);
 
@@ -144,7 +144,7 @@ void __fastcall CPSQSoundC0WriteByte(unsigned int sekAddress, unsigned char byte
 	CpsZRamC0[sekAddress >> 1] = byteValue;
 }
 
-unsigned char __fastcall CPSQSoundF0ReadByte(unsigned int sekAddress)
+UINT8 __fastcall CPSQSoundF0ReadByte(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("    QS %06X read\n"), sekAddress);
 
@@ -158,7 +158,7 @@ unsigned char __fastcall CPSQSoundF0ReadByte(unsigned int sekAddress)
 	return CpsZRamF0[sekAddress >> 1];
 }
 
-void __fastcall CPSQSoundF0WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall CPSQSoundF0WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 //	bprintf(PRINT_NORMAL, _T("    QS %06X -> %02X\n"), sekAddress, byteValue);
 
@@ -183,7 +183,7 @@ void __fastcall CPSQSoundF0WriteByte(unsigned int sekAddress, unsigned char byte
 // ----------------------------------------------------------------------------
 
 #if 0
-unsigned char __fastcall CPSExtraNVRAMReadByte(unsigned int sekAddress)
+UINT8 __fastcall CPSExtraNVRAMReadByte(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("  - 0x%06X read.\n"), sekAddress);
 
@@ -191,7 +191,7 @@ unsigned char __fastcall CPSExtraNVRAMReadByte(unsigned int sekAddress)
 	return CpsRam660[sekAddress];
 }
 
-void __fastcall CPSExtraNVRAMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall CPSExtraNVRAMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 //	bprintf(PRINT_NORMAL, _T("  - 0x%06X -> %02X\n"), sekAddress, byteValue);
 
@@ -203,9 +203,9 @@ void __fastcall CPSExtraNVRAMWriteByte(unsigned int sekAddress, unsigned char by
 // ----------------------------------------------------------------------------
 
 /*
-int prevline;
+INT32 prevline;
 
-void __fastcall CpsWriteSpriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall CpsWriteSpriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (prevline != SekCurrentScanline()) {
 		prevline = SekCurrentScanline();
@@ -216,7 +216,7 @@ void __fastcall CpsWriteSpriteByte(unsigned int sekAddress, unsigned char byteVa
 	CpsRam708[sekAddress + nCpsObjectBank * 0x8000] = byteValue;
 }
 
-void __fastcall CpsWriteSpriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall CpsWriteSpriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (prevline != SekCurrentScanline()) {
 		prevline = SekCurrentScanline();
@@ -231,14 +231,14 @@ void __fastcall CpsWriteSpriteWord(unsigned int sekAddress, unsigned short wordV
 
 // ----------------------------------------------------------------------------
 
-unsigned char __fastcall haxx0rReadByte(unsigned int sekAddress)
+UINT8 __fastcall haxx0rReadByte(UINT32 sekAddress)
 {
 	sekAddress &= 0xFFFF;
 	bprintf(PRINT_NORMAL, _T("    QS %06X read (%02X)\n"), sekAddress, CpsEncZRom[sekAddress]);
 	return CpsEncZRom[sekAddress];
 }
 
-int CpsMemInit()
+INT32 CpsMemInit()
 {
 	if (AllocateMemory()) {
 		return 1;
@@ -301,7 +301,7 @@ int CpsMemInit()
 
 	if (Cps1Qs == 1) {
 		// Map the 1st 32KB of the QSound ROM into the 68K address space
-		for (int i = 0x7FFF; i >= 0; i--) {
+		for (INT32 i = 0x7FFF; i >= 0; i--) {
 			CpsEncZRom[(i << 1) + 0] = CpsEncZRom[i];
 			CpsEncZRom[(i << 1) + 1] = 0xFF;
 		}
@@ -322,7 +322,7 @@ int CpsMemInit()
 	return 0;
 }
 
-int CpsMemExit()
+INT32 CpsMemExit()
 {
 #if 0
 	FILE* fp = fopen("mem.raw", "wb");
@@ -333,13 +333,12 @@ int CpsMemExit()
 #endif
 
 	// Deallocate all used memory
-	free(CpsMem);
-	CpsMem = NULL;
+	BurnFree(CpsMem);
 
 	return 0;
 }
 
-static int ScanRam()
+static INT32 ScanRam()
 {
 	// scan ram:
 	struct BurnArea ba;
@@ -363,7 +362,7 @@ static int ScanRam()
 }
 
 // Scan the current state of the CPS1/2 machine
-int CpsAreaScan(int nAction, int *pnMin)
+INT32 CpsAreaScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -422,27 +421,4 @@ int CpsAreaScan(int nAction, int *pnMin)
 	}
 	
 	return 0;
-}
-
-void QSoundCMD(unsigned short nTrack)
-{
-	CpsZRamC0[0x00] = nTrack >> 8;
-	CpsZRamC0[0x01] = nTrack & 0xff;
-
-	// are all of these writes necessary? [seems like they are]
-
-	CpsZRamC0[0x02] = 0xFF;
-	CpsZRamC0[0x03] = 0x00;
-	CpsZRamC0[0x04] = 0x00;
-	CpsZRamC0[0x06] = 0x00;
-	CpsZRamC0[0x07] = 0x10;
-	CpsZRamC0[0x08] = 0x00;
-	CpsZRamC0[0x09] = 0x00;
-	CpsZRamC0[0x0A] = 0x00;
-	CpsZRamC0[0x0B] = 0x00;
-	CpsZRamC0[0x0C] = 0x00;
-//	CpsZRamC0[0x0D] = 0x00;
-//	CpsZRamC0[0x0E] = 0x00;
-	CpsZRamC0[0x0F] = 0x00;
-
 }

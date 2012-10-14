@@ -46,18 +46,18 @@ struct _es8712_state
 // non volatile
 	UINT8 *region_base;		/* pointer to the base of the region */
 
-	int sample_rate;		/* samples per frame */
-	int volume;			/* set gain */
-	int addSignal;			/* add signal to stream? */
+	INT32 sample_rate;		/* samples per frame */
+	INT32 volume;			/* set gain */
+	INT32 addSignal;			/* add signal to stream? */
 };
 
-static short *tbuf[MAX_ES8712_CHIPS] = { NULL };
+static INT16 *tbuf[MAX_ES8712_CHIPS] = { NULL };
 
 static _es8712_state chips[MAX_ES8712_CHIPS];
 static _es8712_state *chip;
 
-static const int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
-static int diff_lookup[49*16];
+static const INT32 index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
+static INT32 diff_lookup[49*16];
 
 /**********************************************************************************************
 
@@ -68,7 +68,7 @@ static int diff_lookup[49*16];
 static void compute_tables()
 {
 	/* nibble to bit map */
-	static const int nbl2bit[16][4] =
+	static const INT32 nbl2bit[16][4] =
 	{
 		{ 1, 0, 0, 0}, { 1, 0, 0, 1}, { 1, 0, 1, 0}, { 1, 0, 1, 1},
 		{ 1, 1, 0, 0}, { 1, 1, 0, 1}, { 1, 1, 1, 0}, { 1, 1, 1, 1},
@@ -76,13 +76,13 @@ static void compute_tables()
 		{-1, 1, 0, 0}, {-1, 1, 0, 1}, {-1, 1, 1, 0}, {-1, 1, 1, 1}
 	};
 
-	int step, nib;
+	INT32 step, nib;
 
 	/* loop over all possible steps */
 	for (step = 0; step <= 48; step++)
 	{
 		/* compute the step value */
-		int stepval = (int)(floor(16.0 * pow(11.0 / 10.0, (double)step)));
+		INT32 stepval = (INT32)(floor(16.0 * pow(11.0 / 10.0, (double)step)));
 
 		/* loop over all nibbles and compute the difference */
 		for (nib = 0; nib < 16; nib++)
@@ -103,18 +103,18 @@ static void compute_tables()
 
 ***********************************************************************************************/
 
-static void generate_adpcm(short *buffer, int samples)
+static void generate_adpcm(INT16 *buffer, INT32 samples)
 {
 	/* if this chip is active */
 	if (chip->playing)
 	{
 		UINT8 *base = chip->region_base + chip->bank_offset + chip->base_offset;
-		int sample = chip->sample;
-		int signal = chip->signal;
-		int count = chip->count;
-		int step = chip->step;
-		int volume = chip->volume;
-		int val;
+		INT32 sample = chip->sample;
+		INT32 signal = chip->signal;
+		INT32 count = chip->count;
+		INT32 step = chip->step;
+		INT32 volume = chip->volume;
+		INT32 val;
 
 		/* loop while we still have samples to generate */
 		while (samples)
@@ -175,29 +175,33 @@ static void generate_adpcm(short *buffer, int samples)
 
 ***********************************************************************************************/
 
-void es8712Update(int device, short *buffer, int samples)
+void es8712Update(INT32 device, INT16 *buffer, INT32 samples)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Update called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
 
-	int sample_num = (int)((float)(((samples / nBurnSoundLen) * 1.0000) * chip->sample_rate));
+	INT32 sample_num = (INT32)((float)(((samples / nBurnSoundLen) * 1.0000) * chip->sample_rate));
 
 	float step = ((chip->sample_rate * 1.00000) / nBurnSoundLen);
 
-	short *buf = tbuf[device];
+	INT16 *buf = tbuf[device];
 
 	generate_adpcm(buf, sample_num);
 
 	float r = 0;
 	if (chip->addSignal) {
-		for (int i = 0; i < samples; i++, r += step, buffer+=2) {
-			buffer[0] += buf[(int)r];
-			buffer[1] += buf[(int)r];
+		for (INT32 i = 0; i < samples; i++, r += step, buffer+=2) {
+			buffer[0] += buf[(INT32)r];
+			buffer[1] += buf[(INT32)r];
 		}
 	} else {
-		for (int i = 0; i < samples; i++, r += step, buffer+=2) {
-			buffer[0] = buffer[1] = buf[(int)r];
+		for (INT32 i = 0; i < samples; i++, r += step, buffer+=2) {
+			buffer[0] = buffer[1] = buf[(INT32)r];
 		}
 	}
 }
@@ -209,8 +213,10 @@ void es8712Update(int device, short *buffer, int samples)
 
 ***********************************************************************************************/
 
-void es8712Init(int device, unsigned char *rom, int sample_rate, float volume, int addSignal)
+void es8712Init(INT32 device, UINT8 *rom, INT32 sample_rate, float volume, INT32 addSignal)
 {
+	DebugSnd_ES8712Initted = 1;
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -229,11 +235,11 @@ void es8712Init(int device, unsigned char *rom, int sample_rate, float volume, i
 
 	chip->sample_rate = sample_rate;
 
-	chip->volume = (int)(volume+0.5);
+	chip->volume = (INT32)(volume+0.5);
 	chip->addSignal = addSignal;
 
 	if (tbuf[device] == NULL) {
-		tbuf[device] = (short*)malloc(sample_rate * sizeof(short));
+		tbuf[device] = (INT16*)malloc(sample_rate * sizeof(INT16));
 	}
 }
 
@@ -243,8 +249,12 @@ void es8712Init(int device, unsigned char *rom, int sample_rate, float volume, i
 
 ***********************************************************************************************/
 
-void es8712Exit(int device)
+void es8712Exit(INT32 device)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Exit called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -255,6 +265,8 @@ void es8712Exit(int device)
 		free (tbuf[device]);
 		tbuf[device] = NULL;
 	}
+	
+	DebugSnd_ES8712Initted = 0;
 }
 
 /*************************************************************************************
@@ -263,8 +275,12 @@ void es8712Exit(int device)
 
 **************************************************************************************/
 
-void es8712Reset(int device)
+void es8712Reset(INT32 device)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Reset called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -284,8 +300,12 @@ void es8712Reset(int device)
 
 *****************************************************************************/
 
-void es8712SetBankBase(int device, int base)
+void es8712SetBankBase(INT32 device, INT32 base)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712SetBankBase called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -300,8 +320,12 @@ void es8712SetBankBase(int device, int base)
 
 ***********************************************************************************************/
 
-void es8712Play(int device)
+void es8712Play(INT32 device)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Play called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -356,8 +380,12 @@ void es8712Play(int device)
  *
 ***********************************************************************************************/
 
-void es8712Write(int device, int offset, unsigned char data)
+void es8712Write(INT32 device, INT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Write called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return;
 
 	chip = &chips[device];
@@ -393,8 +421,12 @@ void es8712Write(int device, int offset, unsigned char data)
 
 ***********************************************************************************************/
 
-int es8712Scan(int device, int nAction)
+INT32 es8712Scan(INT32 device, INT32 nAction)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES8712Initted) bprintf(PRINT_ERROR, _T("es8712Scan called without init\n"));
+#endif
+
 	if (device >= MAX_ES8712_CHIPS) return 1;
 
 	if (nAction & ACB_DRIVER_DATA) {

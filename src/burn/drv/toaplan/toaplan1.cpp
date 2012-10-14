@@ -1,10 +1,10 @@
 #include "toaplan.h"
 
 // This function decodes the tile data for the GP9001 chip in place.
-int ToaLoadTiles(unsigned char* pDest, int nStart, int nROMSize)
+INT32 ToaLoadTiles(UINT8* pDest, INT32 nStart, INT32 nROMSize)
 {
-	unsigned char* pTile;
-	int nSwap = 3;
+	UINT8* pTile;
+	INT32 nSwap = 3;
 
 	BurnLoadRom(pDest + 3, nStart + 0, 4);
 	BurnLoadRom(pDest + 1, nStart + 1, 4);
@@ -12,10 +12,10 @@ int ToaLoadTiles(unsigned char* pDest, int nStart, int nROMSize)
 	BurnLoadRom(pDest + 0, nStart + 3, 4);
 
 	for (pTile = pDest; pTile < (pDest + nROMSize); pTile += 4) {
-		unsigned char data[4];
-		for (int n = 0; n < 4; n++) {
-			int m = 7 - (n << 1);
-			unsigned char nPixels = ((pTile[0 ^ nSwap] >> m) & 1) << 0;
+		UINT8 data[4];
+		for (INT32 n = 0; n < 4; n++) {
+			INT32 m = 7 - (n << 1);
+			UINT8 nPixels = ((pTile[0 ^ nSwap] >> m) & 1) << 0;
 			nPixels |= ((pTile[2 ^ nSwap] >> m) & 1) << 1;
 			nPixels |= ((pTile[1 ^ nSwap] >> m) & 1) << 2;
 			nPixels |= ((pTile[3 ^ nSwap] >> m) & 1) << 3;
@@ -27,7 +27,7 @@ int ToaLoadTiles(unsigned char* pDest, int nStart, int nROMSize)
 			data[n] = nPixels;
 		}
 
-		for (int n = 0; n < 4; n++) {
+		for (INT32 n = 0; n < 4; n++) {
 			pTile[n] = data[n];
 		}
 	}
@@ -37,11 +37,11 @@ int ToaLoadTiles(unsigned char* pDest, int nStart, int nROMSize)
 // ----------------------------------------------------------------------------
 // CPU synchronisation
 
-int nToa1Cycles68KSync;
+INT32 nToa1Cycles68KSync;
 
 // Callbacks for the FM chip
 
-void toaplan1FMIRQHandler(int, int nStatus)
+void toaplan1FMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -50,16 +50,16 @@ void toaplan1FMIRQHandler(int, int nStatus)
 	}
 }
 
-int toaplan1SynchroniseStream(int nSoundRate)
+INT32 toaplan1SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3500000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3500000;
 }
 
 // ----------------------------------------------------------------------------
 
-inline void toaplan1SynchroniseZ80(int nExtraCycles)
+inline void toaplan1SynchroniseZ80(INT32 nExtraCycles)
 {
-	int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
+	INT32 nCycles = ((INT64)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
 
 	if (nCycles <= ZetTotalCycles()) {
 		return;
@@ -70,7 +70,7 @@ inline void toaplan1SynchroniseZ80(int nExtraCycles)
 	BurnTimerUpdateYM3812(nCycles);
 }
 
-unsigned char __fastcall toaplan1ReadByteZ80RAM(unsigned int sekAddress)
+UINT8 __fastcall toaplan1ReadByteZ80RAM(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("    Z80 %04X read\n"), sekAddress & 0x0FFF);
 
@@ -78,7 +78,7 @@ unsigned char __fastcall toaplan1ReadByteZ80RAM(unsigned int sekAddress)
 	return RamZ80[(sekAddress & 0x0FFF) >> 1];
 }
 
-unsigned short __fastcall toaplan1ReadWordZ80RAM(unsigned int sekAddress)
+UINT16 __fastcall toaplan1ReadWordZ80RAM(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("    Z80 %04X read\n"), sekAddress & 0x0FFF);
 
@@ -86,7 +86,7 @@ unsigned short __fastcall toaplan1ReadWordZ80RAM(unsigned int sekAddress)
 	return RamZ80[(sekAddress & 0x0FFF) >> 1];
 }
 
-void __fastcall toaplan1WriteByteZ80RAM(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall toaplan1WriteByteZ80RAM(UINT32 sekAddress, UINT8 byteValue)
 {
 //	bprintf(PRINT_NORMAL, _T("    Z80 %04X -> %02X\n"), sekAddress & 0x0FFF, byteValue);
 
@@ -94,7 +94,7 @@ void __fastcall toaplan1WriteByteZ80RAM(unsigned int sekAddress, unsigned char b
 	RamZ80[(sekAddress & 0x0FFF) >> 1] = byteValue;
 }
 
-void __fastcall toaplan1WriteWordZ80RAM(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall toaplan1WriteWordZ80RAM(UINT32 sekAddress, UINT16 wordValue)
 {
 //	bprintf(PRINT_NORMAL, _T("    Z80 %04X -> %04X\n"), sekAddress & 0x0FFF, wordValue);
 

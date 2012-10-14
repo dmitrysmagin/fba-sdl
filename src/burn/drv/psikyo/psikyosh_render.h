@@ -1,14 +1,13 @@
+extern UINT8 *pPsikyoshTiles;
+extern UINT32  *pPsikyoshSpriteBuffer;
+extern UINT32  *pPsikyoshBgRAM;
+extern UINT32  *pPsikyoshVidRegs;
+extern UINT32  *pPsikyoshPalRAM;
+extern UINT32  *pPsikyoshZoomRAM;
 
-extern unsigned char *pPsikyoshTiles;
-extern unsigned int  *pPsikyoshSpriteBuffer;
-extern unsigned int  *pPsikyoshBgRAM;
-extern unsigned int  *pPsikyoshVidRegs;
-extern unsigned int  *pPsikyoshPalRAM;
-extern unsigned int  *pPsikyoshZoomRAM;
-
-void PsikyoshVideoInit(int gfx_max, int gfx_min);
+void PsikyoshVideoInit(INT32 gfx_max, INT32 gfx_min);
 void PsikyoshVideoExit();
-int  PsikyoshDraw();
+INT32  PsikyoshDraw();
 
 
 //--------------------------------------------------------------------------------
@@ -17,8 +16,8 @@ int  PsikyoshDraw();
 // Standard tile drawing with full clipping.
 //-----------------------------------------------------------------------
 #define PUTPIXEL_CLIP(forloop, splitpixel, putpixel)				\
-	unsigned int *dest;							\
-	for (int y = 0; y < 16; y++, sy++, src+=inc) {				\
+	UINT32 *dest;							\
+	for (INT32 y = 0; y < 16; y++, sy++, src+=inc) {				\
 		if (sy < 0 || sy >= nScreenHeight) continue;			\
 										\
 		dest = DrvTmpDraw + sy * nScreenWidth;				\
@@ -40,9 +39,9 @@ putpixel									\
 // Tile drawing with clipping and priority
 //-----------------------------------------------------------------------
 #define PUTPIXEL_PRIO_CLIP(forloop, splitpixel, putpixel)			\
-	unsigned int *dest;							\
-	unsigned short *pri;							\
-	for (int y = 0; y < 16; y++, sy++, src+=inc) {				\
+	UINT32 *dest;							\
+	UINT16 *pri;							\
+	for (INT32 y = 0; y < 16; y++, sy++, src+=inc) {				\
 		if (sy < 0 || sy >= nScreenHeight) continue;			\
 										\
 		dest = DrvTmpDraw + sy * nScreenWidth;				\
@@ -67,8 +66,8 @@ putpixel									\
 // Standard tile drawing with no clipping.
 //-----------------------------------------------------------------------
 #define PUTPIXEL(forloop, splitpixel, putpixel)					\
-	unsigned int *dest = DrvTmpDraw + sy * nScreenWidth;			\
-	for (int y = 0; y < 16; y++, sy++, src+=inc) {				\
+	UINT32 *dest = DrvTmpDraw + sy * nScreenWidth;			\
+	for (INT32 y = 0; y < 16; y++, sy++, src+=inc) {				\
 forloop										\
 		{								\
 										\
@@ -86,9 +85,9 @@ putpixel									\
 // Tile drawing with no clipping and with priorities.
 //-----------------------------------------------------------------------
 #define PUTPIXEL_PRIO(forloop, splitpixel, putpixel)				\
-	unsigned int *dest = DrvTmpDraw + sy * nScreenWidth;			\
-	unsigned short *pri = DrvPriBmp + sy * nScreenWidth;			\
-	for (int y = 0; y < 16; y++, sy++, src+=inc) {				\
+	UINT32 *dest = DrvTmpDraw + sy * nScreenWidth;			\
+	UINT16 *pri = DrvPriBmp + sy * nScreenWidth;			\
+	for (INT32 y = 0; y < 16; y++, sy++, src+=inc) {				\
 		forloop {							\
 			if (z >= pri[sx]) {					\
 splitpixel									\
@@ -107,18 +106,18 @@ putpixel									\
 // Zoom drawing with priorities.
 //-----------------------------------------------------------------------
 #define ZOOMPIXEL_PRIO(putpixel)						\
-	for (int y = sy; y < ey; y++)						\
+	for (INT32 y = sy; y < ey; y++)						\
 	{									\
-		unsigned char *source = DrvZoomBmp + (y_index >> 10) * 256;	\
-		unsigned int  *dest = DrvTmpDraw + y * nScreenWidth;		\
-		unsigned short *pri = DrvPriBmp + y * nScreenWidth;		\
+		UINT8 *source = DrvZoomBmp + (y_index >> 10) * 256;	\
+		UINT32  *dest = DrvTmpDraw + y * nScreenWidth;		\
+		UINT16 *pri = DrvPriBmp + y * nScreenWidth;		\
 										\
-		int x_index = x_index_base;					\
-		for (int x = sx; x < ex; x++)					\
+		INT32 x_index = x_index_base;					\
+		for (INT32 x = sx; x < ex; x++)					\
 		{								\
 			if (z >= pri[x])					\
 			{							\
-				int c = source[x_index>>10];			\
+				INT32 c = source[x_index>>10];			\
 				if (c)						\
 				{						\
 putpixel									\
@@ -133,15 +132,15 @@ putpixel									\
 // Standard Zoom drawing
 //-----------------------------------------------------------------------
 #define ZOOMPIXEL_NORMAL(putpixel)	\
-	for (int  y = sy; y < ey; y++)						\
+	for (INT32  y = sy; y < ey; y++)						\
 	{									\
-		unsigned char *source = DrvZoomBmp + (y_index >> 10) * 256;	\
-		unsigned int  *dest = DrvTmpDraw + y * nScreenWidth;		\
-		int x_index = x_index_base;					\
+		UINT8 *source = DrvZoomBmp + (y_index >> 10) * 256;	\
+		UINT32  *dest = DrvTmpDraw + y * nScreenWidth;		\
+		INT32 x_index = x_index_base;					\
 										\
-		for (int x = sx; x < ex; x++)					\
+		for (INT32 x = sx; x < ex; x++)					\
 		{								\
-			int c = source[x_index>>10];				\
+			INT32 c = source[x_index>>10];				\
 			if(c) {							\
 putpixel									\
 			}							\
@@ -154,7 +153,7 @@ putpixel									\
 
 // split up a 4bpp pixel
 #define SPLITPIXEL							\
-	int c = src[(x >> 1)];						\
+	INT32 c = src[(x >> 1)];						\
 	if (x & 1) {							\
 		c &= 0xf;						\
 	} else {							\
@@ -162,7 +161,7 @@ putpixel									\
 	}
 
 // use 8bpp pixel
-#define NORMALPIXEL	int c = src[x];	
+#define NORMALPIXEL	INT32 c = src[x];	
 
 #define SETNORMALPIXEL	dest[sx] = pal[c];
 
@@ -175,9 +174,9 @@ putpixel									\
 		dest[sx] = alpha_blend(dest[sx], pal[c], alphatable[c]);	\
 	}
 
-#define FORLOOP_NORMAL	for (int x = 0; x < 16; x++, sx++)
+#define FORLOOP_NORMAL	for (INT32 x = 0; x < 16; x++, sx++)
 
-#define FORLOOP_FLIPX	for (int x = 15; x >= 0; x--, sx++)
+#define FORLOOP_FLIPX	for (INT32 x = 15; x >= 0; x--, sx++)
 
 // set pixels for zoom routines
 #define ZSETNORMALPIXEL	dest[x] = pal[c];

@@ -4,26 +4,27 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01;
+static UINT8 *DefaultEEPROM = NULL;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int nBankSize[2] = {0x200000, 0x300000};
+static INT32 nBankSize[2] = {0x200000, 0x300000};
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nIRQPending;
+static INT8 nIRQPending;
 
 static struct BurnInputInfo donpachiInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 8,	"p1 coin"},
@@ -61,7 +62,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall donpachiReadByte(unsigned int sekAddress)
+UINT8 __fastcall donpachiReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -69,19 +70,19 @@ unsigned char __fastcall donpachiReadByte(unsigned int sekAddress)
 		case 0x900001:
 		case 0x900002:
 		case 0x900003: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x900004:
 		case 0x900005: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x900006:
 		case 0x900007: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -108,23 +109,23 @@ unsigned char __fastcall donpachiReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall donpachiReadWord(unsigned int sekAddress)
+UINT16 __fastcall donpachiReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x900000:
 		case 0x900002: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 
 		case 0x900004: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x900006: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -147,7 +148,7 @@ unsigned short __fastcall donpachiReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall donpachiWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall donpachiWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -180,9 +181,9 @@ void __fastcall donpachiWriteByte(unsigned int sekAddress, unsigned char byteVal
 		case 0xB0002D:
 		case 0xB0002E:
 		case 0xB0002F: {
-			int nBank = (sekAddress >> 1) & 3;
-			int nChip = (sekAddress >> 3) & 1;
-			int nAddress = byteValue << 16;
+			INT32 nBank = (sekAddress >> 1) & 3;
+			INT32 nChip = (sekAddress >> 3) & 1;
+			INT32 nAddress = byteValue << 16;
 			while (nAddress > nBankSize[nChip]) {
 				nAddress -= nBankSize[nChip];
 			}
@@ -212,7 +213,7 @@ void __fastcall donpachiWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall donpachiWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall donpachiWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x600000:
@@ -281,9 +282,9 @@ void __fastcall donpachiWriteWord(unsigned int sekAddress, unsigned short wordVa
 		case 0xB0002D:
 		case 0xB0002E:
 		case 0xB0002F: {
-			int nBank = (sekAddress >> 1) & 3;
-			int nChip = (sekAddress >> 3) & 1;
-			int nAddress = wordValue << 16;
+			INT32 nBank = (sekAddress >> 1) & 3;
+			INT32 nChip = (sekAddress >> 3) & 1;
+			INT32 nAddress = wordValue << 16;
 			while (nAddress > nBankSize[nChip]) {
 				nAddress -= nBankSize[nChip];
 			}
@@ -315,12 +316,12 @@ void __fastcall donpachiWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 	
-	MSM6295Exit(1);
 	MSM6295Exit(0);
+	MSM6295Exit(1);
 
 	CaveTileExit();
 	CaveSpriteExit();
@@ -328,14 +329,12 @@ static int DrvExit()
 
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -350,11 +349,12 @@ static int DrvDoReset()
 	nIRQPending = 0;
 
 	MSM6295Reset(0);
+	MSM6295Reset(1);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	CavePalUpdate4Bit(0, 128);				// Update the palette
 	CaveClearScreen(CavePalette[0x7F00]);
@@ -368,29 +368,20 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-#if 1 && defined USE_SPEEDHACKS
-	int nCurrentPC = SekGetPC(-1);
-
-	// All versions are the same
-	if (!nIRQPending && nCurrentPC >= 0x002ED6 && nCurrentPC <= 0x002EE2) {
-		return 1;
-	}
-#endif
-
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
 
-	int nCyclesTotal[2];
-	int nCyclesDone[2];
+	INT32 nCyclesTotal[2];
+	INT32 nCyclesDone[2];
 
-	int nCyclesSegment;
+	INT32 nCyclesSegment;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -399,7 +390,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 10; i++) {
+	for (INT32 i = 0; i < 10; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -408,19 +399,19 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCyclesDone[0] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU = 0;
-		int nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU = 0;
+		INT32 nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
 
 		// Run 68000
 
@@ -455,8 +446,8 @@ static int DrvFrame()
 	// Make sure the buffer is entirely filled.
 	{
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
@@ -469,17 +460,18 @@ static int DrvFrame()
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x080000;		// 68K program
 	CaveSpriteROM	= Next; Next += 0x800000;
 	CaveTileROM[0]	= Next; Next += 0x200000;		// Tile layer 0
 	CaveTileROM[1]	= Next; Next += 0x200000;		// Tile layer 1
 	CaveTileROM[2]	= Next; Next += 0x080000;		// Tile layer 2
 	MSM6295ROM		= Next; Next += 0x300000;
+	DefaultEEPROM	= Next; Next += 0x000080;
 	RamStart		= Next;
 	Ram01			= Next; Next += 0x010000;		// CPU #0 work RAM
 	CaveTileRAM[0]	= Next; Next += 0x008000;
@@ -493,12 +485,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap2(unsigned char* pData, int nLen)
+static void NibbleSwap2(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -506,7 +498,7 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -526,12 +518,14 @@ static int LoadRoms()
 	// Load MSM6295 ADPCM data
 	BurnLoadRom(MSM6295ROM, 6, 1);
 	BurnLoadRom(MSM6295ROM + 0x100000, 7, 1);
+	
+	BurnLoadRom(DefaultEEPROM, 8, 1);
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -564,39 +558,36 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
-		if (nAction & ACB_WRITE) {
-
+	if (nAction & ACB_WRITE) {
 		CaveRecalcPalette = 1;
-		}
+	}
 
 	return 0;
 }
 
-static const UINT8 default_eeprom[16] =	{0x00,0x0C,0xFF,0xFB,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
-
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46);
-	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
-
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
 	}
+	
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(DefaultEEPROM,0, 0x80);	
 
 	{
 		SekInit(0, 0x68000);													// Allocate 68000
@@ -641,10 +632,6 @@ static int DrvInit()
 
 	bDrawScreen = true;
 
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
-
 	DrvDoReset(); // Reset machine
 
 	return 0;
@@ -664,7 +651,7 @@ static struct BurnRomInfo donpachiRomDesc[] = {
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
 	
-	{ "eeprom-donpachi.u10", 0x0080, 0x315fb546, BRF_OPT },
+	{ "eeprom-donpachi.u10", 0x0080, 0x315fb546, BRF_ESS | BRF_PRG },
 	
 	{ "peel18cv8p-15.u18", 0x0155, 0x3f4787e9, BRF_OPT },
 };
@@ -686,7 +673,9 @@ static struct BurnRomInfo donpachijRomDesc[] = {
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
 	
-	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_ESS | BRF_PRG },
+	
+	{ "peel18cv8p-15.u18", 0x0155, 0x3f4787e9, BRF_OPT },
 };
 
 
@@ -706,7 +695,9 @@ static struct BurnRomInfo donpachikrRomDesc[] = {
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
 	
-	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_ESS | BRF_PRG },
+	
+	{ "peel18cv8p-15.u18", 0x0155, 0x3f4787e9, BRF_OPT },
 };
 
 
@@ -726,7 +717,9 @@ static struct BurnRomInfo donpachihkRomDesc[] = {
 	{ "atdp.u32",     0x100000, 0x0D89FCCA, BRF_SND },			 //  6 MSM6295 #1 ADPCM data
 	{ "atdp.u33",     0x200000, 0xD749DE00, BRF_SND },			 //  7 MSM6295 #0/1 ADPCM data
 	
-	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_OPT },
+	{ "eeprom-donpachi.bin", 0x0080, 0x315fb546, BRF_ESS | BRF_PRG },
+	
+	{ "peel18cv8p-15.u18", 0x0155, 0x3f4787e9, BRF_OPT },
 };
 
 

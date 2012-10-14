@@ -1,29 +1,29 @@
 // Yamaha YMZ280B module
 
-int YMZ280BInit(int nClock, void (*IRQCallback)(int), int nChannels);
+INT32 YMZ280BInit(INT32 nClock, void (*IRQCallback)(INT32), INT32 nChannels);
 void YMZ280BReset();
-int YMZ280BScan();
+INT32 YMZ280BScan();
 void YMZ280BExit();
-int YMZ280BRender(short* pSoundBuf, int nSegmenLength);
-void YMZ280BWriteRegister(unsigned char nValue);
-unsigned int YMZ280BReadStatus();
-unsigned int YMZ280BReadRAM();
+INT32 YMZ280BRender(INT16* pSoundBuf, INT32 nSegmenLength);
+void YMZ280BWriteRegister(UINT8 nValue);
+UINT32 YMZ280BReadStatus();
+UINT32 YMZ280BReadRAM();
 
-extern unsigned char* YMZ280BROM;
+extern UINT8* YMZ280BROM;
 
 // external memory handlers
-extern void (*pYMZ280BRAMWrite)(int offset, int nValue);
-extern int (*pYMZ280BRAMRead)(int offset);
+extern void (*pYMZ280BRAMWrite)(INT32 offset, INT32 nValue);
+extern INT32 (*pYMZ280BRAMRead)(INT32 offset);
 
-extern unsigned int nYMZ280BStatus;
-extern unsigned int nYMZ280BRegister;
+extern UINT32 nYMZ280BStatus;
+extern UINT32 nYMZ280BRegister;
 
-inline static void YMZ280BSelectRegister(unsigned char nRegister)
+inline static void YMZ280BSelectRegister(UINT8 nRegister)
 {
 	nYMZ280BRegister = nRegister;
 }
 
-inline static void YMZ280BWrite(int offset, unsigned char nValue)
+inline static void YMZ280BWrite(INT32 offset, UINT8 nValue)
 {
 	if (offset & 1) {
 		YMZ280BWriteRegister(nValue);
@@ -32,7 +32,7 @@ inline static void YMZ280BWrite(int offset, unsigned char nValue)
 	}
 }
 
-inline static unsigned int YMZ280BRead(int offset)
+inline static UINT32 YMZ280BRead(INT32 offset)
 {
 	if (offset & 1) {
 		return YMZ280BReadStatus();

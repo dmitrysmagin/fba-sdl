@@ -2,20 +2,21 @@
 // Based on MAME driver by Zsolt Vasvari
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *MemEnd, *Rom, *Gfx, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
-static unsigned int *Palette, *DrvPal;
-static unsigned char DrvRecalcPal;
+static UINT8 *Mem, *MemEnd, *Rom, *Gfx, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
+static UINT32 *Palette, *DrvPal;
+static UINT8 DrvRecalcPal;
 
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
-static int skylancr = 0;
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
+static INT32 skylancr = 0;
 
-static int funkybee_gfx_bank, funkybee_scroll_x, funkybee_flipscreen;
+static INT32 funkybee_gfx_bank, funkybee_scroll_x, funkybee_flipscreen;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
@@ -207,9 +208,9 @@ static struct BurnDIPInfo skylanceDIPList[]=
 STDDIPINFO(skylance)
 
 
-unsigned char __fastcall funkybee_read(unsigned short address)
+UINT8 __fastcall funkybee_read(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address)
 	{
@@ -218,7 +219,7 @@ unsigned char __fastcall funkybee_read(unsigned short address)
 
 		case 0xf800:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret |= DrvJoy1[i] << i;
 
 			return ret | DrvDips[0];
@@ -226,7 +227,7 @@ unsigned char __fastcall funkybee_read(unsigned short address)
 
 		case 0xf801:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret |= DrvJoy2[i] << i;
 
 			return ret;
@@ -235,7 +236,7 @@ unsigned char __fastcall funkybee_read(unsigned short address)
 
 		case 0xf802:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret |= DrvJoy3[i] << i;
 
 			return ret;
@@ -245,7 +246,7 @@ unsigned char __fastcall funkybee_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall funkybee_write(unsigned short address, unsigned char data)
+void __fastcall funkybee_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -270,7 +271,7 @@ void __fastcall funkybee_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall funkybee_in_port(unsigned short address)
+UINT8 __fastcall funkybee_in_port(UINT16 address)
 {
 	switch (address & 0xff)
 	{
@@ -281,7 +282,7 @@ unsigned char __fastcall funkybee_in_port(unsigned short address)
 	return 0;
 }
 
-void __fastcall funkybee_out_port(unsigned short address, unsigned char data)
+void __fastcall funkybee_out_port(UINT16 address, UINT8 data)
 {
 	switch (address & 0xff)
 	{
@@ -292,12 +293,12 @@ void __fastcall funkybee_out_port(unsigned short address, unsigned char data)
 	}
 }
 
-static unsigned char funkybee_ay8910_read_A(unsigned int)
+static UINT8 funkybee_ay8910_read_A(UINT32)
 {
 	return DrvDips[1];
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 	memset (Rom + 0x8000, 0, 0x0800);
@@ -315,18 +316,18 @@ static int DrvDoReset()
 
 static void funkybee_gfx_decode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) {
 		return;
 	}
 
-	static int PlaneOffsets[2] = { 0, 4 };
+	static INT32 PlaneOffsets[2] = { 0, 4 };
 
-	static int XOffsets[8] = {
+	static INT32 XOffsets[8] = {
 		0, 1, 2, 3, 64, 65, 66, 67
 	};
 
-	static int YOffsets[32] = {
+	static INT32 YOffsets[32] = {
 		  0,   8,  16,  24,  32,  40,  48,  56, 128, 136, 144, 152, 160, 168, 176, 184,
 	  	256, 264, 272, 280, 288, 296, 304, 312, 384, 392, 400, 408, 416, 424, 432, 440
 	};
@@ -336,14 +337,14 @@ static void funkybee_gfx_decode()
 	GfxDecode(0x400, 2, 8,  8, PlaneOffsets, XOffsets, YOffsets, 0x080, tmp, Gfx + 0x00000);
 	GfxDecode(0x100, 2, 8, 32, PlaneOffsets, XOffsets, YOffsets, 0x200, tmp, Gfx + 0x10000);
 
-	free (tmp);
+	BurnFree (tmp);
 }
 
 static void funkybee_palette_init()
 {
-	for (int i = 0; i < 32; i++)
+	for (INT32 i = 0; i < 32; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (Prom[i] >> 0) & 0x01;
 		bit1 = (Prom[i] >> 1) & 0x01;
@@ -364,32 +365,32 @@ static void funkybee_palette_init()
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom           = Next; Next += 0x10000;
 	Gfx           = Next; Next += 0x20000;
 	Prom          = Next; Next += 0x00020;
 
-	pFMBuffer     = (short*)Next; Next += nBurnSoundLen * 3 * sizeof(short);
+	pFMBuffer     = (INT16*)Next; Next += nBurnSoundLen * 3 * sizeof(INT16);
 
-	Palette	      = (unsigned int*)Next; Next += 0x00020 * sizeof(unsigned int);
-	DrvPal	      = (unsigned int*)Next; Next += 0x00020 * sizeof(unsigned int);
+	Palette	      = (UINT32*)Next; Next += 0x00020 * sizeof(UINT32);
+	DrvPal	      = (UINT32*)Next; Next += 0x00020 * sizeof(UINT32);
 
 	MemEnd        = Next;
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -418,7 +419,7 @@ static int DrvInit()
 	funkybee_gfx_decode();
 	funkybee_palette_init();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(funkybee_read);
 	ZetSetWriteHandler(funkybee_write);
@@ -443,7 +444,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	skylancr = 0;
 
@@ -451,7 +452,7 @@ static int DrvExit()
 	AY8910Exit(0);
 	GenericTilesExit();
 
-	free (Mem);
+	BurnFree (Mem);
 
 	Palette = DrvPal = NULL;
 
@@ -466,28 +467,28 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalcPal) {
-		for (int i = 0; i < 32; i++) {
-			unsigned int col = Palette[i];
+		for (INT32 i = 0; i < 32; i++) {
+			UINT32 col = Palette[i];
 			DrvPal[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 	}
 
-	for (int offa = 0; offa < 0x1c00; offa += 0x100)
+	for (INT32 offa = 0; offa < 0x1c00; offa += 0x100)
 	{
-		for (int offb = 0; offb < 0x20; offb++)
+		for (INT32 offb = 0; offb < 0x20; offb++)
 		{
-			int sy = (offa >> 5) ^ (funkybee_flipscreen * 0xf8);
-			int sx = (offb << 3) ^ (funkybee_flipscreen * 0xf8);
+			INT32 sy = (offa >> 5) ^ (funkybee_flipscreen * 0xf8);
+			INT32 sx = (offb << 3) ^ (funkybee_flipscreen * 0xf8);
 
 			sx = (sx - funkybee_scroll_x) & 0xff;
 
-			int offs = offa + offb;
+			INT32 offs = offa + offb;
 
-			int code = Rom[0xa000 + offs] + ((Rom[0xc000 + offs] & 0x80) << 1) + funkybee_gfx_bank;
-			int color = Rom[0xc000 + offs] & 0x03;
+			INT32 code = Rom[0xa000 + offs] + ((Rom[0xc000 + offs] & 0x80) << 1) + funkybee_gfx_bank;
+			INT32 color = Rom[0xc000 + offs] & 0x03;
 
 			if (funkybee_flipscreen)
 				Render8x8Tile_FlipXY_Clip(pTransDraw, code, sx - 8, sy - 32, color, 2, 0, Gfx);
@@ -496,15 +497,15 @@ static int DrvDraw()
 		}
 	}
 
-	for (int offs = 0x0f; offs >= 0; offs--)
+	for (INT32 offs = 0x0f; offs >= 0; offs--)
 	{
-		int attr = Rom[0xbe00 + offs];
-		int code = (attr >> 2) | ((attr & 2) << 5);
-		int color = 4 | (Rom[0xde10 + offs] & 3);
-		int flipy = attr & 1;
-		int flipx = funkybee_flipscreen;
-		int sx = Rom[0xbe10 + offs] - 12;
-		int sy =  224 - Rom[0xde00 + offs];
+		INT32 attr = Rom[0xbe00 + offs];
+		INT32 code = (attr >> 2) | ((attr & 2) << 5);
+		INT32 color = 4 | (Rom[0xde10 + offs] & 3);
+		INT32 flipy = attr & 1;
+		INT32 flipx = funkybee_flipscreen;
+		INT32 sx = Rom[0xbe10 + offs] - 12;
+		INT32 sy =  224 - Rom[0xde00 + offs];
 
 		code = (code << 2) + funkybee_gfx_bank;
 
@@ -535,12 +536,12 @@ static int DrvDraw()
 		}
 	}
 
-	for (int offs = 0x1f;offs >= 0;offs--)
+	for (INT32 offs = 0x1f;offs >= 0;offs--)
 	{
-		int code = Rom[0xbc00 + offs] + funkybee_gfx_bank;
-		int color = Rom[0xdf10] & 0x03;
-		int sx = Rom[0xbf10];
-		int sy = offs << 3;
+		INT32 code = Rom[0xbc00 + offs] + funkybee_gfx_bank;
+		INT32 color = Rom[0xdf10] & 0x03;
+		INT32 sx = Rom[0xbf10];
+		INT32 sy = offs << 3;
 
 		if (funkybee_flipscreen)
 			Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code, (232 - sx) + 4, sy ^ 0xf8, color, 2, 0, 0, Gfx);
@@ -563,7 +564,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -575,25 +576,19 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -609,7 +604,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -660,7 +655,7 @@ STD_ROM_FN(funkybee)
 
 struct BurnDriver BurnDrvfunkybee = {
 	"funkybee", NULL, NULL, NULL, "1982",
-	"Funky Bee\0", NULL, "Orca", "misc",
+	"Funky Bee\0", NULL, "Orca", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, funkybeeRomInfo, funkybeeRomName, NULL, NULL, DrvInputInfo, funkybeeDIPInfo,
@@ -688,7 +683,7 @@ STD_ROM_FN(funkbeeb)
 
 struct BurnDriver BurnDrvfunkbeeb = {
 	"funkybeeb", "funkybee", NULL, NULL, "1982",
-	"Funky Bee (bootleg, harder)\0", NULL, "bootleg", "misc",
+	"Funky Bee (bootleg, harder)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, funkbeebRomInfo, funkbeebRomName, NULL, NULL, DrvInputInfo, funkbeebDIPInfo,
@@ -713,7 +708,7 @@ static struct BurnRomInfo skylancrRomDesc[] = {
 STD_ROM_PICK(skylancr)
 STD_ROM_FN(skylancr)
 
-static int skylancrInit()
+static INT32 skylancrInit()
 {
 	skylancr = 1;
 
@@ -722,7 +717,7 @@ static int skylancrInit()
 
 struct BurnDriver BurnDrvskylancr = {
 	"skylancr", NULL, NULL, NULL, "1983",
-	"Sky Lancer\0", NULL, "Orca", "misc",
+	"Sky Lancer\0", NULL, "Orca", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
 	NULL, skylancrRomInfo, skylancrRomName, NULL, NULL, DrvInputInfo, skylancrDIPInfo,
@@ -749,7 +744,7 @@ STD_ROM_FN(skylance)
 
 struct BurnDriver BurnDrvskylance = {
 	"skylancre", "skylancr", NULL, NULL, "1983",
-	"Sky Lancer (Esco Trading Co license)\0", NULL, "Orca (Esco Trading Co license)", "misc",
+	"Sky Lancer (Esco Trading Co license)\0", NULL, "Orca (Esco Trading Co license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
 	NULL, skylanceRomInfo, skylanceRomName, NULL, NULL, DrvInputInfo, skylanceDIPInfo,

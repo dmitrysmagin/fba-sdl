@@ -1,81 +1,82 @@
 #include "gal.h"
 
-unsigned char GalInputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char GalInputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char GalInputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char GalInputPort3[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char GalDip[7]              = {0, 0, 0, 0, 0, 0, 0};
-unsigned char GalInput[4]            = {0x00, 0x00, 0x00, 0x00};
-unsigned char GalReset               = 0;
-unsigned char GalFakeDip             = 0;
-int           GalAnalogPort0         = 0;
-int           GalAnalogPort1         = 0;
+UINT8 GalInputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 GalInputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 GalInputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 GalInputPort3[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 GalDip[7]              = {0, 0, 0, 0, 0, 0, 0};
+UINT8 GalInput[4]            = {0x00, 0x00, 0x00, 0x00};
+UINT8 GalReset               = 0;
+UINT8 GalFakeDip             = 0;
+INT32 GalAnalogPort0         = 0;
+INT32 GalAnalogPort1         = 0;
 
-unsigned char *GalMem                = NULL;
-unsigned char *GalMemEnd             = NULL;
-unsigned char *GalRamStart           = NULL;
-unsigned char *GalRamEnd             = NULL;
-unsigned char *GalZ80Rom1            = NULL;
-unsigned char *GalZ80Rom1Op          = NULL;
-unsigned char *GalZ80Rom2            = NULL;
-unsigned char *GalZ80Rom3            = NULL;
-unsigned char *GalS2650Rom1          = NULL;
-unsigned char *GalZ80Ram1            = NULL;
-unsigned char *GalZ80Ram2            = NULL;
-unsigned char *GalVideoRam           = NULL;
-unsigned char *GalVideoRam2          = NULL;
-unsigned char *GalSpriteRam          = NULL;
-unsigned char *GalScrollVals         = NULL;
-unsigned char *GalProm               = NULL;
-unsigned char *GalChars              = NULL;
-unsigned char *GalSprites            = NULL;
-unsigned char *GalTempRom            = NULL;
-unsigned int  *GalPalette            = NULL;
+UINT8 *GalMem                = NULL;
+UINT8 *GalMemEnd             = NULL;
+UINT8 *GalRamStart           = NULL;
+UINT8 *GalRamEnd             = NULL;
+UINT8 *GalZ80Rom1            = NULL;
+UINT8 *GalZ80Rom1Op          = NULL;
+UINT8 *GalZ80Rom2            = NULL;
+UINT8 *GalZ80Rom3            = NULL;
+UINT8 *GalS2650Rom1          = NULL;
+UINT8 *GalZ80Ram1            = NULL;
+UINT8 *GalZ80Ram2            = NULL;
+UINT8 *GalZ80Ram3            = NULL;
+UINT8 *GalVideoRam           = NULL;
+UINT8 *GalVideoRam2          = NULL;
+UINT8 *GalSpriteRam          = NULL;
+UINT8 *GalScrollVals         = NULL;
+UINT8 *GalProm               = NULL;
+UINT8 *GalChars              = NULL;
+UINT8 *GalSprites            = NULL;
+UINT8 *GalTempRom            = NULL;
+UINT32  *GalPalette            = NULL;
 
-unsigned int   GalZ80Rom1Size        = 0;
-unsigned int   GalZ80Rom1Num         = 0;
-unsigned int   GalZ80Rom2Size        = 0;
-unsigned int   GalZ80Rom2Num         = 0;
-unsigned int   GalZ80Rom3Size        = 0;
-unsigned int   GalZ80Rom3Num         = 0;
-unsigned int   GalS2650Rom1Size      = 0;
-unsigned int   GalS2650Rom1Num       = 0;
-unsigned int   GalTilesSharedRomSize = 0;
-unsigned int   GalTilesSharedRomNum  = 0;
-unsigned int   GalTilesCharRomSize   = 0;
-unsigned int   GalTilesCharRomNum    = 0;
-unsigned int   GalNumChars           = 0;
-unsigned int   GalTilesSpriteRomSize = 0;
-unsigned int   GalTilesSpriteRomNum  = 0;
-unsigned int   GalNumSprites         = 0;
-unsigned int   GalPromRomSize        = 0;
-unsigned int   GalPromRomNum         = 0;
+UINT32   GalZ80Rom1Size        = 0;
+UINT32   GalZ80Rom1Num         = 0;
+UINT32   GalZ80Rom2Size        = 0;
+UINT32   GalZ80Rom2Num         = 0;
+UINT32   GalZ80Rom3Size        = 0;
+UINT32   GalZ80Rom3Num         = 0;
+UINT32   GalS2650Rom1Size      = 0;
+UINT32   GalS2650Rom1Num       = 0;
+UINT32   GalTilesSharedRomSize = 0;
+UINT32   GalTilesSharedRomNum  = 0;
+UINT32   GalTilesCharRomSize   = 0;
+UINT32   GalTilesCharRomNum    = 0;
+UINT32   GalNumChars           = 0;
+UINT32   GalTilesSpriteRomSize = 0;
+UINT32   GalTilesSpriteRomNum  = 0;
+UINT32   GalNumSprites         = 0;
+UINT32   GalPromRomSize        = 0;
+UINT32   GalPromRomNum         = 0;
 
 GalPostLoadCallback GalPostLoadCallbackFunction;
 
 // CPU Control
-unsigned char GalIrqType;
-unsigned char GalIrqFire;
-int nGalCyclesDone[3], nGalCyclesTotal[3];
-static int nGalCyclesSegment;
+UINT8 GalIrqType;
+UINT8 GalIrqFire;
+INT32 nGalCyclesDone[3], nGalCyclesTotal[3];
+static INT32 nGalCyclesSegment;
 
 // Misc variables
-unsigned char ZigzagAYLatch;
-unsigned char GalSoundLatch;
-unsigned char GalSoundLatch2;
-unsigned char KingballSound;
-unsigned char KingballSpeechDip;
-unsigned char KonamiSoundControl;
-unsigned char SfxSampleControl;
-unsigned short ScrambleProtectionState;
-unsigned char ScrambleProtectionResult;
-unsigned char MoonwarPortSelect;
-unsigned char MshuttleAY8910CS;
-unsigned char GmgalaxSelectedGame;
-unsigned char Fourin1Bank;
-unsigned char GameIsGmgalax;
-unsigned char CavelonBankSwitch;
-unsigned char GalVBlank;
+UINT8 ZigzagAYLatch;
+UINT8 GalSoundLatch;
+UINT8 GalSoundLatch2;
+UINT8 KingballSound;
+UINT8 KingballSpeechDip;
+UINT8 KonamiSoundControl;
+UINT8 SfxSampleControl;
+UINT16 ScrambleProtectionState;
+UINT8 ScrambleProtectionResult;
+UINT8 MoonwarPortSelect;
+UINT8 MshuttleAY8910CS;
+UINT8 GmgalaxSelectedGame;
+UINT8 Fourin1Bank;
+UINT8 GameIsGmgalax;
+UINT8 CavelonBankSwitch;
+UINT8 GalVBlank;
 
 static inline void GalMakeInputs()
 {
@@ -83,7 +84,7 @@ static inline void GalMakeInputs()
 	GalInput[0] = GalInput[1] = GalInput[2] = GalInput[3] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		GalInput[0] |= (GalInputPort0[i] & 1) << i;
 		GalInput[1] |= (GalInputPort1[i] & 1) << i;
 		GalInput[2] |= (GalInputPort2[i] & 1) << i;
@@ -91,9 +92,9 @@ static inline void GalMakeInputs()
 	}
 }
 
-static int GalMemIndex()
+static INT32 GalMemIndex()
 {
-	unsigned char *Next; Next = GalMem;
+	UINT8 *Next; Next = GalMem;
 	
 	GalZ80Rom1             = Next; Next += GalZ80Rom1Size;
 	GalZ80Rom2             = Next; Next += GalZ80Rom2Size;
@@ -113,18 +114,22 @@ static int GalMemIndex()
 		GalZ80Ram2     = Next; Next += 0x00400;
 	}
 	
+	if (GalZ80Rom3Size) {
+		GalZ80Ram3     = Next; Next += 0x00400;
+	}
+	
 	GalRamEnd              = Next;
 
 	GalChars               = Next; Next += GalNumChars * 8 * 8;
 	GalSprites             = Next; Next += GalNumSprites * 16 * 16;
-	GalPalette             = (unsigned int*)Next; Next += (GAL_PALETTE_NUM_COLOURS_PROM + GAL_PALETTE_NUM_COLOURS_STARS + GAL_PALETTE_NUM_COLOURS_BULLETS + GAL_PALETTE_NUM_COLOURS_BACKGROUND) * sizeof(unsigned int);
+	GalPalette             = (UINT32*)Next; Next += (GAL_PALETTE_NUM_COLOURS_PROM + GAL_PALETTE_NUM_COLOURS_STARS + GAL_PALETTE_NUM_COLOURS_BULLETS + GAL_PALETTE_NUM_COLOURS_BACKGROUND) * sizeof(UINT32);
 	
 	GalMemEnd              = Next;
 
 	return 0;
 }
 
-static int GalDoReset()
+static INT32 GalDoReset()
 {
 	if (GalS2650Rom1Size) {
 		s2650Open(0);
@@ -178,14 +183,14 @@ static int GalDoReset()
 	return 0;
 }
 
-static int GalLoadRoms(bool bLoad)
+static INT32 GalLoadRoms(bool bLoad)
 {
 	struct BurnRomInfo ri;
 	ri.nType = 0;
 	ri.nLen = 0;
-	int nOffset = -1;
-	unsigned int i;
-	int nRet = 0;
+	INT32 nOffset = -1;
+	UINT32 i;
+	INT32 nRet = 0;
 	
 	if (!bLoad) {
 		do {
@@ -256,7 +261,7 @@ static int GalLoadRoms(bool bLoad)
 	}
 
 	if (bLoad) {
-		int Offset;
+		INT32 Offset;
 		
 		// Z80 #1 Program Roms
 		Offset = 0;
@@ -292,7 +297,7 @@ static int GalLoadRoms(bool bLoad)
 		// Shared Tile Roms
 		if (GalTilesSharedRomSize) {
 			Offset = 0;
-			GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+			GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 			for (i = GAL_ROM_OFFSET_TILES_SHARED; i < GAL_ROM_OFFSET_TILES_SHARED + GalTilesSharedRomNum; i++) {
 				nRet = BurnLoadRom(GalTempRom + Offset, i, 1); if (nRet) return 1;
 			
@@ -301,13 +306,13 @@ static int GalLoadRoms(bool bLoad)
 			}
 			GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 			GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);		
-			free(GalTempRom);
+			BurnFree(GalTempRom);
 		}
 		
 		// Char Tile Roms
 		if (GalTilesCharRomSize) {
 			Offset = 0;
-			GalTempRom = (unsigned char*)malloc(GalTilesCharRomSize);
+			GalTempRom = (UINT8*)BurnMalloc(GalTilesCharRomSize);
 			for (i = GAL_ROM_OFFSET_TILES_CHARS; i < GAL_ROM_OFFSET_TILES_CHARS + GalTilesCharRomNum; i++) {
 				nRet = BurnLoadRom(GalTempRom + Offset, i, 1); if (nRet) return 1;
 			
@@ -315,13 +320,13 @@ static int GalLoadRoms(bool bLoad)
 				Offset += ri.nLen;
 			}
 			GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
-			free(GalTempRom);
+			BurnFree(GalTempRom);
 		}
 		
 		// Sprite Tile Roms
 		if (GalTilesSpriteRomSize) {
 			Offset = 0;
-			GalTempRom = (unsigned char*)malloc(GalTilesSpriteRomSize);
+			GalTempRom = (UINT8*)BurnMalloc(GalTilesSpriteRomSize);
 			for (i = GAL_ROM_OFFSET_TILES_SPRITES; i < GAL_ROM_OFFSET_TILES_SPRITES + GalTilesSpriteRomNum; i++) {
 				nRet = BurnLoadRom(GalTempRom + Offset, i, 1); if (nRet) return 1;
 			
@@ -329,7 +334,7 @@ static int GalLoadRoms(bool bLoad)
 				Offset += ri.nLen;
 			}
 			GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);		
-			free(GalTempRom);
+			BurnFree(GalTempRom);
 		}
 		
 		// Prom
@@ -359,22 +364,22 @@ static int GalLoadRoms(bool bLoad)
 }
 
 // Konami PPI Handlers
-unsigned char KonamiPPIReadIN0()
+UINT8 KonamiPPIReadIN0()
 {
 	return 0xff - GalInput[0] - GalDip[0];
 }
 
-unsigned char KonamiPPIReadIN1()
+UINT8 KonamiPPIReadIN1()
 {
 	return 0xff - GalInput[1] - GalDip[1];
 }
 
-unsigned char KonamiPPIReadIN2()
+UINT8 KonamiPPIReadIN2()
 {
 	return 0xff - GalInput[2] - GalDip[2];
 }
 
-unsigned char KonamiPPIReadIN3()
+UINT8 KonamiPPIReadIN3()
 {
 	return 0xff - GalInput[3] - GalDip[3];
 }
@@ -391,7 +396,7 @@ void KonamiPPIInit()
 }
 
 // Galaxian Memory Map
-unsigned char __fastcall GalaxianZ80Read(unsigned short a)
+UINT8 __fastcall GalaxianZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x6000: {
@@ -419,7 +424,7 @@ unsigned char __fastcall GalaxianZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall GalaxianZ80Write(unsigned short a, unsigned char d)
+void __fastcall GalaxianZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5800 && a <= 0x58ff) {
 		int Offset = a - 0x5800;
@@ -504,7 +509,7 @@ void __fastcall GalaxianZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall GalaxianZ80PortRead(unsigned short a)
+UINT8 __fastcall GalaxianZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -517,7 +522,7 @@ unsigned char __fastcall GalaxianZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall GalaxianZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall GalaxianZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -528,9 +533,9 @@ void __fastcall GalaxianZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-int GalInit()
+INT32 GalInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	GalLoadRoms(0);
 	
@@ -539,8 +544,8 @@ int GalInit()
 	// Allocate and Blank all required memory
 	GalMem = NULL;
 	GalMemIndex();
-	nLen = GalMemEnd - (unsigned char *)0;
-	if ((GalMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = GalMemEnd - (UINT8 *)0;
+	if ((GalMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(GalMem, 0, nLen);
 	GalMemIndex();
 
@@ -549,13 +554,16 @@ int GalInit()
 	// Setup the Z80 emulation
 	if (GalSoundType != GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
 		if (GalZ80Rom3Size) {
-			ZetInit(3);
+			ZetInit(0);
+			ZetInit(1);
+			ZetInit(2);
 		} else {
 			if (GalZ80Rom2Size) {
-				ZetInit(2);
+				ZetInit(0);
+				ZetInit(1);
 			} else {
 				if (GalZ80Rom1Size) {
-					ZetInit(1);
+					ZetInit(0);
 				}
 			}
 		}
@@ -611,7 +619,7 @@ int GalInit()
 }
 
 // Moon Cresta Memory Map
-unsigned char __fastcall MooncrstZ80Read(unsigned short a)
+UINT8 __fastcall MooncrstZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -639,7 +647,7 @@ unsigned char __fastcall MooncrstZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall MooncrstZ80Write(unsigned short a, unsigned char d)
+void __fastcall MooncrstZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
 		int Offset = a - 0x9800;
@@ -720,7 +728,7 @@ void __fastcall MooncrstZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MooncrstZ80PortRead(unsigned short a)
+UINT8 __fastcall MooncrstZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -733,7 +741,7 @@ unsigned char __fastcall MooncrstZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall MooncrstZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall MooncrstZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -769,10 +777,10 @@ void MapMooncrst()
 }
 
 // Jumpbug Memory Map
-unsigned char __fastcall JumpbugZ80Read(unsigned short a)
+UINT8 __fastcall JumpbugZ80Read(UINT16 a)
 {
 	if (a >= 0xb000 && a <= 0xbfff) {
-		int Offset = a - 0xb000;
+		INT32 Offset = a - 0xb000;
 		
 		switch (Offset) {
 			case 0x114: return 0x4f;
@@ -804,10 +812,10 @@ unsigned char __fastcall JumpbugZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall JumpbugZ80Write(unsigned short a, unsigned char d)
+void __fastcall JumpbugZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -877,7 +885,7 @@ void __fastcall JumpbugZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JumpbugZ80PortRead(unsigned short a)
+UINT8 __fastcall JumpbugZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -890,7 +898,7 @@ unsigned char __fastcall JumpbugZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall JumpbugZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall JumpbugZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -931,11 +939,11 @@ void MapJumpbug()
 }
 
 // Frogger Memory Map
-unsigned char __fastcall FroggerZ80Read(unsigned short a)
+UINT8 __fastcall FroggerZ80Read(UINT16 a)
 {
 	if (a >= 0xc000) {
-		unsigned int Offset = a - 0xc000;
-		unsigned char Result = 0xff;
+		UINT32 Offset = a - 0xc000;
+		UINT8 Result = 0xff;
 		if (Offset & 0x1000) Result &= ppi8255_r(1, (Offset >> 1) & 3);
 		if (Offset & 0x2000) Result &= ppi8255_r(0, (Offset >> 1) & 3);
 		return Result;
@@ -955,10 +963,10 @@ unsigned char __fastcall FroggerZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall FroggerZ80Write(unsigned short a, unsigned char d)
+void __fastcall FroggerZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xb000 && a <= 0xb0ff) {
-		int Offset = a - 0xb000;
+		INT32 Offset = a - 0xb000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -973,7 +981,7 @@ void __fastcall FroggerZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0xc000) {
-		int Offset = a - 0xc000;
+		INT32 Offset = a - 0xc000;
 		if (Offset & 0x1000) ppi8255_w(1, (Offset >> 1) & 3, d);
 		if (Offset & 0x2000) ppi8255_w(0, (Offset >> 1) & 3, d);
 		return;
@@ -1006,7 +1014,7 @@ void __fastcall FroggerZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall FroggerZ80PortRead(unsigned short a)
+UINT8 __fastcall FroggerZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1019,7 +1027,7 @@ unsigned char __fastcall FroggerZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall FroggerZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall FroggerZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1055,11 +1063,11 @@ void MapFrogger()
 }
 
 // The End Memory Map
-unsigned char __fastcall TheendZ80Read(unsigned short a)
+UINT8 __fastcall TheendZ80Read(UINT16 a)
 {
 	if (a >= 0x8000) {
-		unsigned int Offset = a - 0x8000;
-		unsigned char Result = 0xff;
+		UINT32 Offset = a - 0x8000;
+		UINT8 Result = 0xff;
 		if (Offset & 0x0100) Result &= ppi8255_r(0, Offset & 3);
 		if (Offset & 0x0200) Result &= ppi8255_r(1, Offset & 3);
 		return Result;
@@ -1079,10 +1087,10 @@ unsigned char __fastcall TheendZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall TheendZ80Write(unsigned short a, unsigned char d)
+void __fastcall TheendZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -1096,7 +1104,7 @@ void __fastcall TheendZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8000) {
-		int Offset = a - 0x8000;
+		INT32 Offset = a - 0x8000;
 		if (Offset & 0x0100) ppi8255_w(0, Offset & 3, d);
 		if (Offset & 0x0200) ppi8255_w(1, Offset & 3, d);
 		return;
@@ -1140,7 +1148,7 @@ void __fastcall TheendZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TheendZ80PortRead(unsigned short a)
+UINT8 __fastcall TheendZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1153,7 +1161,7 @@ unsigned char __fastcall TheendZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall TheendZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall TheendZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1192,15 +1200,15 @@ void MapTheend()
 }
 
 // Turtles Memory Map
-unsigned char __fastcall TurtlesZ80Read(unsigned short a)
+UINT8 __fastcall TurtlesZ80Read(UINT16 a)
 {
 	if (a >= 0xb000 && a <= 0xb03f) {
-		unsigned int Offset = a - 0xb000;
+		UINT32 Offset = a - 0xb000;
 		return ppi8255_r(0, (Offset >> 4) & 3);
 	}
 	
 	if (a >= 0xb800 && a <= 0xb83f) {
-		unsigned int Offset = a - 0xb800;
+		UINT32 Offset = a - 0xb800;
 		return ppi8255_r(1, (Offset >> 4) & 3);
 	}
 	
@@ -1218,10 +1226,10 @@ unsigned char __fastcall TurtlesZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall TurtlesZ80Write(unsigned short a, unsigned char d)
+void __fastcall TurtlesZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -1235,13 +1243,13 @@ void __fastcall TurtlesZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0xb000 && a <= 0xb03f) {
-		unsigned int Offset = a - 0xb000;
+		UINT32 Offset = a - 0xb000;
 		ppi8255_w(0, (Offset >> 4) & 3, d);
 		return;
 	}
 	
 	if (a >= 0xb800 && a <= 0xb83f) {
-		unsigned int Offset = a - 0xb800;
+		UINT32 Offset = a - 0xb800;
 		ppi8255_w(1, (Offset >> 4) & 3, d);
 		return;
 	}
@@ -1293,7 +1301,7 @@ void __fastcall TurtlesZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TurtlesZ80PortRead(unsigned short a)
+UINT8 __fastcall TurtlesZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1306,7 +1314,7 @@ unsigned char __fastcall TurtlesZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall TurtlesZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall TurtlesZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1345,7 +1353,7 @@ void MapTurtles()
 }
 
 // Super Cobra Memory Map
-unsigned char __fastcall ScobraZ80Read(unsigned short a)
+UINT8 __fastcall ScobraZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9800:
@@ -1375,10 +1383,10 @@ unsigned char __fastcall ScobraZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall ScobraZ80Write(unsigned short a, unsigned char d)
+void __fastcall ScobraZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9000 && a <= 0x90ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -1443,7 +1451,7 @@ void __fastcall ScobraZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall ScobraZ80PortRead(unsigned short a)
+UINT8 __fastcall ScobraZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1456,7 +1464,7 @@ unsigned char __fastcall ScobraZ80PortRead(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall ScobraZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall ScobraZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1494,29 +1502,17 @@ void MapScobra()
 	ZetClose();
 }
 
-int GalExit()
+INT32 GalExit()
 {
-	ZetExit();
+	if (GalZ80Rom1Size) ZetExit();
+	if (GalS2650Rom1Size) s2650Exit();
 	
 	GenericTilesExit();
 	
-	free(GalMem);
-	GalMem = NULL;
-	
-	if (GalZ80Rom1Op) {
-		free(GalZ80Rom1Op);
-		GalZ80Rom1Op = NULL;
-	}
-	
-	if (GalVideoRam2) {
-		free(GalVideoRam2);
-		GalVideoRam2 = NULL;
-	}
-	
-	if (RockclimTiles) {
-		free(RockclimTiles);
-		RockclimTiles = NULL;
-	}
+	BurnFree(GalMem);
+	BurnFree(GalZ80Rom1Op);
+	BurnFree(GalVideoRam2);
+	BurnFree(RockclimTiles);
 	
 	GalSoundExit();
 	
@@ -1593,33 +1589,34 @@ int GalExit()
 	return 0;
 }
 
-int KonamiExit()
+INT32 KonamiExit()
 {
 	ppi8255_exit();
 	
 	return GalExit();
 }
 
-int GalFrame()
+INT32 GalFrame()
 {
-	int nInterleave = 8;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 8;
+	INT32 nSoundBufferPos = 0;
 	
-	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_GALAXIAN) {
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_GALAXIAN || GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC) {
 		nInterleave = nBurnSoundLen;
 		GalaxianSoundUpdateTimers();
 	}
-	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) nInterleave = nBurnSoundLen / 4;
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) nInterleave = nBurnSoundLen / 4;
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC) nInterleave = 32;
 	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910) nInterleave = 32;
-	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC) nInterleave = nBurnSoundLen;
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) nInterleave = 32;
 	
-	int nIrqInterleaveFire = nInterleave / 4;	
+	INT32 nIrqInterleaveFire = nInterleave / 4;	
 
 	if (GalReset) GalDoReset();
 	
 	if (GameIsGmgalax && (GmgalaxSelectedGame != GalFakeDip)) {
 		GmgalaxSelectedGame = GalFakeDip;
-		int nAddress = 0x0000;
+		INT32 nAddress = 0x0000;
 		if (GmgalaxSelectedGame == 1) nAddress = 0x4000;
 		ZetOpen(0);
 		ZetMapArea(0x0000, 0x3fff, 0, GalZ80Rom1 + nAddress);
@@ -1641,8 +1638,8 @@ int GalFrame()
 
 	nGalCyclesDone[0] = nGalCyclesDone[1] = nGalCyclesDone[2] = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 			// Run Z80 #1
 		if (GalZ80Rom1Size && GalSoundType != GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
@@ -1725,30 +1722,30 @@ int GalFrame()
 		
 		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_GALAXIAN) {
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				GalRenderSoundSamples(pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
 			}
 		}
 		
-		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_JUMPBUGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_BONGOAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_JUMPBUGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_BONGOAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 			if (pBurnSoundOut) {
-				int nSample;
-				int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSample;
+				INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 					AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 				}				
 				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910) {
 					AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 				}
-				for (int n = 0; n < nSegmentLength; n++) {
+				for (INT32 n = 0; n < nSegmentLength; n++) {
 					nSample  = pAY8910Buffer[0][n] >> GalSoundVolumeShift;
 					nSample += pAY8910Buffer[1][n] >> GalSoundVolumeShift;
 					nSample += pAY8910Buffer[2][n] >> GalSoundVolumeShift;
-					if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+					if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 						nSample += pAY8910Buffer[3][n] >> GalSoundVolumeShift;
 						nSample += pAY8910Buffer[4][n] >> GalSoundVolumeShift;
 						nSample += pAY8910Buffer[5][n] >> GalSoundVolumeShift;
@@ -1759,25 +1756,19 @@ int GalFrame()
 						nSample += pAY8910Buffer[8][n] >> GalSoundVolumeShift;
 					}
 
-					if (nSample < -32768) {
-						nSample = -32768;
-					} else {
-						if (nSample > 32767) {
-							nSample = 32767;
-						}
-					}
+					nSample = BURN_SND_CLIP(nSample);
 
 					pSoundBuf[(n << 1) + 0] = nSample;
 					pSoundBuf[(n << 1) + 1] = nSample;
-    				}
+    			}
 				nSoundBufferPos += nSegmentLength;
 			}
 		}
 		
-		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC/* || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC*/) {
+		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC) {
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 				GalRenderSoundSamples(pSoundBuf, nSegmentLength);
 				DACUpdate(pSoundBuf, nSegmentLength);
@@ -1786,8 +1777,8 @@ int GalFrame()
 		}
 		
 		if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_RACKNROLSN76496 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HEXPOOLASN76496) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			SN76496Update(0, pSoundBuf, nSegmentLength);
 			if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_RACKNROLSN76496) {
 				SN76496Update(1, pSoundBuf, nSegmentLength);
@@ -1800,8 +1791,8 @@ int GalFrame()
 	// Make sure the buffer is entirely filled.
 	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_GALAXIAN) {
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			if (nSegmentLength) {
 				GalRenderSoundSamples(pSoundBuf, nSegmentLength);
@@ -1809,24 +1800,24 @@ int GalFrame()
 		}
 	}
 	
-	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_JUMPBUGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_BONGOAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_JUMPBUGAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_BONGOAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 					AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 				}
 				if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910) {
 					AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 				}
-				for (int n = 0; n < nSegmentLength; n++) {
+				for (INT32 n = 0; n < nSegmentLength; n++) {
 					nSample  = pAY8910Buffer[0][n] >> GalSoundVolumeShift;
 					nSample += pAY8910Buffer[1][n] >> GalSoundVolumeShift;
 					nSample += pAY8910Buffer[2][n] >> GalSoundVolumeShift;
-					if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910) {
+					if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_AD2083AY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910) {
 						nSample += pAY8910Buffer[3][n] >> GalSoundVolumeShift;
 						nSample += pAY8910Buffer[4][n] >> GalSoundVolumeShift;
 						nSample += pAY8910Buffer[5][n] >> GalSoundVolumeShift;
@@ -1837,13 +1828,7 @@ int GalFrame()
 						nSample += pAY8910Buffer[8][n] >> GalSoundVolumeShift;
 					}
 
-					if (nSample < -32768) {
-						nSample = -32768;
-					} else {
-						if (nSample > 32767) {
-							nSample = 32767;
-						}
-					}
+					nSample = BURN_SND_CLIP(nSample);
 
 					pSoundBuf[(n << 1) + 0] = nSample;
 					pSoundBuf[(n << 1) + 1] = nSample;
@@ -1852,10 +1837,10 @@ int GalFrame()
 		}
 	}
 	
-	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC/* || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC*/) {
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC) {
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			if (nSegmentLength) {
 				GalRenderSoundSamples(pSoundBuf, nSegmentLength);
@@ -1864,9 +1849,13 @@ int GalFrame()
 		}
 	}
 	
+	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC) {
+		if (pBurnSoundOut) DACUpdate(pBurnSoundOut, nBurnSoundLen);
+	}
+	
 	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_RACKNROLSN76496 || GalSoundType == GAL_SOUND_HARDWARE_TYPE_HEXPOOLASN76496) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			SN76496Update(0, pSoundBuf, nSegmentLength);
@@ -1882,7 +1871,7 @@ int GalFrame()
 	return 0;
 }
 
-int GalScan(int nAction, int *pnMin)
+INT32 GalScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

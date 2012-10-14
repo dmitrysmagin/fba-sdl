@@ -12,38 +12,40 @@
 
 #define K053260_INLINE		static inline
 
-static unsigned int nUpdateStep;
+static UINT32 nUpdateStep;
 
 struct k053260_channel_def {
-	unsigned long		rate;
-	unsigned long		size;
-	unsigned long		start;
-	unsigned long		bank;
-	unsigned long		volume;
-	int					play;
-	unsigned long		pan;
-	unsigned long		pos;
-	int					loop;
-	int					ppcm; /* packed PCM ( 4 bit signed ) */
-	int					ppcm_data;
+	UINT32		rate;
+	UINT32		size;
+	UINT32		start;
+	UINT32		bank;
+	UINT32		volume;
+	INT32					play;
+	UINT32		pan;
+	UINT32		pos;
+	INT32					loop;
+	INT32					ppcm; /* packed PCM ( 4 bit signed ) */
+	INT32					ppcm_data;
 };
 struct k053260_chip_def {
-	int								mode;
-	int								regs[0x30];
-	unsigned char					*rom;
-	int								rom_size;
-	unsigned long					*delta_table;
+	INT32								mode;
+	INT32								regs[0x30];
+	UINT8					*rom;
+	INT32								rom_size;
+	UINT32					*delta_table;
 	k053260_channel_def channels[4];
 };
 
 static k053260_chip_def Chips[2];
 static k053260_chip_def *ic;
 
-static void InitDeltaTable(int rate, int clock ) {
-	int		i;
+static INT32 nNumChips = 0;
+
+static void InitDeltaTable(INT32 rate, INT32 clock ) {
+	INT32		i;
 	double	base = ( double )rate;
 	double	max = (double)(clock); /* Hz */
-	unsigned long val;
+	UINT32 val;
 
 	for( i = 0; i < 0x1000; i++ ) {
 		double v = ( double )( 0x1000 - i );
@@ -52,7 +54,7 @@ static void InitDeltaTable(int rate, int clock ) {
 
 		if ( target && base ) {
 			target = fixed / ( base / target );
-			val = ( unsigned long )target;
+			val = (UINT32)target;
 			if ( val == 0 )
 				val = 1;
 		} else
@@ -62,11 +64,16 @@ static void InitDeltaTable(int rate, int clock ) {
 	}
 }
 
-void K053260Reset(int chip)
+void K053260Reset(INT32 chip)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Reset called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K053260Reset called with invalid chip %x\n"), chip);
+#endif
+
 	ic = &Chips[chip];
 
-	for(int i = 0; i < 4; i++ ) {
+	for(INT32 i = 0; i < 4; i++ ) {
 		ic->channels[i].rate = 0;
 		ic->channels[i].size = 0;
 		ic->channels[i].start = 0;
@@ -81,7 +88,7 @@ void K053260Reset(int chip)
 	}
 }
 
-K053260_INLINE int limit( int val, int max, int min ) {
+K053260_INLINE INT32 limit( INT32 val, INT32 max, INT32 min ) {
 	if ( val > max )
 		val = max;
 	else if ( val < min )
@@ -93,15 +100,20 @@ K053260_INLINE int limit( int val, int max, int min ) {
 #define MAXOUT 0x3fff
 #define MINOUT -0x4000
 
-void K053260Update(int chip, short *pBuf, int length)
+void K053260Update(INT32 chip, INT16 *pBuf, INT32 length)
 {
-	static const long dpcmcnv[] = { 0,1,2,4,8,16,32,64, -128, -64, -32, -16, -8, -4, -2, -1};
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Update called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K053260Update called with invalid chip %x\n"), chip);
+#endif
 
-	int i, j, lvol[4], rvol[4], play[4], loop[4], ppcm_data[4], ppcm[4];
-	unsigned char *rom[4];
-	unsigned long delta[4], end[4], pos[4];
-	int dataL, dataR;
-	signed char d;
+	static const INT32 dpcmcnv[] = { 0,1,2,4,8,16,32,64, -128, -64, -32, -16, -8, -4, -2, -1};
+
+	INT32 i, j, lvol[4], rvol[4], play[4], loop[4], ppcm_data[4], ppcm[4];
+	UINT8 *rom[4];
+	UINT32 delta[4], end[4], pos[4];
+	INT32 dataL, dataR;
+	INT8 d;
 	ic = &Chips[chip];
 
 	/* precache some values */
@@ -145,7 +157,7 @@ void K053260Update(int chip, short *pBuf, int length)
 						if ( pos[i] == 0 || ( ( pos[i] ^ ( pos[i] - delta[i] ) ) & 0x8000 ) == 0x8000 )
 
 						 {
-							int newdata;
+							INT32 newdata;
 							if ( pos[i] & 0x8000 ){
 
 								newdata = ((rom[i][pos[i] >> BASE_SHIFT]) >> 4) & 0x0f; /*high nybble*/
@@ -192,15 +204,17 @@ void K053260Update(int chip, short *pBuf, int length)
 	}
 }
 
-void K053260Init(int chip, int clock, unsigned char *rom, int nLen)
+void K053260Init(INT32 chip, INT32 clock, UINT8 *rom, INT32 nLen)
 {
+	DebugSnd_K053260Initted = 1;
+	
 	ic = &Chips[chip];
 	memset (ic, 0, sizeof(k053260_chip_def));
 
-	int rate = clock / 32;
-	int i;
+	INT32 rate = clock / 32;
+	INT32 i;
 	
-	nUpdateStep = (int)(((float)rate / nBurnSoundRate) * 32768);
+	nUpdateStep = (INT32)(((float)rate / nBurnSoundRate) * 32768);
 
 	ic->mode = 0;
 	ic->rom = rom;
@@ -211,9 +225,11 @@ void K053260Init(int chip, int clock, unsigned char *rom, int nLen)
 	for ( i = 0; i < 0x30; i++ )
 		ic->regs[i] = 0;
 
-	ic->delta_table = ( unsigned long * )malloc( 0x1000 * sizeof( unsigned long ) );
+	ic->delta_table = (UINT32* )malloc( 0x1000 * sizeof(UINT32) );
 
 	InitDeltaTable( rate, clock );
+	
+	nNumChips = chip;
 
 	/* setup SH1 timer if necessary */
 //	if ( ic->intf->irq )
@@ -222,7 +238,11 @@ void K053260Init(int chip, int clock, unsigned char *rom, int nLen)
 
 void K053260Exit()
 {
-	for (int i = 0; i < 2; i++) {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Exit called without init\n"));
+#endif
+
+	for (INT32 i = 0; i < 2; i++) {
 		ic = &Chips[i];
 
 		if (ic->delta_table) {
@@ -232,12 +252,16 @@ void K053260Exit()
 	}
 	
 	nUpdateStep = 0;
+	
+	DebugSnd_K053260Initted = 0;
+	
+	nNumChips = 0;
 }
 
-K053260_INLINE void check_bounds(int channel ) {
+K053260_INLINE void check_bounds(INT32 channel ) {
 
-	int channel_start = ( ic->channels[channel].bank << 16 ) + ic->channels[channel].start;
-	int channel_end = channel_start + ic->channels[channel].size - 1;
+	INT32 channel_start = ( ic->channels[channel].bank << 16 ) + ic->channels[channel].start;
+	INT32 channel_end = channel_start + ic->channels[channel].size - 1;
 
 	if ( channel_start > ic->rom_size ) {
 		ic->channels[channel].play = 0;
@@ -250,11 +274,16 @@ K053260_INLINE void check_bounds(int channel ) {
 	}
 }
 
-void K053260Write(int chip, int offset, unsigned char data)
+void K053260Write(INT32 chip, INT32 offset, UINT8 data)
 {
-	int i, t;
-	int r = offset;
-	int v = data;
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Write called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K053260Write called with invalid chip %x\n"), chip);
+#endif
+
+	INT32 i, t;
+	INT32 r = offset;
+	INT32 v = data;
 
 	ic = &Chips[chip];
 
@@ -291,7 +320,7 @@ void K053260Write(int chip, int offset, unsigned char data)
 
 	/* channel setup */
 	if ( r < 0x28 ) {
-		int channel = ( r - 8 ) / 8;
+		INT32 channel = ( r - 8 ) / 8;
 
 		switch ( ( r - 8 ) & 0x07 ) {
 			case 0: /* sample rate low */
@@ -364,14 +393,19 @@ void K053260Write(int chip, int offset, unsigned char data)
 	}
 }
 
-unsigned char K053260Read(int chip, int offset)
+UINT8 K053260Read(INT32 chip, INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Read called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K053260Read called with invalid chip %x\n"), chip);
+#endif
+
 	ic = & Chips[chip];
 
 	switch ( offset ) {
 		case 0x29: /* channel status */
 			{
-				int i, status = 0;
+				INT32 i, status = 0;
 
 				for ( i = 0; i < 4; i++ )
 					status |= ic->channels[i].play << i;
@@ -382,11 +416,11 @@ unsigned char K053260Read(int chip, int offset)
 
 		case 0x2e: /* read rom */
 			if ( ic->mode & 1 ) {
-				unsigned int offs = ic->channels[0].start + ( ic->channels[0].pos >> BASE_SHIFT ) + ( ic->channels[0].bank << 16 );
+				UINT32 offs = ic->channels[0].start + ( ic->channels[0].pos >> BASE_SHIFT ) + ( ic->channels[0].bank << 16 );
 
 				ic->channels[0].pos += ( 1 << 16 );
 
-				if ( offs > (unsigned int)ic->rom_size ) {
+				if ( offs > (UINT32)ic->rom_size ) {
 
 					return 0;
 				}
@@ -399,8 +433,12 @@ unsigned char K053260Read(int chip, int offset)
 	return ic->regs[offset];
 }
 
-int K053260Scan(int nAction)
+INT32 K053260Scan(INT32 nAction)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K053260Initted) bprintf(PRINT_ERROR, _T("K053260Scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 	char szName[32];
 
@@ -408,12 +446,12 @@ int K053260Scan(int nAction)
 		return 1;
 	}
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ic = &Chips[i];
 
 		sprintf(szName, "k053260 regs %d", 0);
 		ba.Data		= ic->regs;
-		ba.nLen		= 0x30 * sizeof(int);
+		ba.nLen		= 0x30 * sizeof(INT32);
 		ba.nAddress = 0;
 		ba.szName	= szName;
 		BurnAcb(&ba);

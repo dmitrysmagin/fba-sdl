@@ -9,7 +9,7 @@
 #define OUTPUT_LEVEL(n)		((n) * MIXLEVEL / chip->num_voices)
 #define WAVEFORM_POSITION(n)	(((n) >> chip->f_fracbits) & 0x1f)
 
-unsigned char* NamcoSoundProm = NULL;
+UINT8* NamcoSoundProm = NULL;
 
 typedef struct
 {
@@ -32,27 +32,27 @@ struct namco_sound
 	sound_channel channel_list[MAX_VOICES];
 	sound_channel *last_channel;
 
-	int wave_size;
+	INT32 wave_size;
 	INT32 num_voices;
 	INT32 sound_enable;
-	int namco_clock;
-	int sample_rate;
-	int f_fracbits;
-	int stereo;
+	INT32 namco_clock;
+	INT32 sample_rate;
+	INT32 f_fracbits;
+	INT32 stereo;
 
 	INT16 *waveform[MAX_VOLUME];
 	
-	int update_step;
+	INT32 update_step;
 };
 
 static struct namco_sound *chip = NULL;
 
-static void update_namco_waveform(int offset, UINT8 data)
+static void update_namco_waveform(INT32 offset, UINT8 data)
 {
 	if (chip->wave_size == 1)
 	{
 		INT16 wdata;
-		int v;
+		INT32 v;
 
 		/* use full byte, first 4 high bits, then low 4 bits */
 		for (v = 0; v < MAX_VOLUME; v++)
@@ -65,7 +65,7 @@ static void update_namco_waveform(int offset, UINT8 data)
 	}
 	else
 	{
-		int v;
+		INT32 v;
 
 		/* use only low 4 bits */
 		for (v = 0; v < MAX_VOLUME; v++)
@@ -73,7 +73,7 @@ static void update_namco_waveform(int offset, UINT8 data)
 	}
 }
 
-static inline UINT32 namco_update_one(short *buffer, int length, const INT16 *wave, UINT32 counter, UINT32 freq)
+static inline UINT32 namco_update_one(INT16 *buffer, INT32 length, const INT16 *wave, UINT32 counter, UINT32 freq)
 {
 	while (length-- > 0)
 	{
@@ -85,7 +85,7 @@ static inline UINT32 namco_update_one(short *buffer, int length, const INT16 *wa
 	return counter;
 }
 
-static inline UINT32 namco_stereo_update_one(short *buffer, int length, const INT16 *wave, UINT32 counter, UINT32 freq)
+static inline UINT32 namco_stereo_update_one(INT16 *buffer, INT32 length, const INT16 *wave, UINT32 counter, UINT32 freq)
 {
 	while (length-- > 0)
 	{
@@ -97,8 +97,12 @@ static inline UINT32 namco_stereo_update_one(short *buffer, int length, const IN
 	return counter;
 }
 
-void NamcoSoundUpdate(short* buffer, int length)
+void NamcoSoundUpdate(INT16* buffer, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("NamcoSoundUpdate called without init\n"));
+#endif
+
 	sound_channel *voice;
 
 	/* zap the contents of the buffer */
@@ -111,27 +115,27 @@ void NamcoSoundUpdate(short* buffer, int length)
 	/* loop over each voice and add its contribution */
 	for (voice = chip->channel_list; voice < chip->last_channel; voice++)
 	{
-		short *mix = buffer;
-		int v = voice->volume[0];
+		INT16 *mix = buffer;
+		INT32 v = voice->volume[0];
 
 		if (voice->noise_sw)
 		{
-			int f = voice->frequency & 0xff;
+			INT32 f = voice->frequency & 0xff;
 
 			/* only update if we have non-zero volume and frequency */
 			if (v && f)
 			{
-				int hold_time = 1 << (chip->f_fracbits - 16);
-				int hold = voice->noise_hold;
+				INT32 hold_time = 1 << (chip->f_fracbits - 16);
+				INT32 hold = voice->noise_hold;
 				UINT32 delta = f << 4;
 				UINT32 c = voice->noise_counter;
 				INT16 noise_data = OUTPUT_LEVEL(0x07 * (v >> 1));
-				int i;
+				INT32 i;
 
 				/* add our contribution */
 				for (i = 0; i < length; i++)
 				{
-					int cnt;
+					INT32 cnt;
 
 					if (voice->noise_state)
 						*mix++ += noise_data;
@@ -176,8 +180,12 @@ void NamcoSoundUpdate(short* buffer, int length)
 	}
 }
 
-void NamcoSoundUpdateStereo(short* buffer, int length)
+void NamcoSoundUpdateStereo(INT16* buffer, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("NamcoSoundUpdateStereo called without init\n"));
+#endif
+
 	sound_channel *voice;
 
 	/* zap the contents of the buffers */
@@ -190,29 +198,29 @@ void NamcoSoundUpdateStereo(short* buffer, int length)
 	/* loop over each voice and add its contribution */
 	for (voice = chip->channel_list; voice < chip->last_channel; voice++)
 	{
-		short *lrmix = buffer;
-		int lv = voice->volume[0];
-		int rv = voice->volume[1];
+		INT16 *lrmix = buffer;
+		INT32 lv = voice->volume[0];
+		INT32 rv = voice->volume[1];
 
 		if (voice->noise_sw)
 		{
-			int f = voice->frequency & 0xff;
+			INT32 f = voice->frequency & 0xff;
 
 			/* only update if we have non-zero volume and frequency */
 			if ((lv || rv) && f)
 			{
-				int hold_time = 1 << (chip->f_fracbits - 16);
-				int hold = voice->noise_hold;
+				INT32 hold_time = 1 << (chip->f_fracbits - 16);
+				INT32 hold = voice->noise_hold;
 				UINT32 delta = f << 4;
 				UINT32 c = voice->noise_counter;
 				INT16 l_noise_data = OUTPUT_LEVEL(0x07 * (lv >> 1));
 				INT16 r_noise_data = OUTPUT_LEVEL(0x07 * (rv >> 1));
-				int i;
+				INT32 i;
 
 				/* add our contribution */
 				for (i = 0; i < length; i++)
 				{
-					int cnt;
+					INT32 cnt;
 
 					if (voice->noise_state)
 					{
@@ -282,10 +290,14 @@ void NamcoSoundUpdateStereo(short* buffer, int length)
 	}
 }
 
-void NamcoSoundWrite(unsigned int offset, unsigned char data)
+void NamcoSoundWrite(UINT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("NamcoSoundWrite called without init\n"));
+#endif
+
 	sound_channel *voice;
-	int ch;
+	INT32 ch;
 
 	data &= 0x0f;
 	if (namco_soundregs[offset] == data)
@@ -332,7 +344,7 @@ void NamcoSoundWrite(unsigned int offset, unsigned char data)
 	}
 }
 
-static void namcos1_sound_write(int offset, int data)
+static void namcos1_sound_write(INT32 offset, INT32 data)
 {
 	/* verify the offset */
 	if (offset > 63)
@@ -347,7 +359,7 @@ static void namcos1_sound_write(int offset, int data)
 	/* set the register */
 	namco_soundregs[offset] = data;
 
-	int ch = offset / 8;
+	INT32 ch = offset / 8;
 	if (ch >= chip->num_voices)
 		return;
 
@@ -373,7 +385,7 @@ static void namcos1_sound_write(int offset, int data)
 		case 0x04:
 			voice->volume[1] = data & 0x0f;
 	
-			int nssw = ((data & 0x80) >> 7);
+			INT32 nssw = ((data & 0x80) >> 7);
 			if (++voice == chip->last_channel)
 				voice = chip->channel_list;
 			voice->noise_sw = nssw;
@@ -381,8 +393,12 @@ static void namcos1_sound_write(int offset, int data)
 	}
 }
 
-void namcos1_custom30_write(int offset, int data)
+void namcos1_custom30_write(INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("namcos1_custom30_write called without init\n"));
+#endif
+
 	if (offset < 0x100)
 	{
 		if (namco_wavedata[offset] != data)
@@ -400,17 +416,21 @@ void namcos1_custom30_write(int offset, int data)
 		namco_wavedata[offset] = data;
 }
 
-unsigned char namcos1_custom30_read(int offset)
+UINT8 namcos1_custom30_read(INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("namcos1_custom30_read called without init\n"));
+#endif
+
 	return namco_wavedata[offset];
 }
 
-static int build_decoded_waveform()
+static INT32 build_decoded_waveform()
 {
 	INT16 *p;
-	int size;
-	int offset;
-	int v;
+	INT32 size;
+	INT32 offset;
+	INT32 v;
 
 	if (NamcoSoundProm != NULL)
 		namco_wavedata = NamcoSoundProm;
@@ -445,9 +465,11 @@ static int build_decoded_waveform()
 	return 0;
 }
 
-void NamcoSoundInit(int clock)
+void NamcoSoundInit(INT32 clock)
 {
-	int clock_multiple;
+	DebugSnd_NamcoSndInitted = 1;
+	
+	INT32 clock_multiple;
 	sound_channel *voice;
 	
 	chip = (struct namco_sound*)malloc(sizeof(*chip));
@@ -495,14 +517,24 @@ void NamcoSoundInit(int clock)
 
 void NamcoSoundExit()
 {
-	free(chip);
-	chip = NULL;
+#if defined FBA_DEBUG
+	if (!DebugSnd_NamcoSndInitted) bprintf(PRINT_ERROR, _T("NamcoSoundExit called without init\n"));
+#endif
+
+	if (chip) {
+		free(chip);
+		chip = NULL;
+	}
 	
-	free(namco_soundregs);
-	namco_soundregs = NULL;
+	if (namco_soundregs) {
+		free(namco_soundregs);
+		namco_soundregs = NULL;
+	}
+	
+	DebugSnd_NamcoSndInitted = 0;
 }
 
-void NamcoSoundScan(int nAction,int *pnMin)
+void NamcoSoundScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 	char szName[16];
@@ -529,4 +561,3 @@ void NamcoSoundScan(int nAction,int *pnMin)
 	ba.szName	= szName;
 	BurnAcb(&ba);
 }
-

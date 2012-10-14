@@ -3,10 +3,10 @@
 
 // Load a rom and separate out the bytes by nGap
 // Dest is the memory block to insert the rom into
-static int LoadRom(unsigned char *Dest,int i,int nGap,int bXor)
+static INT32 LoadRom(UINT8 *Dest, INT32 i, INT32 nGap, INT32 bXor)
 {
-  int nRet=0,nLen=0;
-  if (BurnExtLoadRom==NULL) return 1; // Load function was not defined by the application
+  INT32 nRet = 0, nLen = 0;
+  if (BurnExtLoadRom == NULL) return 1; // Load function was not defined by the application
 
   // Find the length of the rom (as given by the current driver)
   {
@@ -25,18 +25,19 @@ static int LoadRom(unsigned char *Dest,int i,int nGap,int bXor)
 
   if (nGap>1 || bXor)
   {
-    unsigned char *Load=NULL;
-    unsigned char *pd=NULL,*pl=NULL,*LoadEnd=NULL;
-    int nLoadLen=0;
+    UINT8 *Load=NULL;
+    UINT8 *pd=NULL,*pl=NULL,*LoadEnd=NULL;
+    INT32 nLoadLen=0;
 
     // Allocate space for the file
-    Load=(unsigned char *)malloc(nLen);
+    Load=(UINT8 *)malloc(nLen);
     if (Load==NULL) return 1;
     memset(Load,0,nLen);
 
     // Load in the file
     nRet=BurnExtLoadRom(Load,&nLoadLen,i);
-    if (nRet!=0) { free(Load); return 1; }
+	if (bDoIpsPatch) IpsApplyPatches(Load, RomName);
+    if (nRet!=0) { if (Load) { free(Load); Load = NULL; } return 1; }
 
     if (nLoadLen<0) nLoadLen=0;
     if (nLoadLen>nLen) nLoadLen=nLen;
@@ -54,36 +55,40 @@ static int LoadRom(unsigned char *Dest,int i,int nGap,int bXor)
     {
       do { *pd  = *pl++; pd+=nGap; } while (pl<LoadEnd);
     }
-    free(Load);
+    if (Load) {
+		free(Load);
+		Load = NULL;
+	}
   }
   else
   {
     // If no XOR, and gap of 1, just copy straight in
     nRet=BurnExtLoadRom(Dest,NULL,i);
+	if (bDoIpsPatch) IpsApplyPatches(Dest, RomName);
     if (nRet!=0) return 1;
   }
 
   return 0;
 }
 
-int BurnLoadRom(unsigned char *Dest,int i,int nGap)
+INT32 BurnLoadRom(UINT8 *Dest, INT32 i, INT32 nGap)
 {
   return LoadRom(Dest,i,nGap,0);
 }
 
-int BurnXorRom(unsigned char *Dest,int i,int nGap)
+INT32 BurnXorRom(UINT8 *Dest, INT32 i, INT32 nGap)
 {
   return LoadRom(Dest,i,nGap,1);
 }
 
 // Separate out a bitfield into Bit number 'nField' of each nibble in pDest
 // (end result: each dword in memory carries the 8 pixels of a tile line).
-int BurnLoadBitField(unsigned char *pDest,unsigned char *pSrc,int nField,int nSrcLen)
+INT32 BurnLoadBitField(UINT8 *pDest, UINT8 *pSrc, INT32 nField, INT32 nSrcLen)
 {
-  int nPix=0;
+  INT32 nPix=0;
   for (nPix=0; nPix<(nSrcLen<<3); nPix++)
   {
-    int nBit;
+    INT32 nBit;
     // Get the bitplane pixel value (on or off)
     nBit=(*pSrc)>>(7-(nPix&7)); nBit&=1;
     nBit<<=nField; // Move to correct bit for this field

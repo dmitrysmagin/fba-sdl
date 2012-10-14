@@ -238,7 +238,10 @@ int PrintCPUInfo()
 {
 	// Determine the processor type using the CPUID instruction
 	SYSTEM_INFO si;
-	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nSignatureECX = 0, nSignatureEDX = 0, nVendorEAX = 0, nVendorEBX = 0, nVendorECX = 0, nVendorEDX = 0;
+	unsigned int nSignatureEAX = 0, nSignatureEBX = 0, nVendorEBX = 0, nVendorECX = 0, nVendorEDX = 0;
+#if !defined BUILD_X64_EXE
+	unsigned int nSignatureECX = 0, nSignatureEDX = 0, nVendorEAX = 0;
+#endif
 	bool bMMX = false, bXMMI = false, bXMMI64 = false;
 	char szCPUText[13] = { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0 };
 	TCHAR* szModel = NULL;
@@ -894,7 +897,7 @@ int PrintFBAInfo()
 	if (bDrvOkay) {
 		TCHAR szName[1024];
 
-		int n = _stprintf(szName, _T("Emulating %s (%hs)"), BurnDrvGetText(DRV_NAME), DecorateGameName(nBurnDrvSelect));
+		int n = _stprintf(szName, _T("Emulating %s (%hs)"), BurnDrvGetText(DRV_NAME), DecorateGameName(nBurnDrvActive));
 		if (n >= 70) {
 			_tcscpy(szName + 66, _T("...)"));
 		}
@@ -1075,7 +1078,10 @@ int PrintDeviceInfo()
 							_tcscpy(szImagePath, pSC->lpBinaryPathName);
 						}
 
-						free(pSC);
+						if (pSC) {
+							free(pSC);
+							pSC = NULL;
+						}
 
 						CloseServiceHandle(hService);
 						CloseServiceHandle(hSCManager);
@@ -1152,7 +1158,7 @@ static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM l
 				hCodeFont = CreateFont(22, 0, 0, 0, FW_BOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_MODERN, _T("Lucida Console"));
 				SendDlgItemMessage(hDlg, IDC_SYSINFO_CODE, WM_SETFONT, (WPARAM)hCodeFont, (LPARAM)0);
 
-				_stprintf(szText, _T("Guru Meditation #%08X.%08X"), pExceptionPointers->ExceptionRecord->ExceptionCode, (unsigned int)pExceptionPointers->ExceptionRecord->ExceptionAddress);
+				_stprintf(szText, _T("Guru Meditation #%08X.%08X"), pExceptionPointers->ExceptionRecord->ExceptionCode, (INT_PTR)pExceptionPointers->ExceptionRecord->ExceptionAddress);
 				SendDlgItemMessage(hDlg, IDC_SYSINFO_CODE, WM_SETTEXT, (WPARAM)0, (LPARAM)szText);
 
 				AddLine(_T(APP_TITLE) _T(" v%.20s fatal exception report (%s)."), szAppBurnVer, _tasctime(tmTime));
@@ -1220,8 +1226,10 @@ static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM l
 		}
 
 		case WM_CLOSE: {
-			free(pszTextBuffer);
-			pszTextBuffer = NULL;
+			if (pszTextBuffer) {
+				free(pszTextBuffer);
+				pszTextBuffer = NULL;
+			}
 			nTextBufferSize = 0;
 
 			DeleteObject(hLogFont);
@@ -1237,12 +1245,12 @@ static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM l
 
 		case WM_CTLCOLORSTATIC: {
 			if ((HWND)lParam == GetDlgItem(hDlg, IDC_SYSINFO_EDIT)) {
-				return (BOOL)GetSysColorBrush(15);
+				return (INT_PTR)GetSysColorBrush(15);
 			}
 			if ((HWND)lParam == GetDlgItem(hDlg, IDC_SYSINFO_CODE)) {
 				SetTextColor((HDC)wParam, RGB(255, 0, 0));
 				SetBkMode((HDC)wParam, TRANSPARENT);
-				return (BOOL)hCodeBGBrush;
+				return (INT_PTR)hCodeBGBrush;
 			}
 			break;
 		}
@@ -1276,7 +1284,7 @@ static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM l
 
 					if (pExceptionPointers) {
 						TCHAR szLogName[MAX_PATH];
-						_stprintf(szLogName, _T("config\\%s.error.log"), szAppExeName);
+						_stprintf(szLogName, _T("config/%s.error.log"), szAppExeName);
 						fp = _tfopen(szLogName, _T("ab"));
 
 						EnableWindow(GetDlgItem(hDlg, IDC_SYSINFO_LOG), FALSE);
@@ -1321,7 +1329,10 @@ static INT_PTR CALLBACK SysInfoProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM l
 							fwrite(szText, sizeof(TCHAR), nSize, fp);
 							_ftprintf(fp, _T(""));
 						}
-						free(szText);
+						if (szText) {
+							free(szText);
+							szText = NULL;
+						}
 						fclose(fp);
 					}
 				}

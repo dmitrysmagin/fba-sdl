@@ -3,16 +3,16 @@
 #include "burnint.h"
 #include "taito_ic.h"
 
-unsigned char TC0220IOCInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0220IOCInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0220IOCInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0220IOCDip[2]        = { 0, 0 };
-unsigned char TC0220IOCInput[3]      = { 0, 0, 0 };
+UINT8 TC0220IOCInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0220IOCInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0220IOCInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0220IOCDip[2]        = { 0, 0 };
+UINT8 TC0220IOCInput[3]      = { 0, 0, 0 };
 
 static UINT8 TC0220IOCRegs[8];
 static UINT8 TC0220IOCPort;
 
-extern unsigned char TaitoCoinLockout[4];
+extern UINT8 TaitoCoinLockout[4];
 
 UINT8 TC0220IOCPortRead()
 {
@@ -62,7 +62,7 @@ UINT8 TC0220IOCPortRegRead()
 	return TC0220IOCRead(TC0220IOCPort);
 }
 
-UINT8 TC0220IOCHalfWordRead(int Offset)
+UINT8 TC0220IOCHalfWordRead(INT32 Offset)
 {
 	return TC0220IOCRead(Offset);
 }
@@ -97,7 +97,7 @@ void TC0220IOCHalfWordPortWrite(UINT16 Data)
 	TC0220IOCPortWrite(Data & 0xff);
 }
 
-void TC0220IOCHalfWordWrite(int Offset, UINT16 Data)
+void TC0220IOCHalfWordWrite(INT32 Offset, UINT16 Data)
 {
 	TC0220IOCWrite(Offset, Data & 0xff);
 }
@@ -119,7 +119,7 @@ void TC0220IOCExit()
 	TC0220IOCPort = 0;
 }
 
-void TC0220IOCScan(int nAction)
+void TC0220IOCScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(TC0220IOCInputPort0);

@@ -2,7 +2,7 @@
 // Based on MAME driver by Jason Nelson and Phil Stroffolino
 
 #include "burnint.h"
-#include "m6502.h"
+#include "m6502_intf.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
@@ -13,12 +13,12 @@ extern "C" {
 // Variables
 
 
-static unsigned char *Mem, *Rom, *Gfx, *BankRam;
-static unsigned char DrvJoy1[12], DrvJoy2[12], DrvReset, DrvDips;
-static int *Palette;
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
+static UINT8 *Mem, *Rom, *Gfx, *BankRam;
+static UINT8 DrvJoy1[12], DrvJoy2[12], DrvReset, DrvDips;
+static INT32 *Palette;
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
 
-static int tile_bank, flipscreen;
+static INT32 tile_bank, flipscreen;
 
 
 //--------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ STDDIPINFO(Drv)
 // Memory handling
 
 
-static unsigned char mole_protection_r(unsigned char offset)
+static UINT8 mole_protection_r(UINT8 offset)
 {
 	switch (offset)
 	{
@@ -94,7 +94,7 @@ static unsigned char mole_protection_r(unsigned char offset)
 			return 0xb0;
 
 		case 0x26:
-			if (m6502_get_reg(M6502_REG_PC) == 0x53d7)
+			if (M6502GetPC() == 0x53d7)
 			{
 				return 0x06;	// bonus round
 			}
@@ -113,7 +113,7 @@ static unsigned char mole_protection_r(unsigned char offset)
 	return 0x00;
 }
 
-void mole_write_byte(unsigned short address, unsigned char data)
+void mole_write_byte(UINT16 address, UINT8 data)
 {
 	// Tile RAM
 	if (address >= 0x8000 && address <= 0x83ff)
@@ -148,11 +148,15 @@ void mole_write_byte(unsigned short address, unsigned char data)
 			flipscreen = data & 1;
 		break;
 	}
+	
+	if (address <= 0x3ff) {
+		Rom[address] = data;
+	}
 }
 
-unsigned char mole_read_byte(unsigned short address)
+UINT8 mole_read_byte(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address)
 	{
@@ -161,7 +165,7 @@ unsigned char mole_read_byte(unsigned short address)
 
 		case 0x8d40: // input port 1
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret |= DrvJoy1[i] << i;
 
 			return ret;
@@ -199,6 +203,10 @@ unsigned char mole_read_byte(unsigned short address)
 	{
 		return mole_protection_r(address & 0xff);
 	}
+	
+	if (address <= 0x3ff) {
+		return Rom[address];
+	}
 
 	return 0;
 }
@@ -208,7 +216,7 @@ unsigned char mole_read_byte(unsigned short address)
 // Initilizing functions
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -219,9 +227,9 @@ static int DrvDoReset()
 	tile_bank = 0;
 	flipscreen = 0;
 
-	m6502Open(0);
-	m6502Reset();
-	m6502Close();
+	M6502Open(0);
+	M6502Reset();
+	M6502Close();
 
 	AY8910Reset(0);
 
@@ -230,7 +238,7 @@ static int DrvDoReset()
 
 static void mole_palette_init()
 {
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		Palette[i] |= (i & 1) ? 0xff0000 : 0;
 		Palette[i] |= (i & 4) ? 0x00ff00 : 0;
 		Palette[i] |= (i & 2) ? 0x0000ff : 0;
@@ -238,17 +246,17 @@ static void mole_palette_init()
 	
 }
 
-static int mole_gfx_convert()
+static INT32 mole_gfx_convert()
 {
-	unsigned char a, b, c;
-	unsigned char *tmp = (unsigned char*)malloc(0x6000);
+	UINT8 a, b, c;
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x6000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
 	memcpy (tmp, Gfx, 0x6000);
 
-	for (int i = 0; i < 0x8000; i++)
+	for (INT32 i = 0; i < 0x8000; i++)
 	{
 		a = (tmp[0x0000 + (i >> 3)] >> (i & 7)) & 1;
 		b = (tmp[0x1000 + (i >> 3)] >> (i & 7)) & 1;
@@ -263,19 +271,19 @@ static int mole_gfx_convert()
 		Gfx[0x8007 ^ i] = (a << 2) | (b << 1) | c;
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 	
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x400 + 0x20);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x400 + (0x20 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)BurnMalloc(nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -285,7 +293,7 @@ static int DrvInit()
 	Rom = Mem + 0x00000;
 	Gfx = Mem + 0x10000;
 	BankRam = Mem + 0x20000;
-	Palette = (int *)(Mem + 0x20400);
+	Palette = (INT32 *)(Mem + 0x20400);
 
 	{
 		BurnLoadRom(Rom + 0x5000, 0, 1);
@@ -303,16 +311,18 @@ static int DrvInit()
 	mole_gfx_convert();
 	mole_palette_init();
 
-	m6502Init(1);
-	m6502Open(0);
-	m6502MapMemory(Rom + 0x0000, 0x0000, 0x03ff, M6502_RAM); // Ram
-
-	m6502MapMemory(Rom + 0x5000, 0x5000, 0x7fff, M6502_ROM); // Rom
-	m6502MapMemory(Rom + 0x5000, 0xd000, 0xffff, M6502_ROM); // Rom Mirror
-
-	m6502SetReadHandler(mole_read_byte);
-	m6502SetWriteHandler(mole_write_byte);
-	m6502Close();
+	M6502Init(0, TYPE_M6502);
+	M6502Open(0);
+	M6502MapMemory(Rom + 0x0000, 0x0000, 0x03ff, M6502_RAM); // Rom
+	M6502MapMemory(Rom + 0x5000, 0x5000, 0x7fff, M6502_ROM); // Rom
+	M6502MapMemory(Rom + 0x5000, 0xd000, 0xffff, M6502_ROM); // Rom Mirror
+	M6502SetReadByteHandler(mole_read_byte);
+	M6502SetWriteByteHandler(mole_write_byte);
+	M6502SetReadMemIndexHandler(mole_read_byte);
+	M6502SetWriteMemIndexHandler(mole_write_byte);
+	M6502SetReadOpHandler(mole_read_byte);
+	M6502SetReadOpArgHandler(mole_read_byte);
+	M6502Close();
 
 	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
@@ -325,13 +335,13 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
-	m6502Exit();
+	M6502Exit();
 	AY8910Exit(0);
 
-	free (Mem);
-	free (pFMBuffer);
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	return 0;
 }
@@ -341,24 +351,24 @@ static int DrvExit()
 // Drawing functions
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sy = ((offs / 40) % 25) << 3;
-		int sx = (offs % 40) << 3;
+		INT32 sy = ((offs / 40) % 25) << 3;
+		INT32 sx = (offs % 40) << 3;
 
-		int code = ((BankRam[offs] & 3) << 14) | ((Rom[0x8000 + offs]) << 6);
+		INT32 code = ((BankRam[offs] & 3) << 14) | ((Rom[0x8000 + offs]) << 6);
 
-		unsigned char *gfxsrc = Gfx + code;
+		UINT8 *gfxsrc = Gfx + code;
 
-		for (int y = sy; y < sy + 8; y++)
+		for (INT32 y = sy; y < sy + 8; y++)
 		{
-			for (int x = sx; x < sx + 8; x++, gfxsrc++)
+			for (INT32 x = sx; x < sx + 8; x++, gfxsrc++)
 			{
-				int pxl = Palette[*gfxsrc];
+				INT32 pxl = Palette[*gfxsrc];
 
-				int pos;
+				INT32 pos;
 
 				if (flipscreen)
 					pos = (199 - y) * 320 + (319 - x);
@@ -374,37 +384,31 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	m6502Open(0);
-	m6502Run(4000000 / 60);
-	m6502SetIRQ(M6502_IRQ);
-	m6502Close();
+	M6502Open(0);
+	M6502Run(4000000 / 60);
+	M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_AUTO);
+	M6502Close();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -424,7 +428,7 @@ static int DrvFrame()
 // Savestates
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -450,7 +454,7 @@ static int DrvScan(int nAction,int *pnMin)
 		ba.szName = "Bank Ram";
 		BurnAcb(&ba);
 
-		m6502Scan(nAction);			// Scan m6502
+		M6502Scan(nAction);			// Scan m6502
 		AY8910Scan(nAction, pnMin);		// Scan AY8910
 
 		// Scan critical driver variables

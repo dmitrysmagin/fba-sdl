@@ -3,15 +3,16 @@
 
 int bDrvOkay = 0;						// 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
 
-TCHAR szAppRomPaths[DIRS_MAX][MAX_PATH] = { { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("roms\\") } };
+TCHAR szAppRomPaths[DIRS_MAX][MAX_PATH] = { { _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, 
+											{ _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, 
+											{ _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("") }, 
+											{ _T("") }, { _T("") }, { _T("") }, { _T("") }, { _T("roms/") } };
 
 static bool bSaveRAM = false;
 
-static int DoLibInit()					// Do Init of Burn library driver
+static int DrvBzipOpen()
 {
-	int nRet = 0;
-
-	BzipOpen(FALSE);
+	BzipOpen(false);
 
 	// If there is a problem with the romset, report it
 	switch (BzipStatus()) {
@@ -41,7 +42,20 @@ static int DoLibInit()					// Do Init of Burn library driver
 		}
 	}
 
-	ProgressCreate();
+	return 0;
+}	
+
+static int DoLibInit()					// Do Init of Burn library driver
+{
+	int nRet = 0;
+
+	if (DrvBzipOpen()) {
+		return 1;
+	}
+	
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SNK_MVS) {
+		ProgressCreate();
+	}
 
 	nRet = BurnDrvInit();
 
@@ -62,12 +76,13 @@ static int __cdecl DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 {
 	int nRet;
 
-	BzipOpen(FALSE);
+	BzipOpen(false);
 
 	if ((nRet = BurnExtLoadRom(Dest, pnWrote, i)) != 0) {
 		char* pszFilename;
 
 		BurnDrvGetRomName(&pszFilename, i, 0);
+		
 		FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_LOAD_REQUEST), pszFilename, BurnDrvGetText(DRV_NAME));
 		FBAPopupDisplay(PUF_TYPE_ERROR);
 	}
@@ -81,6 +96,28 @@ static int __cdecl DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 	return nRet;
 }
 
+int __cdecl DrvCartridgeAccess(BurnCartrigeCommand nCommand)
+{
+	switch (nCommand) {
+		case CART_INIT_START:
+			ProgressCreate();
+			if (DrvBzipOpen()) {
+				return 1;
+			}
+			break;
+		case CART_INIT_END:
+			ProgressDestroy();
+			BzipClose();
+			break;
+		case CART_EXIT:
+			break;
+		default:
+			return 1;
+	}
+
+	return 0;
+}
+
 int DrvInit(int nDrvNum, bool bRestore)
 {
 	int nStatus;
@@ -88,7 +125,27 @@ int DrvInit(int nDrvNum, bool bRestore)
 	DrvExit();						// Make sure exitted
 	MediaExit();
 
-	nBurnDrvSelect = nDrvNum;		// Set the driver number
+	nBurnDrvActive = nDrvNum;		// Set the driver number
+	
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_MVS) {
+
+		BurnExtCartridgeSetupCallback = DrvCartridgeAccess;
+
+		if (SelMVSDialog()) {
+			POST_INITIALISE_MESSAGE;
+			return 0;
+		}
+	}
+
+	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOCD) {
+		if (CDEmuInit()) {
+			FBAPopupAddText(PUF_TEXT_DEFAULT, MAKEINTRESOURCE(IDS_ERR_CDEMU_INI_FAIL));
+			FBAPopupDisplay(PUF_TYPE_ERROR);
+
+			POST_INITIALISE_MESSAGE;
+			return 0;
+		}
+	}
 
 	MediaInit();
 
@@ -163,7 +220,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 
 int DrvInitCallback()
 {
-	return DrvInit(nBurnDrvSelect, false);
+	return DrvInit(nBurnDrvActive, false);
 }
 
 int DrvExit()
@@ -180,7 +237,7 @@ int DrvExit()
 		DestroyWindow(hInpDIPSWDlg);	// Make sure the DipSwitch Dialog is exited
 		DestroyWindow(hInpCheatDlg);	// Make sure the Cheat Dialog is exited
 
-		if (nBurnDrvSelect < nBurnDrvCount) {
+		if (nBurnDrvActive < nBurnDrvCount) {
 			MemCardEject();				// Eject memory card if present
 
 			if (bSaveRAM) {
@@ -206,8 +263,12 @@ int DrvExit()
 		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
 		memset(nAudNextSound, 0, nAudSegLen << 2);
 	}
+	
+	CDEmuExit();
 
-	nBurnDrvSelect = ~0U;			// no driver selected
+	BurnExtCartridgeSetupCallback = NULL;
+
+	nBurnDrvActive = ~0U;			// no driver selected
 
 	return 0;
 }

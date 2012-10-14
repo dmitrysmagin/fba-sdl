@@ -347,8 +347,10 @@ static void DestroyDHT()
 	// and reset the node list
 	while(list_idx < MAX_LIST_LEN-3)
 	{
-		free(node_list[list_idx]);
-		node_list[list_idx] = NULL;
+		if (node_list[list_idx]) {
+			free(node_list[list_idx]);
+			node_list[list_idx] = NULL;
+		}
 		++list_idx;
 	}
 	node_list[MAX_LIST_LEN-2]=NULL;

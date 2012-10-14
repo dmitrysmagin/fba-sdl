@@ -2,15 +2,17 @@
 // Based on MAME driver by David Graves, Brian Troha, and 
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "burn_ym2610.h"
 #include "msm5205.h"
 #include "taito_ic.h"
 #include "taito.h"
 
-static unsigned char TaitoInputConfig;
-static unsigned int AsukaADPCMPos;
-static int AsukaADPCMData;
+static UINT8 TaitoInputConfig;
+static INT32 AsukaADPCMPos;
+static INT32 AsukaADPCMData;
 
 static struct BurnInputInfo CadashInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	TC0220IOCInputPort2 + 0,	"p1 coin"	},
@@ -625,13 +627,13 @@ STDDIPINFO(Jigkmgri)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-void __fastcall cadash_write_byte(unsigned int a, unsigned char d)
+void __fastcall cadash_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x900000)
 	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
 }
 
-void __fastcall cadash_write_word(unsigned int a, unsigned short d)
+void __fastcall cadash_write_word(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x900000)
 	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
@@ -662,14 +664,14 @@ void __fastcall cadash_write_word(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall cadash_read_byte(unsigned int a)
+UINT8 __fastcall cadash_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x900000)
 
 	return 0;
 }
 
-unsigned short __fastcall cadash_read_word(unsigned int a)
+UINT16 __fastcall cadash_read_word(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x900000)
 	if ((a & 0xffffff0) == 0xc20000) return TC0100SCNCtrl[0][(a & 0x0f)/2];
@@ -688,7 +690,7 @@ unsigned short __fastcall cadash_read_word(unsigned int a)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-void __fastcall asuka_write_byte(unsigned int a, unsigned char d)
+void __fastcall asuka_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
@@ -712,7 +714,7 @@ void __fastcall asuka_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall asuka_write_word(unsigned int a, unsigned short d)
+void __fastcall asuka_write_word(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
@@ -742,7 +744,7 @@ void __fastcall asuka_write_word(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall asuka_read_byte(unsigned int a)
+UINT8 __fastcall asuka_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x400000)
 
@@ -756,7 +758,7 @@ unsigned char __fastcall asuka_read_byte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall asuka_read_word(unsigned int a)
+UINT16 __fastcall asuka_read_word(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x400000)
 	if ((a & 0xffffff0) == 0xc20000) return TC0100SCNCtrl[0][(a & 0x0f)/2];
@@ -778,14 +780,14 @@ unsigned short __fastcall asuka_read_word(unsigned int a)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-void __fastcall eto_write_byte(unsigned int a, unsigned char d)
+void __fastcall eto_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0ByteWrite_Map(0xd00000, 0xd0ffff)
 	
 	if (a >= 0xc04000 && a <= 0xc0ffff) {
-		int Offset = (a - 0xc00000) ^ 1;
+		INT32 Offset = (a - 0xc00000) ^ 1;
 		if (TC0100SCNRam[0][Offset] != d) {
 			TC0100SCNBgLayerUpdate[0] = 1;
 			TC0100SCNFgLayerUpdate[0] = 1;
@@ -803,7 +805,7 @@ void __fastcall eto_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall eto_write_word(unsigned int a, unsigned short d)
+void __fastcall eto_write_word(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0220IOCHalfWordWrite_Map(0x400000)
@@ -812,7 +814,7 @@ void __fastcall eto_write_word(unsigned int a, unsigned short d)
 	
 	if (a >= 0xc04000 && a <= 0xc0ffff) {
 		UINT16 *Ram = (UINT16*)TC0100SCNRam[0];
-		int Offset = (a - 0xc00000) >> 1;
+		INT32 Offset = (a - 0xc00000) >> 1;
 		if (Ram[Offset] != d) {
 			TC0100SCNBgLayerUpdate[0] = 1;
 			TC0100SCNFgLayerUpdate[0] = 1;
@@ -841,7 +843,7 @@ void __fastcall eto_write_word(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall eto_read_byte(unsigned int a)
+UINT8 __fastcall eto_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	TC0220IOCHalfWordRead_Map(0x400000)
@@ -856,7 +858,7 @@ unsigned char __fastcall eto_read_byte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall eto_read_word(unsigned int a)
+UINT16 __fastcall eto_read_word(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	TC0220IOCHalfWordRead_Map(0x400000)
@@ -876,7 +878,7 @@ unsigned short __fastcall eto_read_word(unsigned int a)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-void __fastcall bonze_write_byte(unsigned int a, unsigned char d)
+void __fastcall bonze_write_byte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
 	
@@ -910,7 +912,7 @@ void __fastcall bonze_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall bonze_write_word(unsigned int a, unsigned short d)
+void __fastcall bonze_write_word(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
 	TC0100SCN0CtrlWordWrite_Map(0xc20000)
@@ -931,7 +933,7 @@ void __fastcall bonze_write_word(unsigned int a, unsigned short d)
 	if ((a & 0xffffc00) == 0xc10000) return; // nop
 }
 
-unsigned char __fastcall bonze_read_byte(unsigned int a)
+UINT8 __fastcall bonze_read_byte(UINT32 a)
 {
 	switch (a)
 	{
@@ -949,7 +951,7 @@ unsigned char __fastcall bonze_read_byte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall bonze_read_word(unsigned int a)
+UINT16 __fastcall bonze_read_word(UINT32 a)
 {
 	if ((a & 0xffffff0) == 0xc20000) return TC0100SCNCtrl[0][(a & 0x0f)/2];
 
@@ -977,7 +979,7 @@ unsigned short __fastcall bonze_read_word(unsigned int a)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-void __fastcall cadash_sound_write(unsigned short a, unsigned char d)
+void __fastcall cadash_sound_write(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1017,7 +1019,7 @@ void __fastcall cadash_sound_write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall cadash_sound_read(unsigned short a)
+UINT8 __fastcall cadash_sound_read(UINT16 a)
 {
 	switch (a)
 	{
@@ -1034,7 +1036,7 @@ unsigned char __fastcall cadash_sound_read(unsigned short a)
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-static void DrvSoundBankSwitch(unsigned int, unsigned int bank)
+static void DrvSoundBankSwitch(UINT32, UINT32 bank)
 {
 	TaitoZ80Bank = bank & 0x03;
 
@@ -1042,7 +1044,7 @@ static void DrvSoundBankSwitch(unsigned int, unsigned int bank)
 	ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + TaitoZ80Bank * 0x4000);
 }
 
-void __fastcall bonze_sound_write(unsigned short a, unsigned char d)
+void __fastcall bonze_sound_write(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1067,7 +1069,7 @@ void __fastcall bonze_sound_write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall bonze_sound_read(unsigned short a)
+UINT8 __fastcall bonze_sound_read(UINT16 a)
 {
 	switch (a)
 	{
@@ -1092,14 +1094,14 @@ static void DrvMakeInputs()
 
 	TC0220IOCInput[2] &= ~TaitoInputConfig; // asuka
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[0] ^= (TC0220IOCInputPort0[i] & 1) << i;
 		TC0220IOCInput[1] ^= (TC0220IOCInputPort1[i] & 1) << i;
 		TC0220IOCInput[2] ^= (TC0220IOCInputPort2[i] & 1) << i;
 	}
 }
 
-static void CadashYM2151IRQHandler(int Irq)
+static void CadashYM2151IRQHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1108,7 +1110,7 @@ static void CadashYM2151IRQHandler(int Irq)
 	}
 }
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1117,9 +1119,9 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double DrvGetTime()
@@ -1139,11 +1141,28 @@ static void AsukaMSM5205Vck()
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (TaitoRamStart, 0, TaitoRamEnd - TaitoRamStart);
 
+#if 0
+	// This resets the YM2151 which calls DrvSoundBankSwitch via the port callback
 	TaitoDoReset();
+#else
+	SekOpen(0);
+	SekReset();
+	SekClose();
+	
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	if (TaitoNumYM2610) BurnYM2610Reset();
+	if (TaitoNumMSM5205) MSM5205Reset();
+	ZetOpen(0);
+	if (TaitoNumYM2151) BurnYM2151Reset();
+	ZetClose();	
+#endif
 
 	ZetOpen(0);
 	DrvSoundBankSwitch(0, 1);
@@ -1157,9 +1176,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1		= Next; Next += 0x100000;
 	TaitoZ80Rom1		= Next; Next += 0x010000;
@@ -1183,9 +1202,9 @@ static int MemIndex()
 	return 0;
 }
 
-static void expand_graphics(unsigned char *src, int len)
+static void expand_graphics(UINT8 *src, INT32 len)
 {
-	for (int i = (len * 2) - 2; i >= 0; i -= 2) {
+	for (INT32 i = (len * 2) - 2; i >= 0; i -= 2) {
 		src[i + 0] = src[(i / 2) ^ 1] >> 4;
 		src[i + 1] = src[(i / 2) ^ 1] & 0x0f;
 	}
@@ -1258,7 +1277,7 @@ static void Bonze68KSetup()
 
 static void CadashZ80Setup()
 {
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x3fff, 0, TaitoZ80Rom1);
 	ZetMapArea(0x0000, 0x3fff, 2, TaitoZ80Rom1);
@@ -1273,7 +1292,7 @@ static void CadashZ80Setup()
 
 static void BonzeZ80Setup()
 {
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x3fff, 0, TaitoZ80Rom1);
 	ZetMapArea(0x0000, 0x3fff, 2, TaitoZ80Rom1);
@@ -1312,7 +1331,7 @@ static void AsukaSoundSetup()
 
 static void BonzeSoundSetup()
 {
-	int DrvSndROMLen = 0x80000;
+	INT32 DrvSndROMLen = 0x80000;
 	BurnYM2610Init(8000000, TaitoYM2610ARom, &DrvSndROMLen, TaitoYM2610ARom, &DrvSndROMLen, &DrvFMIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	BurnYM2610SetSoundMixMode(1);
@@ -1322,7 +1341,7 @@ static void BonzeSoundSetup()
 	TaitoNumMSM5205 = 0;
 }
 
-static int CommonInit(void (*Cpu68KSetup)(), void (*CpuZ80Setup)(), void (*SoundSetup)(), int buffer_sprites)
+static INT32 CommonInit(void (*Cpu68KSetup)(), void (*CpuZ80Setup)(), void (*SoundSetup)(), INT32 buffer_sprites)
 {
 	TaitoNum68Ks = 1;
 	TaitoNumZ80s = 1;
@@ -1332,8 +1351,8 @@ static int CommonInit(void (*Cpu68KSetup)(), void (*CpuZ80Setup)(), void (*Sound
 
 	TaitoMem = NULL;
 	MemIndex();
-	int nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 
@@ -1360,9 +1379,9 @@ static int CommonInit(void (*Cpu68KSetup)(), void (*CpuZ80Setup)(), void (*Sound
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 
 	BurnTransferClear();
 
@@ -1385,7 +1404,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int CadashFrame()
+static INT32 CadashFrame()
 {
 	if (TaitoReset) {
 		DrvDoReset();
@@ -1393,20 +1412,20 @@ static int CadashFrame()
 
 	TaitoMakeInputsFunction();
 
+	SekNewFrame();
+	ZetNewFrame();
+	
 	SekOpen(0);
 	ZetOpen(0);
 
-	SekNewFrame();
-	ZetNewFrame();
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 16000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 16000000 / 60, 4000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
-
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nCycleSegment;
+		INT32 nCycleSegment;
 
 		nCycleSegment = (nCyclesTotal[0] / nInterleave) * (i+1);
 		if (i == (nInterleave - 1)) nCycleSegment -= 500; //?
@@ -1416,8 +1435,8 @@ static int CadashFrame()
 		nCyclesDone[1] += ZetRun(nCycleSegment - ZetTotalCycles());
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1428,8 +1447,8 @@ static int CadashFrame()
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 		}
@@ -1445,7 +1464,7 @@ static int CadashFrame()
 	return 0;
 }
 
-static int EtoFrame() // Using for asuka too, but needs msm5205
+static INT32 EtoFrame() // Using for asuka too, but needs msm5205
 {
 	if (TaitoReset) {
 		DrvDoReset();
@@ -1453,21 +1472,21 @@ static int EtoFrame() // Using for asuka too, but needs msm5205
 
 	TaitoMakeInputsFunction();
 
+	SekNewFrame();
+	ZetNewFrame();
+	
 	SekOpen(0);
 	ZetOpen(0);
 
-	SekNewFrame();
-	ZetNewFrame();
-
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 	if (TaitoNumMSM5205) nInterleave = MSM5205CalcInterleave(0, 4000000);
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 8000000 / 60, 4000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 8000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nCycleSegment;
+		INT32 nCycleSegment;
 
 		nCycleSegment = (nCyclesTotal[0] / nInterleave) * (i+1);
 		nCyclesDone[0] += SekRun(nCycleSegment - SekTotalCycles());
@@ -1477,8 +1496,8 @@ static int EtoFrame() // Using for asuka too, but needs msm5205
 		if (TaitoNumMSM5205) MSM5205Update();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1487,8 +1506,8 @@ static int EtoFrame() // Using for asuka too, but needs msm5205
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 		}
@@ -1506,7 +1525,7 @@ static int EtoFrame() // Using for asuka too, but needs msm5205
 	return 0;
 }
 
-static int BonzeFrame()
+static INT32 BonzeFrame()
 {
 	TaitoWatchdog++;
 	if (TaitoReset || TaitoWatchdog >= 180) {
@@ -1517,7 +1536,7 @@ static int BonzeFrame()
 		memset (TaitoInput, 0xff, 4);
 		TaitoInput[1] = 0;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			TaitoInput[0] ^= (TaitoInputPort0[i] & 1) << i;
 			TaitoInput[1] ^= (TaitoInputPort1[i] & 1) << i;
 			TaitoInput[2] ^= (TaitoInputPort2[i] & 1) << i;
@@ -1525,11 +1544,11 @@ static int BonzeFrame()
 		}
 	}
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
 	ZetNewFrame();
+	
+	SekOpen(0);
+	ZetOpen(0);
 
 	SekRun(8000000 / 60);
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
@@ -1550,7 +1569,7 @@ static int BonzeFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1614,7 +1633,7 @@ static struct BurnRomInfo cadashRomDesc[] = {
 STD_ROM_PICK(cadash)
 STD_ROM_FN(cadash)
 
-static int CadashInit()
+static INT32 CadashInit()
 {
 	return CommonInit(Cadash68KSetup, CadashZ80Setup, CadashSoundSetup, 1);
 }
@@ -1802,9 +1821,9 @@ static struct BurnRomInfo etoRomDesc[] = {
 STD_ROM_PICK(eto)
 STD_ROM_FN(eto)
 
-static int EtoInit()
+static INT32 EtoInit()
 {
-	int nRet = CommonInit(Eto68KSetup, CadashZ80Setup, CadashSoundSetup, 0);
+	INT32 nRet = CommonInit(Eto68KSetup, CadashZ80Setup, CadashSoundSetup, 0);
 
 	if (nRet == 0) {
 		BurnByteswap(Taito68KRom1 + 0x40000, 0x80000);
@@ -1816,7 +1835,7 @@ static int EtoInit()
 struct BurnDriver BurnDrvEto = {
 	"eto", NULL, NULL, NULL, "1994",
 	"Kokontouzai Eto Monogatari (Japan)\0", NULL, "Visco", "Taito Misc",
-	L"\u53E4\u4ECA\u6771\u897F\u5E72\u652F\u7269\u8A9E (Japan)\0Kokontouzai Eto Monogatari (Japan)\0", NULL, NULL, NULL,
+	L"\u53E4\u4ECA\u6771\u897F\u5E72\u652F\u7269\u8A9E\0Kokontouzai Eto Monogatari (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_PUZZLE, 0,
 	NULL, etoRomInfo, etoRomName, NULL, NULL, AsukaInputInfo, EtoDIPInfo,
 	EtoInit, TaitoExit, EtoFrame, DrvDraw, DrvScan, NULL, 0x1000,
@@ -1845,9 +1864,9 @@ static struct BurnRomInfo asukaRomDesc[] = {
 STD_ROM_PICK(asuka)
 STD_ROM_FN(asuka)
 
-static int AsukaInit()
+static INT32 AsukaInit()
 {
-	int nRet = CommonInit(Asuka68KSetup, CadashZ80Setup, AsukaSoundSetup, 0);
+	INT32 nRet = CommonInit(Asuka68KSetup, CadashZ80Setup, AsukaSoundSetup, 0);
 
 	if (nRet == 0) {
 		BurnByteswap(Taito68KRom1 + 0x40000, 0x80000);
@@ -1950,9 +1969,9 @@ static struct BurnRomInfo galmedesRomDesc[] = {
 STD_ROM_PICK(galmedes)
 STD_ROM_FN(galmedes)
 
-static int GalmedesInit()
+static INT32 GalmedesInit()
 {
-	int nRet = CommonInit(Asuka68KSetup, CadashZ80Setup, CadashSoundSetup, 0);
+	INT32 nRet = CommonInit(Asuka68KSetup, CadashZ80Setup, CadashSoundSetup, 0);
 
 	if (nRet == 0) {
 		BurnByteswap(Taito68KRom1 + 0x40000, 0x80000);
@@ -2023,7 +2042,7 @@ static struct BurnRomInfo bonzeadvRomDesc[] = {
 STD_ROM_PICK(bonzeadv)
 STD_ROM_FN(bonzeadv)
 
-static int BonzeInit()
+static INT32 BonzeInit()
 {
 	return CommonInit(Bonze68KSetup, BonzeZ80Setup, BonzeSoundSetup, 0);
 }
@@ -2127,7 +2146,7 @@ STD_ROM_FN(jigkmgri)
 struct BurnDriver BurnDrvJigkmgri = {
 	"jigkmgri", "bonzeadv", NULL, NULL, "1988",
 	"Jigoku Meguri (Japan)\0", NULL, "Taito Corporation", "Taito Misc",
-	L"\u5730\u7344\u3081\u3050\u308A (Japan)\0Jigoku Meguri (Japan)\0", NULL, NULL, NULL,
+	L"\u5730\u7344\u3081\u3050\u308A\0Jigoku Meguri (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, jigkmgriRomInfo, jigkmgriRomName, NULL, NULL, BonzeadvInputInfo, JigkmgriDIPInfo,
 	BonzeInit, TaitoExit, BonzeFrame, DrvDraw, DrvScan, NULL, 0x1000,

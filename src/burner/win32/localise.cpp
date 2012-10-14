@@ -6,7 +6,7 @@
 bool bLocalisationActive = false;
 TCHAR szLocalisationTemplate[MAX_PATH] = _T("");
 
-static const unsigned int nMaxResources = 1000;
+static const unsigned int nMaxResources = 2000;
 
 static int nFBACodepage;
 
@@ -212,7 +212,7 @@ int BuildTemplateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, LPTSTR lpszName, 
 	int nControls = 0;
 
 	// 26 is sizeof(DLGTEMPLATEEX)
-	char* pTemplateDataIn = (char*)(((UINT32)pTemplate + 26 + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
+	char* pTemplateDataIn = (char*)(((INT_PTR)pTemplate + 26 + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
 
 	// Menu
 	switch (*((WORD*)pTemplateDataIn)) {
@@ -258,7 +258,7 @@ int BuildTemplateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, LPTSTR lpszName, 
 		EscapeString(wszBuffer, pszCaption, 5120);
 		_ftprintf(fp, _T("        //-- \"%ls\"\n"), wszBuffer);
 		if (IS_INTRESOURCE(lpszName)) {
-			_ftprintf(fp, _T("dialog\t%4i "), (int)lpszName);
+			_ftprintf(fp, _T("dialog\t%4i "), (INT_PTR)lpszName);
 		} else {
 #if defined (UNICODE)
 			EscapeString(wszBuffer, lpszName, 5120);
@@ -294,12 +294,12 @@ int BuildTemplateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, LPTSTR lpszName, 
 		DWORD dwStyle;
 		WORD wID;
 
-		pTemplateDataIn = (char*)(((UINT32)pTemplateDataIn + sizeof(DWORD) - 1) & ~(sizeof(DWORD) - 1));
+		pTemplateDataIn = (char*)(((INT_PTR)pTemplateDataIn + sizeof(DWORD) - 1) & ~(sizeof(DWORD) - 1));
 
 		dwStyle = ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->style;
 		wID = ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->id;
 
-		pTemplateDataIn = (char*)(((UINT32)pTemplateDataIn + sizeof(DLGITEMTEMPLATEEX) + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
+		pTemplateDataIn = (char*)(((INT_PTR)pTemplateDataIn + sizeof(DLGITEMTEMPLATEEX) + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
 
 		// Class
 		switch (*((WORD*)pTemplateDataIn)) {
@@ -367,7 +367,7 @@ int BuildTemplateMenuTemplate(const MENUTEMPLATE* pTemplate, LPTSTR lpszName, FI
 
 	if (fp) {
 		if (IS_INTRESOURCE(lpszName)) {
-			_ftprintf(fp, _T("menu   %4i {\n"), (int)lpszName);
+			_ftprintf(fp, _T("menu   %4i {\n"), (INT_PTR)lpszName);
 		} else {
 #if defined (UNICODE)
 			EscapeString(wszBuffer, lpszName, 5120);
@@ -492,7 +492,7 @@ static BOOL CALLBACK FBALocaliseEnumResourceNamesString(HMODULE /* hModule */, L
 			if (*pwsz) {
 				EscapeString(wszBuffer, pwsz + 1, 5120);
 				_ftprintf((FILE*)lParam, _T("        //-- \"%ls\"\n"), wszBuffer);
-				_ftprintf((FILE*)lParam, _T("string %5i \"\"\n\n"), (((int)lpszName) - 1) * 16 + i);
+				_ftprintf((FILE*)lParam, _T("string %5i \"\"\n\n"), (((INT_PTR)lpszName) - 1) * 16 + i);
 			}
 			pwsz += *pwsz + 1;
 		}
@@ -679,7 +679,7 @@ void ParseDlgTemplateEx(const DLGTEMPLATEEX* pTemplate)
 DLGTEMPLATE* TranslateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, const LocaliseResourceInfo* pLocaliseInfo)
 {
 	// 26 is sizeof(DLGTEMPLATEEX)
-	char* pTemplateDataIn = (char*)(((UINT32)pTemplate + 26 + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
+	char* pTemplateDataIn = (char*)(((INT_PTR)pTemplate + 26 + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
 	char* pTemplateDataOut = NULL;
 	char* pTemplateDataInSync = NULL;
 	char* pTemplateDataOutSync = NULL;
@@ -811,13 +811,13 @@ DLGTEMPLATE* TranslateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, const Locali
 		CATCH_UP;
 		ALIGN(sizeof(DWORD));
 
-		pTemplateDataIn = pTemplateDataInSync = (char*)(((UINT32)pTemplateDataIn + sizeof(DWORD) - 1) & ~(sizeof(DWORD) - 1));
+		pTemplateDataIn = pTemplateDataInSync = (char*)(((INT_PTR)pTemplateDataIn + sizeof(DWORD) - 1) & ~(sizeof(DWORD) - 1));
 
 #ifdef PRINT_TRANSLATION_INFO
 		dprintf(_T("      control %02i, ID is %05i, pos %03ix%03i, size %03ix%03i\n"), i, ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->id, ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->x, ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->y, ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->cx, ((DLGITEMTEMPLATEEX*)pTemplateDataIn)->cy);
 #endif
 
-		pTemplateDataIn = (char*)(((UINT32)pTemplateDataIn + sizeof(DLGITEMTEMPLATEEX) + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
+		pTemplateDataIn = (char*)(((INT_PTR)pTemplateDataIn + sizeof(DLGITEMTEMPLATEEX) + sizeof(WORD) - 1) & ~(sizeof(WORD) - 1));
 
 #ifdef PRINT_TRANSLATION_INFO
 		dprintf(_T("         "));
@@ -886,8 +886,8 @@ DLGTEMPLATE* TranslateDlgTemplateEx(const DLGTEMPLATEEX* pTemplate, const Locali
 INT_PTR FBADialogBox(HINSTANCE hInstance, LPTSTR lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc)
 {
 	// Try to load the translated dialog
-	if (bLocalisationActive && hInstance == hAppInst && (unsigned int)lpTemplate < nMaxResources && FBAResourceInfo[(unsigned int)lpTemplate].pResourceTranslation) {
-		return DialogBoxIndirect(hInstance, (LPCDLGTEMPLATE)FBAResourceInfo[(unsigned int)lpTemplate].pResourceTranslation, hWndParent, lpDialogFunc);
+	if (bLocalisationActive && hInstance == hAppInst && (UINT_PTR)lpTemplate < nMaxResources && FBAResourceInfo[(UINT_PTR)lpTemplate].pResourceTranslation) {
+		return DialogBoxIndirect(hInstance, (LPCDLGTEMPLATE)FBAResourceInfo[(INT_PTR)lpTemplate].pResourceTranslation, hWndParent, lpDialogFunc);
 	}
 
 	// Localisation disabled or couldn't lock resource, so use normal function
@@ -897,8 +897,8 @@ INT_PTR FBADialogBox(HINSTANCE hInstance, LPTSTR lpTemplate, HWND hWndParent, DL
 HWND FBACreateDialog(HINSTANCE hInstance, LPCTSTR lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc)
 {
 	// Try to load the translated dialog
-	if (bLocalisationActive && hInstance == hAppInst && (unsigned int)lpTemplate < nMaxResources && FBAResourceInfo[(unsigned int)lpTemplate].pResourceTranslation) {
-		return CreateDialogIndirect(hInstance, (LPCDLGTEMPLATE)FBAResourceInfo[(unsigned int)lpTemplate].pResourceTranslation, hWndParent, lpDialogFunc);
+	if (bLocalisationActive && hInstance == hAppInst && (UINT_PTR)lpTemplate < nMaxResources && FBAResourceInfo[(UINT_PTR)lpTemplate].pResourceTranslation) {
+		return CreateDialogIndirect(hInstance, (LPCDLGTEMPLATE)FBAResourceInfo[(INT_PTR)lpTemplate].pResourceTranslation, hWndParent, lpDialogFunc);
 	}
 
 	// Localisation disabled or couldn't lock resource, so use normal function
@@ -1059,8 +1059,8 @@ MENUTEMPLATE* TranslateMenuTemplate(const MENUTEMPLATE* pTemplate, const Localis
 HMENU FBALoadMenu(HINSTANCE hInstance, LPTSTR lpMenuName)
 {
 	// Try to load the translated menu
-	if (bLocalisationActive && hInstance == hAppInst && (unsigned int)lpMenuName < nMaxResources && FBAResourceInfo[(unsigned int)lpMenuName].pResourceTranslation) {
-		return LoadMenuIndirect((MENUTEMPLATE*)FBAResourceInfo[(unsigned int)lpMenuName].pResourceTranslation);
+	if (bLocalisationActive && hInstance == hAppInst && (UINT_PTR)lpMenuName < nMaxResources && FBAResourceInfo[(UINT_PTR)lpMenuName].pResourceTranslation) {
+		return LoadMenuIndirect((MENUTEMPLATE*)FBAResourceInfo[(INT_PTR)lpMenuName].pResourceTranslation);
 	}
 
 	// Translation unavailable, so use normal function
@@ -1516,7 +1516,10 @@ static int FBALocaliseParseFile(TCHAR* pszFilename)
 				}
 
 				for (int i = 0; i < 1024; i++) {
-					free(CurrentResource.pControlInfo[i]);
+					if (CurrentResource.pControlInfo[i]) {
+						free(CurrentResource.pControlInfo[i]);
+						CurrentResource.pControlInfo[i] = NULL;
+					}
 				}
 				memset(&CurrentResource, 0, sizeof(LocaliseResourceInfo));
 			}
@@ -1533,7 +1536,10 @@ static int FBALocaliseParseFile(TCHAR* pszFilename)
 	}
 
 	for (int i = 0; i < 1024; i++) {
-		free(CurrentResource.pControlInfo[i]);
+		if (CurrentResource.pControlInfo[i]) {
+			free(CurrentResource.pControlInfo[i]);
+			CurrentResource.pControlInfo[i] = NULL;
+		}
 	}
 
 	if (h) {
@@ -1555,14 +1561,19 @@ void FBALocaliseExit()
 	bLocalisationActive = false;
 
 	if (FBAResourceInfo) {
-		for (int i = 0; i < 1000; i++) {
+		for (unsigned int i = 0; i < nMaxResources; i++) {
 			if (FBAResourceInfo[i].nResourceFlags & RES_DEALLOCATE) {
-				free(FBAResourceInfo[i].pResourceTranslation);
+				if (FBAResourceInfo[i].pResourceTranslation) {
+					free(FBAResourceInfo[i].pResourceTranslation);
+					FBAResourceInfo[i].pResourceTranslation = NULL;
+				}
 			}
 		}
 
-		free(FBAResourceInfo);
-		FBAResourceInfo = NULL;
+		if (FBAResourceInfo) {
+			free(FBAResourceInfo);
+			FBAResourceInfo = NULL;
+		}
 	}
 
 	return;
@@ -1586,12 +1597,12 @@ int FBALocaliseInit(TCHAR* pszTemplate)
 		return 0;
 	}
 
-	FBAResourceInfo = (FBAResourceInfo_t*)malloc(1000 * sizeof(FBAResourceInfo_t));
+	FBAResourceInfo = (FBAResourceInfo_t*)malloc(nMaxResources * sizeof(FBAResourceInfo_t));
 	if (FBAResourceInfo == NULL) {
 		return 1;
 	}
 
-	memset(FBAResourceInfo, 0, 1000 * sizeof(FBAResourceInfo_t));
+	memset(FBAResourceInfo, 0, nMaxResources * sizeof(FBAResourceInfo_t));
 
 	nRet = FBALocaliseParseFile(pszTemplate);
 	if (nRet > 0) {
@@ -1633,12 +1644,17 @@ int FBALocaliseInit(TCHAR* pszTemplate)
 // ----------------------------------------------------------------------------
 // Dialog box to load/save a template
 
+static TCHAR szFilter[100];
+
 static void MakeOfn()
 {
+	_stprintf(szFilter, _T("%s"), FBALoadStringEx(hAppInst, IDS_LOCAL_FILTER, true));
+	memcpy(szFilter + _tcslen(szFilter), _T(" (*.flt)\0*.flt\0\0"), 16 * sizeof(TCHAR));
+			
 	memset(&ofn, 0, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hScrnWnd;
-	ofn.lpstrFilter = _T("FB Alpha localisation templates (*.flt)\0*.flt\0\0");
+	ofn.lpstrFilter = szFilter;
 	ofn.lpstrFile = szChoice;
 	ofn.nMaxFile = sizeof(szChoice) / sizeof(TCHAR);
 	ofn.lpstrInitialDir = _T(".\\config\\localisation");
@@ -1652,7 +1668,9 @@ int FBALocaliseLoadTemplate()
 {
 	_stprintf(szChoice, _T("template"));
 	MakeOfn();
-	ofn.lpstrTitle = _T("Select localisation template");
+	TCHAR szTitle[100];
+	_stprintf(szTitle, _T("%s"), FBALoadStringEx(hAppInst, IDS_LOCAL_SELECT, true));
+	ofn.lpstrTitle = szTitle;
 	ofn.Flags |= OFN_OVERWRITEPROMPT;
 
 	int bOldPause = bRunPause;
@@ -1671,7 +1689,9 @@ int FBALocaliseCreateTemplate()
 {
 	_stprintf(szChoice, _T("template"));
 	MakeOfn();
-	ofn.lpstrTitle = _T("Create localisation template");
+	TCHAR szTitle[100];
+	_stprintf(szTitle, _T("%s"), FBALoadStringEx(hAppInst, IDS_LOCAL_CREATE, true));
+	ofn.lpstrTitle = szTitle;
 	ofn.Flags |= OFN_OVERWRITEPROMPT;
 
 	int bOldPause = bRunPause;

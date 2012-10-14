@@ -1,34 +1,5 @@
 #include <stdio.h>
 
-#define MAKE_STRING_2(s) #s
-#define MAKE_STRING(s) MAKE_STRING_2(s)
-
-#if defined _MSC_VER
- #if _M_IX86 == 500
-  #define BUILD_CPU i586
- #elif _M_IX86 == 600
-  #define BUILD_CPU i686
- #elif _M_IX86 == 700
-  #define BUILD_CPU Pentium4 / Athlon
- #endif
-#elif defined __GNUC__
- #ifdef __i586__
-  #define BUILD_CPU i586
- #elif __i686__
-  #define BUILD_CPU i686
- #elif __pentium4__
-  #define BUILD_CPU Pentium4
- #elif __k6__
-  #define BUILD_CPU K6
- #elif __athlon__
-  #define BUILD_CPU Athlon
- #endif
-#endif
-
-#ifndef BUILD_CPU
- #define BUILD_CPU Unknown CPU
-#endif
-
 int main(int /*argc*/, char** /*argv*/)
 {
 	printf("#define BUILD_TIME %s\n", __TIME__);
@@ -41,7 +12,7 @@ int main(int /*argc*/, char** /*argv*/)
 #endif
 
 #if !defined BUILD_X64_EXE
-	printf("#define BUILD_CPU  " MAKE_STRING(BUILD_CPU) "\n");
+	printf("#define BUILD_CPU  X86\n");
 #else
 	printf("#define BUILD_CPU  X64\n");
 #endif

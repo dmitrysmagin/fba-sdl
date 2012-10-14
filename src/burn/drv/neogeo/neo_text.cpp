@@ -1,25 +1,31 @@
 #include "neogeo.h"
 
-unsigned char* NeoTextROM;
-int nNeoTextROMSize = -1;
+UINT8* NeoTextROMBIOS;
+UINT8* NeoTextROM[MAX_SLOT];
+
+INT32 nNeoTextROMSize[MAX_SLOT] = { 0, };
 bool bBIOSTextROMEnabled;
 
-static char* NeoTextTileAttrib = NULL;
-static int nBankswitch;
+static UINT8* NeoTextROMCurrent;
 
-static int nBankLookupAddress[40];
-static int nBankLookupShift[40];
+static INT8* NeoTextTileAttrib[MAX_SLOT] = { NULL, };
+static INT8* NeoTextTileAttribBIOS = NULL;
+static INT8* NeoTextTileAttribActive = NULL;
+static INT32 nBankswitch[MAX_SLOT] = { 0, };
 
-static unsigned char* pTile;
-static unsigned char* pTileData;
-static unsigned int* pTilePalette;
+static INT32 nBankLookupAddress[40];
+static INT32 nBankLookupShift[40];
+
+static UINT8* pTile;
+static UINT8* pTileData;
+static UINT32* pTilePalette;
 
 typedef void (*RenderTileFunction)();
 static RenderTileFunction RenderTile;
 
-static int nLastBPP = 0;
+static INT32 nLastBPP = 0;
 
-static int nMinX, nMaxX;
+static INT32 nMinX, nMaxX;
 
 #define BPP 16
  #include "neo_text_render.h"
@@ -33,16 +39,16 @@ static int nMinX, nMaxX;
  #include "neo_text_render.h"
 #undef BPP
 
-int NeoRenderText()
+INT32 NeoRenderText()
 {
-	int x, y;
-	unsigned char* pTextROM;
-	char* pTileAttrib;
-	unsigned char* pCurrentRow = pBurnDraw;
-	unsigned int* pTextPalette = NeoPalette;
-	unsigned int nTileDown = nBurnPitch << 3;
-	unsigned int nTileLeft = nBurnBpp << 3;
-	unsigned short* pTileRow = (unsigned short*)(NeoGraphicsRAM + 0xE000);
+	INT32 x, y;
+	UINT8* pTextROM;
+	INT8* pTileAttrib;
+	UINT8* pCurrentRow = pBurnDraw;
+	UINT32* pTextPalette = NeoPalette;
+	UINT32 nTileDown = nBurnPitch << 3;
+	UINT32 nTileLeft = nBurnBpp << 3;
+	UINT16* pTileRow = (UINT16*)(NeoGraphicsRAM + 0xE000);
 
 	if (!(nBurnLayer & 2)) {
 		return 0;
@@ -66,20 +72,24 @@ int NeoRenderText()
 		}
 	}
 
-	if (!bBIOSTextROMEnabled && nBankswitch) {
-		if (nBankswitch == 1) {
+	if (!bBIOSTextROMEnabled && nBankswitch[nNeoActiveSlot]) {
 
-			// GAROU, MSLUG3, MSLUG4, SAMSHO5, and SAMSH5SP
+		if (!NeoTextROMCurrent) {
+			return 0;
+		}
 
-			int nOffset[32];
-			int nBank = 0x001000 + (3 << 12);
-			int z = 0;
+		if (nBankswitch[nNeoActiveSlot] == 1) {
+
+			// Garou, Metal Slug 3, Metal Slug 4
+
+			INT32 nOffset[32];
+			INT32 nBank = (3 << 12);
+			INT32 z = 0;
 
 			y = 0;
 			while (y < 32) {
-				if (*((unsigned short*)(NeoGraphicsRAM + 0xEA00 + z)) == 0x0200 && (*((unsigned short*)(NeoGraphicsRAM + 0xEB00 + z)) & 0xFF00) == 0xFF00) {
-					nBank = ((*((unsigned short*)(NeoGraphicsRAM + 0xEB00 + z)) & 3) ^ 3) << 12;
-					nBank += 0x001000;
+				if (*((UINT16*)(NeoGraphicsRAM + 0xEA00 + z)) == 0x0200 && (*((UINT16*)(NeoGraphicsRAM + 0xEB00 + z)) & 0xFF00) == 0xFF00) {
+					nBank = ((*((UINT16*)(NeoGraphicsRAM + 0xEB00 + z)) & 3) ^ 3) << 12;
 					nOffset[y++] = nBank;
 				}
 				nOffset[y++] = nBank;
@@ -87,11 +97,11 @@ int NeoRenderText()
 			}
 
 			for (y = 2, pTileRow += 2; y < 30; y++, pCurrentRow += nTileDown, pTileRow++) {
-				pTextROM = NeoTextROM + (nOffset[y - 2] << 5);
-				pTileAttrib = NeoTextTileAttrib + nOffset[y - 2];
+				pTextROM    = NeoTextROMCurrent        + (nOffset[y - 2] << 5);
+				pTileAttrib = NeoTextTileAttribActive +  nOffset[y - 2];
 				for (x = nMinX, pTile = pCurrentRow; x < nMaxX; x++, pTile += nTileLeft) {
-					unsigned int nTile = pTileRow[x << 5];
-					int nPalette = nTile & 0xF000;
+					UINT32 nTile = pTileRow[x << 5];
+					INT32 nPalette = nTile & 0xF000;
 					nTile &= 0x0FFF;
 					if (pTileAttrib[nTile] == 0) {
 						pTileData = pTextROM + (nTile << 5);
@@ -102,16 +112,16 @@ int NeoRenderText()
 			}
 		} else {
 
-			// KOF2000, MATRIM, SVC, and KOF2003
+			// KOF2000
 
-			unsigned short* pBankInfo = (unsigned short*)(NeoGraphicsRAM + 0xEA00) + 1;
-			pTextROM = NeoTextROM + 0x020000;
-			pTileAttrib = NeoTextTileAttrib + 0x01000;
+			UINT16* pBankInfo = (UINT16*)(NeoGraphicsRAM + 0xEA00) + 1;
+			pTextROM    = NeoTextROMCurrent;
+			pTileAttrib = NeoTextTileAttribActive;
 
 			for (y = 2, pTileRow += 2; y < 30; y++, pCurrentRow += nTileDown, pTileRow++, pBankInfo++) {
  				for (x = nMinX, pTile = pCurrentRow; x < nMaxX; x++, pTile += nTileLeft) {
-					unsigned int nTile = pTileRow[x << 5];
-					int nPalette = nTile & 0xF000;
+					UINT32 nTile = pTileRow[x << 5];
+					INT32 nPalette = nTile & 0xF000;
 					nTile &= 0x0FFF;
 					nTile += (((pBankInfo[nBankLookupAddress[x]] >> nBankLookupShift[x]) & 3) ^ 3) << 12;
 					if (pTileAttrib[nTile] == 0) {
@@ -123,19 +133,21 @@ int NeoRenderText()
 			}
 		}
 	} else {
-
 		if (bBIOSTextROMEnabled) {
-			pTextROM = NeoTextROM;
-			pTileAttrib = NeoTextTileAttrib;
+			pTextROM    = NeoTextROMBIOS;
+			pTileAttrib = NeoTextTileAttribBIOS;
 		} else {
-			pTextROM = NeoTextROM + 0x020000;
-			pTileAttrib = NeoTextTileAttrib + 0x1000;
+			pTextROM    = NeoTextROMCurrent;
+			pTileAttrib = NeoTextTileAttribActive;
+		}
+		if (!pTextROM) {
+			return 0;
 		}
 
 		for (y = 2, pTileRow += 2; y < 30; y++, pCurrentRow += nTileDown, pTileRow++) {
 			for (x = nMinX, pTile = pCurrentRow; x < nMaxX; x++, pTile += nTileLeft) {
-				unsigned int nTile = pTileRow[x << 5];
-				int nPalette = nTile & 0xF000;
+				UINT32 nTile = pTileRow[x << 5];
+				INT32 nPalette = nTile & 0xF000;
 				nTile &= 0xFFF;
 				if (pTileAttrib[nTile] == 0) {
 					pTileData = pTextROM + (nTile << 5);
@@ -149,43 +161,131 @@ int NeoRenderText()
 	return 0;
 }
 
-// kof10th
-static inline void NeoUpdateTextAttribOne(const int nOffset)
+void NeoExitText(INT32 nSlot)
 {
-	for (int i = nOffset; i < nOffset + 32; i += 4) {
-		if (*((unsigned int*)(NeoTextROM + i))) {
-			NeoTextTileAttrib[nOffset >> 5] = 0;
+	BurnFree(NeoTextTileAttribBIOS);
+	BurnFree(NeoTextTileAttrib[nSlot]);
+	NeoTextTileAttribActive = NULL;
+}
+
+static void NeoUpdateTextAttribBIOS(INT32 nOffset, INT32 nSize)
+{
+	for (INT32 i = nOffset & ~31; i < nOffset + nSize; i += 32) {
+		NeoTextTileAttribBIOS[i >> 5] = (((INT64*)NeoTextROMBIOS)[(i >> 3) + 0] ||
+										 ((INT64*)NeoTextROMBIOS)[(i >> 3) + 1] ||
+										 ((INT64*)NeoTextROMBIOS)[(i >> 3) + 2] ||
+										 ((INT64*)NeoTextROMBIOS)[(i >> 3) + 3])
+									  ? 0 : 1;
+	}
+}
+
+static inline void NeoUpdateTextAttribOne(const INT32 nOffset)
+{
+	NeoTextTileAttribActive[nOffset >> 5] = 1;
+
+	for (INT32 i = nOffset; i < nOffset + 32; i += 4) {
+		if (*((UINT32*)(NeoTextROMCurrent + i))) {
+			NeoTextTileAttribActive[nOffset >> 5] = 0;
 			break;
 		}
 	}
 }
 
-void NeoUpdateTextOne(int nOffset, const unsigned char byteValue)
+static void NeoUpdateTextAttrib(INT32 nOffset, INT32 nSize)
+{
+	nOffset &= ~0x1F;
+
+	for (INT32 i = nOffset; i < nOffset + nSize; i += 32) {
+		NeoUpdateTextAttribOne(i);
+	}
+}
+
+void NeoUpdateTextOne(INT32 nOffset, const UINT8 byteValue)
 {
 	nOffset = (nOffset & ~0x1F) | (((nOffset ^ 0x10) & 0x18) >> 3) | ((nOffset & 0x07) << 2);
+
 	if (byteValue) {
-		NeoTextTileAttrib[nOffset >> 5] = 0;
+		NeoTextTileAttribActive[nOffset >> 5] = 0;
 	} else {
-		if (NeoTextTileAttrib[nOffset >> 5] == 0 && NeoTextROM[nOffset]) {
-			NeoTextTileAttrib[nOffset >> 5] = 1;
+		if (NeoTextTileAttribActive[nOffset >> 5] == 0 && NeoTextROMCurrent[nOffset]) {
+			NeoTextTileAttribActive[nOffset >> 5] = 1;
 			NeoUpdateTextAttribOne(nOffset);
 		}
 	}
-	NeoTextROM[nOffset] = byteValue;
+
+	NeoTextROMCurrent[nOffset] = byteValue;
 }
 
-void NeoExitText()
+static inline void NeoTextDecodeTile(const UINT8* pData, UINT8* pDest)
 {
-	free(NeoTextTileAttrib);
-	NeoTextTileAttrib = NULL;
+	UINT8 nBuffer[32];
+
+	for (INT32 i = 0; i < 8; i++) {
+		nBuffer[0 + i * 4] = pData[16 + i];
+		nBuffer[1 + i * 4] = pData[24 + i];
+		nBuffer[2 + i * 4] = pData[ 0 + i];
+		nBuffer[3 + i * 4] = pData[ 8 + i];
+	}
+
+	for (INT32 i = 0; i < 32; i++) {
+		pDest[i]  = nBuffer[i] << 4;
+		pDest[i] |= nBuffer[i] >> 4;
+	}
 }
 
-int NeoInitText()
+void NeoDecodeTextBIOS(INT32 nOffset, const INT32 nSize, UINT8* pData)
 {
-	int nTileNum = (0x020000 + nNeoTextROMSize) >> 5;
+	UINT8* pEnd = pData + nSize;
 
-	free(NeoTextTileAttrib);
-	NeoTextTileAttrib = (char*)malloc((nTileNum < 0x2000) ? 0x2000 : nTileNum);
+	for (UINT8* pDest = NeoTextROMBIOS + (nOffset & ~0x1F); pData < pEnd; pData += 32, pDest += 32) {
+		NeoTextDecodeTile(pData, pDest);
+	}
+
+//	if (NeoTextTileAttribBIOS) {
+//		NeoUpdateTextAttribBIOS(0, nSize);
+//	}	
+}
+
+void NeoDecodeText(INT32 nOffset, const INT32 nSize, UINT8* pData, UINT8* pDest)
+{
+	UINT8* pEnd = pData + nSize;
+
+	for (pData += (nOffset & ~0x1F); pData < pEnd; pData += 32, pDest += 32) {
+		NeoTextDecodeTile(pData, pDest);
+	}
+}
+
+void NeoUpdateText(INT32 nOffset, const INT32 nSize, UINT8* pData, UINT8* pDest)
+{
+	NeoDecodeText(nOffset, nSize, pData, pDest);
+	if (NeoTextTileAttribActive) {
+		NeoUpdateTextAttrib((nOffset & ~0x1F), nSize);
+	}	
+}
+
+void NeoSetTextSlot(INT32 nSlot)
+{
+	NeoTextROMCurrent       = NeoTextROM[nSlot];
+	NeoTextTileAttribActive = NeoTextTileAttrib[nSlot];
+}
+
+INT32 NeoInitText(INT32 nSlot)
+{
+	if (nSlot < 0) {
+		NeoTextTileAttribBIOS    = (INT8*)BurnMalloc(0x1000);
+		for (INT32 i = 0; i < 0x1000; i++) {
+			NeoTextTileAttribBIOS[i] = 1;
+		}
+		NeoUpdateTextAttribBIOS(0, 0x020000);
+
+		return 0;
+	}
+		
+	INT32 nTileNum = nNeoTextROMSize[nSlot] >> 5;
+
+//	NeoExitText(nSlot);
+
+	NeoTextTileAttrib[nSlot] = (INT8*)BurnMalloc((nTileNum < 0x1000) ? 0x1000 : nTileNum);
 
 	if (nNeoScreenWidth == 304) {
 		nMinX = 1;
@@ -195,39 +295,31 @@ int NeoInitText()
 		nMaxX = 40;
 	}
 
-	for (int i = 0; i < nTileNum; i++) {
-		pTile = NeoTextROM + (i << 5);
-		bool bTransparent = true;
-		for (int j = 0; j < 32; j++) {
-			if (pTile[j]) {
-				bTransparent = false;
-				break;
-			}
-		}
+	// Set up tile attributes
 
-		if (bTransparent) {
-			NeoTextTileAttrib[i] = 1;
-		} else {
-			NeoTextTileAttrib[i] = 0;
-		}
+	NeoTextROMCurrent       = NeoTextROM[nSlot];
+	NeoTextTileAttribActive = NeoTextTileAttrib[nSlot];
+	for (INT32 i = 0; i < ((nTileNum < 0x1000) ? 0x1000 : nTileNum); i++) {
+		NeoTextTileAttribActive[i] = 1;
 	}
-	for (int i = nTileNum; i < 0x2000; i++) {
-		NeoTextTileAttrib[i] = 1;
-	}
+	NeoUpdateTextAttrib(0, nNeoTextROMSize[nSlot]);
 
-	nBankswitch = 0;
-	if (nNeoTextROMSize > 0x040000) {
+	// Set up tile bankswitching
+
+	nBankswitch[nSlot] = 0;
+	if (nNeoTextROMSize[nSlot] > 0x040000) {
+//		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_CMC50) {
 		if (BurnDrvGetHardwareCode() & HARDWARE_SNK_ALTERNATE_TEXT) {
-			nBankswitch = 2;
+			nBankswitch[nSlot] = 2;
 
 			// Precompute lookup-tables
-			for (int x = nMinX; x < nMaxX; x++) {
+			for (INT32 x = nMinX; x < nMaxX; x++) {
 				nBankLookupAddress[x] = (x / 6) << 5;
 				nBankLookupShift[x] = (5 - (x % 6)) << 1;
 			}
 
 		} else {
-			nBankswitch = 1;
+			nBankswitch[nSlot] = 1;
 		}
 	}
 

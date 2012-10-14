@@ -93,8 +93,10 @@ static int InpCheatInit()
 
 static int InpCheatExit()
 {
-	free(nPrevCheatSettings);
-	nPrevCheatSettings = NULL;
+	if (nPrevCheatSettings) {
+		free(nPrevCheatSettings);
+		nPrevCheatSettings = NULL;
+	}
 
 	hInpCheatList = NULL;
 	hInpCheatDlg = NULL;

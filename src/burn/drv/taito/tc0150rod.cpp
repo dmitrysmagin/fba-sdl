@@ -3,14 +3,14 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *TC0150RODRom = NULL;
-unsigned char *TC0150RODRam = NULL;
-static int TC0150RODFlipScreenX;
+UINT8 *TC0150RODRom = NULL;
+UINT8 *TC0150RODRam = NULL;
+static INT32 TC0150RODFlipScreenX;
 
-static void DrawScanLine(int y, const UINT16 *src, int Transparent, int /*Pri*/)
+static void DrawScanLine(INT32 y, const UINT16 *src, INT32 Transparent, INT32 /*Pri*/)
 {
-	unsigned short* pPixel;
-	int Length;
+	UINT16* pPixel;
+	INT32 Length;
 	
 	if (!TC0150RODFlipScreenX) {
 		pPixel = pTransDraw + (y * nScreenWidth);
@@ -51,9 +51,9 @@ static void DrawScanLine(int y, const UINT16 *src, int Transparent, int /*Pri*/)
 	}
 }
 
-void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriority, int HighPriority)
+void TC0150RODDraw(INT32 yOffs, INT32 pOffs, INT32 Type, INT32 RoadTrans, INT32 LowPriority, INT32 HighPriority)
 {
-	int xOffs = 0xa7;
+	INT32 xOffs = 0xa7;
 	yOffs += 16;
 	
 	UINT16* RoadRam = (UINT16*)TC0150RODRam;
@@ -71,19 +71,19 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 	UINT16 RoadBClipL, RoadBClipR, RoadBBodyCtrl;;
 	UINT16 Pri, PixPri;
 	UINT8 Priorities[6];
-	int xIndex, RoadRamIndex, RoadRam2Index, i;
-	int xOffset, PalOffs, PalLOffs, PalROffs;
-	int RoadGfxTileNum, ColBank, RoadCentre;
-	int RoadCtrl = RoadRam[0xfff];
-	int LeftEdge, RightEdge, Begin, End, RightOver, LeftOver;
-	int LineNeedsDrawing, DrawTopRoadLine, BackgroundOnly;
+	INT32 xIndex, RoadRamIndex, RoadRam2Index, i;
+	INT32 xOffset, PalOffs, PalLOffs, PalROffs;
+	INT32 RoadGfxTileNum, ColBank, RoadCentre;
+	INT32 RoadCtrl = BURN_ENDIAN_SWAP_INT16(RoadRam[0xfff]);
+	INT32 LeftEdge, RightEdge, Begin, End, RightOver, LeftOver;
+	INT32 LineNeedsDrawing, DrawTopRoadLine, BackgroundOnly;
 
-	int y = 0;
+	INT32 y = 0;
 
-	int RoadAAddress = yOffs * 4 + ((RoadCtrl & 0x0300) << 2);
-	int RoadBAddress = yOffs * 4 + ((RoadCtrl & 0x0c00) << 0);
+	INT32 RoadAAddress = yOffs * 4 + ((RoadCtrl & 0x0300) << 2);
+	INT32 RoadBAddress = yOffs * 4 + ((RoadCtrl & 0x0c00) << 0);
 	
-	int PrioritySwitchLine = (RoadCtrl & 0x00ff) - yOffs;
+	INT32 PrioritySwitchLine = (RoadCtrl & 0x00ff) - yOffs;
 
 	do {
 		LineNeedsDrawing = 0;
@@ -105,12 +105,12 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 		Priorities[4] = 3;
 		Priorities[5] = 1;
 		
-		RoadAClipR = RoadRam[RoadRamIndex + 0];
-		RoadAClipL = RoadRam[RoadRamIndex + 1];
-		RoadABodyCtrl = RoadRam[RoadRamIndex + 2];
-		RoadBClipR = RoadRam[RoadRam2Index + 0];
-		RoadBClipL = RoadRam[RoadRam2Index + 1];
-		RoadBBodyCtrl = RoadRam[RoadRam2Index + 2];
+		RoadAClipR = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRamIndex + 0]);
+		RoadAClipL = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRamIndex + 1]);
+		RoadABodyCtrl = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRamIndex + 2]);
+		RoadBClipR = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRam2Index + 0]);
+		RoadBClipL = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRam2Index + 1]);
+		RoadBBodyCtrl = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRam2Index + 2]);
 		
 		if (RoadABodyCtrl & 0x2000) Priorities[2] += 2;
 		if (RoadBBodyCtrl & 0x2000) Priorities[2] += 1;
@@ -127,8 +127,8 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 		
 		xOffset  = RoadABodyCtrl & 0x7ff;
 		PalOffs  = (RoadABodyCtrl & 0x1800) >> 11;
-		ColBank  = (RoadRam[RoadRamIndex + 3] & 0xf000) >> 10;
-		RoadGfxTileNum = RoadRam[RoadRamIndex + 3] & 0x3ff;
+		ColBank  = (BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRamIndex + 3]) & 0xf000) >> 10;
+		RoadGfxTileNum = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRamIndex + 3]) & 0x3ff;
 		RightOver = 0;
 		LeftOver = 0;
 
@@ -166,7 +166,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 		if ((LineNeedsDrawing) && (Begin < End)) {
 			for (i = Begin; i < End; i++) {
 				if (RoadGfxTileNum) {
-					GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+					GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 					Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 					if ((Pixel) || !(RoadTrans)) {
@@ -201,7 +201,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 
 				if (LineNeedsDrawing) {
 					for (i = LeftEdge; i >= 0; i--)	{
-						GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+						GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 						Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 						PixPri = (Pixel == 0) ? (0) : (Pri);
@@ -231,7 +231,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 
 			if (LineNeedsDrawing) {
 				for (i = RightEdge; i < nScreenWidth; i++) {
-					GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+					GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 					Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 					PixPri = (Pixel == 0) ? (0) : (Pri);
@@ -254,8 +254,8 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 		PalLOffs = (RoadBClipL & 0x1000) >> 11;
 		xOffset  =  RoadBBodyCtrl & 0x7ff;
 		PalOffs  = (RoadBBodyCtrl & 0x1800) >> 11;
-		ColBank  = (RoadRam[RoadRam2Index + 3] & 0xf000) >> 10;
-		RoadGfxTileNum = RoadRam[RoadRam2Index + 3] & 0x3ff;
+		ColBank  = (BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRam2Index + 3]) & 0xf000) >> 10;
+		RoadGfxTileNum = BURN_ENDIAN_SWAP_INT16(RoadRam[RoadRam2Index + 3]) & 0x3ff;
 		RightOver = 0;
 		LeftOver = 0;
 
@@ -303,7 +303,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 
 			if (DrawTopRoadLine && RoadGfxTileNum && (Begin < End)) {
 				for (i = Begin; i < End; i++) {
-					GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+					GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 					Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 					if ((Pixel) || !(RoadTrans)) {
@@ -337,7 +337,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 
 				if (LineNeedsDrawing) {
 					for (i = LeftEdge; i >= 0; i--)	{
-						GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+						GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 						Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 						PixPri = (Pixel == 0) ? (0) : (Pri);
@@ -367,7 +367,7 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 
 			if (DrawTopRoadLine) {
 				for (i = RightEdge; i < nScreenWidth; i++) {
-					GfxWord = RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)];
+					GfxWord = BURN_ENDIAN_SWAP_INT16(RoadGfx[(RoadGfxTileNum << 8) + (xIndex >> 3)]);
 					Pixel = ((GfxWord >> (7 - (xIndex % 8) + 8)) & 1) * 2 + ((GfxWord >> (7 - (xIndex % 8))) & 1);
 
 					PixPri = (Pixel == 0) ? (0) : (Pri);
@@ -420,11 +420,11 @@ void TC0150RODReset()
 
 }
 
-void TC0150RODInit(int nRomSize, int xFlip)
+void TC0150RODInit(INT32 nRomSize, INT32 xFlip)
 {
-	TC0150RODRom = (unsigned char*)malloc(nRomSize);
+	TC0150RODRom = (UINT8*)BurnMalloc(nRomSize);
 	memset(TC0150RODRom, 0, nRomSize);
-	TC0150RODRam = (unsigned char*)malloc(0x2000);
+	TC0150RODRam = (UINT8*)BurnMalloc(0x2000);
 	memset(TC0150RODRam, 0, 0x2000);
 	
 	TC0150RODFlipScreenX = xFlip;
@@ -434,16 +434,13 @@ void TC0150RODInit(int nRomSize, int xFlip)
 
 void TC0150RODExit()
 {
-	free(TC0150RODRom);
-	TC0150RODRom = NULL;
-	
-	free(TC0150RODRam);
-	TC0150RODRam = NULL;
+	BurnFree(TC0150RODRom);
+	BurnFree(TC0150RODRam);
 	
 	TC0150RODFlipScreenX = 0;
 }
 
-void TC0150RODScan(int nAction)
+void TC0150RODScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

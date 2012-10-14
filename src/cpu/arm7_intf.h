@@ -1,15 +1,15 @@
 
-// use these in arm.cpp
-void Arm7_program_write_byte_32le(unsigned int addr, unsigned char data);
-void Arm7_program_write_word_32le(unsigned int addr, unsigned short data);
-void Arm7_program_write_dword_32le(unsigned int addr, unsigned int data);
-unsigned char  Arm7_program_read_byte_32le(unsigned int addr);
-unsigned short Arm7_program_read_word_32le(unsigned int addr);
-unsigned int   Arm7_program_read_dword_32le(unsigned int addr);
-unsigned short Arm7_program_opcode_word_32le(unsigned int addr);
-unsigned int   Arm7_program_opcode_dword_32le(unsigned int addr);
+// use these in arm7.cpp
+void Arm7_program_write_byte_32le(UINT32 addr, UINT8 data);
+void Arm7_program_write_word_32le(UINT32 addr, UINT16 data);
+void Arm7_program_write_dword_32le(UINT32 addr, UINT32 data);
+UINT8  Arm7_program_read_byte_32le(UINT32 addr);
+UINT16 Arm7_program_read_word_32le(UINT32 addr);
+UINT32   Arm7_program_read_dword_32le(UINT32 addr);
+UINT16 Arm7_program_opcode_word_32le(UINT32 addr);
+UINT32   Arm7_program_opcode_dword_32le(UINT32 addr);
 
-void arm7_set_irq_line(int irqline, int state);
+void arm7_set_irq_line(INT32 irqline, INT32 state);
 
 // use these everywhere else
 #define ARM7_READ		1
@@ -19,26 +19,26 @@ void arm7_set_irq_line(int irqline, int state);
 #define ARM7_ROM		(ARM7_READ | ARM7_FETCH)
 #define ARM7_RAM		(ARM7_READ | ARM7_FETCH | ARM7_WRITE)
 
-void Arm7MapMemory(unsigned char *src, int start, int finish, int type);
+void Arm7MapMemory(UINT8 *src, INT32 start, INT32 finish, INT32 type);
 
-void Arm7SetWriteByteHandler(void (*write)(unsigned int, unsigned char));
-void Arm7SetWriteWordHandler(void (*write)(unsigned int, unsigned short));
-void Arm7SetWriteLongHandler(void (*write)(unsigned int, unsigned int));
-void Arm7SetReadByteHandler(unsigned char (*read)(unsigned int));
-void Arm7SetReadWordHandler(unsigned short (*read)(unsigned int));
-void Arm7SetReadLongHandler(unsigned int (*read)(unsigned int));
+void Arm7SetWriteByteHandler(void (*write)(UINT32, UINT8));
+void Arm7SetWriteWordHandler(void (*write)(UINT32, UINT16));
+void Arm7SetWriteLongHandler(void (*write)(UINT32, UINT32));
+void Arm7SetReadByteHandler(UINT8 (*read)(UINT32));
+void Arm7SetReadWordHandler(UINT16 (*read)(UINT32));
+void Arm7SetReadLongHandler(UINT32 (*read)(UINT32));
 
-int Arm7Scan(int nAction);
+INT32 Arm7Scan(INT32 nAction);
 
 void Arm7RunEnd();
-void Arm7BurnCycles(int cycles);
-int Arm7TotalCycles();
+void Arm7BurnCycles(INT32 cycles);
+INT32 Arm7TotalCycles();
 void Arm7NewFrame();
 
-void Arm7Init(int);
-void Arm7Open(int );
+void Arm7Init(INT32);
+void Arm7Open(INT32 );
 void Arm7Reset();
-int Arm7Run(int cycles);
+INT32 Arm7Run(INT32 cycles);
 
 // defined in arm7core.h
 #define ARM7_IRQ_LINE		0
@@ -48,13 +48,13 @@ int Arm7Run(int cycles);
 #define ARM7_ASSERT_LINE	1
 #define ARM7_HOLD_LINE		2
 
-void Arm7SetIRQLine(int line, int state);
+void Arm7SetIRQLine(INT32 line, INT32 state);
 
 void Arm7Exit();
 void Arm7Close();
 
 // speed hack stuff
-void Arm7SetIdleLoopAddress(unsigned int address);
+void Arm7SetIdleLoopAddress(UINT32 address);
 
 // for cheat handling
-void Arm7_write_rom_byte(unsigned int addr, unsigned char data);
+void Arm7_write_rom_byte(UINT32 addr, UINT8 data);

@@ -4,7 +4,7 @@
 Input defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo System18InputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System16InputPort0 + 0, "p1 coin"   },
@@ -898,6 +898,36 @@ static struct BurnRomInfo AstormjRomDesc[] = {
 STD_ROM_PICK(Astormj)
 STD_ROM_FN(Astormj)
 
+static struct BurnRomInfo AstormjaRomDesc[] = {
+	{ "epr-13085.a6",   0x40000, 0x15f74e2d, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-13084.a5",   0x40000, 0x9687b38f, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "epr-13073.bin",  0x40000, 0xdf5d0a61, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-13074.bin",  0x40000, 0x787afab8, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-13075.bin",  0x40000, 0x4e01b477, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "mpr-13082.bin",  0x40000, 0xa782b704, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-13089.bin",  0x40000, 0x2a4227f0, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-13081.bin",  0x40000, 0xeb510228, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-13088.bin",  0x40000, 0x3b6b4c55, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-13080.bin",  0x40000, 0xe668eefb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "mpr-13087.bin",  0x40000, 0x2293427d, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-13079.bin",  0x40000, 0xde9221ed, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-13086.bin",  0x40000, 0x8c9a71c4, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr-13083b.bin", 0x20000, 0x169b4b5f, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "epr-13076.bin",  0x40000, 0x94e6c76e, SYS16_ROM_RF5C68DATA | BRF_SND },
+	{ "epr-13077.bin",  0x40000, 0xe2ec0d8d, SYS16_ROM_RF5C68DATA | BRF_SND },
+	{ "epr-13078.bin",  0x40000, 0x15684dc5, SYS16_ROM_RF5C68DATA | BRF_SND },
+	
+	{ "317-0146.key",   0x02000, 0xe94991c5, SYS16_ROM_KEY | BRF_ESS | BRF_PRG},
+};
+
+
+STD_ROM_PICK(Astormja)
+STD_ROM_FN(Astormja)
+
 static struct BurnRomInfo AstormuRomDesc[] = {
 	{ "epr-13095.a6",   0x40000, 0x55d40742, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-13094.a5",   0x40000, 0x92b305f9, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -1564,7 +1594,7 @@ Memory Handlers
 
 static UINT8 misc_io_data[0x10];
 
-static unsigned char io_chip_r(unsigned int offset)
+static UINT8 io_chip_r(UINT32 offset)
 {
 	switch (offset) {
 		case 0x03:
@@ -1633,7 +1663,7 @@ static unsigned char io_chip_r(unsigned int offset)
 	return 0xff;
 }
 
-static void io_chip_w(unsigned int offset, unsigned short d)
+static void io_chip_w(UINT32 offset, UINT16 d)
 {
 	UINT8 old;
 	
@@ -1681,11 +1711,11 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 	}
 }
 
-static void System18GfxBankWrite(unsigned int offset, unsigned short d)
+static void System18GfxBankWrite(UINT32 offset, UINT16 d)
 {
 	// Tile Banking
 	if (offset < 8) {
-		int MaxBanks = System16NumTiles / 1024;
+		INT32 MaxBanks = System16NumTiles / 1024;
 		if (d >= MaxBanks) d %= MaxBanks;
 		if (System16TileBanks[offset] != d) {
 			System16TileBanks[offset] = d;
@@ -1696,14 +1726,14 @@ static void System18GfxBankWrite(unsigned int offset, unsigned short d)
 		}
 	} else {
 		// Sprite Banking
-		int MaxBanks = System16SpriteRomSize / 0x40000;
+		INT32 MaxBanks = System16SpriteRomSize / 0x40000;
 		if (d >= MaxBanks) d = 255;
 		System16SpriteBanks[(offset - 8) * 2 + 0] = d * 2 + 0;
 		System16SpriteBanks[(offset - 8) * 2 + 1] = d * 2 + 1;
 	}
 }
 
-unsigned short __fastcall System18ReadWord(unsigned int a)
+UINT16 __fastcall System18ReadWord(UINT32 a)
 {
 	if (a >= 0xc00000 && a <= 0xc0000f) {
 		return GenesisVDPRead((a - 0xc00000) >> 1);
@@ -1716,7 +1746,7 @@ unsigned short __fastcall System18ReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall System18ReadByte(unsigned int a)
+UINT8 __fastcall System18ReadByte(UINT32 a)
 {
 	if (a >= 0xa40000 && a <= 0xa4001f) {
 		return io_chip_r((a - 0xa40000) >> 1);
@@ -1733,7 +1763,7 @@ unsigned char __fastcall System18ReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall System18WriteWord(unsigned int a, unsigned short d)
+void __fastcall System18WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileWordWrite(a - 0x400000, d);
@@ -1757,7 +1787,7 @@ void __fastcall System18WriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall System18WriteByte(unsigned int a, unsigned char d)
+void __fastcall System18WriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -1805,7 +1835,7 @@ void __fastcall System18WriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall Astorm3ReadByte(unsigned int a)
+UINT8 __fastcall Astorm3ReadByte(UINT32 a)
 {
 	if (a >= 0xa00000 && a <= 0xa0001f) {
 		return io_chip_r((a - 0xa00000) >> 1);
@@ -1818,7 +1848,7 @@ unsigned char __fastcall Astorm3ReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall Astorm3WriteByte(unsigned int a, unsigned char d)
+void __fastcall Astorm3WriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0xa00000 && a <= 0xa01fff) {
 		io_chip_w((a - 0xa00000) >> 1, d);
@@ -1837,7 +1867,7 @@ void __fastcall Astorm3WriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall DdcrewuReadByte(unsigned int a)
+UINT8 __fastcall DdcrewuReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xe43021: {
@@ -1858,7 +1888,7 @@ unsigned char __fastcall DdcrewuReadByte(unsigned int a)
 
 UINT8 LghostValue;
 
-unsigned char __fastcall LghostReadByte(unsigned int a)
+UINT8 __fastcall LghostReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xe43011:
@@ -1874,7 +1904,7 @@ unsigned char __fastcall LghostReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall LghostWriteByte(unsigned int a, unsigned char d)
+void __fastcall LghostWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe43011: {
@@ -1904,7 +1934,7 @@ void __fastcall LghostWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MwalkblReadByte(unsigned int a)
+UINT8 __fastcall MwalkblReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc40001: {
@@ -1935,7 +1965,7 @@ unsigned char __fastcall MwalkblReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall MwalkblWriteByte(unsigned int a, unsigned char d)
+void __fastcall MwalkblWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc40007: {
@@ -1977,7 +2007,7 @@ void __fastcall MwalkblWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-void __fastcall MwalkblWriteWord(unsigned int a, unsigned short d)
+void __fastcall MwalkblWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc46000: {
@@ -2002,7 +2032,7 @@ void __fastcall MwalkblWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-unsigned char __fastcall ShdancblReadByte(unsigned int a)
+UINT8 __fastcall ShdancblReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc40001: {
@@ -2037,7 +2067,7 @@ unsigned char __fastcall ShdancblReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall ShdancblWriteByte(unsigned int a, unsigned char d)
+void __fastcall ShdancblWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc40007: {
@@ -2080,15 +2110,15 @@ void __fastcall ShdancblWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-static short WwallyTrack1X = 0;
-static short WwallyTrack1Y = 0;
-static short WwallyTrack2X = 0;
-static short WwallyTrack2Y = 0;
+static INT16 WwallyTrack1X = 0;
+static INT16 WwallyTrack1Y = 0;
+static INT16 WwallyTrack2X = 0;
+static INT16 WwallyTrack2Y = 0;
 
 static UINT8 WwallyLastX[2];
 static UINT8 WwallyLastY[2];
 
-unsigned char __fastcall WwallyReadByte(unsigned int a)
+UINT8 __fastcall WwallyReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xa43001: {
@@ -2112,7 +2142,7 @@ unsigned char __fastcall WwallyReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall WwallyWriteWord(unsigned int a, unsigned short /*d*/)
+void __fastcall WwallyWriteWord(UINT32 a, UINT16 /*d*/)
 {
 	switch (a) {
 		case 0xa43000: {
@@ -2156,41 +2186,41 @@ void WwallyMakeAnalogInputs()
 	if (WwallyTrack2Y < 0) WwallyTrack2Y = 0xfc;
 }
 
-static int System18BankRom40000()
+static INT32 System18BankRom40000()
 {
-	int nRet = 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0x280000);
+	INT32 nRet = 1;
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x280000);
 	
 	if (pTemp) {
 		memcpy(pTemp, System16Rom, 0x280000);
 		memset(System16Rom, 0, 0x280000);
 		memcpy(System16Rom + 0x000000, pTemp + 0x00000, 0x80000);
 		memcpy(System16Rom + 0x200000, pTemp + 0x80000, 0x80000);
-		free(pTemp);
+		BurnFree(pTemp);
 		nRet = 0;
 	}
 		
 	return nRet;
 }
 
-static int System18BankRom80000()
+static INT32 System18BankRom80000()
 {
-	int nRet = 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0x300000);
+	INT32 nRet = 1;
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x300000);
 	
 	if (pTemp) {
 		memcpy(pTemp, System16Rom, 0x300000);
 		memset(System16Rom, 0, 0x300000);
 		memcpy(System16Rom + 0x000000, pTemp + 0x000000, 0x100000);
 		memcpy(System16Rom + 0x200000, pTemp + 0x100000, 0x100000);
-		free(pTemp);
+		BurnFree(pTemp);
 		nRet = 0;
 	}
 		
 	return nRet;
 }
 
-static int System18Bank40000Init()
+static INT32 System18Bank40000Init()
 {
 	System16RomSize = 0x180000;
 	
@@ -2198,14 +2228,14 @@ static int System18Bank40000Init()
 	
 	System16SpriteRomSize = 0x800000 - 0x400000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
 		SekMapMemory(System16Rom + 0x200000, 0x200000, 0x27ffff, SM_READ);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x400000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x400000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x400000);
 			memset(System16Sprites, 0, System16SpriteRomSize);
@@ -2216,19 +2246,20 @@ static int System18Bank40000Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
+		
 	}
 	
 	return nRet;
 }
 
-static int System18Bank80000Init()
+static INT32 System18Bank80000Init()
 {
 	System16RomSize = 0x100000;
 	
 	System16CustomLoadRomDo = System18BankRom80000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2260,18 +2291,18 @@ void Astorm3Map68K()
 	SekClose();
 }
 
-static int Astorm3Init()
+static INT32 Astorm3Init()
 {
 	System16Map68KDo = Astorm3Map68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 
 	return nRet;
 }
 
-static int DdcrewuInit()
+static INT32 DdcrewuInit()
 {
-	int nRet = System18Bank40000Init();
+	INT32 nRet = System18Bank40000Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2283,11 +2314,11 @@ static int DdcrewuInit()
 	return nRet;
 }
 
-static int LghostInit()
+static INT32 LghostInit()
 {
 	BurnGunInit(3, true);
 	
-	int nRet = System18Bank40000Init();
+	INT32 nRet = System18Bank40000Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2300,11 +2331,11 @@ static int LghostInit()
 	return nRet;
 }
 
-static int MwalkblPatchRom()
+static INT32 MwalkblPatchRom()
 {
-	*((unsigned short*)(System16Rom + 0x070212)) = 0x4e71;
-	*((unsigned short*)(System16Rom + 0x070116)) = 0x4e71;
-	*((unsigned short*)(System16Rom + 0x00314a)) = 0x4642;
+	*((UINT16*)(System16Rom + 0x070212)) = 0x4e71;
+	*((UINT16*)(System16Rom + 0x070116)) = 0x4e71;
+	*((UINT16*)(System16Rom + 0x00314a)) = 0x4642;
 	System16Rom[0x00311a] = 0x3f;
 	System16Rom[0x070103] = 0x00;
 	System16Rom[0x070109] = 0x00;
@@ -2336,13 +2367,13 @@ static int MwalkblPatchRom()
 	return 0;
 }
 
-static int MwalkblInit()
+static INT32 MwalkblInit()
 {
 	System16CustomLoadRomDo = MwalkblPatchRom;
 	
 	System16SpriteXOffset = 128;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2357,11 +2388,11 @@ static int MwalkblInit()
 	return nRet;
 }
 
-static int ShdancblInit()
+static INT32 ShdancblInit()
 {
 	System16SpriteXOffset = 112;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2375,11 +2406,11 @@ static int ShdancblInit()
 	return nRet;
 }
 
-static int WwallyInit()
+static INT32 WwallyInit()
 {
 	System16MakeAnalogInputsDo = WwallyMakeAnalogInputs;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -2392,7 +2423,7 @@ static int WwallyInit()
 	return nRet;
 }
 
-static int System18Exit()
+static INT32 System18Exit()
 {
 	memset(misc_io_data, 0, sizeof(misc_io_data));
 	
@@ -2401,7 +2432,7 @@ static int System18Exit()
 	return System16Exit();
 }
 
-static int System18Scan(int nAction,int *pnMin)
+static INT32 System18Scan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -2416,14 +2447,14 @@ static int System18Scan(int nAction,int *pnMin)
 	return System16Scan(nAction, pnMin);;
 }
 
-static int LghostExit()
+static INT32 LghostExit()
 {
 	LghostValue = 0;
 
 	return System18Exit();
 }
 
-static int LghostScan(int nAction,int *pnMin)
+static INT32 LghostScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -2436,7 +2467,7 @@ static int LghostScan(int nAction,int *pnMin)
 	return System18Scan(nAction, pnMin);;
 }
 
-static int WwallyExit()
+static INT32 WwallyExit()
 {
 	WwallyTrack1X = 0;
 	WwallyTrack1Y = 0;
@@ -2449,7 +2480,7 @@ static int WwallyExit()
 	return System18Exit();
 }
 
-static int WwallyScan(int nAction,int *pnMin)
+static INT32 WwallyScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -2495,8 +2526,18 @@ struct BurnDriver BurnDrvAstormj = {
 	"astormj", "astorm", NULL, NULL, "1990",
 	"Alien Storm (set 1, Japan, 2 Players, FD1094 317-0146)\0", NULL, "Sega", "System 18",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 3, HARDWARE_SEGA_SYSTEM18 | HARDWARE_SEGA_FD1094_ENC, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM18 | HARDWARE_SEGA_FD1094_ENC, GBF_PLATFORM, 0,
 	NULL, AstormjRomInfo, AstormjRomName, NULL, NULL, System18InputInfo, Astorm2pDIPInfo,
+	Astorm3Init, System18Exit, System18Frame, NULL, System18Scan,
+	NULL, 0x1800, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvAstormja = {
+	"astormja", "astorm", NULL, NULL, "1990",
+	"Alien Storm (set 5, Japan Rev B, 2 Players, FD1094 317-0146)\0", NULL, "Sega", "System 18",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM18 | HARDWARE_SEGA_FD1094_ENC, GBF_PLATFORM, 0,
+	NULL, AstormjaRomInfo, AstormjaRomName, NULL, NULL, System18InputInfo, Astorm2pDIPInfo,
 	Astorm3Init, System18Exit, System18Frame, NULL, System18Scan,
 	NULL, 0x1800, 320, 224, 4, 3
 };

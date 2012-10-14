@@ -1,9 +1,18 @@
 // Support functions for blitters that use DirectX
 #include "burner.h"
-#include "vid_directx_support.h"
+
+#if !defined BUILD_X64_EXE
+ #include "vid_directx_support.h"
+#endif
 
 #include <InitGuid.h>
 #define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
+
+#if defined BUILD_X64_EXE
+ #include "vid_directx_support.h"
+#endif
+
+#include "ddraw_core.h"
 
 // ---------------------------------------------------------------------------
 // General
@@ -84,7 +93,7 @@ int VidSClipperInit(IDirectDrawSurface7* pSurf)
 
 	IDirectDrawClipper *pClipper = NULL;
 
-	if (SUCCEEDED(DirectDrawCreateClipper(0, &pClipper, NULL))) {
+	if (SUCCEEDED(_DirectDrawCreateClipper(0, &pClipper, NULL))) {
 		if (SUCCEEDED(pClipper->SetHWnd(0, hVidWnd))) {
 			pSurf->SetClipper(pClipper);
 			RELEASE(pClipper);
@@ -110,10 +119,14 @@ void VidSRestoreGamma()
 			pGammaControl->SetGammaRamp(0, pSysGamma);
 		}
 
-		free(pSysGamma);
-		pSysGamma = NULL;
-		free(pFBAGamma);
-		pFBAGamma = NULL;
+		if (pSysGamma) {
+			free(pSysGamma);
+			pSysGamma = NULL;
+		}
+		if (pFBAGamma) {
+			free(pFBAGamma);
+			pFBAGamma = NULL;
+		}
 
 		RELEASE(pGammaControl);
 	}
@@ -705,10 +718,14 @@ void VidSExitChat()
 	}
 
 	for (int i = 0; i < CHAT_SIZE; i++) {
-		free(VidSChatMessage[i].pIDText);
-		VidSChatMessage[i].pIDText = NULL;
-		free(VidSChatMessage[i].pMainText);
-		VidSChatMessage[i].pMainText = NULL;
+		if (VidSChatMessage[i].pIDText) {
+			free(VidSChatMessage[i].pIDText);
+			VidSChatMessage[i].pIDText = NULL;
+		}
+		if (VidSChatMessage[i].pMainText) {
+			free(VidSChatMessage[i].pMainText);
+			VidSChatMessage[i].pMainText = NULL;
+		}		
 	}
 
 	RELEASE(pChatSurf);
@@ -783,7 +800,7 @@ static int VidSInitShortMsg(int nFlags)
 
 	nShortMsgFlags = nFlags;
 
-	ShortMsgFont = CreateFont(30, 0, 0, 0, FW_DEMIBOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_SWISS, _T("Lucida"));
+	ShortMsgFont = CreateFont(24, 0, 0, 0, FW_DEMIBOLD, 0, 0, 0, 0, 0, 0, ANTIALIASED_QUALITY, FF_SWISS, _T("Lucida"));
 	VidSShortMsg.nTimer = 0;
 
 	// create surface to display the text
@@ -793,7 +810,7 @@ static int VidSInitShortMsg(int nFlags)
 
 	ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY;
 
-	ddsd.dwWidth = 192;
+	ddsd.dwWidth = 256;
 	ddsd.dwHeight = 32;
 
 	ddsd.ddckCKSrcBlt.dwColorSpaceLowValue = nKeyColour;
@@ -1078,7 +1095,7 @@ static void VidSDisplayTinyMsg(IDirectDrawSurface7* pSurf, RECT* pRect)
 static void VidSDisplayShortMsg(IDirectDrawSurface7* pSurf, RECT* pRect)
 {
 	if (VidSShortMsg.nTimer) {
-		RECT src = { 0, 0, 192, 32 };
+		RECT src = { 0, 0, 256, 32 };
 		RECT dest = { 0, pRect->top + 4, pRect->right - 8, pRect->top + 36 };
 
 		// Switch off message display when the message has been displayed long enough
@@ -1097,7 +1114,7 @@ static void VidSDisplayShortMsg(IDirectDrawSurface7* pSurf, RECT* pRect)
 			dest.bottom += 10;
 		}
 
-		dest.left = dest.right - 192;
+		dest.left = dest.right - 256;
 		if (dest.left < pRect->left) {
 			src.left = pRect->left - dest.left;
 			dest.left = pRect->left;
@@ -1585,7 +1602,7 @@ int VidSNewShortMsg(const TCHAR* pText, int nRGB, int nDuration, int nPriority)	
 		hFont = (HFONT)SelectObject(hDC, ShortMsgFont);
 		SetTextAlign(hDC, TA_TOP | TA_RIGHT);
 
-		MyTextOut(hDC, 192 - 2, 0, VidSShortMsg.pMsgText, _tcslen(VidSShortMsg.pMsgText), 2, VidSShortMsg.nColour);
+		MyTextOut(hDC, 256 - 2, 0, VidSShortMsg.pMsgText, _tcslen(VidSShortMsg.pMsgText), 2, VidSShortMsg.nColour);
 
 		// Clean up
 		SelectObject(hDC, hFont);
@@ -1614,10 +1631,14 @@ int VidSAddChatMsg(const TCHAR* pID, int nIDRGB, const TCHAR* pMain, int nMainRG
 {
 	if (pID || pMain) {
 		// Scroll the text buffers up one entry
-		free(VidSChatMessage[0].pIDText);
-		VidSChatMessage[0].pIDText = NULL;
-		free(VidSChatMessage[0].pMainText);
-		VidSChatMessage[0].pMainText = NULL;
+		if (VidSChatMessage[0].pIDText) {
+			free(VidSChatMessage[0].pIDText);
+			VidSChatMessage[0].pIDText = NULL;
+		}
+		if (VidSChatMessage[0].pMainText) {
+			free(VidSChatMessage[0].pMainText);
+			VidSChatMessage[0].pMainText = NULL;
+		}
 
 		for (int i = 1; i < CHAT_SIZE; i++) {
 			VidSChatMessage[i - 1].pIDText = VidSChatMessage[i].pIDText;
@@ -1648,10 +1669,14 @@ int VidSAddChatMsg(const TCHAR* pID, int nIDRGB, const TCHAR* pMain, int nMainRG
 	} else {
 		for (int i = 0; i < CHAT_SIZE; i++) {
 			if (VidSChatMessage[i].pIDText || VidSChatMessage[i].pMainText) {
-				free(VidSChatMessage[i].pIDText);
-				VidSChatMessage[i].pIDText = NULL;
-				free(VidSChatMessage[i].pMainText);
-				VidSChatMessage[i].pMainText = NULL;
+				if (VidSChatMessage[i].pIDText) {
+					free(VidSChatMessage[i].pIDText);
+					VidSChatMessage[i].pIDText = NULL;
+				}
+				if (VidSChatMessage[i].pMainText) {
+					free(VidSChatMessage[i].pMainText);
+					VidSChatMessage[i].pMainText = NULL;
+				}
 
 				break;
 			}

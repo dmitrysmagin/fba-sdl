@@ -10,6 +10,7 @@ typedef struct tagRECT {
 typedef const RECT *LPCRECT;
 
 typedef unsigned long DWORD;
+typedef unsigned char BYTE;
 
 #ifndef MAX_PATH
 #define MAX_PATH 511
@@ -103,13 +104,4 @@ extern bool bJukeboxDisplayed;
 #define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
 int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
 
-// image.cpp
-typedef struct tagIMAGE {
-	unsigned int	width;
-	unsigned int	height;
-	unsigned int	rowbytes;
-	unsigned int	imgbytes;
-	unsigned char**	rowptr;
-	unsigned char*	bmpbits;
-	unsigned int	flags;
-} IMAGE;
+#define _tcsstr strstr

@@ -2,39 +2,40 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "konami_intf.h"
 #include "konamiic.h"
 #include "k053260.h"
 
-static unsigned char *AllMem;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
-static unsigned char *DrvKonROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvKonRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
+static UINT8 *DrvKonROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvKonRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *Palette;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static int readzoomroms;
-static unsigned char *nDrvBank;
+static INT32 readzoomroms;
+static UINT8 *nDrvBank;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo RollergInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 5,	"p1 coin"	},
@@ -139,7 +140,7 @@ static struct BurnDIPInfo RollergDIPList[]=
 
 STDDIPINFO(Rollerg)
 
-void rollerg_main_write(unsigned short address, unsigned char data)
+void rollerg_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -185,7 +186,7 @@ void rollerg_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char rollerg_main_read(unsigned short address)
+UINT8 rollerg_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -233,7 +234,7 @@ unsigned char rollerg_main_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall rollerg_sound_write(unsigned short address, unsigned char data)
+void __fastcall rollerg_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -254,7 +255,7 @@ void __fastcall rollerg_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall rollerg_sound_read(unsigned short address)
+UINT8 __fastcall rollerg_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -273,34 +274,34 @@ unsigned char __fastcall rollerg_sound_read(unsigned short address)
 	return 0;
 }
 
-static void rollerg_set_lines(int lines)
+static void rollerg_set_lines(INT32 lines)
 {
 	nDrvBank[0] = lines;
 
-	int offs = 0x10000 + ((lines & 0x07) * 0x4000);
+	INT32 offs = 0x10000 + ((lines & 0x07) * 0x4000);
 
 	konamiMapMemory(DrvKonROM + offs, 0x4000, 0x7fff, KON_ROM); 
 }
 
-static void K053245Callback(int *, int *color, int *priority)
+static void K053245Callback(INT32 *, INT32 *color, INT32 *priority)
 {
 	*priority = *color & 0x10;
 	*color = 16 + (*color & 0x0f);
 }
 
-static void K051316Callback(int *code, int *color, int *flags)
+static void K051316Callback(INT32 *code, INT32 *color, INT32 *flags)
 {
 	*flags =  (*color & 0xc0) >> 6;
 	*code |= ((*color & 0x0f) << 8);
 	*color = ((*color & 0x30) >> 4);
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3579545;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3579545;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -324,9 +325,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvKonROM		= Next; Next += 0x030000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -338,8 +339,8 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x080000;
 
-	Palette			= (unsigned int*)Next; Next += 0x400 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x400 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x400 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x400 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -356,12 +357,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -395,7 +396,7 @@ static int DrvInit()
 	konamiSetlinesCallback(rollerg_set_lines);
 	konamiClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -425,7 +426,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -437,18 +438,17 @@ static int DrvExit()
 	BurnYM3812Exit();
 	K053260Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x800 / 2; i++) {
-		unsigned short d = (p[i] << 8) | (p[i] >> 8);
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x800 / 2; i++) {
+		UINT16 d = (p[i] << 8) | (p[i] >> 8);
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -463,13 +463,13 @@ static void DrvRecalcPal()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
 	}
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x100;
 	}
 
@@ -482,7 +482,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -493,7 +493,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -506,15 +506,15 @@ static int DrvFrame()
 		if ((DrvInputs[1] & 0x60) == 0) DrvInputs[1] |= 0x60;
 	}
 
-	int nInterleave = nBurnSoundLen;
-	int nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	ZetOpen(0);
 	konamiOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext, nCyclesSegment;
 
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
@@ -543,7 +543,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

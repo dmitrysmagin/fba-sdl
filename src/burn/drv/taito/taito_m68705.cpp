@@ -4,24 +4,24 @@
 
 // taito m68705 protection
 
-unsigned char portA_in;
-unsigned char portA_out;
-unsigned char ddrA;
-unsigned char portB_in;
-unsigned char portB_out;
-unsigned char ddrB;
-unsigned char portC_in;
-unsigned char portC_out;
-unsigned char ddrC;
+UINT8 portA_in;
+UINT8 portA_out;
+UINT8 ddrA;
+UINT8 portB_in;
+UINT8 portB_out;
+UINT8 ddrB;
+UINT8 portC_in;
+UINT8 portC_out;
+UINT8 ddrC;
 
-unsigned char from_main;
-unsigned char from_mcu;
-int mcu_sent;
-int main_sent;
+UINT8 from_main;
+UINT8 from_mcu;
+INT32 mcu_sent;
+INT32 main_sent;
 
 static struct m68705_interface *ptr;
 
-void m67805_mcu_write(unsigned short address, unsigned char data)
+void m67805_mcu_write(UINT16 address, UINT8 data)
 {
 	switch (address & 0x7ff)
 	{
@@ -69,7 +69,7 @@ void m67805_mcu_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char m67805_mcu_read(unsigned short address)
+UINT8 m67805_mcu_read(UINT16 address)
 {
 	switch (address & 0x7ff)
 	{
@@ -117,7 +117,7 @@ void m67805_taito_reset()
 	main_sent = 0;
 }
 
-void m67805_taito_init(unsigned char *rom, unsigned char *ram, m68705_interface *interface)
+void m67805_taito_init(UINT8 *rom, UINT8 *ram, m68705_interface *interface)
 {
 	ptr = interface;
 
@@ -132,14 +132,27 @@ void m67805_taito_init(unsigned char *rom, unsigned char *ram, m68705_interface 
 
 void m67805_taito_exit()
 {
-	m67805_taito_reset();
+	portA_in = 0;
+	portA_out = 0;
+	ddrA = 0;
+	portB_in = 0;
+	portB_out = 0;
+	ddrB = 0;
+	portC_in = 0;
+	portC_out = 0;
+	ddrC = 0;
+
+	from_main = 0;
+	from_mcu = 0;
+	mcu_sent = 0;
+	main_sent = 0;
 
 	ptr = NULL;
 
 	m6805Exit();
 }
 
-int m68705_taito_scan(int nAction)
+INT32 m68705_taito_scan(INT32 nAction)
 {
 	if (nAction & ACB_VOLATILE) {		
 		m6805Scan(nAction, 0);
@@ -167,20 +180,20 @@ int m68705_taito_scan(int nAction)
 
 
 
-void standard_taito_mcu_write(int data)
+void standard_taito_mcu_write(INT32 data)
 {
 	from_main = data;
 	main_sent = 1;
 	m68705SetIrqLine(0, 1 /*ASSERT_LINE*/);
 }
 
-int standard_taito_mcu_read()
+INT32 standard_taito_mcu_read()
 {
 	mcu_sent = 0;
 	return from_mcu;
 }
 
-void standard_m68705_portB_out(unsigned char *data)
+void standard_m68705_portB_out(UINT8 *data)
 {
 	if ((ddrB & 0x02) && (~*data & 0x02) && (portB_out & 0x02))
 	{

@@ -1,13 +1,13 @@
 #include "toaplan.h"
 // Shippu Mahou Daisakusen
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
 // Rom information
@@ -167,18 +167,18 @@ static struct BurnDIPInfo kingdmgpRegionDIPList[] = {
 STDDIPINFOEXT(shippumd, shippumd, shippumdRegion)
 STDDIPINFOEXT(kingdmgp, shippumd, kingdmgpRegion)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *Ram02, *RamPal;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x100000;		//
 	RomZ80		= Next; Next += 0x010000;		// Z80 ROM
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
@@ -193,16 +193,16 @@ static int MemIndex()
 	RamPal		= Next; Next += 0x001000;		// palette
 	RamZ80		= Next; Next += 0x004000;		// Z80 RAM
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -230,7 +230,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	if (ToaLoadCode(Rom01, 0, 2)) {
@@ -252,7 +252,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall shippumdZ80Read(unsigned short nAddress)
+UINT8 __fastcall shippumdZ80Read(UINT16 nAddress)
 {
 	if (nAddress == 0xE001) {
 		return BurnYM2151ReadStatus();
@@ -263,7 +263,7 @@ unsigned char __fastcall shippumdZ80Read(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall shippumdZ80Write(unsigned short nAddress, unsigned char nValue)
+void __fastcall shippumdZ80Write(UINT16 nAddress, UINT8 nValue)
 {
 	switch (nAddress) {
 		case 0xE000:
@@ -278,10 +278,11 @@ void __fastcall shippumdZ80Write(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int DrvZ80Init()
+static INT32 DrvZ80Init()
 {
 	// Init the Z80
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 
 	ZetSetReadHandler(shippumdZ80Read);
 	ZetSetWriteHandler(shippumdZ80Write);
@@ -298,11 +299,12 @@ static int DrvZ80Init()
 	ZetMemCallback(0xE000, 0xE0FF, 1);			// Write
 
 	ZetMemEnd();
+	ZetClose();
 
 	return 0;
 }
 
-unsigned char __fastcall shippumdReadByte(unsigned int sekAddress)
+UINT8 __fastcall shippumdReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x21C021:								// Player 1 inputs
@@ -332,7 +334,7 @@ unsigned char __fastcall shippumdReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall shippumdReadWord(unsigned int sekAddress)
+UINT16 __fastcall shippumdReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -371,11 +373,11 @@ unsigned short __fastcall shippumdReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall shippumdWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall shippumdWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x21C01D: {
-			int nBankOffset;
+			INT32 nBankOffset;
 			if (byteValue & 0x10) {
 				nBankOffset = 0x40000;
 			} else {
@@ -402,12 +404,12 @@ void __fastcall shippumdWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall shippumdWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall shippumdWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
 		case 0x21C01C: {
-			int nBankOffset;
+			INT32 nBankOffset;
 			if (wordValue & 0x10) {
 				nBankOffset = 0x40000;
 			} else {
@@ -451,13 +453,15 @@ void __fastcall shippumdWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
 	SekClose();
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	MSM6295Reset(0);
 	BurnYM2151Reset();
@@ -465,9 +469,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -478,8 +482,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -534,7 +538,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM2151Exit();
@@ -546,14 +550,12 @@ static int DrvExit()
 	ToaZExit();				// Z80 exit
 	SekExit();				// Deallocate 68000s
 
-	// Free memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -568,14 +570,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -585,7 +587,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -595,21 +597,23 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = TOA_Z80_SPEED / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
+	
+	SekOpen(0);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
-	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	ZetOpen(0);
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -645,8 +649,8 @@ static int DrvFrame()
 		{
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
@@ -654,19 +658,20 @@ static int DrvFrame()
 		}
 	}
 
-	SekClose();
-
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 			}
 		}
 	}
+	
+	SekClose();
+	ZetClose();
 
 	if (pBurnDraw) {
 		DrvDraw();														// Draw screen if needed
@@ -677,7 +682,7 @@ static int DrvFrame()
 
 struct BurnDriver BurnDrvShippuMD = {
 	"shippumd", "kingdmgp", NULL, NULL, "1994",
-	"Shippu Mahou Daisakusen - kingdom grandprix (Japan)\0", NULL, "Raizing / 8ing", "Toaplan GP9001 based",
+	"Shippu Mahou Daisakusen - kingdom grandprix\0", NULL, "Raizing / 8ing", "Toaplan GP9001 based",
 	L"\u75BE\u98A8\u9B54\u6CD5\u5927\u4F5C\u6226 - kingdom grandprix (Japan)\0Shippu Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
 	NULL, shippumdRomInfo, shippumdRomName, NULL, NULL, shippumdInputInfo, shippumdDIPInfo,

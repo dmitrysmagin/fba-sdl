@@ -6,19 +6,19 @@
 
 static const eeprom_interface *intf;
 
-static int serial_count;
-static unsigned char serial_buffer[SERIAL_BUFFER_LENGTH];
-static unsigned char eeprom_data[MEMORY_SIZE];
-static int eeprom_data_bits;
-static int eeprom_read_address;
-static int eeprom_clock_count;
-static int latch, reset_line, clock_line, sending;
-static int locked;
-static int reset_delay;
+static INT32 serial_count;
+static UINT8 serial_buffer[SERIAL_BUFFER_LENGTH];
+static UINT8 eeprom_data[MEMORY_SIZE];
+static INT32 eeprom_data_bits;
+static INT32 eeprom_read_address;
+static INT32 eeprom_clock_count;
+static INT32 latch, reset_line, clock_line, sending;
+static INT32 locked;
+static INT32 reset_delay;
 
-static int neeprom_available = 0;
+static INT32 neeprom_available = 0;
 
-static int eeprom_command_match(const char *buf, const char *cmd, int len)
+static INT32 eeprom_command_match(const char *buf, const char *cmd, INT32 len)
 {
 	if ( cmd == 0 )	return 0;
 	if ( len == 0 )	return 0;
@@ -59,13 +59,19 @@ static int eeprom_command_match(const char *buf, const char *cmd, int len)
 	return (*cmd==0);
 }
 
-int EEPROMAvailable()
+INT32 EEPROMAvailable()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMAvailable called without init\n"));
+#endif
+
 	return neeprom_available;
 }
 
 void EEPROMInit(const eeprom_interface *interface)
 {
+	DebugDev_EEPROMInitted = 1;
+	
 	intf = interface;
 
 	if ((1 << intf->address_bits) * intf->data_bits / 8 > MEMORY_SIZE)
@@ -84,11 +90,11 @@ void EEPROMInit(const eeprom_interface *interface)
 	else locked = 0;
 
 	char output[128];
-	sprintf (output, "config\\games\\%s.nv", BurnDrvGetTextA(DRV_NAME));
+	sprintf (output, "config/games/%s.nv", BurnDrvGetTextA(DRV_NAME));
 
 	neeprom_available = 0;
 
-	int len = ((1 << intf->address_bits) * (intf->data_bits >> 3)) & (MEMORY_SIZE-1);
+	INT32 len = ((1 << intf->address_bits) * (intf->data_bits >> 3)) & (MEMORY_SIZE-1);
 
 	FILE *fz = fopen(output, "rb");
 	if (fz != NULL) {
@@ -100,19 +106,25 @@ void EEPROMInit(const eeprom_interface *interface)
 
 void EEPROMExit()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMExit called without init\n"));
+#endif
+
 	char output[128];
-	sprintf (output, "config\\games\\%s.nv", BurnDrvGetTextA(DRV_NAME));
+	sprintf (output, "config/games/%s.nv", BurnDrvGetTextA(DRV_NAME));
 
 	neeprom_available = 0;
 
-	int len = ((1 << intf->address_bits) * (intf->data_bits >> 3)) & (MEMORY_SIZE-1);
+	INT32 len = ((1 << intf->address_bits) * (intf->data_bits >> 3)) & (MEMORY_SIZE-1);
 
 	FILE *fz = fopen(output, "wb");
 	fwrite (eeprom_data, len, 1, fz);
 	fclose (fz);
+	
+	DebugDev_EEPROMInitted = 0;
 }
 
-static void eeprom_write(int bit)
+static void eeprom_write(INT32 bit)
 {
 	if (serial_count >= SERIAL_BUFFER_LENGTH-1)
 	{
@@ -126,7 +138,7 @@ static void eeprom_write(int bit)
 	if ( (serial_count > intf->address_bits) &&
 	      eeprom_command_match((char*)serial_buffer,intf->cmd_read,strlen((char*)serial_buffer)-intf->address_bits) )
 	{
-		int i,address;
+		INT32 i,address;
 
 		address = 0;
 		for (i = serial_count-intf->address_bits;i < serial_count;i++)
@@ -146,7 +158,7 @@ static void eeprom_write(int bit)
 	else if ( (serial_count > intf->address_bits) &&
 	           eeprom_command_match((char*)serial_buffer,intf->cmd_erase,strlen((char*)serial_buffer)-intf->address_bits) )
 	{
-		int i,address;
+		INT32 i,address;
 
 		address = 0;
 		for (i = serial_count-intf->address_bits;i < serial_count;i++)
@@ -171,7 +183,7 @@ static void eeprom_write(int bit)
 	else if ( (serial_count > (intf->address_bits + intf->data_bits)) &&
 	           eeprom_command_match((char*)serial_buffer,intf->cmd_write,strlen((char*)serial_buffer)-(intf->address_bits + intf->data_bits)) )
 	{
-		int i,address,data;
+		INT32 i,address,data;
 
 		address = 0;
 		for (i = serial_count-intf->data_bits-intf->address_bits;i < (serial_count-intf->data_bits);i++)
@@ -213,19 +225,31 @@ static void eeprom_write(int bit)
 
 void EEPROMReset()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMReset called without init\n"));
+#endif
+
 	serial_count = 0;
 	sending = 0;
 	reset_delay = intf->reset_delay;
 }
 
-void EEPROMWriteBit(int bit)
+void EEPROMWriteBit(INT32 bit)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMWriteBit called without init\n"));
+#endif
+
 	latch = bit;
 }
 
-int EEPROMRead()
+INT32 EEPROMRead()
 {
-	int res;
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMRead called without init\n"));
+#endif
+
+	INT32 res;
 
 	if (sending)
 		res = (eeprom_data_bits >> intf->data_bits) & 1;
@@ -244,16 +268,24 @@ int EEPROMRead()
 	return res;
 }
 
-void EEPROMSetCSLine(int state)
+void EEPROMSetCSLine(INT32 state)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMSetCSLine called without init\n"));
+#endif
+
 	reset_line = state;
 
 	if (reset_line != EEPROM_CLEAR_LINE)
 		EEPROMReset();
 }
 
-void EEPROMSetClockLine(int state)
+void EEPROMSetClockLine(INT32 state)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMSetClockLine called without init\n"));
+#endif
+
 	if (state == EEPROM_PULSE_LINE || (clock_line == EEPROM_CLEAR_LINE && state != EEPROM_CLEAR_LINE))
 	{
 		if (reset_line == EEPROM_CLEAR_LINE)
@@ -280,13 +312,21 @@ void EEPROMSetClockLine(int state)
 	clock_line = state;
 }
 
-void EEPROMFill(const unsigned char *data, int offset, int length)
+void EEPROMFill(const UINT8 *data, INT32 offset, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMFill called without init\n"));
+#endif
+
 	memcpy(eeprom_data + offset, data, length);
 }
 
-void EEPROMScan(int nAction, int* pnMin)
+void EEPROMScan(INT32 nAction, INT32* pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMScan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 
 	if (nAction & ACB_DRIVER_DATA) {

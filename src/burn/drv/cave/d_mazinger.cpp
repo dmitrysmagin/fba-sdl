@@ -6,40 +6,40 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01, *RomZ80;
-static unsigned char *Ram01, *RamZ80;
-static unsigned char *MSM6295ROMSrc;
-static unsigned char *DefEEPROM = NULL;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01, *RomZ80;
+static UINT8 *Ram01, *RamZ80;
+static UINT8 *MSM6295ROMSrc;
+static UINT8 *DefEEPROM = NULL;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nIRQPending;
+static INT8 nIRQPending;
 
-static int nCyclesTotal[2];
-static int nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+static INT32 nCyclesDone[2];
 
-static int SoundLatch;
-static int SoundLatchReply[48];
-static int SoundLatchStatus;
+static INT32 SoundLatch;
+static INT32 SoundLatchReply[48];
+static INT32 SoundLatchStatus;
 
-static int SoundLatchReplyIndex;
-static int SoundLatchReplyMax;
+static INT32 SoundLatchReplyIndex;
+static INT32 SoundLatchReplyMax;
 
-static unsigned char DrvZ80Bank;
-static unsigned char DrvOkiBank1;
-static unsigned char DrvOkiBank2;
+static UINT8 DrvZ80Bank;
+static UINT8 DrvOkiBank1;
+static UINT8 DrvOkiBank2;
 
 static struct BurnInputInfo mazingerInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 8,	"p1 coin"},
@@ -77,7 +77,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall mazingerReadByte(unsigned int sekAddress)
+UINT8 __fastcall mazingerReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x800002:
@@ -92,7 +92,7 @@ unsigned char __fastcall mazingerReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall mazingerWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall mazingerWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -107,22 +107,22 @@ void __fastcall mazingerWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-unsigned short __fastcall mazingerReadWord(unsigned int sekAddress)
+UINT16 __fastcall mazingerReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x300000:
 		case 0x300002: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x300004: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x300006: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -148,7 +148,7 @@ unsigned short __fastcall mazingerReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall mazingerWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall mazingerWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress >= 0x30000a && sekAddress <= 0x300066) return;
 	if (sekAddress >= 0x30006a && sekAddress <= 0x30006c) return;
@@ -171,10 +171,8 @@ void __fastcall mazingerWriteWord(unsigned int sekAddress, unsigned short wordVa
 			SoundLatch = wordValue;
 			SoundLatchStatus |= 0x0C;
 
-			ZetOpen(0);
 			ZetNmi();
 			nCyclesDone[1] += ZetRun(0x0400);
-			ZetClose();
 			return;
 		
 		case 0x600000:
@@ -209,17 +207,17 @@ void __fastcall mazingerWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-void __fastcall mazingerWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall mazingerWriteBytePalette(UINT32 sekAddress, UINT8 byteValue)
 {
 	CavePalWriteByte(sekAddress & 0xffff, byteValue);
 }
 
-void __fastcall mazingerWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall mazingerWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	CavePalWriteWord(sekAddress & 0xffff, wordValue);
 }
 
-unsigned char __fastcall mazingerZIn(unsigned short nAddress)
+UINT8 __fastcall mazingerZIn(UINT16 nAddress)
 {
 	nAddress &= 0xFF;
 
@@ -241,7 +239,7 @@ unsigned char __fastcall mazingerZIn(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall mazingerZOut(unsigned short nAddress, unsigned char nValue)
+void __fastcall mazingerZOut(UINT16 nAddress, UINT8 nValue)
 {
 	nAddress &= 0xFF;
 
@@ -293,7 +291,7 @@ void __fastcall mazingerZOut(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-unsigned char __fastcall mazingerZRead(unsigned short a)
+UINT8 __fastcall mazingerZRead(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -304,7 +302,7 @@ unsigned char __fastcall mazingerZRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall mazingerZWrite(unsigned short a, unsigned char d)
+void __fastcall mazingerZWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -313,7 +311,7 @@ void __fastcall mazingerZWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
@@ -333,14 +331,12 @@ static int DrvExit()
 	DrvOkiBank1 = 0;
 	DrvOkiBank2 = 0;
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -378,7 +374,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (CaveRecalcPalette) {
 		CavePalUpdate8Bit(0x4400, 12);
@@ -397,19 +393,18 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
+	INT32 nCyclesVBlank;
 	
-	int nInterleave = 80;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 80;
 
-	int nCyclesSegment;
+	INT32 nCyclesSegment;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -418,7 +413,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 10; i++) {
+	for (INT32 i = 0; i < 10; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -429,17 +424,18 @@ static int DrvFrame()
 	ZetNewFrame();
 	
 	SekOpen(0);
+	ZetOpen(0);
 	
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
-	nCyclesTotal[1] = (int)(4000000 / CAVE_REFRESHRATE);
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[1] = (INT32)(4000000 / CAVE_REFRESHRATE);
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU = 0;
-		int nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU = 0;
+		INT32 nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
 
 		// Run 68000
 
@@ -459,7 +455,7 @@ static int DrvFrame()
 			}
 			
 			CaveSpriteBuffer();
-			unsigned char Temp = nCaveSpriteBank;
+			UINT8 Temp = nCaveSpriteBank;
 			nCaveSpriteBank = nCaveSpriteBankDelay;
 			nCaveSpriteBankDelay = Temp;
 
@@ -476,43 +472,28 @@ static int DrvFrame()
 			nCyclesDone[nCurrentCPU] += SekIdle(nCyclesSegment);
 		}
 		
-		ZetOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
-		ZetClose();
 	}
 	
 	SekClose();
 	
-	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	ZetClose();
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
+	
+	ZetClose();
 
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x100000;		// 68K program
 	RomZ80			= Next; Next += 0x020000;
 	CaveSpriteROM	= Next; Next += 0x800000;
@@ -534,12 +515,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -547,12 +528,12 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap2(unsigned char* pData, int nLen)
+static void NibbleSwap2(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -560,32 +541,32 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	BurnLoadRom(Rom01 + 0x00000, 0, 1);
 	BurnLoadRom(Rom01 + 0x80000, 1, 1);
 	
 	BurnLoadRom(RomZ80, 2, 1);
 
-	unsigned char *pTemp = (unsigned char*)malloc(0x400000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x400000);
 	BurnLoadRom(pTemp + 0x000000, 3, 1);
 	BurnLoadRom(pTemp + 0x200000, 4, 1);
-	for (int i = 0; i < 0x400000; i++) {
+	for (INT32 i = 0; i < 0x400000; i++) {
 		CaveSpriteROM[i ^ 0xdf88] = pTemp[BITSWAP24(i,23,22,21,20,19,9,7,3,15,4,17,14,18,2,16,5,11,8,6,13,1,10,12,0)];
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 	NibbleSwap1(CaveSpriteROM, 0x400000);
 
 	BurnLoadRom(CaveTileROM[0], 5, 1);
 	NibbleSwap2(CaveTileROM[0], 0x200000);
 	
-	pTemp = (unsigned char*)malloc(0x200000);
+	pTemp = (UINT8*)BurnMalloc(0x200000);
 	BurnLoadRom(pTemp, 6, 1);
-	for (int i = 0; i < 0x0100000; i++) {
+	for (INT32 i = 0; i < 0x0100000; i++) {
 		CaveTileROM[1][(i << 1) + 1] = (pTemp[(i << 1) + 0] & 15) | ((pTemp[(i << 1) + 1] & 15) << 4);
 		CaveTileROM[1][(i << 1) + 0] = (pTemp[(i << 1) + 0] >> 4) | (pTemp[(i << 1) + 1] & 240);
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load MSM6295 ADPCM data
 	BurnLoadRom(MSM6295ROMSrc, 7, 1);
@@ -596,7 +577,7 @@ static int LoadRoms()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -648,7 +629,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -657,9 +638,9 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double DrvGetTime()
@@ -667,12 +648,10 @@ static double DrvGetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-static int drvZInit()
+static INT32 drvZInit()
 {
-	ZetInit(1);
-	
+	ZetInit(0);
 	ZetOpen(0);
-
 	ZetSetInHandler(mazingerZIn);
 	ZetSetOutHandler(mazingerZOut);
 	ZetSetReadHandler(mazingerZRead);
@@ -692,27 +671,23 @@ static int drvZInit()
 	ZetMapArea    (0xf800, 0xffFF, 0, RamZ80 + 0x0800);			// Direct Read from RAM
 	ZetMapArea    (0xf800, 0xffFF, 1, RamZ80 + 0x0800);			// Direct Write to RAM
 	ZetMapArea    (0xf800, 0xffFF, 2, RamZ80 + 0x0800);			//
-
 	ZetMemEnd();
-	
 	ZetClose();
 
 	return 0;
 }
 
-static const UINT8 default_eeprom[16] =	{0xED,0xFF,0x00,0x00,0x12,0x31,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -760,6 +735,7 @@ static int DrvInit()
 	CaveTileInitLayer(1, 0x400000, 6, 0x4400);
 	
 	BurnYM2203Init(1, 4000000, &DrvFMIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(4000000);
 	
 	memcpy(MSM6295ROM, MSM6295ROMSrc, 0x40000);
@@ -769,10 +745,6 @@ static int DrvInit()
 	if (!EEPROMAvailable()) EEPROMFill(DefEEPROM,0, 0x80);
 	
 	bDrawScreen = true;
-
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
 
 	DrvDoReset(); // Reset machine
 
@@ -794,7 +766,7 @@ static struct BurnRomInfo mazingerRomDesc[] = {
 
 	{ "bp943a-4.u64", 0x080000, 0x3fc7f29a, BRF_SND },			 //  7 MSM6295 #1 ADPCM data
 	
-	{ "mazinger_world.nv", 0x0080, 0x4f6225c6, BRF_OPT },
+	{ "mazinger_world.nv", 0x0080, 0x4f6225c6, BRF_ESS | BRF_PRG },
 };
 
 
@@ -815,7 +787,7 @@ static struct BurnRomInfo mazingerjRomDesc[] = {
 
 	{ "bp943a-4.u64", 0x080000, 0x3fc7f29a, BRF_SND },			 //  7 MSM6295 #1 ADPCM data
 	
-	{ "mazinger_japan.nv", 0x0080, 0xf84a2a45, BRF_OPT },
+	{ "mazinger_japan.nv", 0x0080, 0xf84a2a45, BRF_ESS | BRF_PRG },
 };
 
 

@@ -2,56 +2,57 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "msm5205.h"
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvJoy6[8];
-static unsigned char DrvJoy11[8];
-static unsigned char DrvReset;
-static unsigned char DrvInputs[11];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvJoy6[8];
+static UINT8 DrvJoy11[8];
+static UINT8 DrvReset;
+static UINT8 DrvInputs[11];
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvTextRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvForeRAM;
-static unsigned char *DrvBackRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvTextRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvForeRAM;
+static UINT8 *DrvBackRAM;
 
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned short *DrvBgScroll;
-static unsigned short *DrvFgScroll;
+static UINT16 *DrvBgScroll;
+static UINT16 *DrvFgScroll;
 
-static int tecmo_video_type;
+static INT32 tecmo_video_type;
 
-static unsigned int adpcm_pos;
-static unsigned int adpcm_end;
-static unsigned int adpcm_size;
-static int adpcm_data;
-static unsigned char DrvHasADPCM;
+static UINT32 adpcm_pos;
+static UINT32 adpcm_end;
+static UINT32 adpcm_size;
+static INT32 adpcm_data;
+static UINT8 DrvHasADPCM;
 
-static unsigned int DrvZ80Bank;
-static unsigned char soundlatch;
-static unsigned char flipscreen;
-static unsigned char DrvEnableNmi;
+static UINT32 DrvZ80Bank;
+static UINT8 soundlatch;
+static UINT8 flipscreen;
+static UINT8 DrvEnableNmi;
 
 static struct BurnInputInfo RygarInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy5 + 3,	"p1 coin"  },
@@ -399,7 +400,7 @@ static struct BurnDIPInfo BackfirtDIPList[]=
 
 STDDIPINFO(Backfirt)
 
-unsigned char __fastcall rygar_main_read(unsigned short address)
+UINT8 __fastcall rygar_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -422,7 +423,7 @@ unsigned char __fastcall rygar_main_read(unsigned short address)
 	return 0;
 }
 
-static void bankswitch_w(int data)
+static void bankswitch_w(INT32 data)
 {
 	DrvZ80Bank = 0x10000 + ((data & 0xf8) << 8);
 
@@ -430,12 +431,12 @@ static void bankswitch_w(int data)
 	ZetMapArea(0xf000, 0xf7ff, 2, DrvZ80ROM0 + DrvZ80Bank);
 }
 
-static inline void palette_write(int offset)
+static inline void palette_write(INT32 offset)
 {
-	unsigned short data;
-	unsigned char r,g,b;
+	UINT16 data;
+	UINT8 r,g,b;
 
-	data = *((unsigned short*)(DrvPalRAM + (offset & ~1)));
+	data = *((UINT16*)(DrvPalRAM + (offset & ~1)));
 	data = (data << 8) | (data >> 8);
 
 	r = (data >> 4) & 0x0f;
@@ -449,7 +450,7 @@ static inline void palette_write(int offset)
 	DrvPalette[offset >> 1] = BurnHighCol(r, g, b, 0);
 }
 
-void __fastcall rygar_main_write(unsigned short address, unsigned char data)
+void __fastcall rygar_main_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf000) == 0xe000) {
 		DrvPalRAM[address & 0x7ff] = data;
@@ -504,7 +505,7 @@ void __fastcall rygar_main_write(unsigned short address, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall rygar_sound_read(unsigned short address)
+UINT8 __fastcall rygar_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -515,7 +516,7 @@ unsigned char __fastcall rygar_sound_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall rygar_sound_write(unsigned short address, unsigned char data)
+void __fastcall rygar_sound_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xff80) == 0x2000) {
 		DrvZ80ROM1[address] = data;
@@ -535,8 +536,10 @@ void __fastcall rygar_sound_write(unsigned short address, unsigned char data)
 		return;
 
 		case 0xc000:
-			adpcm_pos = data << 8;
-			MSM5205ResetWrite(0, 0);
+			if (DrvHasADPCM) {
+				adpcm_pos = data << 8;
+				MSM5205ResetWrite(0, 0);
+			}
 		return;
 
 		case 0xc400:
@@ -546,7 +549,7 @@ void __fastcall rygar_sound_write(unsigned short address, unsigned char data)
 
 		case 0xc800:
 		case 0xe000:
-			MSM5205SetVolume(0, (data & 0x0f) * 100 / 15);
+			if (DrvHasADPCM) MSM5205SetVolume(0, (data & 0x0f) * 100 / 15);
 		return;
 
 		case 0xf000:
@@ -556,9 +559,9 @@ void __fastcall rygar_sound_write(unsigned short address, unsigned char data)
 	return;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0	= Next; Next += 0x20000;
 	DrvZ80ROM1	= Next; Next += 0x08000;
@@ -581,10 +584,10 @@ static int MemIndex()
 	DrvForeRAM	= Next; Next += 0x00400;
 	DrvSprRAM	= Next; Next += 0x00800;
 
-	DrvBgScroll	= (unsigned short*)Next; Next += 0x00002 * sizeof(unsigned short);
-	DrvFgScroll	= (unsigned short*)Next; Next += 0x00002 * sizeof(unsigned short);
+	DrvBgScroll	= (UINT16*)Next; Next += 0x00002 * sizeof(UINT16);
+	DrvFgScroll	= (UINT16*)Next; Next += 0x00002 * sizeof(UINT16);
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	DrvPalette	= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	RamEnd		= Next;
 	MemEnd		= Next;
@@ -592,23 +595,23 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	static int Planes[4] = {
+	static INT32 Planes[4] = {
 		0x000, 0x001, 0x002, 0x003
 	};
 
-	static int XOffs[16] = {
+	static INT32 XOffs[16] = {
 		0x000, 0x004, 0x008, 0x00c, 0x010, 0x014, 0x018, 0x01c,
 		0x100, 0x104, 0x108, 0x10c, 0x110, 0x114, 0x118, 0x11c
 	};
 
-	static int YOffs[16] = {
+	static INT32 YOffs[16] = {
 		0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 		0x200, 0x220, 0x240, 0x260, 0x280, 0x2a0, 0x2c0, 0x2e0
 	};
@@ -629,12 +632,12 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x0800, 4, 16, 16, Planes, XOffs, YOffs, 0x400, tmp, DrvGfxROM3);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -666,7 +669,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void TecmoFMIRQHandler(int, int nStatus)
+static void TecmoFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -675,9 +678,9 @@ static void TecmoFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int TecmoSynchroniseStream(int nSoundRate)
+static INT32 TecmoSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static void TecmoMSM5205Vck()
@@ -695,7 +698,7 @@ static void TecmoMSM5205Vck()
 	}
 }
 
-static int RygarInit()
+static INT32 RygarInit()
 {
 	tecmo_video_type = 0;
 	DrvHasADPCM = 1;
@@ -703,12 +706,12 @@ static int RygarInit()
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80ROM0);
@@ -729,6 +732,7 @@ static int RygarInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x3fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x3fff, 2, DrvZ80ROM1);
@@ -741,7 +745,7 @@ static int RygarInit()
 	ZetClose();
 
 	{
-		for (int i = 0; i < 3; i++) {
+		for (INT32 i = 0; i < 3; i++) {
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x8000, i +  0, 1)) return 1;
 		}
 
@@ -749,7 +753,7 @@ static int RygarInit()
 
 		if (BurnLoadRom(DrvGfxROM0,	4, 1)) return 1;
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x8000, i +  5, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x8000, i +  9, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM3 + i * 0x8000, i + 13, 1)) return 1;
@@ -773,7 +777,7 @@ static int RygarInit()
 }
 
 
-static int SilkwormInit()
+static INT32 SilkwormInit()
 {
 	tecmo_video_type = 1;
 	DrvHasADPCM = 1;
@@ -781,12 +785,12 @@ static int SilkwormInit()
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80ROM0);
@@ -807,6 +811,7 @@ static int SilkwormInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM1);
@@ -819,7 +824,7 @@ static int SilkwormInit()
 	ZetClose();
 
 	{
-		for (int i = 0; i < 2; i++) {
+		for (INT32 i = 0; i < 2; i++) {
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x10000, i +  0, 1)) return 1;
 		}
 
@@ -827,7 +832,7 @@ static int SilkwormInit()
 
 		if (BurnLoadRom(DrvGfxROM0,	3, 1)) return 1;
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x10000, i +  4, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x10000, i +  8, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM3 + i * 0x10000, i + 12, 1)) return 1;
@@ -850,7 +855,7 @@ static int SilkwormInit()
 	return 0;
 }
 
-static int GeminiInit()
+static INT32 GeminiInit()
 {
 	tecmo_video_type = 2;
 	DrvHasADPCM = 1;
@@ -859,12 +864,12 @@ static int GeminiInit()
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80ROM0);
@@ -885,6 +890,7 @@ static int GeminiInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM1);
@@ -897,7 +903,7 @@ static int GeminiInit()
 	ZetClose();
 
 	{
-		for (int i = 0; i < 2; i++) {
+		for (INT32 i = 0; i < 2; i++) {
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x10000, i +  0, 1)) return 1;
 		}
 
@@ -905,7 +911,7 @@ static int GeminiInit()
 
 		if (BurnLoadRom(DrvGfxROM0,	3, 1)) return 1;
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x10000, i +  4, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x10000, i +  8, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM3 + i * 0x10000, i + 12, 1)) return 1;
@@ -928,26 +934,25 @@ static int GeminiInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
-	MSM5205Exit();
+	if (DrvHasADPCM) MSM5205Exit();
 	BurnYM3812Exit();
 
 	GenericTilesExit();
 
 	ZetExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 	
 	DrvHasADPCM = 0;
 
 	return 0;
 }
 
-static inline int calc_sprite_offset(int code, int x, int y)
+static inline INT32 calc_sprite_offset(INT32 code, INT32 x, INT32 y)
 {
-	int ofst = 0;
+	INT32 ofst = 0;
 	if (x & 0x001) ofst |= 0x01;
 	if (y & 0x001) ofst |= 0x02;
 	if (x & 0x002) ofst |= 0x04;
@@ -958,20 +963,20 @@ static inline int calc_sprite_offset(int code, int x, int y)
 	return (ofst + code) & 0x1fff;
 }
 
-static void draw_sprites(int priority)
+static void draw_sprites(INT32 priority)
 {
-	for (int offs = 0; offs < 0x800; offs += 8)
+	for (INT32 offs = 0; offs < 0x800; offs += 8)
 	{
-		int flags = DrvSprRAM[offs+3];
+		INT32 flags = DrvSprRAM[offs+3];
 		if (priority != (flags >> 6)) continue;
 
-		int bank = DrvSprRAM[offs+0];
+		INT32 bank = DrvSprRAM[offs+0];
 
 		if (bank & 4)
 		{
-			int which = DrvSprRAM[offs+1];
-			int code, xpos, ypos, flipx, flipy, x, y;
-			int size = DrvSprRAM[offs + 2] & 3;
+			INT32 which = DrvSprRAM[offs+1];
+			INT32 code, xpos, ypos, flipx, flipy, x, y;
+			INT32 size = DrvSprRAM[offs + 2] & 3;
 
 			if (tecmo_video_type)
 				code = which + ((bank & 0xf8) << 5);
@@ -990,8 +995,8 @@ static void draw_sprites(int priority)
 			{
 				for (x = 0; x < size; x++)
 				{
-					int sx = xpos + ((flipx ? (size - 1 - x) : x) << 3);
-					int sy = ypos + ((flipy ? (size - 1 - y) : y) << 3);
+					INT32 sx = xpos + ((flipx ? (size - 1 - x) : x) << 3);
+					INT32 sy = ypos + ((flipy ? (size - 1 - y) : y) << 3);
 					    sy -= 16;
 
 					if (sy < -7 || sx < -7 || sx > 255 || sy > 223) continue;
@@ -1015,12 +1020,12 @@ static void draw_sprites(int priority)
 	}
 }
  
-static int draw_layer(unsigned char *vidram, unsigned char *gfx_base, int paloffs, unsigned short *scroll)
+static INT32 draw_layer(UINT8 *vidram, UINT8 *gfx_base, INT32 paloffs, UINT16 *scroll)
 {
-	for (int offs = 0; offs < 32 * 16; offs++)
+	for (INT32 offs = 0; offs < 32 * 16; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		    sx -= scroll[0] & 0x1ff;
 
@@ -1037,8 +1042,8 @@ static int draw_layer(unsigned char *vidram, unsigned char *gfx_base, int paloff
 
 		if (sx > nScreenWidth || sy > nScreenHeight) continue;
 
-		unsigned char color = vidram[0x200 | offs];
-		int code  = vidram[offs];
+		UINT8 color = vidram[0x200 | offs];
+		INT32 code  = vidram[offs];
 
 		if (tecmo_video_type == 2) {
 			color = (color << 4) | (color >> 4);
@@ -1059,14 +1064,14 @@ static int draw_layer(unsigned char *vidram, unsigned char *gfx_base, int paloff
 
 static void draw_text_layer()
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int color = DrvTextRAM[offs | 0x400];
+		INT32 color = DrvTextRAM[offs | 0x400];
 
-		int code = DrvTextRAM[offs] | ((color & 3) << 8);
+		INT32 code = DrvTextRAM[offs] | ((color & 3) << 8);
 
 		color >>= 4;
 
@@ -1076,16 +1081,16 @@ static void draw_text_layer()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x800; i+=2) {
+		for (INT32 i = 0; i < 0x800; i+=2) {
 			palette_write(i);
 		}
 		DrvRecalc = 0;
 	}
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x100;
 	}
  
@@ -1103,9 +1108,9 @@ static int DrvDraw()
 	draw_text_layer();
 
 	if (flipscreen) {
-		int nSize = (nScreenWidth * nScreenHeight) - 1;
-		for (int i = 0; i < nSize >> 1; i++) {
-			int n = pTransDraw[i];
+		INT32 nSize = (nScreenWidth * nScreenHeight) - 1;
+		for (INT32 i = 0; i < nSize >> 1; i++) {
+			INT32 n = pTransDraw[i];
 			pTransDraw[i] = pTransDraw[nSize - i];
 			pTransDraw[nSize - i] = n;
 		}
@@ -1116,7 +1121,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1126,7 +1131,7 @@ static int DrvFrame()
 		memset (DrvInputs, 0, 6);
 		DrvInputs[10] = 0;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[ 0] ^= DrvJoy1[i] << i;
 			DrvInputs[ 1] ^= DrvJoy2[i] << i;
 			DrvInputs[ 2] ^= DrvJoy3[i] << i;
@@ -1139,13 +1144,13 @@ static int DrvFrame()
 
 	ZetNewFrame();
 
-	int nSegment;
-	int nInterleave = 10;
+	INT32 nSegment;
+	INT32 nInterleave = 10;
 	if (DrvHasADPCM) nInterleave = MSM5205CalcInterleave(0, 4000000);
-	int nTotalCycles[2] = { 6000000 / 60, 4000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nTotalCycles[2] = { 6000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nSegment = (nTotalCycles[0] - nCyclesDone[0]) / (nInterleave - i);
 
@@ -1179,7 +1184,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1476,6 +1481,45 @@ struct BurnDriver BurnDrvSilkwrmj = {
 	256, 224, 4, 3
 };
 
+// Silk Worm (bootleg)
+
+static struct BurnRomInfo silkwormbRomDesc[] = {
+	{ "e3.4",		    0x10000, 0x3d86fd58, 1 | BRF_PRG | BRF_ESS }, //  0 - Z80 Code
+	{ "e4.5",		    0x10000, 0xa6c7bb51, 1 | BRF_PRG | BRF_ESS }, //  1
+
+	{ "e2.3",		    0x08000, 0xb7a3fb80, 2 | BRF_PRG | BRF_ESS }, //  2 - Z80 Code
+
+	{ "e1.2",		    0x08000, 0xe80a1cd9, 3 | BRF_GRA },	      //  3 - Characters
+
+	{ "e5.6",		    0x10000, 0x1138d159, 4 | BRF_GRA },	      //  4 - Sprites
+	{ "e6.7",		    0x10000, 0xd96214f7, 4 | BRF_GRA },	      //  5
+	{ "e7.8",		    0x10000, 0x0494b38e, 4 | BRF_GRA },	      //  6
+	{ "e8.9",		    0x10000, 0x8ce3cdf5, 4 | BRF_GRA },	      //  7
+
+	{ "e9.10",	        0x10000, 0x8c7138bb, 5 | BRF_GRA },	      //  8 - Foreground Tiles
+	{ "e10.11",	        0x08000, 0xc0c4687d, 5 | BRF_GRA },	      //  9
+	{ "e11.12",	        0x10000, 0xbb0f568f, 5 | BRF_GRA },	      // 10
+	{ "e12.13",	        0x08000, 0xfc472811, 5 | BRF_GRA },	      // 11
+
+	{ "e13.14",	        0x10000, 0x409df64b, 6 | BRF_GRA },	      // 12 - Background Tiles
+	{ "e14.15",	        0x08000, 0xb02acdb6, 6 | BRF_GRA },	      // 13
+	{ "e15.16",	        0x08000, 0xcaf7b25e, 6 | BRF_GRA },	      // 14
+	{ "e16.17",	        0x08000, 0x7ec93873, 6 | BRF_GRA },	      // 15
+
+};
+
+STD_ROM_PICK(silkwormb)
+STD_ROM_FN(silkwormb)
+
+struct BurnDriver BurnDrvSilkwormb = {
+	"silkwormb", "silkworm", NULL, NULL, "1988",
+	"Silk Worm (bootleg)\0", NULL, "Tecmo", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	NULL, silkwormbRomInfo, silkwormbRomName, NULL, NULL, SilkwormInputInfo, SilkwormDIPInfo,
+	SilkwormInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
+	256, 224, 4, 3
+};
 
 // Back Fire (Tecmo) (Japan, Bootleg, Prototype?)
 

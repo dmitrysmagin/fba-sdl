@@ -15,65 +15,65 @@
  *
  */
 
-unsigned char* GP9001ROM[2];
-unsigned int nGP9001ROMSize[2];
-static unsigned char* GP9001TileAttrib[2];
+UINT8* GP9001ROM[2];
+UINT32 nGP9001ROMSize[2];
+static UINT8* GP9001TileAttrib[2];
 
-static unsigned int nMaxTile[2];
-static unsigned int nMaxSprite[2];
+static UINT32 nMaxTile[2];
+static UINT32 nMaxSprite[2];
 
-static int nControllers;
-static int nMode;
+static INT32 nControllers;
+static INT32 nMode;
 
-unsigned int GP9001TileBank[8];
+UINT32 GP9001TileBank[8];
 
-unsigned char* GP9001RAM[2];
-unsigned short* GP9001Reg[2];
+UINT8* GP9001RAM[2];
+UINT16* GP9001Reg[2];
 
-unsigned char* GP9001Pointer[2];
-int GP9001Regnum[2];
+UINT8* GP9001Pointer[2];
+INT32 GP9001Regnum[2];
 
-static unsigned int* pTileQueue[32];
-static unsigned int* pTileQueueData[2] = {NULL, };
+static UINT32* pTileQueue[32];
+static UINT32* pTileQueueData[2] = {NULL, };
 
-static unsigned char** pSpriteQueue[32];
-static unsigned char** pSpriteQueueData[2] = {NULL, };
+static UINT8** pSpriteQueue[32];
+static UINT8** pSpriteQueueData[2] = {NULL, };
 
-static unsigned char* pSpriteBuffer[2];
-static unsigned char* pSpriteBufferData[2] = {NULL, };
+static UINT8* pSpriteBuffer[2];
+static UINT8* pSpriteBufferData[2] = {NULL, };
 
-static int nSpriteBuffer = 0;
+static INT32 nSpriteBuffer = 0;
 
-int nSpriteXOffset = 0, nSpriteYOffset = 0, nSpritePriority = 0;
+INT32 nSpriteXOffset = 0, nSpriteYOffset = 0, nSpritePriority = 0;
 
-int nLayer0XOffset = 0, nLayer0YOffset = 0;
-int nLayer1XOffset = 0, nLayer1YOffset = 0;
-int nLayer2XOffset = 0, nLayer2YOffset = 0;
-int nLayer3XOffset = 0, nLayer3YOffset = 0;
+INT32 nLayer0XOffset = 0, nLayer0YOffset = 0;
+INT32 nLayer1XOffset = 0, nLayer1YOffset = 0;
+INT32 nLayer2XOffset = 0, nLayer2YOffset = 0;
+INT32 nLayer3XOffset = 0, nLayer3YOffset = 0;
 
-static unsigned char* pTile;
-static unsigned int* pTileData;
-static unsigned int* pTilePalette;
+static UINT8* pTile;
+static UINT32* pTileData;
+static UINT32* pTilePalette;
 
 typedef void (*RenderTileFunction)();
 static RenderTileFunction* RenderTile;
 
-static int nTileXPos, nTileYPos;
+static INT32 nTileXPos, nTileYPos;
 
-static int nLastBPP = 0;
+static INT32 nLastBPP = 0;
 
 // Include the tile rendering functions
 #include "toa_gp9001_func.h"
 
 static void PrepareSprites()
 {
-	unsigned char* pSpriteInfo;
-	int nSprite, nAttrib;
+	UINT8* pSpriteInfo;
+	INT32 nSprite, nAttrib;
 
-	for (int i = 0; i < nControllers; i++) {
-		unsigned char*** pMySpriteQueue = &pSpriteQueue[i << 4];
+	for (INT32 i = 0; i < nControllers; i++) {
+		UINT8*** pMySpriteQueue = &pSpriteQueue[i << 4];
 
-		for (int nPriority = 0; nPriority < 16; nPriority++) {
+		for (INT32 nPriority = 0; nPriority < 16; nPriority++) {
 			pMySpriteQueue[nPriority] = &pSpriteQueueData[i][(nPriority << 8) + nPriority];
 		}
 
@@ -86,17 +86,17 @@ static void PrepareSprites()
 	}
 }
 
-static void RenderSpriteQueue(int i, int nPriority)
+static void RenderSpriteQueue(INT32 i, INT32 nPriority)
 {
-	unsigned char* pSpriteInfo;
-	unsigned char* pSpriteData;
-	int nSpriteXPos, nSpriteYPos;
-	int nSpriteXSize, nSpriteYSize;
-	unsigned int nSpriteNumber;
-	int x, y, xoff, yoff;
-	int nFlip;
+	UINT8* pSpriteInfo;
+	UINT8* pSpriteData;
+	INT32 nSpriteXPos, nSpriteYPos;
+	INT32 nSpriteXSize, nSpriteYSize;
+	UINT32 nSpriteNumber;
+	INT32 x, y, xoff, yoff;
+	INT32 nFlip;
 
-	unsigned char*** pMySpriteQueue = &pSpriteQueue[i << 4];
+	UINT8*** pMySpriteQueue = &pSpriteQueue[i << 4];
 
 	*pMySpriteQueue[nPriority] = NULL;
 	pMySpriteQueue[nPriority] = &pSpriteQueueData[i][(nPriority << 8) + nPriority];
@@ -148,7 +148,7 @@ static void RenderSpriteQueue(int i, int nPriority)
 				if (GP9001TileAttrib[i][nSpriteNumber]) {
 					// Skip tile if it's completely off the screen
 					if (!(nTileXPos <= -8 || nTileXPos >= 320 || nTileYPos <= -8 || nTileYPos >= 240)) {
-						pTileData = (unsigned int*)pSpriteData;
+						pTileData = (UINT32*)pSpriteData;
 						pTile = pBurnBitmap + (nTileXPos * nBurnColumn) + (nTileYPos * nBurnRow);
 						if (nTileXPos < 0 || nTileXPos > 312 || nTileYPos < 0 || nTileYPos > 232) {
 							RenderTile[nFlip + 1]();
@@ -162,13 +162,13 @@ static void RenderSpriteQueue(int i, int nPriority)
 	}
 }
 
-static void QueueLayer(int i, unsigned short* pTilemap, int nXPos, int nYPos)
+static void QueueLayer(INT32 i, UINT16* pTilemap, INT32 nXPos, INT32 nYPos)
 {
-	int x, y;
-	int nTileRow, nTileColumn;
-	unsigned int nTileNumber, nTileAttrib;
+	INT32 x, y;
+	INT32 nTileRow, nTileColumn;
+	UINT32 nTileNumber, nTileAttrib;
 
-	unsigned int** pMyTileQueue = &pTileQueue[i << 4];
+	UINT32** pMyTileQueue = &pTileQueue[i << 4];
 
 	for (y = 0; y < 16; y++) {
 
@@ -176,10 +176,10 @@ static void QueueLayer(int i, unsigned short* pTilemap, int nXPos, int nYPos)
 
 		for (x = 0; x < 21; x++) {
 			nTileColumn = (((nXPos >> 4) + x) << 1) & 0x3E;
-			nTileNumber = pTilemap[nTileRow + nTileColumn + 1];
+			nTileNumber = BURN_ENDIAN_SWAP_INT16(pTilemap[nTileRow + nTileColumn + 1]);
 
 			if (nTileNumber > 0 && nTileNumber <= nMaxTile[i]) {
-				nTileAttrib = pTilemap[nTileRow + nTileColumn];
+				nTileAttrib = BURN_ENDIAN_SWAP_INT16(pTilemap[nTileRow + nTileColumn]);
 				*pMyTileQueue[(nTileAttrib >> 8) & 0x0F]++ = (nTileAttrib << 16) | nTileNumber;
 				nTileXPos = (x << 4) - (nXPos & 15);
 				nTileYPos = (y << 4) - (nYPos & 15);
@@ -192,13 +192,13 @@ static void QueueLayer(int i, unsigned short* pTilemap, int nXPos, int nYPos)
 	}
 }
 
-static void QueueLayer2(int i, unsigned short* pTilemap, int nXPos, int nYPos)
+static void QueueLayer2(INT32 i, UINT16* pTilemap, INT32 nXPos, INT32 nYPos)
 {
-	int x, y;
-	int nTileRow, nTileColumn;
-	unsigned int nTileNumber, nTileAttrib;
+	INT32 x, y;
+	INT32 nTileRow, nTileColumn;
+	UINT32 nTileNumber, nTileAttrib;
 
-	unsigned int** pMyTileQueue = &pTileQueue[i << 4];
+	UINT32** pMyTileQueue = &pTileQueue[i << 4];
 
 	for (y = 0; y < 16; y++) {
 
@@ -206,10 +206,10 @@ static void QueueLayer2(int i, unsigned short* pTilemap, int nXPos, int nYPos)
 
 		for (x = 0; x < 21; x++) {
 			nTileColumn = (((nXPos >> 4) + x) << 1) & 0x3E;
-			nTileNumber = pTilemap[nTileRow + nTileColumn + 1];
+			nTileNumber = BURN_ENDIAN_SWAP_INT16(pTilemap[nTileRow + nTileColumn + 1]);
 
 			if (nTileNumber > 0 && nTileNumber <= nMaxTile[i]) {
-				nTileAttrib = pTilemap[nTileRow + nTileColumn];
+				nTileAttrib = BURN_ENDIAN_SWAP_INT16(pTilemap[nTileRow + nTileColumn]);
 				if ((nTileAttrib & 0x0F00) == 0) {
 					nTileAttrib |= 0x0100;
 				}
@@ -224,55 +224,55 @@ static void QueueLayer2(int i, unsigned short* pTilemap, int nXPos, int nYPos)
 
 static void PrepareTiles()
 {
-	for (int i = 0; i < nControllers; i++) {
-		unsigned int** pMyTileQueue = &pTileQueue[i << 4];
+	for (INT32 i = 0; i < nControllers; i++) {
+		UINT32** pMyTileQueue = &pTileQueue[i << 4];
 
-		for (int nPriority = 0; nPriority < 16; nPriority++) {
+		for (INT32 nPriority = 0; nPriority < 16; nPriority++) {
 			pMyTileQueue[nPriority] = &pTileQueueData[i][nPriority * 512 * 3 * 2];
 		}
 	}
 
 	if (nControllers == 1) {
-		QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
-		QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
-		QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
+		QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
+		QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
+		QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
 	} else {
 		if (nMode == 2) {
-			QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
-			QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
-			QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x0000), GP9001Reg[1][0] + nLayer0XOffset, GP9001Reg[1][1] + nLayer0YOffset);
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x1000), GP9001Reg[1][2] + nLayer1XOffset, GP9001Reg[1][3] + nLayer1YOffset);
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x2000), GP9001Reg[1][4] + nLayer2XOffset, GP9001Reg[1][5] + nLayer2YOffset);
+			QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
+			QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
+			QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x0000), GP9001Reg[1][0] + nLayer0XOffset, GP9001Reg[1][1] + nLayer0YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x1000), GP9001Reg[1][2] + nLayer1XOffset, GP9001Reg[1][3] + nLayer1YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x2000), GP9001Reg[1][4] + nLayer2XOffset, GP9001Reg[1][5] + nLayer2YOffset);
 		} else {
-			QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
-			QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
+			QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x0000), GP9001Reg[0][0] + nLayer0XOffset, GP9001Reg[0][1] + nLayer0YOffset);
+			QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x1000), GP9001Reg[0][2] + nLayer1XOffset, GP9001Reg[0][3] + nLayer1YOffset);
 			if (GP9001Reg[0][4] + nLayer2XOffset == 0) {
-				QueueLayer(0, (unsigned short*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
+				QueueLayer(0, (UINT16*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
 			} else {
-				QueueLayer2(0, (unsigned short*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
+				QueueLayer2(0, (UINT16*)(GP9001RAM[0] + 0x2000), GP9001Reg[0][4] + nLayer2XOffset, GP9001Reg[0][5] + nLayer2YOffset);
 			}
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x0000), GP9001Reg[1][0] + nLayer0XOffset, GP9001Reg[1][1] + nLayer0YOffset);
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x1000), GP9001Reg[1][2] + nLayer1XOffset, GP9001Reg[1][3] + nLayer1YOffset);
-			QueueLayer(1, (unsigned short*)(GP9001RAM[1] + 0x2000), GP9001Reg[1][4] + nLayer2XOffset, GP9001Reg[1][5] + nLayer2YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x0000), GP9001Reg[1][0] + nLayer0XOffset, GP9001Reg[1][1] + nLayer0YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x1000), GP9001Reg[1][2] + nLayer1XOffset, GP9001Reg[1][3] + nLayer1YOffset);
+			QueueLayer(1, (UINT16*)(GP9001RAM[1] + 0x2000), GP9001Reg[1][4] + nLayer2XOffset, GP9001Reg[1][5] + nLayer2YOffset);
 		}
 	}
 }
 
-static void RenderTileQueue(int i, int nPriority)
+static void RenderTileQueue(INT32 i, INT32 nPriority)
 {
-	unsigned int nTileNumber, nTileAttrib;
-	unsigned char* pTileStart;
-	unsigned char nOpacity;
+	UINT32 nTileNumber, nTileAttrib;
+	UINT8* pTileStart;
+	UINT8 nOpacity;
 
-	unsigned int** pMyTileQueue = &pTileQueue[i << 4];
+	UINT32** pMyTileQueue = &pTileQueue[i << 4];
 
 	*pMyTileQueue[nPriority] = 0;
 	pMyTileQueue[nPriority] = &pTileQueueData[i][nPriority * 512 * 3 * 2];
 
 	while ((nTileNumber = *pMyTileQueue[nPriority]++) != 0) {
-		nTileXPos = (signed short)(*pMyTileQueue[nPriority] >> 16);
-		nTileYPos = (signed short)(*pMyTileQueue[nPriority]++ & 0xFFFF);
+		nTileXPos = (INT16)(*pMyTileQueue[nPriority] >> 16);
+		nTileYPos = (INT16)(*pMyTileQueue[nPriority]++ & 0xFFFF);
 		nTileAttrib = nTileNumber;
 		nTileNumber = ((nTileNumber & 0x1FFF) << 2) + GP9001TileBank[(nTileNumber >> 13) & 7];
 
@@ -280,36 +280,36 @@ static void RenderTileQueue(int i, int nPriority)
 		pTilePalette = &ToaPalette[(nTileAttrib >> 12) & 0x07F0];
 
 		if (nTileXPos >= 0 && nTileXPos < 304 && nTileYPos >= 0 && nTileYPos < 224) {
-			int nTileWidth = 8 * nBurnColumn;
+			INT32 nTileWidth = 8 * nBurnColumn;
 			pTile = pBurnBitmap + (nTileXPos * nBurnColumn) + (nTileYPos * nBurnRow);
 
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber]) != 0) {
-				pTileData = (unsigned int*)pTileStart;
+				pTileData = (UINT32*)pTileStart;
 				RenderTile[nOpacity - 1]();
 			}
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber + 1]) != 0) {
 				pTile += nTileWidth;
-				pTileData = (unsigned int*)(pTileStart + 32);
+				pTileData = (UINT32*)(pTileStart + 32);
 				RenderTile[nOpacity - 1]();
 				pTile -= nTileWidth;
 			}
 			pTile += 8 * nBurnRow;
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber + 2]) != 0) {
-				pTileData = (unsigned int*)(pTileStart + 64);
+				pTileData = (UINT32*)(pTileStart + 64);
 				RenderTile[nOpacity - 1]();
 			}
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber + 3]) != 0) {
 				pTile += nTileWidth;
-				pTileData = (unsigned int*)(pTileStart + 96);
+				pTileData = (UINT32*)(pTileStart + 96);
 				RenderTile[nOpacity - 1]();
 			}
 		} else {
-			int nTileWidth = 8 * nBurnColumn;
+			INT32 nTileWidth = 8 * nBurnColumn;
 			pTile = pBurnBitmap + (nTileXPos * nBurnColumn) + (nTileYPos * nBurnRow);
 
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber]) != 0) {
 				if (nTileXPos > -8 && nTileXPos < 320 && nTileYPos > -8 && nTileYPos < 240) {
-					pTileData = (unsigned int*)pTileStart;
+					pTileData = (UINT32*)pTileStart;
 					if (nTileXPos > 0 && nTileXPos <= 312 && nTileYPos > 0 && nTileYPos <= 232) {
 						RenderTile[nOpacity - 1]();
 					} else {
@@ -321,7 +321,7 @@ static void RenderTileQueue(int i, int nPriority)
 				pTile += nTileWidth;
 				nTileXPos += 8;
 				if (nTileXPos > -8 && nTileXPos < 320 && nTileYPos > -8 && nTileYPos < 240) {
-					pTileData = (unsigned int*)(pTileStart + 32);
+					pTileData = (UINT32*)(pTileStart + 32);
 					if (nTileXPos > 0 && nTileXPos <= 312 && nTileYPos > 0 && nTileYPos <= 232) {
 						RenderTile[nOpacity - 1]();
 					} else {
@@ -335,7 +335,7 @@ static void RenderTileQueue(int i, int nPriority)
 			pTile += 8 * nBurnRow;
 			if ((nOpacity = GP9001TileAttrib[i][nTileNumber + 2]) != 0) {
 				if (nTileXPos > -8 && nTileXPos < 320 && nTileYPos > -8 && nTileYPos < 240) {
-					pTileData = (unsigned int*)(pTileStart + 64);
+					pTileData = (UINT32*)(pTileStart + 64);
 					if (nTileXPos > 0 && nTileXPos <= 312 && nTileYPos > 0 && nTileYPos <= 232) {
 						RenderTile[nOpacity - 1]();
 					} else {
@@ -347,7 +347,7 @@ static void RenderTileQueue(int i, int nPriority)
 				nTileXPos += 8;
 				pTile += nTileWidth;
 				if (nTileXPos > -8 && nTileXPos < 320 && nTileYPos > -8 && nTileYPos < 240) {
-					pTileData = (unsigned int*)(pTileStart + 96);
+					pTileData = (UINT32*)(pTileStart + 96);
 					if (nTileXPos > 0 && nTileXPos <= 312 && nTileYPos > 0 && nTileYPos <= 232) {
 						RenderTile[nOpacity - 1]();
 					} else {
@@ -359,7 +359,7 @@ static void RenderTileQueue(int i, int nPriority)
 	}
 }
 
-int ToaBufferGP9001Sprites()
+INT32 ToaBufferGP9001Sprites()
 {
 
 #if 0
@@ -385,7 +385,7 @@ int ToaBufferGP9001Sprites()
 	return 0;
 }
 
-int ToaRenderGP9001()
+INT32 ToaRenderGP9001()
 {
 	if (nLastBPP != nBurnBpp ) {
 		nLastBPP = nBurnBpp;
@@ -406,12 +406,12 @@ int ToaRenderGP9001()
 
 	if (nControllers > 1) {
 		if (nMode == 2) {						// Dogyuun
-			for (int nPriority = 0; nPriority < 16; nPriority++) {
+			for (INT32 nPriority = 0; nPriority < 16; nPriority++) {
 				RenderTileQueue(1, nPriority);
 				RenderSpriteQueue(1, nPriority);
 
 			}
-			for (int nPriority = 0; nPriority < 16; nPriority++) {
+			for (INT32 nPriority = 0; nPriority < 16; nPriority++) {
 				RenderTileQueue(0, nPriority);
 				RenderSpriteQueue(0, nPriority);
 
@@ -427,7 +427,7 @@ int ToaRenderGP9001()
 				RenderTileQueue(0, 0);
 			}
 
-			for (int nPriority = 1; nPriority < 16; nPriority++) {
+			for (INT32 nPriority = 1; nPriority < 16; nPriority++) {
 				RenderTileQueue(0, nPriority);
 				if (nPriority < 4) {
 					RenderTileQueue(1, nPriority);
@@ -437,7 +437,7 @@ int ToaRenderGP9001()
 			RenderSpriteQueue(0, 15);
 
 			RenderSpriteQueue(1, 0);
-			for (int nPriority = 1; nPriority < 16; nPriority++) {
+			for (INT32 nPriority = 1; nPriority < 16; nPriority++) {
 				if (nPriority >= 4) {
 					RenderTileQueue(1, nPriority);
 				}
@@ -446,16 +446,16 @@ int ToaRenderGP9001()
 		}
 	} else {
 		if (nSpritePriority) {
-			for (int nPriority = 0; nPriority < nSpritePriority; nPriority++) {
+			for (INT32 nPriority = 0; nPriority < nSpritePriority; nPriority++) {
 				RenderTileQueue(0, nPriority);
 			}
 		}
-		for (int nPriority = nSpritePriority; nPriority < 16; nPriority++) {
+		for (INT32 nPriority = nSpritePriority; nPriority < 16; nPriority++) {
 			RenderTileQueue(0, nPriority );
 			RenderSpriteQueue(0, nPriority - nSpritePriority);
 		}
 		if (nSpritePriority) {
-			for (int nPriority = 16 - nSpritePriority; nPriority < 16; nPriority++) {
+			for (INT32 nPriority = 16 - nSpritePriority; nPriority < 16; nPriority++) {
 				RenderSpriteQueue(0, nPriority);
 			}
 		}
@@ -464,9 +464,9 @@ int ToaRenderGP9001()
 	return 0;
 }
 
-int ToaInitGP9001(int n)
+INT32 ToaInitGP9001(INT32 n)
 {
-	int nSize;
+	INT32 nSize;
 
 	if (n < 1 || n > 3) {
 		return 1;
@@ -482,28 +482,28 @@ int ToaInitGP9001(int n)
 
 	nLastBPP = 0;
 
-	for (int i = 0; i < nControllers; i++) {
+	for (INT32 i = 0; i < nControllers; i++) {
 
 		nMaxTile[i] = (nGP9001ROMSize[i] - 1) >> 7;
 		nMaxSprite[i] = (nGP9001ROMSize[i] - 1) >> 5;
 
-		nSize = 512 * 3 * 0x10 * 2 * sizeof(int);
-		pTileQueueData[i] = (unsigned int*)malloc(nSize);
+		nSize = 512 * 3 * 0x10 * 2 * sizeof(INT32);
+		pTileQueueData[i] = (UINT32*)BurnMalloc(nSize);
 		memset(pTileQueueData[i], 0, nSize);
 
-		nSize = 0x10 * 0x101 * sizeof(int);
-		pSpriteQueueData[i] = (unsigned char**)malloc(nSize);
+		nSize = 0x10 * 0x101 * sizeof(UINT8*);
+		pSpriteQueueData[i] = (UINT8**)BurnMalloc(nSize);
 		memset(pSpriteQueueData[i], 0, nSize);
 
 		nSize = 0x0800 * 2;
-		pSpriteBufferData[i] = (unsigned char*)malloc(nSize);
+		pSpriteBufferData[i] = (UINT8*)BurnMalloc(nSize);
 		memset(pSpriteBufferData[i], 0, nSize);
 
-		GP9001TileAttrib[i] = (unsigned char*)malloc(nGP9001ROMSize[i] >> 5);
-		for (unsigned int j = 0; j < (nGP9001ROMSize[i] >> 5); j++) {
+		GP9001TileAttrib[i] = (UINT8*)BurnMalloc(nGP9001ROMSize[i] >> 5);
+		for (UINT32 j = 0; j < (nGP9001ROMSize[i] >> 5); j++) {
 			bool bTransparent = true, bSolid = true;
-			int nTwoPixels;
-			for (unsigned int k = (j << 5); k < ((j << 5) + 32); k++) {
+			INT32 nTwoPixels;
+			for (UINT32 k = (j << 5); k < ((j << 5) + 32); k++) {
 				if ((nTwoPixels = GP9001ROM[i][k]) != 0) {
 					bTransparent = false;
 				}
@@ -525,12 +525,12 @@ int ToaInitGP9001(int n)
 
 	// Mark the rubbish tiles that appear on level 1 of Batsugun transparent
 	if (nMode == 3) {
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			GP9001TileAttrib[1][(0x225C << 2) + i] = 0;
 		}
 	}
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		GP9001TileBank[i] = i << 15;
 	}
 
@@ -569,7 +569,7 @@ int ToaInitGP9001(int n)
 	return 0;
 }
 
-int ToaExitGP9001()
+INT32 ToaExitGP9001()
 {
 	nSpriteXOffset = 0;
 	nSpriteYOffset = 0;
@@ -582,25 +582,17 @@ int ToaExitGP9001()
 	nLayer1YOffset = 0;
 	nLayer2YOffset = 0;
 
-	for (int i = 0; i < nControllers; i++) {
-		free(pSpriteBufferData[i]);
-		pSpriteBufferData[i] = NULL;
-
-		free(pSpriteQueueData[i]);
-		pSpriteQueueData[i] = NULL;
-
-		free(pTileQueueData[i]);
-		pTileQueueData[i] = NULL;
-
-		free(GP9001TileAttrib[i]);
-		GP9001TileAttrib[i] = NULL;
-
+	for (INT32 i = 0; i < nControllers; i++) {
+		BurnFree(pSpriteBufferData[i]);
+		BurnFree(pSpriteQueueData[i]);
+		BurnFree(pTileQueueData[i]);
+		BurnFree(GP9001TileAttrib[i]);
 	}
 
 	return 0;
 }
 
-int ToaScanGP9001(int nAction, int* pnMin)
+INT32 ToaScanGP9001(INT32 nAction, INT32* pnMin)
 {
 	if (nAction & ACB_VOLATILE) {		// Scan volatile data
 

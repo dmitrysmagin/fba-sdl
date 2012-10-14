@@ -8,8 +8,13 @@
 
 typedef union
 {
+#ifdef LSB_FIRST
 	struct { UINT8 l,h,h2,h3; } b;
 	struct { UINT16 l,h; } w;
+#else
+	struct { UINT8 h3,h2,h,l; } b;
+	struct { UINT16 h,l; } w;
+#endif
 	UINT32 d;
 } Z80_PAIR;
 
@@ -22,6 +27,7 @@ typedef struct
 	UINT8	nmi_pending;		/* nmi pending */
 	UINT8	irq_state;			/* irq line state */
 	UINT8	after_ei;			/* are we in the EI shadow? */
+	INT32 cycles_left;
 	const struct z80_irq_daisy_chain *daisy;
 	int		(*irq_callback)(int irqline);
 } Z80_Regs;
@@ -59,6 +65,7 @@ void Z80SetIrqLine(int irqline, int state);
 void Z80GetContext (void *dst);
 void Z80SetContext (void *src);
 int Z80Scan(int nAction);
+INT32 z80TotalCycles();
 
 extern unsigned char Z80Vector;
 

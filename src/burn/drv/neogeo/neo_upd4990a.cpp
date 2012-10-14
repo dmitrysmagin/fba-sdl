@@ -4,26 +4,26 @@
 
 static struct {
 	// The current time
-	unsigned int nSeconds; unsigned int nMinutes; unsigned int nHours;
-	unsigned int nDay; unsigned int nMonth; unsigned int nYear;
-	unsigned int nWeekDay;
+	UINT32 nSeconds; UINT32 nMinutes; UINT32 nHours;
+	UINT32 nDay; UINT32 nMonth; UINT32 nYear;
+	UINT32 nWeekDay;
 
 	// Modes for both outputs
-	int nMode; int nTPMode;
+	INT32 nMode; INT32 nTPMode;
 
 	// Shift register and command
-	unsigned int nRegister[2]; unsigned int nCommand;
+	UINT32 nRegister[2]; UINT32 nCommand;
 
 	// Counters
-	unsigned int nCount; unsigned int nTPCount; unsigned int nInterval;
+	UINT32 nCount; UINT32 nTPCount; UINT32 nInterval;
 
 	// Outputs
-	unsigned char TP; unsigned char nPrevCLK; unsigned char nPrevSTB;
+	UINT8 TP; UINT8 nPrevCLK; UINT8 nPrevSTB;
 } uPD4990A;
 
-static unsigned int nOneSecond;
+static UINT32 nOneSecond;
 
-int uPD4990AInit(unsigned int nTicksPerSecond)
+INT32 uPD4990AInit(UINT32 nTicksPerSecond)
 {
 	nOneSecond = nTicksPerSecond;
 
@@ -54,11 +54,11 @@ int uPD4990AInit(unsigned int nTicksPerSecond)
 	return 0;
 }
 
-void uPD499ASetTicks(unsigned int nTicksPerSecond)
+void uPD499ASetTicks(UINT32 nTicksPerSecond)
 {
-	uPD4990A.nCount    = (unsigned int)((long long)uPD4990A.nCount    * nTicksPerSecond / nOneSecond);
-	uPD4990A.nTPCount  = (unsigned int)((long long)uPD4990A.nTPCount  * nTicksPerSecond / nOneSecond);
-	uPD4990A.nInterval = (unsigned int)((long long)uPD4990A.nInterval * nTicksPerSecond / nOneSecond);
+	uPD4990A.nCount    = (UINT32)((INT64)uPD4990A.nCount    * nTicksPerSecond / nOneSecond);
+	uPD4990A.nTPCount  = (UINT32)((INT64)uPD4990A.nTPCount  * nTicksPerSecond / nOneSecond);
+	uPD4990A.nInterval = (UINT32)((INT64)uPD4990A.nInterval * nTicksPerSecond / nOneSecond);
 
 	nOneSecond = nTicksPerSecond;
 }
@@ -67,7 +67,7 @@ void uPD4990AExit()
 {
 }
 
-void uPD4990AUpdate(unsigned int nTicks)
+void uPD4990AUpdate(UINT32 nTicks)
 {
 	if (uPD4990A.nTPMode != 2) {
 		uPD4990A.nTPCount += nTicks;
@@ -107,7 +107,7 @@ void uPD4990AUpdate(unsigned int nTicks)
 						uPD4990A.nWeekDay = 0;
 					}
 
-					unsigned int nMonthLength[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+					UINT32 nMonthLength[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 					if ((uPD4990A.nYear & 3) == 0) {
 						nMonthLength[2]++;
 					}
@@ -132,7 +132,7 @@ void uPD4990AUpdate(unsigned int nTicks)
 	}
 }
 
-void uPD4990AScan(int nAction, int* pnMin)
+void uPD4990AScan(INT32 nAction, INT32* pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {							// Scan variables
 
@@ -144,23 +144,9 @@ void uPD4990AScan(int nAction, int* pnMin)
 	}
 }
 
-void uPD4990AWrite(unsigned char CLK, unsigned char STB, unsigned char DATA)
+void uPD4990AWrite(UINT8 CLK, UINT8 STB, UINT8 DATA)
 {
-#if 0
-	{
-		int c = 0, s = 0, d = 0;
-		if (CLK) {
-			c = 1;
-		}
-		if (STB) {
-			s = 1;
-		}
-		if (DATA) {
-			d = 1;
-		}
-		bprintf(PRINT_NORMAL, _T("  - uPD4990A written: CLK: %i, STB: %i DATA IN: %i (PC: %06X).\n"), c, s, d, SekGetPC(-1));
-	}
-#endif
+//	bprintf(PRINT_NORMAL, _T("  - uPD4990A written: CLK: %i, STB: %i DATA IN: %i (PC: %06X).\n"), CLK ? 1 : 0, STB ? 1 : 0, DATA ? 1 : 0, SekGetPC(-1));
 
 	if (STB && uPD4990A.nPrevSTB == 0) {						// Process command
 
@@ -218,7 +204,7 @@ void uPD4990AWrite(unsigned char CLK, unsigned char STB, unsigned char DATA)
 			case 0x05:
 			case 0x06:
 			case 0x07: {										// TP = nn Hz
-				int n[4] = { 64, 256, 2048, 4096 };
+				INT32 n[4] = { 64, 256, 2048, 4096 };
 
 				uPD4990A.nTPMode = 0;
 				uPD4990A.nInterval = nOneSecond / n[uPD4990A.nCommand & 3];
@@ -230,7 +216,7 @@ void uPD4990AWrite(unsigned char CLK, unsigned char STB, unsigned char DATA)
 			case 0x09:
 			case 0x0A:
 			case 0x0B: {										// TP = nn s interval set (counter reset & start)
-				int n[4] = { 1, 10, 30, 60 };
+				INT32 n[4] = { 1, 10, 30, 60 };
 
 				uPD4990A.nTPMode = 0;
 				uPD4990A.nInterval = n[uPD4990A.nCommand & 3] * nOneSecond;
@@ -280,9 +266,9 @@ void uPD4990AWrite(unsigned char CLK, unsigned char STB, unsigned char DATA)
 	uPD4990A.nPrevSTB = STB;
 }
 
-unsigned char uPD4990ARead(unsigned int nTicks)
+UINT8 uPD4990ARead(UINT32 nTicks)
 {
-	unsigned char OUT;
+	UINT8 OUT;
 
 	uPD4990AUpdate(nTicks);
 

@@ -34,16 +34,16 @@
 #endif
 
 {
-  int y;
-  unsigned int *ctp;
-  unsigned int nBlank = 0;
+  INT32 y;
+  UINT32 *ctp;
+  UINT32 nBlank = 0;
 
-  unsigned int b;      			// Eight bit-packed pixels (msb) AAAABBBB CCCCDDDD EEEEFFFF GGGGHHHH (lsb)
-  unsigned int c;				// 32-bit colour value
-  unsigned char *pPix;			// Pointer to output bitmap
+  UINT32 b;      			// Eight bit-packed pixels (msb) AAAABBBB CCCCDDDD EEEEFFFF GGGGHHHH (lsb)
+  UINT32 c;				// 32-bit colour value
+  UINT8 *pPix;			// Pointer to output bitmap
 
 #if CU_ROWS == 1
-  short *Rows = CpstRowShift;
+  INT16 *Rows = CpstRowShift;
 #endif
 
   ctp = CpstPal;
@@ -61,11 +61,11 @@ for (y = 0; y < CU_SIZE; y++, pCtvLine += nBurnPitch, pCtvTile += nCtvTileAdd
 )
 {
 #if CU_CARE==1
-  unsigned int rx = nCtvRollX;	// Copy of nCtvRollX
+  UINT32 rx = nCtvRollX;	// Copy of nCtvRollX
 #endif
 
 #if CU_MASK==1
-  unsigned short *pPixZ;
+  UINT16 *pPixZ;
 #endif
 
 #if CU_CARE==1
@@ -91,26 +91,26 @@ for (y = 0; y < CU_SIZE; y++, pCtvLine += nBurnPitch, pCtvTile += nCtvTileAdd
 // Make macros for plotting c and advancing pPix by one pixel
 #if CU_BPP==2
  #if   CU_MASK==1
-  #define PLOT { if(*pPixZ < ZValue) { *((unsigned short *)pPix)=(unsigned short)c; *pPixZ=ZValue; } }
+  #define PLOT { if(*pPixZ < ZValue) { *((UINT16 *)pPix)=(UINT16)c; *pPixZ=ZValue; } }
   #define ADV { pPix+=2; pPixZ++; }
  #else
-  #define PLOT { *((unsigned short *)pPix)=(unsigned short)c; }
+  #define PLOT { *((UINT16 *)pPix)=(UINT16)c; }
   #define ADV pPix+=2
  #endif
 #elif CU_BPP==3
  #if   CU_MASK==1
-  #define PLOT { if(*pPixZ < ZValue) { pPix[0]=(unsigned char)c; pPix[1]=(unsigned char)(c>>8); pPix[2]=(unsigned char)(c>>16); } }
+  #define PLOT { if(*pPixZ < ZValue) { pPix[0]=(UINT8)c; pPix[1]=(UINT8)(c>>8); pPix[2]=(UINT8)(c>>16); } }
   #define ADV { pPix+=3; pPixZ++; }
  #else
-  #define PLOT { pPix[0]=(unsigned char)c; pPix[1]=(unsigned char)(c>>8); pPix[2]=(unsigned char)(c>>16); }
+  #define PLOT { pPix[0]=(UINT8)c; pPix[1]=(UINT8)(c>>8); pPix[2]=(UINT8)(c>>16); }
   #define ADV pPix+=3
  #endif
 #elif CU_BPP==4
  #if   CU_MASK==1
-  #define PLOT { if(*pPixZ < ZValue) { *((unsigned int *)pPix)=c; *pPixZ=ZValue; } }
+  #define PLOT { if(*pPixZ < ZValue) { *((UINT32 *)pPix)=c; *pPixZ=ZValue; } }
   #define ADV { pPix+=4; pPixZ++; }
  #else
-  #define PLOT { *((unsigned int *)pPix)=c; }
+  #define PLOT { *((UINT32 *)pPix)=c; }
   #define ADV pPix+=4
  #endif
 #else
@@ -149,29 +149,29 @@ for (y = 0; y < CU_SIZE; y++, pCtvLine += nBurnPitch, pCtvTile += nCtvTileAdd
 
 #if   CU_SIZE==8
   // 8x8 tiles
-  b=*((unsigned int *)(pCtvTile+0)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+0)); DRAW_8
 #elif CU_SIZE==16
  // 16x16 tiles
  #if CU_FLIPX==0
-  b=*((unsigned int *)(pCtvTile+0)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+4)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+0)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+4)); DRAW_8
  #else
-  b=*((unsigned int *)(pCtvTile+4)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+0)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+4)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+0)); DRAW_8
  #endif
 
 #elif CU_SIZE==32
  // 32x32 tiles
  #if CU_FLIPX==0
-  b=*((unsigned int *)(pCtvTile+ 0)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+ 4)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+ 8)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+12)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 0)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 4)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 8)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+12)); DRAW_8
  #else
-  b=*((unsigned int *)(pCtvTile+12)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+ 8)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+ 4)); DRAW_8
-  b=*((unsigned int *)(pCtvTile+ 0)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+12)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 8)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 4)); DRAW_8
+  b=*((UINT32 *)(pCtvTile+ 0)); DRAW_8
  #endif
 
 #else

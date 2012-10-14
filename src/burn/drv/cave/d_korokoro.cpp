@@ -4,32 +4,32 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[1];
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[1];
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int korokoro_hopper = 0;
+static INT32 korokoro_hopper = 0;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nIRQPending;
+static INT8 nIRQPending;
 
-static int nCurrentCPU;
-static int nCyclesDone[2];
-static int nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCurrentCPU;
+static INT32 nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static const eeprom_interface eeprom_interface_93C46_8bit =
 {
@@ -77,7 +77,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(2, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall korokoroReadByte(unsigned int sekAddress)
+UINT8 __fastcall korokoroReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -128,7 +128,7 @@ unsigned char __fastcall korokoroReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall korokoroReadWord(unsigned int sekAddress)
+UINT16 __fastcall korokoroReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x1c0000:
@@ -163,7 +163,7 @@ unsigned short __fastcall korokoroReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall korokoroWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall korokoroWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x240001:
@@ -189,7 +189,7 @@ void __fastcall korokoroWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall korokoroWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall korokoroWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x140000:
@@ -241,7 +241,7 @@ void __fastcall korokoroWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static void TriggerSoundIRQ(int nStatus)
+static void TriggerSoundIRQ(INT32 nStatus)
 {
 	nSoundIRQ = nStatus ^ 1;
 	UpdateIRQStatus();
@@ -251,7 +251,7 @@ static void TriggerSoundIRQ(int nStatus)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	YMZ280BExit();
 
@@ -263,14 +263,12 @@ static int DrvExit()
 
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
 	BurnFree(Mem);
-	Mem = NULL;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -286,14 +284,12 @@ static int DrvDoReset()
 
 	nIRQPending = 0;
 
-	YMZ280BReset();
-
 	return 0;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x03E0) >> 2;	// Red
 	r |= r >> 5;
@@ -307,24 +303,24 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void KorokoroPaletteUpdate()
 {
-	for (int color = 0; color < 0x40; color++) {
-		for (int pen = 0; pen < 0x10; pen++) {
-			CavePalette[(color << 8) | pen] = CalcCol(*(unsigned short*)(CavePalSrc + ((0x3c00 | (color << 4) | pen)*2)));
+	for (INT32 color = 0; color < 0x40; color++) {
+		for (INT32 pen = 0; pen < 0x10; pen++) {
+			CavePalette[(color << 8) | pen] = CalcCol(*(UINT16*)(CavePalSrc + ((0x3c00 | (color << 4) | pen)*2)));
 		}
 
-		for (int pen = 0x10; pen < 0x100; pen++) {
-			CavePalette[(color << 8) | pen] = CalcCol(*(unsigned short*)(CavePalSrc + ((0x0000 | (color << 8) | pen)*2)));
+		for (INT32 pen = 0x10; pen < 0x100; pen++) {
+			CavePalette[(color << 8) | pen] = CalcCol(*(UINT16*)(CavePalSrc + ((0x0000 | (color << 8) | pen)*2)));
 		}
 	}
 
-	for (int color = 0; color < 0x4000; color++) {
-		CavePalette[color+0x4000] = CalcCol(*(unsigned short*)(CavePalSrc + color*2));
+	for (INT32 color = 0; color < 0x4000; color++) {
+		CavePalette[color+0x4000] = CalcCol(*(UINT16*)(CavePalSrc + color*2));
 	}
 
 	pBurnDrvPalette = CavePalette;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	KorokoroPaletteUpdate();				// Update the palette
 	CaveClearScreen(CavePalette[0x3F00]);
@@ -338,15 +334,15 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -355,7 +351,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0;  												// Player 1
 	DrvInput[1] = 0;  												// Player 2
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -366,24 +362,24 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCyclesDone[0] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 
-	for (int i = 1; i <= nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+		INT32 nNext;
 
 		// Render sound segment
 		if ((i & 1) == 0) {
 			if (pBurnSoundOut) {
-				int nSegmentEnd = nBurnSoundLen * i / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentEnd = nBurnSoundLen * i / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				YMZ280BRender(pSoundBuf, nSegmentEnd - nSoundBufferPos);
 				nSoundBufferPos = nSegmentEnd;
 			}
@@ -426,8 +422,8 @@ static int DrvFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				YMZ280BRender(pSoundBuf, nSegmentLength);
 			}
@@ -439,7 +435,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -474,9 +470,9 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 
 	Rom01			= Next; Next += 0x080000;		// 68K program
 	CaveSpriteROM		= Next; Next += 0x400000;
@@ -497,12 +493,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -510,12 +506,12 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap2(unsigned char* pData, int nLen)
+static void NibbleSwap2(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -523,7 +519,7 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01 + 0, 0, 1);
@@ -541,28 +537,28 @@ static int LoadRoms()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46_8bit);
-	
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
 	}
+
+	EEPROMInit(&eeprom_interface_93C46_8bit);
 
 	{
 
@@ -600,7 +596,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int crushermLoadRoms()
+static INT32 crushermLoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01 + 0, 0, 1);
@@ -619,28 +615,28 @@ static int crushermLoadRoms()
 	return 0;
 }
 
-static int crushermInit()
+static INT32 crushermInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)BurnMalloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46_8bit);
-	
 	// Load the roms into memory
 	if (crushermLoadRoms()) {
 		return 1;
 	}
+
+	EEPROMInit(&eeprom_interface_93C46_8bit);
 
 	{
 

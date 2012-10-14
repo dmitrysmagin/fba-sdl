@@ -1,48 +1,50 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
 
-static unsigned char  FstarfrcInputPort0[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char  FstarfrcInputPort1[6]  = {0, 0, 0, 0, 0, 0};
-static unsigned char  FstarfrcDip[2]         = {0, 0};
-static unsigned short FstarfrcInput[2]       = {0x00, 0x00};
-static unsigned char  FstarfrcReset          = 0;
+static UINT8  FstarfrcInputPort0[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8  FstarfrcInputPort1[6]  = {0, 0, 0, 0, 0, 0};
+static UINT8  FstarfrcDip[2]         = {0, 0};
+static UINT16 FstarfrcInput[2]       = {0x00, 0x00};
+static UINT8  FstarfrcReset          = 0;
 
-static unsigned char  *Mem                   = NULL;
-static unsigned char  *MemEnd                = NULL;
-static unsigned char  *RamStart              = NULL;
-static unsigned char  *RamEnd                = NULL;
-static unsigned char  *FstarfrcRom           = NULL;
-static unsigned char  *FstarfrcZ80Rom        = NULL;
-static unsigned char  *FstarfrcRam           = NULL;
-static unsigned char  *FstarfrcCharRam       = NULL;
-static unsigned char  *FstarfrcVideoRam      = NULL;
-static unsigned char  *FstarfrcColourRam     = NULL;
-static unsigned char  *FstarfrcVideo2Ram     = NULL;
-static unsigned char  *FstarfrcColour2Ram    = NULL;
-static unsigned char  *FstarfrcSpriteRam     = NULL;
-static unsigned char  *FstarfrcPaletteRam    = NULL;
-static unsigned char  *FstarfrcZ80Ram        = NULL;
-static unsigned int   *FstarfrcPalette       = NULL;
-static unsigned char  *FstarfrcCharTiles     = NULL;
-static unsigned char  *FstarfrcLayerTiles    = NULL;
-static unsigned char  *FstarfrcSpriteTiles   = NULL;
-static unsigned char  *FstarfrcTempGfx       = NULL;
+static UINT8  *Mem                   = NULL;
+static UINT8  *MemEnd                = NULL;
+static UINT8  *RamStart              = NULL;
+static UINT8  *RamEnd                = NULL;
+static UINT8  *FstarfrcRom           = NULL;
+static UINT8  *FstarfrcZ80Rom        = NULL;
+static UINT8  *FstarfrcRam           = NULL;
+static UINT8  *FstarfrcCharRam       = NULL;
+static UINT8  *FstarfrcVideoRam      = NULL;
+static UINT8  *FstarfrcColourRam     = NULL;
+static UINT8  *FstarfrcVideo2Ram     = NULL;
+static UINT8  *FstarfrcColour2Ram    = NULL;
+static UINT8  *FstarfrcSpriteRam     = NULL;
+static UINT8  *FstarfrcPaletteRam    = NULL;
+static UINT8  *FstarfrcZ80Ram        = NULL;
+static UINT32 *FstarfrcPalette       = NULL;
+static UINT8  *FstarfrcCharTiles     = NULL;
+static UINT8  *FstarfrcLayerTiles    = NULL;
+static UINT8  *FstarfrcSpriteTiles   = NULL;
+static UINT8  *FstarfrcTempGfx       = NULL;
 
-static int CharScrollX;
-static int CharScrollY;
-static int Scroll1X;
-static int Scroll1Y;
-static int Scroll2X;
-static int Scroll2Y;
+static INT32 CharScrollX;
+static INT32 CharScrollY;
+static INT32 Scroll1X;
+static INT32 Scroll1Y;
+static INT32 Scroll2X;
+static INT32 Scroll2Y;
 
-static int Ginkun = 0;
-static int Riot = 0;
+static INT32 Ginkun = 0;
+static INT32 Riot = 0;
 
-static int FstarfrcSoundLatch;
+static INT32 FstarfrcSoundLatch;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo FstarfrcInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , FstarfrcInputPort0 + 14, "p1 coin"   },
@@ -106,15 +108,15 @@ inline void FstarfrcMakeInputs()
 	FstarfrcInput[0] = FstarfrcInput[1] = 0x3fff;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 14; i++) {
+	for (INT32 i = 0; i < 14; i++) {
 		FstarfrcInput[0] -= (FstarfrcInputPort0[i] & 1) << i;
 	}
 
-	for (int i = 14; i < 16; i++) {
+	for (INT32 i = 14; i < 16; i++) {
 		FstarfrcInput[0] |= (FstarfrcInputPort0[i] & 1) << i;
 	}
 
-	for (int i = 0; i < 6; i++) {
+	for (INT32 i = 0; i < 6; i++) {
 		FstarfrcInput[1] -= (FstarfrcInputPort1[i] & 1) << i;
 	}
 }
@@ -355,7 +357,7 @@ static struct BurnRomInfo RiotRomDesc[] = {
 STD_ROM_PICK(Riot)
 STD_ROM_FN(Riot)
 
-int FstarfrcDoReset()
+INT32 FstarfrcDoReset()
 {
 	CharScrollX = CharScrollY = Scroll1X = Scroll1Y = Scroll2X = Scroll2Y = 0;
 
@@ -375,18 +377,16 @@ int FstarfrcDoReset()
 	return 0;
 }
 
-void FstarfrcYM2151IrqHandler(int Irq)
+void FstarfrcYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		//ZetRaiseIrq(1);
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
 	} else {
-		//ZetLowerIrq();
 		ZetSetIRQLine(0   , ZET_IRQSTATUS_NONE);
 	}
 }
 
-unsigned short __fastcall FstarfrcReadWord(unsigned int a)
+UINT16 __fastcall FstarfrcReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x150030: {
@@ -405,7 +405,7 @@ unsigned short __fastcall FstarfrcReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall FstarfrcReadByte(unsigned int a)
+UINT8 __fastcall FstarfrcReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x150030:
@@ -421,7 +421,7 @@ unsigned char __fastcall FstarfrcReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall FstarfrcWriteWord(unsigned int a, unsigned short d)
+void __fastcall FstarfrcWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x150010: {
@@ -456,7 +456,7 @@ void __fastcall FstarfrcWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall FstarfrcWriteByte(unsigned int a, unsigned char d)
+void __fastcall FstarfrcWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x150011: {
@@ -469,7 +469,7 @@ void __fastcall FstarfrcWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall GinkunReadWord(unsigned int a)
+UINT16 __fastcall GinkunReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x150020: {
@@ -494,7 +494,7 @@ unsigned short __fastcall GinkunReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall GinkunReadByte(unsigned int a)
+UINT8 __fastcall GinkunReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x150030:
@@ -513,7 +513,7 @@ unsigned char __fastcall GinkunReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall GinkunWriteWord(unsigned int a, unsigned short d)
+void __fastcall GinkunWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 //		case 0x150010: {
@@ -563,7 +563,7 @@ void __fastcall GinkunWriteWord(unsigned int a, unsigned short d)
 //	bprintf(PRINT_NORMAL, _T("Write Word -> %06X, %04X\n"), a, d);
 }
 
-void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
+void __fastcall GinkunWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x150001: {
@@ -590,7 +590,7 @@ void __fastcall GinkunWriteByte(unsigned int a, unsigned char d)
 //	bprintf(PRINT_NORMAL, _T("Write Byte -> %06X, %02X\n"), a, d);
 }
 
-unsigned char __fastcall FstarfrcZ80Read(unsigned short a)
+UINT8 __fastcall FstarfrcZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xfc00: {
@@ -609,7 +609,7 @@ unsigned char __fastcall FstarfrcZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall FstarfrcZ80Write(unsigned short a, unsigned char d)
+void __fastcall FstarfrcZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfc00: {
@@ -629,9 +629,9 @@ void __fastcall FstarfrcZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int FstarfrcMemIndex()
+static INT32 FstarfrcMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	FstarfrcRom          = Next; Next += 0x80000;
 	FstarfrcZ80Rom       = Next; Next += 0x10000;
@@ -663,23 +663,23 @@ static int FstarfrcMemIndex()
 	FstarfrcCharTiles    = Next; Next += (4096 * 8 * 8);
 	FstarfrcLayerTiles   = Next; Next += (8192 * 16 * 16);
 	FstarfrcSpriteTiles  = Next; Next += (32768 * 8 * 8);
-	FstarfrcPalette      = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	FstarfrcPalette      = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int TilePlaneOffsets[4] = { 0, 1, 2, 3 };
-static int TileXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-static int TileYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int CharPlaneOffsets[4] = { 0, 1, 2, 3 };
-static int CharXOffsets[8]     = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int CharYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 TilePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 TileXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static INT32 TileYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 CharPlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]     = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 CharYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
 	
 
-int FstarfrcInit()
+INT32 FstarfrcInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "ginkun")) Ginkun = 1;
 
@@ -688,12 +688,12 @@ int FstarfrcInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	FstarfrcMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	FstarfrcMemIndex();
 
-	FstarfrcTempGfx = (unsigned char*)malloc(0x100000);
+	FstarfrcTempGfx = (UINT8*)BurnMalloc(0x100000);
 
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(FstarfrcRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -716,7 +716,7 @@ int FstarfrcInit()
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000001, 6, 2); if (nRet != 0) return 1;
 	GfxDecode(32768, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, FstarfrcTempGfx, FstarfrcSpriteTiles);
 
-	free(FstarfrcTempGfx);
+	BurnFree(FstarfrcTempGfx);
 
 	// Load Z80 Program rom
 	nRet = BurnLoadRom(FstarfrcZ80Rom, 7, 1); if (nRet != 0) return 1;
@@ -761,7 +761,7 @@ int FstarfrcInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, FstarfrcZ80Rom         );
 	ZetMapArea(0x0000, 0xefff, 2, FstarfrcZ80Rom         );
@@ -791,7 +791,7 @@ int FstarfrcInit()
 	return 0;
 }
 
-int FstarfrcExit()
+INT32 FstarfrcExit()
 {
 	BurnYM2151Exit();
 	MSM6295Exit(0);
@@ -801,8 +801,7 @@ int FstarfrcExit()
 
 	GenericTilesExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	Ginkun = 0;
 	Riot = 0;
@@ -812,7 +811,7 @@ int FstarfrcExit()
 
 void GinkunRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -846,7 +845,7 @@ void GinkunRenderBgLayer()
 
 void FstarfrcRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -880,7 +879,7 @@ void FstarfrcRenderBgLayer()
 
 void GinkunRenderFgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -914,7 +913,7 @@ void GinkunRenderFgLayer()
 
 void FstarfrcRenderFgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -948,7 +947,7 @@ void FstarfrcRenderFgLayer()
 
 void FstarfrcRenderTextLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -976,12 +975,12 @@ void FstarfrcRenderTextLayer()
 	}
 }
 
-static void draw_sprites(int layerpriority)
+static void draw_sprites(INT32 layerpriority)
 {
-	unsigned short* pFstarfrcSpriteRam = ((unsigned short*)FstarfrcSpriteRam);
+	UINT16* pFstarfrcSpriteRam = ((UINT16*)FstarfrcSpriteRam);
 
 
-	int offs;
+	INT32 offs;
 	const UINT8 layout[8][8] =
 	{
 		{0,1,4,5,16,17,20,21},
@@ -996,31 +995,31 @@ static void draw_sprites(int layerpriority)
 
 	for (offs = 0; offs < 0x1000 / 2; offs += 8)
 	{
-		if (pFstarfrcSpriteRam[offs] & 0x04)	/* enable */
+		if (BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs]) & 0x04)	/* enable */
 		{
-			int code,color,sizex,sizey,flipx,flipy,xpos,ypos;
-			int x,y,priority;
+			INT32 code,color,sizex,sizey,flipx,flipy,xpos,ypos;
+			INT32 x,y,priority;
 
-			code = pFstarfrcSpriteRam[offs+1];
-			color = (pFstarfrcSpriteRam[offs+2] & 0xf0) >> 4;
-			sizex = 1 << ((pFstarfrcSpriteRam[offs+2] & 0x03) >> 0);
+			code = BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+1]);
+			color = (BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+2]) & 0xf0) >> 4;
+			sizex = 1 << ((BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+2]) & 0x03) >> 0);
 			if(Riot)
 				sizey = sizex;
 			else
-			sizey = 1 << ((pFstarfrcSpriteRam[offs+2] & 0x0c) >> 2);
+			sizey = 1 << ((BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+2]) & 0x0c) >> 2);
 			if (sizex >= 2) code &= ~0x01;
 			if (sizey >= 2) code &= ~0x02;
 			if (sizex >= 4) code &= ~0x04;
 			if (sizey >= 4) code &= ~0x08;
 			if (sizex >= 8) code &= ~0x10;
 			if (sizey >= 8) code &= ~0x20;
-			flipx = pFstarfrcSpriteRam[offs] & 0x01;
-			flipy = pFstarfrcSpriteRam[offs] & 0x02;
-			xpos = pFstarfrcSpriteRam[offs+4];
+			flipx = BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs]) & 0x01;
+			flipy = BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs]) & 0x02;
+			xpos = BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+4]);
 			if (xpos >= 0x8000) xpos -= 0x10000;
-			ypos = pFstarfrcSpriteRam[offs+3];
+			ypos = BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs+3]);
 			if (ypos >= 0x8000) ypos -= 0x10000;
-			priority = (pFstarfrcSpriteRam[offs] & 0xc0) >> 6;
+			priority = (BURN_ENDIAN_SWAP_INT16(pFstarfrcSpriteRam[offs]) & 0xc0) >> 6;
 
 			if (priority != layerpriority) continue;
 
@@ -1028,8 +1027,8 @@ static void draw_sprites(int layerpriority)
 			{
 				for (x = 0;x < sizex;x++)
 				{
-					int sx = xpos + 8*(flipx?(sizex-1-x):x);
-					int sy = ypos + 8*(flipy?(sizey-1-y):y);
+					INT32 sx = xpos + 8*(flipx?(sizex-1-x):x);
+					INT32 sy = ypos + 8*(flipy?(sizey-1-y):y);
 
 					if ((code + layout[y][x]) > 32767) break;
 
@@ -1070,9 +1069,9 @@ static void draw_sprites(int layerpriority)
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 0) & 0x0f;
 	g = (nColour >> 4) & 0x0f;
@@ -1085,14 +1084,14 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int FstarfrcCalcPalette()
+INT32 FstarfrcCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)FstarfrcPaletteRam, pd = FstarfrcPalette; i < 0x2000; i++, ps++, pd++) {
-		*pd = CalcCol(*ps);
+	for (i = 0, ps = (UINT16*)FstarfrcPaletteRam, pd = FstarfrcPalette; i < 0x2000; i++, ps++, pd++) {
+		*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(*ps));
 	}
 
 	return 0;
@@ -1102,7 +1101,7 @@ void GinkunRender()
 {
 	FstarfrcCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0x300;
 	}
 	
@@ -1120,7 +1119,7 @@ void FstarfrcRender()
 {
 	FstarfrcCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0x300;
 	}
 	
@@ -1134,9 +1133,9 @@ void FstarfrcRender()
 	BurnTransferCopy(FstarfrcPalette);
 }
 
-int FstarfrcFrame()
+INT32 FstarfrcFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 
 	if (FstarfrcReset) FstarfrcDoReset();
 
@@ -1146,13 +1145,13 @@ int FstarfrcFrame()
 	nCyclesTotal[1] = (8000000 / 2) / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 
 	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -1170,8 +1169,8 @@ int FstarfrcFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -1186,8 +1185,8 @@ int FstarfrcFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -1208,7 +1207,7 @@ int FstarfrcFrame()
 	return 0;
 }
 
-static int FstarfrcScan(int nAction,int *pnMin)
+static INT32 FstarfrcScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

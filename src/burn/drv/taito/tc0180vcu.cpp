@@ -2,35 +2,35 @@
 #include "taito_ic.h"
 #include "taito.h"
 
-unsigned char *TC0180VCURAM;
-unsigned char *TC0180VCUScrollRAM;
-unsigned char *TC0180VCUFbRAM; // framebuffer ram
+UINT8 *TC0180VCURAM;
+UINT8 *TC0180VCUScrollRAM;
+UINT8 *TC0180VCUFbRAM; // framebuffer ram
 
-static unsigned short *TC0180VCUFramebuffer[2];
+static UINT16 *TC0180VCUFramebuffer[2];
 
-static int TC0180VCU_y_offset;
-static int TC0180VCU_x_offset;
+static INT32 TC0180VCU_y_offset;
+static INT32 TC0180VCU_x_offset;
 
-static unsigned char TC0180VCUControl[0x10];
+static UINT8 TC0180VCUControl[0x10];
 
-static unsigned char *tiledata[2];
-static unsigned int tilemask[2];
-static unsigned char *transtiletab[2];
+static UINT8 *tiledata[2];
+static UINT32 tilemask[2];
+static UINT8 *transtiletab[2];
 
-static unsigned char *dummy_tile = NULL;
+static UINT8 *dummy_tile = NULL;
 
-static int *TC0180VCU_scrollx[2];
-static int *TC0180VCU_scrolly[2];
+static INT32 *TC0180VCU_scrollx[2];
+static INT32 *TC0180VCU_scrolly[2];
 
-static int flipscreen;
-static int framebuffer_page;
+static INT32 flipscreen;
+static INT32 framebuffer_page;
 
-void TC0180VCUFramebufferWrite(int offset)
+void TC0180VCUFramebufferWrite(INT32 offset)
 {
 	offset &= 0x3fffe;
-	int data = *((unsigned short*)(TC0180VCUFbRAM + offset));
+	INT32 data = *((UINT16*)(TC0180VCUFbRAM + offset));
 
-	int fb = (offset >> 17) & 1;
+	INT32 fb = (offset >> 17) & 1;
 
 	offset &= 0x1fffe;
 
@@ -38,23 +38,23 @@ void TC0180VCUFramebufferWrite(int offset)
 	TC0180VCUFramebuffer[fb][offset + 1] = data & 0xff;
 }
 
-unsigned short TC0180VCUFramebufferRead(int offset)
+UINT16 TC0180VCUFramebufferRead(INT32 offset)
 {
 	offset &= 0x3fffe;
 
-	int fb = (offset >> 17) & 1;
+	INT32 fb = (offset >> 17) & 1;
 
 	offset &= 0x1fffe;
 
 	return (TC0180VCUFramebuffer[fb][offset + 0] << 8) | (TC0180VCUFramebuffer[fb][offset + 1] & 0xff);
 }
 
-unsigned char TC0180VCUReadControl()
+UINT8 TC0180VCUReadControl()
 {
 	return TC0180VCUControl[7];
 }
 
-unsigned char TC0180VCUReadRegs(int offset)
+UINT8 TC0180VCUReadRegs(INT32 offset)
 {
 	offset >>= 1;
 	offset &= 0x0f;
@@ -62,7 +62,7 @@ unsigned char TC0180VCUReadRegs(int offset)
 	return TC0180VCUControl[offset];
 }
 
-void TC0180VCUWriteRegs(int offset, int data)
+void TC0180VCUWriteRegs(INT32 offset, INT32 data)
 {
 	offset >>= 1;
 	offset &= 0x0f;
@@ -78,11 +78,11 @@ void TC0180VCUWriteRegs(int offset, int data)
 
 void TC0180VCUReset()
 {
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 
-		memset (TC0180VCUFramebuffer[i], 0, 512 * 256 * sizeof(short));
-		memset (TC0180VCU_scrollx[i], 0, 256 * sizeof(int));
-		memset (TC0180VCU_scrolly[i], 0, 256 * sizeof(int));
+		memset (TC0180VCUFramebuffer[i], 0, 512 * 256 * sizeof(UINT16));
+		memset (TC0180VCU_scrollx[i], 0, 256 * sizeof(INT32));
+		memset (TC0180VCU_scrolly[i], 0, 256 * sizeof(INT32));
 	}
 
 	memset (TC0180VCUControl, 	0, 16);
@@ -94,18 +94,18 @@ void TC0180VCUReset()
 	framebuffer_page = 0;
 }
 
-static void create_transtile_table(int tile)
+static void create_transtile_table(INT32 tile)
 {
-	int size = (tile) ? (16 * 16) : (8 * 8);
+	INT32 size = (tile) ? (16 * 16) : (8 * 8);
 
 	if (tilemask[tile]) {
-		int len = (tilemask[tile] + 1);
+		INT32 len = (tilemask[tile] + 1);
 
-		transtiletab[tile] = (unsigned char*)malloc(len);
+		transtiletab[tile] = (UINT8*)BurnMalloc(len);
 
 		memset (transtiletab[tile], 1, len);
 
-		for (int i = 0; i < len * size; i++)
+		for (INT32 i = 0; i < len * size; i++)
 		{
 			if (tiledata[tile][i]) {
 				transtiletab[tile][i / size] = 0;
@@ -115,20 +115,20 @@ static void create_transtile_table(int tile)
 	}
 }
 
-void TC0180VCUInit(unsigned char *gfx0, int mask0, unsigned char *gfx1, int mask1, int global_x, int global_y)
+void TC0180VCUInit(UINT8 *gfx0, INT32 mask0, UINT8 *gfx1, INT32 mask1, INT32 global_x, INT32 global_y)
 {
 	TaitoIC_TC0180VCUInUse = 1;
 
-	for (int i = 0; i < 2; i++)
+	for (INT32 i = 0; i < 2; i++)
 	{
-		TC0180VCUFramebuffer[i] = (unsigned short*)malloc(512 * 256 * sizeof(short));
-		TC0180VCU_scrollx[i] = (int*)malloc(257 * sizeof(int));
-		TC0180VCU_scrolly[i] = (int*)malloc(257 * sizeof(int));
+		TC0180VCUFramebuffer[i] = (UINT16*)BurnMalloc(512 * 256 * sizeof(UINT16));
+		TC0180VCU_scrollx[i] = (INT32*)BurnMalloc(257 * sizeof(INT32));
+		TC0180VCU_scrolly[i] = (INT32*)BurnMalloc(257 * sizeof(INT32));
 	}
 
-	TC0180VCURAM		= (unsigned char*)malloc(0x010000);
-	TC0180VCUScrollRAM	= (unsigned char*)malloc(0x000800);
-	TC0180VCUFbRAM		= (unsigned char*)malloc(0x040000);
+	TC0180VCURAM		= (UINT8*)BurnMalloc(0x010000);
+	TC0180VCUScrollRAM	= (UINT8*)BurnMalloc(0x000800);
+	TC0180VCUFbRAM		= (UINT8*)BurnMalloc(0x040000);
 
 	tilemask[0] = mask0;
 	tilemask[1] = mask1;
@@ -139,8 +139,8 @@ void TC0180VCUInit(unsigned char *gfx0, int mask0, unsigned char *gfx1, int mask
 	if (mask1) create_transtile_table(1);
 
 	if (mask0 == 0) {
-		dummy_tile = (unsigned char*)malloc(0x100);
-		transtiletab[1] = (unsigned char*)malloc(1);
+		dummy_tile = (UINT8*)BurnMalloc(0x100);
+		transtiletab[1] = (UINT8*)BurnMalloc(1);
 		tiledata[1] = dummy_tile;
 	}
 
@@ -152,76 +152,47 @@ void TC0180VCUInit(unsigned char *gfx0, int mask0, unsigned char *gfx1, int mask
 
 void TC0180VCUExit()
 {
-	for (int i = 0; i < 2; i++)
+	for (INT32 i = 0; i < 2; i++)
 	{
-		if (TC0180VCU_scrollx[i]) {
-			free (TC0180VCU_scrollx[i]);
-			TC0180VCU_scrollx[i] = NULL;
-		}
-
-		if (TC0180VCU_scrolly[i]) {
-			free (TC0180VCU_scrolly[i]);
-			TC0180VCU_scrolly[i] = NULL;
-		}
+		BurnFree (TC0180VCU_scrollx[i]);
+		BurnFree (TC0180VCU_scrolly[i]);
 
 		tilemask[i] = ~0;
 		tiledata[i] = NULL;
 
-		if (TC0180VCUFramebuffer[i]) {
-			free (TC0180VCUFramebuffer[i]);
-			TC0180VCUFramebuffer[i] = NULL;
-		}
-
-		if (transtiletab[i]) {
-			free (transtiletab[i]);
-			transtiletab[i] = NULL;
-		}
+		BurnFree (TC0180VCUFramebuffer[i]);
+		BurnFree (transtiletab[i]);
 	}
 
-	if (dummy_tile) {
-		free (dummy_tile);
-		dummy_tile = NULL;
-	}
-
-	if (TC0180VCURAM) {
-		free (TC0180VCURAM);
-		TC0180VCURAM = NULL;
-	}
-
-	if (TC0180VCUScrollRAM) {
-		free (TC0180VCUScrollRAM);
-		TC0180VCUScrollRAM = NULL;
-	}
-
-	if (TC0180VCUFbRAM) {
-		free (TC0180VCUFbRAM);
-		TC0180VCUFbRAM = NULL;
-	}
+	BurnFree (dummy_tile);
+	BurnFree (TC0180VCURAM);
+	BurnFree (TC0180VCUScrollRAM);
+	BurnFree (TC0180VCUFbRAM);
 
 	TC0180VCU_y_offset = 0;
 	TC0180VCU_x_offset = 0;
 }
 
-static void update_scroll(int plane)
+static void update_scroll(INT32 plane)
 {
 	flipscreen = TC0180VCUReadControl() & 0x10;
 
-	unsigned short *scrollram = (unsigned short*)TC0180VCUScrollRAM;
+	UINT16 *scrollram = (UINT16*)TC0180VCUScrollRAM;
 
-	int lines_per_block = 256 - TC0180VCUControl[2 + plane];
-	int number_of_blocks = 256 / lines_per_block;
+	INT32 lines_per_block = 256 - TC0180VCUControl[2 + plane];
+	INT32 number_of_blocks = 256 / lines_per_block;
 
-	for (int i = 0; i < number_of_blocks; i++)
+	for (INT32 i = 0; i < number_of_blocks; i++)
 	{
-		int scrollx = scrollram[plane * 0x200 + i * 2 * lines_per_block + 0];
-		int scrolly = scrollram[plane * 0x200 + i * 2 * lines_per_block + 1];
+		INT32 scrollx = scrollram[plane * 0x200 + i * 2 * lines_per_block + 0];
+		INT32 scrolly = scrollram[plane * 0x200 + i * 2 * lines_per_block + 1];
 
-		int min_y = (i + 0) * lines_per_block - 0;
-		int max_y = (i + 1) * lines_per_block - 1;
+		INT32 min_y = (i + 0) * lines_per_block - 0;
+		INT32 max_y = (i + 1) * lines_per_block - 1;
 
 		if (min_y <= max_y)
 		{
-			for (int y = min_y; y <= max_y; y++) {
+			for (INT32 y = min_y; y <= max_y; y++) {
 				TC0180VCU_scrollx[plane][y] = -(scrollx & 0x3ff);
 				TC0180VCU_scrolly[plane][y] = -(scrolly & 0x3ff);
 			}
@@ -229,28 +200,28 @@ static void update_scroll(int plane)
 	}
 }
 
-void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -1
+void TC0180VCUDrawLayer(INT32 colorbase, INT32 ctrl_offset, INT32 transparent) // 0, -1
 {
 	update_scroll(ctrl_offset);
 
-	unsigned short *ram = (unsigned short*)TC0180VCURAM;
+	UINT16 *ram = (UINT16*)TC0180VCURAM;
 
-	int bank0 = (TC0180VCUControl[ctrl_offset] << 12) & 0xf000; // tile bank
-	int bank1 = (TC0180VCUControl[ctrl_offset] <<  8) & 0xf000; // color bank
+	INT32 bank0 = (TC0180VCUControl[ctrl_offset] << 12) & 0xf000; // tile bank
+	INT32 bank1 = (TC0180VCUControl[ctrl_offset] <<  8) & 0xf000; // color bank
 
-	int *scroll_x = TC0180VCU_scrollx[ctrl_offset];
-	int *scroll_y = TC0180VCU_scrolly[ctrl_offset];
+	INT32 *scroll_x = TC0180VCU_scrollx[ctrl_offset];
+	INT32 *scroll_y = TC0180VCU_scrolly[ctrl_offset];
 
-	int lines = TC0180VCUControl[2 + ctrl_offset];
+	INT32 lines = TC0180VCUControl[2 + ctrl_offset];
 
 	if (lines)
 	{
-		int screen_width = nScreenWidth - 1;
-		int screen_height = nScreenHeight - 1;
+		INT32 screen_width = nScreenWidth - 1;
+		INT32 screen_height = nScreenHeight - 1;
 
-		unsigned short *dest;
+		UINT16 *dest;
 
-		for (int sy = 0; sy < nScreenHeight; sy++)
+		for (INT32 sy = 0; sy < nScreenHeight; sy++)
 		{
 			if (flipscreen) {
 				dest = pTransDraw + (screen_height - sy) * nScreenWidth;
@@ -258,22 +229,22 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 				dest = pTransDraw + sy * nScreenWidth;
 			}
 
-			int scly = (sy + scroll_y[(sy + TC0180VCU_y_offset) & 0xff] + TC0180VCU_y_offset) & 0x3ff;
+			INT32 scly = (sy + scroll_y[(sy + TC0180VCU_y_offset) & 0xff] + TC0180VCU_y_offset) & 0x3ff;
 
-			int scly_off = (scly >> 4) << 6;
-			int scly_ts  = (scly & 0x0f) << 4;
+			INT32 scly_off = (scly >> 4) << 6;
+			INT32 scly_ts  = (scly & 0x0f) << 4;
 
-			int sclx_base = scroll_x[(sy + TC0180VCU_y_offset) & 0xff] + TC0180VCU_x_offset;
+			INT32 sclx_base = scroll_x[(sy + TC0180VCU_y_offset) & 0xff] + TC0180VCU_x_offset;
 
-			for (int sx = 0; sx < nScreenWidth + 16; sx+=16)
+			for (INT32 sx = 0; sx < nScreenWidth + 16; sx+=16)
 			{
-				int sclx = (sx + sclx_base) & 0x3ff;
+				INT32 sclx = (sx + sclx_base) & 0x3ff;
 
-				int offs = scly_off | (sclx >> 4);
+				INT32 offs = scly_off | (sclx >> 4);
 
-				int attr = ram[offs + bank1];
-				int code = ram[offs + bank0];
-				int color = (attr & 0x003f) + colorbase;
+				INT32 attr = ram[offs + bank1];
+				INT32 code = ram[offs + bank0];
+				INT32 color = (attr & 0x003f) + colorbase;
 				code &= tilemask[1];
 
 				if (!transparent) {
@@ -281,10 +252,10 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 				}
 
 				{
-					int sx4 = sx - (sclx & 0x0f);
+					INT32 sx4 = sx - (sclx & 0x0f);
 
 					color <<= 4;
-					unsigned char *src = tiledata[1] + code * 256;
+					UINT8 *src = tiledata[1] + code * 256;
 
 					if (attr & 0x80) {			// flipy
 						src += (scly_ts ^ 0xf0);
@@ -292,21 +263,21 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 						src += (scly_ts);
 					}
 
-					int flipx = ((attr & 0x40) >> 6) * 0x0f;
+					INT32 flipx = ((attr & 0x40) >> 6) * 0x0f;
 
 					if (flipscreen) {
 						if (!transparent) { // transparency
-							for (int sxx = 0; sxx < 16; sxx++, sx4++) {
+							for (INT32 sxx = 0; sxx < 16; sxx++, sx4++) {
 								if (sx4 >= nScreenWidth || sx4 < 0) continue;
 			
-								int pxl = src[sxx ^ flipx];
+								INT32 pxl = src[sxx ^ flipx];
 		
 								if (pxl != transparent) {
 									dest[(screen_width - sx4)] = pxl | color;
 								}
 							}
 						} else {
-							for (int sxx = 0; sxx < 16; sxx++, sx4++) {
+							for (INT32 sxx = 0; sxx < 16; sxx++, sx4++) {
 								if (sx4 >= nScreenWidth || sx4 < 0) continue;
 
 								dest[(screen_width - sx4)] = src[sxx ^ flipx] | color;
@@ -314,17 +285,17 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 						}
 					} else {
 						if (!transparent) { // transparency
-							for (int sxx = 0; sxx < 16; sxx++, sx4++) {
+							for (INT32 sxx = 0; sxx < 16; sxx++, sx4++) {
 								if (sx4 >= nScreenWidth || sx4 < 0) continue;
 			
-								int pxl = src[sxx ^ flipx];
+								INT32 pxl = src[sxx ^ flipx];
 		
 								if (pxl != transparent) {
 									dest[sx4] = pxl | color;
 								}
 							}
 						} else {
-							for (int sxx = 0; sxx < 16; sxx++, sx4++) {
+							for (INT32 sxx = 0; sxx < 16; sxx++, sx4++) {
 								if (sx4 >= nScreenWidth || sx4 < 0) continue;
 
 								dest[sx4] = src[sxx ^ flipx] | color;
@@ -337,10 +308,10 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 	}
 	else
 	{
-		for (int offs = 0; offs < 64 * 64; offs++)
+		for (INT32 offs = 0; offs < 64 * 64; offs++)
 		{
-			int sx = (offs & 0x3f) << 4;
-			int sy = (offs >> 6) << 4;
+			INT32 sx = (offs & 0x3f) << 4;
+			INT32 sy = (offs >> 6) << 4;
 	
 			sy -= scroll_y[(sy + TC0180VCU_y_offset) & 0xff];
 			if (sy >= 0x400-15) sy -= 0x400;
@@ -348,12 +319,12 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 			sx -= scroll_x[(sy + TC0180VCU_y_offset) & 0xff];
 			if (sx >= 0x400-15) sx -= 0x400;
 
-			int attr  = ram[offs + bank1];
-			int code  = ram[offs + bank0];
+			INT32 attr  = ram[offs + bank1];
+			INT32 code  = ram[offs + bank0];
 	
-			int color = (attr & 0x003f) + colorbase;
-			int flipx = (attr & 0x0040);
-			int flipy = (attr & 0x0080);
+			INT32 color = (attr & 0x003f) + colorbase;
+			INT32 flipx = (attr & 0x0040);
+			INT32 flipy = (attr & 0x0080);
 	
 			code &= tilemask[1];
 
@@ -434,21 +405,21 @@ void TC0180VCUDrawLayer(int colorbase, int ctrl_offset, int transparent) // 0, -
 	}
 }
 
-void TC0180VCUDrawCharLayer(int colorbase)
+void TC0180VCUDrawCharLayer(INT32 colorbase)
 {
 	if (tilemask[0] == 0) return;
 
-	unsigned short *ram = (unsigned short*)TC0180VCURAM;
+	UINT16 *ram = (UINT16*)TC0180VCURAM;
 
-	int bank0 = (TC0180VCUControl[6] & 0x0f) << 11; // tile bank
+	INT32 bank0 = (TC0180VCUControl[6] & 0x0f) << 11; // tile bank
 
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
-		int code  = ram[offs + bank0];
-		int color = (code >> 12) + colorbase;
+		INT32 code  = ram[offs + bank0];
+		INT32 color = (code >> 12) + colorbase;
 
 		code = (code & 0x07ff) | (TC0180VCUControl[4 + ((code & 0x800) >> 11)] << 11);
 
@@ -467,24 +438,24 @@ void TC0180VCUDrawCharLayer(int colorbase)
 	}
 }
 
-void TC0180VCUFramebufferDraw(int priority, int color_base)
+void TC0180VCUFramebufferDraw(INT32 priority, INT32 color_base)
 {
 	priority <<= 4;
 
-	int ctrl = TC0180VCUReadControl();
+	INT32 ctrl = TC0180VCUReadControl();
 
 	if (ctrl & 0x08)
 	{
 		if (ctrl & 0x10)	// flip screen
 		{
-			for (int y = 0; y < nScreenHeight; y++)
+			for (INT32 y = 0; y < nScreenHeight; y++)
 			{
-				unsigned short *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
-				unsigned short *dst = pTransDraw + ((nScreenHeight - 1) - y) * nScreenWidth + (nScreenWidth - 1);
+				UINT16 *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
+				UINT16 *dst = pTransDraw + ((nScreenHeight - 1) - y) * nScreenWidth + (nScreenWidth - 1);
 
-				for (int x = 0; x < nScreenWidth; x++)
+				for (INT32 x = 0; x < nScreenWidth; x++)
 				{
-					int c = *src++;
+					INT32 c = *src++;
 
 					if (c != 0) *dst = color_base + c;
 					dst--;
@@ -493,14 +464,14 @@ void TC0180VCUFramebufferDraw(int priority, int color_base)
 		}
 		else
 		{
-			for (int y = 0; y < nScreenHeight; y++)
+			for (INT32 y = 0; y < nScreenHeight; y++)
 			{
-				unsigned short *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
-				unsigned short *dst = pTransDraw + y * nScreenWidth;
+				UINT16 *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
+				UINT16 *dst = pTransDraw + y * nScreenWidth;
 
-				for (int x = 0; x < nScreenWidth; x++)
+				for (INT32 x = 0; x < nScreenWidth; x++)
 				{
-					int c = *src++;
+					INT32 c = *src++;
 
 					if (c != 0) *dst = color_base + c;
 					dst++;
@@ -512,14 +483,14 @@ void TC0180VCUFramebufferDraw(int priority, int color_base)
 	{
 		if (ctrl & 0x10)   // flip screen
 		{
-			for (int y = 0; y < nScreenHeight; y++)
+			for (INT32 y = 0; y < nScreenHeight; y++)
 			{
-				unsigned short *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
-				unsigned short *dst = pTransDraw + ((nScreenHeight - 1) - y) * nScreenWidth + (nScreenWidth - 1);
+				UINT16 *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
+				UINT16 *dst = pTransDraw + ((nScreenHeight - 1) - y) * nScreenWidth + (nScreenWidth - 1);
 
-				for (int x = 0; x < nScreenWidth; x++)
+				for (INT32 x = 0; x < nScreenWidth; x++)
 				{
-					int c = *src++;
+					INT32 c = *src++;
 
 					if (c != 0 && (c & 0x10) == priority)
 						*dst = color_base + c;
@@ -529,14 +500,14 @@ void TC0180VCUFramebufferDraw(int priority, int color_base)
 		}
     		else
 		{
-			for (int y = 0; y < nScreenHeight; y++)
+			for (INT32 y = 0; y < nScreenHeight; y++)
 			{
-				unsigned short *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
-				unsigned short *dst = pTransDraw + y * nScreenWidth;
+				UINT16 *src = TC0180VCUFramebuffer[framebuffer_page & 1] + (y + TC0180VCU_y_offset) * 512 + TC0180VCU_x_offset;
+				UINT16 *dst = pTransDraw + y * nScreenWidth;
 
-				for (int x = 0; x < nScreenWidth; x++)
+				for (INT32 x = 0; x < nScreenWidth; x++)
 				{
-					int c = *src++;
+					INT32 c = *src++;
 
 					if (c != 0 && (c & 0x10) == priority)
 						*dst = color_base + c;
@@ -547,38 +518,38 @@ void TC0180VCUFramebufferDraw(int priority, int color_base)
 	}
 }
 
-void TC0180VCUDrawSprite(unsigned short *dest)
+void TC0180VCUDrawSprite(UINT16 *dest)
 {
-	int t_swide = nScreenWidth;  nScreenWidth  = 512; // hack to allow use of generic tile routines
-	int t_shigh = nScreenHeight; nScreenHeight = 256;
+	INT32 t_swide = nScreenWidth;  nScreenWidth  = 512; // hack to allow use of generic tile routines
+	INT32 t_shigh = nScreenHeight; nScreenHeight = 256;
 
-	int xlatch = 0;
-	int ylatch = 0;
-	int x_no = 0;
-	int y_no = 0;
-	int x_num = 0;
-	int y_num = 0;
-	int big_sprite = 0;
-	unsigned int zoomx;
-	unsigned int zoomy;
-	unsigned int zx;
-	unsigned int zy;
-	unsigned int zoomxlatch = 0;
-	unsigned int zoomylatch = 0;
+	INT32 xlatch = 0;
+	INT32 ylatch = 0;
+	INT32 x_no = 0;
+	INT32 y_no = 0;
+	INT32 x_num = 0;
+	INT32 y_num = 0;
+	INT32 big_sprite = 0;
+	UINT32 zoomx;
+	UINT32 zoomy;
+	UINT32 zx;
+	UINT32 zy;
+	UINT32 zoomxlatch = 0;
+	UINT32 zoomylatch = 0;
 
-	unsigned short *ram = (unsigned short*)TaitoSpriteRam;
+	UINT16 *ram = (UINT16*)TaitoSpriteRam;
 
-	for (int offs = (0x1980 - 16) / 2; offs >=0; offs -= 8)
+	for (INT32 offs = (0x1980 - 16) / 2; offs >=0; offs -= 8)
 	{
-		int code  = ram[offs + 0] & tilemask[1];
-		int color = ram[offs + 1];
-		int x     = ram[offs + 2] & 0x03ff;
-		int y     = ram[offs + 3] & 0x03ff;
+		INT32 code  = ram[offs + 0] & tilemask[1];
+		INT32 color = ram[offs + 1];
+		INT32 x     = ram[offs + 2] & 0x03ff;
+		INT32 y     = ram[offs + 3] & 0x03ff;
 
-		int data  = ram[offs + 5];
+		INT32 data  = ram[offs + 5];
 
-		int flipx = color & 0x4000;
-		int flipy = color & 0x8000;
+		INT32 flipx = color & 0x4000;
+		INT32 flipy = color & 0x8000;
 
 		if (x >= 0x200) x -= 0x400;
 		if (y >= 0x200) y -= 0x400;
@@ -654,11 +625,11 @@ void TC0180VCUDrawSprite(unsigned short *dest)
 
 void TC0180VCUBufferSprites()
 {
-	int ctrl = TC0180VCUReadControl();
+	INT32 ctrl = TC0180VCUReadControl();
 
 	if (~ctrl & 0x01) {
 		memset (TC0180VCUFbRAM + framebuffer_page * 0x20000, 0, 512 * 256);
-		memset (TC0180VCUFramebuffer[framebuffer_page], 0, 512 * 256 * sizeof(short));
+		memset (TC0180VCUFramebuffer[framebuffer_page], 0, 512 * 256 * sizeof(UINT16));
 	}
 
 	if (~ctrl & 0x80) {
@@ -670,7 +641,7 @@ void TC0180VCUBufferSprites()
 	}
 }
 
-void TC0180VCUScan(int nAction)
+void TC0180VCUScan(INT32 nAction)
 {
 	struct BurnArea ba;
 
@@ -678,13 +649,13 @@ void TC0180VCUScan(int nAction)
 	{
 	bprintf (0, _T("yup\n"));
 
-		ba.Data	  = (unsigned char*)TC0180VCUFramebuffer[0];
-		ba.nLen	  = 512 * 256 * sizeof(short);
+		ba.Data	  = (UINT8*)TC0180VCUFramebuffer[0];
+		ba.nLen	  = 512 * 256 * sizeof(UINT16);
 		ba.szName = "Framebuffer 0";
 		BurnAcb(&ba);
 
-		ba.Data	  = (unsigned char*)TC0180VCUFramebuffer[1];
-		ba.nLen	  = 512 * 256 * sizeof(short);
+		ba.Data	  = (UINT8*)TC0180VCUFramebuffer[1];
+		ba.nLen	  = 512 * 256 * sizeof(UINT16);
 		ba.szName = "Framebuffer 1";
 		BurnAcb(&ba);
 

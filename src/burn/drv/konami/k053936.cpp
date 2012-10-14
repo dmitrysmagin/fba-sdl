@@ -3,43 +3,43 @@
 
 #define MAX_K053936	2
 
-static int nRamLen[MAX_K053936] = { 0, 0 };
-static int nWidth[MAX_K053936] = { 0, 0 };
-static int nHeight[MAX_K053936] = { 0, 0 };
-static unsigned short *tscreen[MAX_K053936] = { NULL, NULL };
-static unsigned char *ramptr[MAX_K053936] = { NULL, NULL };
-static unsigned char *rambuf[MAX_K053936] = { NULL, NULL };
+static INT32 nRamLen[MAX_K053936] = { 0, 0 };
+static INT32 nWidth[MAX_K053936] = { 0, 0 };
+static INT32 nHeight[MAX_K053936] = { 0, 0 };
+static UINT16 *tscreen[MAX_K053936] = { NULL, NULL };
+static UINT8 *ramptr[MAX_K053936] = { NULL, NULL };
+static UINT8 *rambuf[MAX_K053936] = { NULL, NULL };
 
-static int K053936Wrap[MAX_K053936] = { 0, 0 };
-static int K053936Offset[MAX_K053936][2] = { { 0, 0 }, { 0, 0 } };
+static INT32 K053936Wrap[MAX_K053936] = { 0, 0 };
+static INT32 K053936Offset[MAX_K053936][2] = { { 0, 0 }, { 0, 0 } };
 
-static void (*pTileCallback0)(int offset, unsigned short *ram, int *code, int *color, int *sx, int *sy, int *fx, int *fy);
-static void (*pTileCallback1)(int offset, unsigned short *ram, int *code, int *color, int *sx, int *sy, int *fx, int *fy);
+static void (*pTileCallback0)(INT32 offset, UINT16 *ram, INT32 *code, INT32 *color, INT32 *sx, INT32 *sy, INT32 *fx, INT32 *fy);
+static void (*pTileCallback1)(INT32 offset, UINT16 *ram, INT32 *code, INT32 *color, INT32 *sx, INT32 *sy, INT32 *fx, INT32 *fy);
 
 void K053936Reset()
 {
-	for (int i = 0; i < MAX_K053936; i++) {
+	for (INT32 i = 0; i < MAX_K053936; i++) {
 		if (rambuf[i]) {
 			memset (rambuf[i], 0, nRamLen[i]);
 		}
 	}
 }
 
-void K053936Init(int chip, unsigned char *ram, int len, int w, int h, void (*pCallback)(int offset, unsigned short *ram, int *code, int *color, int *sx, int *sy, int *fx, int *fy))
+void K053936Init(INT32 chip, UINT8 *ram, INT32 len, INT32 w, INT32 h, void (*pCallback)(INT32 offset, UINT16 *ram, INT32 *code, INT32 *color, INT32 *sx, INT32 *sy, INT32 *fx, INT32 *fy))
 {
 	ramptr[chip] = ram;
 
 	nRamLen[chip] = len;
 
 	if (rambuf[chip] == NULL) {
-		rambuf[chip] = (unsigned char*)malloc(len);
+		rambuf[chip] = (UINT8*)BurnMalloc(len);
 	}
 
 	nWidth[chip] = w;
 	nHeight[chip] = h;
 
 	if (tscreen[chip] == NULL) {
-		tscreen[chip] = (unsigned short*)malloc(w * h * 2);
+		tscreen[chip] = (UINT16*)BurnMalloc(w * h * 2);
 	}
 
 	if (chip == 0) {
@@ -54,39 +54,33 @@ void K053936Init(int chip, unsigned char *ram, int len, int w, int h, void (*pCa
 
 void K053936Exit()
 {
-	for (int i = 0; i < MAX_K053936; i++) {
+	for (INT32 i = 0; i < MAX_K053936; i++) {
 		nRamLen[i] = 0;
 		nWidth[i] = 0;
 		nHeight[i] = 0;
-		if (tscreen[i] != NULL) {
-			free (tscreen[i]);
-			tscreen[i] = NULL;
-		}
+		BurnFree (tscreen[i]);
 		ramptr[i] = NULL;
-		if (rambuf[i] != NULL) {
-			free (rambuf[i]);
-			rambuf[i] = NULL;
-		}
+		BurnFree (rambuf[i]);
 		K053936Wrap[i] = 0;
 		K053936Offset[i][0] = K053936Offset[i][1] = 0;
 	}
 }
 
-void K053936PredrawTiles(int chip, unsigned char *gfx, int transparent, int tcol)
+void K053936PredrawTiles(INT32 chip, UINT8 *gfx, INT32 transparent, INT32 tcol)
 {
-	int twidth = nWidth[chip];
-	unsigned short *ram = (unsigned short*)ramptr[chip];
-	unsigned short *buf = (unsigned short*)rambuf[chip];
+	INT32 twidth = nWidth[chip];
+	UINT16 *ram = (UINT16*)ramptr[chip];
+	UINT16 *buf = (UINT16*)rambuf[chip];
 
-	for (int i = 0; i < nRamLen[chip] / 2; i++)
+	for (INT32 i = 0; i < nRamLen[chip] / 2; i++)
 	{
 		if (ram[i] != buf[i]) {
-			int sx;
-			int sy;
-			int code;
-			int color;
-			int fx;
-			int fy;
+			INT32 sx;
+			INT32 sy;
+			INT32 code;
+			INT32 color;
+			INT32 fx;
+			INT32 fy;
 		
 			if (chip) {
 				pTileCallback1(i, ram, &code, &color, &sx, &sy, &fx, &fy);
@@ -99,12 +93,12 @@ void K053936PredrawTiles(int chip, unsigned char *gfx, int transparent, int tcol
 				if (fy) fy  = 0xf0;
 				if (fx) fy |= 0x0f;
 		
-				unsigned char *src = gfx + (code * 16 * 16);
-				unsigned short *sdst = tscreen[chip] + (sy * twidth) + sx;
+				UINT8 *src = gfx + (code * 16 * 16);
+				UINT16 *sdst = tscreen[chip] + (sy * twidth) + sx;
 		
-				for (int y = 0; y < 16; y++) {
-					for (int x = 0; x < 16; x++) {
-						int pxl = src[((y << 4) | x) ^ fy];
+				for (INT32 y = 0; y < 16; y++) {
+					for (INT32 x = 0; x < 16; x++) {
+						INT32 pxl = src[((y << 4) | x) ^ fy];
 						if (transparent) {
 							if (pxl == tcol) pxl |= 0x8000;
 						}
@@ -119,40 +113,40 @@ void K053936PredrawTiles(int chip, unsigned char *gfx, int transparent, int tcol
 	}
 }
 
-static inline void copy_roz(int chip, int minx, int maxx, int miny, int maxy, unsigned int startx, unsigned int starty, int incxx, int incxy, int incyx, int incyy, int transp)
+static inline void copy_roz(INT32 chip, INT32 minx, INT32 maxx, INT32 miny, INT32 maxy, UINT32 startx, UINT32 starty, INT32 incxx, INT32 incxy, INT32 incyx, INT32 incyy, INT32 transp)
 {
-	unsigned short *dst = pTransDraw;
-	unsigned short *src = tscreen[chip];
+	UINT16 *dst = pTransDraw;
+	UINT16 *src = tscreen[chip];
 
-	int hmask = nHeight[chip] - 1;
-	int wmask = nWidth[chip] - 1;
+	INT32 hmask = nHeight[chip] - 1;
+	INT32 wmask = nWidth[chip] - 1;
 
-	int wrap = K053936Wrap[chip];
+	INT32 wrap = K053936Wrap[chip];
 
-	for (int sy = miny; sy < maxy; sy++, startx+=incyx, starty+=incyy)
+	for (INT32 sy = miny; sy < maxy; sy++, startx+=incyx, starty+=incyy)
 	{
-		unsigned int cx = startx;
-		unsigned int cy = starty;
+		UINT32 cx = startx;
+		UINT32 cy = starty;
 
 		if (transp) {
 			if (wrap) {
-				for (int x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++)
+				for (INT32 x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++)
 				{
-					int pxl = src[(((cy >> 16) & hmask) << 10) + ((cx >> 16) & wmask)];
+					INT32 pxl = src[(((cy >> 16) & hmask) << 10) + ((cx >> 16) & wmask)];
 		
 					if (!(pxl & 0x8000)) {
 						*dst = pxl;
 					}
 				}
 			} else {
-				for (int x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++)
+				for (INT32 x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++)
 				{
-					int yy = cy >> 16;
+					INT32 yy = cy >> 16;
 					if (yy > hmask || yy < 0) continue;
-					int xx = cx >> 16;
+					INT32 xx = cx >> 16;
 					if (xx > wmask || xx < 0) continue;
 
-					int pxl = src[(yy << 10) + xx];
+					INT32 pxl = src[(yy << 10) + xx];
 
 					if (!(pxl & 0x8000)) {
 						*dst = pxl;
@@ -161,14 +155,14 @@ static inline void copy_roz(int chip, int minx, int maxx, int miny, int maxy, un
 			}
 		} else {
 			if (wrap) {
-				for (int x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++) {
+				for (INT32 x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++) {
 					*dst = src[(((cy >> 16) & hmask) << 10) + ((cx >> 16) & wmask)] & 0x7fff;
 				}
 			} else {
-				for (int x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++) {
-					int yy = cy >> 16;
+				for (INT32 x = minx; x < maxx; x++, cx+=incxx, cy+=incxy, dst++) {
+					INT32 yy = cy >> 16;
 					if (yy > hmask || yy < 0) continue;
-					int xx = cx >> 16;
+					INT32 xx = cx >> 16;
 					if (xx > wmask || xx < 0) continue;
 
 					*dst = src[(yy << 10) + xx] & 0x7fff;
@@ -178,14 +172,14 @@ static inline void copy_roz(int chip, int minx, int maxx, int miny, int maxy, un
 	}
 }
 
-void K053936Draw(int chip, unsigned short *ctrl, unsigned short *linectrl, int transp)
+void K053936Draw(INT32 chip, UINT16 *ctrl, UINT16 *linectrl, INT32 transp)
 {
 	if (ctrl[0x07] & 0x0040 && linectrl)	// Super!
 	{
 		UINT32 startx,starty;
-		int incxx,incxy;
+		INT32 incxx,incxy;
 
-		int minx, maxx, maxy, miny, y;
+		INT32 minx, maxx, maxy, miny, y;
 
 		if ((ctrl[0x07] & 0x0002) && ctrl[0x09])	// glfgreat
 		{
@@ -232,7 +226,7 @@ void K053936Draw(int chip, unsigned short *ctrl, unsigned short *linectrl, int t
 	else	// simple
 	{
 		UINT32 startx,starty;
-		int incxx,incxy,incyx,incyy;
+		INT32 incxx,incxy,incyx,incyy;
 
 		startx = 256 * (INT16)(ctrl[0x00]);
 		starty = 256 * (INT16)(ctrl[0x01]);
@@ -254,18 +248,18 @@ void K053936Draw(int chip, unsigned short *ctrl, unsigned short *linectrl, int t
 	}
 }
 
-void K053936EnableWrap(int chip, int status)
+void K053936EnableWrap(INT32 chip, INT32 status)
 {
 	K053936Wrap[chip] = status;
 }
 
-void K053936SetOffset(int chip, int xoffs, int yoffs)
+void K053936SetOffset(INT32 chip, INT32 xoffs, INT32 yoffs)
 {
 	K053936Offset[chip][0] = xoffs;
 	K053936Offset[chip][1] = yoffs;
 }
 
-void K053936Scan(int nAction)
+void K053936Scan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(K053936Wrap[0]);

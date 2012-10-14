@@ -2446,7 +2446,10 @@ int YM2203Init(int num, int clock, int rate,
 
 	if( !init_tables() )
 	{
-		free( FM2203 );
+		if (FM2203) {
+			free( FM2203 );
+			FM2203 = NULL;
+		}
 		return (-1);
 	}
 	for ( i = 0 ; i < YM2203NumChips; i++ ) {
@@ -2472,8 +2475,10 @@ void YM2203Shutdown(void)
 	if (!FM2203) return;
 
 	FMCloseTable();
-	free(FM2203);
-	FM2203 = NULL;
+	if (FM2203) {
+		free(FM2203);
+		FM2203 = NULL;
+	}
 }
 
 /* YM2203 I/O interface */
@@ -3700,7 +3705,10 @@ int YM2608Init(int num, int clock, int rate,
 	/* allocate total level table (128kb space) */
 	if( !init_tables() )
 	{
-		free( FM2608 );
+		if (FM2608) {
+			free( FM2608 );
+			FM2608 = NULL;
+		}
 		return (-1);
 	}
 
@@ -3750,8 +3758,10 @@ void YM2608Shutdown()
 	if (!FM2608) return;
 
 	FMCloseTable();
-	free(FM2608);
-	FM2608 = NULL;
+	if (FM2608) {
+		free(FM2608);
+		FM2608 = NULL;
+	}
 }
 
 /* reset one of chips */
@@ -4414,7 +4424,10 @@ int YM2610Init(int num, int clock, int rate,
 	/* allocate total level table (128kb space) */
 	if( !init_tables() )
 	{
-		free( FM2610 );
+		if (FM2610) {
+			free( FM2610 );
+			FM2610 = NULL;
+		}
 		return (-1);
 	}
 
@@ -4450,14 +4463,34 @@ int YM2610Init(int num, int clock, int rate,
 	return 0;
 }
 
+/* remap sample memory of chip */
+void YM2610SetRom(int num, void *pcmroma,int pcmsizea,void *pcmromb,int pcmsizeb)
+{
+	YM2610 *F2610 = &(FM2610[num]);
+
+	/* ADPCM */
+	F2610->pcmbuf   = (UINT8 *)pcmroma;
+	F2610->pcm_size = pcmsizea;
+	/* DELTA-T */
+	F2610->deltaT.memory = (UINT8 *)pcmromb;
+	F2610->deltaT.memory_size = pcmsizeb;
+
+	if( (void *)F2610 == cur_chip ){
+		pcmbufA  = F2610->pcmbuf;
+		pcmsizeA = F2610->pcm_size;
+	}
+}
+
 /* shut down emulator */
 void YM2610Shutdown()
 {
 	if (!FM2610) return;
 
 	FMCloseTable();
-	free(FM2610);
-	FM2610 = NULL;
+	if (FM2610) {
+		free(FM2610);
+		FM2610 = NULL;
+	}
 }
 
 /* reset one of chip */
@@ -4903,7 +4936,10 @@ int YM2612Init(int num, int clock, int rate,
 	/* allocate total level table (128kb space) */
 	if( !init_tables() )
 	{
-		free( FM2612 );
+		if (FM2612) {
+			free( FM2612 );
+			FM2612 = NULL;
+		}
 		return (-1);
 	}
 
@@ -4932,8 +4968,10 @@ void YM2612Shutdown()
 	if (!FM2612) return;
 
 	FMCloseTable();
-	free(FM2612);
-	FM2612 = NULL;
+	if (FM2612) {
+		free(FM2612);
+		FM2612 = NULL;
+	}
 }
 
 /* reset one of chip */

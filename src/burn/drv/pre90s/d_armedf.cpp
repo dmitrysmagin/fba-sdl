@@ -2,50 +2,56 @@
 // Based on MAME driver by Carlos A. Lozano, Phil Stroffolino, and Takahiro Nogi
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "dac.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KRAM0;
-static unsigned char *Drv68KRAM1;
-static unsigned char *Drv68KRAM2;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvTxRAM;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KRAM0;
+static UINT8 *Drv68KRAM1;
+static UINT8 *Drv68KRAM2;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvZ80ROM2;
+static UINT8 *DrvZ80RAM2;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvTxRAM;
+static UINT32 *DrvPalette;
 
-static unsigned short*DrvMcuCmd;
-static unsigned short*DrvScroll;
-static unsigned char *DrvVidRegs;
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
+static UINT16*DrvMcuCmd;
+static UINT16*DrvScroll;
+static UINT8 *DrvVidRegs;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned short DrvInputs[4];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT16 DrvInputs[4];
+static UINT8 DrvReset;
 
-static int scroll_type;
-static int sprite_offy;
-static int yoffset;
-static int xoffset;
-static int irqline;
+static INT32 scroll_type;
+static INT32 sprite_offy;
+static INT32 yoffset;
+static INT32 xoffset;
+static INT32 irqline;
+
+static INT32 Terrafjb = 0;
 
 static struct BurnInputInfo ArmedfInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 10,	"p1 coin"	},
@@ -396,7 +402,7 @@ static struct BurnDIPInfo TerrafDIPList[]=
 
 STDDIPINFO(Terraf)
 
-void __fastcall armedf_write_word(unsigned int address, unsigned short data)
+void __fastcall armedf_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -427,7 +433,7 @@ void __fastcall armedf_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall cclimbr2_write_word(unsigned int address, unsigned short data)
+void __fastcall cclimbr2_write_word(UINT32 address, UINT16 data)
 {
 	if (scroll_type == 6 && (address & 0xffffc0) == 0x040000) {
 		DrvMcuCmd[(address >> 1) & 0x1f] = data;
@@ -438,24 +444,37 @@ void __fastcall cclimbr2_write_word(unsigned int address, unsigned short data)
 	{
 		case 0x7c000:
 		{
-			*DrvVidRegs = data >> 8;
-			*flipscreen = (data >> 12) & 1;
-
-			if (scroll_type == 2) {
-				if (~data & 0x0080) {
-					memset (DrvTxRAM, 0xff, 0x2000);
+/*			if (Terrafjb) {
+				// We should be using the extra Z80 - but it doesn't seem to work - the normal simulation does though
+				static UINT32 OldData = 0;
+				if ((data & 0x4000) && (OldData & 0x4000) == 0) {
+					ZetClose();
+					ZetOpen(1);
+					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					ZetClose();
+					ZetOpen(0);
 				}
-			}
-
-			if (scroll_type == 0 || scroll_type == 3 || scroll_type == 5 || scroll_type == 6) { // scroll6 - hack
-				if (((data & 0x4100) == 0x4000 && scroll_type != 6) ||
-					((data & 0x4100) == 0x0000 && scroll_type == 6)) {
-					unsigned short *ram = (unsigned short*)DrvTxRAM;
-					for (int i = 0x10; i < 0x1000; i++) {
-						ram[i] = 0x0020;
+				OldData = data;
+			} else {*/
+				if (scroll_type == 2) {
+					if (~data & 0x0080) {
+						memset (DrvTxRAM, 0xff, 0x2000);
 					}
 				}
-			}
+
+				if (scroll_type == 0 || scroll_type == 3 || scroll_type == 5 || scroll_type == 6) { // scroll6 - hack
+					if (((data & 0x4100) == 0x4000 && scroll_type != 6) ||
+						((data & 0x4100) == 0x0000 && scroll_type == 6)) {
+						UINT16 *ram = (UINT16*)DrvTxRAM;
+						for (INT32 i = 0x10; i < 0x1000; i++) {
+							ram[i] = 0x0020;
+						}
+					}
+				}
+//			}
+			
+			*DrvVidRegs = data >> 8;
+			*flipscreen = (data >> 12) & 1;			
 		}
 		return;
 
@@ -479,7 +498,7 @@ void __fastcall cclimbr2_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall cclimbr2_write_byte(unsigned int address, unsigned char data)
+void __fastcall cclimbr2_write_byte(UINT32 address, UINT8 data)
 {
 	if (scroll_type != 0) return;
 
@@ -505,7 +524,7 @@ void __fastcall cclimbr2_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall cclimbr2_read_word(unsigned int address)
+UINT16 __fastcall cclimbr2_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -525,7 +544,7 @@ unsigned short __fastcall cclimbr2_read_word(unsigned int address)
 	return 0;
 }
 
-void __fastcall armedf_write_port(unsigned short port, unsigned char data)
+void __fastcall armedf_write_port(UINT16 port, UINT8 data)
 {
 //	bprintf (PRINT_NORMAL, _T("%2.2x %2.2x\n"), port & 0xff, data);
 
@@ -540,18 +559,16 @@ void __fastcall armedf_write_port(unsigned short port, unsigned char data)
 		return;
 
 		case 0x02:
-			DACWrite((data & 0x7f) << 1);
-		// dac_0_signed_data_w
+			DACSignedWrite(0, data);
 		return;
 
 		case 0x03:
-			DACWrite((data & 0x7f) << 1);
-		//dac_1_signed_data_w
+			DACSignedWrite(1, data);
 		return;
 	}
 }
 
-unsigned char __fastcall armedf_read_port(unsigned short port)
+UINT8 __fastcall armedf_read_port(UINT16 port)
 {
 //	bprintf (PRINT_NORMAL, _T("%2.2x read\n"), port & 0xff);
 
@@ -568,12 +585,93 @@ unsigned char __fastcall armedf_read_port(unsigned short port)
 	return 0;
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+void __fastcall terrafjbextra_write_port(UINT16 port, UINT8 data)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3072000;
+	// rendering code reads scroll values from RAM - we write the values to RAM here so that the rendering code still works
+//	UINT16 *RAM = (UINT16*)DrvTxRAM;
+	
+	switch (port & 0xff) {
+		case 0x00: {
+//			RAM[13] = data & 0xff;
+//			RAM[14] = data >> 8;
+			return;
+		}
+		
+		case 0x01: {
+//			RAM[11] = data & 0xff;
+//			RAM[12] = data >> 8;
+			return;
+		}
+		
+		case 0x02: {
+			/*
+			state->m_fg_scrolly = (((data & 0x03) >> 0) << 8) | (state->m_fg_scrolly & 0xff);
+			state->m_fg_scrollx = (((data & 0x0c) >> 2) << 8) | (state->m_fg_scrollx & 0xff);*/
+//			RAM[12] = data;//(data & 0x03) >> 0;
+//			RAM[14] = data;//(data & 0x0c) >> 2;
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Port write %x, %x\n"), port, data);
+		}
+	}
 }
 
-static int DrvDoReset()
+UINT8 __fastcall terrafjbextra_read_port(UINT16 port)
+{
+	switch (port & 0xff) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("Port read %x\n"), port);
+		}
+	}
+
+	return 0;
+}
+
+void __fastcall terrafjbextra_write(UINT16 address, UINT8 data)
+{
+	if (address >= 0x4000 && address <= 0x5fff) {
+		DrvTxRAM[(address ^ 1) - 0x4000] = data;
+		return;
+	}
+	
+	switch (address) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("Write %x, %x\n"), address, data);
+		}
+	}
+}
+
+UINT8 __fastcall terrafjbextra_read(UINT16 address)
+{
+	if (address >= 0x4000 && address <= 0x5fff) {
+		return DrvTxRAM[(address ^ 1) - 0x4000];
+	}
+	
+	switch (address) {
+		default: {
+			bprintf(PRINT_NORMAL, _T("Read %x\n"), address);
+		}
+	}
+
+	return 0;
+}
+
+
+
+
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
+{
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
+}
+
+static INT32 DrvSyncDAC()
+{
+	return (INT32)(float)(nBurnSoundLen * (ZetTotalCycles() / (4000000.000 / (nBurnFPS / 100.000))));
+}
+
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -586,15 +684,22 @@ static int DrvDoReset()
 	ZetOpen(0);
 	ZetReset();
 	ZetClose();
+	
+	if (Terrafjb) {
+		ZetOpen(1);
+		ZetReset();
+		ZetClose();
+	}
 
 	BurnYM3812Reset();
+	DACReset();
 
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM	= Next; Next += 0x010000;
 	Drv68KROM	= Next; Next += 0x060000;
@@ -603,9 +708,13 @@ static int MemIndex()
 	DrvGfxROM1	= Next; Next += 0x080000;
 	DrvGfxROM2	= Next; Next += 0x080000;
 	DrvGfxROM3	= Next; Next += 0x080000;
+	
+	if (Terrafjb) {
+		DrvZ80ROM2	= Next; Next += 0x004000;
+	}
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
-
+	DrvPalette	= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
+	
 	AllRam		= Next;
 
 	DrvSprRAM	= Next; Next += 0x001000;
@@ -617,14 +726,18 @@ static int MemIndex()
 	Drv68KRAM0	= Next; Next += 0x005000;
 	Drv68KRAM1	= Next; Next += 0x001000;
 	Drv68KRAM2	= Next; Next += 0x001000;
-
+	
 	flipscreen	= Next; Next += 0x000001;
 	soundlatch	= Next; Next += 0x000001;
 	DrvVidRegs	= Next; Next += 0x000001;
-	DrvScroll	= (unsigned short*)Next; Next += 0x000004 * sizeof(short);
-	DrvMcuCmd	= (unsigned short*)Next; Next += 0x000020 * sizeof(short); 
+	DrvScroll	= (UINT16*)Next; Next += 0x000004 * sizeof(UINT16);
+	DrvMcuCmd	= (UINT16*)Next; Next += 0x000020 * sizeof(UINT16); 
 
 	DrvZ80RAM	= Next; Next += 0x004000;
+	
+	if (Terrafjb) {
+		DrvZ80RAM2	= Next; Next += 0x000800;
+	}
 
 	RamEnd		= Next;
 	MemEnd		= Next;
@@ -632,19 +745,19 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4]   = { 0x000, 0x001, 0x002, 0x003 };
-	int XOffs0[16] = { 0x004, 0x000, 0x00c, 0x008, 0x014, 0x010, 0x01c, 0x018,
+	INT32 Plane[4]   = { 0x000, 0x001, 0x002, 0x003 };
+	INT32 XOffs0[16] = { 0x004, 0x000, 0x00c, 0x008, 0x014, 0x010, 0x01c, 0x018,
 			   0x024, 0x020, 0x02c, 0x028, 0x034, 0x030, 0x03c, 0x038 };
-	int YOffs0[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	INT32 YOffs0[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			   0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
-	int XOffs1[16] = { 0x000004, 0x000000, 0x100004, 0x100000, 0x00000c, 0x000008, 0x10000c, 0x100008,
+	INT32 XOffs1[16] = { 0x000004, 0x000000, 0x100004, 0x100000, 0x00000c, 0x000008, 0x10000c, 0x100008,
 			   0x000014, 0x000010, 0x100014, 0x100010, 0x00001c, 0x000018, 0x10001c, 0x100018 };
-	int YOffs1[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
+	INT32 YOffs1[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 			   0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -665,7 +778,7 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x0800, 4, 16, 16, Plane, XOffs1, YOffs0, 0x200, tmp, DrvGfxROM3);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -700,12 +813,12 @@ static void Cclimbr268KInit()
 	SekSetReadWordHandler(0,	cclimbr2_read_word);
 }
 
-static int DrvInit(int (*pLoadRoms)(), void (*p68KInit)(), int zLen)
+static INT32 DrvInit(INT32 (*pLoadRoms)(), void (*p68KInit)(), INT32 zLen)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -725,7 +838,7 @@ static int DrvInit(int (*pLoadRoms)(), void (*p68KInit)(), int zLen)
 
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, zLen-1, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, zLen-1, 2, DrvZ80ROM);
@@ -736,11 +849,30 @@ static int DrvInit(int (*pLoadRoms)(), void (*p68KInit)(), int zLen)
 	ZetSetInHandler(armedf_read_port);
 	ZetMemEnd();
 	ZetClose();
+	
+	if (Terrafjb) {
+		ZetInit(1);
+		ZetOpen(1);
+		ZetMapArea(0x0000, 0x3fff, 0, DrvZ80ROM2);
+		ZetMapArea(0x0000, 0x3fff, 2, DrvZ80ROM2);
+		ZetMapArea(0x8000, 0x87ff, 0, DrvZ80RAM);
+		ZetMapArea(0x8000, 0x87ff, 1, DrvZ80RAM);
+		ZetMapArea(0x8000, 0x87ff, 2, DrvZ80RAM);
+		ZetSetWriteHandler(terrafjbextra_write);
+		ZetSetReadHandler(terrafjbextra_read);
+		ZetSetOutHandler(terrafjbextra_write_port);
+		ZetSetInHandler(terrafjbextra_read_port);
+		ZetMemEnd();
+		ZetClose();
+	}
 
 	BurnYM3812Init(4000000, NULL, &DrvSynchroniseStream, 0);
-	BurnTimerAttachZetYM3812(3072000);
+	BurnTimerAttachZetYM3812(4000000);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1, DrvSyncDAC);
+	DACInit(1, 0, 1, DrvSyncDAC);
+	DACSetVolShift(0, 1);
+	DACSetVolShift(1, 1);
 
 	GenericTilesInit();
 
@@ -757,7 +889,7 @@ static int DrvInit(int (*pLoadRoms)(), void (*p68KInit)(), int zLen)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -766,18 +898,19 @@ static int DrvExit()
 	SekExit();
 	ZetExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
+	
+	Terrafjb = 0;
 
 	return 0;
 }
 
 static inline void DrvPaletteRecalc()
 {
-	unsigned char r,g,b;
-	unsigned short *pal = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		int d = pal[i];
+	UINT8 r,g,b;
+	UINT16 *pal = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		INT32 d = pal[i];
 
 		r = (d >> 4) & 0xf0;
 		g = (d & 0xf0);
@@ -793,8 +926,8 @@ static inline void DrvPaletteRecalc()
 
 static inline void AssembleInputs()
 {
-	memset (DrvInputs, 0xff, 2 * sizeof(short));
-	for (int i = 0; i < 16; i++) {
+	memset (DrvInputs, 0xff, 2 * sizeof(INT16));
+	for (INT32 i = 0; i < 16; i++) {
 		DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 	}
@@ -803,7 +936,7 @@ static inline void AssembleInputs()
 	DrvInputs[3] = DrvDips[1] | 0xff00;
 
 	if (scroll_type == 1) {
-		unsigned short *ptr = (unsigned short*)Drv68KRAM2;
+		UINT16 *ptr = (UINT16*)Drv68KRAM2;
 		ptr[0] = DrvInputs[0];
 		ptr[1] = DrvInputs[1];
 		ptr[2] = DrvInputs[2];
@@ -811,14 +944,14 @@ static inline void AssembleInputs()
 	}
 }
 
-static void draw_layer(unsigned char *ram, unsigned char *gfxbase, int scrollx, int scrolly, int coloff, int code_and)
+static void draw_layer(UINT8 *ram, UINT8 *gfxbase, INT32 scrollx, INT32 scrolly, INT32 coloff, INT32 code_and)
 {
-	unsigned short *vram = (unsigned short*)ram;
+	UINT16 *vram = (UINT16*)ram;
 
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int sy = (offs & 0x1f) << 4;
-		int sx = (offs >> 5) << 4;
+		INT32 sy = (offs & 0x1f) << 4;
+		INT32 sx = (offs >> 5) << 4;
 		sy -= scrolly + yoffset;
 		sx -= scrollx + xoffset;
 		if (sy < -15) sy += 512;
@@ -826,8 +959,8 @@ static void draw_layer(unsigned char *ram, unsigned char *gfxbase, int scrollx, 
 
 		if (sy >= nScreenHeight || sx >= nScreenWidth) continue;
 
-		int code = vram[offs] & code_and;
-		int color = vram[offs] >> 11;
+		INT32 code = vram[offs] & code_and;
+		INT32 color = vram[offs] >> 11;
 
 		if (*flipscreen) {
 			Render16x16Tile_Mask_FlipXY_Clip(pTransDraw, code, (nScreenWidth - 16) - sx, (nScreenHeight - 16) - sy, color, 4, 15, coloff, gfxbase);
@@ -837,16 +970,16 @@ static void draw_layer(unsigned char *ram, unsigned char *gfxbase, int scrollx, 
 	}
 }
 
-static void draw_txt_layer(int transp)
+static void draw_txt_layer(INT32 transp)
 {
-	unsigned short *vram = (unsigned short*)DrvTxRAM;
+	UINT16 *vram = (UINT16*)DrvTxRAM;
 
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int ofst = 0;
-		int ofsta = 0x400;
-		int sx = offs & 0x3f;
-		int sy = offs >> 6;
+		INT32 ofst = 0;
+		INT32 ofsta = 0x400;
+		INT32 sx = offs & 0x3f;
+		INT32 sy = offs >> 6;
 
 		if (scroll_type == 1) {
 	 		ofst = (sx << 5) | sy;
@@ -863,8 +996,8 @@ static void draw_txt_layer(int transp)
 
 		if (sx < -7 || sy < -7 || sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int attr = vram[ofst+ofsta] & 0xff;
-		int code = (vram[ofst] & 0xff) | ((attr & 3) << 8);
+		INT32 attr = vram[ofst+ofsta] & 0xff;
+		INT32 code = (vram[ofst] & 0xff) | ((attr & 3) << 8);
 
 		if (transp) {
 			if (*flipscreen) {
@@ -882,24 +1015,24 @@ static void draw_txt_layer(int transp)
 	}
 }
 
-static void draw_sprites(int priority)
+static void draw_sprites(INT32 priority)
 {
-	unsigned short *spr = (unsigned short*)DrvSprBuf;
+	UINT16 *spr = (UINT16*)DrvSprBuf;
 
-	int sprlen = 0x1000;
+	INT32 sprlen = 0x1000;
 	if (scroll_type == 0 || scroll_type == 5) sprlen = 0x400;
 
-	for (int offs = 0; offs < sprlen / 2; offs+=4)
+	for (INT32 offs = 0; offs < sprlen / 2; offs+=4)
 	{
-		int attr  = spr[offs + 0];
+		INT32 attr  = spr[offs + 0];
 		if (((attr & 0x3000) >> 12) != priority) continue;
 
-		int code  = spr[offs + 1];
-		int flipx = code & 0x2000;
-		int flipy = code & 0x1000;
-		int color =(spr[offs + 2] >> 8) & 0x1f;
-		int sx    = spr[offs + 3];
-		int sy    = sprite_offy + 240 - (attr & 0x1ff);
+		INT32 code  = spr[offs + 1];
+		INT32 flipx = code & 0x2000;
+		INT32 flipy = code & 0x1000;
+		INT32 color =(spr[offs + 2] >> 8) & 0x1f;
+		INT32 sx    = spr[offs + 3];
+		INT32 sy    = sprite_offy + 240 - (attr & 0x1ff);
 		code     &= 0xfff;
 
 		if (*flipscreen) {
@@ -930,23 +1063,23 @@ static void draw_sprites(int priority)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteRecalc();
 	}
 
-	for (int offs = 0; offs < nScreenWidth * nScreenHeight; offs++)
+	for (INT32 offs = 0; offs < nScreenWidth * nScreenHeight; offs++)
 		pTransDraw[offs] = 0x00ff;
 
-	int txt_transp = 1;
+	INT32 txt_transp = 1;
 
 	if (scroll_type == 0 || scroll_type == 5) {
 		if ((*DrvMcuCmd & 0x000f) == 0x000f) txt_transp = 0;
 	}
 
 	if (scroll_type != 1) {
-		unsigned short *ram = (unsigned short*)DrvTxRAM;
+		UINT16 *ram = (UINT16*)DrvTxRAM;
 		if (scroll_type == 0 || scroll_type == 6) ram = DrvMcuCmd;
 
 		DrvScroll[2] = (ram[13] & 0xff) | ((ram[14] & 3) << 8);
@@ -970,7 +1103,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -981,31 +1114,57 @@ static int DrvFrame()
 
 	AssembleInputs();
 
-	int nSegment;
-	int nInterleave = 128;
-	int nTotalCycles[2] = { 8000000 / 60, 3072000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
-
+	INT32 nSegment;
+	INT32 nInterleave = 100;
+	INT32 nTotalCycles[3] = { 8000000 / 60, 4000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
+	
+	INT32 Z80IRQSlice[9];
+	for (INT32 i = 0; i < 9; i++) {
+		Z80IRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 10));
+	}
+	
 	SekOpen(0);
 	ZetOpen(0);
 	
-//	memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(short)); 
-
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		nSegment = nTotalCycles[0] / nInterleave;
-		nCyclesDone[0] += SekRun(nSegment);
+		INT32 nNext;
+		
+		nNext = (i + 1) * nTotalCycles[0] / nInterleave;
+		nSegment = nNext - nCyclesDone[0];
+		nSegment = SekRun(nSegment);
+		nCyclesDone[0] += nSegment;
 
-		nSegment = nTotalCycles[1] / nInterleave;
-		nCyclesDone[1] += ZetRun(nSegment);
-		ZetRaiseIrq(0);
+		BurnTimerUpdateYM3812(i * (nTotalCycles[1] / nInterleave));
+		
+		for (INT32 j = 0; j < 9; j++) {
+			if (i == Z80IRQSlice[j]) {
+				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				nCyclesDone[1] += ZetRun(3000);
+				ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			}
+		}
+		
+		if (Terrafjb) {
+			ZetClose();
+			ZetOpen(1);
+			nNext = (i + 1) * nTotalCycles[2] / nInterleave;
+			nSegment = nNext - nCyclesDone[2];
+			nSegment = ZetRun(nSegment);
+			nCyclesDone[2] += nSegment;
+			ZetClose();
+			ZetOpen(0);
+		}
 	}
+	
+	BurnTimerEndFrameYM3812(nTotalCycles[1]);
 	
 	if (pBurnSoundOut) {
 		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	//	DACUpdate(pBurnSoundOut, nBurnSoundLen);
+		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
-
+	
 	SekSetIRQLine(irqline, SEK_IRQSTATUS_AUTO);
 
 	ZetClose();
@@ -1018,7 +1177,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1098,7 +1257,7 @@ static struct BurnRomInfo armedffRomDesc[] = {
 STD_ROM_PICK(armedff)
 STD_ROM_FN(armedff)
 
-static int ArmedfLoadRoms()
+static INT32 ArmedfLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
@@ -1123,7 +1282,7 @@ static int ArmedfLoadRoms()
 	return 0;
 }
 
-static int ArmedfInit()
+static INT32 ArmedfInit()
 {
 	scroll_type = 1;
 	sprite_offy = 128;
@@ -1188,7 +1347,7 @@ static struct BurnRomInfo cclimbr2RomDesc[] = {
 STD_ROM_PICK(cclimbr2)
 STD_ROM_FN(cclimbr2)
 
-static int Cclimbr2LoadRoms()
+static INT32 Cclimbr2LoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
@@ -1216,7 +1375,7 @@ static int Cclimbr2LoadRoms()
 	return 0;
 }
 
-static int Cclimbr2Init()
+static INT32 Cclimbr2Init()
 {
 	scroll_type = 4;
 	sprite_offy = 0;
@@ -1309,7 +1468,7 @@ static struct BurnRomInfo kozureRomDesc[] = {
 STD_ROM_PICK(kozure)
 STD_ROM_FN(kozure)
 
-static int KozureLoadRoms()
+static INT32 KozureLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
@@ -1333,7 +1492,7 @@ static int KozureLoadRoms()
 	return 0;
 }
 
-static int KozureInit()
+static INT32 KozureInit()
 {
 	scroll_type = 2;
 	sprite_offy = 128;
@@ -1344,7 +1503,7 @@ static int KozureInit()
 
 struct BurnDriver BurnDrvKozure = {
 	"kozure", NULL, NULL, NULL, "1987",
-	"Kozure Ookami (Japan)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Kozure Ookami (Japan)\0", "Imperfect Graphics", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, kozureRomInfo, kozureRomName, NULL, NULL, ArmedfInputInfo, KozureDIPInfo,
@@ -1375,20 +1534,21 @@ static struct BurnRomInfo legionRomDesc[] = {
 
 	{ "lg7.bin",	0x04000, 0x533e2b58, 7 | BRF_GRA | BRF_OPT }, // 11 MCU data
 
-	{ "legion.1i",	0x08000, 0x79f4a827, 0 | BRF_OPT },           // 12 Unknown
+	{ "legion.1i",	0x08000, 0x79f4a827, 2 | BRF_OPT },           // 12 Unknown
 };
 
 STD_ROM_PICK(legion)
 STD_ROM_FN(legion)
 
-static int LegionLoadRoms()
+static INT32 LegionLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x020001,	 2, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM + 0x020000,	 3, 2)) return 1;
 
-	if (BurnLoadRom(DrvZ80ROM,		 4, 1)) return 1;
+	if (BurnLoadRom(DrvZ80ROM + 0x00000,	 4, 1)) return 1;
+	if (BurnLoadRom(DrvZ80ROM + 0x04000,	12, 1)) return 1;
 
 	if (BurnLoadRom(DrvGfxROM0,		 5, 1)) return 1;
 
@@ -1403,17 +1563,17 @@ static int LegionLoadRoms()
 	return 0;
 }
 
-static int LegionInit()
+static INT32 LegionInit()
 {
 	scroll_type = 3;
 	sprite_offy = 0;
 	irqline = 2;
 
-	int nRet = DrvInit(LegionLoadRoms, Cclimbr268KInit, 0xf800);
+	INT32 nRet = DrvInit(LegionLoadRoms, Cclimbr268KInit, 0xc000);
 
 	if (nRet == 0) { // hack
-		*((unsigned short*)(Drv68KROM + 0x001d6)) = 0x0001;
-		*((unsigned short*)(Drv68KROM + 0x00488)) = 0x4e71;
+		*((UINT16*)(Drv68KROM + 0x001d6)) = 0x0001;
+		*((UINT16*)(Drv68KROM + 0x00488)) = 0x4e71;
 	}
 
 	return nRet;
@@ -1421,7 +1581,7 @@ static int LegionInit()
 
 struct BurnDriver BurnDrvLegion = {
 	"legion", NULL, NULL, NULL, "1987",
-	"Chouji Meikyuu Legion (ver 2.03)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Chouji Meikyuu Legion (ver 2.03)\0", "Imperfect Graphics", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, legionRomInfo, legionRomName, NULL, NULL, ArmedfInputInfo, LegionDIPInfo,
@@ -1456,16 +1616,39 @@ static struct BurnRomInfo legionoRomDesc[] = {
 STD_ROM_PICK(legiono)
 STD_ROM_FN(legiono)
 
-static int LegionoInit()
+static INT32 LegionoLoadRoms()
+{
+	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x020001,	 2, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x020000,	 3, 2)) return 1;
+
+	if (BurnLoadRom(DrvZ80ROM + 0x00000,	 4, 1)) return 1;
+	if (BurnLoadRom(DrvZ80ROM + 0x04000,	11, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM0,		 5, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM1 + 0x000000,	 6, 1)) return 1;
+	if (BurnLoadRom(DrvGfxROM1 + 0x018000,	 7, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM2,		 8, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM3 + 0x000000,	 9, 1)) return 1;
+	if (BurnLoadRom(DrvGfxROM3 + 0x020000,	10, 1)) return 1;
+
+	return 0;
+}
+
+static INT32 LegionoInit()
 {
 	scroll_type = 6;
 	sprite_offy = 0;
 	irqline = 2;
 
-	int nRet = DrvInit(LegionLoadRoms, Cclimbr268KInit, 0xf800);
+	INT32 nRet = DrvInit(LegionoLoadRoms, Cclimbr268KInit, 0xc000);
 
 	if (nRet == 0) { // hack
-		*((unsigned short*)(Drv68KROM + 0x001d6)) = 0x0001;
+		*((UINT16*)(Drv68KROM + 0x001d6)) = 0x0001;
 	}
 
 	return nRet;
@@ -1473,7 +1656,7 @@ static int LegionoInit()
 
 struct BurnDriver BurnDrvLegiono = {
 	"legiono", "legion", NULL, NULL, "1987",
-	"Chouji Meikyuu Legion (ver 1.05)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Chouji Meikyuu Legion (ver 1.05)\0", "Imperfect Graphics", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, legionoRomInfo, legionoRomName, NULL, NULL, ArmedfInputInfo, LegionDIPInfo,
@@ -1513,7 +1696,7 @@ static struct BurnRomInfo terrafRomDesc[] = {
 STD_ROM_PICK(terraf)
 STD_ROM_FN(terraf)
 
-static int TerrafInit()
+static INT32 TerrafInit()
 {
 	scroll_type = 0;
 	sprite_offy = 128;
@@ -1564,7 +1747,7 @@ static struct BurnRomInfo terrafuRomDesc[] = {
 STD_ROM_PICK(terrafu)
 STD_ROM_FN(terrafu)
 
-static int TerrafuInit()
+static INT32 TerrafuInit()
 {
 	scroll_type = 5;
 	sprite_offy = 128;
@@ -1614,16 +1797,49 @@ static struct BurnRomInfo terrafjbRomDesc[] = {
 STD_ROM_PICK(terrafjb)
 STD_ROM_FN(terrafjb)
 
-static int TerrafjbInit()
+static INT32 TerrafjbLoadRoms()
 {
-	return 1;
+	if (BurnLoadRom(Drv68KROM + 0x000001,	 0, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x000000,	 1, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x020001,	 2, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x020000,	 3, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x040001,	 4, 2)) return 1;
+	if (BurnLoadRom(Drv68KROM + 0x040000,	 5, 2)) return 1;
+
+	if (BurnLoadRom(DrvZ80ROM,		 6, 1)) return 1;
+	
+	if (BurnLoadRom(DrvZ80ROM2,		 7, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM0,		 8, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM1 + 0x000000,	 9, 1)) return 1;
+	if (BurnLoadRom(DrvGfxROM1 + 0x010000,	10, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM2 + 0x000000,	11, 1)) return 1;
+	if (BurnLoadRom(DrvGfxROM2 + 0x010000,	12, 1)) return 1;
+
+	if (BurnLoadRom(DrvGfxROM3 + 0x000000,	13, 1)) return 1;
+	if (BurnLoadRom(DrvGfxROM3 + 0x020000,	14, 1)) return 1;
+
+	return 0;
 }
 
-struct BurnDriverD BurnDrvTerrafjb = {
+static INT32 TerrafjbInit()
+{
+	scroll_type = 5;
+	sprite_offy = 128;
+	irqline = 1;
+	
+	Terrafjb = 1;
+
+	return DrvInit(TerrafjbLoadRoms, Cclimbr268KInit, 0xf800);
+}
+
+struct BurnDriver BurnDrvTerrafjb = {
 	"terrafjb", "terraf", NULL, NULL, "1987",
 	"Terra Force (Japan bootleg with additional Z80)\0", "imperfect graphics", "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
 	NULL, terrafjbRomInfo, terrafjbRomName, NULL, NULL, ArmedfInputInfo, TerrafDIPInfo,
 	TerrafjbInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	320, 240, 4, 3

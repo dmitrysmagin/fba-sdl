@@ -6,36 +6,36 @@
 #include "konami_intf.h"
 #include "konamiic.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvKonROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvBankRAM;
-static unsigned char *DrvKonRAM;
-static unsigned char *DrvPalRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvKonROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvBankRAM;
+static UINT8 *DrvKonRAM;
+static UINT8 *DrvPalRAM;
 
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *Palette;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *nDrvRomBank;
-static int videobank;
+static UINT8 *nDrvRomBank;
+static INT32 videobank;
 
-static int layer_colorbase[3];
-static int sprite_colorbase;
-static int layerpri[3];
+static INT32 layer_colorbase[3];
+static INT32 sprite_colorbase;
+static INT32 layerpri[3];
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
-static unsigned char DrvInputs[3];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
+static UINT8 DrvInputs[3];
 
 static struct BurnInputInfo SurpratkInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 2,	"p1 coin"	},
@@ -150,7 +150,7 @@ static struct BurnDIPInfo BonusQuizDIPList[]=
 STDDIPINFO(Suratkj)
 STDDIPINFOEXT(Surpratk, Suratkj, BonusQuiz)
 
-unsigned char supratk_read(unsigned short address)
+UINT8 supratk_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -194,7 +194,7 @@ unsigned char supratk_read(unsigned short address)
 	return 0;
 }
 
-void supratk_write(unsigned short address, unsigned char data)
+void supratk_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -243,16 +243,16 @@ void supratk_write(unsigned short address, unsigned char data)
 	}
 }
 
-static void K052109Callback(int layer, int bank, int *code, int *color, int *flags, int *)
+static void K052109Callback(INT32 layer, INT32 bank, INT32 *code, INT32 *color, INT32 *flags, INT32 *)
 {
 	*flags = (*color & 0x80) >> 7;
 	*code |= ((*color & 0x03) << 8) | ((*color & 0x10) << 6) | ((*color & 0x0c) << 9) | (bank << 13);
 	*color = layer_colorbase[layer] + ((*color & 0x60) >> 5);
 }
 
-static void K053245Callback(int *code, int *color, int *priority)
+static void K053245Callback(INT32 *code, INT32 *color, INT32 *priority)
 {
-	int pri = 0x20 | ((*color & 0x60) >> 2);
+	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
 	if (pri <= layerpri[2])                           *priority = 0;
 	else if (pri > layerpri[2] && pri <= layerpri[1]) *priority = 1;
 	else if (pri > layerpri[1] && pri <= layerpri[0]) *priority = 2;
@@ -262,18 +262,18 @@ static void K053245Callback(int *code, int *color, int *priority)
 	*color = sprite_colorbase + (*color & 0x1f);
 }
 
-static void supratk_set_lines(int lines)
+static void supratk_set_lines(INT32 lines)
 {
 	nDrvRomBank[0] = lines;
 	konamiMapMemory(DrvKonROM + 0x10000 + ((lines & 0x1f) * 0x2000), 0x2000, 0x3fff, KON_ROM); 
 }
 
-static void DrvYM2151IRQHandler(int nStatus)
+static void DrvYM2151IRQHandler(INT32 nStatus)
 {
 	konamiSetIrqLine(KONAMI_FIRQ_LINE, nStatus ? 3 /* use 3 as ACK */ : 0);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -292,9 +292,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvGfxROM0		= Next; Next += 0x080000;
 	DrvGfxROMExp0		= Next; Next += 0x100000;
@@ -303,8 +303,8 @@ static int MemIndex()
 
 	DrvKonROM		= Next; Next += 0x050000;
 
-	Palette			= (unsigned int*)Next; Next += 0x800 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -320,11 +320,11 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
-	int XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
-	int YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
+	INT32 Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
+	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
+	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, 0x080000);
 	konami_rom_deinterleave_2(DrvGfxROM1, 0x080000);
@@ -336,12 +336,12 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	int nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -386,7 +386,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -397,18 +397,17 @@ static int DrvExit()
 
 	BurnYM2151Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		unsigned short d = (p[i] << 8) | (p[i] >> 8);
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		UINT16 d = (p[i] << 8) | (p[i] >> 8);
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -424,12 +423,12 @@ static void DrvRecalcPal()
 }
 
 // stolen directly from mame
-static void sortlayers(int *layer,int *pri)
+static void sortlayers(INT32 *layer,INT32 *pri)
 {
 #define SWAP(a,b) \
 	if (pri[a] < pri[b]) \
 	{ \
-		int t; \
+		INT32 t; \
 		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
 		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
 	}
@@ -439,7 +438,7 @@ static void sortlayers(int *layer,int *pri)
 	SWAP(1,2)
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
@@ -447,7 +446,7 @@ static int DrvDraw()
 
 	K052109UpdateScroll();
 
-	int bg_colorbase, layer[3];
+	INT32 bg_colorbase, layer[3];
 
 	bg_colorbase       = K053251GetPaletteIndex(0);
 	sprite_colorbase   = K053251GetPaletteIndex(1);
@@ -464,7 +463,7 @@ static int DrvDraw()
 
 	sortlayers(layer,layerpri);
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 16 * bg_colorbase;
 	}
 
@@ -482,7 +481,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -490,7 +489,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -502,14 +501,35 @@ static int DrvFrame()
 		if ((DrvInputs[1] & 0x18) == 0) DrvInputs[1] |= 0x18;
 		if ((DrvInputs[1] & 0x06) == 0) DrvInputs[1] |= 0x06;
 	}
+	
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nCyclesTotal = (((3000000 / 60) * 133) / 100); // 33% overclock
+	INT32 nCyclesDone = 0;
 
 	konamiOpen(0);
-	konamiRun((((3000000 / 60) * 133) / 100) /* 33% overclock */);
+	
+	for (INT32 i = 0; i < nInterleave; i++)	{
+		INT32 nSegment = (nCyclesTotal / nInterleave) * (i + 1);
+
+		nCyclesDone += konamiRun(nSegment - nCyclesDone);
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}	
+	}
 
 	if (K052109_irq_enabled) konamiSetIrqLine(KONAMI_IRQ_LINE, KONAMI_HOLD_LINE);
 
 	if (pBurnSoundOut) {
-		BurnYM2151Render(pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		if (nSegmentLength) {
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+		}
 	}
 
 	konamiClose();
@@ -521,7 +541,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

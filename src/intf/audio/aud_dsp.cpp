@@ -32,7 +32,7 @@
 class LowPass2 *LP1 = NULL, *LP2 = NULL;
 
 
-int DspDo(short *Buff, int Len)
+INT32 DspDo(INT16 *Buff, INT32 Len)
 {
   if ((!LP1) || (!LP2)) { return 1; }
 
@@ -43,7 +43,7 @@ int DspDo(short *Buff, int Len)
 }
 
 
-int DspInit(void)
+INT32 DspInit(void)
 {
   LP1 = new LowPass2(CutFreq, SampleFreq, Q, Gain,
                      CutFreq2, Q2, Gain2);
@@ -52,7 +52,7 @@ int DspInit(void)
   return 0;
 }
 
-int DspExit(void)
+INT32 DspExit(void)
 {
   delete LP1;
   delete LP2;

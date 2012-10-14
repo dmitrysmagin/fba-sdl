@@ -1,9 +1,9 @@
 #include "gal.h"
 
-static int ScrambleInit();
+static INT32 ScrambleInit();
 
 // Input definitions (alphabetical)
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 static struct BurnInputInfo Ad2083InputList[] =
 {
 	{"Coin 1"            , BIT_DIGITAL   , GalInputPort1 + 3, "p1 coin"   },
@@ -616,6 +616,24 @@ static struct BurnInputInfo ExplorerInputList[] =
 
 STDINPUTINFO(Explorer)
 
+static struct BurnInputInfo FantastcInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 1, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL   , GalInputPort1 + 0, "p1 start"  },
+	{"Start 2"           , BIT_DIGITAL   , GalInputPort1 + 1, "p2 start"  },
+
+	{"Left"              , BIT_DIGITAL   , GalInputPort0 + 2, "p1 left"   },
+	{"Right"             , BIT_DIGITAL   , GalInputPort0 + 3, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL   , GalInputPort0 + 4, "p1 fire 1" },
+	
+	{"Reset"             , BIT_DIGITAL   , &GalReset        , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH , GalDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , GalDip + 1       , "dip"       },
+	{"Dip 3"             , BIT_DIPSWITCH , GalDip + 2       , "dip"       },
+};
+
+STDINPUTINFO(Fantastc)
+
 static struct BurnInputInfo Fourin1InputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 0, "p1 coin"   },
 	{"Start 1"           , BIT_DIGITAL   , GalInputPort1 + 0, "p1 start"  },
@@ -956,6 +974,25 @@ static struct BurnInputInfo CkongmcInputList[] =
 };
 
 STDINPUTINFO(Ckongmc)
+
+static struct BurnInputInfo KongInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 1, "p1 coin"   },
+
+	{"Up"                , BIT_DIGITAL   , GalInputPort0 + 7, "p1 up"     },
+	{"Down"              , BIT_DIGITAL   , GalInputPort1 + 5, "p1 down"   },
+	{"Left"              , BIT_DIGITAL   , GalInputPort0 + 2, "p1 left"   },
+	{"Right"             , BIT_DIGITAL   , GalInputPort0 + 3, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL   , GalInputPort1 + 0, "p1 fire 1" },
+	{"Fire 2"            , BIT_DIGITAL   , GalInputPort1 + 1, "p2 fire 1" },
+	
+	{"Reset"             , BIT_DIGITAL   , &GalReset        , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH , GalDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , GalDip + 1       , "dip"       },
+	{"Dip 3"             , BIT_DIPSWITCH , GalDip + 2       , "dip"       },
+};
+
+STDINPUTINFO(Kong)
 
 static struct BurnInputInfo LadybuggInputList[] =
 {
@@ -3183,6 +3220,47 @@ static struct BurnDIPInfo ExplorerDIPList[]=
 
 STDDIPINFO(Explorer)
 
+static struct BurnDIPInfo FantastcDIPList[]=
+{
+	// Default Values
+	{0x07, 0xff, 0xff, 0x40, NULL                     },
+	{0x08, 0xff, 0xff, 0x00, NULL                     },
+	{0x09, 0xff, 0xff, 0x01, NULL                     },
+	
+	// Dip 1	
+	{0   , 0xfe, 0   , 2   , "Service Mode"           },
+	{0x07, 0x01, 0x20, 0x00, "Off"                    },
+	{0x07, 0x01, 0x20, 0x20, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Extended Bonus Life"    },
+	{0x07, 0x01, 0x40, 0x00, "Off"                    },
+	{0x07, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Coinage"                },
+	{0x08, 0x01, 0xc0, 0x00, "1 Coin  1 Play"         },
+	{0x08, 0x01, 0xc0, 0x80, "2 Coins 1 Play"         },
+	
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x08, 0x01, 0x80, 0x00, "3"                      },
+	{0x08, 0x01, 0x80, 0x80, "5"                      },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x09, 0x01, 0x03, 0x00, "Easy"                   },
+	{0x09, 0x01, 0x03, 0x01, "Medium"                 },
+	{0x09, 0x01, 0x03, 0x02, "Hard"                   },
+	{0x09, 0x01, 0x03, 0x03, "Hardest"                },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x09, 0x01, 0x0c, 0x00, "20000 80000"            },
+	{0x09, 0x01, 0x0c, 0x04, "30000 80000"            },
+	{0x09, 0x01, 0x0c, 0x08, "20000 120000"           },
+	{0x09, 0x01, 0x0c, 0x0c, "30000 120000"           },
+};
+
+STDDIPINFO(Fantastc)
+
 static struct BurnDIPInfo FantaziaDIPList[]=
 {
 	// Default Values
@@ -3806,6 +3884,45 @@ static struct BurnDIPInfo CkongmcDIPList[]=
 };
 
 STDDIPINFO(Ckongmc)
+
+static struct BurnDIPInfo KongDIPList[]=
+{
+	// Default Values
+	{0x08, 0xff, 0xff, 0x00, NULL                     },
+	{0x09, 0xff, 0xff, 0x00, NULL                     },
+	{0x0a, 0xff, 0xff, 0x00, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Service Mode"           },
+	{0x08, 0x01, 0x20, 0x00, "Off"                    },
+	{0x08, 0x01, 0x20, 0x20, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "99 Men/Max Timer"       },
+	{0x08, 0x01, 0x40, 0x00, "Off"                    },
+	{0x08, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x09, 0x01, 0x40, 0x00, "3"                      },
+	{0x09, 0x01, 0x40, 0x40, "5"                      },
+	
+	{0   , 0xfe, 0   , 2   , "Coinage"                },
+	{0x09, 0x01, 0x80, 0x00, "1 Coin  1 Credit"       },
+	{0x09, 0x01, 0x80, 0x80, "2 Coins 1 Credit"       },
+		
+	// Dip 3
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x0a, 0x01, 0x03, 0x00, "10000"                  },
+	{0x0a, 0x01, 0x03, 0x01, "20000"                  },
+	{0x0a, 0x01, 0x03, 0x02, "30000"                  },
+	{0x0a, 0x01, 0x03, 0x03, "None"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Mode"                   },
+	{0x0a, 0x01, 0x04, 0x04, "Tournament (Harder)"    },
+	{0x0a, 0x01, 0x04, 0x00, "Normal"                 },
+};
+
+STDDIPINFO(Kong)
 
 static struct BurnDIPInfo LadybuggDIPList[]=
 {
@@ -6101,23 +6218,23 @@ static struct BurnRomInfo TstgalxRomDesc[] = {
 STD_ROM_PICK(Tstgalx)
 STD_ROM_FN(Tstgalx)
 
-static int SupergxInit()
+static INT32 SupergxInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalTilesSharedRomSize = 0x1000;
 	GalPromRomSize = 0x20;
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	HardCodeGalaxianPROM();
 	
@@ -6517,7 +6634,7 @@ static struct BurnRomInfo Scramb2RomDesc[] = {
 STD_ROM_PICK(Scramb2)
 STD_ROM_FN(Scramb2)
 
-unsigned char __fastcall AzurianZ80Read(unsigned short a)
+UINT8 __fastcall AzurianZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x6000: {
@@ -6545,7 +6662,7 @@ unsigned char __fastcall AzurianZ80Read(unsigned short a)
 	return 0xff;
 }
 
-unsigned char __fastcall TazzmangZ80Read(unsigned short a)
+UINT8 __fastcall TazzmangZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9800:
@@ -6576,10 +6693,10 @@ unsigned char __fastcall TazzmangZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall TazzmangZ80Write(unsigned short a, unsigned char d)
+void __fastcall TazzmangZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x8800 && a <= 0x88ff) {
-		int Offset = a - 0x8800;
+		INT32 Offset = a - 0x8800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -6637,7 +6754,7 @@ void __fastcall TazzmangZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall ScramblbZ80Read(unsigned short a)
+UINT8 __fastcall ScramblbZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x6000: {
@@ -6680,10 +6797,10 @@ unsigned char __fastcall ScramblbZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall ScramblbZ80Write(unsigned short a, unsigned char d)
+void __fastcall ScramblbZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -6770,7 +6887,7 @@ void __fastcall ScramblbZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Scramb2Z80Read(unsigned short a)
+UINT8 __fastcall Scramb2Z80Read(UINT16 a)
 {
 	if (a >= 0x5800 && a <= 0x5fff) return 0x25;
 	
@@ -6812,7 +6929,7 @@ unsigned char __fastcall Scramb2Z80Read(unsigned short a)
 		case 0x7805:
 		case 0x7806:
 		case 0x7807: {
-			int Offset = a - 0x7800;
+			INT32 Offset = a - 0x7800;
 			return ((0xff - GalInput[2] - GalDip[2]) >> Offset) & 0x01;
 		}
 		
@@ -6824,10 +6941,10 @@ unsigned char __fastcall Scramb2Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Scramb2Z80Write(unsigned short a, unsigned char d)
+void __fastcall Scramb2Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -6905,7 +7022,7 @@ void __fastcall Scramb2Z80Write(unsigned short a, unsigned char d)
 
 static void OrbitronRearrangeRom()
 {
-	GalTempRom = (unsigned char*)malloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(0x2000);
 	
 	memcpy(GalTempRom, GalZ80Rom1, 0x2000);
 	memcpy(GalZ80Rom1 + 0x0600, GalTempRom + 0x0000, 0x200);
@@ -6924,10 +7041,10 @@ static void OrbitronRearrangeRom()
 	memcpy(GalZ80Rom1 + 0x1c00, GalTempRom + 0x1a00, 0x200);
 	memcpy(GalZ80Rom1 + 0x1a00, GalTempRom + 0x1c00, 0x200);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x1e00, 0x200);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 }
 
-static int OrbitronInit()
+static INT32 OrbitronInit()
 {
 	GalPostLoadCallbackFunction = OrbitronRearrangeRom;
 	
@@ -6940,7 +7057,7 @@ static void LuctodayRearrangeRom()
 	memset(GalZ80Rom1 + 0x0800, 0, 0x800);
 }
 
-static int LuctodayInit()
+static INT32 LuctodayInit()
 {
 	GalZ80Rom1Size = 0x1800;
 	GalPostLoadCallbackFunction = LuctodayRearrangeRom;
@@ -6954,7 +7071,7 @@ static void ChewingRearrangeRom()
 	memset(GalZ80Rom1 + 0x1000, 0, 0x800);
 }
 
-static int ChewingInit()
+static INT32 ChewingInit()
 {
 	GalZ80Rom1Size = 0x1000;
 	GalPostLoadCallbackFunction = ChewingRearrangeRom;
@@ -6968,7 +7085,7 @@ static void CatacombRearrangeRom()
 	memset(GalZ80Rom1 + 0x1800, 0, 0x800);
 }
 
-static int CatacombInit()
+static INT32 CatacombInit()
 {
 	GalZ80Rom1Size = 0x800;
 	GalPostLoadCallbackFunction = CatacombRearrangeRom;
@@ -6985,9 +7102,9 @@ static void TdpgalPostLoad()
 	ZetClose();
 }
 
-static int TdpgalInit()
+static INT32 TdpgalInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = TdpgalPostLoad;
 	
@@ -7003,9 +7120,9 @@ static void AzurianPostLoad()
 	ZetClose();
 }
 
-static int AzurianInit()
+static INT32 AzurianInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = AzurianPostLoad;
 	
@@ -7037,7 +7154,7 @@ static void TazzmangPostLoad()
 	ZetClose();
 }
 
-static int TazzmangInit()
+static INT32 TazzmangInit()
 {
 	GalPostLoadCallbackFunction = TazzmangPostLoad;
 	
@@ -7068,9 +7185,9 @@ static void MapScramblb()
 	ZetClose();
 }
 
-static int ScramblbInit()
+static INT32 ScramblbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScramblb;
 	
@@ -7092,9 +7209,9 @@ static void Scramb2PostLoad()
 	ZetClose();
 }
 
-static int Scramb2Init()
+static INT32 Scramb2Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = Scramb2PostLoad;
 	
@@ -7489,10 +7606,31 @@ static struct BurnRomInfo SkyraidrRomDesc[] = {
 STD_ROM_PICK(Skyraidr)
 STD_ROM_FN(Skyraidr)
 
-void __fastcall PiscesZ80Write(unsigned short a, unsigned char d)
+static struct BurnRomInfo GalempRomDesc[] = {
+	{ "1",             0x00800, 0xd975af10, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2",             0x00800, 0xb2ed14c3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "3",             0x00800, 0x945f4160, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "4",             0x00800, 0xdf7a13ea, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "5",             0x00800, 0xff6128a2, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "6",             0x00800, 0xd915a389, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "7",             0x00800, 0xc9245346, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "8",             0x00800, 0x797d45c7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+		
+	{ "10",            0x00800, 0x30177b93, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "12",            0x00800, 0xc26132af, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "9",             0x00800, 0x7e8dcc13, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "11",            0x00800, 0xdcc2b33b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "l06_prom.bin",  0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Galemp)
+STD_ROM_FN(Galemp)
+
+void __fastcall PiscesZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5800 && a <= 0x58ff) {
-		int Offset = a - 0x5800;
+		INT32 Offset = a - 0x5800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -7581,7 +7719,7 @@ static void PiscesInstallGfxBankHandler()
 	ZetClose();
 }
 
-static int PiscesInit()
+static INT32 PiscesInit()
 {
 	GalPostLoadCallbackFunction = PiscesInstallGfxBankHandler;
 	GalExtendTileInfoFunction = PiscesExtendTileInfo;
@@ -7700,6 +7838,16 @@ struct BurnDriver BurnDrvSkyraidr = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvGalemp = {
+	"galemp", "uniwars", NULL, NULL, "1980",
+	"Galaxy Empire (bootleg?)\0", NULL, "bootleg (Taito do Brasil)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, GalempRomInfo, GalempRomName, NULL, NULL, GalaxianInputInfo, SupergDIPInfo,
+	PiscesInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 // Extra chars contolled via different banking at 0x6002
 static struct BurnRomInfo Batman2RomDesc[] = {
 	{ "01.bin",        0x00800, 0x150fbca5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -7741,7 +7889,7 @@ static struct BurnRomInfo LadybuggRomDesc[] = {
 STD_ROM_PICK(Ladybugg)
 STD_ROM_FN(Ladybugg)
 
-static int Batman2Init()
+static INT32 Batman2Init()
 {
 	GalPostLoadCallbackFunction = PiscesInstallGfxBankHandler;
 	GalExtendTileInfoFunction = Batman2ExtendTileInfo;
@@ -7750,9 +7898,9 @@ static int Batman2Init()
 	return GalInit();
 }
 
-static int LadybuggInit()
+static INT32 LadybuggInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = PiscesInstallGfxBankHandler;
 	GalExtendTileInfoFunction = Batman2ExtendTileInfo;
@@ -7760,8 +7908,8 @@ static int LadybuggInit()
 	
 	nRet = GalInit();
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x1000);
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	memcpy(GalTempRom + 0x0800, TempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
@@ -7770,8 +7918,8 @@ static int LadybuggInit()
 	memcpy(GalTempRom + 0x1000, TempRom + 0x0800, 0x800);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	return nRet;
 }
@@ -7910,9 +8058,9 @@ static struct BurnRomInfo AtlantisbRomDesc[] = {
 STD_ROM_PICK(Atlantisb)
 STD_ROM_FN(Atlantisb)
 
-static int PacmanblInit()
+static INT32 PacmanblInit()
 {
-	int nRet = GalInit();
+	INT32 nRet = GalInit();
 	
 	GalSpriteClipStart = 7;
 	GalSpriteClipEnd = 246;
@@ -7922,7 +8070,7 @@ static int PacmanblInit()
 
 static void PacmanblaRearrangeRom()
 {
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0800, 0x800);
@@ -7932,12 +8080,12 @@ static void PacmanblaRearrangeRom()
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 }
 
-static int PacmanblaInit()
+static INT32 PacmanblaInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = PacmanblaRearrangeRom;
 	
@@ -7948,8 +8096,8 @@ static int PacmanblaInit()
 	CharPlaneOffsets[1] = 0x4000;
 	SpritePlaneOffsets[1] = 0x4000;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x2000);
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(TempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
@@ -7958,23 +8106,23 @@ static int PacmanblaInit()
 	memcpy(GalTempRom + 0x1800, TempRom + 0x1000, 0x800);	
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x1000, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	return nRet;
 }
 
 static void AtlantisbRearrangeRom()
 {
-	GalTempRom = (unsigned char*)malloc(0x3000);
+	GalTempRom = (UINT8*)BurnMalloc(0x3000);
 	
 	memcpy(GalTempRom, GalZ80Rom1, 0x3000);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x1000, 0x2000);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 }
 
-static int AtlantisbInit()
+static INT32 AtlantisbInit()
 {
 	GalZ80Rom1Size = 0x1000;
 	
@@ -8061,7 +8209,7 @@ STD_ROM_FN(Devilfsg)
 
 static void DevilfsgRearrangeRom()
 {
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0800, 0x800);
@@ -8071,12 +8219,12 @@ static void DevilfsgRearrangeRom()
 	memcpy(GalZ80Rom1 + 0x1000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 }
 
-static int DevilfsgInit()
+static INT32 DevilfsgInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DevilfsgRearrangeRom;
 	
@@ -8087,8 +8235,8 @@ static int DevilfsgInit()
 	CharPlaneOffsets[1] = 0x4000;
 	SpritePlaneOffsets[1] = 0x4000;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x2000);
-	GalTempRom = (unsigned char*)malloc(0x1000);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(0x1000);
 	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
@@ -8097,8 +8245,8 @@ static int DevilfsgInit()
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x0800, TempRom + 0x1000, 0x800);	
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	GalIrqType = GAL_IRQ_TYPE_IRQ0;
 	
@@ -8160,10 +8308,10 @@ static struct BurnRomInfo Ozon1RomDesc[] = {
 STD_ROM_PICK(Ozon1)
 STD_ROM_FN(Ozon1)
 
-void __fastcall ZigzagZ80Write(unsigned short a, unsigned char d)
+void __fastcall ZigzagZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x4800 && a <= 0x4fff) {
-		int Offset = a - 0x4800;
+		INT32 Offset = a - 0x4800;
 		
 		switch (Offset & 0x300) {
 			case 0x000: {
@@ -8186,7 +8334,7 @@ void __fastcall ZigzagZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x5800 && a <= 0x58ff) {
-		int Offset = a - 0x5800;
+		INT32 Offset = a - 0x5800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -8256,7 +8404,7 @@ void __fastcall ZigzagZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Ozon1Z80Read(unsigned short a)
+UINT8 __fastcall Ozon1Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x8100: {
@@ -8279,10 +8427,10 @@ unsigned char __fastcall Ozon1Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Ozon1Z80Write(unsigned short a, unsigned char d)
+void __fastcall Ozon1Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -8313,7 +8461,7 @@ void __fastcall Ozon1Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Ozon1Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall Ozon1Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -8341,9 +8489,9 @@ static void ZigzagInstallHandler()
 	ZetClose();
 }
 
-static int ZigzagInit()
+static INT32 ZigzagInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910;
 	GalPostLoadCallbackFunction = ZigzagInstallHandler;
@@ -8355,8 +8503,8 @@ static int ZigzagInit()
 	CharPlaneOffsets[1] = 0x4000;
 	SpritePlaneOffsets[1] = 0x4000;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x2000);
-	GalTempRom = (unsigned char*)malloc(0x1000);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(0x1000);
 	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0000, 0x800);
@@ -8365,8 +8513,8 @@ static int ZigzagInit()
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
 	memcpy(GalTempRom + 0x0800, TempRom + 0x1800, 0x800);	
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	GalDrawBulletsFunction = NULL;
 	
@@ -8401,9 +8549,9 @@ static void Ozon1PostLoad()
 	ZetClose();
 }
 
-static int Ozon1Init()
+static INT32 Ozon1Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = Ozon1PostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910;
@@ -8468,7 +8616,7 @@ static struct BurnRomInfo GmgalaxRomDesc[] = {
 STD_ROM_PICK(Gmgalax)
 STD_ROM_FN(Gmgalax)
 
-unsigned char __fastcall GmgalaxZ80Read(unsigned short a)
+UINT8 __fastcall GmgalaxZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x6000: {
@@ -8503,17 +8651,17 @@ static void GmgalaxPostLoad()
 	ZetClose();
 }
 
-static int GmgalaxInit()
+static INT32 GmgalaxInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = GmgalaxPostLoad;
 	GalZ80Rom1Size = 0x1000;	
 	
 	nRet = GalInit();
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x1000);
-	GalTempRom = (unsigned char*)malloc(0x4000);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(0x4000);
 	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x1000, TempRom + 0x0800, 0x800);
@@ -8528,8 +8676,8 @@ static int GmgalaxInit()
 	memcpy(GalTempRom + 0x3800, TempRom + 0x0800, 0x800);	
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	GalExtendTileInfoFunction = GmgalaxExtendTileInfo;
 	GalExtendSpriteInfoFunction = GmgalaxExtendSpriteInfo;
@@ -8542,11 +8690,11 @@ static int GmgalaxInit()
 	return nRet;
 }
 
-struct BurnDriver BurnDrvGmgalax = {
+struct BurnDriverD BurnDrvGmgalax = {
 	"gmgalax", NULL, NULL, NULL, "1981",
 	"Ghostmuncher Galaxian (bootleg)\0", NULL, "LAX", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, GmgalaxRomInfo, GmgalaxRomName, NULL, NULL, GmgalaxInputInfo, GmgalaxDIPInfo,
 	GmgalaxInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
@@ -8586,7 +8734,7 @@ static struct BurnRomInfo Fourin1RomDesc[] = {
 STD_ROM_PICK(Fourin1)
 STD_ROM_FN(Fourin1)
 
-unsigned char __fastcall Fourin1Z80Read(unsigned short a)
+UINT8 __fastcall Fourin1Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x6000: {
@@ -8614,10 +8762,12 @@ unsigned char __fastcall Fourin1Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Fourin1Z80Write(unsigned short a, unsigned char d)
+void __fastcall Fourin1Z80Write(UINT16 a, UINT8 d)
 {
+	if (a < 0x4000) return;
+	
 	if (a >= 0x5800 && a <= 0x58ff) {
-		int Offset = a - 0x5800;
+		INT32 Offset = a - 0x5800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -8708,14 +8858,14 @@ void __fastcall Fourin1Z80Write(unsigned short a, unsigned char d)
 
 static void Fourin1PostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(0x3000);
+	GalTempRom = (UINT8*)BurnMalloc(0x3000);
 	memcpy(GalTempRom, GalZ80Rom1 + 0xd000, 0x3000);
 	memset(GalZ80Rom1 + 0xd000, 0xff, 0x1000);
 	memcpy(GalZ80Rom1 + 0xe000, GalTempRom, 0x3000);
 	memset(GalZ80Rom1 + 0x11000, 0xff, 0x1000);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
-	for (unsigned int i = 0; i < GalZ80Rom1Size; i++) {
+	for (UINT32 i = 0; i < GalZ80Rom1Size; i++) {
 		GalZ80Rom1[i] = GalZ80Rom1[i] ^ (i & 0xff);
 	}
 
@@ -8729,10 +8879,11 @@ static void Fourin1PostLoad()
 	ZetClose();
 }
 
-static int Fourin1Init()
+static INT32 Fourin1Init()
 {
-	int nRet;
+	INT32 nRet;
 	
+	Fourin1Bank = 0;
 	GalPostLoadCallbackFunction = Fourin1PostLoad;
 	GalZ80Rom1Size = 0x2000;
 	GalTilesSharedRomSize = 0x1000;
@@ -8744,8 +8895,8 @@ static int Fourin1Init()
 	CharPlaneOffsets[1] = GalNumChars * 8 * 8;
 	SpritePlaneOffsets[1] = GalNumSprites * 16 * 16;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x1000);
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x4000, TempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
@@ -8772,8 +8923,8 @@ static int Fourin1Init()
 	memcpy(GalTempRom + 0x3800, TempRom + 0x0800, 0x800);	
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x4000, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	GalExtendTileInfoFunction = Fourin1ExtendTileInfo;
 	GalExtendSpriteInfoFunction = Fourin1ExtendSpriteInfo;
@@ -8784,11 +8935,11 @@ static int Fourin1Init()
 	return nRet;
 }
 
-struct BurnDriver BurnDrvFourin1 = {
+struct BurnDriverD BurnDrvFourin1 = {
 	"4in1", NULL, NULL, NULL, "1981",
 	"4 Fun in 1\0", NULL, "Armenia / Food and Fun", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, Fourin1RomInfo, Fourin1RomName, NULL, NULL, Fourin1InputInfo, Fourin1DIPInfo,
 	Fourin1Init, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
@@ -8902,9 +9053,9 @@ STD_ROM_FN(Mooncrstg)
 
 static void MooncrstEncryptedPostLoad()
 {
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char Data = GalZ80Rom1[Offset];
-		unsigned char Res = Data;
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 Data = GalZ80Rom1[Offset];
+		UINT8 Res = Data;
 		if (BIT(Data, 1)) Res ^= 0x40;
 		if (BIT(Data, 5)) Res ^= 0x04;
 		if ((Offset & 1) == 0) Res = BITSWAP08(Res, 7, 2, 5, 4, 3, 6, 1, 0);
@@ -8914,9 +9065,9 @@ static void MooncrstEncryptedPostLoad()
 	MapMooncrst();
 }
 
-static int MooncrstEncryptedInit()
+static INT32 MooncrstEncryptedInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MooncrstEncryptedPostLoad;
 	
@@ -8928,9 +9079,9 @@ static int MooncrstEncryptedInit()
 	return nRet;
 }
 
-static int MooncrstInit()
+static INT32 MooncrstInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapMooncrst;
 	
@@ -9386,10 +9537,10 @@ static struct BurnRomInfo ThepitmRomDesc[] = {
 STD_ROM_PICK(Thepitm)
 STD_ROM_FN(Thepitm)
 
-void __fastcall MooncrgxZ80Write(unsigned short a, unsigned char d)
+void __fastcall MooncrgxZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5800 && a <= 0x58ff) {
-		int Offset = a - 0x5800;
+		INT32 Offset = a - 0x5800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -9467,10 +9618,10 @@ void __fastcall MooncrgxZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall MoonqsrZ80Write(unsigned short a, unsigned char d)
+void __fastcall MoonqsrZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -9546,10 +9697,10 @@ void __fastcall MoonqsrZ80Write(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-void __fastcall ThepitmZ80Write(unsigned short a, unsigned char d)
+void __fastcall ThepitmZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -9627,8 +9778,8 @@ void __fastcall ThepitmZ80Write(unsigned short a, unsigned char d)
 
 static void Mooncrs2RearrangeGfx()
 {
-	unsigned char* TempRom = (unsigned char*)malloc(0x800);
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	UINT8* TempRom = (UINT8*)BurnMalloc(0x800);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 2, 1);
 	BurnLoadRom(TempRom, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
@@ -9641,17 +9792,17 @@ static void Mooncrs2RearrangeGfx()
 	memcpy(GalTempRom + 0x1c00, TempRom + 0x0200, 0x200);
 	memcpy(GalTempRom + 0x1a00, TempRom + 0x0400, 0x200);
 	memcpy(GalTempRom + 0x1e00, TempRom + 0x0600, 0x200);	
-	free(TempRom);
+	BurnFree(TempRom);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);	
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 }
 
-static int Mooncrs2Init()
+static INT32 Mooncrs2Init()
 {
 	GalPostLoadCallbackFunction = MapMooncrst;
 	
-	int nRet = GalInit();
+	INT32 nRet = GalInit();
 	
 	Mooncrs2RearrangeGfx();
 	
@@ -9663,7 +9814,7 @@ static int Mooncrs2Init()
 
 static void Mooncrs3PostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0800, 0x800);
@@ -9673,14 +9824,14 @@ static void Mooncrs3PostLoad()
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapMooncrst();
 }
 
-static int Mooncrs3Init()
+static INT32 Mooncrs3Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = Mooncrs3PostLoad;
 	
@@ -9701,9 +9852,9 @@ static void MooncrgxInstallHandler()
 	ZetClose();
 }
 
-static int MooncrgxInit()
+static INT32 MooncrgxInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MooncrgxInstallHandler;
 	
@@ -9717,9 +9868,9 @@ static int MooncrgxInit()
 
 static void MoonqsrDecrypt()
 {
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char Data = GalZ80Rom1[Offset];
-		unsigned char Res = Data;
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 Data = GalZ80Rom1[Offset];
+		UINT8 Res = Data;
 		if (BIT(Data, 1)) Res ^= 0x40;
 		if (BIT(Data, 5)) Res ^= 0x04;
 		if ((Offset & 1) == 0) Res = BITSWAP08(Res, 7, 2, 5, 4, 3, 6, 1, 0);
@@ -9734,11 +9885,11 @@ static void MoonqsrDecrypt()
 	ZetClose();
 }
 
-static int MoonqsrInit()
+static INT32 MoonqsrInit()
 {
-	int nRet;
+	INT32 nRet;
 	
-	GalZ80Rom1Op = (unsigned char*)malloc(0x4000);
+	GalZ80Rom1Op = (UINT8*)BurnMalloc(0x4000);
 		
 	GalPostLoadCallbackFunction = MoonqsrDecrypt;
 	
@@ -9750,9 +9901,9 @@ static int MoonqsrInit()
 	return nRet;
 }
 
-static int Moonal2Init()
+static INT32 Moonal2Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapMooncrst;
 	
@@ -9772,9 +9923,9 @@ static void ThepitmPostLoad()
 	ZetClose();
 }
 
-static int ThepitmInit()
+static INT32 ThepitmInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = ThepitmPostLoad;
 	
@@ -10053,10 +10204,10 @@ STD_ROM_FN(Vpool)
 static struct BurnRomInfo CkonggRomDesc[] = {
 	{ "g_ck1.bin",     0x01000, 0xa4323b94, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "ck2.bin",       0x01000, 0x1e532996, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "ck3.bin",       0x01000, 0x65157cde, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "ck4.bin",       0x01000, 0x43827bc6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "ck5.bin",       0x01000, 0xa74ed96e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "ck7.bin",       0x00800, 0x2c4d8129, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "g_ck3.bin",     0x01000, 0x65157cde, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "g_ck4.bin",     0x01000, 0x43827bc6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "g_ck5.bin",     0x01000, 0xa74ed96e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "g_ck7.bin",     0x00800, 0x2c4d8129, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
 	{ "ckvid10.bin",   0x01000, 0x7866d2cb, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "ckvid7.bin",    0x01000, 0x7311a101, BRF_GRA | GAL_ROM_TILES_SHARED },
@@ -10102,7 +10253,49 @@ static struct BurnRomInfo PorterRomDesc[] = {
 STD_ROM_PICK(Porter)
 STD_ROM_FN(Porter)
 
-unsigned char __fastcall BagmanmcZ80Read(unsigned short a)
+static struct BurnRomInfo KongRomDesc[] = {
+	{ "1",             0x01000, 0xa206beb5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2",             0x01000, 0xd75597b6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "3",             0x01000, 0x54e0b87b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "4",             0x01000, 0x356c4ca2, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "5",             0x01000, 0x2d295976, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "6",             0x01000, 0x77131cca, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "7",             0x01000, 0x3d5ec3f1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "8",             0x01000, 0x015fe5e5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "9",             0x00800, 0xfe42a052, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "11",            0x00800, 0xad2b2cdd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "10",            0x00800, 0x91fa187e, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "12",            0x00800, 0xb74724df, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "prom",          0x00020, 0x00000000, BRF_OPT | BRF_NODUMP },
+	
+	{ "13",            0x01000, 0x7d33ca0a, BRF_OPT }, // unknown
+};
+
+STD_ROM_PICK(Kong)
+STD_ROM_FN(Kong)
+
+static struct BurnRomInfo FantastcRomDesc[] = {
+	{ "f1",            0x01000, 0x8019f0b7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f2",            0x01000, 0x988a9bc6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f3",            0x01000, 0xa3c0cc0b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f4",            0x01000, 0xc1361be8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f5",            0x01000, 0x6787e93f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f6",            0x01000, 0x597029ae, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f7",            0x01000, 0x8de08d9a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "f8",            0x01000, 0x489e2fb7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "37",            0x01000, 0x3a54f749, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "38",            0x01000, 0x88b71264, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom-74g138",  0x00020, 0xb7cbbc1f, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Fantastc)
+STD_ROM_FN(Fantastc)
+
+UINT8 __fastcall BagmanmcZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -10130,10 +10323,10 @@ unsigned char __fastcall BagmanmcZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall BagmanmcZ80Write(unsigned short a, unsigned char d)
+void __fastcall BagmanmcZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -10205,7 +10398,7 @@ void __fastcall BagmanmcZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall DkongjrmZ80Read(unsigned short a)
+UINT8 __fastcall DkongjrmZ80Read(UINT16 a)
 {
 	if (a >= 0xa000 && a <= 0xa0ff) {
 		return GalInput[0] | GalDip[0];
@@ -10233,10 +10426,10 @@ unsigned char __fastcall DkongjrmZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall DkongjrmZ80Write(unsigned short a, unsigned char d)
+void __fastcall DkongjrmZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -10306,7 +10499,7 @@ void __fastcall DkongjrmZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CkonggZ80Read(unsigned short a)
+UINT8 __fastcall CkonggZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xc000: {
@@ -10334,10 +10527,10 @@ unsigned char __fastcall CkonggZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CkonggZ80Write(unsigned short a, unsigned char d)
+void __fastcall CkonggZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -10394,7 +10587,7 @@ void __fastcall CkonggZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CkongmcZ80Read(unsigned short a)
+UINT8 __fastcall CkongmcZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -10422,10 +10615,10 @@ unsigned char __fastcall CkongmcZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CkongmcZ80Write(unsigned short a, unsigned char d)
+void __fastcall CkongmcZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -10477,6 +10670,64 @@ void __fastcall CkongmcZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
+void __fastcall FantastcZ80Write(UINT16 a, UINT8 d)
+{
+	if (a >= 0x9800 && a <= 0x98ff) {
+		int Offset = a - 0x9800;
+		
+		GalSpriteRam[Offset] = d;
+		
+		if (Offset < 0x40) {
+			if ((Offset & 0x01) == 0) {
+				GalScrollVals[Offset >> 1] = d;
+			}
+		}
+		
+		return;
+	}
+	
+	if (a >= 0x9900 && a <= 0xafff) {
+		// ???
+		return;
+	}
+	
+	if (a >= 0xb001 && a <= 0xd7ff) {
+		// ???
+		return;
+	}
+	
+	switch (a) {
+		case 0x8803: {
+			AY8910Write(0, 0, d);
+			return;
+		}
+		
+		case 0x880b: {
+			AY8910Write(0, 1, d);
+			return;
+		}
+		
+		case 0x880c: {
+			AY8910Write(1, 0, d);
+			return;
+		}
+		
+		case 0x880e: {
+			AY8910Write(1, 1, d);
+			return;
+		}
+		
+		case 0xb000: {
+			GalIrqFire = d & 1;
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
+		}
+	}
+}
+
 static void SkybaseAlterZ80()
 {
 	MapMooncrst();
@@ -10490,9 +10741,9 @@ static void SkybaseAlterZ80()
 	ZetClose();
 }
 
-static int SkybaseInit()
+static INT32 SkybaseInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = SkybaseAlterZ80;
 	
@@ -10525,9 +10776,9 @@ static void BagmanmcPostLoad()
 	ZetClose();
 }
 
-static int BagmanmcInit()
+static INT32 BagmanmcInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = BagmanmcPostLoad;
 	GalPromRomSize = 0x20;
@@ -10539,8 +10790,8 @@ static int BagmanmcInit()
 	CharPlaneOffsets[1] = GalNumChars * 8 * 8;
 	SpritePlaneOffsets[1] = GalNumSprites * 16 * 16;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x1000);
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x0000, TempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x2000, TempRom + 0x0800, 0x800);
@@ -10551,8 +10802,8 @@ static int BagmanmcInit()
 	nRet = BurnLoadRom(GalTempRom + 0x1800, GAL_ROM_OFFSET_TILES_SHARED + 3, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x2000, GalSprites);
-	free(GalTempRom);
-	free(TempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	HardCodeMooncrstPROM();
 		
@@ -10585,9 +10836,9 @@ static void DkongjrmPostLoad()
 	ZetClose();
 }
 
-static int DkongjrmInit()
+static INT32 DkongjrmInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DkongjrmPostLoad;
 	
@@ -10607,7 +10858,7 @@ static void VpoolPostLoad()
 {
 	MapMooncrst();
 	
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0800, 0x800);
@@ -10617,7 +10868,7 @@ static void VpoolPostLoad()
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	ZetOpen(0);
 	ZetMapArea(0x8000, 0x87ff, 0, GalZ80Ram1);
@@ -10626,9 +10877,9 @@ static void VpoolPostLoad()
 	ZetClose();
 }
 
-static int VpoolInit()
+static INT32 VpoolInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = VpoolPostLoad;
 	
@@ -10663,7 +10914,7 @@ static void CkonggMapZ80()
 
 static void CkonggPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x2400, GalTempRom + 0x0000, 0x400);
 	memcpy(GalZ80Rom1 + 0x1c00, GalTempRom + 0x0400, 0x400);
@@ -10687,14 +10938,14 @@ static void CkonggPostLoad()
 	memcpy(GalZ80Rom1 + 0x1400, GalTempRom + 0x4c00, 0x400);
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x5000, 0x400);
 	memcpy(GalZ80Rom1 + 0x3c00, GalTempRom + 0x5400, 0x400);	
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 
 	CkonggMapZ80();
 }
 
-static int CkonggInit()
+static INT32 CkonggInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CkonggPostLoad;
 	
@@ -10710,7 +10961,7 @@ static int CkonggInit()
 
 static void CkongmcPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(0x4000);
+	GalTempRom = (UINT8*)BurnMalloc(0x4000);
 	memcpy(GalTempRom, GalZ80Rom1, 0x4000);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0800, 0x800);
@@ -10720,7 +10971,7 @@ static void CkongmcPostLoad()
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	CkonggMapZ80();
 	
@@ -10730,9 +10981,9 @@ static void CkongmcPostLoad()
 	ZetClose();
 }
 
-static int CkongmcInit()
+static INT32 CkongmcInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CkongmcPostLoad;
 	
@@ -10748,7 +10999,7 @@ static int CkongmcInit()
 
 static void PorterPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(0x4000);
+	GalTempRom = (UINT8*)BurnMalloc(0x4000);
 	memcpy(GalTempRom, GalZ80Rom1, 0x4000);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x0800, 0x800);
@@ -10758,7 +11009,7 @@ static void PorterPostLoad()
 	memcpy(GalZ80Rom1 + 0x3000, GalTempRom + 0x2800, 0x800);
 	memcpy(GalZ80Rom1 + 0x1800, GalTempRom + 0x3000, 0x800);
 	memcpy(GalZ80Rom1 + 0x3800, GalTempRom + 0x3800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapMooncrst();
 	
@@ -10771,9 +11022,9 @@ static void PorterPostLoad()
 	ZetClose();
 }
 
-static int PorterInit()
+static INT32 PorterInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = PorterPostLoad;
 	
@@ -10782,6 +11033,90 @@ static int PorterInit()
 	GalExtendTileInfoFunction = MooncrstExtendTileInfo;
 	GalExtendSpriteInfoFunction = MooncrstExtendSpriteInfo;
 
+	return nRet;
+}
+
+static void KongAlterZ80()
+{
+	MapMooncrst();
+	
+	ZetOpen(0);
+	ZetMapArea(0x0000, 0x7fff, 0, GalZ80Rom1);
+	ZetMapArea(0x0000, 0x7fff, 2, GalZ80Rom1);
+	ZetMapArea(0x8000, 0x87ff, 0, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 1, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 2, GalZ80Ram1);
+	ZetClose();
+}
+
+static INT32 KongInit()
+{
+	INT32 nRet;
+	
+	GalPostLoadCallbackFunction = KongAlterZ80;
+	
+	GalPromRomSize = 0x20;
+	
+	nRet = GalInit();
+	
+	GalRenderBackgroundFunction = NULL;
+	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
+	
+	HardCodeMooncrstPROM();
+	
+	return nRet;
+}
+
+static void FantastcPostLoad()
+{
+	MapMooncrst();
+	
+	ZetOpen(0);
+	ZetMapArea(0x0000, 0x7fff, 0, GalZ80Rom1);
+	ZetMapArea(0x0000, 0x7fff, 2, GalZ80Rom1);
+	ZetMapArea(0x8000, 0x87ff, 0, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 1, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 2, GalZ80Ram1);
+	ZetSetWriteHandler(FantastcZ80Write);
+	ZetClose();
+	
+	static const UINT16 lut_am_unscramble[32] = {
+		0, 2, 4, 6,	// ok!
+		7, 3, 5, 1,	// ok!
+		6, 0, 2, 4,	// ok!
+		1, 5, 3, 0,	// ok!
+		2, 4, 6, 3,	// good, good?, guess, guess
+		5, 6, 0, 2,	// good, good?, good?, guess
+		4, 1, 1, 5,	// good, good, guess, good
+		3, 7, 7, 7	// ok!
+	};
+	
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x8000);
+	memcpy(pTemp, GalZ80Rom1, 0x8000);
+
+	for (INT32 i = 0; i < 32; i++) {
+		memcpy(GalZ80Rom1 + i * 0x400, pTemp + lut_am_unscramble[i] * 0x1000 + (i & 3) * 0x400, 0x400);
+	}
+	
+	BurnFree(pTemp);
+}
+
+static INT32 FantastcInit()
+{
+	INT32 nRet;
+	
+	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910;
+	
+	GalPostLoadCallbackFunction = FantastcPostLoad;
+	GalNumSprites = 0x40;
+	
+	nRet = GalInit();
+	
+	GalRenderFrameFunction = FantastcRenderFrame;
+	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
+	
+	HardCodeMooncrstPROM();
+	
 	return nRet;
 }
 
@@ -10795,11 +11130,11 @@ struct BurnDriver BurnDrvSkybase = {
 	NULL, 392, 224, 256, 3, 4
 };
 
-struct BurnDriver BurnDrvBagmanmc = {
+struct BurnDriverD BurnDrvBagmanmc = {
 	"bagmanmc", "bagman", NULL, NULL, "1982",
 	"Bagman (Moon Cresta hardware)\0", "Bad Colours", "bootleg", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, BagmanmcRomInfo, BagmanmcRomName, NULL, NULL, BagmanmcInputInfo, BagmanmcDIPInfo,
 	BagmanmcInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
@@ -10855,6 +11190,26 @@ struct BurnDriver BurnDrvPorter = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvKong = {
+	"kong", NULL, NULL, NULL, "198?",
+	"Kong (Brazil)\0", "Bad Colours", "Taito do Brasil", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_PLATFORM, 0,
+	NULL, KongRomInfo, KongRomName, NULL, NULL, KongInputInfo, KongDIPInfo,
+	KongInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvFantastc = {
+	"fantastc", NULL, NULL, NULL, "198?",
+	"Fantastic\0", "Bad Colours", "Taito do Brasil", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, FantastcRomInfo, FantastcRomName, NULL, NULL, FantastcInputInfo, FantastcDIPInfo,
+	FantastcInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 // Custom background
 static struct BurnRomInfo RockclimRomDesc[] = {
 	{ "lc01.a1",       0x01000, 0x8601ae8d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -10879,7 +11234,7 @@ static struct BurnRomInfo RockclimRomDesc[] = {
 STD_ROM_PICK(Rockclim)
 STD_ROM_FN(Rockclim)
 
-unsigned char __fastcall RockclimZ80Read(unsigned short a)
+UINT8 __fastcall RockclimZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x8800: {
@@ -10911,10 +11266,10 @@ unsigned char __fastcall RockclimZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall RockclimZ80Write(unsigned short a, unsigned char d)
+void __fastcall RockclimZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -11016,7 +11371,7 @@ static void RockclimPostLoad()
 {
 	MapMooncrst();
 	
-	GalVideoRam2 = (unsigned char*)malloc(0x800);
+	GalVideoRam2 = (UINT8*)BurnMalloc(0x800);
 	
 	ZetOpen(0);
 	ZetSetReadHandler(RockclimZ80Read);
@@ -11032,24 +11387,24 @@ static void RockclimPostLoad()
 	ZetClose();
 }
 
-static int RockclimInit()
+static INT32 RockclimInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = RockclimPostLoad;
-	RockclimTiles = (unsigned char*)malloc(0x100 * 8 * 8);
+	RockclimTiles = (UINT8*)BurnMalloc(0x100 * 8 * 8);
 	
 	nRet = GalInit();
 	
-	int RockclimPlaneOffsets[4] = {4, 0, 0x8004, 0x8000};
-	int RockclimCharXOffsets[8] = {3, 2, 1, 0, 11, 10, 9, 8};
-	int RockclimCharYOffsets[8] = {0, 16, 32, 48, 64, 80, 96, 112};
+	INT32 RockclimPlaneOffsets[4] = {4, 0, 0x8004, 0x8000};
+	INT32 RockclimCharXOffsets[8] = {3, 2, 1, 0, 11, 10, 9, 8};
+	INT32 RockclimCharYOffsets[8] = {0, 16, 32, 48, 64, 80, 96, 112};
 	
-	GalTempRom = (unsigned char*)malloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(0x2000);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, 12, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, 13, 1); if (nRet) return 1;
 	GfxDecode(256, 4, 8, 8, RockclimPlaneOffsets, RockclimCharXOffsets, RockclimCharYOffsets, 0x80, GalTempRom, RockclimTiles);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalCalcPaletteFunction = RockclimCalcPalette;
 	GalRenderBackgroundFunction = RockclimDrawBackground;
@@ -11150,10 +11505,10 @@ static struct BurnRomInfo BongoRomDesc[] = {
 STD_ROM_PICK(Bongo)
 STD_ROM_FN(Bongo)
 
-void __fastcall BongoZ80Write(unsigned short a, unsigned char d)
+void __fastcall BongoZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -11199,7 +11554,7 @@ void __fastcall BongoZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall BongoZ80PortRead(unsigned short a)
+UINT8 __fastcall BongoZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -11216,7 +11571,7 @@ unsigned char __fastcall BongoZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall BongoZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall BongoZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -11237,9 +11592,9 @@ void __fastcall BongoZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int JumpbugInit()
+static INT32 JumpbugInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapJumpbug;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_JUMPBUGAY8910;
@@ -11258,19 +11613,19 @@ static int JumpbugInit()
 
 static void LeversPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memset(GalZ80Rom1, 0, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x2000, GalTempRom + 0x1000, GalZ80Rom1Size - 0x2000);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapJumpbug();
 }
 
-static int LeversInit()
+static INT32 LeversInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalZ80Rom1Size = 0x1000;
 	GalTilesSharedRomSize = 0x1000;
@@ -11280,14 +11635,14 @@ static int LeversInit()
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1800, GAL_ROM_OFFSET_TILES_SHARED + 2, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x2800, GAL_ROM_OFFSET_TILES_SHARED + 3, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = JumpbugDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -11318,9 +11673,9 @@ static void BongoPostLoad()
 	ZetClose();
 }
 
-static int BongoInit()
+static INT32 BongoInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = BongoPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_BONGOAY8910;
@@ -11443,7 +11798,7 @@ static struct BurnRomInfo DingoeRomDesc[] = {
 STD_ROM_PICK(Dingoe)
 STD_ROM_FN(Dingoe)
 
-void __fastcall CheckmanZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall CheckmanZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -11462,10 +11817,10 @@ void __fastcall CheckmanZ80PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall CheckmanZ80Write(unsigned short a, unsigned char d)
+void __fastcall CheckmanZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -11516,7 +11871,7 @@ void __fastcall CheckmanZ80Write(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall CheckmanSoundZ80PortRead(unsigned short a)
+UINT8 __fastcall CheckmanSoundZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -11534,7 +11889,7 @@ unsigned char __fastcall CheckmanSoundZ80PortRead(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CheckmanSoundZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall CheckmanSoundZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -11553,7 +11908,7 @@ void __fastcall CheckmanSoundZ80PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Sound IO Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall CheckmanjZ80Read(unsigned short a)
+UINT8 __fastcall CheckmanjZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x3800: {
@@ -11590,10 +11945,10 @@ unsigned char __fastcall CheckmanjZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CheckmanjZ80Write(unsigned short a, unsigned char d)
+void __fastcall CheckmanjZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5800 && a <= 0x58ff) {
-		int Offset = a - 0x5800;
+		INT32 Offset = a - 0x5800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -11658,7 +12013,7 @@ void __fastcall CheckmanjZ80Write(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall CheckmanjSoundZ80Read(unsigned short a)
+UINT8 __fastcall CheckmanjSoundZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa002: {
@@ -11670,7 +12025,7 @@ unsigned char __fastcall CheckmanjSoundZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CheckmanjSoundZ80Write(unsigned short a, unsigned char d)
+void __fastcall CheckmanjSoundZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa000: {
@@ -11687,7 +12042,7 @@ void __fastcall CheckmanjSoundZ80Write(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Sound Prog Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall DingoZ80Read(unsigned short a)
+UINT8 __fastcall DingoZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x3000: {
@@ -11738,7 +12093,7 @@ static void CheckmanInitSoundCPU()
 
 static void CheckmanPostLoad()
 {
-	static const unsigned char XORTable[8][4] = {
+	static const UINT8 XORTable[8][4] = {
 		{ 6, 0, 6, 0 },
 		{ 5, 1, 5, 1 },
 		{ 4, 2, 6, 1 },
@@ -11749,9 +12104,9 @@ static void CheckmanPostLoad()
 		{ 1, 4, 1, 4 }
 	};
 	
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char Data = GalZ80Rom1[Offset];
-		unsigned int Line = Offset & 0x07;
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 Data = GalZ80Rom1[Offset];
+		UINT32 Line = Offset & 0x07;
 
 		Data ^= (BIT(Data, XORTable[Line][0]) << XORTable[Line][1]) | (BIT(Data, XORTable[Line][2]) << XORTable[Line][3]);
 		GalZ80Rom1[Offset] = Data;
@@ -11766,9 +12121,9 @@ static void CheckmanPostLoad()
 	CheckmanInitSoundCPU();
 }
 
-static int CheckmanInit()
+static INT32 CheckmanInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CheckmanPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910;
@@ -11776,14 +12131,14 @@ static int CheckmanInit()
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
 	memcpy(GalTempRom + 0x0800, GalTempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x1800, GalTempRom + 0x1000, 0x800);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);	
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalExtendTileInfoFunction = MooncrstExtendTileInfo;
 	GalExtendSpriteInfoFunction = MooncrstExtendSpriteInfo;
@@ -11817,9 +12172,9 @@ static void CheckmanjPostLoad()
 	CheckmanjInitSoundCPU();
 }
 
-static int CheckmanjInit()
+static INT32 CheckmanjInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CheckmanjPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910;
@@ -11842,9 +12197,9 @@ static void DingoPostLoad()
 	CheckmanjInitSoundCPU();
 }
 
-static int DingoInit()
+static INT32 DingoInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DingoPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_CHECKMAJAY8910;
@@ -11858,8 +12213,8 @@ static int DingoInit()
 
 static void DingoePostLoad()
 {
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char Data = GalZ80Rom1[Offset];
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 Data = GalZ80Rom1[Offset];
 		
 		Data ^= BIT(Data, 2) << 4;
 		Data ^= BIT(Data, 5) << 0;
@@ -11878,9 +12233,9 @@ static void DingoePostLoad()
 	CheckmanInitSoundCPU();
 }
 
-static int DingoeInit()
+static INT32 DingoeInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DingoePostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910;
@@ -11946,7 +12301,7 @@ static struct BurnRomInfo MshuttleRomDesc[] = {
 	{ "mscprom1.bin",  0x00020, 0xea0d1af0, BRF_GRA | GAL_ROM_PROM },
 	
 	{ "my07",          0x01000, 0x522a2920, BRF_SND | BRF_OPT },	// Samples
-	{ "my06",          0x01000, 0x466415f2, BRF_SND | BRF_OPT },
+	{ "my06(__eng)",   0x01000, 0x466415f2, BRF_SND | BRF_OPT },
 };
 
 STD_ROM_PICK(Mshuttle)
@@ -11956,11 +12311,11 @@ static struct BurnRomInfo Mshuttle2RomDesc[] = {
 	{ "my05",          0x01000, 0x83574af1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "my04",          0x01000, 0x1cfae2c8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "my03",          0x01000, 0xc8b8a368, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "my02",          0x01000, 0x9804061c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "my01",          0x01000, 0xca746a61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "my02(__mshuttle2)", 0x01000, 0x9804061c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "my01(__mshuttle2)", 0x01000, 0xca746a61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
 	{ "my09",          0x01000, 0x3601b380, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "my11",          0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "my11(__mshuttle2)", 0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "my08",          0x01000, 0x992b06cd, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "my10",          0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
 	
@@ -12015,7 +12370,7 @@ static struct BurnRomInfo Mshuttlej2RomDesc[] = {
 STD_ROM_PICK(Mshuttlej2)
 STD_ROM_FN(Mshuttlej2)
 
-unsigned char __fastcall MshuttleZ80PortRead(unsigned short a)
+UINT8 __fastcall MshuttleZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -12030,7 +12385,7 @@ unsigned char __fastcall MshuttleZ80PortRead(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall MshuttleZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall MshuttleZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -12049,10 +12404,10 @@ void __fastcall MshuttleZ80PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall MshuttleZ80Write(unsigned short a, unsigned char d)
+void __fastcall MshuttleZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -12120,22 +12475,22 @@ static void MapMshuttle()
 
 static void MshuttleDecrypt()
 {
-	GalZ80Rom1Op = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalZ80Rom1Op = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	
-	static const unsigned char ConvTable[8][16] = {
-		{ 0x40, 0x41, 0x44, 0x15, 0x05, 0x51, 0x54, 0x55, 0x50, 0x00, 0x01, 0x04, (unsigned char)-1, 0x10, 0x11, 0x14 },
+	static const UINT8 ConvTable[8][16] = {
+		{ 0x40, 0x41, 0x44, 0x15, 0x05, 0x51, 0x54, 0x55, 0x50, 0x00, 0x01, 0x04, (UINT8)-1, 0x10, 0x11, 0x14 },
 		{ 0x45, 0x51, 0x55, 0x44, 0x40, 0x11, 0x05, 0x41, 0x10, 0x14, 0x54, 0x50, 0x15, 0x04, 0x00, 0x01 },
-		{ 0x11, 0x14, 0x10, 0x00, 0x44, 0x05, (unsigned char)-1, 0x04, 0x45, 0x15, 0x55, 0x50, (unsigned char)-1, 0x01, 0x54, 0x51 },
-		{ 0x14, 0x01, 0x11, 0x10, 0x50, 0x15, 0x00, 0x40, 0x04, 0x51, 0x45, 0x05, 0x55, 0x54, (unsigned char)-1, 0x44 },
-		{ 0x04, 0x10, (unsigned char)-1, 0x40, 0x15, 0x41, 0x50, 0x50, 0x11, (unsigned char)-1, 0x14, 0x00, 0x51, 0x45, 0x55, 0x01 },
-		{ 0x44, 0x45, 0x00, 0x51, (unsigned char)-1, (unsigned char)-1, 0x15, 0x11, 0x01, 0x10, 0x04, 0x55, 0x05, 0x40, 0x50, 0x41 },
-		{ 0x51, 0x00, 0x01, 0x05, 0x04, 0x55, 0x54, 0x50, 0x41, (unsigned char)-1, 0x11, 0x15, 0x14, 0x10, 0x44, 0x40 },
-		{ 0x05, 0x04, 0x51, 0x01, (unsigned char)-1, (unsigned char)-1, 0x55, (unsigned char)-1, 0x00, 0x50, 0x15, 0x14, 0x44, 0x41, 0x40, 0x54 },
+		{ 0x11, 0x14, 0x10, 0x00, 0x44, 0x05, (UINT8)-1, 0x04, 0x45, 0x15, 0x55, 0x50, (UINT8)-1, 0x01, 0x54, 0x51 },
+		{ 0x14, 0x01, 0x11, 0x10, 0x50, 0x15, 0x00, 0x40, 0x04, 0x51, 0x45, 0x05, 0x55, 0x54, (UINT8)-1, 0x44 },
+		{ 0x04, 0x10, (UINT8)-1, 0x40, 0x15, 0x41, 0x50, 0x50, 0x11, (UINT8)-1, 0x14, 0x00, 0x51, 0x45, 0x55, 0x01 },
+		{ 0x44, 0x45, 0x00, 0x51, (UINT8)-1, (UINT8)-1, 0x15, 0x11, 0x01, 0x10, 0x04, 0x55, 0x05, 0x40, 0x50, 0x41 },
+		{ 0x51, 0x00, 0x01, 0x05, 0x04, 0x55, 0x54, 0x50, 0x41, (UINT8)-1, 0x11, 0x15, 0x14, 0x10, 0x44, 0x40 },
+		{ 0x05, 0x04, 0x51, 0x01, (UINT8)-1, (UINT8)-1, 0x55, (UINT8)-1, 0x00, 0x50, 0x15, 0x14, 0x44, 0x41, 0x40, 0x54 },
 	};
 	
-	for (unsigned int Offset = 0x0000; Offset < GalZ80Rom1Size; Offset++) {
-		int i, j;
-		unsigned char Src;
+	for (UINT32 Offset = 0x0000; Offset < GalZ80Rom1Size; Offset++) {
+		INT32 i, j;
+		UINT8 Src;
 
 		Src = GalZ80Rom1[Offset];
 		i = (Offset & 1) | (Src & 0x02) | ((Src & 0x80) >> 5);
@@ -12149,14 +12504,14 @@ static void MshuttleDecrypt()
 
 static void MShuttleCommonInit()
 {
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
 	BurnLoadRom(GalTempRom + 0x2000, GAL_ROM_OFFSET_TILES_SHARED + 2, 1);
 	BurnLoadRom(GalTempRom + 0x3000, GAL_ROM_OFFSET_TILES_SHARED + 3, 1);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalDrawBulletsFunction = MshuttleDrawBullets;
 	GalExtendTileInfoFunction = MshuttleExtendTileInfo;
@@ -12165,9 +12520,9 @@ static void MShuttleCommonInit()
 	GalIrqType = GAL_IRQ_TYPE_IRQ0;
 }
 
-static int MshuttleInit()
+static INT32 MshuttleInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MshuttleDecrypt;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910;
@@ -12182,9 +12537,9 @@ static int MshuttleInit()
 
 static void MshuttlejDecrypt()
 {
-	GalZ80Rom1Op = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalZ80Rom1Op = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	
-	static const unsigned char ConvTable[8][16] = {
+	static const UINT8 ConvTable[8][16] = {
 		{ 0x41, 0x54, 0x51, 0x14, 0x05, 0x10, 0x01, 0x55, 0x44, 0x11, 0x00, 0x50, 0x15, 0x40, 0x04, 0x45 },
 		{ 0x50, 0x11, 0x40, 0x55, 0x51, 0x14, 0x45, 0x04, 0x54, 0x15, 0x10, 0x05, 0x44, 0x01, 0x00, 0x41 },
 		{ 0x44, 0x11, 0x00, 0x50, 0x41, 0x54, 0x04, 0x14, 0x15, 0x40, 0x51, 0x55, 0x05, 0x10, 0x01, 0x45 },
@@ -12195,9 +12550,9 @@ static void MshuttlejDecrypt()
 		{ 0x55, 0x50, 0x15, 0x10, 0x01, 0x04, 0x41, 0x44, 0x45, 0x40, 0x05, 0x00, 0x11, 0x14, 0x51, 0x54 },
 	};
 	
-	for (unsigned int Offset = 0x0000; Offset < GalZ80Rom1Size; Offset++) {
-		int i, j;
-		unsigned char Src;
+	for (UINT32 Offset = 0x0000; Offset < GalZ80Rom1Size; Offset++) {
+		INT32 i, j;
+		UINT8 Src;
 
 		Src = GalZ80Rom1[Offset];
 		i = (Offset & 1) | (Src & 0x02) | ((Src & 0x80) >> 5);
@@ -12209,9 +12564,9 @@ static void MshuttlejDecrypt()
 	MapMshuttle();
 }
 
-static int MshuttlejInit()
+static INT32 MshuttlejInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MshuttlejDecrypt;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_MSHUTTLEAY8910;
@@ -12303,7 +12658,7 @@ static struct BurnRomInfo KingballjRomDesc[] = {
 STD_ROM_PICK(Kingballj)
 STD_ROM_FN(Kingballj)
 
-unsigned char __fastcall KingballZ80Read(unsigned short a)
+UINT8 __fastcall KingballZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -12335,10 +12690,10 @@ unsigned char __fastcall KingballZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall KingballZ80Write(unsigned short a, unsigned char d)
+void __fastcall KingballZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -12432,7 +12787,7 @@ void __fastcall KingballZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall KingballSoundZ80Read(unsigned short a)
+UINT8 __fastcall KingballSoundZ80Read(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -12443,7 +12798,7 @@ unsigned char __fastcall KingballSoundZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall KingballSoundZ80Write(unsigned short a, unsigned char d)
+void __fastcall KingballSoundZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -12452,7 +12807,7 @@ void __fastcall KingballSoundZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall KingballSoundZ80PortRead(unsigned short a)
+UINT8 __fastcall KingballSoundZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -12469,13 +12824,13 @@ unsigned char __fastcall KingballSoundZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall KingballSoundZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall KingballSoundZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
 	switch (a) {
 		case 0x00: {
-			DACWrite(d ^ 0xff);
+			DACWrite(0, d ^ 0xff);
 			return;
 		}
 		
@@ -12507,9 +12862,9 @@ static void KingballPostLoad()
 	nGalCyclesTotal[1] = (5000000 / 2) / 60;
 }
 
-static int KingballInit()
+static INT32 KingballInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = KingballPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC;
@@ -12517,14 +12872,14 @@ static int KingballInit()
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
 	memcpy(GalTempRom + 0x0800, GalTempRom + 0x0000, 0x800);
 	memcpy(GalTempRom + 0x1800, GalTempRom + 0x1000, 0x800);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);	
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	return nRet;
 }
@@ -12680,10 +13035,10 @@ static struct BurnRomInfo FroggRomDesc[] = {
 STD_ROM_PICK(Frogg)
 STD_ROM_FN(Frogg)
 
-void __fastcall FroggermcZ80Write(unsigned short a, unsigned char d)
+void __fastcall FroggermcZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -12752,11 +13107,11 @@ void __fastcall FroggermcZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall FrogfZ80Read(unsigned short a)
+UINT8 __fastcall FrogfZ80Read(UINT16 a)
 {
 	if (a >= 0xc000) {
-		unsigned int Offset = a - 0xc000;
-		unsigned char Result = 0xff;
+		UINT32 Offset = a - 0xc000;
+		UINT8 Result = 0xff;
 		if (Offset & 0x1000) Result &= ppi8255_r(0, (Offset >> 3) & 3);
 		if (Offset & 0x2000) Result &= ppi8255_r(1, (Offset >> 3) & 3);
 		return Result;
@@ -12776,10 +13131,10 @@ unsigned char __fastcall FrogfZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall FrogfZ80Write(unsigned short a, unsigned char d)
+void __fastcall FrogfZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9000 && a <= 0x90ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -12793,7 +13148,7 @@ void __fastcall FrogfZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0xc000) {
-		int Offset = a - 0xc000;
+		INT32 Offset = a - 0xc000;
 		if (Offset & 0x1000) ppi8255_w(0, (Offset >> 3) & 3, d);
 		if (Offset & 0x2000) ppi8255_w(1, (Offset >> 3) & 3, d);
 		return;
@@ -12833,20 +13188,20 @@ void __fastcall FrogfZ80Write(unsigned short a, unsigned char d)
 
 static void FroggerEncGfxPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
-	for (unsigned int Offset = 0x0800; Offset < 0x1000; Offset++) GalTempRom[Offset] = BITSWAP08(GalTempRom[Offset], 7, 6, 5, 4, 3, 2, 0, 1);
+	for (UINT32 Offset = 0x0800; Offset < 0x1000; Offset++) GalTempRom[Offset] = BITSWAP08(GalTempRom[Offset], 7, 6, 5, 4, 3, 2, 0, 1);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapFrogger();
 }
 
-static int FroggerEncGfxInit()
+static INT32 FroggerEncGfxInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	GalPostLoadCallbackFunction = FroggerEncGfxPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -12878,9 +13233,9 @@ static void FroggermcPostLoad()
 	ZetClose();
 }
 
-static int FroggermcInit()
+static INT32 FroggermcInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = FroggermcPostLoad;
 //	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -12896,9 +13251,9 @@ static int FroggermcInit()
 	return nRet;
 }
 
-static int FroggersInit()
+static INT32 FroggersInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTheend;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -12934,9 +13289,9 @@ static void FrogfPostLoad()
 	ZetClose();
 }
 
-static int FrogfInit()
+static INT32 FrogfInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = FrogfPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -12963,9 +13318,9 @@ static void FroggPostLoad()
 	ZetClose();
 }
 
-static int FroggInit()
+static INT32 FroggInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = FroggPostLoad;
 
@@ -13258,7 +13613,7 @@ static struct BurnRomInfo AmidarsRomDesc[] = {
 STD_ROM_PICK(Amidars)
 STD_ROM_FN(Amidars)
 
-unsigned char __fastcall TurpinsZ80Read(unsigned short a)
+UINT8 __fastcall TurpinsZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -13286,10 +13641,10 @@ unsigned char __fastcall TurpinsZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall TurpinsZ80Write(unsigned short a, unsigned char d)
+void __fastcall TurpinsZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -13351,9 +13706,9 @@ void __fastcall TurpinsZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int TurtlesInit()
+static INT32 TurtlesInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTurtles;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -13379,9 +13734,9 @@ static void TurpinsPostLoad()
 	ZetClose();
 }
 
-static int TurpinsInit()
+static INT32 TurpinsInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = TurpinsPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -13975,7 +14330,7 @@ static struct BurnRomInfo MimonscrRomDesc[] = {
 STD_ROM_PICK(Mimonscr)
 STD_ROM_FN(Mimonscr)
 
-unsigned char __fastcall ExplorerZ80Read(unsigned short a)
+UINT8 __fastcall ExplorerZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x7000: {
@@ -14007,10 +14362,10 @@ unsigned char __fastcall ExplorerZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall ExplorerZ80Write(unsigned short a, unsigned char d)
+void __fastcall ExplorerZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14024,7 +14379,7 @@ void __fastcall ExplorerZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x5100 && a <= 0x51ff) {
-		int Offset = a - 0x5100;
+		INT32 Offset = a - 0x5100;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14094,7 +14449,7 @@ void __fastcall ExplorerZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CkongsZ80Read(unsigned short a)
+UINT8 __fastcall CkongsZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x7000:
@@ -14124,10 +14479,10 @@ unsigned char __fastcall CkongsZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CkongsZ80Write(unsigned short a, unsigned char d)
+void __fastcall CkongsZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14183,15 +14538,15 @@ void __fastcall CkongsZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MarsZ80Read(unsigned short a)
+UINT8 __fastcall MarsZ80Read(UINT16 a)
 {
 	if (a >= 0x8100 && a <= 0x810f) {
-		int Offset = a - 0x8100;
+		INT32 Offset = a - 0x8100;
 		return ppi8255_r(0, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01));
 	}
 	
 	if (a >= 0x8200 && a <= 0x820f) {
-		int Offset = a - 0x8200;
+		INT32 Offset = a - 0x8200;
 		return ppi8255_r(1, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01));
 	}
 	
@@ -14209,10 +14564,10 @@ unsigned char __fastcall MarsZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall MarsZ80Write(unsigned short a, unsigned char d)
+void __fastcall MarsZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14226,13 +14581,13 @@ void __fastcall MarsZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8100 && a <= 0x810f) {
-		int Offset = a - 0x8100;
+		INT32 Offset = a - 0x8100;
 		ppi8255_w(0, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
 	
 	if (a >= 0x8200 && a <= 0x820f) {
-		int Offset = a - 0x8200;
+		INT32 Offset = a - 0x8200;
 		ppi8255_w(1, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
@@ -14275,15 +14630,15 @@ void __fastcall MarsZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Newsin7Z80Read(unsigned short a)
+UINT8 __fastcall Newsin7Z80Read(UINT16 a)
 {
 	if (a >= 0x8200 && a <= 0x820f) {
-		int Offset = a - 0x8200;
+		INT32 Offset = a - 0x8200;
 		return ppi8255_r(1, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01));
 	}
 	
 	if (a >= 0xc100 && a <= 0xc10f) {
-		int Offset = a - 0xc100;
+		INT32 Offset = a - 0xc100;
 		return ppi8255_r(0, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01));
 	}
 	
@@ -14301,10 +14656,10 @@ unsigned char __fastcall Newsin7Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Newsin7Z80Write(unsigned short a, unsigned char d)
+void __fastcall Newsin7Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14318,13 +14673,13 @@ void __fastcall Newsin7Z80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8200 && a <= 0x820f) {
-		int Offset = a - 0x8200;
+		INT32 Offset = a - 0x8200;
 		ppi8255_w(1, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
 	
 	if (a >= 0xc100 && a <= 0xc10f) {
-		int Offset = a - 0xc100;
+		INT32 Offset = a - 0xc100;
 		ppi8255_w(0, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
@@ -14367,10 +14722,10 @@ void __fastcall Newsin7Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall MrkougarZ80Write(unsigned short a, unsigned char d)
+void __fastcall MrkougarZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14384,13 +14739,13 @@ void __fastcall MrkougarZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8100 && a <= 0x810f) {
-		int Offset = a - 0x8100;
+		INT32 Offset = a - 0x8100;
 		ppi8255_w(0, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
 	
 	if (a >= 0x8200 && a <= 0x820f) {
-		int Offset = a - 0x8200;
+		INT32 Offset = a - 0x8200;
 		ppi8255_w(1, ((Offset >> 2) & 0x02) | ((Offset >> 1) & 0x01), d);
 		return;
 	}
@@ -14427,7 +14782,7 @@ void __fastcall MrkougarZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall HotshockZ80Read(unsigned short a)
+UINT8 __fastcall HotshockZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x8000: {
@@ -14454,10 +14809,10 @@ unsigned char __fastcall HotshockZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall HotshockZ80Write(unsigned short a, unsigned char d)
+void __fastcall HotshockZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14527,7 +14882,7 @@ void __fastcall HotshockZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall HotshockSoundZ80PortRead(unsigned short a)
+UINT8 __fastcall HotshockSoundZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -14546,7 +14901,7 @@ unsigned char __fastcall HotshockSoundZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall HotshockSoundZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall HotshockSoundZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -14582,12 +14937,12 @@ static void CavelonDoBankSwitch()
 	ZetMapArea(0x0000, 0x1fff, 2, GalZ80Rom1 + ((CavelonBankSwitch) ? 0x4000 : 0x0000));
 }
 
-unsigned char __fastcall CavelonZ80Read(unsigned short a)
+UINT8 __fastcall CavelonZ80Read(UINT16 a)
 {
 	if (a >= 0x8000) {
 		CavelonDoBankSwitch();
-		unsigned int Offset = a - 0x8000;
-		unsigned char Result = 0xff;
+		UINT32 Offset = a - 0x8000;
+		UINT8 Result = 0xff;
 		if (Offset & 0x0100) Result &= ppi8255_r(0, Offset & 3);
 		if (Offset & 0x0200) Result &= ppi8255_r(1, Offset & 3);
 		return Result;
@@ -14607,10 +14962,10 @@ unsigned char __fastcall CavelonZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall CavelonZ80Write(unsigned short a, unsigned char d)
+void __fastcall CavelonZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14625,7 +14980,7 @@ void __fastcall CavelonZ80Write(unsigned short a, unsigned char d)
 	
 	if (a >= 0x8000) {
 		CavelonDoBankSwitch();
-		int Offset = a - 0x8000;
+		INT32 Offset = a - 0x8000;
 		if (Offset & 0x0100) ppi8255_w(0, Offset & 3, d);
 		if (Offset & 0x0200) ppi8255_w(1, Offset & 3, d);
 		return;
@@ -14676,7 +15031,7 @@ void __fastcall CavelonZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MimonscrZ80Read(unsigned short a)
+UINT8 __fastcall MimonscrZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x7000: {
@@ -14706,10 +15061,10 @@ unsigned char __fastcall MimonscrZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall MimonscrZ80Write(unsigned short a, unsigned char d)
+void __fastcall MimonscrZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -14785,9 +15140,9 @@ void __fastcall MimonscrZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int TheendInit()
+static INT32 TheendInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTheend;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -14805,9 +15160,9 @@ static int TheendInit()
 	return nRet;
 }
 
-static unsigned char ScramblePPIReadIN2()
+static UINT8 ScramblePPIReadIN2()
 {
-	unsigned char Val = (ScrambleProtectionResult >> 7) & 1;
+	UINT8 Val = (ScrambleProtectionResult >> 7) & 1;
 	
 	if (Val) {
 		return 0x5f - GalInput[2] - GalDip[2];
@@ -14816,12 +15171,12 @@ static unsigned char ScramblePPIReadIN2()
 	}
 }
 
-static unsigned char ScrambleProtectionRead()
+static UINT8 ScrambleProtectionRead()
 {
 	return ScrambleProtectionResult;
 }
 
-static void ScrambleProtectionWrite(unsigned char d)
+static void ScrambleProtectionWrite(UINT8 d)
 {
 	ScrambleProtectionState = (ScrambleProtectionState << 4) | (d & 0x0f);
 	
@@ -14837,9 +15192,9 @@ static void ScrambleProtectionWrite(unsigned char d)
 	}
 }
 
-static int ScrambleInit()
+static INT32 ScrambleInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTheend;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -14870,9 +15225,9 @@ static void ExplorerPostLoad()
 	ZetClose();
 }
 
-static int ExplorerInit()
+static INT32 ExplorerInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = ExplorerPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_EXPLORERAY8910;
@@ -14888,9 +15243,9 @@ static int ExplorerInit()
 	return nRet;
 }
 
-static int AtlantisInit()
+static INT32 AtlantisInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTheend;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -14930,9 +15285,9 @@ static void CkongsPostLoad()
 	ZetClose();
 }
 
-static int CkongsInit()
+static INT32 CkongsInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CkongsPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -14952,11 +15307,11 @@ static int CkongsInit()
 
 static void MarsDecrypt()
 {
-	for (unsigned int i = 0; i < GalZ80Rom1Size; i += 16) {
-		unsigned char SwapBuffer[16];
+	for (UINT32 i = 0; i < GalZ80Rom1Size; i += 16) {
+		UINT8 SwapBuffer[16];
 		
-		for (unsigned int j = 0; j < 16; j++) {
-			int NewOffset = BITSWAP08(j, 7, 6, 5, 4, 2, 0, 3, 1);
+		for (UINT32 j = 0; j < 16; j++) {
+			INT32 NewOffset = BITSWAP08(j, 7, 6, 5, 4, 2, 0, 3, 1);
 			SwapBuffer[j] = GalZ80Rom1[i + NewOffset];
 		}
 		memcpy(GalZ80Rom1 + i, SwapBuffer, 16);
@@ -14986,9 +15341,9 @@ static void MarsPostLoad()
 	ZetClose();
 }
 
-static int MarsInit()
+static INT32 MarsInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MarsPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15006,9 +15361,9 @@ static int MarsInit()
 	return nRet;
 }
 
-static int DevilfshInit()
+static INT32 DevilfshInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MarsPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15021,12 +15376,12 @@ static int DevilfshInit()
 	CharPlaneOffsets[1] = 0x8000;
 	SpritePlaneOffsets[1] = 0x8000;
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x800, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -15063,9 +15418,9 @@ static void Newsin7PostLoad()
 	ZetClose();
 }
 
-static int Newsin7Init()
+static INT32 Newsin7Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = Newsin7PostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15076,15 +15431,15 @@ static int Newsin7Init()
 	GalNumChars = 0x100;
 	GalNumSprites = 0x40;
 	
-	int Newsin7PlaneOffsets[3] = {0x10000, 0, 0x8000};
+	INT32 Newsin7PlaneOffsets[3] = {0x10000, 0, 0x8000};
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x2000, GAL_ROM_OFFSET_TILES_SHARED + 2, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 3, 8, 8, Newsin7PlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 3, 16, 16, Newsin7PlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x800, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -15130,9 +15485,9 @@ static void MrkougarPostLoad()
 	MapMrkougar();
 }
 
-static int MrkougarInit()
+static INT32 MrkougarInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MrkougarPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15140,17 +15495,17 @@ static int MrkougarInit()
 	nRet = GalInit();
 	KonamiSoundInit();
 	
-	int MrkougarPlaneOffsets[2] = {0, 4};
-	int MrkougarCharXOffsets[8] = {64, 65, 66, 67, 0, 1, 2, 3};
-	int MrkougarCharYOffsets[8] = {0, 8, 16, 24, 32, 40, 48, 56};
-	int MrkougarSpriteXOffsets[16] = {64, 65, 66, 67, 0, 1, 2, 3, 192, 193, 194, 195, 128, 129, 130, 131};
-	int MrkougarSpriteYOffsets[16] = {0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312};
+	INT32 MrkougarPlaneOffsets[2] = {0, 4};
+	INT32 MrkougarCharXOffsets[8] = {64, 65, 66, 67, 0, 1, 2, 3};
+	INT32 MrkougarCharYOffsets[8] = {0, 8, 16, 24, 32, 40, 48, 56};
+	INT32 MrkougarSpriteXOffsets[16] = {64, 65, 66, 67, 0, 1, 2, 3, 192, 193, 194, 195, 128, 129, 130, 131};
+	INT32 MrkougarSpriteYOffsets[16] = {0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312};
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	GfxDecode(GalNumChars, 2, 8, 8, MrkougarPlaneOffsets, MrkougarCharXOffsets, MrkougarCharYOffsets, 0x80, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, MrkougarPlaneOffsets, MrkougarSpriteXOffsets, MrkougarSpriteYOffsets, 0x200, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -15160,9 +15515,9 @@ static int MrkougarInit()
 	return nRet;
 }
 
-static int MrkougbInit()
+static INT32 MrkougbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapMrkougar;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15190,9 +15545,9 @@ static void HotshockPostLoad()
 	GalZ80Rom1[0x2ef9] = 0xc9;
 }
 
-static int HotshockInit()
+static INT32 HotshockInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HotshockPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15225,9 +15580,9 @@ static void ConquerPostLoad()
 	ZetClose();
 }
 
-static int ConquerInit()
+static INT32 ConquerInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = ConquerPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15257,9 +15612,9 @@ static void CavelonPostLoad()
 	ZetClose();
 }
 
-static int CavelonInit()
+static INT32 CavelonInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = CavelonPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -15304,9 +15659,9 @@ static void MimonscrPostLoad()
 	ZetClose();
 }
 
-static int MimonscrInit()
+static INT32 MimonscrInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MimonscrPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -15621,7 +15976,7 @@ static struct BurnRomInfo EighthundredfathRomDesc[] = {
 STD_ROM_PICK(Eighthundredfath)
 STD_ROM_FN(Eighthundredfath)
 
-unsigned char __fastcall TriplepZ80PortRead(unsigned short a)
+UINT8 __fastcall TriplepZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -15654,7 +16009,7 @@ unsigned char __fastcall TriplepZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall TriplepZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall TriplepZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -15675,14 +16030,14 @@ void __fastcall TriplepZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MarinerZ80Read(unsigned short a)
+UINT8 __fastcall MarinerZ80Read(UINT16 a)
 {
 	if (a >= 0x8000) {
 		if (a == 0xb401) return 0x07;
 		if (a == 0x9008) return 0x03;
 		
-		unsigned int Offset = a - 0x8000;
-		unsigned char Result = 0xff;
+		UINT32 Offset = a - 0x8000;
+		UINT8 Result = 0xff;
 		if (Offset & 0x0100) Result &= ppi8255_r(0, Offset & 3);
 		if (Offset & 0x0200) Result &= ppi8255_r(1, Offset & 3);
 		return Result;
@@ -15712,9 +16067,9 @@ static void TriplepPostLoad()
 	ZetClose();
 }
 
-static int TriplepInit()
+static INT32 TriplepInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = TriplepPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910;
@@ -15733,11 +16088,11 @@ static int TriplepInit()
 
 static void MarinerPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(0x1000);
 	memcpy(GalTempRom, GalZ80Rom1 + 0x4000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x4800, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x4000, GalTempRom + 0x0800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapTheend();
 	
@@ -15750,9 +16105,9 @@ static void MarinerPostLoad()
 	ZetClose();
 }
 
-static int MarinerInit()
+static INT32 MarinerInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MarinerPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_ZIGZAGAY8910;
@@ -15920,7 +16275,7 @@ static struct BurnRomInfo AracnisRomDesc[] = {
 STD_ROM_PICK(Aracnis)
 STD_ROM_FN(Aracnis)
 
-unsigned char __fastcall ScorpionmcZ80Read(unsigned short a)
+UINT8 __fastcall ScorpionmcZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -15952,10 +16307,10 @@ unsigned char __fastcall ScorpionmcZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall ScorpionmcZ80Write(unsigned short a, unsigned char d)
+void __fastcall ScorpionmcZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -16033,7 +16388,7 @@ void __fastcall ScorpionmcZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall ScorpionSoundZ80Read(unsigned short a)
+UINT8 __fastcall ScorpionSoundZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x3000: {
@@ -16048,18 +16403,18 @@ unsigned char __fastcall ScorpionSoundZ80Read(unsigned short a)
 	return 0xff;
 }
 
-unsigned char __fastcall ScorpionSoundZ80PortRead(unsigned short a)
+UINT8 __fastcall ScorpionSoundZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
-	unsigned char Result = 0xff;
+	UINT8 Result = 0xff;
 	if (a & 0x08) Result &= AY8910Read(2);
 	if (a & 0x20) Result &= AY8910Read(0);
 	if (a & 0x80) Result &= AY8910Read(1);
 	return Result;
 }
 
-void __fastcall ScorpionSoundZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall ScorpionSoundZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -16071,10 +16426,10 @@ void __fastcall ScorpionSoundZ80PortWrite(unsigned short a, unsigned char d)
 	if (a & 0x80) AY8910Write(1, 1, d);
 }
 
-static unsigned char ScorpionProtectionRead()
+static UINT8 ScorpionProtectionRead()
 {
-	unsigned short ParityBits;
-	unsigned char Parity = 0;
+	UINT16 ParityBits;
+	UINT8 Parity = 0;
 	
 	for (ParityBits = ScrambleProtectionState & 0xce29; ParityBits != 0; ParityBits >>= 1) {
 		if (ParityBits & 1) Parity++;
@@ -16083,7 +16438,7 @@ static unsigned char ScorpionProtectionRead()
 	return Parity;
 }
 
-static void ScorpionProtectionWrite(unsigned char d)
+static void ScorpionProtectionWrite(UINT8 d)
 {
 	if (!(d & 0x20)) ScrambleProtectionState = 0x0000;
 	if (!(d & 0x10)) ScrambleProtectionState = (ScrambleProtectionState << 1) | (~ScorpionProtectionRead() & 1);
@@ -16091,11 +16446,11 @@ static void ScorpionProtectionWrite(unsigned char d)
 
 static void ScorpionPostLoad()
 {	
-	GalTempRom = (unsigned char*)malloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(0x1000);
 	memcpy(GalTempRom, GalZ80Rom1 + 0x4000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x4800, GalTempRom + 0x0000, 0x800);
 	memcpy(GalZ80Rom1 + 0x4000, GalTempRom + 0x0800, 0x800);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	MapTheend();
 	
@@ -16105,9 +16460,9 @@ static void ScorpionPostLoad()
 	ZetClose();
 }
 
-static int ScorpionInit()
+static INT32 ScorpionInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = ScorpionPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_SCORPIONAY8910;
@@ -16151,9 +16506,9 @@ static void ScorpionmcPostLoad()
 	ZetClose();
 }
 
-static int ScorpionmcInit()
+static INT32 ScorpionmcInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = ScorpionmcPostLoad;
 	
@@ -16201,7 +16556,7 @@ struct BurnDriver BurnDrvScorpionmc = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
 	NULL, ScorpionmcRomInfo, ScorpionmcRomName, NULL, NULL, ScorpionmcInputInfo, ScorpionmcDIPInfo,
-	ScorpionmcInit, KonamiExit, GalFrame, NULL, GalScan,
+	ScorpionmcInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -16211,7 +16566,7 @@ struct BurnDriver BurnDrvAracnis = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
 	NULL, AracnisRomInfo, AracnisRomName, NULL, NULL, AracnisInputInfo, AracnisDIPInfo,
-	ScorpionmcInit, KonamiExit, GalFrame, NULL, GalScan,
+	ScorpionmcInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -16238,7 +16593,7 @@ static struct BurnRomInfo Ad2083RomDesc[] = {
 STD_ROM_PICK(Ad2083)
 STD_ROM_FN(Ad2083)
 
-unsigned char __fastcall Ad2083Z80Read(unsigned short a)
+UINT8 __fastcall Ad2083Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x7000: {
@@ -16270,10 +16625,10 @@ unsigned char __fastcall Ad2083Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Ad2083Z80Write(unsigned short a, unsigned char d)
+void __fastcall Ad2083Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -16350,9 +16705,9 @@ void __fastcall Ad2083Z80Write(unsigned short a, unsigned char d)
 
 static void Ad2083PostLoad()
 {
-	unsigned char c;
+	UINT8 c;
 	
-	for (unsigned int i = 0; i < GalZ80Rom1Size; i++) {
+	for (UINT32 i = 0; i < GalZ80Rom1Size; i++) {
 		c = GalZ80Rom1[i] ^ 0x35;
 		c = BITSWAP08(c, 6, 2, 5, 1, 7, 3, 4, 0);
 		GalZ80Rom1[i] = c;
@@ -16371,9 +16726,9 @@ static void Ad2083PostLoad()
 	ZetClose();
 }
 
-static int Ad2083Init()
+static INT32 Ad2083Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = Ad2083PostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_AD2083AY8910;
@@ -16402,7 +16757,7 @@ struct BurnDriver BurnDrvAd2083 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
 	NULL, Ad2083RomInfo, Ad2083RomName, NULL, NULL, Ad2083InputInfo, Ad2083DIPInfo,
-	Ad2083Init, KonamiExit, GalFrame, NULL, GalScan,
+	Ad2083Init, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -16491,10 +16846,10 @@ static struct BurnRomInfo MonsterzRomDesc[] = {
 STD_ROM_PICK(Monsterz)
 STD_ROM_FN(Monsterz)
 
-void __fastcall SfxZ80Write(unsigned short a, unsigned char d)
+void __fastcall SfxZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5000 && a <= 0x50ff) {
-		int Offset = a - 0x5000;
+		INT32 Offset = a - 0x5000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -16508,7 +16863,7 @@ void __fastcall SfxZ80Write(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8000) {
-		int Offset = a - 0x8000;
+		INT32 Offset = a - 0x8000;
 		if (Offset & 0x0100) ppi8255_w(0, Offset & 3, d);
 		if (Offset & 0x0200) ppi8255_w(1, Offset & 3, d);
 		return;
@@ -16562,7 +16917,7 @@ void __fastcall SfxZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall SfxSampleZ80Read(unsigned short a)
+UINT8 __fastcall SfxSampleZ80Read(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -16570,10 +16925,10 @@ unsigned char __fastcall SfxSampleZ80Read(unsigned short a)
 		}
 	}
 
-	return 0xff;
+	return 0;
 }
 
-void __fastcall SfxSampleZ80Write(unsigned short a, unsigned char d)
+void __fastcall SfxSampleZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -16582,33 +16937,25 @@ void __fastcall SfxSampleZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall SfxSampleZ80PortRead(unsigned short a)
+UINT8 __fastcall SfxSampleZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
-	switch (a) {
-		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #3 Port Read => %02X\n"), a);
-		}
-	}
-	
-	return 0xff;
+	UINT8 Result = 0xff;
+	if (a & 0x04) Result &= ppi8255_r(2, a & 3);
+	return Result;
 }
 
-void __fastcall SfxSampleZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall SfxSampleZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
-	switch (a) {
-		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #3 Port Write => %02X, %02X\n"), a, d);
-		}
-	}
+	if (a & 0x04) ppi8255_w(2, a & 3, d);
+	if (a & 0x10) DACSignedWrite(0, d);
 }
 
-static unsigned char SfxSoundLatch2Read()
+static UINT8 SfxSoundLatch2Read()
 {
-	bprintf(PRINT_NORMAL, _T("Sound Latch2 Read\n"));
 	return GalSoundLatch2;
 }
 
@@ -16624,12 +16971,12 @@ static void SfxPostLoad()
 	ZetMapArea(0xc000, 0xefff, 2, GalZ80Rom1 + 0x5000);
 	ZetClose();
 	
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memcpy(GalZ80Rom1 + 0x0000, GalTempRom + 0x0000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x7000, GalTempRom + 0x1000, 0x1000);
 	memcpy(GalZ80Rom1 + 0x1000, GalTempRom + 0x2000, 0x6000);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	ZetOpen(2);
 	ZetSetReadHandler(SfxSampleZ80Read);
@@ -16638,12 +16985,17 @@ static void SfxPostLoad()
 	ZetSetOutHandler(SfxSampleZ80PortWrite);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 0, GalZ80Rom3);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 2, GalZ80Rom3);
-	ZetClose();	
+	ZetMapArea(0x8000, 0x83ff, 0, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 1, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 2, GalZ80Ram3);
+	ZetClose();
+	
+	nGalCyclesTotal[2] = (14318000 / 8) / 60;
 }
 
-static int SfxInit()
+static INT32 SfxInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = SfxPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC;
@@ -16684,11 +17036,11 @@ static void SkelagonPostLoad()
 	ZetMapArea(0xc000, 0xefff, 2, GalZ80Rom1 + 0x5000);
 	ZetClose();
 	
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom1Size);
 	memcpy(GalTempRom, GalZ80Rom1, GalZ80Rom1Size);
 	memset(GalZ80Rom1, 0xff, 0x1000);
 	memcpy(GalZ80Rom1 + 0x1000, GalTempRom + 0x0000, 0x7000);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	ZetOpen(2);
 	ZetSetReadHandler(SfxSampleZ80Read);
@@ -16697,12 +17049,17 @@ static void SkelagonPostLoad()
 	ZetSetOutHandler(SfxSampleZ80PortWrite);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 0, GalZ80Rom3);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 2, GalZ80Rom3);
-	ZetClose();	
+	ZetMapArea(0x8000, 0x83ff, 0, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 1, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 2, GalZ80Ram3);
+	ZetClose();
+	
+	nGalCyclesTotal[2] = (14318000 / 8) / 60;
 }
 
-static int SkelagonInit()
+static INT32 SkelagonInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = SkelagonPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC;
@@ -16747,18 +17104,24 @@ static void MonsterzPostLoad()
 	ZetSetOutHandler(SfxSampleZ80PortWrite);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 0, GalZ80Rom3);
 	ZetMapArea(0x0000, GalZ80Rom3Size - 1, 2, GalZ80Rom3);
+	ZetMapArea(0x8000, 0x83ff, 0, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 1, GalZ80Ram3);
+	ZetMapArea(0x8000, 0x83ff, 2, GalZ80Ram3);
 	ZetClose();
 	
-	GalTempRom = (unsigned char*)malloc(GalZ80Rom3Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalZ80Rom3Size);
 	memcpy(GalTempRom, GalZ80Rom3, GalZ80Rom3Size);
 	memcpy(GalZ80Rom3 + 0x0000, GalTempRom + 0x0000, 0x3000);
 	memset(GalZ80Rom3 + 0x3000, 0xff, 0x1000);
 	memcpy(GalZ80Rom3 + 0x4000, GalTempRom + 0x3000, 0x2000);
+	BurnFree(GalTempRom);
+	
+	nGalCyclesTotal[2] = (14318000 / 8) / 60;
 }
 
-static int MonsterzInit()
+static INT32 MonsterzInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MonsterzPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC;
@@ -17423,7 +17786,7 @@ static struct BurnRomInfo MimonscoRomDesc[] = {
 STD_ROM_PICK(Mimonsco)
 STD_ROM_FN(Mimonsco)
 
-unsigned char __fastcall Tazmani2Z80Read(unsigned short a)
+UINT8 __fastcall Tazmani2Z80Read(UINT16 a)
 {
 	if (a >= 0xa000 && a <= 0xa00f) {
 		return ppi8255_r(0, (a - 0xa000) >> 2);
@@ -17447,10 +17810,10 @@ unsigned char __fastcall Tazmani2Z80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall Tazmani2Z80Write(unsigned short a, unsigned char d)
+void __fastcall Tazmani2Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x8800 && a <= 0x88ff) {
-		int Offset = a - 0x8800;
+		INT32 Offset = a - 0x8800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17511,7 +17874,7 @@ void __fastcall Tazmani2Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall AnteatergZ80Read(unsigned short a)
+UINT8 __fastcall AnteatergZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xf521: {
@@ -17543,10 +17906,10 @@ unsigned char __fastcall AnteatergZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall AnteatergZ80Write(unsigned short a, unsigned char d)
+void __fastcall AnteatergZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x2000 && a <= 0x20ff) {
-		int Offset = a - 0x2000;
+		INT32 Offset = a - 0x2000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17632,7 +17995,7 @@ void __fastcall AnteatergZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall AnteatgbZ80Read(unsigned short a)
+UINT8 __fastcall AnteatgbZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x145b: {
@@ -17662,10 +18025,10 @@ unsigned char __fastcall AnteatgbZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall AnteatgbZ80Write(unsigned short a, unsigned char d)
+void __fastcall AnteatgbZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x1200 && a <= 0x12ff) {
-		int Offset = a - 0x1200;
+		INT32 Offset = a - 0x1200;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17732,10 +18095,10 @@ void __fastcall AnteatgbZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall StratgyxZ80Write(unsigned short a, unsigned char d)
+void __fastcall StratgyxZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x8800 && a <= 0x88ff) {
-		int Offset = a - 0x8800;
+		INT32 Offset = a - 0x8800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17800,10 +18163,10 @@ void __fastcall StratgyxZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall DarkplntZ80Write(unsigned short a, unsigned char d)
+void __fastcall DarkplntZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x8800 && a <= 0x88ff) {
-		int Offset = a - 0x8800;
+		INT32 Offset = a - 0x8800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17869,7 +18232,7 @@ void __fastcall DarkplntZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall HustlerZ80Read(unsigned short a)
+UINT8 __fastcall HustlerZ80Read(UINT16 a)
 {
 	if (a >= 0xd000 && a <= 0xd01f) {
 		return ppi8255_r(0, (a - 0xd000) >> 3);
@@ -17893,10 +18256,10 @@ unsigned char __fastcall HustlerZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall HustlerZ80Write(unsigned short a, unsigned char d)
+void __fastcall HustlerZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9000 && a <= 0x90ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -17946,7 +18309,7 @@ void __fastcall HustlerZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall HustlerbZ80Read(unsigned short a)
+UINT8 __fastcall HustlerbZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xb000: {
@@ -17976,10 +18339,10 @@ unsigned char __fastcall HustlerbZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall HustlerbZ80Write(unsigned short a, unsigned char d)
+void __fastcall HustlerbZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9000 && a <= 0x90ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -18035,7 +18398,7 @@ void __fastcall HustlerbZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall HustlerbSoundZ80PortRead(unsigned short a)
+UINT8 __fastcall HustlerbSoundZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -18048,7 +18411,7 @@ unsigned char __fastcall HustlerbSoundZ80PortRead(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall HustlerbSoundZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall HustlerbSoundZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -18065,10 +18428,10 @@ void __fastcall HustlerbSoundZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall MimonkeyZ80Write(unsigned short a, unsigned char d)
+void __fastcall MimonkeyZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9000 && a <= 0x90ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -18144,9 +18507,9 @@ void __fastcall MimonkeyZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int ScobraInit()
+static INT32 ScobraInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18162,9 +18525,9 @@ static int ScobraInit()
 	return nRet;
 }
 
-static int LosttombInit()
+static INT32 LosttombInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18172,21 +18535,21 @@ static int LosttombInit()
 	nRet = GalInit();
 	KonamiSoundInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char *TempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(TempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
-	for (unsigned int Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
-		unsigned int SrcOffset = Offset & 0xa7f;
+	for (UINT32 Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
+		UINT32 SrcOffset = Offset & 0xa7f;
 		SrcOffset |= ((BIT(Offset, 1) & BIT(Offset, 8)) | ((1 ^ BIT(Offset, 1)) & (BIT(Offset, 10)))) << 7;
 		SrcOffset |= (BIT(Offset, 7) ^ (BIT(Offset, 1) & (BIT(Offset, 7) ^ BIT(Offset, 10)))) << 8;
 		SrcOffset |= ((BIT(Offset, 1) & BIT(Offset, 7)) | ((1 ^ BIT(Offset, 1)) & (BIT(Offset, 8)))) << 10;
 		GalTempRom[Offset] = TempRom[SrcOffset];
 	}
-	free(TempRom);
+	BurnFree(TempRom);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -18218,9 +18581,9 @@ static void MapTazmani2()
 	ZetClose();
 }
 
-static int Tazmani2Init()
+static INT32 Tazmani2Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapTazmani2;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18236,9 +18599,9 @@ static int Tazmani2Init()
 	return nRet;
 }
 
-static int AnteaterInit()
+static INT32 AnteaterInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18246,21 +18609,21 @@ static int AnteaterInit()
 	nRet = GalInit();
 	KonamiSoundInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char *TempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
 	BurnLoadRom(TempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
-	for (unsigned int Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
-		unsigned int SrcOffset = Offset & 0x9bf;
+	for (UINT32 Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
+		UINT32 SrcOffset = Offset & 0x9bf;
 		SrcOffset |= (BIT(Offset, 4) ^ BIT(Offset, 9) ^ (BIT(Offset, 2) & BIT(Offset, 10))) << 6;
 		SrcOffset |= (BIT(Offset, 2) ^ BIT(Offset, 10)) << 9;
 		SrcOffset |= (BIT(Offset, 0) ^ BIT(Offset, 6) ^ 1) << 10;
 		GalTempRom[Offset] = TempRom[SrcOffset];
 	}
-	free(TempRom);
+	BurnFree(TempRom);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	GalRenderBackgroundFunction = AnteaterDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
@@ -18305,9 +18668,9 @@ static void AnteatergPostLoad()
 	ZetClose();
 }
 
-static int AnteatergInit()
+static INT32 AnteatergInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = AnteatergPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18355,9 +18718,9 @@ static void AnteaterukPostLoad()
 	ZetClose();
 }
 
-static int AnteaterukInit()
+static INT32 AnteaterukInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = AnteaterukPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18379,7 +18742,7 @@ static void SuperbonPostLoad()
 {
 	MapScobra();
 	
-	for (unsigned int Offset = 0; Offset < 0x1000; Offset++) {
+	for (UINT32 Offset = 0; Offset < 0x1000; Offset++) {
 		switch (Offset & 0x280) {
 			case 0x000: GalZ80Rom1[Offset] ^= 0x92; break;
 			case 0x080: GalZ80Rom1[Offset] ^= 0x82; break;
@@ -18389,9 +18752,9 @@ static void SuperbonPostLoad()
 	}
 }
 
-static int SuperbonInit()
+static INT32 SuperbonInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = SuperbonPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -18412,9 +18775,9 @@ static int SuperbonInit()
 	return nRet;
 }
 
-static int CalipsoInit()
+static INT32 CalipsoInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -18433,13 +18796,13 @@ static int CalipsoInit()
 	return nRet;
 }
 
-static unsigned char MoonwarPPIReadIN0()
+static UINT8 MoonwarPPIReadIN0()
 {
-	unsigned char Dial1 = (GalAnalogPort0 >> 8) & 0xff;
-	unsigned char Dial2 = (GalAnalogPort1 >> 8) & 0xff;
-	unsigned char Input0 = 0xff - GalInput[0] - GalDip[0];
-	unsigned char Sign;
-	unsigned char Delta;
+	UINT8 Dial1 = (GalAnalogPort0 >> 8) & 0xff;
+	UINT8 Dial2 = (GalAnalogPort1 >> 8) & 0xff;
+	UINT8 Input0 = 0xff - GalInput[0] - GalDip[0];
+	UINT8 Sign;
+	UINT8 Delta;
 	
 	if (Dial1 >= 0xfc || (Dial1 >= 0x01 && Dial1 <= 0x04)) Dial1 = 0;
 	if (Dial1 >= 0xf8) Dial1 = 0xfd;
@@ -18456,14 +18819,14 @@ static unsigned char MoonwarPPIReadIN0()
 	return (Input0 & 0xe0) | Delta | Sign;
 }
 
-static void MoonwarPortSelectWrite(unsigned char d)
+static void MoonwarPortSelectWrite(UINT8 d)
 {
 	MoonwarPortSelect = d & 0x10;
 }
 
-static int MoonwarInit()
+static INT32 MoonwarInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -18491,9 +18854,9 @@ static void StratgyxPostLoad()
 	ZetClose();
 }
 
-static int StratgyxInit()
+static INT32 StratgyxInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = StratgyxPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18518,12 +18881,12 @@ static void DarkplntPostLoad()
 	ZetClose();
 }
 
-static short DarkplntDial = 0;
-static unsigned int DarkplntDialFrameNumberRead = 0;
+static INT16 DarkplntDial = 0;
+static UINT32 DarkplntDialFrameNumberRead = 0;
 
-static unsigned char DarkplntPPIReadIN1()
+static UINT8 DarkplntPPIReadIN1()
 {
-	unsigned int CurrentFrame = GetCurrentFrame();
+	UINT32 CurrentFrame = GetCurrentFrame();
 	
 	if (DarkplntDialFrameNumberRead != CurrentFrame) {
 		if (GalInputPort3[0]) DarkplntDial -= 0x01;
@@ -18533,14 +18896,14 @@ static unsigned char DarkplntPPIReadIN1()
 		DarkplntDialFrameNumberRead = CurrentFrame;
 	}
 	
-	static const unsigned char remap[] = {0x03, 0x02, 0x00, 0x01, 0x21, 0x20, 0x22, 0x23, 0x33, 0x32, 0x30, 0x31, 0x11, 0x10, 0x12, 0x13, 0x17, 0x16, 0x14, 0x15, 0x35, 0x34, 0x36, 0x37, 0x3f, 0x3e, 0x3c, 0x3d, 0x1d, 0x1c, 0x1e, 0x1f, 0x1b, 0x1a, 0x18, 0x19, 0x39, 0x38, 0x3a, 0x3b, 0x2b, 0x2a, 0x28, 0x29, 0x09, 0x08, 0x0a, 0x0b, 0x0f, 0x0e, 0x0c, 0x0d, 0x2d, 0x2c, 0x2e, 0x2f, 0x27, 0x26, 0x24, 0x25, 0x05, 0x04, 0x06, 0x07 };
+	static const UINT8 remap[] = {0x03, 0x02, 0x00, 0x01, 0x21, 0x20, 0x22, 0x23, 0x33, 0x32, 0x30, 0x31, 0x11, 0x10, 0x12, 0x13, 0x17, 0x16, 0x14, 0x15, 0x35, 0x34, 0x36, 0x37, 0x3f, 0x3e, 0x3c, 0x3d, 0x1d, 0x1c, 0x1e, 0x1f, 0x1b, 0x1a, 0x18, 0x19, 0x39, 0x38, 0x3a, 0x3b, 0x2b, 0x2a, 0x28, 0x29, 0x09, 0x08, 0x0a, 0x0b, 0x0f, 0x0e, 0x0c, 0x0d, 0x2d, 0x2c, 0x2e, 0x2f, 0x27, 0x26, 0x24, 0x25, 0x05, 0x04, 0x06, 0x07 };
 		
 	return 0xff - GalInput[1] - GalDip[1] - remap[DarkplntDial >> 2];
 }
 
-static int DarkplntInit()
+static INT32 DarkplntInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DarkplntPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18559,9 +18922,9 @@ static int DarkplntInit()
 	return nRet;
 }
 
-static int RescueInit()
+static INT32 RescueInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18569,13 +18932,13 @@ static int RescueInit()
 	nRet = GalInit();
 	KonamiSoundInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char* TempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8* TempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	memcpy(TempRom, GalTempRom, GalTilesSharedRomSize);
-	for (unsigned int Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
-		unsigned int j = Offset & 0xa7f;
+	for (UINT32 Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
+		UINT32 j = Offset & 0xa7f;
 		j |= (BIT(Offset, 3) ^ BIT(Offset, 10)) << 7;
 		j |= (BIT(Offset, 1) ^ BIT(Offset, 7)) << 8;
 		j |= (BIT(Offset, 0) ^ BIT(Offset, 8)) << 10;
@@ -18583,8 +18946,8 @@ static int RescueInit()
 	}
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(TempRom);
-	free(GalTempRom);
+	BurnFree(TempRom);
+	BurnFree(GalTempRom);
 	
 	GalCalcPaletteFunction = RescueCalcPalette;
 	GalRenderBackgroundFunction = RescueDrawBackground;
@@ -18597,9 +18960,9 @@ static int RescueInit()
 	return nRet;
 }
 
-static int MinefldInit()
+static INT32 MinefldInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapScobra;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;
@@ -18607,13 +18970,13 @@ static int MinefldInit()
 	nRet = GalInit();
 	KonamiSoundInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char* TempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8* TempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	memcpy(TempRom, GalTempRom, GalTilesSharedRomSize);
-	for (unsigned int Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
-		unsigned int j = Offset & 0xd5f;
+	for (UINT32 Offset = 0; Offset < GalTilesSharedRomSize; Offset++) {
+		UINT32 j = Offset & 0xd5f;
 		j |= (BIT(Offset, 3) ^ BIT(Offset, 7)) << 5;
 		j |= (BIT(Offset, 2) ^ BIT(Offset, 9) ^ (BIT(Offset, 0) & BIT(Offset, 5)) ^ (BIT(Offset, 3) & BIT(Offset, 7) & (BIT(Offset, 0) ^ BIT(Offset, 5)))) << 7;
 		j |= (BIT(Offset, 0) ^ BIT(Offset, 5) ^ (BIT(Offset, 3) & BIT(Offset, 7))) << 9;
@@ -18621,8 +18984,8 @@ static int MinefldInit()
 	}
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(TempRom);
-	free(GalTempRom);
+	BurnFree(TempRom);
+	BurnFree(GalTempRom);
 	
 	GalCalcPaletteFunction = MinefldCalcPalette;
 	GalRenderBackgroundFunction = MinefldDrawBackground;
@@ -18644,11 +19007,11 @@ static void HustlerPostLoad()
 	ZetSetWriteHandler(HustlerZ80Write);
 	ZetClose();
 	
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char XorMask;
-		int Bits[8];
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 XorMask;
+		INT32 Bits[8];
 
-		for (unsigned int i = 0; i < 8; i++) Bits[i] = (Offset >> i) & 1;
+		for (UINT32 i = 0; i < 8; i++) Bits[i] = (Offset >> i) & 1;
 
 		XorMask = 0xff;
 		if (Bits[0] ^ Bits[1]) XorMask ^= 0x01;
@@ -18664,9 +19027,9 @@ static void HustlerPostLoad()
 	}
 }
 
-static int HustlerInit()
+static INT32 HustlerInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HustlerPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -18694,11 +19057,11 @@ static void BilliardPostLoad()
 	ZetSetWriteHandler(HustlerZ80Write);
 	ZetClose();
 	
-	for (unsigned int Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
-		unsigned char XorMask;
-		int Bits[8];
+	for (UINT32 Offset = 0; Offset < GalZ80Rom1Size; Offset++) {
+		UINT8 XorMask;
+		INT32 Bits[8];
 
-		for (unsigned int i = 0; i < 8; i++) Bits[i] = (Offset >> i) & 1;
+		for (UINT32 i = 0; i < 8; i++) Bits[i] = (Offset >> i) & 1;
 
 		XorMask = 0x55;
 		if (Bits[2] ^ ( Bits[3] &  Bits[6])) XorMask ^= 0x01;
@@ -18715,9 +19078,9 @@ static void BilliardPostLoad()
 	}
 }
 
-static int BilliardInit()
+static INT32 BilliardInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = BilliardPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -18755,9 +19118,9 @@ static void HustlerbPostLoad()
 	ZetClose();
 }
 
-static int HustlerbInit()
+static INT32 HustlerbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HustlerbPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
@@ -18790,7 +19153,7 @@ static void MapMimonkey()
 
 static void MimonkeyPostLoad()
 {
-	static const unsigned char XorTable[16][16] = {
+	static const UINT8 XorTable[16][16] = {
 		{ 0x03, 0x03, 0x05, 0x07, 0x85, 0x00, 0x85, 0x85, 0x80, 0x80, 0x06, 0x03, 0x03, 0x00, 0x00, 0x81 },
 		{ 0x83, 0x87, 0x03, 0x87, 0x06, 0x00, 0x06, 0x04, 0x02, 0x00, 0x84, 0x84, 0x04, 0x00, 0x01, 0x83 },
 		{ 0x82, 0x82, 0x84, 0x02, 0x04, 0x00, 0x00, 0x03, 0x82, 0x00, 0x06, 0x80, 0x03, 0x00, 0x81, 0x07 },
@@ -18809,9 +19172,9 @@ static void MimonkeyPostLoad()
 		{ 0x80, 0x87, 0x81, 0x87, 0x83, 0x00, 0x84, 0x01, 0x01, 0x86, 0x86, 0x80, 0x86, 0x00, 0x86, 0x86 }
 	};
 
-	int Ctr = 0, Line, Col;
+	INT32 Ctr = 0, Line, Col;
 
-	for (int Offset = 0; Offset < 0x4000; Offset++) {
+	for (INT32 Offset = 0; Offset < 0x4000; Offset++) {
 		Line = (Ctr & 0x07) | ((Ctr & 0x200) >> 6);
 		Col = ((GalZ80Rom1[Offset] & 0x80) >> 4) | (GalZ80Rom1[Offset] & 0x07);
 		GalZ80Rom1[Offset] = GalZ80Rom1[Offset] ^ XorTable[Line][Col];
@@ -18821,9 +19184,9 @@ static void MimonkeyPostLoad()
 	MapMimonkey();
 }
 
-static int MimonkeyInit()
+static INT32 MimonkeyInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MimonkeyPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -18841,9 +19204,9 @@ static int MimonkeyInit()
 	return nRet;
 }
 
-static int MimonscoInit()
+static INT32 MimonscoInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = MapMimonkey;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
@@ -19241,7 +19604,7 @@ static struct BurnRomInfo DambustrukRomDesc[] = {
 STD_ROM_PICK(Dambustruk)
 STD_ROM_FN(Dambustruk)
 
-unsigned char __fastcall DambustrZ80Read(unsigned short a)
+UINT8 __fastcall DambustrZ80Read(UINT16 a)
 {
 	if (a >= 0xd900 && a <= 0xdbff) {
 		// ???
@@ -19274,10 +19637,10 @@ unsigned char __fastcall DambustrZ80Read(unsigned short a)
 	return 0xff;
 }
 
-void __fastcall DambustrZ80Write(unsigned short a, unsigned char d)
+void __fastcall DambustrZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xd800 && a <= 0xd8ff) {
-		int Offset = a - 0xd800;
+		INT32 Offset = a - 0xd800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -19367,7 +19730,7 @@ void __fastcall DambustrZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall DambustrZ80PortRead(unsigned short a)
+UINT8 __fastcall DambustrZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -19380,7 +19743,7 @@ unsigned char __fastcall DambustrZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall DambustrZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall DambustrZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -19393,23 +19756,23 @@ void __fastcall DambustrZ80PortWrite(unsigned short a, unsigned char d)
 
 static void DambustrPostLoad()
 {
-	unsigned char Temp;
+	UINT8 Temp;
 	
-	GalTempRom = (unsigned char*)malloc(0x4000);
+	GalTempRom = (UINT8*)BurnMalloc(0x4000);
 	memcpy(GalTempRom, GalZ80Rom1, 0x4000);
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		GalZ80Rom1[i] = GalTempRom[BITSWAP16(i, 15, 14, 13, 12, 4, 10, 9, 8, 7, 6, 5, 3, 11, 2, 1, 0)];
 	}
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
-	for (int i = 0; i < 0x1000; i++) {
+	for (INT32 i = 0; i < 0x1000; i++) {
 		Temp = GalZ80Rom1[0x5000 + i];
 		GalZ80Rom1[0x5000 + i] = GalZ80Rom1[0x6000 + i];
 		GalZ80Rom1[0x6000 + i] = GalZ80Rom1[0x1000 + i];
 		GalZ80Rom1[0x1000 + i] = Temp;
 	}
 	
-	for (int i = 0; i < 0x1000; i++) {
+	for (INT32 i = 0; i < 0x1000; i++) {
 		GalZ80Rom1[0x1000 + i] = BITSWAP08(GalZ80Rom1[0x1000 + i], 7, 6, 5, 1, 3, 2, 4, 0);
 		GalZ80Rom1[0x4000 + i] = BITSWAP08(GalZ80Rom1[0x4000 + i], 7, 6, 5, 1, 3, 2, 4, 0);
 		GalZ80Rom1[0x5000 + i] = BITSWAP08(GalZ80Rom1[0x5000 + i], 7, 6, 5, 1, 3, 2, 4, 0);
@@ -19440,22 +19803,22 @@ static void DambustrPostLoad()
 	ZetClose();
 }
 
-static int DambustrInit()
+static INT32 DambustrInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DambustrPostLoad;
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char Temp[16];
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8 Temp[16];
 	nRet = BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x1000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x2000, GAL_ROM_OFFSET_TILES_SHARED + 2, 1); if (nRet) return 1;
 	nRet = BurnLoadRom(GalTempRom + 0x3000, GAL_ROM_OFFSET_TILES_SHARED + 3, 1); if (nRet) return 1;
-	for (unsigned int i = 0; i < GalTilesSharedRomSize; i += 16) {
-		unsigned int j;
+	for (UINT32 i = 0; i < GalTilesSharedRomSize; i += 16) {
+		UINT32 j;
 		
 		for (j = 0; j < 16; j++) {
 			Temp[j] = GalTempRom[i + j];
@@ -19468,7 +19831,7 @@ static int DambustrInit()
 	}
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 
 	GalCalcPaletteFunction = DambustrCalcPalette;
 	GalRenderBackgroundFunction = DambustrDrawBackground;
@@ -19480,7 +19843,7 @@ static int DambustrInit()
 	GalSpriteClipStart = 0;
 	GalSpriteClipEnd = 255;
 	
-	GalVideoRam2 = (unsigned char*)malloc(0x400);
+	GalVideoRam2 = (UINT8*)BurnMalloc(0x400);
 
 	return nRet;
 }
@@ -19654,7 +20017,7 @@ static struct BurnRomInfo HncholmsRomDesc[] = {
 STD_ROM_PICK(Hncholms)
 STD_ROM_FN(Hncholms)
 
-unsigned char HunchbkgS2650Read(unsigned short Address)
+UINT8 HunchbkgS2650Read(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1500:
@@ -19694,10 +20057,10 @@ unsigned char HunchbkgS2650Read(unsigned short Address)
 	return 0;
 }
 
-void HunchbkgS2650Write(unsigned short Address, unsigned char Data)
+void HunchbkgS2650Write(UINT16 Address, UINT8 Data)
 {
 	if ((Address >= 0x1480 && Address <= 0x14ff) || (Address >= 0x3480 && Address <= 0x34ff)  || (Address >= 0x5480 && Address <= 0x54ff)  || (Address >= 0x7480 && Address <= 0x74ff)) {
-		int Offset = Address & 0x7f;
+		INT32 Offset = Address & 0x7f;
 		
 		GalSpriteRam[Offset] = Data;
 		
@@ -19841,7 +20204,7 @@ void HunchbkgS2650Write(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char HunchbkgS2650PortRead(unsigned short Port)
+UINT8 HunchbkgS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case S2650_DATA_PORT: {
@@ -19861,7 +20224,7 @@ unsigned char HunchbkgS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-void HunchbkgS2650PortWrite(unsigned short Port, unsigned char Data)
+void HunchbkgS2650PortWrite(UINT16 Port, UINT8 Data)
 {
 	switch (Port) {
 		default: {
@@ -19870,7 +20233,7 @@ void HunchbkgS2650PortWrite(unsigned short Port, unsigned char Data)
 	}
 }
 
-unsigned char DrivfrcgS2650Read(unsigned short Address)
+UINT8 DrivfrcgS2650Read(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1500:
@@ -19909,10 +20272,10 @@ unsigned char DrivfrcgS2650Read(unsigned short Address)
 	return 0;
 }
 
-void DrivfrcgS2650Write(unsigned short Address, unsigned char Data)
+void DrivfrcgS2650Write(UINT16 Address, UINT8 Data)
 {
 	if ((Address >= 0x1480 && Address <= 0x14ff) || (Address >= 0x3480 && Address <= 0x34ff)  || (Address >= 0x5480 && Address <= 0x54ff)  || (Address >= 0x7480 && Address <= 0x74ff)) {
-		int Offset = Address & 0x7f;
+		INT32 Offset = Address & 0x7f;
 		
 		GalSpriteRam[Offset] = Data;
 		
@@ -20032,7 +20395,7 @@ void DrivfrcgS2650Write(unsigned short Address, unsigned char Data)
 		case 0x7705:
 		case 0x7706:
 		case 0x7707: {
-			int Offset = Address & 0x03;
+			INT32 Offset = Address & 0x03;
 			GalVol = (GalVol & ~(1 << Offset)) | ((Data & 1) << Offset);
 			return;
 		}
@@ -20043,7 +20406,7 @@ void DrivfrcgS2650Write(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char DrivfrcgS2650PortRead(unsigned short Port)
+UINT8 DrivfrcgS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case 0x00: {
@@ -20069,7 +20432,7 @@ unsigned char DrivfrcgS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-void DrivfrcgS2650PortWrite(unsigned short Port, unsigned char Data)
+void DrivfrcgS2650PortWrite(UINT16 Port, UINT8 Data)
 {
 	switch (Port) {
 		default: {
@@ -20078,7 +20441,7 @@ void DrivfrcgS2650PortWrite(unsigned short Port, unsigned char Data)
 	}
 }
 
-unsigned char RacknrolS2650Read(unsigned short Address)
+UINT8 RacknrolS2650Read(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1500:
@@ -20118,10 +20481,10 @@ unsigned char RacknrolS2650Read(unsigned short Address)
 	return 0;
 }
 
-void RacknrolS2650Write(unsigned short Address, unsigned char Data)
+void RacknrolS2650Write(UINT16 Address, UINT8 Data)
 {
 	if ((Address >= 0x1400 && Address <= 0x14ff) || (Address >= 0x3400 && Address <= 0x34ff)  || (Address >= 0x5400 && Address <= 0x54ff)  || (Address >= 0x7400 && Address <= 0x74ff)) {
-		int Offset = Address & 0xff;
+		INT32 Offset = Address & 0xff;
 		
 		GalSpriteRam[Offset] = Data;
 		
@@ -20165,7 +20528,7 @@ void RacknrolS2650Write(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char RacknrolS2650PortRead(unsigned short Port)
+UINT8 RacknrolS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case S2650_SENSE_PORT: {
@@ -20180,7 +20543,7 @@ unsigned char RacknrolS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-void RacknrolS2650PortWrite(unsigned short Port, unsigned char Data)
+void RacknrolS2650PortWrite(UINT16 Port, UINT8 Data)
 {
 	if (Port >= 0x0020 && Port <= 0x003f) {
 		GalGfxBank[Port - 0x0020] = Data;
@@ -20209,7 +20572,7 @@ void RacknrolS2650PortWrite(unsigned short Port, unsigned char Data)
 	}
 }
 
-unsigned char HexpoolaS2650PortRead(unsigned short Port)
+UINT8 HexpoolaS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case 0x0000: {
@@ -20237,7 +20600,7 @@ unsigned char HexpoolaS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-void HexpoolaS2650PortWrite(unsigned short Port, unsigned char Data)
+void HexpoolaS2650PortWrite(UINT16 Port, UINT8 Data)
 {
 	if (Port >= 0x0020 && Port <= 0x003f) {
 		GalGfxBank[Port - 0x0020] = Data;
@@ -20256,7 +20619,7 @@ void HexpoolaS2650PortWrite(unsigned short Port, unsigned char Data)
 	}
 }
 
-unsigned char HunchbksS2650Read(unsigned short Address)
+UINT8 HunchbksS2650Read(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1210:
@@ -20321,10 +20684,10 @@ unsigned char HunchbksS2650Read(unsigned short Address)
 	return 0;
 }
 
-void HunchbksS2650Write(unsigned short Address, unsigned char Data)
+void HunchbksS2650Write(UINT16 Address, UINT8 Data)
 {
 	if ((Address >= 0x1400 && Address <= 0x14ff) || (Address >= 0x3400 && Address <= 0x34ff)  || (Address >= 0x5400 && Address <= 0x54ff)  || (Address >= 0x7400 && Address <= 0x74ff)) {
-		int Offset = Address & 0xff;
+		INT32 Offset = Address & 0xff;
 		
 		GalSpriteRam[Offset] = Data;
 		
@@ -20421,7 +20784,7 @@ void HunchbksS2650Write(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char HunchbksS2650PortRead(unsigned short Port)
+UINT8 HunchbksS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case S2650_DATA_PORT: {
@@ -20441,7 +20804,7 @@ unsigned char HunchbksS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-void HunchbksS2650PortWrite(unsigned short Port, unsigned char Data)
+void HunchbksS2650PortWrite(UINT16 Port, UINT8 Data)
 {
 	switch (Port) {
 		default: {
@@ -20450,7 +20813,7 @@ void HunchbksS2650PortWrite(unsigned short Port, unsigned char Data)
 	}
 }
 
-unsigned char HncholmsS2650PortRead(unsigned short Port)
+UINT8 HncholmsS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case 0x0000: {
@@ -20478,7 +20841,7 @@ unsigned char HncholmsS2650PortRead(unsigned short Port)
 	return 0;
 }
 
-static int GalS2650ReturnVector(int)
+static INT32 GalS2650ReturnVector(INT32)
 {
 	return 0x03;
 }
@@ -20511,9 +20874,9 @@ static void S2650PostLoad()
 	s2650Close();
 }
 
-static int HunchbkgInit()
+static INT32 HunchbkgInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = S2650PostLoad;
 	
@@ -20524,7 +20887,7 @@ static int HunchbkgInit()
 
 static void DrivfrcgPostLoad()
 {
-	GalTempRom = (unsigned char*)malloc(GalS2650Rom1Size);
+	GalTempRom = (UINT8*)BurnMalloc(GalS2650Rom1Size);
 	memcpy(GalTempRom, GalS2650Rom1, GalS2650Rom1Size);
 	memcpy(GalS2650Rom1 + 0x1800, GalTempRom + 0x0000, 0x400);
 	memcpy(GalS2650Rom1 + 0x1c00, GalTempRom + 0x0400, 0x400);
@@ -20542,7 +20905,7 @@ static void DrivfrcgPostLoad()
 	memcpy(GalS2650Rom1 + 0x2c00, GalTempRom + 0x3400, 0x400);
 	memcpy(GalS2650Rom1 + 0x3000, GalTempRom + 0x3800, 0x400);
 	memcpy(GalS2650Rom1 + 0x3400, GalTempRom + 0x3c00, 0x400);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
 	
 	S2650PostLoad();
 	s2650Open(0);
@@ -20553,9 +20916,9 @@ static void DrivfrcgPostLoad()
 	s2650Close();
 }
 
-static int DrivfrcgInit()
+static INT32 DrivfrcgInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DrivfrcgPostLoad;
 	
@@ -20568,16 +20931,16 @@ static int DrivfrcgInit()
 	return nRet;
 }
 
-static int DrivfrcbInit()
+static INT32 DrivfrcbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = DrivfrcgPostLoad;
 	
 	nRet = GalInit();
 	
-	GalTempRom = (unsigned char*)malloc(GalTilesSharedRomSize);
-	unsigned char *TempRom = (unsigned char*)malloc(0x2000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	UINT8 *TempRom = (UINT8*)BurnMalloc(0x2000);
 	nRet = BurnLoadRom(TempRom, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
 	memcpy(GalTempRom + 0x1000, TempRom + 0x0000, 0x1000);
 	memcpy(GalTempRom + 0x0000, TempRom + 0x1000, 0x1000);
@@ -20586,7 +20949,8 @@ static int DrivfrcbInit()
 	memcpy(GalTempRom + 0x2000, TempRom + 0x1000, 0x1000);
 	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
-	free(GalTempRom);
+	BurnFree(GalTempRom);
+	BurnFree(TempRom);
 	
 	GalCalcPaletteFunction = RockclimCalcPalette;
 	GalExtendTileInfoFunction = Ad2083ExtendTileInfo;
@@ -20623,9 +20987,9 @@ static void RacknrolPostLoad()
 	s2650Close();
 }
 
-static int RacknrolInit()
+static INT32 RacknrolInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = RacknrolPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_RACKNROLSN76496;
@@ -20647,9 +21011,9 @@ static void HexpoolaPostLoad()
 	s2650Close();
 }
 
-static int HexpoolaInit()
+static INT32 HexpoolaInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HexpoolaPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_HEXPOOLASN76496;
@@ -20674,9 +21038,9 @@ static void HunchbksPostLoad()
 	ZetInit(1);
 }
 
-static int HunchbksInit()
+static INT32 HunchbksInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HunchbksPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910;
@@ -20708,9 +21072,9 @@ static void HncholmsPostLoad()
 	ZetInit(1);
 }
 
-static int HncholmsInit()
+static INT32 HncholmsInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = HncholmsPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_HUNCHBACKAY8910;
@@ -20799,7 +21163,7 @@ struct BurnDriver BurnDrvHunchbks = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_PLATFORM, 0,
 	NULL, HunchbksRomInfo, HunchbksRomName, NULL, NULL, HunchbksInputInfo, HunchbksDIPInfo,
-	HunchbksInit, GalExit, GalFrame, NULL, GalScan,
+	HunchbksInit, KonamiExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -20809,6 +21173,6 @@ struct BurnDriver BurnDrvHncholms = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_SPORTSMISC, 0,
 	NULL, HncholmsRomInfo, HncholmsRomName, NULL, NULL, HunchbksInputInfo, HunchbksDIPInfo,
-	HncholmsInit, GalExit, GalFrame, NULL, GalScan,
+	HncholmsInit, KonamiExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };

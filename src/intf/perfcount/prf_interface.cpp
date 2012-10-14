@@ -2,13 +2,15 @@
 #include "burner.h"
 
 bool bProfileOkay = false;
-unsigned int nProfileSelect = 0;
+UINT32 nProfileSelect = 0;
 
 static InterfaceInfo ProfileInfo = { NULL, NULL, NULL };
 
 #if defined (BUILD_WIN32)
 	extern struct ProfileDo cntDoPerfCount;
 #elif defined (BUILD_SDL)
+	extern struct ProfileDo cntDoPerfCount;
+#elif defined (_XBOX)
 	extern struct ProfileDo cntDoPerfCount;
 #endif
 
@@ -18,12 +20,14 @@ static struct ProfileDo* pProfileDo[] =
 	&cntDoPerfCount,
 #elif defined (BUILD_SDL)
 	&cntDoPerfCount,
+#elif defined (_XBOX)
+	&cntDoPerfCount,
 #endif
 };
 
 #define PROFILE_LEN (sizeof(pProfileDo) / sizeof(pProfileDo[0]))
 
-int ProfileExit()
+INT32 ProfileExit()
 {
 	IntInfoFree(&ProfileInfo);
 
@@ -35,9 +39,9 @@ int ProfileExit()
 	return pProfileDo[nProfileSelect]->ProfileExit();
 }
 
-int ProfileInit()
+INT32 ProfileInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	if (nProfileSelect >= PROFILE_LEN) {
 		return 1;
@@ -50,7 +54,7 @@ int ProfileInit()
 	return nRet;
 }
 
-int ProfileProfileStart(int nSubSystem)
+INT32 ProfileProfileStart(INT32 nSubSystem)
 {
 	if (!bProfileOkay || nProfileSelect >= PROFILE_LEN) {
 		return 1;
@@ -59,7 +63,7 @@ int ProfileProfileStart(int nSubSystem)
 	return pProfileDo[nProfileSelect]->ProfileStart(nSubSystem);
 }
 
-int ProfileProfileEnd(int nSubSystem)
+INT32 ProfileProfileEnd(INT32 nSubSystem)
 {
 	if (!bProfileOkay || nProfileSelect >= PROFILE_LEN) {
 		return 1;
@@ -68,7 +72,7 @@ int ProfileProfileEnd(int nSubSystem)
 	return pProfileDo[nProfileSelect]->ProfileEnd(nSubSystem);
 }
 
-double ProfileProfileReadLast(int nSubSystem)
+double ProfileProfileReadLast(INT32 nSubSystem)
 {
 	if (!bProfileOkay || nProfileSelect >= PROFILE_LEN) {
 		return 0.0;
@@ -77,7 +81,7 @@ double ProfileProfileReadLast(int nSubSystem)
 	return pProfileDo[nProfileSelect]->ProfileReadLast(nSubSystem);
 }
 
-double ProfileProfileReadAverage(int nSubSystem)
+double ProfileProfileReadAverage(INT32 nSubSystem)
 {
 	if (!bProfileOkay || nProfileSelect >= PROFILE_LEN) {
 		return 0.0;

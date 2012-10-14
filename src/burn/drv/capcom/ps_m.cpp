@@ -3,14 +3,14 @@
 
 // CPS1 sound Mixing
 
-int bPsmOkay = 0;										// 1 if the module is okay
-static short* WaveBuf = NULL;
+INT32 bPsmOkay = 0;										// 1 if the module is okay
+static INT16* WaveBuf = NULL;
 
-static int nPos;
+static INT32 nPos;
 
-int PsmInit()
+INT32 PsmInit()
 {
-	int nMemLen, nRate, nRet;
+	INT32 nMemLen, nRate, nRet;
 	bPsmOkay = 0;										// not OK yet
 
 	if (nBurnSoundRate > 0) {
@@ -24,8 +24,8 @@ int PsmInit()
 	}
 
 	// Allocate a buffer for the intermediate sound (between YM2151 and pBurnSoundOut)
-	nMemLen = nBurnSoundLen * 2 * sizeof(short);
-	WaveBuf = (short*)malloc(nMemLen);
+	nMemLen = nBurnSoundLen * 2 * sizeof(INT16);
+	WaveBuf = (INT16*)BurnMalloc(nMemLen);
 	if (WaveBuf == NULL) {
 		PsmExit();
 		return 1;
@@ -49,14 +49,13 @@ int PsmInit()
 	return 0;
 }
 
-int PsmExit()
+INT32 PsmExit()
 {
 	bPsmOkay = 0;
 
 	MSM6295Exit(0);
 
-	free(WaveBuf);
-	WaveBuf = NULL;
+	BurnFree(WaveBuf);
 
 	BurnYM2151Exit();									// Exit FM sound chip
 	return 0;
@@ -67,7 +66,7 @@ void PsmNewFrame()
 	nPos = 0;
 }
 
-int PsmUpdate(int nEnd)
+INT32 PsmUpdate(INT32 nEnd)
 {
 	if (bPsmOkay == 0 || pBurnSoundOut == NULL) {
 		return 1;

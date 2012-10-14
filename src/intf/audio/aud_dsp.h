@@ -1,4 +1,4 @@
 // dsp.cpp
-int DspInit();
-int DspExit();
-int DspDo(short* Wave, int nCount);
+INT32 DspInit();
+INT32 DspExit();
+INT32 DspDo(INT16* Wave, INT32 nCount);

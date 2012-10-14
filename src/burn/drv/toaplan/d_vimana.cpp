@@ -3,28 +3,28 @@
 #define REFRESHRATE 57.59
 #define VBLANK_LINES (32)
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPalRAM2;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPalRAM2;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-static unsigned char DrvInputs[3];
-static unsigned char DrvDips[3];
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvReset;
+static UINT8 DrvInputs[3];
+static UINT8 DrvDips[3];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvReset;
 
-static int vimana_latch;
-static int vimana_credits;
+static INT32 vimana_latch;
+static INT32 vimana_credits;
 
-static unsigned char bDrawScreen;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
 static bool bEnableInterrupts;
@@ -177,7 +177,7 @@ static struct BurnDIPInfo VimananDIPList[]=
 
 STDDIPINFO(Vimanan)
 
-void __fastcall vimanaWriteWord(unsigned int a, unsigned short d)
+void __fastcall vimanaWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a)
 	{
@@ -258,12 +258,12 @@ void __fastcall vimanaWriteWord(unsigned int a, unsigned short d)
 	bprintf (0, _T("%5.5x %4.4x ww\n"), a, d);
 }
 
-void __fastcall vimanaWriteByte(unsigned int , unsigned char )
+void __fastcall vimanaWriteByte(UINT32 , UINT8 )
 {
 	return;
 }
 
-unsigned short __fastcall vimanaReadWord(unsigned int a)
+UINT16 __fastcall vimanaReadWord(UINT32 a)
 {
 	switch (a)
 	{
@@ -299,7 +299,7 @@ unsigned short __fastcall vimanaReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall vimanaReadByte(unsigned int a)
+UINT8 __fastcall vimanaReadByte(UINT32 a)
 {
 	switch (a)
 	{
@@ -321,7 +321,7 @@ unsigned char __fastcall vimanaReadByte(unsigned int a)
 
 		case 0x440009:
 		{
-			int p = DrvInputs[2];
+			INT32 p = DrvInputs[2];
 			vimana_latch ^= p;
 			p = vimana_latch & p;
 
@@ -349,7 +349,7 @@ unsigned char __fastcall vimanaReadByte(unsigned int a)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -365,9 +365,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x040000;
 	BCU2ROM		= Next; Next += nBCU2ROMSize;
@@ -385,17 +385,17 @@ static int MemIndex()
 
 	RamEnd		= Next;
 
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
-	ToaPalette2	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
+	ToaPalette2	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 //	bToaRotateScreen = true;
 
@@ -407,8 +407,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(AllMem, 0, nLen);
@@ -447,24 +447,22 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 //	BurnYM3812Exit();
 	ToaPalExit();
 
 	ToaExitBCU2();
-	ToaZExit();
 	SekExit();
 
-	free(AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	ToaClearScreen(0);
+	ToaClearScreen(0x120);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -477,21 +475,21 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	memset (DrvInputs, 0, 3);
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] |= (DrvJoy3[i] & 1) << i;
@@ -499,21 +497,21 @@ static int DrvFrame()
 	ToaClearOpposites(&DrvInputs[0]);
 	ToaClearOpposites(&DrvInputs[1]);
 
-	SekOpen(0);
-
 	SekNewFrame();
+	
+	SekOpen(0);
 
 	SekIdle(nCyclesDone[0]);
 
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 
@@ -561,7 +559,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 

@@ -3,16 +3,16 @@
 #include "burnint.h"
 #include "taito_ic.h"
 
-unsigned char TC0510NIOInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0510NIOInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0510NIOInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0510NIODip[2]        = { 0, 0 };
-unsigned char TC0510NIOInput[3]      = { 0, 0, 0 };
+UINT8 TC0510NIOInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0510NIOInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0510NIOInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0510NIODip[2]        = { 0, 0 };
+UINT8 TC0510NIOInput[3]      = { 0, 0, 0 };
 static UINT8 TC0510NIORegs[8];
 
-extern unsigned char TaitoCoinLockout[4];
+extern UINT8 TaitoCoinLockout[4];
 
-static UINT8 TC0510NIORead(int Offset)
+static UINT8 TC0510NIORead(INT32 Offset)
 {
 	switch (Offset)	{
 		case 0x00: return TC0510NIODip[0];
@@ -28,7 +28,7 @@ static UINT8 TC0510NIORead(int Offset)
 	}
 }
 
-static void TC0510NIOWrite(int Offset, UINT16 Data)
+static void TC0510NIOWrite(INT32 Offset, UINT16 Data)
 {
 	TC0510NIORegs[Offset] = Data;
 
@@ -43,22 +43,22 @@ static void TC0510NIOWrite(int Offset, UINT16 Data)
 	}
 }
 
-UINT16 TC0510NIOHalfWordRead(int Offset)
+UINT16 TC0510NIOHalfWordRead(INT32 Offset)
 {
 	return TC0510NIORead(Offset);
 }
 
-UINT16 TC0510NIOHalfWordSwapRead(int Offset)
+UINT16 TC0510NIOHalfWordSwapRead(INT32 Offset)
 {
 	return TC0510NIOHalfWordRead(Offset ^ 1);
 }
 
-void TC0510NIOHalfWordWrite(int Offset, UINT16 Data)
+void TC0510NIOHalfWordWrite(INT32 Offset, UINT16 Data)
 {
 	TC0510NIOWrite(Offset, Data & 0xff);
 }
 
-void TC0510NIOHalfWordSwapWrite(int Offset, UINT16 Data)
+void TC0510NIOHalfWordSwapWrite(INT32 Offset, UINT16 Data)
 {
 	TC0510NIOWrite(Offset ^ 1, Data);
 }
@@ -78,7 +78,7 @@ void TC0510NIOExit()
 	memset(TC0510NIORegs, 0, 8);
 }
 
-void TC0510NIOScan(int nAction)
+void TC0510NIOScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(TC0510NIOInputPort0);

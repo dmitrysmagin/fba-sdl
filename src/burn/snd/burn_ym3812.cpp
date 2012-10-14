@@ -1,10 +1,13 @@
 #include "burnint.h"
 #include "burn_sound.h"
 #include "burn_ym3812.h"
+#include "sek.h"
+#include "zet.h"
 #include "m6809_intf.h"
 #include "hd6309_intf.h"
 #include "m6800_intf.h"
 #include "m6502_intf.h"
+#include "h6280_intf.h"
 
 // Timer Related
 
@@ -12,15 +15,15 @@
 
 static double dTimeYM3812;									// Time elapsed since the emulated machine was started
 
-static int nTimerCount[2], nTimerStart[2];
+static INT32 nTimerCount[2], nTimerStart[2];
 
 // Callbacks
-static int (*pTimerOverCallback)(int, int);
+static INT32 (*pTimerOverCallback)(INT32, INT32);
 static double (*pTimerTimeCallback)();
 
-static int nCPUClockspeed = 0;
-static int (*pCPUTotalCycles)() = NULL;
-static int (*pCPURun)(int) = NULL;
+static INT32 nCPUClockspeed = 0;
+static INT32 (*pCPUTotalCycles)() = NULL;
+static INT32 (*pCPURun)(INT32) = NULL;
 static void (*pCPURunEnd)() = NULL;
 
 // ---------------------------------------------------------------------------
@@ -39,18 +42,18 @@ extern "C" double BurnTimerGetTimeYM3812()
 // ---------------------------------------------------------------------------
 // Update timers
 
-static int nTicksTotal, nTicksDone, nTicksExtra;
+static INT32 nTicksTotal, nTicksDone, nTicksExtra;
 
-int BurnTimerUpdateYM3812(int nCycles)
+INT32 BurnTimerUpdateYM3812(INT32 nCycles)
 {
-	int nIRQStatus = 0;
+	INT32 nIRQStatus = 0;
 
 	nTicksTotal = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
 
 //	bprintf(PRINT_NORMAL, _T(" -- Ticks: %08X, cycles %i\n"), nTicksTotal, nCycles);
 
 	while (nTicksDone < nTicksTotal) {
-		int nTimer, nCyclesSegment, nTicksSegment;
+		INT32 nTimer, nCyclesSegment, nTicksSegment;
 
 		// Determine which timer fires first
 		if (nTimerCount[0] <= nTimerCount[1]) {
@@ -100,9 +103,9 @@ int BurnTimerUpdateYM3812(int nCycles)
 	return nIRQStatus;
 }
 
-void BurnTimerEndFrameYM3812(int nCycles)
+void BurnTimerEndFrameYM3812(INT32 nCycles)
 {
-	int nTicks = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
+	INT32 nTicks = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
 
 	BurnTimerUpdateYM3812(nCycles);
 
@@ -129,7 +132,7 @@ void BurnTimerUpdateEndYM3812()
 	nTicksTotal = 0;
 }
 
-void BurnOPLTimerCallbackYM3812(int c, double period)
+void BurnOPLTimerCallbackYM3812(INT32 c, double period)
 {
 	pCPURunEnd();
 
@@ -139,13 +142,13 @@ void BurnOPLTimerCallbackYM3812(int c, double period)
 		return;
 	}
 
-	nTimerCount[c]  = (int)(period * (double)TIMER_TICKS_PER_SECOND);
+	nTimerCount[c]  = (INT32)(period * (double)TIMER_TICKS_PER_SECOND);
 	nTimerCount[c] += MAKE_TIMER_TICKS(pCPUTotalCycles(), nCPUClockspeed);
 
 //	bprintf(PRINT_NORMAL, _T("  - timer %i started, %08X ticks (fires in %lf seconds)\n"), c, nTimerCount[c], period);
 }
 
-void BurnTimerScanYM3812(int nAction, int* pnMin)
+void BurnTimerScanYM3812(INT32 nAction, INT32* pnMin)
 {
 	if (pnMin && *pnMin < 0x029521) {
 		*pnMin = 0x029521;
@@ -180,7 +183,7 @@ void BurnTimerResetYM3812()
 	nTicksDone = 0;
 }
 
-int BurnTimerInitYM3812(int (*pOverCallback)(int, int), double (*pTimeCallback)())
+INT32 BurnTimerInitYM3812(INT32 (*pOverCallback)(INT32, INT32), double (*pTimeCallback)())
 {
 	BurnTimerExitYM3812();
 
@@ -192,7 +195,7 @@ int BurnTimerInitYM3812(int (*pOverCallback)(int, int), double (*pTimeCallback)(
 	return 0;
 }
 
-int BurnTimerAttachSekYM3812(int nClockspeed)
+INT32 BurnTimerAttachSekYM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = SekTotalCycles;
@@ -206,7 +209,7 @@ int BurnTimerAttachSekYM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachZetYM3812(int nClockspeed)
+INT32 BurnTimerAttachZetYM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = ZetTotalCycles;
@@ -220,7 +223,7 @@ int BurnTimerAttachZetYM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6809YM3812(int nClockspeed)
+INT32 BurnTimerAttachM6809YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6809TotalCycles;
@@ -234,7 +237,7 @@ int BurnTimerAttachM6809YM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachHD6309YM3812(int nClockspeed)
+INT32 BurnTimerAttachHD6309YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = HD6309TotalCycles;
@@ -248,7 +251,7 @@ int BurnTimerAttachHD6309YM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6800YM3812(int nClockspeed)
+INT32 BurnTimerAttachM6800YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -262,7 +265,7 @@ int BurnTimerAttachM6800YM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachHD63701YM3812(int nClockspeed)
+INT32 BurnTimerAttachHD63701YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -276,7 +279,7 @@ int BurnTimerAttachHD63701YM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6803YM3812(int nClockspeed)
+INT32 BurnTimerAttachM6803YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -290,12 +293,26 @@ int BurnTimerAttachM6803YM3812(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6502YM3812(int nClockspeed)
+INT32 BurnTimerAttachM6502YM3812(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
-	pCPUTotalCycles = m6502TotalCycles;
-	pCPURun = m6502Run;
-	pCPURunEnd = M6800RunEnd; // doesn't do anything...
+	pCPUTotalCycles = M6502TotalCycles;
+	pCPURun = M6502Run;
+	pCPURunEnd = M6502RunEnd; // doesn't do anything...
+
+	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
+
+//	bprintf(PRINT_NORMAL, _T("--- timer cpu speed %iHz, one cycle = %i ticks.\n"), nClockspeed, MAKE_TIMER_TICKS(1, nCPUClockspeed));
+
+	return 0;
+}
+
+INT32 BurnTimerAttachH6280YM3812(INT32 nClockspeed)
+{
+	nCPUClockspeed = nClockspeed;
+	pCPUTotalCycles = h6280TotalCycles;
+	pCPURun = h6280Run;
+	pCPURunEnd = h6280RunEnd;
 
 	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
 
@@ -306,31 +323,31 @@ int BurnTimerAttachM6502YM3812(int nClockspeed)
 
 // Sound Related
 
-void (*BurnYM3812Update)(short* pSoundBuf, int nSegmentEnd);
+void (*BurnYM3812Update)(INT16* pSoundBuf, INT32 nSegmentEnd);
 
-static int (*BurnYM3812StreamCallback)(int nSoundRate);
+static INT32 (*BurnYM3812StreamCallback)(INT32 nSoundRate);
 
-static int nBurnYM3812SoundRate;
+static INT32 nBurnYM3812SoundRate;
 
-static short* pBuffer;
-static short* pYM3812Buffer;
+static INT16* pBuffer;
+static INT16* pYM3812Buffer;
 
-static int nYM3812Position;
+static INT32 nYM3812Position;
 
-static unsigned int nSampleSize;
-static unsigned int nFractionalPosition;
+static UINT32 nSampleSize;
+static INT32 nFractionalPosition;
 
-static int bYM3812AddSignal;
+static INT32 bYM3812AddSignal;
 
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM3812UpdateDummy(short* , int /* nSegmentEnd */)
+static void YM3812UpdateDummy(INT16* , INT32 /* nSegmentEnd */)
 {
 	return;
 }
 
-static int YM3812StreamCallbackDummy(int /* nSoundRate */)
+static INT32 YM3812StreamCallbackDummy(INT32 /* nSoundRate */)
 {
 	return 0;
 }
@@ -338,8 +355,12 @@ static int YM3812StreamCallbackDummy(int /* nSoundRate */)
 // ----------------------------------------------------------------------------
 // Execute YM3812 for part of a frame
 
-static void YM3812Render(int nSegmentLength)
+static void YM3812Render(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("YM3812Render called without init\n"));
+#endif
+
 	if (nYM3812Position >= nSegmentLength) {
 		return;
 	}
@@ -356,10 +377,14 @@ static void YM3812Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void YM3812UpdateResample(short* pSoundBuf, int nSegmentEnd)
+static void YM3812UpdateResample(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
-	int nSamplesNeeded = nSegmentEnd * nBurnYM3812SoundRate / nBurnSoundRate + 1;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("YM3812UpdateResample called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
+	INT32 nSamplesNeeded = nSegmentEnd * nBurnYM3812SoundRate / nBurnSoundRate + 1;
 
 //	bprintf(PRINT_NORMAL, _T("    YM3812 update        -> %6i\n", nSegmentLength));
 
@@ -376,8 +401,8 @@ static void YM3812UpdateResample(short* pSoundBuf, int nSegmentEnd)
 
 	pYM3812Buffer = pBuffer + 0 * 4096 + 4;
 
-	for (int i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
-		short nSample =  INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
+	for (INT32 i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
+		INT16 nSample =  INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
 												pYM3812Buffer[(nFractionalPosition >> 16) - 3],
 												pYM3812Buffer[(nFractionalPosition >> 16) - 2],
 												pYM3812Buffer[(nFractionalPosition >> 16) - 1],
@@ -392,11 +417,11 @@ static void YM3812UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
+		INT32 nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
 
 //		bprintf(PRINT_NORMAL, _T("   %6i rendered, %i extra, %i <- %i\n"), nSamplesNeeded, nExtraSamples, nExtraSamples, (nFractionalPosition >> 16) + nExtraSamples - 1);
 
-		for (int i = -4; i < nExtraSamples; i++) {
+		for (INT32 i = -4; i < nExtraSamples; i++) {
 			pYM3812Buffer[i] = pYM3812Buffer[(nFractionalPosition >> 16) + i];
 		}
 
@@ -406,9 +431,13 @@ static void YM3812UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 }
 
-static void YM3812UpdateNormal(short* pSoundBuf, int nSegmentEnd)
+static void YM3812UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("YM3812UpdateNormal called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    YM3812 render %6i -> %6i\n"), nYM3812Position, nSegmentEnd);
 
@@ -424,7 +453,7 @@ static void YM3812UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 
 	pYM3812Buffer = pBuffer + 4 + 0 * 4096;
 
-	for (int i = nFractionalPosition; i < nSegmentLength; i++) {
+	for (INT32 i = nFractionalPosition; i < nSegmentLength; i++) {
 		if (bYM3812AddSignal) {
 			pSoundBuf[(i << 1) + 0] += pYM3812Buffer[i];
 			pSoundBuf[(i << 1) + 1] += pYM3812Buffer[i];
@@ -437,9 +466,9 @@ static void YM3812UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 	nFractionalPosition = nSegmentLength;
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSegmentEnd - nBurnSoundLen;
+		INT32 nExtraSamples = nSegmentEnd - nBurnSoundLen;
 
-		for (int i = 0; i < nExtraSamples; i++) {
+		for (INT32 i = 0; i < nExtraSamples; i++) {
 			pYM3812Buffer[i] = pYM3812Buffer[nBurnSoundLen + i];
 		}
 
@@ -453,8 +482,12 @@ static void YM3812UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 // ----------------------------------------------------------------------------
 // Callbacks for YM3812 core
 
-void BurnYM3812UpdateRequest(int, int)
+void BurnYM3812UpdateRequest(INT32, INT32)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("BurnYM3812UpdateRequest called without init\n"));
+#endif
+
 	YM3812Render(BurnYM3812StreamCallback(nBurnYM3812SoundRate));
 }
 
@@ -463,6 +496,10 @@ void BurnYM3812UpdateRequest(int, int)
 
 void BurnYM3812Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("BurnYM3812Reset called without init\n"));
+#endif
+
 	BurnTimerResetYM3812();
 
 	YM3812ResetChip(0);
@@ -470,17 +507,28 @@ void BurnYM3812Reset()
 
 void BurnYM3812Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("BurnYM3812Exit called without init\n"));
+#endif
+
 	YM3812Shutdown();
 
 	BurnTimerExitYM3812();
 
-	free(pBuffer);
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
 	
 	bYM3812AddSignal = 0;
+	
+	DebugSnd_YM3812Initted = 0;
 }
 
-int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int), int bAddSignal)
+INT32 BurnYM3812Init(INT32 nClockFrequency, OPL_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), INT32 bAddSignal)
 {
+	DebugSnd_YM3812Initted = 1;
+	
 	BurnTimerInitYM3812(&YM3812TimerOver, NULL);
 
 	if (nBurnSoundRate <= 0) {
@@ -504,7 +552,7 @@ int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*Stream
 
 		BurnYM3812Update = YM3812UpdateResample;
 
-		nSampleSize = (unsigned int)nBurnYM3812SoundRate * (1 << 16) / nBurnSoundRate;
+		nSampleSize = (UINT32)nBurnYM3812SoundRate * (1 << 16) / nBurnSoundRate;
 		nFractionalPosition = 0;
 	} else {
 		nBurnYM3812SoundRate = nBurnSoundRate;
@@ -517,8 +565,8 @@ int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*Stream
 	YM3812SetTimerHandler(0, &BurnOPLTimerCallbackYM3812, 0);
 	YM3812SetUpdateHandler(0, &BurnYM3812UpdateRequest, 0);
 
-	pBuffer = (short*)malloc(4096 * sizeof(short));
-	memset(pBuffer, 0, 4096 * sizeof(short));
+	pBuffer = (INT16*)malloc(4096 * sizeof(INT16));
+	memset(pBuffer, 0, 4096 * sizeof(INT16));
 
 	nYM3812Position = 0;
 
@@ -529,9 +577,14 @@ int BurnYM3812Init(int nClockFrequency, OPL_IRQHANDLER IRQCallback, int (*Stream
 	return 0;
 }
 
-void BurnYM3812Scan(int nAction, int* pnMin)
+void BurnYM3812Scan(INT32 nAction, INT32* pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM3812Initted) bprintf(PRINT_ERROR, _T("BurnYM3812Scan called without init\n"));
+#endif
+
 	BurnTimerScanYM3812(nAction, pnMin);
+	FMOPLScan(FM_OPL_SAVESTATE_YM3812, 0, nAction, pnMin);
 	
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(nYM3812Position);

@@ -1,13 +1,13 @@
 #include "cps.h"
 // QSound - Z80
 
-static int nQsndZBank = 0;
+static INT32 nQsndZBank = 0;
 
 // Map in the memory for the current 0x8000-0xc000 music bank
-static int QsndZBankMap()
+static INT32 QsndZBankMap()
 {
-	unsigned int nOff;
-	unsigned char* Bank;
+	UINT32 nOff;
+	UINT8* Bank;
 	nOff = nQsndZBank << 14;
 	nOff += 0x8000;
 
@@ -34,9 +34,9 @@ static int QsndZBankMap()
 	return 0;
 }
 
-static unsigned char QscCmd[2] = {0, 0};
+static UINT8 QscCmd[2] = {0, 0};
 
-void __fastcall QsndZWrite(unsigned short a, unsigned char d)
+void __fastcall QsndZWrite(UINT16 a, UINT8 d)
 {
 	if (a == 0xd000) {
 		QscCmd[0] = d;
@@ -52,7 +52,7 @@ void __fastcall QsndZWrite(unsigned short a, unsigned char d)
 		return;
 	}
 	if (a == 0xd003) {
-		int nNewBank = d & 0x0f;
+		INT32 nNewBank = d & 0x0f;
 		if (nQsndZBank != nNewBank) {
 			nQsndZBank = nNewBank;
 			QsndZBankMap();
@@ -60,7 +60,7 @@ void __fastcall QsndZWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall QsndZRead(unsigned short a)
+UINT8 __fastcall QsndZRead(UINT16 a)
 {
 	if (a == 0xd007) {						// return ready all the time
 		return 0x80;
@@ -68,7 +68,7 @@ unsigned char __fastcall QsndZRead(unsigned short a)
 	return 0;
 }
 
-int QsndZInit()
+INT32 QsndZInit()
 {
 	if (nCpsZRomLen < 0x8000) {				// Not enough Z80 Data
 		return 1;
@@ -77,7 +77,8 @@ int QsndZInit()
 		return 1;
 	}
 
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 
 	ZetSetReadHandler(QsndZRead);
 	ZetSetWriteHandler(QsndZWrite);
@@ -118,20 +119,22 @@ int QsndZInit()
 	return 0;
 }
 
-int QsndZExit()
+INT32 QsndZExit()
 {
 	ZetExit();
 	return 0;
 }
 
 // Scan the current QSound z80 state
-int QsndZScan(int nAction)
+INT32 QsndZScan(INT32 nAction)
 {
 	ZetScan(nAction);					// Scan Z80
 	SCAN_VAR(nQsndZBank);
 
 	if (nAction & ACB_WRITE) {			// If write, bank could have changed
+		ZetOpen(0);
 		QsndZBankMap();
+		ZetClose();
 	}
 
 	return 0;

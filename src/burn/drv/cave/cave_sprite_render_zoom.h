@@ -50,20 +50,20 @@
 #if BPP == 16
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTZBUF(a)) {						\
    	WRITEZBUF(a);																\
-	*((unsigned short*)(pPixel + a * 2)) = (unsigned short)pSpritePalette[b];	\
+	*((UINT16*)(pPixel + a * 2)) = (UINT16)pSpritePalette[b];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTZBUF(a)) {						\
 	WRITEZBUF(a);																\
-	unsigned int nRGB = pSpritePalette[b];										\
-	pPixel[a * 3 + 0] = (unsigned char)nRGB;									\
-	pPixel[a * 3 + 1] = (unsigned char)(nRGB >> 8);								\
-	pPixel[a * 3 + 2] = (unsigned char)(nRGB >> 16);							\
+	UINT32 nRGB = pSpritePalette[b];										\
+	pPixel[a * 3 + 0] = (UINT8)nRGB;									\
+	pPixel[a * 3 + 1] = (UINT8)(nRGB >> 8);								\
+	pPixel[a * 3 + 2] = (UINT8)(nRGB >> 16);							\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTZBUF(a)) {						\
 	WRITEZBUF(a);																\
-	*((unsigned int*)(pPixel + a * 4)) = (unsigned int)pSpritePalette[b];		\
+	*((UINT32*)(pPixel + a * 4)) = (UINT32)pSpritePalette[b];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -92,14 +92,14 @@ static void FUNCTIONNAME(BPP,XSIZE,ROT,FLIP,ZOOMMODE,ZBUF,DEPTH)()
 // Create an empty function if unsupported features are requested
 #if ROT == 0 && XFLIP == 0 && EIGHTBIT == 1
 
-	int nSpriteColumn;
+	INT32 nSpriteColumn;
 
-	int nSpriteXOffset2;
+	INT32 nSpriteXOffset2;
 
  #if ZOOM == 2
-	int nPrevSpriteXOffset;
-	int nPrevSpriteXOffsetStart = nSpriteXOffset & 0xFFFF0000;
-	int nPrevSpriteYOffset = nSpriteYOffset & 0xFFFF0000;
+	INT32 nPrevSpriteXOffset;
+	INT32 nPrevSpriteXOffsetStart = nSpriteXOffset & 0xFFFF0000;
+	INT32 nPrevSpriteYOffset = nSpriteYOffset & 0xFFFF0000;
 
 	if (nPrevSpriteXOffsetStart == 0) {
 		nPrevSpriteXOffsetStart = 0xFEDC1234;
@@ -110,7 +110,7 @@ static void FUNCTIONNAME(BPP,XSIZE,ROT,FLIP,ZOOMMODE,ZBUF,DEPTH)()
 	}
  #endif
 
-	unsigned char* pSpriteRowData = (unsigned char*)pSpriteData;
+	UINT8* pSpriteRowData = (UINT8*)pSpriteData;
 
 	for (nSpriteRow = nYSize; nSpriteRow > 0; nSpriteRow -= 0x00010000, nSpriteYOffset += nSpriteYZoomSize) {
 
@@ -127,7 +127,7 @@ static void FUNCTIONNAME(BPP,XSIZE,ROT,FLIP,ZOOMMODE,ZBUF,DEPTH)()
 		nPrevSpriteYOffset = nSpriteYOffset;
 		nPrevSpriteXOffset = nPrevSpriteXOffsetStart;
  #endif
-		pSpriteRowData = ((unsigned char*)pSpriteData) + (nSpriteYOffset >> 16) * nSpriteRowSize;
+		pSpriteRowData = ((UINT8*)pSpriteData) + (nSpriteYOffset >> 16) * nSpriteRowSize;
 
 		nSpriteXOffset2 = nSpriteXOffset;
 

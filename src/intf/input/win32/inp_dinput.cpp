@@ -9,10 +9,12 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
-#ifdef _MSC_VER
-#pragma comment(lib, "dinput8")
-#pragma comment(lib, "dxguid")
-#endif
+//#ifdef _MSC_VER
+//#pragma comment(lib, "dinput8")
+//#pragma comment(lib, "dxguid")
+//#endif
+
+#include "dinput_core.h"
 
 #define MAX_KEYBOARD	(1)
 #define MAX_GAMEPAD		(8)
@@ -29,13 +31,13 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 //class InputDI : public Input {
 //public:
 	struct keyboardData {
-		IDirectInputDevice8* lpdid;
+		IDirectInputDevice8W* lpdid;
 		unsigned char state[256];
 		unsigned char readStatus;
 	} keyboardProperties[MAX_KEYBOARD];
 
 	struct gamepadData {
-		IDirectInputDevice8* lpdid;
+		IDirectInputDevice8W* lpdid;
 		DIJOYSTATE2 dijs;
 		DWORD dwAxisType[MAX_JOYAXIS];
 		DWORD dwAxisBaseline[MAX_JOYAXIS];
@@ -46,7 +48,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 	} gamepadProperties[MAX_GAMEPAD];
 
 	struct mouseData {
-		IDirectInputDevice8* lpdid;
+		IDirectInputDevice8W* lpdid;
 		DIMOUSESTATE2 dims;
 		DWORD dwAxisType[MAX_MOUSEAXIS];
 		DWORD dwAxes;
@@ -58,7 +60,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 	int gamepadCount;		// Number of gamepads connected to this machine
 	int mouseCount;			// Number of mice connected to this machine
 
-	IDirectInput8* pDI;
+	IDirectInput8W* pDI;
 	HWND hDinpWnd;
 	
 	int gamepadInitSingle()
@@ -275,7 +277,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		memset(&gamepadProperties, 0, sizeof(gamepadProperties));
 		memset(&mouseProperties, 0, sizeof(mouseProperties));
 
-		if (FAILED(DirectInput8Create(hAppInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI, NULL))) {
+		if (FAILED(_DirectInput8Create(hAppInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI, NULL))) {
 			return 1;
 		}
 
@@ -695,7 +697,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 	int getControlName(int code, wchar_t* deviceName, wchar_t* controlName)
 	{
-		IDirectInputDevice8* lpdid = NULL;
+		IDirectInputDevice8W* lpdid = NULL;
 		DWORD* pdwAxisType = NULL;
 		DWORD dwMouseAxes = 0, dwPOVs = 0, dwButtons = 0;
 		DWORD dwObj = 0;

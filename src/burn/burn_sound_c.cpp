@@ -3,7 +3,7 @@
 
 #define CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))
 
-void BurnSoundCopyClamp_C(int *Src, short *Dest, int Len)
+void BurnSoundCopyClamp_C(INT32 *Src, INT16 *Dest, INT32 Len)
 {
 	Len *= 2;
 	while (Len--) {
@@ -13,7 +13,7 @@ void BurnSoundCopyClamp_C(int *Src, short *Dest, int Len)
 	}
 }
 
-void BurnSoundCopyClamp_Add_C(int *Src, short *Dest, int Len)
+void BurnSoundCopyClamp_Add_C(INT32 *Src, INT16 *Dest, INT32 Len)
 {
 	Len *= 2;
 		while (Len--) {
@@ -23,7 +23,7 @@ void BurnSoundCopyClamp_Add_C(int *Src, short *Dest, int Len)
 	}
 }
 
-void BurnSoundCopyClamp_Mono_C(int *Src, short *Dest, int Len)
+void BurnSoundCopyClamp_Mono_C(INT32 *Src, INT16 *Dest, INT32 Len)
 {
 	while (Len--) {
 		Dest[0] = CLIP((*Src >> 8));
@@ -33,7 +33,7 @@ void BurnSoundCopyClamp_Mono_C(int *Src, short *Dest, int Len)
 	}
 }
 
-void BurnSoundCopyClamp_Mono_Add_C(int *Src, short *Dest, int Len)
+void BurnSoundCopyClamp_Mono_Add_C(INT32 *Src, INT16 *Dest, INT32 Len)
 {
 	while (Len--) {
 		Dest[0] = CLIP((*Src >> 8) + Dest[0]);

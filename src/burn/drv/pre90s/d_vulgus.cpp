@@ -4,21 +4,23 @@
 // To do: flip screen
 
 #include "tiles_generic.h"
+#include "zet.h"
+
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *MemEnd, *Rom0, *Rom1, *Gfx0, *Gfx1, *Gfx2, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
-static short *pAY8910Buffer[6], *pFMBuffer = NULL;
-static unsigned int *DrvPalette, *Palette;
-static unsigned char DrvRecalc;
+static UINT8 *Mem, *MemEnd, *Rom0, *Rom1, *Gfx0, *Gfx1, *Gfx2, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
+static INT16 *pAY8910Buffer[6], *pFMBuffer = NULL;
+static UINT32 *DrvPalette, *Palette;
+static UINT8 DrvRecalc;
 
-static int vulgus_soundlatch;
-static int vulgus_scroll[2];
-static int vulgus_palette_bank;
-static int vulgus_flipscreen;
+static INT32 vulgus_soundlatch;
+static INT32 vulgus_scroll[2];
+static INT32 vulgus_palette_bank;
+static INT32 vulgus_flipscreen;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 7,	"p1 coin"  },
@@ -40,6 +42,7 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 fire 1"},
 	{"P2 Button 2"  , BIT_DIGITAL  , DrvJoy3 + 5,	"p2 fire 2"},
 
+	
 	{"Reset"        , BIT_DIGITAL  , &DrvReset  ,	"reset"    },
 	{"Dip 1"        , BIT_DIPSWITCH, DrvDips + 0,   "dip 1"    },
 	{"Dip 2"        , BIT_DIPSWITCH, DrvDips + 1,   "dip 2"    },
@@ -112,7 +115,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-void __fastcall vulgus_write_main(unsigned short address, unsigned char data)
+void __fastcall vulgus_write_main(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -140,9 +143,9 @@ void __fastcall vulgus_write_main(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall vulgus_read_main(unsigned short address)
+UINT8 __fastcall vulgus_read_main(UINT16 address)
 {
-	unsigned char ret;
+	UINT8 ret;
 
 	switch (address)
 	{
@@ -150,7 +153,7 @@ unsigned char __fastcall vulgus_read_main(unsigned short address)
 		{
 			ret = 0xff;
 
-			for (int i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
 
 			return ret;
 		}
@@ -159,7 +162,7 @@ unsigned char __fastcall vulgus_read_main(unsigned short address)
 		{
 			ret = 0xff;
 
-			for (int i = 0; i < 5; i++) ret ^= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 5; i++) ret ^= DrvJoy2[i] << i;
 
 			return ret;
 		}
@@ -168,7 +171,7 @@ unsigned char __fastcall vulgus_read_main(unsigned short address)
 		{
 			ret = 0xff;
 
-			for (int i = 0; i < 5; i++) ret ^= DrvJoy3[i] << i;
+			for (INT32 i = 0; i < 5; i++) ret ^= DrvJoy3[i] << i;
 
 			return ret;
 		}
@@ -183,7 +186,7 @@ unsigned char __fastcall vulgus_read_main(unsigned short address)
 	return 0;
 }
 
-void __fastcall vulgus_write_sound(unsigned short address, unsigned char data)
+void __fastcall vulgus_write_sound(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -196,7 +199,7 @@ void __fastcall vulgus_write_sound(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall vulgus_read_sound(unsigned short address)
+UINT8 __fastcall vulgus_read_sound(UINT16 address)
 {
 	switch (address)
 	{
@@ -207,7 +210,7 @@ unsigned char __fastcall vulgus_read_sound(unsigned short address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -221,7 +224,7 @@ static int DrvDoReset()
 	memset (Rom0 + 0xcc00, 0, 0x2400);
 	memset (Rom1 + 0x4000, 0, 0x0800);
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -232,9 +235,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom0		= Next; Next += 0x10000;
 	Rom1		= Next; Next += 0x05000;
@@ -243,26 +246,26 @@ static int MemIndex()
 	Gfx2		= Next; Next += 0x10000;
 	Prom		= Next; Next += 0x00600;
 
-	Palette		= (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette	= (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	Palette		= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette	= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 
-	pFMBuffer	= (short*)Next; Next += (nBurnSoundLen * 6 * sizeof(short));
+	pFMBuffer	= (INT16*)Next; Next += (nBurnSoundLen * 6 * sizeof(INT16));
 
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int DrvPaletteInit()
+static INT32 DrvPaletteInit()
 {
-	unsigned int *tmp = (unsigned int*)malloc(0x100 * sizeof(int));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x100 * sizeof(UINT32));
 	if (tmp == NULL) { 
 		return 1;
 	}
 
-	for (int i = 0; i < 256; i++)
+	for (INT32 i = 0; i < 256; i++)
 	{
-		int bit0,bit1,bit2,bit3,r,g,b;
+		INT32 bit0,bit1,bit2,bit3,r,g,b;
 
 		bit0 = (Prom[  0 + i] >> 0) & 0x01;
 		bit1 = (Prom[  0 + i] >> 1) & 0x01;
@@ -285,43 +288,43 @@ static int DrvPaletteInit()
 		tmp[i] = (r << 16) | (g << 8) | b;
 	}
 
-	for (int i = 0; i < 0x100; i++) {
+	for (INT32 i = 0; i < 0x100; i++) {
 		Palette[i] = tmp[32 + Prom[0x300 + i]];
 	}
 
-	for (int i = 0; i < 0x100; i++) {
+	for (INT32 i = 0; i < 0x100; i++) {
 		Palette[0x100 + i] = tmp[16 + Prom[0x400 + i]];
 	}
 
-	for (int i = 0; i < 0x100; i++)	{
+	for (INT32 i = 0; i < 0x100; i++)	{
 		Palette[0x400 + i] = tmp[Prom[0x500 + i] + 0x00];
 		Palette[0x500 + i] = tmp[Prom[0x500 + i] + 0x40];
 		Palette[0x600 + i] = tmp[Prom[0x500 + i] + 0x80];
 		Palette[0x700 + i] = tmp[Prom[0x500 + i] + 0xc0];
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0xc000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0xc000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	static int SpriPlanes[4] = { 0x20004, 0x20000, 0x00004, 0x00000 };
-	static int SpriXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b,
+	static INT32 SpriPlanes[4] = { 0x20004, 0x20000, 0x00004, 0x00000 };
+	static INT32 SpriXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b,
 				     0x100, 0x101, 0x102, 0x103, 0x108, 0x109, 0x10a, 0x10b };
-	static int SpriYOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
+	static INT32 SpriYOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 				     0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0 };
 
-	static int TilePlanes[3] = { 0x00000, 0x20000, 0x40000 };
-	static int TileXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	static INT32 TilePlanes[3] = { 0x00000, 0x20000, 0x40000 };
+	static INT32 TileXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 				     0x080, 0x081, 0x082, 0x083, 0x084, 0x085, 0x086, 0x087 };
-	static int TileYOffs[16] = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
+	static INT32 TileYOffs[16] = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
 				     0x040, 0x048, 0x050, 0x058, 0x060, 0x068, 0x070, 0x078 };
 
 	memcpy (tmp, Gfx0, 0x2000);
@@ -336,43 +339,43 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x100, 4, 16, 16, SpriPlanes + 0, SpriXOffs, SpriYOffs, 0x200, tmp, Gfx2);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	for (int i = 0; i < 6; i++) {
+	for (INT32 i = 0; i < 6; i++) {
 		pAY8910Buffer[i] = pFMBuffer + nBurnSoundLen * i;
 	}
 
 	{
-		for (int i = 0; i < 5; i++) {
+		for (INT32 i = 0; i < 5; i++) {
 			if (BurnLoadRom(Rom0 + i * 0x2000, i +  0, 1)) return 1;
 		}
 
 		if (BurnLoadRom(Rom1 + 0x0000, 5, 1)) return 1;
 		if (BurnLoadRom(Gfx0 + 0x0000, 6, 1)) return 1;
 
-		for (int i = 0; i < 6; i++) {
+		for (INT32 i = 0; i < 6; i++) {
 			if (BurnLoadRom(Gfx1 + i * 0x2000, i +  7, 1)) return 1;
 		}
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(Gfx2 + i * 0x2000, i + 13, 1)) return 1;
 		}
 
-		for (int i = 0; i < 6; i++) {
+		for (INT32 i = 0; i < 6; i++) {
 			if (BurnLoadRom(Prom + i * 0x0100, i + 17, 1)) return 1;
 		}
 
@@ -380,7 +383,7 @@ static int DrvInit()
 		if (DrvGfxDecode()) return 1;
 	}
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x9fff, 0, Rom0 + 0x0000);
 	ZetMapArea(0x0000, 0x9fff, 2, Rom0 + 0x0000);
@@ -396,6 +399,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x1fff, 0, Rom1 + 0x0000);
 	ZetMapArea(0x0000, 0x1fff, 2, Rom1 + 0x0000);
@@ -417,20 +421,20 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 	AY8910Exit(0);
 	AY8910Exit(1);
 	GenericTilesExit();
 
-	free (Mem);
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Prom = NULL;
 	pFMBuffer = NULL;
 
-	for (int i = 0; i < 6; i++) {
+	for (INT32 i = 0; i < 6; i++) {
 		pAY8910Buffer[i] = NULL;
 	}
 
@@ -446,18 +450,18 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x800; i++) {
-			int color = Palette[i];
+		for (INT32 i = 0; i < 0x800; i++) {
+			INT32 color = Palette[i];
 			DrvPalette[i] = BurnHighCol(color >> 16, color >> 8, color, 0);
 		}
 	}
 
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sx, sy, color, code, flipx, flipy;
+		INT32 sx, sy, color, code, flipx, flipy;
 
 		sx = (offs >> 1) & 0x1f0;
 		sy = (offs << 4) & 0x1f0;
@@ -493,9 +497,9 @@ static int DrvDraw()
 		}
 	}
 
-	for (int offs = 0x7c; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x7c; offs >= 0; offs -= 4)
 	{
-		int code, i, color, sx, sy;
+		INT32 code, i, color, sx, sy;
 
 		code  = Rom0[0xcc00 + offs];
 		color = Rom0[0xcc01 + offs] & 0x0f;
@@ -508,7 +512,7 @@ static int DrvDraw()
 		if (i == 2) i = 3;
 
 		for (; i >= 0; i--) {
-			int ssy = sy + (i << 4);
+			INT32 ssy = sy + (i << 4);
 			Render16x16Tile_Mask_Clip(pTransDraw, code + i, sx, ssy, color, 4, 0x0f, 0x100, Gfx2);
 			if (ssy > 240) { // wrap
 				Render16x16Tile_Mask_Clip(pTransDraw, code + i, sx, ssy - 256, color, 4, 0x0f, 0x100, Gfx2);
@@ -516,16 +520,16 @@ static int DrvDraw()
 		}
 	}
 
-	for (int offs = 0x40; offs < 0x3c0; offs++)
+	for (INT32 offs = 0x40; offs < 0x3c0; offs++)
 	{
-		int sx, sy, color, code;
+		INT32 sx, sy, color, code;
 
 		color = Rom0[0xd400 + offs];
 		code  = Rom0[0xd000 + offs] | ((color & 0x80) << 1);
 
 		if (code == 0x20) continue;
 
-		unsigned char *src = Gfx0 + (code << 6);
+		UINT8 *src = Gfx0 + (code << 6);
 
 		color = (color & 0x3f) << 2;
 
@@ -534,9 +538,9 @@ static int DrvDraw()
 
 		sy -= 0x10;
 
-		for (int y = sy; y < sy + 8; y++) {
-			for (int x = sx; x < sx + 8; x++, src++) {
-				int pxl = color | *src;
+		for (INT32 y = sy; y < sy + 8; y++) {
+			for (INT32 x = sx; x < sx + 8; x++, src++) {
+				INT32 pxl = color | *src;
 				if (Prom[0x300 | pxl] == 0x0f) continue;
 				pTransDraw[(y << 8) | x] = pxl;
 			}
@@ -544,9 +548,9 @@ static int DrvDraw()
 	}
 
 	if (vulgus_flipscreen) {
-		int nSize = (nScreenWidth * nScreenHeight) - 1;
-		for (int i = 0; i < nSize >> 1; i++) {
-			int n = pTransDraw[i];
+		INT32 nSize = (nScreenWidth * nScreenHeight) - 1;
+		for (INT32 i = 0; i < nSize >> 1; i++) {
+			INT32 n = pTransDraw[i];
 			pTransDraw[i] = pTransDraw[nSize - i];
 			pTransDraw[nSize - i] = n;
 		}
@@ -558,27 +562,25 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	int nInterleave = 8;
-	int nSoundBufferPos = 0;
-	int nCycles[2] = { 4000000 / 60, 3000000 / 60 };
+	INT32 nInterleave = 8;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCycles[2] = { 4000000 / 60, 3000000 / 60 };
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		ZetOpen(0);
 		nCycles[0] -= ZetRun(nCycles[0] / (nInterleave - i));
 		if (i == ((nInterleave / 2) - 1)) {
-			//ZetRaiseIrq(0xd7);
 			ZetSetVector(0xd7);
 			ZetRaiseIrq(0);
 		}
 		if (i == ( nInterleave      - 1)) {
-			//ZetRaiseIrq(0xcf);
 			ZetSetVector(0xcf);
 			ZetRaiseIrq(0);
 		}
@@ -590,12 +592,12 @@ static int DrvFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -603,29 +605,23 @@ static int DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) | 0] = nSample;
 				pSoundBuf[(n << 1) | 1] = nSample;
-    			}
-				nSoundBufferPos += nSegmentLength;
+    		}
+			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -633,13 +629,7 @@ static int DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) | 0] = nSample;
 				pSoundBuf[(n << 1) | 1] = nSample;
@@ -654,7 +644,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -730,9 +720,9 @@ STD_ROM_FN(vulgus)
 
 struct BurnDriver BurnDrvvulgus = {
 	"vulgus", NULL, NULL, NULL, "1984",
-	"Vulgus (set 1)\0", NULL, "Capcom", "Misc",
+	"Vulgus (set 1)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, vulgusRomInfo, vulgusRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
@@ -780,9 +770,9 @@ STD_ROM_FN(vulgusa)
 
 struct BurnDriver BurnDrvvulgusa = {
 	"vulgusa", "vulgus", NULL, NULL, "1984",
-	"Vulgus (set 2)\0", NULL, "Capcom", "Misc",
+	"Vulgus (set 2)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, vulgusaRomInfo, vulgusaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
@@ -830,11 +820,10 @@ STD_ROM_FN(vulgusj)
 
 struct BurnDriver BurnDrvvulgusj = {
 	"vulgusj", "vulgus", NULL, NULL, "1984",
-	"Vulgus (Japan?)\0", NULL, "Capcom", "Misc",
+	"Vulgus (Japan?)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, vulgusjRomInfo, vulgusjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
 };
-

@@ -1,4 +1,6 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "taito.h"
 #include "taito_ic.h"
 #include "burn_ym2610.h"
@@ -9,7 +11,7 @@ static void OthunderDraw();
 
 static bool bUseAsm68KCoreOldValue = false;
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo OthunderInputList[] =
 {
@@ -46,7 +48,7 @@ static void TC0220IOCMakeInputs()
 	TC0220IOCInput[1] = 0xff;
 	TC0220IOCInput[2] = 0xff;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[0] -= (TC0220IOCInputPort0[i] & 1) << i;
 		TC0220IOCInput[1] -= (TC0220IOCInputPort1[i] & 1) << i;
 		TC0220IOCInput[2] -= (TC0220IOCInputPort2[i] & 1) << i;
@@ -57,8 +59,8 @@ static void OthunderMakeInputs()
 {
 	TC0220IOCMakeInputs();
 	
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
-	BurnGunMakeInputs(1, (short)TaitoAnalogPort2, (short)TaitoAnalogPort3);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
+	BurnGunMakeInputs(1, (INT16)TaitoAnalogPort2, (INT16)TaitoAnalogPort3);
 }
 
 static struct BurnDIPInfo OthunderDIPList[]=
@@ -388,9 +390,9 @@ static struct BurnRomInfo OthunderjRomDesc[] = {
 STD_ROM_PICK(Othunderj)
 STD_ROM_FN(Othunderj)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                   = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                   = Next; Next += TaitoZ80Rom1Size;
@@ -409,21 +411,21 @@ static int MemIndex()
 
 	TaitoChars                     = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
 	TaitoSpritesA                  = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                   = (unsigned int*)Next; Next += 0x01000 * sizeof(unsigned int);
+	TaitoPalette                   = (UINT32*)Next; Next += 0x01000 * sizeof(UINT32);
 
 	TaitoMemEnd                    = Next;
 
 	return 0;
 }
 
-static int OthunderDoReset()
+static INT32 OthunderDoReset()
 {
 	TaitoDoReset();
 	
 	return 0;
 }
 
-static unsigned char OthunderInputBypassRead(int Offset)
+static UINT8 OthunderInputBypassRead(INT32 Offset)
 {
 	switch (Offset) {
 		case 0x03: {
@@ -438,7 +440,7 @@ static unsigned char OthunderInputBypassRead(int Offset)
 	return 0;
 }
 
-static void OthunderInputBypassWrite(int Offset, unsigned short Data)
+static void OthunderInputBypassWrite(INT32 Offset, UINT16 Data)
 {
 	switch (Offset) {
 		case 0x03: {
@@ -452,7 +454,7 @@ static void OthunderInputBypassWrite(int Offset, unsigned short Data)
 	}
 }
 
-unsigned char __fastcall Othunder68KReadByte(unsigned int a)
+UINT8 __fastcall Othunder68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x500001: {
@@ -479,7 +481,7 @@ unsigned char __fastcall Othunder68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Othunder68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Othunder68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x200000, 0x20ffff)
 	
@@ -499,7 +501,7 @@ void __fastcall Othunder68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Othunder68KReadWord(unsigned int a)
+UINT16 __fastcall Othunder68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x090000:
@@ -525,7 +527,7 @@ unsigned short __fastcall Othunder68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Othunder68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Othunder68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x200000, 0x20ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x220000)
@@ -581,7 +583,7 @@ void __fastcall Othunder68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall OthunderZ80Read(unsigned short a)
+UINT8 __fastcall OthunderZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -608,7 +610,7 @@ unsigned char __fastcall OthunderZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall OthunderZ80Write(unsigned short a, unsigned char d)
+void __fastcall OthunderZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -688,7 +690,7 @@ static const eeprom_interface othunder_eeprom_interface = {
 	0
 };
 
-static const unsigned char othunder_default_eeprom[128] = {
+static const UINT8 othunder_default_eeprom[128] = {
 	0x00, 0x00, 0x00, 0xff, 0x00, 0x01, 0x41, 0x41, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0xf0, 0xf0,
 	0x00, 0x00, 0x00, 0xff, 0x00, 0x01, 0x41, 0x41, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0xf0, 0xf0,
 	0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x80, 0x00, 0x01, 0x40, 0x00, 0x00, 0x00, 0xf0, 0x00,
@@ -699,7 +701,7 @@ static const unsigned char othunder_default_eeprom[128] = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-static void OthunderFMIRQHandler(int, int nStatus)
+static void OthunderFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -708,9 +710,9 @@ static void OthunderFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int OthunderSynchroniseStream(int nSoundRate)
+static INT32 OthunderSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / (16000000 / 4);
+	return (INT64)ZetTotalCycles() * nSoundRate / (16000000 / 4);
 }
 
 static double OthunderGetTime()
@@ -718,12 +720,12 @@ static double OthunderGetTime()
 	return (double)ZetTotalCycles() / (16000000 / 4);
 }
 
-static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int CharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4] = { 0, 8, 16, 24 };
-static int SpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int SpriteYOffsets[8]     = { 0, 64, 128, 192, 256, 320, 384, 448 };
+static INT32 CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 SpritePlaneOffsets[4] = { 0, 8, 16, 24 };
+static INT32 SpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 SpriteYOffsets[8]     = { 0, 64, 128, 192, 256, 320, 384, 448 };
 
 static void SwitchToMusashi()
 {
@@ -736,9 +738,9 @@ static void SwitchToMusashi()
 	}
 }
 
-static int OthunderInit()
+static INT32 OthunderInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -768,8 +770,8 @@ static int OthunderInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -797,7 +799,7 @@ static int OthunderInit()
 	SekSetWriteByteHandler(0, Othunder68KWriteByte);
 	SekClose();	
 	
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(OthunderZ80Read);
 	ZetSetWriteHandler(OthunderZ80Write);
@@ -811,7 +813,7 @@ static int OthunderInit()
 	ZetMemEnd();
 	ZetClose();	
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &OthunderFMIRQHandler, OthunderSynchroniseStream, OthunderGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &OthunderFMIRQHandler, OthunderSynchroniseStream, OthunderGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -835,13 +837,11 @@ static int OthunderInit()
 	return 0;
 }
 
-static int OthunderExit()
+static INT32 OthunderExit()
 {
-	TaitoExit();
-	
-	BurnGunExit();
-	
 	BurnYM2610SetSoundMixMode(0);
+	
+	TaitoExit();
 	
 	// Switch back CPU core if needed
 	if (bUseAsm68KCoreOldValue) {
@@ -855,14 +855,14 @@ static int OthunderExit()
 	return 0;
 }
 
-static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, int yFlip, int xScale, int yScale, unsigned char* pSource)
+static void RenderSpriteZoom(INT32 Code, INT32 sx, INT32 sy, INT32 Colour, INT32 xFlip, INT32 yFlip, INT32 xScale, INT32 yScale, UINT8* pSource)
 {
 	// We can use sprite A for sizes, etc. as only Chase HQ uses sprite B and it has the same sizes and count
 	
 	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x100);
 	
@@ -872,14 +872,14 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}	
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
-		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
+		INT32 dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		INT32 dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (xFlip) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -896,37 +896,37 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth) {
-			int Pixels = ex - nScreenWidth;
+			INT32 Pixels = ex - nScreenWidth;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight) {
-			int Pixels = ey - nScreenHeight;
+			INT32 Pixels = ey - nScreenHeight;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x < ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						pPixel[x] = c | Colour;
 					}
@@ -939,18 +939,18 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}
 }
 
-static void OthunderRenderSprites(int PriorityDraw)
+static void OthunderRenderSprites(INT32 PriorityDraw)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
-	int BadChunks;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 BadChunks;
 	
 	for (Offset = 0x300 - 4; Offset >= 0; Offset -= 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -959,16 +959,16 @@ static void OthunderRenderSprites(int PriorityDraw)
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
 
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		yFlip = (Data & 0x8000) >> 15;
 		Tile = Data & 0x1fff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0xfe00) >> 9;
 		y = Data & 0x1ff;
 		
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		Colour = (Data & 0xff00) >> 8;
 		xZoom = (Data & 0x7f);
 
@@ -991,7 +991,7 @@ static void OthunderRenderSprites(int PriorityDraw)
 			px = xFlip ? (3 - k) : k;
 			py = yFlip ? (7 - j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 2)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 			Code &= (TaitoNumSpriteA - 1);	
 			
 			if (Code == 0xffff) {
@@ -1015,7 +1015,7 @@ static void OthunderRenderSprites(int PriorityDraw)
 
 static void OthunderDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -1034,14 +1034,14 @@ static void OthunderDraw()
 	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 	
-	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+	for (INT32 i = 0; i < nBurnGunNumPlayers; i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 }
 
-static int OthunderFrame()
+static INT32 OthunderFrame()
 {
-	int nInterleave = TaitoFrameInterleave;
+	INT32 nInterleave = TaitoFrameInterleave;
 
 	if (TaitoReset) OthunderDoReset();
 
@@ -1052,8 +1052,8 @@ static int OthunderFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -1063,6 +1063,10 @@ static int OthunderFrame()
 		nTaitoCyclesDone[nCurrentCPU] += SekRun(nTaitoCyclesSegment);
 		if (i == (TaitoFrameInterleave - 1)) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 		SekClose();
+		
+		ZetOpen(0);
+		BurnTimerUpdate(i * (nTaitoCyclesTotal[1] / nInterleave));
+		ZetClose();
 	}
 	
 	ZetOpen(0);
@@ -1075,7 +1079,7 @@ static int OthunderFrame()
 	return 0;
 }
 
-static int OthunderScan(int nAction, int *pnMin)
+static INT32 OthunderScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

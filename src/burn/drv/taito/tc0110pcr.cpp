@@ -5,32 +5,32 @@
 
 #define MAX_TC0110PCR		3
 
-static unsigned char *TC0110PCRRam[MAX_TC0110PCR];
-unsigned int *TC0110PCRPalette = NULL;
-static int TC0110PCRAddr[MAX_TC0110PCR];
-int TC0110PCRTotalColours;
+static UINT8 *TC0110PCRRam[MAX_TC0110PCR];
+UINT32 *TC0110PCRPalette = NULL;
+static INT32 TC0110PCRAddr[MAX_TC0110PCR];
+INT32 TC0110PCRTotalColours;
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | (bits);
 }
 
-UINT16 TC0110PCRWordRead(int Chip)
+UINT16 TC0110PCRWordRead(INT32 Chip)
 {
 	UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
 	return PalRam[TC0110PCRAddr[Chip]];
 }
 
-void TC0110PCRWordWrite(int Chip, int Offset, UINT16 Data)
+void TC0110PCRWordWrite(INT32 Chip, INT32 Offset, UINT16 Data)
 {
-	int PaletteOffset = Chip * 0x1000;
+	INT32 PaletteOffset = Chip * 0x1000;
 	
 	switch (Offset) {
 		case 0: {
@@ -40,7 +40,7 @@ void TC0110PCRWordWrite(int Chip, int Offset, UINT16 Data)
 
 		case 1:	{
 			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
-			int r, g, b;
+			INT32 r, g, b;
 			
 			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
@@ -54,9 +54,9 @@ void TC0110PCRWordWrite(int Chip, int Offset, UINT16 Data)
 	}
 }
 
-void TC0110PCRStep1WordWrite(int Chip, int Offset, UINT16 Data)
+void TC0110PCRStep1WordWrite(INT32 Chip, INT32 Offset, UINT16 Data)
 {
-	int PaletteOffset = Chip * 0x1000;
+	INT32 PaletteOffset = Chip * 0x1000;
 	
 	switch (Offset) {
 		case 0: {
@@ -66,7 +66,7 @@ void TC0110PCRStep1WordWrite(int Chip, int Offset, UINT16 Data)
 		
 		case 1: {
 			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
-			int r, g, b;
+			INT32 r, g, b;
 			
 			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
@@ -80,9 +80,9 @@ void TC0110PCRStep1WordWrite(int Chip, int Offset, UINT16 Data)
 	}
 }
 
-void TC0110PCRStep14rbgWordWrite(int Chip, int Offset, UINT16 Data)
+void TC0110PCRStep14rbgWordWrite(INT32 Chip, INT32 Offset, UINT16 Data)
 {
-	int PaletteOffset = Chip * 0x1000;
+	INT32 PaletteOffset = Chip * 0x1000;
 	
 	switch (Offset) {
 		case 0: {
@@ -92,7 +92,7 @@ void TC0110PCRStep14rbgWordWrite(int Chip, int Offset, UINT16 Data)
 		
 		case 1: {
 			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
-			int r, g, b;
+			INT32 r, g, b;
 			
 			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
@@ -106,9 +106,9 @@ void TC0110PCRStep14rbgWordWrite(int Chip, int Offset, UINT16 Data)
 	}
 }
 
-void TC0110PCRStep1RBSwapWordWrite(int Chip, int Offset, UINT16 Data)
+void TC0110PCRStep1RBSwapWordWrite(INT32 Chip, INT32 Offset, UINT16 Data)
 {
-	int PaletteOffset = Chip * 0x1000;
+	INT32 PaletteOffset = Chip * 0x1000;
 	
 	switch (Offset) {
 		case 0: {
@@ -118,7 +118,7 @@ void TC0110PCRStep1RBSwapWordWrite(int Chip, int Offset, UINT16 Data)
 		
 		case 1: {
 			UINT16 *PalRam = (UINT16*)TC0110PCRRam[Chip];
-			int r, g, b;
+			INT32 r, g, b;
 			
 			PalRam[TC0110PCRAddr[Chip]] = Data;
 			
@@ -137,14 +137,14 @@ void TC0110PCRReset()
 	TC0110PCRAddr[0] = 0;
 }
 
-void TC0110PCRInit(int Num, int nNumColours)
+void TC0110PCRInit(INT32 Num, INT32 nNumColours)
 {
-	for (int i = 0; i < Num; i++) {
-		TC0110PCRRam[i] = (unsigned char*)malloc(0x4000);
+	for (INT32 i = 0; i < Num; i++) {
+		TC0110PCRRam[i] = (UINT8*)BurnMalloc(0x4000);
 		memset(TC0110PCRRam[i], 0, 0x4000);
 	}
 	
-	TC0110PCRPalette = (unsigned int*)malloc(nNumColours * sizeof(unsigned int));
+	TC0110PCRPalette = (UINT32*)BurnMalloc(nNumColours * sizeof(UINT32));
 	memset(TC0110PCRPalette, 0, nNumColours);
 	
 	TC0110PCRTotalColours = nNumColours;
@@ -154,19 +154,17 @@ void TC0110PCRInit(int Num, int nNumColours)
 
 void TC0110PCRExit()
 {
-	for (int i = 0; i < MAX_TC0110PCR; i++) {
-		free(TC0110PCRRam[i]);
-		TC0110PCRRam[i] = NULL;
+	for (INT32 i = 0; i < MAX_TC0110PCR; i++) {
+		BurnFree(TC0110PCRRam[i]);
 		TC0110PCRAddr[i] = 0;
 	}
 	
-	free(TC0110PCRPalette);
-	TC0110PCRPalette = NULL;
+	BurnFree(TC0110PCRPalette);
 	
 	TC0110PCRTotalColours = 0;
 }
 
-void TC0110PCRScan(int nAction)
+void TC0110PCRScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -179,7 +177,7 @@ void TC0110PCRScan(int nAction)
 		
 		memset(&ba, 0, sizeof(ba));
 		ba.Data	  = TC0110PCRPalette;
-		ba.nLen	  = TC0110PCRTotalColours * sizeof(unsigned int);
+		ba.nLen	  = TC0110PCRTotalColours * sizeof(UINT32);
 		ba.szName = "TC0110PCR Palette";
 		BurnAcb(&ba);
 	}

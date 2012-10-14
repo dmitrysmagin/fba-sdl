@@ -1,16 +1,16 @@
 #include "toaplan.h"
 // Knuckle Bash 2
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int nPreviousOkiBank;
+static INT32 nPreviousOkiBank;
 
 static struct BurnRomInfo kbash2RomDesc[] = {
 	{ "mecat-m",	0x080000, 0xbd2263c6, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -138,19 +138,19 @@ static struct BurnDIPInfo Kbash2DIPList[]=
 
 STDDIPINFO(Kbash2)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal;
-static unsigned char *RomSnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *RomSnd;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		// 68000 ROM
 	MSM6295ROM	= Next;
 	RomSnd		= Next; Next += 0x140000;
@@ -159,16 +159,16 @@ static int MemIndex()
 	Ram01		= Next; Next += 0x004000;		// CPU #0 work RAM
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -199,7 +199,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -213,7 +213,7 @@ static int LoadRoms()
 	return 0;
 }
 
-static void oki_set_bank(int bank)
+static void oki_set_bank(INT32 bank)
 {
 	bank &= 1;
 	if (nPreviousOkiBank != bank) {
@@ -222,7 +222,7 @@ static void oki_set_bank(int bank)
 	}
 }
 
-unsigned char __fastcall kbash2ReadByte(unsigned int sekAddress)
+UINT8 __fastcall kbash2ReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -259,7 +259,7 @@ unsigned char __fastcall kbash2ReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall kbash2ReadWord(unsigned int sekAddress)
+UINT16 __fastcall kbash2ReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -301,7 +301,7 @@ unsigned short __fastcall kbash2ReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall kbash2WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall kbash2WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x200021:
@@ -321,7 +321,7 @@ void __fastcall kbash2WriteByte(unsigned int sekAddress, unsigned char byteValue
 	}
 }
 
-void __fastcall kbash2WriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kbash2WriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x300000:								// Set GP9001 VRAM address-pointer
@@ -348,7 +348,7 @@ void __fastcall kbash2WriteWord(unsigned int sekAddress, unsigned short wordValu
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -363,9 +363,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = false;
@@ -376,8 +376,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -423,21 +423,22 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 
 	ToaExitGP9001();
 	SekExit();				// Deallocate 68000s
+	
+	MSM6295Exit(0);
+	MSM6295Exit(1);
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -451,14 +452,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -468,7 +469,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -478,19 +479,19 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
+	
+	SekOpen(0);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	SekOpen(0);
-
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -521,18 +522,18 @@ static int DrvFrame()
 
 	}
 
-	SekClose();
-
 	if (pBurnSoundOut) {
-		memset (pBurnSoundOut, 0, nBurnSoundLen * 2 * sizeof(short));
+		memset (pBurnSoundOut, 0, nBurnSoundLen * 2 * sizeof(INT16));
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
 	}
+	
+	SekClose();
 
 	if (pBurnDraw) {
 		DrvDraw();												// Draw screen if needed
 	}
-
+	
 	return 0;
 }
 

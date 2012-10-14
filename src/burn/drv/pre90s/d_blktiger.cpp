@@ -2,50 +2,51 @@
 // Based on MAME driver by Paul Leaman
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym2203.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvTxRAM;
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvTxRAM;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *DrvScreenLayout;
-static unsigned char *DrvBgEnable;
-static unsigned char *DrvFgEnable;
-static unsigned char *DrvSprEnable;
-static unsigned char *DrvVidBank;
-static unsigned char *DrvRomBank;
+static UINT8 *DrvScreenLayout;
+static UINT8 *DrvBgEnable;
+static UINT8 *DrvFgEnable;
+static UINT8 *DrvSprEnable;
+static UINT8 *DrvVidBank;
+static UINT8 *DrvRomBank;
 
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
-static unsigned char *coin_lockout;
-static unsigned char *watchdog;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
+static UINT8 *coin_lockout;
+static UINT8 *watchdog;
 
-static unsigned short *DrvScrollx;
-static unsigned short *DrvScrolly;
+static UINT16 *DrvScrollx;
+static UINT16 *DrvScrolly;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
 
-static int nCyclesTotal[2];
+static INT32 nCyclesTotal[2];
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       	  , BIT_DIGITAL  , DrvJoy1 + 6,	 "p1 coin"  },
@@ -147,10 +148,10 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-static void palette_write(int offset)
+static void palette_write(INT32 offset)
 {
-	unsigned char r,g,b;
-	unsigned short data = (DrvPalRAM[offset]) | (DrvPalRAM[offset | 0x400] << 8);
+	UINT8 r,g,b;
+	UINT16 data = (DrvPalRAM[offset]) | (DrvPalRAM[offset | 0x400] << 8);
 
 	r = (data >> 4) & 0x0f;
 	g = (data >> 0) & 0x0f;
@@ -163,28 +164,28 @@ static void palette_write(int offset)
 	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
 }
 
-static void DrvRomBankswitch(int bank)
+static void DrvRomBankswitch(INT32 bank)
 {
 	*DrvRomBank = bank & 0x0f;
 
-	int nBank = 0x10000 + (bank & 0x0f) * 0x4000;
+	INT32 nBank = 0x10000 + (bank & 0x0f) * 0x4000;
 
 	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80ROM0 + nBank);
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM0 + nBank);
 }
 
-static void DrvVidRamBankswitch(int bank)
+static void DrvVidRamBankswitch(INT32 bank)
 {
 	*DrvVidBank = bank & 0x03;
 
-	int nBank = (bank & 3) * 0x1000;
+	INT32 nBank = (bank & 3) * 0x1000;
 
 	ZetMapArea(0xc000, 0xcfff, 0, DrvBgRAM + nBank);
 	ZetMapArea(0xc000, 0xcfff, 1, DrvBgRAM + nBank);
 	ZetMapArea(0xc000, 0xcfff, 2, DrvBgRAM + nBank);
 }
 
-void __fastcall blacktiger_write(unsigned short address, unsigned char data)
+void __fastcall blacktiger_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf800) == 0xd800) {
 		DrvPalRAM[address & 0x7ff] = data;
@@ -197,22 +198,22 @@ void __fastcall blacktiger_write(unsigned short address, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall blacktiger_read(unsigned short /*address*/)
+UINT8 __fastcall blacktiger_read(UINT16 /*address*/)
 {
 	return 0;
 }
 
-void __fastcall blacktiger_out(unsigned short port, unsigned char data)
+void __fastcall blacktiger_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
 		case 0x00:
 		{
-		//	long long cycles = ZetTotalCycles();
+		//	INT64 cycles = ZetTotalCycles();
 		//	ZetClose();
 		//	ZetOpen(1);
 
-		//	int nCycles = ((long long)cycles * nCyclesTotal[1] / nCyclesTotal[0]);
+		//	INT32 nCycles = ((INT64)cycles * nCyclesTotal[1] / nCyclesTotal[0]);
 		//	if (nCycles <= ZetTotalCycles()) return;
 
 		//	BurnTimerUpdate(nCycles);
@@ -282,7 +283,7 @@ void __fastcall blacktiger_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall blacktiger_in(unsigned short port)
+UINT8 __fastcall blacktiger_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -305,7 +306,7 @@ unsigned char __fastcall blacktiger_in(unsigned short port)
 	return 0;
 }
 
-void __fastcall blacktiger_sound_write(unsigned short address, unsigned char data)
+void __fastcall blacktiger_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -327,7 +328,7 @@ void __fastcall blacktiger_sound_write(unsigned short address, unsigned char dat
 	}
 }
 
-unsigned char __fastcall blacktiger_sound_read(unsigned short address)
+UINT8 __fastcall blacktiger_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -350,9 +351,9 @@ unsigned char __fastcall blacktiger_sound_read(unsigned short address)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0	= Next; Next += 0x050000;
 	DrvZ80ROM1	= Next; Next += 0x008000;
@@ -361,7 +362,7 @@ static int MemIndex()
 	DrvGfxROM1	= Next; Next += 0x080000;
 	DrvGfxROM2	= Next; Next += 0x080000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -382,8 +383,8 @@ static int MemIndex()
 	DrvVidBank	= Next; Next += 0x000001;
 	DrvRomBank	= Next; Next += 0x000001;
 
-	DrvScrollx	= (unsigned short*)Next; Next += 0x0001 * sizeof (short);
-	DrvScrolly	= (unsigned short*)Next; Next += 0x0001 * sizeof (short);
+	DrvScrollx	= (UINT16*)Next; Next += 0x0001 * sizeof (UINT16);
+	DrvScrolly	= (UINT16*)Next; Next += 0x0001 * sizeof (UINT16);
 
 	soundlatch	= Next; Next += 0x000001;
 	flipscreen	= Next; Next += 0x000001;
@@ -397,7 +398,7 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -418,15 +419,15 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { ((0x40000 * 8) / 2) + 4, ((0x40000 * 8) / 2) + 0, 4, 0 };
-	int XOffs[16] = { 0, 1, 2, 3, 8+0, 8+1, 8+2, 8+3,
+	INT32 Plane[4] = { ((0x40000 * 8) / 2) + 4, ((0x40000 * 8) / 2) + 0, 4, 0 };
+	INT32 XOffs[16] = { 0, 1, 2, 3, 8+0, 8+1, 8+2, 8+3,
 			16*16+0, 16*16+1, 16*16+2, 16*16+3, 16*16+8+0, 16*16+8+1, 16*16+8+2, 16*16+8+3 };
-	int YOffs[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16,
+	INT32 YOffs[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16,
 			8*16, 9*16, 10*16, 11*16, 12*16, 13*16, 14*16, 15*16 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -443,12 +444,12 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x0800, 4, 16, 16, Plane + 0, XOffs, YOffs, 0x200, tmp, DrvGfxROM2);
 
-	free (tmp);
-
+	BurnFree (tmp);
+	
 	return 0;
 }
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -457,9 +458,9 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3579545;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3579545;
 }
 
 static double DrvGetTime()
@@ -467,17 +468,17 @@ static double DrvGetTime()
 	return (double)ZetTotalCycles() / 3579545;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 	{
-		for (int i = 0; i < 5; i++) {
+		for (INT32 i = 0; i < 5; i++) {
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x10000, 0  + i, 1)) return 1;
 		}
 
@@ -485,7 +486,7 @@ static int DrvInit()
 
 		if (BurnLoadRom(DrvGfxROM0, 6, 1)) return 1;
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x10000, 7  + i, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x10000, 11 + i, 1)) return 1;
 		}
@@ -493,7 +494,7 @@ static int DrvInit()
 		DrvGfxDecode();
 	}
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM0);
@@ -516,6 +517,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM1);
@@ -530,6 +532,7 @@ static int DrvInit()
 	GenericTilesInit();
 
 	BurnYM2203Init(2, 3579545, &DrvFMIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(1);
 	BurnTimerAttachZet(3579545);
 
 	DrvDoReset();
@@ -537,30 +540,29 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM2203Exit();
 	ZetExit();
 	GenericTilesExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static void draw_bg(int type)
+static void draw_bg(INT32 type)
 {
 	// No tile priorities implemented... I really can't notice where it is used.
 
-	int scrollx = (*DrvScrollx)     & (0x3ff | (0x200 << type));
-	int scrolly = ((*DrvScrolly)+16) & (0x7ff >> type);
+	INT32 scrollx = (*DrvScrollx)     & (0x3ff | (0x200 << type));
+	INT32 scrolly = ((*DrvScrolly)+16) & (0x7ff >> type);
 
-	for (int offs = 0; offs < 0x2000; offs++)
+	for (INT32 offs = 0; offs < 0x2000; offs++)
 	{
-		int sx;
-		int sy;
-		int ofst;
+		INT32 sx;
+		INT32 sy;
+		INT32 ofst;
 
 		// 1 = 128x64, 0 = 64x128
 		if (type) {
@@ -584,10 +586,10 @@ static void draw_bg(int type)
 		if (sy < -15) sy += (0x800 >> type);
 		if (sx > 255 || sy > 223) continue;
 
-		int attr  = DrvBgRAM[(ofst << 1) | 1];
-		int color = (attr >> 3) & 0x0f;
-		int code  = DrvBgRAM[ofst << 1] | ((attr & 0x07) << 8);
-		int flipx = attr & 0x80;
+		INT32 attr  = DrvBgRAM[(ofst << 1) | 1];
+		INT32 color = (attr >> 3) & 0x0f;
+		INT32 code  = DrvBgRAM[ofst << 1] | ((attr & 0x07) << 8);
+		INT32 flipx = attr & 0x80;
 
 		if (*flipscreen) {
 			if (flipx) {
@@ -607,14 +609,14 @@ static void draw_bg(int type)
 
 static void draw_sprites()
 {
-	for (int offs = 0x1200 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x1200 - 4; offs >= 0; offs -= 4)
 	{
-		int attr = DrvSprBuf[offs+1];
-		int sx = DrvSprBuf[offs + 3] - ((attr & 0x10) << 4);
-		int sy = DrvSprBuf[offs + 2];
-		int code = DrvSprBuf[offs] | ((attr & 0xe0) << 3);
-		int color = attr & 0x07;
-		int flipx = attr & 0x08;
+		INT32 attr = DrvSprBuf[offs+1];
+		INT32 sx = DrvSprBuf[offs + 3] - ((attr & 0x10) << 4);
+		INT32 sy = DrvSprBuf[offs + 2];
+		INT32 code = DrvSprBuf[offs] | ((attr & 0xe0) << 3);
+		INT32 color = attr & 0x07;
+		INT32 flipx = attr & 0x08;
 
 		if (*flipscreen)
 		{
@@ -645,32 +647,32 @@ static void draw_sprites()
 
 static void draw_text_layer()
 {
-	for (int offs = 0x40; offs < 0x3c0; offs++)
+	for (INT32 offs = 0x40; offs < 0x3c0; offs++)
 	{
-		int attr  = DrvTxRAM[offs | 0x400];
-		int code  = DrvTxRAM[offs] | ((attr & 0xe0) << 3);
+		INT32 attr  = DrvTxRAM[offs | 0x400];
+		INT32 code  = DrvTxRAM[offs] | ((attr & 0xe0) << 3);
 
 		if (!code) continue;
 
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
 		sy -= 16;
-		int color = attr & 0x1f;
+		INT32 color = attr & 0x1f;
 
 		Render8x8Tile_Mask(pTransDraw, code, sx, sy, color, 2, 3, 0x300, DrvGfxROM0);
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x400; i++) {
+		for (INT32 i = 0; i < 0x400; i++) {
 			palette_write(i);
 		}
 	}
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x3ff;
 	}
 
@@ -691,17 +693,16 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
 
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	if (*watchdog >= 60) {
-		for (int i = 0; i < 2; i++) {
+		for (INT32 i = 0; i < 2; i++) {
 			ZetOpen(i);
 			ZetReset();
 			ZetClose();
@@ -712,7 +713,7 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = DrvInputs[1] = DrvInputs[2] = 0xff;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -723,13 +724,13 @@ static int DrvFrame()
 
 	nCyclesTotal[0] = 6000000 / 60;
 	nCyclesTotal[1] = 3579545 / 60;
-	int nCyclesDone[2];
+	INT32 nCyclesDone[2];
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
 	ZetNewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -744,37 +745,14 @@ static int DrvFrame()
 		// Run Z80 #2
 		nCurrentCPU = 1;
 		ZetOpen(nCurrentCPU);
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = BurnTimerUpdate(nCyclesSegment);
-		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
 		ZetClose();
-		
-		// Render Sound Segment
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 
 	ZetOpen(1);
-	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-
-	// Make sure the buffer is entirely filled.
-	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
-	}
 	
 	if (pBurnDraw) {
 		DrvDraw();
@@ -788,7 +766,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -857,7 +835,7 @@ struct BurnDriver BurnDrvBlktiger = {
 	"blktiger", NULL, NULL, NULL, "1987",
 	"Black Tiger\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, blktigerRomInfo, blktigerRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -902,7 +880,7 @@ struct BurnDriver BurnDrvBlktigera = {
 	"blktigera", "blktiger", NULL, NULL, "1987",
 	"Black Tiger (older)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, blktigeraRomInfo, blktigeraRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -945,7 +923,7 @@ struct BurnDriver BurnDrvBlktigerb1 = {
 	"blktigerb1", "blktiger", NULL, NULL, "1987",
 	"Black Tiger (bootleg set 1)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, blktigerb1RomInfo, blktigerb1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -991,7 +969,7 @@ struct BurnDriver BurnDrvBktigrb2 = {
 	"bktigrb2", "blktiger", NULL, NULL, "1987",
 	"Black Tiger (bootleg set 2)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, bktigrb2RomInfo, bktigrb2RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -1036,7 +1014,7 @@ struct BurnDriver BurnDrvBlkdrgon = {
 	"blkdrgon", "blktiger", NULL, NULL, "1987",
 	"Black Dragon\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, blkdrgonRomInfo, blkdrgonRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -1079,7 +1057,7 @@ struct BurnDriver BurnDrvBlkdrgonb = {
 	"blkdrgonb", "blktiger", NULL, NULL, "1987",
 	"Black Dragon (bootleg)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, blkdrgonbRomInfo, blkdrgonbRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3

@@ -9,14 +9,14 @@
 #define MSM5205_S64_4B 6     /* prescaler 1/64(6KHz) , data 4bit */
 #define MSM5205_SEX_4B 7     /* VCLK slave mode      , data 4bit */
 
-void MSM5205ResetWrite(int chip, int reset);
-void MSM5205DataWrite(int chip, int data);
-void MSM5205VCLKWrite(int chip, int reset);
-void MSM5205PlaymodeWrite(int chip, int select);
+void MSM5205ResetWrite(INT32 chip, INT32 reset);
+void MSM5205DataWrite(INT32 chip, INT32 data);
+void MSM5205VCLKWrite(INT32 chip, INT32 reset);
+void MSM5205PlaymodeWrite(INT32 chip, INT32 select);
 
-void MSM5205SetVolume(int chip, int volume);
+void MSM5205SetVolume(INT32 chip, INT32 volume);
 
-void MSM5205Init(int chip, int (*stream_sync)(int), int clock, void (*vclk_callback)(), int select, int volume, int bAdd);
+void MSM5205Init(INT32 chip, INT32 (*stream_sync)(INT32), INT32 clock, void (*vclk_callback)(), INT32 select, INT32 volume, INT32 bAdd);
 void MSM5205Reset();
 
 /*
@@ -24,10 +24,10 @@ void MSM5205Reset();
 	or the data will likely be output badly
 */
 
-void MSM5205Render(int chip, short *buffer, int len);
+void MSM5205Render(INT32 chip, INT16 *buffer, INT32 len);
 void MSM5205Exit();
 
-void MSM5205Scan(int nAction, int *pnMin);
+void MSM5205Scan(INT32 nAction, INT32 *pnMin);
 
 /*
 	MSM5205CalcInterleave is used to calculate after how
@@ -36,5 +36,5 @@ void MSM5205Scan(int nAction, int *pnMin);
 	slices must be made of the sound cpu's cycles
 */	
 
-int MSM5205CalcInterleave(int chip, int cpu_speed);
+INT32 MSM5205CalcInterleave(INT32 chip, INT32 cpu_speed);
 void MSM5205Update();

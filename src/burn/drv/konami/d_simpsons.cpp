@@ -2,54 +2,55 @@
 // Based on MAME driver by Ernesto Corvi and various others
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "konami_intf.h"
 #include "konamiic.h"
 #include "k053260.h"
 #include "eeprom.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvKonROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvKonRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvKonROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvKonRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int *Palette;
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *nDrvBank;
+static UINT8 *nDrvBank;
 
-static int videobank;
-static int init_eeprom_count;
-static int simpsons_firq_enabled;
-static int K053246Irq;
+static INT32 videobank;
+static INT32 init_eeprom_count;
+static INT32 simpsons_firq_enabled;
+static INT32 K053246Irq;
 
-static int bg_colorbase;
-static int sprite_colorbase;
-static int layer_colorbase[3];
-static int layerpri[3];
+static INT32 bg_colorbase;
+static INT32 sprite_colorbase;
+static INT32 layer_colorbase[3];
+static INT32 layerpri[3];
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvDiag;
-static unsigned char DrvReset;
-static unsigned char DrvInputs[5];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvDiag;
+static UINT8 DrvReset;
+static UINT8 DrvInputs[5];
 
-static int nCyclesDone[2];
+static INT32 nCyclesDone[2];
 
 static struct BurnInputInfo SimpsonsInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy5 + 0,	"p1 coin"	},
@@ -119,7 +120,7 @@ static struct BurnInputInfo Simpsons2pInputList[] = {
 
 STDINPUTINFO(Simpsons2p)
 
-void simpsons_main_write(unsigned short address, unsigned char data)
+void simpsons_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -182,13 +183,13 @@ void simpsons_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char simpsons_main_read(unsigned short address)
+UINT8 simpsons_main_read(UINT16 address)
 {
 	switch (address)
 	{
 		case 0x1f81:
 		{
-			int res = ((EEPROMRead() & 1) << 4) | 0x20 | (~DrvDiag & 1);
+			INT32 res = ((EEPROMRead() & 1) << 4) | 0x20 | (~DrvDiag & 1);
 
 			if (init_eeprom_count > 0)
 			{
@@ -250,12 +251,12 @@ unsigned char simpsons_main_read(unsigned short address)
 	return 0;
 }
 
-static void DrvZ80Bankswitch(int data)
+static void DrvZ80Bankswitch(INT32 data)
 {
 	data &= 0x07;
 	if (data < 2) return;
 
-	int nBank = (data & 7) * 0x4000;
+	INT32 nBank = (data & 7) * 0x4000;
 
 	nDrvBank[1] = data;
 
@@ -263,7 +264,7 @@ static void DrvZ80Bankswitch(int data)
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM + nBank);
 }
 
-void __fastcall simpsons_sound_write(unsigned short address, unsigned char data)
+void __fastcall simpsons_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -291,7 +292,7 @@ void __fastcall simpsons_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall simpsons_sound_read(unsigned short address)
+UINT8 __fastcall simpsons_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -310,25 +311,25 @@ unsigned char __fastcall simpsons_sound_read(unsigned short address)
 	return 0;
 }
 
-static void simpsons_set_lines(int lines)
+static void simpsons_set_lines(INT32 lines)
 {
 	nDrvBank[0] = lines;
 
-	int nBank = (lines & 0x3f) * 0x2000;
+	INT32 nBank = (lines & 0x3f) * 0x2000;
 
 	konamiMapMemory(DrvKonROM + 0x10000 + nBank, 0x6000, 0x7fff, KON_ROM); 
 }
 
-static void K052109Callback(int layer, int bank, int *code, int *color, int *, int *)
+static void K052109Callback(INT32 layer, INT32 bank, INT32 *code, INT32 *color, INT32 *, INT32 *)
 {
 	*code |= ((*color & 0x3f) << 8) | (bank << 14);
 	*color = layer_colorbase[layer] + ((*color & 0xc0) >> 6);
 	*code &= 0x7fff;
 }
 
-static void K053247Callback(int *code, int *color, int *priority)
+static void K053247Callback(INT32 *code, INT32 *color, INT32 *priority)
 {
-	int pri = (*color & 0x0f80) >> 6;
+	INT32 pri = (*color & 0x0f80) >> 6;
 	if (pri <= layerpri[2])					*priority = 0;
 	else if (pri > layerpri[2] && pri <= layerpri[1])	*priority = 1;
 	else if (pri > layerpri[1] && pri <= layerpri[0])	*priority = 2;
@@ -339,7 +340,7 @@ static void K053247Callback(int *code, int *color, int *priority)
 	*code &= 0x7fff;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -375,9 +376,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvKonROM		= Next; Next += 0x090000;
 	DrvZ80ROM		= Next; Next += 0x020000;
@@ -389,8 +390,8 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x200000;
 
-	Palette			= (unsigned int*)Next; Next += 0x800 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -408,11 +409,11 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
-	int XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
-	int YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
+	INT32 Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
+	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
+	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, 0x100000);
 	konami_rom_deinterleave_4(DrvGfxROM1, 0x400000);
@@ -437,12 +438,12 @@ static const eeprom_interface simpsons_eeprom_intf =
 	0
 };
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -479,7 +480,7 @@ static int DrvInit()
 	konamiSetlinesCallback(simpsons_set_lines);
 	konamiClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -513,7 +514,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -527,25 +528,24 @@ static int DrvExit()
 	BurnYM2151Exit();
 	K053260Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void simpsons_objdma()
 {
-	int counter, num_inactive;
-	unsigned char *dstptr;
-	unsigned short *src, *dst;
+	INT32 counter, num_inactive;
+	UINT8 *dstptr;
+	UINT16 *src, *dst;
 
 	K053247Export(&dstptr, 0, 0, 0, &counter);
-	src = (unsigned short*)DrvSprRAM;
-	dst = (unsigned short*)dstptr;
+	src = (UINT16*)DrvSprRAM;
+	dst = (UINT16*)dstptr;
 	num_inactive = counter = 256;
 
 	do {
-		if ((*src & 0x8000) && (*src & 0xff))
+		if ((*src & BURN_ENDIAN_SWAP_INT16(0x8000)) && (*src & BURN_ENDIAN_SWAP_INT16(0xff)))
 		{
 			memcpy(dst, src, 0x10);
 			dst += 8;
@@ -560,10 +560,10 @@ static void simpsons_objdma()
 
 static void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		unsigned short d = (p[i] << 8) | (p[i] >> 8);
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		UINT16 d = BURN_ENDIAN_SWAP_INT16((p[i] << 8) | (p[i] >> 8));
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -578,12 +578,12 @@ static void DrvRecalcPal()
 	}
 }
 
-static void sortlayers(int *layer,int *pri)
+static void sortlayers(INT32 *layer,INT32 *pri)
 {
 #define SWAP(a,b) \
 	if (pri[a] < pri[b]) \
 	{ \
-		int t; \
+		INT32 t; \
 		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
 		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
 	}
@@ -593,7 +593,7 @@ static void sortlayers(int *layer,int *pri)
 	SWAP(1,2)
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
@@ -601,7 +601,7 @@ static int DrvDraw()
 
 	K052109UpdateScroll();
 
-	int layer[3];
+	INT32 layer[3];
 
 	bg_colorbase       = K053251GetPaletteIndex(0);
 	sprite_colorbase   = K053251GetPaletteIndex(1);
@@ -618,7 +618,7 @@ static int DrvDraw()
 
 	sortlayers(layer,layerpri);
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 16 * bg_colorbase;
 	}
 
@@ -635,7 +635,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -646,7 +646,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -665,17 +665,17 @@ static int DrvFrame()
 		if ((DrvInputs[3] & 0x03) == 0) DrvInputs[3] |= 0x03;
 	}
 
-	int nInterleave = nBurnSoundLen;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
 	
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
 	ZetOpen(0);
 	konamiOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext, nCyclesSegment;
 
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
@@ -694,8 +694,8 @@ static int DrvFrame()
 		nCyclesDone[1] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -706,8 +706,8 @@ static int DrvFrame()
 	if (K052109_irq_enabled) konamiSetIrqLine(KONAMI_IRQ_LINE, KONAMI_HOLD_LINE);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
@@ -724,7 +724,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

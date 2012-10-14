@@ -13,7 +13,8 @@
 #include "math.h"
 #include "k054539.h"
 
-static unsigned int nUpdateStep;
+static UINT32 nUpdateStep;
+static INT32 nNumChips = 0;
 
 typedef struct _k054539_interface k054539_interface;
 struct _k054539_interface
@@ -37,20 +38,20 @@ struct k054539_info {
 
 	double k054539_gain[8];
 	UINT8 k054539_posreg_latch[8][3];
-	int k054539_flags;
+	INT32 k054539_flags;
 
-	unsigned char regs[0x230];
-	unsigned char *ram;
-	int reverb_pos;
+	UINT8 regs[0x230];
+	UINT8 *ram;
+	INT32 reverb_pos;
 
 	INT32 cur_ptr;
-	int cur_limit;
-	unsigned char *cur_zone;
-	unsigned char *rom;
+	INT32 cur_limit;
+	UINT8 *cur_zone;
+	UINT8 *rom;
 	UINT32 rom_size;
 	UINT32 rom_mask;
 
-	int clock;
+	INT32 clock;
 
 	k054539_channel channels[8];
 };
@@ -58,43 +59,70 @@ struct k054539_info {
 static k054539_info Chips[2];
 static k054539_info *info;
 
-static int *soundbuf[2];
+static INT32 *soundbuf[2];
 
-void K054539_init_flags(int chip, int flags)
+void K054539_init_flags(INT32 chip, INT32 flags)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539_init_flags called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539_init_flags called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
 	info->k054539_flags = flags;
 }
 
-void K054539_set_gain(int chip, int channel, double gain)
+void K054539_set_gain(INT32 chip, INT32 channel, double gain)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539_set_gain called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539_set_gain called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
 	if (gain >= 0) info->k054539_gain[channel] = gain;
 }
 
-static int k054539_regupdate()
+static INT32 k054539_regupdate()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539_regupdate called without init\n"));
+#endif
+
 	return !(info->regs[0x22f] & 0x80);
 }
 
-static void k054539_keyon(int channel)
+static void k054539_keyon(INT32 channel)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539_keyon called without init\n"));
+#endif
+
 	if(k054539_regupdate())
 		info->regs[0x22c] |= 1 << channel;
 }
 
-static void k054539_keyoff(int channel)
+static void k054539_keyoff(INT32 channel)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539_keyoff called without init\n"));
+#endif
+
 	if(k054539_regupdate())
 		info->regs[0x22c] &= ~(1 << channel);
 }
 
-void K054539Write(int chip, int offset, unsigned char data)
+void K054539Write(INT32 chip, INT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Write called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539Write called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
 
-	int latch, offs, ch, pan;
-	unsigned char *regbase, *regptr, *posptr;
+	INT32 latch, offs, ch, pan;
+	UINT8 *regbase, *regptr, *posptr;
 
 	regbase = info->regs;
 	latch = (info->k054539_flags & K054539_UPDATE_AT_KEYON) && (regbase[0x22f] & 1);
@@ -176,8 +204,13 @@ void K054539Write(int chip, int offset, unsigned char data)
 	regbase[offset] = data;
 }
 
-unsigned char K054539Read(int chip, int offset)
+UINT8 K054539Read(INT32 chip, INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Read called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539Read called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
 
 	switch(offset) {
@@ -201,26 +234,31 @@ unsigned char K054539Read(int chip, int offset)
 	return info->regs[offset];
 }
 
-void K054539Reset(int chip)
+void K054539Reset(INT32 chip)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Reset called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539Reset called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
-	int data = info->regs[0x22e];
+	INT32 data = info->regs[0x22e];
 	info->cur_zone =
 		data == 0x80 ? info->ram :
 		info->rom + 0x20000*data;
 	info->cur_limit = data == 0x80 ? 0x4000 : 0x20000;
 }
 
-static void k054539_init_chip(int clock, unsigned char *rom, int nLen)
+static void k054539_init_chip(INT32 clock, UINT8 *rom, INT32 nLen)
 {
-	int i;
+	INT32 i;
 
 	memset(info->regs, 0, sizeof(info->regs));
 	memset(info->k054539_posreg_latch, 0, sizeof(info->k054539_posreg_latch));
 	info->k054539_flags |= K054539_UPDATE_AT_KEYON; // make it default until proven otherwise
 
 	// Real size of 0x4000, the addon is to simplify the reverb buffer computations
-	info->ram = (unsigned char*)malloc(0x4000*2+clock/50*2);
+	info->ram = (UINT8*)malloc(0x4000*2+clock/50*2);
 	info->reverb_pos = 0;
 	info->cur_ptr = 0;
 	memset(info->ram, 0, 0x4000*2+clock/50*2);
@@ -238,17 +276,19 @@ static void k054539_init_chip(int clock, unsigned char *rom, int nLen)
 //		timer_pulse(ATTOTIME_IN_HZ(480), info, 0, k054539_irq); // 10% of usual clock...
 }
 
-void K054539Init(int chip, int clock, unsigned char *rom, int nLen)
+void K054539Init(INT32 chip, INT32 clock, UINT8 *rom, INT32 nLen)
 {
+	DebugSnd_K054539Initted = 1;
+	
 	static const k054539_interface defintrf = { 0, 0 };
-	int i;
+	INT32 i;
 
 	info = &Chips[chip];
 
 	info->intf = &defintrf;
 	info->clock = clock;
 
-	nUpdateStep = (int)(((float)clock / nBurnSoundRate) * 32768);
+	nUpdateStep = (INT32)(((float)clock / nBurnSoundRate) * 32768);
 
 	for (i = 0; i < 8; i++)
 		info->k054539_gain[i] = 1.0;
@@ -263,12 +303,18 @@ void K054539Init(int chip, int clock, unsigned char *rom, int nLen)
 
 	k054539_init_chip(clock, rom, nLen);
 
-	if (soundbuf[0] == NULL) soundbuf[0] = (int*)malloc(nBurnSoundLen * sizeof(int));
-	if (soundbuf[1] == NULL) soundbuf[1] = (int*)malloc(nBurnSoundLen * sizeof(int));
+	if (soundbuf[0] == NULL) soundbuf[0] = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
+	if (soundbuf[1] == NULL) soundbuf[1] = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
+	
+	nNumChips = chip;
 }
 
 void K054539Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Exit called without init\n"));
+#endif
+
 	if (soundbuf[0] != NULL) {
 		free (soundbuf[0]);
 		soundbuf[0] = NULL;
@@ -279,17 +325,25 @@ void K054539Exit()
 		soundbuf[1] = NULL;
 	}
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		info = &Chips[i];
 		if (info->ram) {
 			free (info->ram);
 			info->ram = NULL;
 		}
 	}
+	
+	DebugSnd_K054539Initted = 0;
+	nNumChips = 0;
 }
 
-void K054539Update(int chip, short *pBuf, int length)
+void K054539Update(INT32 chip, INT16 *pBuf, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Update called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("K054539Update called with invalid chip %x\n"), chip);
+#endif
+
 	info = &Chips[chip];
 #define VOL_CAP 1.80
 
@@ -298,24 +352,24 @@ void K054539Update(int chip, short *pBuf, int length)
 		-64<<8, -49<<8, -36<<8, -25<<8, -16<<8, -9<<8, -4<<8, -1<<8
 	};
 
-	int ch, reverb_pos;
-	short *rbase;
-	unsigned char *samples;
+	INT32 ch, reverb_pos;
+	INT16 *rbase;
+	UINT8 *samples;
 	UINT32 rom_mask;
 
-	unsigned char *base1, *base2;
+	UINT8 *base1, *base2;
 	struct k054539_channel *chan;
-	int *bufl, *bufr;
-	int cur_pos, cur_pfrac, cur_val, cur_pval;
-	int delta, rdelta, fdelta, pdelta;
-	int vol, bval, pan, i;
+	INT32 *bufl, *bufr;
+	INT32 cur_pos, cur_pfrac, cur_val, cur_pval;
+	INT32 delta, rdelta, fdelta, pdelta;
+	INT32 vol, bval, pan, i;
 
 	double gain, lvol, rvol, rbvol;
 
 	reverb_pos = info->reverb_pos;
-	rbase = (short *)(info->ram);
+	rbase = (INT16 *)(info->ram);
 
-	int **buffer = soundbuf;
+	INT32 **buffer = soundbuf;
 
 	memset(buffer[0], 0, length*sizeof(*buffer[0]));
 	memset(buffer[1], 0, length*sizeof(*buffer[1]));
@@ -359,7 +413,7 @@ else
 
 			rdelta = (base1[6] | (base1[7] << 8)) >> 3;
 //          rdelta = (reverb_pos + (int)((rdelta - 0x2000) * info->freq_ratio)) & 0x3fff;
-			rdelta = (int)(rdelta + reverb_pos) & 0x3fff;
+			rdelta = (INT32)(rdelta + reverb_pos) & 0x3fff;
 
 			cur_pos = (base1[0x0c] | (base1[0x0d] << 8) | (base1[0x0e] << 16)) & rom_mask;
 
@@ -376,7 +430,7 @@ else
 				pdelta = +1;
 			}
 
-			if(cur_pos != (int)chan->pos) {
+			if(cur_pos != (INT32)chan->pos) {
 				chan->pos = cur_pos;
 				cur_pfrac = 0;
 				cur_val = 0;
@@ -515,13 +569,13 @@ else
 	if(!(info->k054539_flags & K054539_DISABLE_REVERB))
 	{
 		for(i=0; i<length; i++) {
-			short val = rbase[(i+reverb_pos) & 0x3fff];
+			INT16 val = rbase[(i+reverb_pos) & 0x3fff];
 			buffer[0][i] += val;
 			buffer[1][i] += val;
 		}
 	}
 
-	for (int f = 0; f < length; f++) {
+	for (INT32 f = 0; f < length; f++) {
 		if (buffer[0][f] >  32767) buffer[0][f] =  32767;
 		if (buffer[0][f] < -32768) buffer[0][f] = -32768;
 		
@@ -541,8 +595,12 @@ else
 		memset(rbase + reverb_pos, 0, length*2);
 }
 
-int K054539Scan(int nAction)
+INT32 K054539Scan(INT32 nAction)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K054539Initted) bprintf(PRINT_ERROR, _T("K054539Scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 	char szName[32];
 
@@ -550,7 +608,7 @@ int K054539Scan(int nAction)
 		return 1;
 	}
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		info = &Chips[i];
 
 		sprintf(szName, "K054539 Latch %d", 0);

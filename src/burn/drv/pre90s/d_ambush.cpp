@@ -2,38 +2,39 @@
 // Based on MAME driver by Zsolt Vasvari
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvColRAM;
-static unsigned char *DrvScrRAM;
-static short         *pAY8910Buffer[6];
-static unsigned int *DrvPalette;
-static unsigned int *Palette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvColRAM;
+static UINT8 *DrvScrRAM;
+static INT16 *pAY8910Buffer[6];
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvDips[1];
-static unsigned char DrvInputs[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvDips[1];
+static UINT8 DrvInputs[2];
+static UINT8 DrvReset;
 
-static unsigned char *color_bank;
-static unsigned char *flipscreen;
+static UINT8 *color_bank;
+static UINT8 *flipscreen;
 
 static struct BurnInputInfo AmbushInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 coin"	},
@@ -95,7 +96,7 @@ static struct BurnDIPInfo AmbushDIPList[]=
 
 STDDIPINFO(Ambush)
 
-unsigned char __fastcall ambush_read_byte(unsigned short address)
+UINT8 __fastcall ambush_read_byte(UINT16 address)
 {
 	switch (address)
 	{
@@ -106,7 +107,7 @@ unsigned char __fastcall ambush_read_byte(unsigned short address)
 	return 0;
 }
 
-void __fastcall ambush_write_byte(unsigned short address, unsigned char data)
+void __fastcall ambush_write_byte(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -120,7 +121,7 @@ void __fastcall ambush_write_byte(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall ambush_in_port(unsigned short port)
+UINT8 __fastcall ambush_in_port(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -134,7 +135,7 @@ unsigned char __fastcall ambush_in_port(unsigned short port)
 	return 0;
 }
 
-void __fastcall ambush_out_port(unsigned short port, unsigned char data)
+void __fastcall ambush_out_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -156,17 +157,17 @@ void __fastcall ambush_out_port(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char AY8910_0_port0(unsigned int)
+UINT8 AY8910_0_port0(UINT32)
 {
 	return DrvInputs[0];
 }
 
-unsigned char AY8910_1_port0(unsigned int)
+UINT8 AY8910_1_port0(UINT32)
 {
 	return DrvInputs[1];
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset(AllRam, 0, RamEnd - AllRam);
 
@@ -182,9 +183,9 @@ static int DrvDoReset()
 
 static void DrvPaletteInit()
 {
-	for (int i = 0;i < 0x100; i++)
+	for (INT32 i = 0;i < 0x100; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
 		bit1 = (DrvColPROM[i] >> 1) & 0x01;
@@ -206,11 +207,11 @@ static void DrvPaletteInit()
 
 static void DrvGfxDecode()
 {
-	static int Plane[2]  = { 0, 0x10000 };
-	static int XOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-	static int YOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+	static INT32 Plane[2]  = { 0, 0x10000 };
+	static INT32 XOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+	static INT32 YOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
-	unsigned char *tmp = (unsigned char *)malloc(0x4000);
+	UINT8 *tmp = (UINT8 *)BurnMalloc(0x4000);
 	if (tmp == NULL) {
 		return;
 	}
@@ -221,12 +222,12 @@ static void DrvGfxDecode()
 
 	GfxDecode(0x0100, 2, 16, 16, Plane, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM	= Next; Next += 0x008000;
 
@@ -235,8 +236,8 @@ static int MemIndex()
 
 	DrvColPROM	= Next; Next += 0x000100;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0100 * sizeof(int);
-	Palette		= (unsigned int*)Next; Next += 0x0100 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0100 * sizeof(UINT32);
+	Palette		= (UINT32*)Next; Next += 0x0100 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -249,12 +250,12 @@ static int MemIndex()
 	flipscreen 	= Next; Next += 0x000001;
 	color_bank	= Next; Next += 0x000001;
 
-	pAY8910Buffer[0] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[3] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[4] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[5] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[3] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[4] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[5] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 
 	RamEnd		= Next;
 
@@ -263,12 +264,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -287,7 +288,7 @@ static int DrvInit()
 		DrvGfxDecode();
 	}
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -323,7 +324,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -331,28 +332,27 @@ static int DrvExit()
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static void draw_layer(int priority)
+static void draw_layer(INT32 priority)
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int attr = DrvColRAM[(sy & 0xe0) | (sx >> 3)];
+		INT32 attr = DrvColRAM[(sy & 0xe0) | (sx >> 3)];
 		if ((attr & 0x10) != priority) continue;
 
-		int code  = DrvVidRAM[offs] | ((attr & 0x60) << 3);
-		int color = (attr & 0x0f) | *color_bank;
+		INT32 code  = DrvVidRAM[offs] | ((attr & 0x60) << 3);
+		INT32 color = (attr & 0x0f) | *color_bank;
 
 		sy = (sy + (DrvScrRAM[sx >> 3] ^ 0xff)) & 0xff;
 
-		int flip = 0;
+		INT32 flip = 0;
 
 		if (*flipscreen) {
 			flip = 1;
@@ -378,19 +378,19 @@ static void draw_layer(int priority)
 
 static void draw_sprites()
 {
-	for (int offs = 0x200 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x200 - 4; offs >= 0; offs -= 4)
 	{
-		int sy = DrvSprRAM[offs + 0];
-		int sx = DrvSprRAM[offs + 3];
+		INT32 sy = DrvSprRAM[offs + 0];
+		INT32 sx = DrvSprRAM[offs + 3];
 
 		if (sy == 0 || sy == 0xff || (sx < 0x40 && DrvSprRAM[offs + 2] & 0x10) || (sx >= 0xc0 && ~DrvSprRAM[offs + 2] & 0x10))
 			continue;
 
-		int code  = (DrvSprRAM[offs + 1] & 0x3f) | ((DrvSprRAM[offs + 2] & 0x60) << 1);
+		INT32 code  = (DrvSprRAM[offs + 1] & 0x3f) | ((DrvSprRAM[offs + 2] & 0x60) << 1);
 
-		int color =(DrvSprRAM[offs + 2] & 0x0f) | *color_bank;
-		int flipx = DrvSprRAM[offs + 1] & 0x40;
-		int flipy = DrvSprRAM[offs + 1] & 0x80;
+		INT32 color =(DrvSprRAM[offs + 2] & 0x0f) | *color_bank;
+		INT32 flipx = DrvSprRAM[offs + 1] & 0x40;
+		INT32 flipy = DrvSprRAM[offs + 1] & 0x80;
 
 		if (*flipscreen)
 		{
@@ -446,11 +446,11 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x100; i++) {
-			int p = Palette[i];
+		for (INT32 i = 0; i < 0x100; i++) {
+			INT32 p = Palette[i];
 			DrvPalette[i] =  BurnHighCol(p >> 16, (p >> 8) & 0xff, p & 0xff, 0);
 		}
 	}
@@ -466,7 +466,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -474,7 +474,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 2);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
@@ -486,10 +486,10 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
 		AY8910Update(1, &pAY8910Buffer[3], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pAY8910Buffer[0][n] >> 2;
 			nSample += pAY8910Buffer[1][n] >> 2;
 			nSample += pAY8910Buffer[2][n] >> 2;
@@ -497,13 +497,7 @@ static int DrvFrame()
 			nSample += pAY8910Buffer[4][n] >> 2;
 			nSample += pAY8910Buffer[5][n] >> 2;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -517,7 +511,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -526,8 +520,6 @@ static int DrvScan(int nAction,int *pnMin)
 	}
 
 	if (nAction & ACB_VOLATILE) {		
-		memset(&ba, 0, sizeof(ba));
-
 		memset(&ba, 0, sizeof(ba));
 		ba.Data	  = AllRam;
 		ba.nLen	  = RamEnd - AllRam;

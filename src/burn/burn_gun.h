@@ -1,15 +1,15 @@
 #define MAX_GUNS	4
 
-extern int nBurnGunNumPlayers;
+extern INT32 nBurnGunNumPlayers;
 
-extern int BurnGunX[MAX_GUNS];
-extern int BurnGunY[MAX_GUNS];
+extern INT32 BurnGunX[MAX_GUNS];
+extern INT32 BurnGunY[MAX_GUNS];
 
-unsigned char BurnGunReturnX(int num);
-unsigned char BurnGunReturnY(int num);
+UINT8 BurnGunReturnX(INT32 num);
+UINT8 BurnGunReturnY(INT32 num);
 
-extern void BurnGunInit(int nNumPlayers, bool bDrawTargets);
+extern void BurnGunInit(INT32 nNumPlayers, bool bDrawTargets);
 void BurnGunExit();
 void BurnGunScan();
-extern void BurnGunDrawTarget(int num, int x, int y);
-extern void BurnGunMakeInputs(int num, short x, short y);
+extern void BurnGunDrawTarget(INT32 num, INT32 x, INT32 y);
+extern void BurnGunMakeInputs(INT32 num, INT16 x, INT16 y);

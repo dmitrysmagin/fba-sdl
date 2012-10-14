@@ -1,31 +1,31 @@
 #include "cps.h"
 
 // CPS Tiles
-unsigned int *CpstPal=NULL;
+UINT32 *CpstPal=NULL;
 
 // Arguments for the tile draw function
-unsigned int nCpstType = 0;
-int nCpstX = 0, nCpstY = 0;
-unsigned int nCpstTile = 0;
-int nCpstFlip = 0;
-short *CpstRowShift = NULL;
-unsigned int CpstPmsk = 0;		// Pixel mask
+UINT32 nCpstType = 0;
+INT32 nCpstX = 0, nCpstY = 0;
+UINT32 nCpstTile = 0;
+INT32 nCpstFlip = 0;
+INT16 *CpstRowShift = NULL;
+UINT32 CpstPmsk = 0;		// Pixel mask
 
-int nBgHi = 0;
-unsigned short  ZValue = 1;
-unsigned short* ZBuf = NULL;
-unsigned short* pZVal = NULL;
+INT32 nBgHi = 0;
+UINT16  ZValue = 1;
+UINT16* ZBuf = NULL;
+UINT16* pZVal = NULL;
 
-static int CpstOne();
-static int Cps2tOne();
-static int CpstOneBgHi();
-static int CpstOneObjZ();
+static INT32 CpstOne();
+static INT32 Cps2tOne();
+static INT32 CpstOneBgHi();
+static INT32 CpstOneObjZ();
 CpstOneDoFn CpstOneDoX[3]    = { CpstOne, CpstOneBgHi, Cps2tOne};
 CpstOneDoFn CpstOneObjDoX[2] = { CpstOne, CpstOneObjZ};
 
-static int CpstOne()
+static INT32 CpstOne()
 {
-  int nFun; int nSize;
+  INT32 nFun; INT32 nSize;
   nSize=(nCpstType&24)+8;
 
   if (nCpstType&CTT_CARE)
@@ -64,9 +64,9 @@ static int CpstOne()
   return CtvDoX[nFun]();
 }
 
-static int CpstOneBgHi()
+static INT32 CpstOneBgHi()
 {
-  int nFun; int nSize;
+  INT32 nFun; INT32 nSize;
   nSize=(nCpstType&24)+8;
 
   if (nCpstType&CTT_CARE)
@@ -106,9 +106,9 @@ static int CpstOneBgHi()
   return CtvDoXB[nFun]();
 }
 
-static int Cps2tOne()
+static INT32 Cps2tOne()
 {
-  int nFun; int nSize;
+  INT32 nFun; INT32 nSize;
   nSize=(nCpstType&24)+8;
 
   if (nCpstType&CTT_CARE)
@@ -147,9 +147,9 @@ static int Cps2tOne()
   return CtvDoX[nFun]();
 }
 
-static int CpstOneObjZ()
+static INT32 CpstOneObjZ()
 {
-  int nFun; int nSize;
+  INT32 nFun; INT32 nSize;
   nSize=(nCpstType&24)+8;
 
 

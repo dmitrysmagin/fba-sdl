@@ -66,18 +66,18 @@
 
 #if BPP == 16
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-   	*((unsigned short*)pPixel) = (unsigned short)pTilePalette[b];	\
+   	*((UINT16*)pPixel) = (UINT16)pTilePalette[b];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	unsigned int nRGB = pTilePalette[b];							\
-	pPixel[0] = (unsigned char)nRGB;								\
-	pPixel[1] = (unsigned char)(nRGB >> 8);							\
-	pPixel[2] = (unsigned char)(nRGB >> 16);						\
+	UINT32 nRGB = pTilePalette[b];							\
+	pPixel[0] = (UINT8)nRGB;								\
+	pPixel[1] = (UINT8)(nRGB >> 8);							\
+	pPixel[2] = (UINT8)(nRGB >> 16);						\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	 *((unsigned int*)pPixel) = (unsigned int)pTilePalette[b];		\
+	 *((UINT32*)pPixel) = (UINT32)pTilePalette[b];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -98,8 +98,8 @@
 
 static void FUNCTIONNAME(BPP,ROT,FLIP,CLIP,OPACITY)()
 {
-	unsigned char *pTileRow, *pPixel;
-	int y, nColour;
+	UINT8 *pTileRow, *pPixel;
+	INT32 y, nColour;
 
  #if ROT == 0
   #if YFLIP == 0
@@ -140,7 +140,7 @@ static void FUNCTIONNAME(BPP,ROT,FLIP,CLIP,OPACITY)()
   #endif
  #endif
 
-		nColour = *pTileData++;
+		nColour = BURN_ENDIAN_SWAP_INT32(*pTileData++);
 		PLOTPIXEL(OFFSET(0), nColour & 0x0F);
 		ADVANCECOLUMN;
 		nColour >>= 4;

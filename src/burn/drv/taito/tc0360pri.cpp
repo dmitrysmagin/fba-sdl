@@ -5,17 +5,17 @@
 
 UINT8 TC0360PRIRegs[16];
 
-void TC0360PRIWrite(unsigned int Offset, unsigned char Data)
+void TC0360PRIWrite(UINT32 Offset, UINT8 Data)
 {
 	TC0360PRIRegs[Offset] = Data;
 }
 
-void TC0360PRIHalfWordWrite(unsigned int Offset, unsigned short Data)
+void TC0360PRIHalfWordWrite(UINT32 Offset, UINT16 Data)
 {
 	TC0360PRIWrite(Offset, Data & 0xff);
 }
 
-void TC0360PRIHalfWordSwapWrite(unsigned int Offset, unsigned short Data)
+void TC0360PRIHalfWordSwapWrite(UINT32 Offset, UINT16 Data)
 {
 	if (Data & 0xff00) TC0360PRIWrite(Offset, (Data >> 8) & 0xff);
 }
@@ -35,7 +35,7 @@ void TC0360PRIExit()
 	memset(TC0360PRIRegs, 0, 16);
 }
 
-void TC0360PRIScan(int nAction)
+void TC0360PRIScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(TC0360PRIRegs);

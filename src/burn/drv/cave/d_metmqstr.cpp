@@ -5,41 +5,41 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01, *RomZ80;
-static unsigned char *Ram01, *RamZ80;
-static unsigned char *MSM6295ROMSrc1, *MSM6295ROMSrc2;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01, *RomZ80;
+static UINT8 *Ram01, *RamZ80;
+static UINT8 *MSM6295ROMSrc1, *MSM6295ROMSrc2;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nIRQPending;
+static INT8 nIRQPending;
 
-static int nCyclesTotal[2];
-static int nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+static INT32 nCyclesDone[2];
 
-static int SoundLatch;
-static int SoundLatchReply[48];
-static int SoundLatchStatus;
+static INT32 SoundLatch;
+static INT32 SoundLatchReply[48];
+static INT32 SoundLatchStatus;
 
-static int SoundLatchReplyIndex;
-static int SoundLatchReplyMax;
+static INT32 SoundLatchReplyIndex;
+static INT32 SoundLatchReplyMax;
 
-static unsigned char DrvZ80Bank;
-static unsigned char DrvOkiBank1_1;
-static unsigned char DrvOkiBank1_2;
-static unsigned char DrvOkiBank2_1;
-static unsigned char DrvOkiBank2_2;
+static UINT8 DrvZ80Bank;
+static UINT8 DrvOkiBank1_1;
+static UINT8 DrvOkiBank1_2;
+static UINT8 DrvOkiBank2_1;
+static UINT8 DrvOkiBank2_2;
 
 static struct BurnInputInfo metmqstrInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 8,	"p1 coin"},
@@ -79,7 +79,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall metmqstrReadByte(unsigned int sekAddress)
+UINT8 __fastcall metmqstrReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		default: {
@@ -89,7 +89,7 @@ unsigned char __fastcall metmqstrReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall metmqstrWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall metmqstrWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 			if (~byteValue & 0x0100) {
@@ -104,22 +104,22 @@ void __fastcall metmqstrWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-unsigned short __fastcall metmqstrReadWord(unsigned int sekAddress)
+UINT16 __fastcall metmqstrReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xa80000:
 		case 0xa80002: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0xa80004: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0xa80006: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -151,7 +151,7 @@ unsigned short __fastcall metmqstrReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall metmqstrWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall metmqstrWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress >= 0xa8000a && sekAddress <= 0xa80068) return;
 	if (sekAddress >= 0xa8006a && sekAddress <= 0xa8006c) return;
@@ -174,10 +174,8 @@ void __fastcall metmqstrWriteWord(unsigned int sekAddress, unsigned short wordVa
 			SoundLatch = wordValue;
 			SoundLatchStatus |= 0x0C;
 
-			ZetOpen(0);
 			ZetNmi();
 			nCyclesDone[1] += ZetRun(0x0400);
-			ZetClose();
 			return;
 			
 		case 0xb00000:
@@ -223,7 +221,7 @@ void __fastcall metmqstrWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-unsigned char __fastcall metmqstrZIn(unsigned short nAddress)
+UINT8 __fastcall metmqstrZIn(UINT16 nAddress)
 {
 	nAddress &= 0xFF;
 
@@ -251,7 +249,7 @@ unsigned char __fastcall metmqstrZIn(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall metmqstrZOut(unsigned short nAddress, unsigned char nValue)
+void __fastcall metmqstrZOut(UINT16 nAddress, UINT8 nValue)
 {
 	nAddress &= 0xFF;
 
@@ -305,7 +303,7 @@ void __fastcall metmqstrZOut(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-unsigned char __fastcall metmqstrZRead(unsigned short a)
+UINT8 __fastcall metmqstrZRead(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -316,7 +314,7 @@ unsigned char __fastcall metmqstrZRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall metmqstrZWrite(unsigned short a, unsigned char d)
+void __fastcall metmqstrZWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -325,7 +323,7 @@ void __fastcall metmqstrZWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 	
@@ -347,14 +345,12 @@ static int DrvExit()
 	DrvOkiBank2_1 = 0;
 	DrvOkiBank2_2 = 0;
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -395,7 +391,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	CavePalUpdate4Bit(0, 128);
 
@@ -410,18 +406,18 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
-	int nSoundBufferPos = 0;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
+	INT32 nSoundBufferPos = 0;
 
-	int nCyclesSegment;
+	INT32 nCyclesSegment;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -430,7 +426,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 11; i++) {
+	for (INT32 i = 0; i < 11; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -441,17 +437,18 @@ static int DrvFrame()
 	ZetNewFrame();
 	
 	SekOpen(0);
+	ZetOpen(0);
 	
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
-	nCyclesTotal[1] = (int)(8000000 / CAVE_REFRESHRATE);
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[1] = (INT32)(8000000 / CAVE_REFRESHRATE);
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU = 0;
-		int nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU = 0;
+		INT32 nNext = i * nCyclesTotal[nCurrentCPU] / nInterleave;
 
 		// Run 68000
 
@@ -470,7 +467,7 @@ static int DrvFrame()
 				DrvDraw();												// Draw screen if needed
 			}
 			
-			unsigned char Temp = nCaveSpriteBank;
+			UINT8 Temp = nCaveSpriteBank;
 			nCaveSpriteBank = nCaveSpriteBankDelay;
 			nCaveSpriteBankDelay = Temp;
 
@@ -490,19 +487,15 @@ static int DrvFrame()
 		}
 		
 		nCurrentCPU = 1;
-		ZetOpen(0);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			MSM6295Render(1, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -511,28 +504,27 @@ static int DrvFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
-			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			MSM6295Render(1, pSoundBuf, nSegmentLength);
 		}
 	}
 	
 	SekClose();
+	ZetClose();
 	
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x180000;		// 68K program
 	RomZ80			= Next; Next += 0x040000;
 	CaveSpriteROM	= Next; Next += 0x1000000;
@@ -556,12 +548,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -569,12 +561,12 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap2(unsigned char* pData, int nLen)
+static void NibbleSwap2(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -582,7 +574,7 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	BurnLoadRom(Rom01 + 0x000000, 0, 1);
 	BurnLoadRom(Rom01 + 0x080000, 1, 1);
@@ -613,7 +605,7 @@ static int LoadRoms()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -671,12 +663,10 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int drvZInit()
+static INT32 drvZInit()
 {
-	ZetInit(1);
-	
+	ZetInit(0);
 	ZetOpen(0);
-
 	ZetSetInHandler(metmqstrZIn);
 	ZetSetOutHandler(metmqstrZOut);
 	ZetSetReadHandler(metmqstrZRead);
@@ -692,15 +682,13 @@ static int drvZInit()
 	ZetMapArea    (0xe000, 0xFFFF, 0, RamZ80 + 0x0000);			// Direct Read from RAM
 	ZetMapArea    (0xe000, 0xFFFF, 1, RamZ80 + 0x0000);			// Direct Write to RAM
 	ZetMapArea    (0xe000, 0xFFFF, 2, RamZ80 + 0x0000);			//
-
 	ZetMemEnd();
-	
 	ZetClose();
 
 	return 0;
 }
 
-static void DrvYM2151IrqHandler(int Irq)
+static void DrvYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -709,28 +697,28 @@ static void DrvYM2151IrqHandler(int Irq)
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46);
-	
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
 	}
+	
+	EEPROMInit(&eeprom_interface_93C46);
 
 	{
 		SekInit(0, 0x68000);													// Allocate 68000
@@ -772,14 +760,10 @@ static int DrvInit()
 	
 	memcpy(MSM6295ROM, MSM6295ROMSrc1, 0x40000);
 	memcpy(MSM6295ROM + 0x100000, MSM6295ROMSrc2, 0x40000);
-	MSM6295Init(0, 2000000 / 132, 100.0, 1);
-	MSM6295Init(1, 2000000 / 132, 100.0, 1);
+	MSM6295Init(0, 2000000 / 132, 30.0, 1);
+	MSM6295Init(1, 2000000 / 132, 30.0, 1);
 	
 	bDrawScreen = true;
-
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
 
 	DrvDoReset(); // Reset machine
 

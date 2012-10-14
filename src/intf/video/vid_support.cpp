@@ -5,25 +5,27 @@
 // ---------------------------------------------------------------------------
 // General
 
-static unsigned char* pVidSFullImage = NULL;
+static UINT8* pVidSFullImage = NULL;
 
 void VidSFreeVidImage()
 {
-	free(pVidSFullImage);
-	pVidSFullImage = NULL;
+	if (pVidSFullImage) {
+		free(pVidSFullImage);
+		pVidSFullImage = NULL;
+	}
 	pVidImage = NULL;
 }
 
-int VidSAllocVidImage()
+INT32 VidSAllocVidImage()
 {
-	int nMemLen = 0;
+	INT32 nMemLen = 0;
 
 	VidSFreeVidImage();
 
 	// Allocate an extra line above and below the image to accomodate effects
 	nVidImagePitch = nVidImageWidth * ((nVidImageDepth + 7) >> 3);
 	nMemLen = (nVidImageHeight + 2) * nVidImagePitch;
-	pVidSFullImage = (unsigned char*)malloc(nMemLen);
+	pVidSFullImage = (UINT8*)malloc(nMemLen);
 
 	if (pVidSFullImage) {
 		memset(pVidSFullImage, 0, nMemLen);

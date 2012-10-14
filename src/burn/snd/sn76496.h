@@ -1,8 +1,9 @@
-extern void SN76496Update(int Num, short* pSoundBuf, int Length);
-extern void SN76496Write(int Num, int Data);
-extern void SN76489Init(int Num, int Clock, int SignalAdd);
-extern void SN76489AInit(int Num, int Clock, int SignalAdd);
-extern void SN76494Init(int Num, int Clock, int SignalAdd);
-extern void SN76496Init(int Num, int Clock, int SignalAdd);
-extern void SN76496Exit();
-extern int SN76496Scan(int nAction,int *pnMin);
+void SN76496Update(INT32 Num, INT16* pSoundBuf, INT32 Length);
+void SN76496Write(INT32 Num, INT32 Data);
+void SN76489Init(INT32 Num, INT32 Clock, INT32 SignalAdd);
+void SN76489AInit(INT32 Num, INT32 Clock, INT32 SignalAdd);
+void SN76494Init(INT32 Num, INT32 Clock, INT32 SignalAdd);
+void SN76496Init(INT32 Num, INT32 Clock, INT32 SignalAdd);
+void SN76496Exit();
+void SN76496SetVolShift(INT32 Num, INT32 nVolShift);
+INT32 SN76496Scan(INT32 nAction,INT32 *pnMin);

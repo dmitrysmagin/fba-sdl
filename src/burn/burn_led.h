@@ -19,12 +19,12 @@
 #define LED_POSITION_BOTTOM_RIGHT	3
 
 // transparency is a percentage 0 - 100
-void BurnLEDInit(int num, int position, int size, int color, int transparency);
+void BurnLEDInit(INT32 num, INT32 position, INT32 size, INT32 color, INT32 transparency);
 
 void BurnLEDReset();
-void BurnLEDSetStatus(int led, unsigned int status);
-void BurnLEDSetFlipscreen(int flip);
+void BurnLEDSetStatus(INT32 led, UINT32 status);
+void BurnLEDSetFlipscreen(INT32 flip);
 void BurnLEDRender();
 void BurnLEDExit();
 
-int BurnLEDScan(int nAction, int *pnMin);
+INT32 BurnLEDScan(INT32 nAction, INT32 *pnMin);

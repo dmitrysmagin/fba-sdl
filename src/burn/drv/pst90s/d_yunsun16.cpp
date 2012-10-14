@@ -2,40 +2,42 @@
 // Based on MAME driver by Luca Elia
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvVidRAM0;
-static unsigned char *DrvVidRAM1;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvVidRAM0;
+static UINT8 *DrvVidRAM1;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8  DrvRecalc;
 
-static int soundbank;
-static unsigned short *scroll;
-static unsigned char *soundlatch;
-static unsigned char *video_priority;
+static INT32 soundbank;
+static UINT16 *scroll;
+static UINT8 *soundlatch;
+static UINT8 *video_priority;
 
-static unsigned short DrvInputs[2];
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
+static UINT16 DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
 
-static int is_magicbub = 0;
+static INT32 is_magicbub = 0;
 
 static struct BurnInputInfo MagicbubInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy2 + 0,	"p1 coin"	},
@@ -314,7 +316,7 @@ static struct BurnDIPInfo PaprazziDIPList[]=
 
 STDDIPINFO(Paprazzi)
 
-static void set_sample_bank(int bank)
+static void set_sample_bank(INT32 bank)
 {
 	if (bank != soundbank) {
 		soundbank = bank;
@@ -322,7 +324,7 @@ static void set_sample_bank(int bank)
 	}
 }
 
-void __fastcall magicbub_main_write_word(unsigned int address, unsigned short data)
+void __fastcall magicbub_main_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -343,7 +345,7 @@ void __fastcall magicbub_main_write_word(unsigned int address, unsigned short da
 	}
 }
 
-void __fastcall magicbub_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall magicbub_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -355,9 +357,11 @@ void __fastcall magicbub_main_write_byte(unsigned int address, unsigned char dat
 		case 0x800188:
 		case 0x800189:
 			if (is_magicbub) {
-				*soundlatch = data;
-				//ZetNmi();
-				Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
+				if (data != 0x3a) {
+					*soundlatch = data;
+//					ZetNmi();
+					Z80SetIrqLine(Z80_INPUT_LINE_NMI, 1);
+				}
 			} else {
 				MSM6295Command(0, data);
 			}
@@ -365,7 +369,7 @@ void __fastcall magicbub_main_write_byte(unsigned int address, unsigned char dat
 	}
 }
 
-unsigned short __fastcall magicbub_main_read_word(unsigned int address)
+UINT16 __fastcall magicbub_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -379,7 +383,7 @@ unsigned short __fastcall magicbub_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall magicbub_main_read_byte(unsigned int address)
+UINT8 __fastcall magicbub_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -407,7 +411,7 @@ unsigned char __fastcall magicbub_main_read_byte(unsigned int address)
 	return 0;
 }		
 
-void __fastcall magicbub_sound_out(unsigned short port, unsigned char data)
+void __fastcall magicbub_sound_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -425,7 +429,7 @@ void __fastcall magicbub_sound_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall magicbub_sound_in(unsigned short port)
+UINT8 __fastcall magicbub_sound_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -447,12 +451,12 @@ unsigned char __fastcall magicbub_sound_in(unsigned short port)
 }		
 
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3000000;
 }
 
-static void DrvYM3812IrqHandler(int, int nStatus)
+static void DrvYM3812IrqHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -461,7 +465,7 @@ static void DrvYM3812IrqHandler(int, int nStatus)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 	memset (AllRam, 0, RamEnd - AllRam);
@@ -483,9 +487,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x080000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -496,7 +500,7 @@ static int MemIndex()
 	MSM6295ROM		= Next;
 	DrvSndROM		= Next; Next += 0x080000 + 0x40000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x2000 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x2000 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -508,7 +512,7 @@ static int MemIndex()
 
 	DrvZ80RAM		= Next; Next += 0x000800;
 
-	scroll			= (unsigned short*)Next; Next += 0x000004 * sizeof(short);
+	scroll			= (UINT16*)Next; Next += 0x000004 * sizeof(UINT16);
 	soundlatch		= Next; Next += 0x000001;
 	video_priority		= Next; Next += 0x000001;
 
@@ -518,25 +522,25 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane0[8]  = { 0x030, 0x020, 0x010, 0x000, 0x038, 0x028, 0x018, 0x008 };
-	int Plane1[4]  = { 0x600000, 0x200000, 0x400000, 0x000000 };
-	int XOffs0[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	INT32 Plane0[8]  = { 0x030, 0x020, 0x010, 0x000, 0x038, 0x028, 0x018, 0x008 };
+	INT32 Plane1[4]  = { 0x600000, 0x200000, 0x400000, 0x000000 };
+	INT32 XOffs0[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 			   0x040, 0x041, 0x042, 0x043, 0x044, 0x045, 0x046, 0x047 };
-	int XOffs1[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	INT32 XOffs1[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 			   0x008, 0x009, 0x00a, 0x00b, 0x00c, 0x00d, 0x00e, 0x00f };
-	int YOffs0[16] = { 0x000, 0x080, 0x100, 0x180, 0x200, 0x280, 0x300, 0x380,
+	INT32 YOffs0[16] = { 0x000, 0x080, 0x100, 0x180, 0x200, 0x280, 0x300, 0x380,
 			   0x400, 0x480, 0x500, 0x580, 0x600, 0x680, 0x700, 0x780 };
-	int YOffs1[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
+	INT32 YOffs1[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 			   0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0 };
 	
-	unsigned char *tmp = (unsigned char*)malloc(0x400000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x400000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < 0x400000; i++) {
+	for (INT32 i = 0; i < 0x400000; i++) {
 		tmp[i] = DrvGfxROM0[(i & ~7) | ((i & 6) >> 1) | ((i & 1) << 2)];
 	}
 
@@ -546,22 +550,22 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x2000, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x100, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvInit(int game_select)
+static INT32 DrvInit(INT32 game_select)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 	{
-		int offset = 0;
+		INT32 offset = 0;
 		if (BurnLoadRom(Drv68KROM  + 0x000001,  0, 2)) return 1;
 		if (BurnLoadRom(Drv68KROM  + 0x000000,  1, 2)) return 1;
 
@@ -650,7 +654,7 @@ static int DrvInit(int game_select)
 	SekSetReadByteHandler(0,	magicbub_main_read_byte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xdfff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0xdfff, 2, DrvZ80ROM);
@@ -674,16 +678,16 @@ static int DrvInit(int game_select)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM3812Exit();
 
 	SekExit();
+	ZetExit();
 	GenericTilesExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	is_magicbub = 0;
 
@@ -692,11 +696,11 @@ static int DrvExit()
 
 static inline void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x2000; i++) {
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x2000; i++) {
 		if (i == 0x200) i = 0x1000;
-		int d = p[i];
+		INT32 d = p[i];
 
 		r = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -710,17 +714,17 @@ static inline void DrvRecalcPal()
 	}
 }
 
-static void draw_layer(int scr, int pri)
+static void draw_layer(INT32 scr, INT32 pri)
 {
-	int scrollx = scroll[scr * 2 + 0] + ((scr) ? 0x38 : 0x34) + ((is_magicbub) ? 32 : 0);
-	int scrolly = scroll[scr * 2 + 1] + 0x10;
+	INT32 scrollx = scroll[scr * 2 + 0] + ((scr) ? 0x38 : 0x34) + ((is_magicbub) ? 32 : 0);
+	INT32 scrolly = scroll[scr * 2 + 1] + 0x10;
 
-	unsigned short *vram = (unsigned short*)(scr ? DrvVidRAM1 : DrvVidRAM0);
+	UINT16 *vram = (UINT16*)(scr ? DrvVidRAM1 : DrvVidRAM0);
 
-	for (int offs = 0; offs < 64 * 64; offs++)
+	for (INT32 offs = 0; offs < 64 * 64; offs++)
 	{
-		int sx = (offs & 0x3f) << 4;
-		int sy = (offs >> 6) << 4;
+		INT32 sx = (offs & 0x3f) << 4;
+		INT32 sy = (offs >> 6) << 4;
 
 		sx -= scrollx;
 		if (sx < -15) sx += 1024;
@@ -729,10 +733,10 @@ static void draw_layer(int scr, int pri)
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int ofst = (offs & 0xc00) + ((offs << 4) & 0x300) + ((offs >> 6) & 0x0f) + ((offs & 0x0f) << 4);
+		INT32 ofst = (offs & 0xc00) + ((offs << 4) & 0x300) + ((offs >> 6) & 0x0f) + ((offs & 0x0f) << 4);
 
-		int code = vram[ofst * 2 + 0] & 0x3fff;
-		int attr = vram[ofst * 2 + 1];
+		INT32 code = vram[ofst * 2 + 0] & 0x3fff;
+		INT32 attr = vram[ofst * 2 + 1];
 
 		if (pri) {
 			if (attr & 0x20) {
@@ -750,21 +754,21 @@ static void draw_layer(int scr, int pri)
 	}	
 }
 
-static void draw_sprites(int pri)
+static void draw_sprites(INT32 pri)
 {
 	if ((*video_priority & 3) != pri) return;	
 
-	int x_offset = is_magicbub ? 96 : 64;
-	unsigned short *vram = (unsigned short*)DrvSprRAM;
+	INT32 x_offset = is_magicbub ? 96 : 64;
+	UINT16 *vram = (UINT16*)DrvSprRAM;
 
-	for (int offs = 0; offs < 0x1000 / 2; offs += 8 / 2)
+	for (INT32 offs = 0; offs < 0x1000 / 2; offs += 8 / 2)
 	{
-		int sx		= vram[offs + 0] - x_offset;
-		int sy		= vram[offs + 1] - 0x0f;
-		int code	= vram[offs + 2] & 0x1fff;
-		int attr	= vram[offs + 3];
-		int flipx	= attr & 0x20;
-		int flipy	= attr & 0x40;
+		INT32 sx		= vram[offs + 0] - x_offset;
+		INT32 sy		= vram[offs + 1] - 0x0f;
+		INT32 code	= vram[offs + 2] & 0x1fff;
+		INT32 attr	= vram[offs + 3];
+		INT32 flipx	= attr & 0x20;
+		INT32 flipy	= attr & 0x40;
 
 		if (flipy) {
 			if (flipx) {
@@ -782,7 +786,7 @@ static void draw_sprites(int pri)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
@@ -824,7 +828,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -833,24 +837,23 @@ static int DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 4);
+		memset (DrvInputs, 0xff, 2 * sizeof(UINT16));
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= DrvJoy1[i] << i;
 			DrvInputs[1] ^= DrvJoy2[i] << i;
 		}
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = 10;
-	int nCyclesTotal[2] = { 16000000 / 60, 3000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 10;
+	INT32 nCyclesTotal[2] = { 16000000 / 60, 3000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nSegment = nCyclesTotal[0] / nInterleave;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nSegment = nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += SekRun(nSegment);
 		if (i == (nInterleave - 1)) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 
@@ -858,14 +861,6 @@ static int DrvFrame()
 
 		nSegment = nCyclesTotal[1] / nInterleave;
 		BurnTimerUpdateYM3812((1 + i) * nSegment);
-
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM3812Update(pSoundBuf, nSegmentLength);
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 
 	if (is_magicbub) {
@@ -873,14 +868,10 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			if (is_magicbub) {
-				BurnYM3812Update(pSoundBuf, nSegmentLength);
-			}
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		if (is_magicbub) {
+			BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 		}
+		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 
 	ZetClose();
@@ -893,7 +884,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -917,7 +908,7 @@ static int DrvScan(int nAction,int *pnMin)
 
 		SCAN_VAR(soundbank);
 
-		int bank = soundbank;
+		INT32 bank = soundbank;
 		soundbank = -1;
 		set_sample_bank(bank);
 	}
@@ -950,7 +941,7 @@ static struct BurnRomInfo magicbubRomDesc[] = {
 STD_ROM_PICK(magicbub)
 STD_ROM_FN(magicbub)
 
-static int MagicbubInit()
+static INT32 MagicbubInit()
 {
 	return DrvInit(0);
 }
@@ -994,7 +985,7 @@ static struct BurnRomInfo magicbubaRomDesc[] = {
 STD_ROM_PICK(magicbuba)
 STD_ROM_FN(magicbuba)
 
-static int MagicbubaInit()
+static INT32 MagicbubaInit()
 {
 	return DrvInit(1);
 }
@@ -1036,7 +1027,7 @@ static struct BurnRomInfo paprazziRomDesc[] = {
 STD_ROM_PICK(paprazzi)
 STD_ROM_FN(paprazzi)
 
-static int PaprazziInit()
+static INT32 PaprazziInit()
 {
 	return DrvInit(2);
 }
@@ -1074,7 +1065,7 @@ static struct BurnRomInfo shockingRomDesc[] = {
 STD_ROM_PICK(shocking)
 STD_ROM_FN(shocking)
 
-static int ShockingInit()
+static INT32 ShockingInit()
 {
 	return DrvInit(3);
 }

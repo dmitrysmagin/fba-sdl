@@ -1,4 +1,3 @@
-
 #include "burnint.h"
 #include "arm_intf.h"
 
@@ -16,25 +15,29 @@
 #define WRITE	1
 #define FETCH	2
 
-static unsigned char **membase[3]; // 0 read, 1, write, 2 opcode
+static UINT8 **membase[3]; // 0 read, 1, write, 2 opcode
 
-static void (*pWriteLongHandler)(unsigned int, unsigned int  ) = NULL;
-static void (*pWriteByteHandler)(unsigned int, unsigned char ) = NULL;
+static void (*pWriteLongHandler)(UINT32, UINT32  ) = NULL;
+static void (*pWriteByteHandler)(UINT32, UINT8 ) = NULL;
 
-static unsigned int   (*pReadLongHandler)(unsigned int) = NULL;
-static unsigned char  (*pReadByteHandler)(unsigned int) = NULL;
+static UINT32   (*pReadLongHandler)(UINT32) = NULL;
+static UINT8  (*pReadByteHandler)(UINT32) = NULL;
 
-unsigned int ArmSpeedHackAddress;
+UINT32 ArmSpeedHackAddress;
 static void (*pArmSpeedHackCallback)();
 
-void ArmSetSpeedHack(unsigned int address, void (*pCallback)())
+void ArmSetSpeedHack(UINT32 address, void (*pCallback)())
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetSpeedHack called without init\n"));
+#endif
+
 	ArmSpeedHackAddress = address;
 
 	pArmSpeedHackCallback = pCallback;
 }
 
-void ArmOpen(int )
+void ArmOpen(INT32)
 {
 
 }
@@ -44,11 +47,34 @@ void ArmClose()
 
 }
 
-void ArmInit( int num ) // only one cpu supported
+INT32 ArmGetActive()
 {
-	for (int i = 0; i < 3; i++) {
-		membase[i] = (unsigned char**)malloc(PAGE_COUNT * sizeof(unsigned char**));
-		memset (membase[i], 0, PAGE_COUNT * sizeof(unsigned char**));
+	return 0; // only one cpu supported
+}
+
+static cpu_core_config ArmCheatCpuConfig =
+{
+	ArmOpen,
+	ArmClose,
+	Arm_program_read_byte_32le,
+	Arm_write_rom_byte,
+	ArmGetActive,
+	ArmGetTotalCycles,
+	ArmNewFrame,
+	ArmRun,
+	ArmRunEnd,
+	ArmReset,
+	MAX_MEMORY,
+	0
+};
+
+void ArmInit(INT32 /*num*/) // only one cpu supported
+{
+	DebugCPU_ARMInitted = 1;
+	
+	for (INT32 i = 0; i < 3; i++) {
+		membase[i] = (UINT8**)malloc(PAGE_COUNT * sizeof(UINT8**));
+		memset (membase[i], 0, PAGE_COUNT * sizeof(UINT8**));
 	}
 
 	pWriteLongHandler = NULL;
@@ -56,7 +82,7 @@ void ArmInit( int num ) // only one cpu supported
 	pReadLongHandler = NULL;
 	pReadByteHandler = NULL;
 
-	CpuCheatRegister(0x0b, num);
+	CpuCheatRegister(0, &ArmCheatCpuConfig);
 
 	pArmSpeedHackCallback = NULL;
 	ArmSpeedHackAddress = ~0;
@@ -64,49 +90,79 @@ void ArmInit( int num ) // only one cpu supported
 
 void ArmExit()
 {
-	for (int i = 0; i < 3; i++) {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmExit called without init\n"));
+#endif
+
+	for (INT32 i = 0; i < 3; i++) {
 		if (membase[i]) {
 			free (membase[i]);
 			membase[i] = NULL;
 		}
 	}
+	
+	DebugCPU_ARMInitted = 0;
 }
 
-void ArmMapMemory(unsigned char *src, int start, int finish, int type)
+void ArmMapMemory(UINT8 *src, INT32 start, INT32 finish, INT32 type)
 {
-	unsigned int len = (finish-start) >> PAGE_SHIFT;
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmMapMemory called without init\n"));
+#endif
 
-	for (unsigned int i = 0; i < len+1; i++)
+	UINT32 len = (finish-start) >> PAGE_SHIFT;
+
+	for (UINT32 i = 0; i < len+1; i++)
 	{
-		unsigned int offset = i + (start >> PAGE_SHIFT);
+		UINT32 offset = i + (start >> PAGE_SHIFT);
 		if (type & (1 <<  READ)) membase[ READ][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << WRITE)) membase[WRITE][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << FETCH)) membase[FETCH][offset] = src + (i << PAGE_SHIFT);
 	}
 }
 
-void ArmSetWriteByteHandler(void (*write)(unsigned int, unsigned char))
+void ArmSetWriteByteHandler(void (*write)(UINT32, UINT8))
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetWriteByteHandler called without init\n"));
+#endif
+
 	pWriteByteHandler = write;
 }
 
-void ArmSetWriteLongHandler(void (*write)(unsigned int, unsigned int))
+void ArmSetWriteLongHandler(void (*write)(UINT32, UINT32))
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetWriteLongHandler called without init\n"));
+#endif
+
 	pWriteLongHandler = write;
 }
 
-void ArmSetReadByteHandler(unsigned char (*read)(unsigned int))
+void ArmSetReadByteHandler(UINT8 (*read)(UINT32))
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetReadByteHandler called without init\n"));
+#endif
+
 	pReadByteHandler = read;
 }
 
-void ArmSetReadLongHandler(unsigned int (*read)(unsigned int))
+void ArmSetReadLongHandler(UINT32 (*read)(UINT32))
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetReadLongHandler called without init\n"));
+#endif
+
 	pReadLongHandler = read;
 }
 
-void Arm_program_write_byte_32le(unsigned int addr, unsigned char data)
+void Arm_program_write_byte_32le(UINT32 addr, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_program_write_byte_32le called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 #ifdef DEBUG_LOG
@@ -123,8 +179,12 @@ void Arm_program_write_byte_32le(unsigned int addr, unsigned char data)
 	}
 }
 
-void Arm_program_write_dword_32le(unsigned int addr, unsigned int data)
+void Arm_program_write_dword_32le(UINT32 addr, UINT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_program_write_dword_32le called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 #ifdef DEBUG_LOG
@@ -132,7 +192,7 @@ void Arm_program_write_dword_32le(unsigned int addr, unsigned int data)
 #endif
 
 	if (membase[WRITE][addr >> PAGE_SHIFT] != NULL) {
-		*((unsigned int*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND))) = data;
+		*((UINT32*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND))) = data;
 		return;
 	}
 
@@ -142,8 +202,12 @@ void Arm_program_write_dword_32le(unsigned int addr, unsigned int data)
 }
 
 
-unsigned char Arm_program_read_byte_32le(unsigned int addr)
+UINT8 Arm_program_read_byte_32le(UINT32 addr)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_program_read_byte_32le called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 #ifdef DEBUG_LOG
@@ -161,8 +225,12 @@ unsigned char Arm_program_read_byte_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned int Arm_program_read_dword_32le(unsigned int addr)
+UINT32 Arm_program_read_dword_32le(UINT32 addr)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_program_read_dword_32le called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 #ifdef DEBUG_LOG
@@ -170,7 +238,7 @@ unsigned int Arm_program_read_dword_32le(unsigned int addr)
 #endif
 
 	if (membase[ READ][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned int*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
+		return *((UINT32*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
 	}
 
 	if (pReadLongHandler) {
@@ -180,8 +248,12 @@ unsigned int Arm_program_read_dword_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned int Arm_program_opcode_dword_32le(unsigned int addr)
+UINT32 Arm_program_opcode_dword_32le(UINT32 addr)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_program_opcode_dword_32le called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 #ifdef DEBUG_LOG
@@ -205,7 +277,7 @@ unsigned int Arm_program_opcode_dword_32le(unsigned int addr)
 #endif
 
 	if (membase[FETCH][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned int*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
+		return *((UINT32*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
 	}
 
 	// good enough for now...
@@ -216,8 +288,12 @@ unsigned int Arm_program_opcode_dword_32le(unsigned int addr)
 	return 0;
 }
 
-void ArmSetIRQLine(int line, int state)
+void ArmSetIRQLine(INT32 line, INT32 state)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("ArmSetIRQLine called without init\n"));
+#endif
+
 	if (state == ARM_CLEAR_LINE || state == ARM_ASSERT_LINE) {
 		arm_set_irq_line(line, state);
 	}
@@ -230,8 +306,12 @@ void ArmSetIRQLine(int line, int state)
 
 // For cheats/etc
 
-void Arm_write_rom_byte(unsigned int addr, unsigned char data)
+void Arm_write_rom_byte(UINT32 addr, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_ARMInitted) bprintf(PRINT_ERROR, _T("Arm_write_rom_byte called without init\n"));
+#endif
+
 	addr &= MAX_MASK;
 
 	// write to rom & ram

@@ -1,26 +1,17 @@
 #include "pgm.h"
+#include "pgm_sprite.h"
 
-static int nTileMask = 0;
-static unsigned char sprmsktab[0x100];
-static unsigned char  *SpritePrio;	// sprite priorities
-static unsigned short *pTempScreen;	// sprites
-static unsigned short *pTempDraw;	// pre-zoomed sprites
-static unsigned char  *tiletrans;	// tile transparency table
-static unsigned char  *texttrans;	// text transparency table
+static INT32 nTileMask = 0;
+static UINT8 sprmsktab[0x100];
+static UINT8  *SpritePrio;	// sprite priorities
+static UINT16 *pTempScreen;	// sprites
+static UINT16 *pTempDraw;	// pre-zoomed sprites
+static UINT8  *tiletrans;	// tile transparency table
+static UINT8  *texttrans;	// text transparency table
 
-#define draw_pixel_nomask(n)				\
-	dest[xoff + n] = adata[aoffset] | palt;		\
-	pdest[xoff + n] = prio;				\
-	aoffset++					\
-
-#define draw_pixel(n, mskno)				\
-	if (msk & mskno) {				\
-		draw_pixel_nomask(n);			\
-	}						\
-
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x7C00) >> 7;  // Red 
 	r |= r >> 5;
@@ -32,95 +23,39 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-static void pgm_prepare_sprite(int wide, int high,int palt, int boffset)
+static void pgm_prepare_sprite(INT32 wide, INT32 high, INT32 palt, INT32 boffset)
 {
-	unsigned char * bdata = PGMSPRMaskROM;
-	unsigned char * adata = PGMSPRColROM;
-	unsigned short* dest = pTempDraw;
-	int bdatasize = nPGMSPRMaskMaskLen;
-	int adatasize = nPGMSPRColMaskLen;
+	UINT16* dest = pTempDraw;
+	UINT8 * bdata = PGMSPRMaskROM;
+	INT32 bdatasize = nPGMSPRMaskMaskLen;
 
 	wide *= 16;
 	palt *= 32;
 
-	unsigned int aoffset = (bdata[(boffset+3) & bdatasize] << 24) | (bdata[(boffset+2) & bdatasize] << 16) | (bdata[(boffset+1) & bdatasize] << 8) | (bdata[(boffset) & bdatasize]);
+	UINT32 aoffset = (bdata[(boffset+3) & bdatasize] << 24) | (bdata[(boffset+2) & bdatasize] << 16) | (bdata[(boffset+1) & bdatasize] << 8) | (bdata[(boffset) & bdatasize]);
 	aoffset = (aoffset >> 2) * 3;
 
 	boffset += 4;
 
-	for (int ycnt = 0 ; ycnt < high; ycnt++) {
-		dest = pTempDraw + (ycnt * wide);
+	for (INT32 ycnt = 0; ycnt < high; ycnt++)
+	{
+		for (INT32 xcnt = 0; xcnt < wide; xcnt+=8)
+		{
+			aoffset+=zoom_draw_table[bdata[boffset & bdatasize]](dest + xcnt, PGMSPRColROM + (aoffset & nPGMSPRColMaskLen), palt);
 
-		for (int xcnt = 0 ; xcnt < wide; xcnt+=16) {
-			unsigned short msk = (bdata[(boffset+1) & bdatasize] << 8) | bdata[boffset & bdatasize];
-
-			if (msk == 0xffff) {
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-				*dest++ = 0x8000;
-			}
-			else if (msk == 0)
-			{
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-				*dest++ = adata[aoffset++ & adatasize] | palt;
-			}
-			else
-			{
-				for (int x = 0; x < 16; x++)
-				{
-					if (msk & 1)
-					{
-						dest[x] = 0x8000;
-					}
-					else
-					{
-						dest[x] = adata[aoffset++ & adatasize] | palt;
-					}
-	
-					msk >>= 1;
-				}
-
-				dest += 16;
-			}
-
-			boffset+=2;
+			boffset++;
 		}
+
+		dest += wide;
 	}
 }
 
-static inline void draw_sprite_line(int wide, unsigned short* dest, unsigned char *pdest, int xzoom, int xgrow, int yoffset, int flip, int xpos, int prio)
+static inline void draw_sprite_line(INT32 wide, UINT16* dest, UINT8 *pdest, INT32 xzoom, INT32 xgrow, INT32 yoffset, INT32 flip, INT32 xpos, INT32 prio)
 {
-	int xzoombit;
-	int xoffset;
-	int xcnt = 0, xcntdraw = 0;
-	int xdrawpos = 0;
+	INT32 xzoombit;
+	INT32 xoffset;
+	INT32 xcnt = 0, xcntdraw = 0;
+	INT32 xdrawpos = 0;
 
 	wide *= 16;
 	flip &= 1;
@@ -130,7 +65,7 @@ static inline void draw_sprite_line(int wide, unsigned short* dest, unsigned cha
 		if (flip) xoffset = wide - xcnt - 1;
 		else	  xoffset = xcnt;
 
-		unsigned int srcdat = pTempDraw[yoffset + xoffset];
+		UINT32 srcdat = pTempDraw[yoffset + xoffset];
 		xzoombit = (xzoom >> (xcnt & 0x1f)) & 1;
 
 		if (xzoombit == 1 && xgrow == 1)
@@ -179,19 +114,19 @@ static inline void draw_sprite_line(int wide, unsigned short* dest, unsigned cha
 	}
 }
 
-static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, int xpos, int ypos, int flipx, int flipy, int prio)
+static void pgm_draw_sprite_nozoom(INT32 wide, INT32 high, INT32 palt, INT32 boffset, INT32 xpos, INT32 ypos, INT32 flipx, INT32 flipy, INT32 prio)
 {
-	unsigned short *dest = pTempScreen;
-	unsigned char *pdest = SpritePrio;
-	unsigned char * bdata = PGMSPRMaskROM;
-	unsigned char * adata = PGMSPRColROM;
-	int bdatasize = nPGMSPRMaskMaskLen;
-	int adatasize = nPGMSPRColMaskLen;
-	int yoff, xoff;
+	UINT16 *dest = pTempScreen;
+	UINT8 *pdest = SpritePrio;
+	UINT8 * bdata = PGMSPRMaskROM;
+	UINT8 * adata = PGMSPRColROM;
+	INT32 bdatasize = nPGMSPRMaskMaskLen;
+	INT32 adatasize = nPGMSPRColMaskLen;
+	INT32 yoff, xoff;
 
-	unsigned short msk;
+	UINT16 msk;
 
-	unsigned int aoffset = (bdata[(boffset+3) & bdatasize] << 24) | (bdata[(boffset+2) & bdatasize] << 16) | (bdata[(boffset+1) & bdatasize] << 8) | (bdata[boffset & bdatasize]);
+	UINT32 aoffset = (bdata[(boffset+3) & bdatasize] << 24) | (bdata[(boffset+2) & bdatasize] << 16) | (bdata[(boffset+1) & bdatasize] << 8) | (bdata[boffset & bdatasize]);
 	aoffset = (aoffset >> 2) * 3;
 	aoffset &= adatasize;
 
@@ -200,7 +135,9 @@ static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, in
 
 	palt <<= 5;
 
-	for (int ycnt = 0; ycnt < high; ycnt++) {
+	sprite_draw_nozoom_function *drawsprite = nozoom_draw_table[flipx ? 1 : 0];
+
+	for (INT32 ycnt = 0; ycnt < high; ycnt++) {
 		if (flipy) {
 			yoff = ypos + ((high-1) - ycnt);
 			if (yoff < 0) break;
@@ -219,63 +156,20 @@ static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, in
 
 		if (yoff >= 0 && yoff < nScreenHeight && xpos >= 0 && (xpos + wide) < nScreenWidth)
 		{
-			for (int xcnt = 0; xcnt < wide; xcnt+=8)
+			for (INT32 xcnt = 0; xcnt < wide; xcnt+=8)
 			{
-				msk = bdata[boffset & bdatasize] ^ 0xff;	
-				boffset++;
-				aoffset &= adatasize; // not 100% safe, but faster...
-
-				if (msk == 0) { // transparent
-					aoffset += sprmsktab[msk];
-					continue;
-				}
-
 				if (flipx) {
 					xoff = xpos + (wide - xcnt);
-					if (msk == 0xff) { // opaque
-						draw_pixel_nomask( 0);
-						draw_pixel_nomask(-1);
-						draw_pixel_nomask(-2);
-						draw_pixel_nomask(-3);
-						draw_pixel_nomask(-4);
-						draw_pixel_nomask(-5);
-						draw_pixel_nomask(-6);
-						draw_pixel_nomask(-7);
-					} else {
-						draw_pixel( 0, 0x01);
-						draw_pixel(-1, 0x02);
-						draw_pixel(-2, 0x04);
-						draw_pixel(-3, 0x08);
-						draw_pixel(-4, 0x10);
-						draw_pixel(-5, 0x20);
-						draw_pixel(-6, 0x40);
-						draw_pixel(-7, 0x80);
-					}
 				} else {
 					xoff = xpos + xcnt;
-					if (msk == 0xff) { // opaque
-						draw_pixel_nomask( 0);
-						draw_pixel_nomask( 1);
-						draw_pixel_nomask( 2);
-						draw_pixel_nomask( 3);
-						draw_pixel_nomask( 4);
-						draw_pixel_nomask( 5);
-						draw_pixel_nomask( 6);
-						draw_pixel_nomask( 7);
-					} else {
-						draw_pixel( 0, 0x01);
-						draw_pixel( 1, 0x02);
-						draw_pixel( 2, 0x04);
-						draw_pixel( 3, 0x08);
-						draw_pixel( 4, 0x10);
-						draw_pixel( 5, 0x20);
-						draw_pixel( 6, 0x40);
-						draw_pixel( 7, 0x80);
-					}
 				}
+
+				aoffset += drawsprite[bdata[boffset & bdatasize]](dest + xoff, pdest + xoff, PGMSPRColROM + (aoffset & nPGMSPRColMaskLen), palt, prio);
+	
+				boffset++;
 			}
 		} else {
-			for (int xcnt = 0; xcnt < wide; xcnt+=8)
+			for (INT32 xcnt = 0; xcnt < wide; xcnt+=8)
 			{
 				msk = bdata[boffset & bdatasize] ^ 0xff;
 				boffset++;
@@ -295,7 +189,7 @@ static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, in
 						continue;
 					}
 
-					for (int x = 0; x < 8; x++, xoff--)
+					for (INT32 x = 0; x < 8; x++, xoff--)
 					{
 						if (msk & 0x0001)
 						{
@@ -318,7 +212,7 @@ static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, in
 						continue;
 					}
 
-					for (int x = 0; x < 8; x++, xoff++)
+					for (INT32 x = 0; x < 8; x++, xoff++)
 					{
 						if (msk & 0x0001)
 						{
@@ -339,7 +233,7 @@ static void pgm_draw_sprite_nozoom(int wide, int high, int palt, int boffset, in
 	}
 }
 
-static void draw_sprite_new_zoomed(int wide, int high, int xpos, int ypos, int palt, int boffset, int flip, unsigned int xzoom, int xgrow, unsigned int yzoom, int ygrow, int prio )
+static void draw_sprite_new_zoomed(INT32 wide, INT32 high, INT32 xpos, INT32 ypos, INT32 palt, INT32 boffset, INT32 flip, UINT32 xzoom, INT32 xgrow, UINT32 yzoom, INT32 ygrow, INT32 prio )
 {
 	if (!wide) return;
 
@@ -348,13 +242,13 @@ static void draw_sprite_new_zoomed(int wide, int high, int xpos, int ypos, int p
 		return;
 	}
 
-	int ycnt;
-	int ydrawpos;
-	unsigned short *dest;
-	unsigned char *pdest;
-	int yoffset;
-	int ycntdraw;
-	int yzoombit;
+	INT32 ycnt;
+	INT32 ydrawpos;
+	UINT16 *dest;
+	UINT8 *pdest;
+	INT32 yoffset;
+	INT32 ycntdraw;
+	INT32 yzoombit;
 
 	pgm_prepare_sprite(wide, high, palt, boffset);
 
@@ -419,32 +313,32 @@ static void draw_sprite_new_zoomed(int wide, int high, int xpos, int ypos, int p
 
 static void pgm_drawsprites()
 {
-	unsigned short *source = PGMSprBuf;
-	unsigned short *finish = PGMSprBuf + 0xa00/2;
-	unsigned short *zoomtable = &PGMVidReg[0x1000/2];
+	UINT16 *source = PGMSprBuf;
+	UINT16 *finish = PGMSprBuf + 0xa00/2;
+	UINT16 *zoomtable = &PGMVidReg[0x1000/2];
 
 	while (finish > source)
 	{
 		if (source[4] == 0) break; // right?
 
-		int xpos =  source[0] & 0x07ff;
-		int ypos =  source[1] & 0x03ff;
-		int xzom = (source[0] & 0x7800) >> 11;
-		int xgrow= (source[0] & 0x8000) >> 15;
-		int yzom = (source[1] & 0x7800) >> 11;
-		int ygrow= (source[1] & 0x8000) >> 15;
-		int palt = (source[2] & 0x1f00) >> 8;
-		int flip = (source[2] & 0x6000) >> 13;
-		int boff =((source[2] & 0x007f) << 16) | (source[3] & 0xffff);
-		int wide = (source[4] & 0x7e00) >> 9;
-		int prio = (source[2] & 0x0080) >> 7;
-		int high =  source[4] & 0x01ff;
+		INT32 xpos =  BURN_ENDIAN_SWAP_INT16(source[0]) & 0x07ff;
+		INT32 ypos =  BURN_ENDIAN_SWAP_INT16(source[1]) & 0x03ff;
+		INT32 xzom = (BURN_ENDIAN_SWAP_INT16(source[0]) & 0x7800) >> 11;
+		INT32 xgrow= (BURN_ENDIAN_SWAP_INT16(source[0]) & 0x8000) >> 15;
+		INT32 yzom = (BURN_ENDIAN_SWAP_INT16(source[1]) & 0x7800) >> 11;
+		INT32 ygrow= (BURN_ENDIAN_SWAP_INT16(source[1]) & 0x8000) >> 15;
+		INT32 palt = (BURN_ENDIAN_SWAP_INT16(source[2]) & 0x1f00) >> 8;
+		INT32 flip = (BURN_ENDIAN_SWAP_INT16(source[2]) & 0x6000) >> 13;
+		INT32 boff =((BURN_ENDIAN_SWAP_INT16(source[2]) & 0x007f) << 16) | (BURN_ENDIAN_SWAP_INT16(source[3]) & 0xffff);
+		INT32 wide = (BURN_ENDIAN_SWAP_INT16(source[4]) & 0x7e00) >> 9;
+		INT32 prio = (BURN_ENDIAN_SWAP_INT16(source[2]) & 0x0080) >> 7;
+		INT32 high =  BURN_ENDIAN_SWAP_INT16(source[4]) & 0x01ff;
 
 		if (xgrow) xzom = 0x10-xzom;
 		if (ygrow) yzom = 0x10-yzom;
 
-		unsigned int xzoom = (zoomtable[xzom*2]<<16)|zoomtable[xzom*2+1];
-		unsigned int yzoom = (zoomtable[yzom*2]<<16)|zoomtable[yzom*2+1];
+		UINT32 xzoom = (zoomtable[xzom*2]<<16)|zoomtable[xzom*2+1];
+		UINT32 yzoom = (zoomtable[yzom*2]<<16)|zoomtable[yzom*2+1];
 
 		if (xpos > 0x3ff) xpos -=0x800;
 		if (ypos > 0x1ff) ypos -=0x400;
@@ -455,12 +349,12 @@ static void pgm_drawsprites()
 	}
 }
 
-static void copy_sprite_priority(int prio)
+static void copy_sprite_priority(INT32 prio)
 {
-	unsigned short *dest = pTransDraw;
-	unsigned short *src = pTempScreen;
-	unsigned char *pri = SpritePrio;
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++)
+	UINT16 *dest = pTransDraw;
+	UINT16 *src = pTempScreen;
+	UINT8 *pri = SpritePrio;
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++)
 	{
 		if (pri[i] == prio) {
 			dest[i] = src[i];
@@ -470,18 +364,18 @@ static void copy_sprite_priority(int prio)
 
 static void draw_text()
 {
-	unsigned short *vram = (unsigned short*)PGMTxtRAM;
+	UINT16 *vram = (UINT16*)PGMTxtRAM;
 
-	int scrollx = ((signed short)PGMVidReg[0x6000 / 2]) & 0x1ff;
-	int scrolly = ((signed short)PGMVidReg[0x5000 / 2]) & 0x0ff;
+	INT32 scrollx = ((INT16)BURN_ENDIAN_SWAP_INT16(PGMVidReg[0x6000 / 2])) & 0x1ff;
+	INT32 scrolly = ((INT16)BURN_ENDIAN_SWAP_INT16(PGMVidReg[0x5000 / 2])) & 0x0ff;
 
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int code = vram[offs * 2];
+		INT32 code = BURN_ENDIAN_SWAP_INT16(vram[offs * 2]);
 		if (texttrans[code] == 0) continue; // transparent
 
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
 		sx -= scrollx;
 		if (sx < -7) sx += 512;
@@ -490,10 +384,10 @@ static void draw_text()
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int attr  = vram[offs * 2 + 1];
-		int color = ((attr & 0x3e) >> 1) | 0x80;
-		int flipx =  (attr & 0x40);
-		int flipy =  (attr & 0x80);
+		INT32 attr  = BURN_ENDIAN_SWAP_INT16(vram[offs * 2 + 1]);
+		INT32 color = ((attr & 0x3e) >> 1) | 0x80;
+		INT32 flipx =  (attr & 0x40);
+		INT32 flipy =  (attr & 0x80);
 
 		if (sx < 0 || sy < 0 || sx >= nScreenWidth - 8 || sy >= nScreenHeight - 8)
 		{
@@ -564,19 +458,19 @@ static void draw_text()
 
 static void draw_background()
 {
-	unsigned short *vram = (unsigned short*)PGMBgRAM;
-	unsigned short *dst   = pTransDraw;
+	UINT16 *vram = (UINT16*)PGMBgRAM;
+	UINT16 *dst   = pTransDraw;
 
-	unsigned short *rowscroll = PGMRowRAM;
-	int yscroll = (signed short)PGMVidReg[0x2000 / 2];
-	int xscroll = (signed short)PGMVidReg[0x3000 / 2];
+	UINT16 *rowscroll = PGMRowRAM;
+	INT32 yscroll = (INT16)BURN_ENDIAN_SWAP_INT16(PGMVidReg[0x2000 / 2]);
+	INT32 xscroll = (INT16)BURN_ENDIAN_SWAP_INT16(PGMVidReg[0x3000 / 2]);
 
 	// check to see if we need to do line scroll
-	int t = 0;
+	INT32 t = 0;
 	{
-		unsigned short *rs = rowscroll;
-		for (int i = 0; i < 224; i++) {
-			if (rs[0] != rs[i]) {
+		UINT16 *rs = rowscroll;
+		for (INT32 i = 0; i < 224; i++) {
+			if (BURN_ENDIAN_SWAP_INT16(rs[0]) != BURN_ENDIAN_SWAP_INT16(rs[i])) {
 				t = 1;
 				break;
 			}
@@ -589,10 +483,10 @@ static void draw_background()
 		yscroll &= 0x1ff;
 		xscroll &= 0x7ff;
 
-		for (int offs = 0; offs < 64 * 16; offs++)
+		for (INT32 offs = 0; offs < 64 * 16; offs++)
 		{
-			int sx = (offs & 0x3f) << 5;
-			int sy = (offs >> 6) << 5;
+			INT32 sx = (offs & 0x3f) << 5;
+			INT32 sy = (offs >> 6) << 5;
 
 			sx -= xscroll;
 			if (sx < -31) sx += 2048;
@@ -601,12 +495,12 @@ static void draw_background()
 
 			if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-			int code = vram[offs * 2];
+			INT32 code = BURN_ENDIAN_SWAP_INT16(vram[offs * 2]);
 			if (code >= nTileMask) continue;
 			if (tiletrans[code] == 0) continue; // transparent
-			int color = ((vram[offs*2+1] & 0x3e) >> 1) | 0x20;
-			int flipy = vram[offs*2+1] & 0x80;
-			int flipx = vram[offs*2+1] & 0x40;
+			INT32 color = ((BURN_ENDIAN_SWAP_INT16(vram[offs*2+1]) & 0x3e) >> 1) | 0x20;
+			INT32 flipy = BURN_ENDIAN_SWAP_INT16(vram[offs*2+1]) & 0x80;
+			INT32 flipx = BURN_ENDIAN_SWAP_INT16(vram[offs*2+1]) & 0x40;
 
 			if (sx < 0 || sy < 0 || sx >= nScreenWidth - 32 || sy >= nScreenHeight - 32)
 			{
@@ -678,43 +572,43 @@ static void draw_background()
 	}
 
 	// do line scroll (slow)
-	for (int y = 0; y < 224; y++, dst += nScreenWidth)
+	for (INT32 y = 0; y < 224; y++, dst += nScreenWidth)
 	{
-		int scrollx = (xscroll + rowscroll[y]) & 0x7ff;
-		int scrolly = (yscroll + y) & 0x7ff;
+		INT32 scrollx = (xscroll + BURN_ENDIAN_SWAP_INT16(rowscroll[y])) & 0x7ff;
+		INT32 scrolly = (yscroll + y) & 0x7ff;
 
-		for (int x = 0; x < 480; x+=32)
+		for (INT32 x = 0; x < 480; x+=32)
 		{
-			int sx = x - (scrollx & 0x1f);
+			INT32 sx = x - (scrollx & 0x1f);
 			if (sx >= nScreenWidth) break;
 
-			int offs = ((scrolly & 0x1e0) << 2) | (((scrollx + x) & 0x7e0) >> 4);
+			INT32 offs = ((scrolly & 0x1e0) << 2) | (((scrollx + x) & 0x7e0) >> 4);
 
-			int code  = vram[offs];
+			INT32 code  = BURN_ENDIAN_SWAP_INT16(vram[offs]);
 			if (code >= nTileMask) continue;
 			if (tiletrans[code] == 0) continue;
 
-			int attr  = vram[offs + 1];
-			int color = ((attr & 0x3e) << 4) | 0x400;
-			int flipx = ((attr & 0x40) >> 6) * 0x1f;
-			int flipy = ((attr & 0x80) >> 7) * 0x1f;
+			INT32 attr  = BURN_ENDIAN_SWAP_INT16(vram[offs + 1]);
+			INT32 color = ((attr & 0x3e) << 4) | 0x400;
+			INT32 flipx = ((attr & 0x40) >> 6) * 0x1f;
+			INT32 flipy = ((attr & 0x80) >> 7) * 0x1f;
 
-			unsigned char *src = PGMTileROMExp + (code * 1024) + (((scrolly ^ flipy) & 0x1f) << 5);
+			UINT8 *src = PGMTileROMExp + (code * 1024) + (((scrolly ^ flipy) & 0x1f) << 5);
 
 			if (sx >= 0 && sx <= 415) {
-				for (int xx = 0; xx < 32; xx++, sx++) {
-					int pxl = src[xx^flipx];
+				for (INT32 xx = 0; xx < 32; xx++, sx++) {
+					INT32 pxl = src[xx^flipx];
 	
 					if (pxl != 0x1f) {
 						dst[sx] = pxl | color;
 					}
 				}
 			} else {
-				for (int xx = 0; xx < 32; xx++, sx++) {
+				for (INT32 xx = 0; xx < 32; xx++, sx++) {
 					if (sx < 0) continue;
 					if (sx >= nScreenWidth) break;
 	
-					int pxl = src[xx^flipx];
+					INT32 pxl = src[xx^flipx];
 	
 					if (pxl != 0x1f) {
 						dst[sx] = pxl | color;
@@ -725,10 +619,10 @@ static void draw_background()
 	}
 }
 
-int pgmDraw()
+INT32 pgmDraw()
 {
 	if (nPgmPalRecalc) {
-		for (int i = 0; i < 0x1200 / 2; i++) {
+		for (INT32 i = 0; i < 0x1200 / 2; i++) {
 			RamCurPal[i] = CalcCol(PGMPalRAM[i]);
 		}
 		nPgmPalRecalc = 0;
@@ -736,13 +630,13 @@ int pgmDraw()
 
 	{
 		// black / magenta
-		RamCurPal[0x1200/2] = (nBurnLayer & 1) ? 0 : BurnHighCol(0xff, 0, 0xff, 0);
+		RamCurPal[0x1200/2] = (nBurnLayer & 1) ? RamCurPal[0x3ff] : BurnHighCol(0xff, 0, 0xff, 0);
 	}
 
 	// Fill in background color (0x1200/2)
 	// also, clear buffers
 	{
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 			pTransDraw[i] = 0x900;
 			pTempScreen[i] = 0;
 			SpritePrio[i] = 0xff;
@@ -764,22 +658,22 @@ void pgmInitDraw() // preprocess some things...
 {
 	GenericTilesInit();
 
-	pTempDraw = (unsigned short*)malloc(0x400 * 0x200 * 2);
-	SpritePrio = (unsigned char*)malloc(nScreenWidth * nScreenHeight);
-	pTempScreen = (unsigned short*)malloc(nScreenWidth * nScreenHeight * sizeof(short));
+	pTempDraw = (UINT16*)BurnMalloc(0x400 * 0x200 * sizeof(INT16));
+	SpritePrio = (UINT8*)BurnMalloc(nScreenWidth * nScreenHeight);
+	pTempScreen = (UINT16*)BurnMalloc(nScreenWidth * nScreenHeight * sizeof(INT16));
 
 	// Find transparent tiles so we can skip them
 	{
 		nTileMask = ((nPGMTileROMLen / 5) * 8) / 0x400; // also used to set max. tile
 
 		// background tiles
-		tiletrans = (unsigned char*)malloc(nTileMask);
+		tiletrans = (UINT8*)BurnMalloc(nTileMask);
 		memset (tiletrans, 0, nTileMask);
 	
-		for (int i = 0; i < nTileMask << 10; i += 0x400)
+		for (INT32 i = 0; i < nTileMask << 10; i += 0x400)
 		{
-			int k = 0x1f;
-			for (int j = 0; j < 0x400; j++)
+			INT32 k = 0x1f;
+			for (INT32 j = 0; j < 0x400; j++)
 			{
 				if (PGMTileROMExp[i+j] != 0x1f) {
 					tiletrans[i/0x400] = 1;
@@ -790,13 +684,13 @@ void pgmInitDraw() // preprocess some things...
 		}
 
 		// character tiles
-		texttrans = (unsigned char*)malloc(0x10000);
+		texttrans = (UINT8*)BurnMalloc(0x10000);
 		memset (texttrans, 0, 0x10000);
 
-		for (int i = 0; i < 0x400000; i += 0x40)
+		for (INT32 i = 0; i < 0x400000; i += 0x40)
 		{
-			int k = 0xf;
-			for (int j = 0; j < 0x40; j++)
+			INT32 k = 0xf;
+			for (INT32 j = 0; j < 0x40; j++)
 			{
 				if (PGMTileROM[i+j] != 0xf) {
 					texttrans[i/0x40] = 1;
@@ -811,8 +705,8 @@ void pgmInitDraw() // preprocess some things...
 	// gives a good speedup in sprite drawing. ^^
 	{
 		memset (sprmsktab, 0, 0x100);
-		for (int i = 0; i < 0x100; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (INT32 i = 0; i < 0x100; i++) {
+			for (INT32 j = 0; j < 8; j++) {
 				if (i & (1 << j)) {
 					sprmsktab[i]++;
 				}
@@ -824,11 +718,12 @@ void pgmInitDraw() // preprocess some things...
 void pgmExitDraw()
 {
 	nTileMask = 0;
-	free (pTempDraw);
-	free (tiletrans);
-	free (texttrans);
-	free (pTempScreen);
-	free (SpritePrio);
+	
+	BurnFree (pTempDraw);
+	BurnFree (tiletrans);
+	BurnFree (texttrans);
+	BurnFree (pTempScreen);
+	BurnFree (SpritePrio);
 
 	GenericTilesExit();
 }

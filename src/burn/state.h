@@ -5,7 +5,7 @@
 #endif
 
 /* Scan driver data */
-int BurnAreaScan(int nAction, int* pnMin);
+INT32 BurnAreaScan(INT32 nAction, INT32* pnMin);
 
 /* flags to use for nAction */
 #define ACB_READ		 ( 1)
@@ -25,13 +25,13 @@ int BurnAreaScan(int nAction, int* pnMin);
 #define ACB_VOLATILE    (ACB_MEMORY_RAM | ACB_DRIVER_DATA)
 
 /* Structure used for area scanning */
-struct BurnArea { void *Data; unsigned int nLen; int nAddress; char *szName; };
+struct BurnArea { void *Data; UINT32 nLen; INT32 nAddress; char *szName; };
 
 /* Application-defined callback for processing the area */
-extern int (__cdecl *BurnAcb) (struct BurnArea* pba);
+extern INT32 (__cdecl *BurnAcb) (struct BurnArea* pba);
 
 /* Scan a small variable or structure */
-inline static void ScanVar(void* pv, int nSize, char* szName)
+inline static void ScanVar(void* pv, INT32 nSize, char* szName)
 {
 	struct BurnArea ba;
 	memset(&ba, 0, sizeof(ba));
@@ -43,20 +43,22 @@ inline static void ScanVar(void* pv, int nSize, char* szName)
 
 #define SCAN_VAR(x) ScanVar(&x, sizeof(x), #x)
 
+#define SCAN_OFF(x, y, a) { INT32 n = y - x; ScanVar(&n, sizeof(n), #x); if (a & ACB_WRITE) {	x = y + n; } }
+
 #ifdef OSD_CPU_H
  /* wrappers for the MAME savestate functions (used by the FM sound cores) */
  void state_save_register_func_postload(void (*pFunction)());
 
- void state_save_register_INT8(const char* module, int instance, const char* name, INT8* val, unsigned size);
- void state_save_register_UINT8(const char* module, int instance, const char* name, UINT8* val, unsigned size);
- void state_save_register_INT16(const char* module, int instance, const char* name, INT16* val, unsigned size);
- void state_save_register_UINT16(const char* module, int instance, const char* name, UINT16* val, unsigned size);
- void state_save_register_INT32(const char* module, int instance, const char* name, INT32* val, unsigned size);
- void state_save_register_UINT32(const char* module, int instance, const char* name, UINT32* val, unsigned size);
+ void state_save_register_INT8(const char* module, INT32 instance, const char* name, INT8* val, unsigned size);
+ void state_save_register_UINT8(const char* module, INT32 instance, const char* name, UINT8* val, unsigned size);
+ void state_save_register_INT16(const char* module, INT32 instance, const char* name, INT16* val, unsigned size);
+ void state_save_register_UINT16(const char* module, INT32 instance, const char* name, UINT16* val, unsigned size);
+ void state_save_register_INT32(const char* module, INT32 instance, const char* name, INT32* val, unsigned size);
+ void state_save_register_UINT32(const char* module, INT32 instance, const char* name, UINT32* val, unsigned size);
 
- void state_save_register_int(const char* module, int instance, const char* name, int* val);
- void state_save_register_float(const char* module, int instance, const char* name, float* val, unsigned size);
- void state_save_register_double(const char* module, int instance, const char* name, double* val, unsigned size);
+ void state_save_register_int(const char* module, INT32 instance, const char* name, INT32* val);
+ void state_save_register_float(const char* module, INT32 instance, const char* name, float* val, unsigned size);
+ void state_save_register_double(const char* module, INT32 instance, const char* name, double* val, unsigned size);
 #endif
 
 #ifdef __cplusplus

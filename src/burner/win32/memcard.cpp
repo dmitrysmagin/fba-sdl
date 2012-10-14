@@ -85,6 +85,7 @@ static int MemCardRead(TCHAR* szFilename, unsigned char* pData, int nSize)
 			}
 
 			free(pTemp);
+			pTemp = NULL;
 		}
 	}
 
@@ -136,6 +137,7 @@ static int MemCardWrite(TCHAR* szFilename, unsigned char* pData, int nSize)
 			fwrite(pTemp, 1, nSize >> 1, fp);
 
 			free(pTemp);
+			pTemp = NULL;
 		}
 	}
 
@@ -196,7 +198,10 @@ int	MemCardCreate()
 			return 1;
 		}
 
-		free(pCard);
+		if (pCard) {
+			free(pCard);
+			pCard = NULL;
+		}
 	}
 
 	nMemoryCardStatus = 1;

@@ -1,32 +1,32 @@
 #include "toaplan.h"
 
-unsigned char* RomZ80;
-unsigned char* RamZ80;
+UINT8* RomZ80;
+UINT8* RamZ80;
 
 // Used to keep track of emulated CPU cycles
-int nCyclesDone[2], nCyclesTotal[2];
-int nCyclesSegment;
+INT32 nCyclesDone[2], nCyclesTotal[2];
+INT32 nCyclesSegment;
 
-int nToaCyclesScanline;
-int nToaCyclesDisplayStart;
-int nToaCyclesVBlankStart;
+INT32 nToaCyclesScanline;
+INT32 nToaCyclesDisplayStart;
+INT32 nToaCyclesVBlankStart;
 
 // Variables for the graphics drawing
 bool bRotatedScreen;
-unsigned char* pBurnBitmap;
-int nBurnColumn;
-int nBurnRow;
+UINT8* pBurnBitmap;
+INT32 nBurnColumn;
+INT32 nBurnRow;
 
 // This function loads interleaved code ROMs.
 // All even roms should be first, followed by all odd ROMs.
-int ToaLoadCode(unsigned char* pROM, int nStart, int nCount)
+INT32 ToaLoadCode(UINT8* pROM, INT32 nStart, INT32 nCount)
 {
 	nCount >>= 1;
 
-	for (int nOdd = 0; nOdd < 2; nOdd++) {
-		unsigned char* pLoad = pROM + (nOdd ^ 1);			// ^1 for byteswapped
+	for (INT32 nOdd = 0; nOdd < 2; nOdd++) {
+		UINT8* pLoad = pROM + (nOdd ^ 1);			// ^1 for byteswapped
 
-		for (int i = 0; i < nCount; i++) {
+		for (INT32 i = 0; i < nCount; i++) {
 			struct BurnRomInfo ri;
 			// Load these even/odd bytes
 			if (BurnLoadRom(pLoad, nStart + i, 2)) {
@@ -44,12 +44,12 @@ int ToaLoadCode(unsigned char* pROM, int nStart, int nCount)
 }
 
 // This function decodes the tile data for the GP9001 chip in place.
-int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROMSize, bool bSwap)	// bSwap = false
+INT32 ToaLoadGP9001Tiles(UINT8* pDest, INT32 nStart, INT32 nNumFiles, INT32 nROMSize, bool bSwap)	// bSwap = false
 {
-	unsigned char* pTile;
-	int nSwap;
+	UINT8* pTile;
+	INT32 nSwap;
 
-	for (int i = 0; i < (nNumFiles >> 1); i++) {
+	for (INT32 i = 0; i < (nNumFiles >> 1); i++) {
 		BurnLoadRom(pDest + (i * 2 * nROMSize / nNumFiles), nStart + i, 2);
 		BurnLoadRom(pDest + (i * 2 * nROMSize / nNumFiles) + 1, nStart + (nNumFiles >> 1) + i, 2);
 	}
@@ -63,10 +63,10 @@ int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROM
 	}
 
 	for (pTile = pDest; pTile < (pDest + nROMSize); pTile += 4) {
-		unsigned char data[4];
-		for (int n = 0; n < 4; n++) {
-			int m = 7 - (n << 1);
-			unsigned char nPixels = ((pTile[0 ^ nSwap] >> m) & 1) << 0;
+		UINT8 data[4];
+		for (INT32 n = 0; n < 4; n++) {
+			INT32 m = 7 - (n << 1);
+			UINT8 nPixels = ((pTile[0 ^ nSwap] >> m) & 1) << 0;
 			nPixels |= ((pTile[2 ^ nSwap] >> m) & 1) << 1;
 			nPixels |= ((pTile[1 ^ nSwap] >> m) & 1) << 2;
 			nPixels |= ((pTile[3 ^ nSwap] >> m) & 1) << 3;
@@ -78,7 +78,7 @@ int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROM
 			data[n] = nPixels;
 		}
 
-		for (int n = 0; n < 4; n++) {
+		for (INT32 n = 0; n < 4; n++) {
 			pTile[n] = data[n];
 		}
 	}
@@ -86,14 +86,14 @@ int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROM
 }
 
 // This function fills the screen with the first palette entry
-void ToaClearScreen(int PalOffset)
+void ToaClearScreen(INT32 PalOffset)
 {
 	if (*ToaPalette) {
 		switch (nBurnBpp) {
 			case 4: {
-				unsigned int* pClear = (unsigned int*)pBurnDraw + PalOffset;
-				unsigned int nColour = *ToaPalette;
-				for (int i = 0; i < 320 * 240 / 8; i++) {
+				UINT32* pClear = (UINT32*)pBurnDraw;
+				UINT32 nColour = ToaPalette[PalOffset];
+				for (INT32 i = 0; i < 320 * 240 / 8; i++) {
 					*pClear++ = nColour;
 					*pClear++ = nColour;
 					*pClear++ = nColour;
@@ -107,12 +107,13 @@ void ToaClearScreen(int PalOffset)
 			}
 
 			case 3: {
-				unsigned char* pClear = pBurnDraw + PalOffset;
-				unsigned char r = *ToaPalette;
-				unsigned char g = (r >> 8) & 0xFF;
-				unsigned char b = (r >> 16) & 0xFF;
+				UINT8* pClear = pBurnDraw;
+				UINT32 nColour = ToaPalette[PalOffset];
+				UINT8 r = nColour & 0xFF;
+				UINT8 g = (nColour >> 8) & 0xFF;
+				UINT8 b = (nColour >> 16) & 0xFF;
 				r &= 0xFF;
-				for (int i = 0; i < 320 * 240; i++) {
+				for (INT32 i = 0; i < 320 * 240; i++) {
 					*pClear++ = r;
 					*pClear++ = g;
 					*pClear++ = b;
@@ -121,9 +122,9 @@ void ToaClearScreen(int PalOffset)
 			}
 
 			case 2: {
-				unsigned int* pClear = (unsigned int*)pBurnDraw + PalOffset;
-				unsigned int nColour = *ToaPalette | *ToaPalette << 16;
-				for (int i = 0; i < 320 * 240 / 16; i++) {
+				UINT32* pClear = (UINT32*)pBurnDraw;
+				UINT32 nColour = ToaPalette[PalOffset] | ToaPalette[PalOffset] << 16;
+				for (INT32 i = 0; i < 320 * 240 / 16; i++) {
 					*pClear++ = nColour;
 					*pClear++ = nColour;
 					*pClear++ = nColour;

@@ -67,7 +67,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 	if (Msg == WM_CTLCOLORSTATIC) {
 		for (int i = 0; i < 256; i++) {
 			if ((HWND)lParam == PaletteControl[i]) {
-				return (BOOL)PaletteBrush[i];
+				return (INT_PTR)PaletteBrush[i];
 			}
 
 		}

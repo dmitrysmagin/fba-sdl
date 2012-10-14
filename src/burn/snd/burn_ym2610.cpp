@@ -2,35 +2,35 @@
 #include "burn_sound.h"
 #include "burn_ym2610.h"
 
-void (*BurnYM2610Update)(short* pSoundBuf, int nSegmentEnd);
+void (*BurnYM2610Update)(INT16* pSoundBuf, INT32 nSegmentEnd);
 
-static int (*BurnYM2610StreamCallback)(int nSoundRate);
+static INT32 (*BurnYM2610StreamCallback)(INT32 nSoundRate);
 
-static int nBurnYM2610SoundRate;
+static INT32 nBurnYM2610SoundRate;
 
-static short* pBuffer;
-static short* pYM2610Buffer[6];
+static INT16* pBuffer;
+static INT16* pYM2610Buffer[6];
 
-static int* pAYBuffer;
+static INT32* pAYBuffer;
 
-static int nYM2610Position;
-static int nAY8910Position;
+static INT32 nYM2610Position;
+static INT32 nAY8910Position;
 
-static unsigned int nSampleSize;
-static unsigned int nFractionalPosition;
+static UINT32 nSampleSize;
+static INT32 nFractionalPosition;
 
-static int bYM2610AddSignal;
-static int bYM2610MixSound;
+static INT32 bYM2610AddSignal;
+static INT32 bYM2610MixSound;
 
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM2610UpdateDummy(short*, int /* nSegmentEnd */)
+static void YM2610UpdateDummy(INT16*, INT32 /* nSegmentEnd */)
 {
 	return;
 }
 
-static int YM2610StreamCallbackDummy(int /* nSoundRate */)
+static INT32 YM2610StreamCallbackDummy(INT32 /* nSoundRate */)
 {
 	return 0;
 }
@@ -38,8 +38,12 @@ static int YM2610StreamCallbackDummy(int /* nSoundRate */)
 // ----------------------------------------------------------------------------
 // Execute YM2610 for part of a frame
 
-static void AY8910Render(int nSegmentLength)
+static void AY8910Render(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610 AY8910Render called without init\n"));
+#endif
+
 	if (nAY8910Position >= nSegmentLength) {
 		return;
 	}
@@ -57,8 +61,12 @@ static void AY8910Render(int nSegmentLength)
 	nAY8910Position += nSegmentLength;
 }
 
-static void YM2610Render(int nSegmentLength)
+static void YM2610Render(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("YM2610Render called without init\n"));
+#endif
+
 	if (nYM2610Position >= nSegmentLength) {
 		return;
 	}
@@ -78,10 +86,14 @@ static void YM2610Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void YM2610UpdateResample(short* pSoundBuf, int nSegmentEnd)
+static void YM2610UpdateResample(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
-	int nSamplesNeeded = nSegmentEnd * nBurnYM2610SoundRate / nBurnSoundRate + 1;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("YM2610UpdateResample called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
+	INT32 nSamplesNeeded = nSegmentEnd * nBurnYM2610SoundRate / nBurnSoundRate + 1;
 
 //	bprintf(PRINT_NORMAL, _T("    YM2610 update        -> %6i\n", nSegmentLength));
 
@@ -107,12 +119,12 @@ static void YM2610UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	pYM2610Buffer[4] = pBuffer + 4 * 4096 + 4;
 	pYM2610Buffer[5] = pBuffer + 5 * 4096 + 4;
 
-	for (int i = (nFractionalPosition >> 16) - 4; i < nSamplesNeeded; i++) {
-		pYM2610Buffer[5][i] = (((int)pYM2610Buffer[2][i] + pYM2610Buffer[3][i] + pYM2610Buffer[4][i]) * (4096 * 60 / 100)) >> 12;
+	for (INT32 i = (nFractionalPosition >> 16) - 4; i < nSamplesNeeded; i++) {
+		pYM2610Buffer[5][i] = (((INT32)pYM2610Buffer[2][i] + pYM2610Buffer[3][i] + pYM2610Buffer[4][i]) * (4096 * 60 / 100)) >> 12;
 	}
 
-	for (int i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
-		int nSample;
+	for (INT32 i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
+		INT32 nSample;
 
 #define CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))
 
@@ -161,11 +173,11 @@ static void YM2610UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
+		INT32 nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
 
 //		bprintf(PRINT_NORMAL, _T("   %6i rendered, %i extra, %i <- %i\n"), nSamplesNeeded, nExtraSamples, nExtraSamples, (nFractionalPosition >> 16) + nExtraSamples - 1);
 
-		for (int i = -4; i < nExtraSamples; i++) {
+		for (INT32 i = -4; i < nExtraSamples; i++) {
 			pYM2610Buffer[0][i] = pYM2610Buffer[0][(nFractionalPosition >> 16) + i];
 			pYM2610Buffer[1][i] = pYM2610Buffer[1][(nFractionalPosition >> 16) + i];
 			pYM2610Buffer[2][i] = pYM2610Buffer[2][(nFractionalPosition >> 16) + i];
@@ -182,9 +194,13 @@ static void YM2610UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 }
 
-static void YM2610UpdateNormal(short* pSoundBuf, int nSegmentEnd)
+static void YM2610UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("YM2610UpdateNormal called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    YM2610 update        -> %6i\n", nSegmentLength));
 
@@ -210,14 +226,14 @@ static void YM2610UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 
 	if (bBurnUseMMX) {
 #if defined BUILD_X86_ASM
-		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
+		for (INT32 n = nFractionalPosition; n < nSegmentLength; n++) {
 			pAYBuffer[n] = pYM2610Buffer[2][n] + pYM2610Buffer[3][n] + pYM2610Buffer[4][n];
 		}
 		BurnSoundCopy_FM_OPN_A(pYM2610Buffer[0], pAYBuffer, pSoundBuf, nSegmentLength, 65536 * 60 / 100, 65536 * 60 / 100);
 #endif
 	} else {
-		for (int n = nFractionalPosition; n < nSegmentLength; n++) {
-			int nAYSample, nTotalSample;
+		for (INT32 n = nFractionalPosition; n < nSegmentLength; n++) {
+			INT32 nAYSample, nTotalSample;
 
 			nAYSample  = pYM2610Buffer[2][n];
 			nAYSample += pYM2610Buffer[3][n];
@@ -265,9 +281,9 @@ static void YM2610UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 	nFractionalPosition = nSegmentLength;
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSegmentEnd - nBurnSoundLen;
+		INT32 nExtraSamples = nSegmentEnd - nBurnSoundLen;
 
-		for (int i = 0; i < nExtraSamples; i++) {
+		for (INT32 i = 0; i < nExtraSamples; i++) {
 			pYM2610Buffer[0][i] = pYM2610Buffer[0][nBurnSoundLen + i];
 			pYM2610Buffer[1][i] = pYM2610Buffer[1][nBurnSoundLen + i];
 			pYM2610Buffer[2][i] = pYM2610Buffer[2][nBurnSoundLen + i];
@@ -289,11 +305,19 @@ static void YM2610UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 
 void BurnYM2610UpdateRequest()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("YM2610UpdateRequest called without init\n"));
+#endif
+
 	YM2610Render(BurnYM2610StreamCallback(nBurnYM2610SoundRate));
 }
 
 static void BurnAY8910UpdateRequest()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610 BurnAY8910UpdateRequest called without init\n"));
+#endif
+
 	AY8910Render(BurnYM2610StreamCallback(nBurnYM2610SoundRate));
 }
 
@@ -302,6 +326,10 @@ static void BurnAY8910UpdateRequest()
 
 void BurnYM2610Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610Reset called without init\n"));
+#endif
+
 	BurnTimerReset();
 
 	YM2610ResetChip(0);
@@ -309,20 +337,43 @@ void BurnYM2610Reset()
 
 void BurnYM2610Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610Exit called without init\n"));
+#endif
+
 	YM2610Shutdown();
 	AY8910Exit(0);
 
 	BurnTimerExit();
 
-	free(pBuffer);
-	free(pAYBuffer);
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
+	if (pAYBuffer) {
+		free(pAYBuffer);
+		pAYBuffer = NULL;
+	}
 	
 	bYM2610AddSignal = 0;
 	bYM2610MixSound = 0;
+	
+	DebugSnd_YM2610Initted = 0;
 }
 
-int BurnYM2610Init(int nClockFrequency, unsigned char* YM2610ADPCMAROM, int* nYM2610ADPCMASize, unsigned char* YM2610ADPCMBROM, int* nYM2610ADPCMBSize, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)(), int bAddSignal)
+void BurnYM2610MapADPCMROM(UINT8* YM2610ADPCMAROM, INT32 nYM2610ADPCMASize, UINT8* YM2610ADPCMBROM, INT32 nYM2610ADPCMBSize)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610MapADPCMROM called without init\n"));
+#endif
+
+	YM2610SetRom(0, YM2610ADPCMAROM, nYM2610ADPCMASize, YM2610ADPCMBROM, nYM2610ADPCMBSize);
+}
+
+INT32 BurnYM2610Init(INT32 nClockFrequency, UINT8* YM2610ADPCMAROM, INT32* nYM2610ADPCMASize, UINT8* YM2610ADPCMBROM, INT32* nYM2610ADPCMBSize, FM_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), double (*GetTimeCallback)(), INT32 bAddSignal)
+{
+	DebugSnd_YM2610Initted = 1;
+	
 	BurnTimerInit(&YM2610TimerOver, GetTimeCallback);
 
 	if (nBurnSoundRate <= 0) {
@@ -347,7 +398,7 @@ int BurnYM2610Init(int nClockFrequency, unsigned char* YM2610ADPCMAROM, int* nYM
 
 		BurnYM2610Update = YM2610UpdateResample;
 
-		nSampleSize = (unsigned int)nBurnYM2610SoundRate * (1 << 16) / nBurnSoundRate;
+		nSampleSize = (UINT32)nBurnYM2610SoundRate * (1 << 16) / nBurnSoundRate;
 	} else {
 		nBurnYM2610SoundRate = nBurnSoundRate;
 
@@ -357,11 +408,11 @@ int BurnYM2610Init(int nClockFrequency, unsigned char* YM2610ADPCMAROM, int* nYM
 	AY8910InitYM(0, nClockFrequency, nBurnYM2610SoundRate, NULL, NULL, NULL, NULL, BurnAY8910UpdateRequest);
 	YM2610Init(1, nClockFrequency, nBurnYM2610SoundRate, (void**)(&YM2610ADPCMAROM), nYM2610ADPCMASize, (void**)(&YM2610ADPCMBROM), nYM2610ADPCMBSize, &BurnOPNTimerCallback, IRQCallback);
 
-	pBuffer = (short*)malloc(4096 * 6 * sizeof(short));
-	memset(pBuffer, 0, 4096 * 6 * sizeof(short));
+	pBuffer = (INT16*)malloc(4096 * 6 * sizeof(INT16));
+	memset(pBuffer, 0, 4096 * 6 * sizeof(INT16));
 
-	pAYBuffer = (int*)malloc(4096 * sizeof(int));
-	memset(pAYBuffer, 0, 4096 * sizeof(int));
+	pAYBuffer = (INT32*)malloc(4096 * sizeof(INT32));
+	memset(pAYBuffer, 0, 4096 * sizeof(INT32));
 
 	nYM2610Position = 0;
 	nAY8910Position = 0;
@@ -372,13 +423,21 @@ int BurnYM2610Init(int nClockFrequency, unsigned char* YM2610ADPCMAROM, int* nYM
 	return 0;
 }
 
-void BurnYM2610SetSoundMixMode(int Mix)
+void BurnYM2610SetSoundMixMode(INT32 Mix)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610SetSoundMixMode called without init\n"));
+#endif
+
 	bYM2610MixSound = Mix;
 }
 
-void BurnYM2610Scan(int nAction, int* pnMin)
+void BurnYM2610Scan(INT32 nAction, INT32* pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2610Initted) bprintf(PRINT_ERROR, _T("BurnYM2610Scan called without init\n"));
+#endif
+
 	BurnTimerScan(nAction, pnMin);
 	AY8910Scan(nAction, pnMin);
 

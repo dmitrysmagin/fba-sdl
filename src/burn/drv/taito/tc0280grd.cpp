@@ -3,26 +3,26 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *TC0280GRDRam;
+UINT8 *TC0280GRDRam;
 static UINT16 TC0280GRDCtrl[8];
-int TC0280GRDBaseColour;
-static int TC0280GRDxMultiply;
-static int TC0280GRDXOffset;
-static int TC0280GRDYOffset;
-static unsigned char *pTC0280GRDSrc = NULL;
+INT32 TC0280GRDBaseColour;
+static INT32 TC0280GRDxMultiply;
+static INT32 TC0280GRDXOffset;
+static INT32 TC0280GRDYOffset;
+static UINT8 *pTC0280GRDSrc = NULL;
 
-static unsigned short *pRozTileMapData = NULL;
+static UINT16 *pRozTileMapData = NULL;
 
 #define PLOTPIXEL_MASK(x, mc, po) if (pTileData[x] != mc) {pPixel[x] = nPalette | pTileData[x] | po;}
 
-static void RenderTile_Mask(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_Mask(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 	
-	unsigned short* pPixel = pDestDraw + (StartY * 512) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * 512) + StartX;
 
-	for (int y = 0; y < 8; y++, pPixel += 512, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += 512, pTileData += 8) {
 		PLOTPIXEL_MASK( 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 2, nMaskColour, nPaletteOffset);
@@ -36,18 +36,18 @@ static void RenderTile_Mask(unsigned short* pDestDraw, int nTileNumber, int Star
 
 #undef PLOTPIXEL_MASK
 
-static void RozRender(UINT32 xStart, UINT32 yStart, int xxInc, int xyInc, int yxInc, int yyInc)
+static void RozRender(UINT32 xStart, UINT32 yStart, INT32 xxInc, INT32 xyInc, INT32 yxInc, INT32 yyInc)
 {
 	UINT32 cx;
 	UINT32 cy;
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Pix;
-	unsigned short *Dest = NULL;	
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Pix;
+	UINT16 *Dest = NULL;	
 	UINT16 *VideoRam = (UINT16*)TC0280GRDRam;
 	
 	if (xxInc == (1 << 16) && xyInc == 0 && yxInc == 0 && yyInc == (1 << 16)) {
 		for (my = 0; my < 64; my++) {
 			for (mx = 0; mx < 64; mx++) {
-				Attr = VideoRam[TileIndex];
+				Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex]);
 				Code = (Attr & 0x3fff);
 				Colour = ((Attr & 0xc000) >> 14) + TC0280GRDBaseColour;
 			
@@ -73,11 +73,11 @@ static void RozRender(UINT32 xStart, UINT32 yStart, int xxInc, int xyInc, int yx
 		return;
 	}
 	
-	memset(pRozTileMapData, 0, 512 * 512 * sizeof(unsigned short));
+	memset(pRozTileMapData, 0, 512 * 512 * sizeof(UINT16));
 	
 	for (my = 0; my < 64; my++) {
 		for (mx = 0; mx < 64; mx++) {
-			Attr = VideoRam[TileIndex];
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex]);
 			Code = (Attr & 0x3fff);
 			Colour = ((Attr & 0xc000) >> 14) + TC0280GRDBaseColour;
 			
@@ -120,7 +120,7 @@ static void RozRender(UINT32 xStart, UINT32 yStart, int xxInc, int xyInc, int yx
 void TC0280GRDRenderLayer()
 {
 	UINT32 xStart, yStart;
-	int xxInc, xyInc, yxInc, yyInc;
+	INT32 xxInc, xyInc, yxInc, yyInc;
 
 	xStart = ((TC0280GRDCtrl[0] & 0xff) << 16) + TC0280GRDCtrl[1];
 	if (xStart & 0x800000) xStart -= 0x1000000;
@@ -140,7 +140,7 @@ void TC0280GRDRenderLayer()
 	RozRender(xStart << 4, yStart << 4, xxInc << 4, xyInc << 4, yxInc << 4, yyInc << 4);
 }
 
-void TC0280GRDCtrlWordWrite(unsigned int Offset, UINT16 Data)
+void TC0280GRDCtrlWordWrite(UINT32 Offset, UINT16 Data)
 {
 	TC0280GRDCtrl[Offset] = Data;
 }
@@ -152,13 +152,13 @@ void TC0280GRDReset()
 	TC0280GRDBaseColour = 0;
 }
 
-void TC0280GRDInit(int xOffs, int yOffs, unsigned char *pSrc)
+void TC0280GRDInit(INT32 xOffs, INT32 yOffs, UINT8 *pSrc)
 {
-	TC0280GRDRam = (unsigned char*)malloc(0x2000);
+	TC0280GRDRam = (UINT8*)BurnMalloc(0x2000);
 	memset(TC0280GRDRam, 0, 0x2000);
 	
-	pRozTileMapData = (unsigned short*)malloc(512 * 512 * sizeof(unsigned short));
-	memset(pRozTileMapData, 0, 512 * 512 * sizeof(unsigned short));
+	pRozTileMapData = (UINT16*)BurnMalloc(512 * 512 * sizeof(UINT16));
+	memset(pRozTileMapData, 0, 512 * 512 * sizeof(UINT16));
 	
 	TC0280GRDXOffset = xOffs;
 	TC0280GRDYOffset = yOffs;
@@ -170,7 +170,7 @@ void TC0280GRDInit(int xOffs, int yOffs, unsigned char *pSrc)
 	TaitoIC_TC0280GRDInUse = 1;
 }
 
-void TC0430GRWInit(int xOffs, int yOffs, unsigned char *pSrc)
+void TC0430GRWInit(INT32 xOffs, INT32 yOffs, UINT8 *pSrc)
 {
 	TC0280GRDInit(xOffs, yOffs, pSrc);
 	
@@ -182,11 +182,8 @@ void TC0430GRWInit(int xOffs, int yOffs, unsigned char *pSrc)
 
 void TC0280GRDExit()
 {
-	free(TC0280GRDRam);
-	TC0280GRDRam = NULL;
-	
-	free(pRozTileMapData);
-	pRozTileMapData = NULL;
+	BurnFree(TC0280GRDRam);
+	BurnFree(pRozTileMapData);
 	
 	memset(TC0280GRDCtrl, 0, 8);
 	
@@ -199,7 +196,7 @@ void TC0280GRDExit()
 	pTC0280GRDSrc = NULL;
 }
 
-void TC0280GRDScan(int nAction)
+void TC0280GRDScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

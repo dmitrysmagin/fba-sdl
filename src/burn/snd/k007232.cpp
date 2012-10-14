@@ -5,9 +5,9 @@
 #define KDAC_A_PCM_MAX	(2)
 #define BASE_SHIFT	(12)
 
-typedef void (*K07232_PortWrite)(int v);
+typedef void (*K07232_PortWrite)(INT32 v);
 
-static unsigned int fncode[0x200];
+static UINT32 fncode[0x200];
 
 struct kdacApcm
 {
@@ -16,11 +16,11 @@ struct kdacApcm
 	UINT32			start[KDAC_A_PCM_MAX];
 	UINT32			step[KDAC_A_PCM_MAX];
 	UINT32			bank[KDAC_A_PCM_MAX];
-	int			play[KDAC_A_PCM_MAX];
+	INT32			play[KDAC_A_PCM_MAX];
 
 	UINT8 			wreg[0x10];
 	
-	int			UpdateStep;
+	INT32			UpdateStep;
 };
 
 // stuff that doesn't need to be saved..
@@ -36,23 +36,30 @@ static struct kdacApcm Chips[2];
 static struct kdacPointers Pointers[2];
 static struct kdacApcm *Chip = NULL;
 static struct kdacPointers *Ptr = NULL;
-static int *Left = NULL;
-static int *Right = NULL;
+static INT32 *Left = NULL;
+static INT32 *Right = NULL;
 
-void K007232Update(int chip, short* pSoundBuf, int nLength)
+static INT32 nNumChips = 0;
+
+void K007232Update(INT32 chip, INT16* pSoundBuf, INT32 nLength)
 {
-	int i;
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232Update called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232Update called with invalid chip %x\n"), chip);
+#endif
+
+	INT32 i;
 
 	Chip = &Chips[chip];
 	Ptr  = &Pointers[chip];
 
-	memset(Left, 0, nLength * sizeof(int));
-	memset(Right, 0, nLength * sizeof(int));
+	memset(Left, 0, nLength * sizeof(INT32));
+	memset(Right, 0, nLength * sizeof(INT32));
 
 	for (i = 0; i < KDAC_A_PCM_MAX; i++) {
 		if (Chip->play[i]) {
-			int volA,volB,j,out;
-			unsigned int addr, old_addr;
+			INT32 volA,volB,j,out;
+			UINT32 addr, old_addr;
 
 			addr = Chip->start[i] + ((Chip->addr[i]>>BASE_SHIFT)&0x000fffff);
 			volA = Chip->vol[i][0] * 2;
@@ -64,7 +71,7 @@ void K007232Update(int chip, short* pSoundBuf, int nLength)
 				while (old_addr <= addr) {
 					if( (Ptr->pcmbuf[i][old_addr] & 0x80) || old_addr >= Ptr->pcmlimit ) {
 						if( Chip->wreg[0x0d]&(1<<i) ) {
-							Chip->start[i] = ((((unsigned int)Chip->wreg[i*0x06 + 0x04]<<16)&0x00010000) | (((unsigned int)Chip->wreg[i*0x06 + 0x03]<< 8)&0x0000ff00) | (((unsigned int)Chip->wreg[i*0x06 + 0x02]    )&0x000000ff) | Chip->bank[i]);
+							Chip->start[i] = ((((UINT32)Chip->wreg[i*0x06 + 0x04]<<16)&0x00010000) | (((UINT32)Chip->wreg[i*0x06 + 0x03]<< 8)&0x0000ff00) | (((UINT32)Chip->wreg[i*0x06 + 0x02]    )&0x000000ff) | Chip->bank[i]);
 							addr = Chip->start[i];
 							Chip->addr[i] = 0;
 							old_addr = addr;
@@ -102,9 +109,14 @@ void K007232Update(int chip, short* pSoundBuf, int nLength)
 	}
 }
 
-unsigned char K007232ReadReg(int chip, int r)
+UINT8 K007232ReadReg(INT32 chip, INT32 r)
 {
-	int  ch = 0;
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232ReadReg called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232ReadReg called with invalid chip %x\n"), chip);
+#endif
+
+	INT32  ch = 0;
 
 	Chip = &Chips[chip];
 	Ptr  = &Pointers[chip];
@@ -113,7 +125,7 @@ unsigned char K007232ReadReg(int chip, int r)
 		ch = r / 0x0006;
 		r  = ch * 0x0006;
 
-		Chip->start[ch] = ((((unsigned int)Chip->wreg[r + 0x04]<<16)&0x00010000) | (((unsigned int)Chip->wreg[r + 0x03]<< 8)&0x0000ff00) | (((unsigned int)Chip->wreg[r + 0x02]    )&0x000000ff) | Chip->bank[ch]);
+		Chip->start[ch] = ((((UINT32)Chip->wreg[r + 0x04]<<16)&0x00010000) | (((UINT32)Chip->wreg[r + 0x03]<< 8)&0x0000ff00) | (((UINT32)Chip->wreg[r + 0x02]    )&0x000000ff) | Chip->bank[ch]);
 
 		if (Chip->start[ch] <  Ptr->pcmlimit) {
 			Chip->play[ch] = 1;
@@ -124,9 +136,14 @@ unsigned char K007232ReadReg(int chip, int r)
 	return 0;
 }
 
-void K007232WriteReg(int chip, int r, int v)
+void K007232WriteReg(INT32 chip, INT32 r, INT32 v)
 {
-	int Data;
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232WriteReg called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232WriteReg called with invalid chip %x\n"), chip);
+#endif
+
+	INT32 Data;
 
 	Chip = &Chips[chip];
 	Ptr  = &Pointers[chip];
@@ -142,7 +159,7 @@ void K007232WriteReg(int chip, int r, int v)
     		return;
   	}
   	else {
-		int RegPort;
+		INT32 RegPort;
 
 		RegPort = 0;
 		if (r >= 0x06) {
@@ -153,7 +170,7 @@ void K007232WriteReg(int chip, int r, int v)
 		switch (r) {
 			case 0x00:
 			case 0x01:
-				Data = (((((unsigned int)Chip->wreg[RegPort*0x06 + 0x01])<<8)&0x0100) | (((unsigned int)Chip->wreg[RegPort*0x06 + 0x00])&0x00ff));
+				Data = (((((UINT32)Chip->wreg[RegPort*0x06 + 0x01])<<8)&0x0100) | (((UINT32)Chip->wreg[RegPort*0x06 + 0x00])&0x00ff));
 				Chip->step[RegPort] = fncode[Data];
 				break;
 
@@ -163,7 +180,7 @@ void K007232WriteReg(int chip, int r, int v)
 				break;
     
 			case 0x05:
-				Chip->start[RegPort] = ((((unsigned int)Chip->wreg[RegPort*0x06 + 0x04]<<16)&0x00010000) | (((unsigned int)Chip->wreg[RegPort*0x06 + 0x03]<< 8)&0x0000ff00) | (((unsigned int)Chip->wreg[RegPort*0x06 + 0x02]    )&0x000000ff) | Chip->bank[RegPort]);
+				Chip->start[RegPort] = ((((UINT32)Chip->wreg[RegPort*0x06 + 0x04]<<16)&0x00010000) | (((UINT32)Chip->wreg[RegPort*0x06 + 0x03]<< 8)&0x0000ff00) | (((UINT32)Chip->wreg[RegPort*0x06 + 0x02]    )&0x000000ff) | Chip->bank[RegPort]);
 				if (Chip->start[RegPort] < Ptr->pcmlimit ) {
 					Chip->play[RegPort] = 1;
 					Chip->addr[RegPort] = 0;
@@ -173,8 +190,13 @@ void K007232WriteReg(int chip, int r, int v)
   	}
 }
 
-void K007232SetPortWriteHandler(int chip, void (*Handler)(int v))
+void K007232SetPortWriteHandler(INT32 chip, void (*Handler)(INT32 v))
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232SetPortWriteHandler called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232SetPortWriteHandler called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = &Chips[chip];
 	Ptr  = &Pointers[chip];
 
@@ -183,11 +205,13 @@ void K007232SetPortWriteHandler(int chip, void (*Handler)(int v))
 
 static void KDAC_A_make_fncode()
 {
-	for (int i = 0; i < 0x200; i++) fncode[i] = (32 << BASE_SHIFT) / (0x200 - i);
+	for (INT32 i = 0; i < 0x200; i++) fncode[i] = (32 << BASE_SHIFT) / (0x200 - i);
 }
 
-void K007232Init(int chip, int clock, UINT8 *pPCMData, int PCMDataSize)
+void K007232Init(INT32 chip, INT32 clock, UINT8 *pPCMData, INT32 PCMDataSize)
 {
+	DebugSnd_K007232Initted = 1;
+	
 	Chip = &Chips[chip];
 	Ptr  = &Pointers[chip];
 
@@ -195,11 +219,11 @@ void K007232Init(int chip, int clock, UINT8 *pPCMData, int PCMDataSize)
 	memset(Ptr,	0, sizeof(kdacPointers));
 
 	if (Left == NULL) {
-		Left = (int*)malloc(nBurnSoundLen * sizeof(int));
+		Left = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
 	}
 
 	if (Right == NULL) {
-		Right = (int*)malloc(nBurnSoundLen * sizeof(int));
+		Right = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
 	}
 
 	Ptr->pcmbuf[0] = pPCMData;
@@ -208,7 +232,7 @@ void K007232Init(int chip, int clock, UINT8 *pPCMData, int PCMDataSize)
 
 	Ptr->clock = clock;
 
-	for (int i = 0; i < KDAC_A_PCM_MAX; i++) {
+	for (INT32 i = 0; i < KDAC_A_PCM_MAX; i++) {
 		Chip->start[i] = 0;
 		Chip->step[i] = 0;
 		Chip->play[i] = 0;
@@ -219,29 +243,42 @@ void K007232Init(int chip, int clock, UINT8 *pPCMData, int PCMDataSize)
 	Chip->vol[1][0] = 0;
 	Chip->vol[1][1] = 255;
 
-	for (int i = 0; i < 0x10; i++)  Chip->wreg[i] = 0;
+	for (INT32 i = 0; i < 0x10; i++)  Chip->wreg[i] = 0;
 
 	KDAC_A_make_fncode();
 	
 	double Rate = (double)clock / 128 / nBurnSoundRate;
-	Chip->UpdateStep = (int)(Rate * 0x10000);
+	Chip->UpdateStep = (INT32)(Rate * 0x10000);
+	
+	nNumChips = chip;
 }
 
 void K007232Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232Exit called without init\n"));
+#endif
+
 	if (Left) {
 		free(Left);
-	}
-	Left = NULL;
+		Left = NULL;
+	}	
 
 	if (Right) {
 		free(Right);
+		Right = NULL;
 	}
-	Right = NULL;
+	
+	DebugSnd_K007232Initted = 0;
+	nNumChips = 0;
 }
 
-int K007232Scan(int nAction, int *pnMin)
+INT32 K007232Scan(INT32 nAction, INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232Scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 	char szName[32];
 
@@ -263,16 +300,26 @@ int K007232Scan(int nAction, int *pnMin)
 	return 0;
 }
 
-void K007232SetVolume(int chip, int channel,int volumeA,int volumeB)
+void K007232SetVolume(INT32 chip, INT32 channel,INT32 volumeA,INT32 volumeB)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232SetVolume called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232SetVolume called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = &Chips[chip];
 
 	Chip->vol[channel][0] = volumeA;
 	Chip->vol[channel][1] = volumeB;
 }
 
-void k007232_set_bank(int chip, int chABank, int chBBank )
+void k007232_set_bank(INT32 chip, INT32 chABank, INT32 chBBank )
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("k007232_set_bank called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("k007232_set_bank called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = &Chips[chip];
 
 	Chip->bank[0] = chABank<<17;

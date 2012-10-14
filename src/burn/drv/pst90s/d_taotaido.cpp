@@ -2,49 +2,51 @@
 // Based on MAME driver by David Haywood
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2610.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvSprRAM0;
-static unsigned char *DrvSprRAM1;
-static unsigned char *DrvSpr0Buf0;
-static unsigned char *DrvSpr1Buf0;
-static unsigned char *DrvSpr0Buf1;
-static unsigned char *DrvSpr1Buf1;
-static unsigned char *DrvScrollRAM;
-static unsigned char *taotaido_tileregs;
-static unsigned char *taotaido_spritebank;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvSprRAM0;
+static UINT8 *DrvSprRAM1;
+static UINT8 *DrvSpr0Buf0;
+static UINT8 *DrvSpr1Buf0;
+static UINT8 *DrvSpr0Buf1;
+static UINT8 *DrvSpr1Buf1;
+static UINT8 *DrvScrollRAM;
+static UINT8 *taotaido_tileregs;
+static UINT8 *taotaido_spritebank;
+static UINT32 *DrvPalette;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvDip[4];
-static unsigned short DrvInps[5];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvDip[4];
+static UINT16 DrvInps[5];
+static UINT8 DrvReset;
 
-static unsigned char *nDrvZ80Bank;
-static unsigned char *pending_command;
-static unsigned char *soundlatch;
+static UINT8 *nDrvZ80Bank;
+static UINT8 *pending_command;
+static UINT8 *soundlatch;
 
-static int nCyclesTotal[2];
+static INT32 nCyclesTotal[2];
 
 static struct BurnInputInfo TaotaidoInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 0,	"p1 coin"	},
@@ -73,7 +75,7 @@ static struct BurnInputInfo TaotaidoInputList[] = {
 	{"Dip A",		BIT_DIPSWITCH,	DrvDip + 0,	"dip"		},
 	{"Dip B",		BIT_DIPSWITCH,	DrvDip + 1,	"dip"		},
 	{"Dip C",		BIT_DIPSWITCH,	DrvDip + 2,	"dip"		},
-	{"Region",	BIT_DIPSWITCH,	DrvDip + 3,	"dip"		},
+	{"Region",		BIT_DIPSWITCH,	DrvDip + 3,	"dip"		},
 };
 
 STDINPUTINFO(Taotaido)
@@ -85,10 +87,10 @@ static struct BurnInputInfo TaotaidoaInputList[] = {
 	{"P1 Down",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 down"	},
 	{"P1 Left",		BIT_DIGITAL,	DrvJoy1 + 2,	"p1 left"	},
 	{"P1 Right",		BIT_DIGITAL,	DrvJoy1 + 3,	"p1 right"	},
-	{"P1 Weak Punch",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"	},
+	{"P1 Weak Punch",	BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"	},
 	{"P1 Medium Punch",	BIT_DIGITAL,	DrvJoy1 + 5,	"p1 fire 2"	},
 	{"P1 Strong Punch",	BIT_DIGITAL,	DrvJoy1 + 6,	"p1 fire 3"	},
-	{"P1 Weak Kick",		BIT_DIGITAL,	DrvJoy4 + 0,	"p1 fire 4"	},
+	{"P1 Weak Kick",	BIT_DIGITAL,	DrvJoy4 + 0,	"p1 fire 4"	},
 	{"P1 Medium Kick",	BIT_DIGITAL,	DrvJoy4 + 1,	"p1 fire 5"	},
 	{"P1 Strong Kick",	BIT_DIGITAL,	DrvJoy4 + 2,	"p1 fire 6"	},
 
@@ -98,10 +100,10 @@ static struct BurnInputInfo TaotaidoaInputList[] = {
 	{"P2 Down",		BIT_DIGITAL,	DrvJoy2 + 1,	"p2 down"	},
 	{"P2 Left",		BIT_DIGITAL,	DrvJoy2 + 2,	"p2 left"	},
 	{"P2 Right",		BIT_DIGITAL,	DrvJoy2 + 3,	"p2 right"	},
-	{"P2 Weak Punch",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"	},
+	{"P2 Weak Punch",	BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"	},
 	{"P2 Medium Punch",	BIT_DIGITAL,	DrvJoy2 + 5,	"p2 fire 2"	},
 	{"P2 Strong Punch",	BIT_DIGITAL,	DrvJoy2 + 6,	"p2 fire 3"	},
-	{"P2 Weak Kick",		BIT_DIGITAL,	DrvJoy5 + 0,	"p2 fire 4"	},
+	{"P2 Weak Kick",	BIT_DIGITAL,	DrvJoy5 + 0,	"p2 fire 4"	},
 	{"P2 Medium Kick",	BIT_DIGITAL,	DrvJoy5 + 1,	"p2 fire 5"	},
 	{"P2 Strong Kick",	BIT_DIGITAL,	DrvJoy5 + 2,	"p2 fire 6"	},
 
@@ -111,7 +113,7 @@ static struct BurnInputInfo TaotaidoaInputList[] = {
 	{"Dip A",		BIT_DIPSWITCH,	DrvDip + 0,	"dip"		},
 	{"Dip B",		BIT_DIPSWITCH,	DrvDip + 1,	"dip"		},
 	{"Dip C",		BIT_DIPSWITCH,	DrvDip + 2,	"dip"		},
-	{"Region",	BIT_DIPSWITCH,	DrvDip + 3,	"dip"		},
+	{"Region",		BIT_DIPSWITCH,	DrvDip + 3,	"dip"		},
 };
 
 STDINPUTINFO(Taotaidoa)
@@ -342,10 +344,10 @@ static struct BurnDIPInfo TaotaidoaDIPList[]=
 
 STDDIPINFO(Taotaidoa)
 
-static void palette_write(int offset)
+static void palette_write(INT32 offset)
 {
-	unsigned char r, g, b;
-	unsigned short data = *((unsigned short*)(DrvPalRAM + offset));
+	UINT8 r, g, b;
+	UINT16 data = *((UINT16*)(DrvPalRAM + offset));
 
 	r = (data >> 10) & 0x1f;
 	r = (r << 3) | (r >> 2);
@@ -357,7 +359,7 @@ static void palette_write(int offset)
 	DrvPalette[offset/2] = BurnHighCol(r, g, b, 0);
 }
 
-unsigned char __fastcall taotaido_read_byte(unsigned int address)
+UINT8 __fastcall taotaido_read_byte(UINT32 address)
 {
 	if (address < 0xffff00) return 0;
 
@@ -402,7 +404,7 @@ unsigned char __fastcall taotaido_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall taotaido_read_word(unsigned int address)
+UINT16 __fastcall taotaido_read_word(UINT32 address)
 {
 	if (address < 0xffff00) return 0;
 
@@ -427,7 +429,7 @@ unsigned short __fastcall taotaido_read_word(unsigned int address)
 	return 0;
 }
 
-void __fastcall taotaido_write_byte(unsigned int address, unsigned char data)
+void __fastcall taotaido_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfff000) == 0xffc000) {
 		DrvPalRAM[(address & 0xfff) ^ 1] = data;
@@ -463,7 +465,7 @@ void __fastcall taotaido_write_byte(unsigned int address, unsigned char data)
 
 		case 0xffffc1:
 		{
-			int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]);
+			INT32 nCycles = ((INT64)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]);
 			if (nCycles <= ZetTotalCycles()) return;
 
 			BurnTimerUpdate(nCycles);
@@ -476,10 +478,10 @@ void __fastcall taotaido_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall taotaido_write_word(unsigned int address, unsigned short data)
+void __fastcall taotaido_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0xffc000) {
-		*((unsigned short*)(DrvPalRAM + (address & 0xffe))) = data;
+		*((UINT16*)(DrvPalRAM + (address & 0xffe))) = data;
 		palette_write(address & 0xffe);
 		return;
 	}		
@@ -492,19 +494,19 @@ void __fastcall taotaido_write_word(unsigned int address, unsigned short data)
 		case 0xffff0a:
 		case 0xffff0c:
 		case 0xffff0e:
-			*((unsigned short*)(taotaido_tileregs + (address & 0x06))) = data;
+			*((UINT16*)(taotaido_tileregs + (address & 0x06))) = data;
 		return;
 
 		case 0xffff40:
 		case 0xffff42:
 		case 0xffff44:
 		case 0xffff46:
-			*((unsigned short*)(taotaido_spritebank + (address & 6))) = data;
+			*((UINT16*)(taotaido_spritebank + (address & 6))) = data;
 		return;
 	}
 }
 
-static void taotaido_sound_bankswitch(int data)
+static void taotaido_sound_bankswitch(INT32 data)
 {
 	*nDrvZ80Bank = data & 3;
 
@@ -512,7 +514,7 @@ static void taotaido_sound_bankswitch(int data)
 	ZetMapArea(0x8000, 0xffff, 2, DrvZ80ROM + 0x8000 * *nDrvZ80Bank);
 }
 
-void __fastcall taotaido_sound_out(unsigned short port, unsigned char data)
+void __fastcall taotaido_sound_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -535,7 +537,7 @@ void __fastcall taotaido_sound_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall taotaido_sound_in(unsigned short port)
+UINT8 __fastcall taotaido_sound_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -553,23 +555,23 @@ unsigned char __fastcall taotaido_sound_in(unsigned short port)
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[ 4] = {
+	INT32 Plane[ 4] = {
 		0x000, 0x001, 0x002, 0x003
 	};
 
-	int XOffs[16] = {
+	INT32 XOffs[16] = {
 		0x004, 0x000, 0x00c, 0x008, 0x014, 0x010, 0x01c, 0x018,
 		0x024, 0x020, 0x02c, 0x028, 0x034, 0x030, 0x03c, 0x038
 	};
 
-	int YOffs[16] = {
+	INT32 YOffs[16] = {
 		0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 		0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0
 	};
 
-	unsigned char *tmp = (unsigned char*)malloc(0x600000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x600000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -582,12 +584,12 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x4000, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -605,9 +607,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x100000;
 	DrvZ80ROM		= Next; Next += 0x020000;
@@ -618,7 +620,7 @@ static int MemIndex()
 	DrvSndROM0		= Next; Next += 0x100000;
 	DrvSndROM1		= Next; Next += 0x200000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -649,7 +651,7 @@ static int MemIndex()
 	return 0;
 }
 
-static void taotaidoFMIRQHandler(int, int nStatus)
+static void taotaidoFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -658,9 +660,9 @@ static void taotaidoFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int taotaidoSynchroniseStream(int nSoundRate)
+static INT32 taotaidoSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 5000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 5000000;
 }
 
 static double taotaidoGetTime()
@@ -668,12 +670,12 @@ static double taotaidoGetTime()
 	return (double)ZetTotalCycles() / 5000000.0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -711,7 +713,7 @@ static int DrvInit()
 	SekSetReadWordHandler(0,	taotaido_read_word);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x77ff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x77ff, 2, DrvZ80ROM);
@@ -723,8 +725,8 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
-	int nDrvSndROM0Size = 0x100000;
-	int nDrvSndROM1Size = 0x200000;
+	INT32 nDrvSndROM0Size = 0x100000;
+	INT32 nDrvSndROM1Size = 0x200000;
 	BurnYM2610Init(8000000, DrvSndROM1, &nDrvSndROM1Size, DrvSndROM0, &nDrvSndROM0Size, &taotaidoFMIRQHandler, taotaidoSynchroniseStream, taotaidoGetTime, 0);
 	BurnTimerAttachZet(5000000);
 
@@ -735,7 +737,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -744,39 +746,38 @@ static int DrvExit()
 	SekExit();
 	ZetExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void draw_layer()
 {
-	unsigned short *vram = (unsigned short*)DrvBgRAM;
-	unsigned short *scroll = (unsigned short*)DrvScrollRAM;
+	UINT16 *vram = (UINT16*)DrvBgRAM;
+	UINT16 *scroll = (UINT16*)DrvScrollRAM;
 
-	for (int line = 0; line < 224; line++)
+	for (INT32 line = 0; line < 224; line++)
 	{
-		int scrolly = ((scroll[(line << 1) | 1] >> 4) +  0) & 0x3ff;
-		int scrollx = ((scroll[(line << 1) | 0] >> 4) + 30) & 0x7ff;
+		INT32 scrolly = ((scroll[(line << 1) | 1] >> 4) +  0) & 0x3ff;
+		INT32 scrollx = ((scroll[(line << 1) | 0] >> 4) + 30) & 0x7ff;
 
-		int sy = scrolly >> 4;
+		INT32 sy = scrolly >> 4;
 
-		for (int col = 0; col < (320 / 16) + 1; col++)
+		for (INT32 col = 0; col < (320 / 16) + 1; col++)
 		{
-			int sx = (scrollx >> 4) + col;
-			int ofst = (sy << 6) + (sx & 0x3f) + ((sx & 0x40) << 6);
+			INT32 sx = (scrollx >> 4) + col;
+			INT32 ofst = (sy << 6) + (sx & 0x3f) + ((sx & 0x40) << 6);
 		
-			int code = vram[ofst];
-			int bank = (code >> 9) & 7;
-			int color = ((code >> 12) << 4) | 0x300;
+			INT32 code = vram[ofst];
+			INT32 bank = (code >> 9) & 7;
+			INT32 color = ((code >> 12) << 4) | 0x300;
 	
 			code = (code & 0x1ff) | (taotaido_tileregs[bank] << 9);
 			
-			unsigned char *src = DrvGfxROM1 + (code << 8) + ((scrolly & 0x0f) << 4);
+			UINT8 *src = DrvGfxROM1 + (code << 8) + ((scrolly & 0x0f) << 4);
 		
-			for (int x = 0; x < 16; x++) {
-				int xx = (x + (col << 4)) - (scrollx & 0x0f);
+			for (INT32 x = 0; x < 16; x++) {
+				INT32 xx = (x + (col << 4)) - (scrollx & 0x0f);
 				if (xx < 0 || xx >= nScreenWidth) continue;
 				pTransDraw[(line * nScreenWidth) + xx] = src[x] | color;
 			}			
@@ -784,26 +785,26 @@ static void draw_layer()
 	}
 }
 
-static void draw_sprite(int spriteno)
+static void draw_sprite(INT32 spriteno)
 {
-	unsigned short *source = (unsigned short*)DrvSpr0Buf1;
-	unsigned short *source1 = (unsigned short*)DrvSpr1Buf1;
+	UINT16 *source = (UINT16*)DrvSpr0Buf1;
+	UINT16 *source1 = (UINT16*)DrvSpr1Buf1;
 	source += spriteno*4;
 
-	int yzoom = (source[0] & 0xf000) >> 12;
-	int xzoom = (source[1] & 0xf000) >> 12;
+	INT32 yzoom = (source[0] & 0xf000) >> 12;
+	INT32 xzoom = (source[1] & 0xf000) >> 12;
 
-	int ysize = (source[0] & 0x0e00) >> 9;
-	int xsize = (source[1] & 0x0e00) >> 9;
+	INT32 ysize = (source[0] & 0x0e00) >> 9;
+	INT32 xsize = (source[1] & 0x0e00) >> 9;
 
-	int ypos = source[0] & 0x01ff;
-	int xpos = source[1] & 0x01ff;
+	INT32 ypos = source[0] & 0x01ff;
+	INT32 xpos = source[1] & 0x01ff;
 
-	int yflip = source[2] & 0x8000;
-	int xflip = source[2] & 0x4000;
-	int color = (source[2] & 0x1f00) >> 8;
+	INT32 yflip = source[2] & 0x8000;
+	INT32 xflip = source[2] & 0x4000;
+	INT32 color = (source[2] & 0x1f00) >> 8;
 
-	int tile = source[3] & 0xffff;
+	INT32 tile = source[3] & 0xffff;
 
 	xpos += (xsize*xzoom+2)/4;
 	ypos += (ysize*yzoom+2)/4;
@@ -811,20 +812,20 @@ static void draw_sprite(int spriteno)
 	xzoom = 32 - xzoom;
 	yzoom = 32 - yzoom;
 
-	for (int y = 0;y <= ysize;y++)
+	for (INT32 y = 0;y <= ysize;y++)
 	{
-		int sx,sy;
+		INT32 sx,sy;
 
 		if (yflip) sy = ((ypos + yzoom * (ysize - y)/2 + 16) & 0x1ff) - 16;
 			else sy = ((ypos + yzoom * y / 2 + 16) & 0x1ff) - 16;
 
-		for (int x = 0;x <= xsize;x++)
+		for (INT32 x = 0;x <= xsize;x++)
 		{
-			int realtile = source1[tile & 0x7fff];
+			INT32 realtile = source1[tile & 0x7fff];
 
 			if (realtile > 0x3fff)
 			{
-				int block;
+				INT32 block;
 
 				block = (realtile & 0x3800)>>11;
 
@@ -856,8 +857,8 @@ static void draw_sprite(int spriteno)
 
 static void draw_sprites()
 {
-	unsigned short *source = (unsigned short*)DrvSpr0Buf1;
-	unsigned short *finish = source + 0x2000/2;
+	UINT16 *source = (UINT16*)DrvSpr0Buf1;
+	UINT16 *finish = source + 0x2000/2;
 
 	while (source < finish)
 	{
@@ -869,10 +870,10 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x1000; i+=2) {
+		for (INT32 i = 0; i < 0x1000; i+=2) {
 			palette_write(i);
 		}
 	}
@@ -885,7 +886,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -895,8 +896,8 @@ static int DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInps, 0xff, 5 * sizeof(short));
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInps, 0xff, 5 * sizeof(UINT16));
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInps[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInps[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInps[2] ^= (DrvJoy3[i] & 1) << i;
@@ -905,8 +906,8 @@ static int DrvFrame()
 		}
 	}
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)(5000000.0 / 60.0);
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)(5000000.0 / 60.0);
 
 	SekOpen(0);
 	ZetOpen(0);
@@ -932,7 +933,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

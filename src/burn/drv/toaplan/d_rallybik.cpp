@@ -3,29 +3,29 @@
 #define REFRESHRATE 55.14
 #define VBLANK_LINES (32)
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPalRAM2;
-static unsigned char *DrvShareRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPalRAM2;
+static UINT8 *DrvShareRAM;
 
-static unsigned char DrvInputs[3];
-static unsigned char DrvDips[3];
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvReset;
+static UINT8 DrvInputs[3];
+static UINT8 DrvDips[3];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvReset;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-static unsigned char bDrawScreen;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
 static bool bEnableInterrupts;
@@ -112,7 +112,7 @@ static struct BurnDIPInfo RallybikDIPList[]=
 
 STDDIPINFO(Rallybik)
 
-void __fastcall rallybikWriteWord(unsigned int a, unsigned short d)
+void __fastcall rallybikWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a)
 	{
@@ -167,12 +167,12 @@ void __fastcall rallybikWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall rallybikWriteByte(unsigned int , unsigned char )
+void __fastcall rallybikWriteByte(UINT32 , UINT8 )
 {
 	return;
 }
 
-unsigned short __fastcall rallybikReadWord(unsigned int a)
+UINT16 __fastcall rallybikReadWord(UINT32 a)
 {
 	switch (a)
 	{
@@ -181,7 +181,7 @@ unsigned short __fastcall rallybikReadWord(unsigned int a)
 
 		case 0x100004: // ok?
 		{
-			int data = ToaBCU2ReadRAM_Hi();
+			INT32 data = ToaBCU2ReadRAM_Hi();
 			data |= ((data & 0xf000) >> 4) | ((data & 0x0030) << 2);
 			return data;
 		}
@@ -203,7 +203,7 @@ unsigned short __fastcall rallybikReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall rallybikReadByte(unsigned int a)
+UINT8 __fastcall rallybikReadByte(UINT32 a)
 {
 	switch (a)
 	{
@@ -214,7 +214,7 @@ unsigned char __fastcall rallybikReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall rallybik_sound_write_port(unsigned short p, unsigned char d)
+void __fastcall rallybik_sound_write_port(UINT16 p, UINT8 d)
 {
 	switch (p & 0xff)
 	{
@@ -231,7 +231,7 @@ void __fastcall rallybik_sound_write_port(unsigned short p, unsigned char d)
 	}
 }
 
-unsigned char __fastcall rallybik_sound_read_port(unsigned short p)
+UINT8 __fastcall rallybik_sound_read_port(UINT16 p)
 {
 	switch (p & 0xff)
 	{
@@ -261,7 +261,7 @@ unsigned char __fastcall rallybik_sound_read_port(unsigned short p)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -278,9 +278,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x080000;
 	DrvZ80ROM	= Next; Next += 0x010000;
@@ -305,8 +305,8 @@ static int MemIndex()
 
 	RamEnd		= Next;
 
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
-	ToaPalette2	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
+	ToaPalette2	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 
 	MemEnd		= Next;
 
@@ -315,7 +315,7 @@ static int MemIndex()
 
 static void DrvSpriteDecode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return;
 	}
@@ -323,18 +323,18 @@ static void DrvSpriteDecode()
 	memcpy (tmp, FCU2ROM, 0x40000);
 	memset (FCU2ROM, 0, 0x80000);
 
-	for (int i = 0; i < (0x40000 / 4) * 8; i++) {
-		for (int j = 0; j < 4; j++) {
+	for (INT32 i = 0; i < (0x40000 / 4) * 8; i++) {
+		for (INT32 j = 0; j < 4; j++) {
 			FCU2ROM[i] |= ((tmp[(j * 0x10000) + (i/8)] >> (~i & 7)) & 1) << (3 - j);
 		}
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Rallybik = 1;
 
@@ -348,8 +348,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(AllMem, 0, nLen);
@@ -393,7 +393,7 @@ static int DrvInit()
 		SekSetWriteWordHandler(1, 		toaplan1WriteWordZ80RAM);
 		SekClose();
 
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 		ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -431,27 +431,25 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM3812Exit();
 	ToaPalExit();
 
 	ToaExitBCU2();
 	ToaZExit();
-	ZetExit();
 	SekExit();
 
-	free(AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	Rallybik = 0;
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	ToaClearScreen(0);
+	ToaClearScreen(0x120);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -464,21 +462,21 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	memset (DrvInputs, 0, 3);
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] |= (DrvJoy3[i] & 1) << i;
@@ -486,25 +484,25 @@ static int DrvFrame()
 	ToaClearOpposites(&DrvInputs[0]);
 	ToaClearOpposites(&DrvInputs[1]);
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
 	ZetNewFrame();
+	
+	SekOpen(0);
+	ZetOpen(0);
 
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
 
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
-	nCyclesTotal[1] = int(28000000.0 / 8 / REFRESHRATE);
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
+	nCyclesTotal[1] = INT32(28000000.0 / 8 / REFRESHRATE);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 
@@ -535,11 +533,13 @@ static int DrvFrame()
 		} else {
 			SekIdle(nCyclesSegment);
 		}
+		
+		BurnTimerUpdateYM3812(i * (nCyclesTotal[1] / nInterleave));
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 
@@ -549,7 +549,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 

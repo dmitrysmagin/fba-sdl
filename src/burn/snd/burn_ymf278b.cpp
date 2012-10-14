@@ -2,18 +2,18 @@
 #include "burn_sound.h"
 #include "burn_ymf278b.h"
 
-static int (*BurnYMF278BStreamCallback)(int nSoundRate);
+static INT32 (*BurnYMF278BStreamCallback)(INT32 nSoundRate);
 
-static short* pBuffer;
-static short* pYMF278BBuffer[2];
+static INT16* pBuffer;
+static INT16* pYMF278BBuffer[2];
 
-static int nYMF278BPosition;
-static unsigned int nFractionalPosition;
+static INT32 nYMF278BPosition;
+static INT32 nFractionalPosition;
 
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static int YMF278BStreamCallbackDummy(int /* nSoundRate */)
+static INT32 YMF278BStreamCallbackDummy(INT32 /* nSoundRate */)
 {
 	return 0;
 }
@@ -22,8 +22,12 @@ static int YMF278BStreamCallbackDummy(int /* nSoundRate */)
 // ----------------------------------------------------------------------------
 // Execute YMF278B for part of a frame
 
-static void YMF278BRender(int nSegmentLength)
+static void YMF278BRender(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("YMF278BRender called without init\n"));
+#endif
+
 	if (nYMF278BPosition >= nSegmentLength) {
 		return;
 	}
@@ -43,10 +47,14 @@ static void YMF278BRender(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-void BurnYMF278BUpdate(int nSegmentEnd)
+void BurnYMF278BUpdate(INT32 nSegmentEnd)
 {
-	short* pSoundBuf = pBurnSoundOut;
-	int nSegmentLength = nSegmentEnd;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BUpdate called without init\n"));
+#endif
+
+	INT16* pSoundBuf = pBurnSoundOut;
+	INT32 nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    YMF278B render %6i -> %6i\n"), nYMF278BPosition, nSegmentEnd);
 
@@ -67,7 +75,7 @@ void BurnYMF278BUpdate(int nSegmentEnd)
 	pYMF278BBuffer[0] = pBuffer + 0 * 4096 + 4;
 	pYMF278BBuffer[1] = pBuffer + 1 * 4096 + 4;
 
-	for (int i = nFractionalPosition; i < nSegmentLength; i++) {
+	for (INT32 i = nFractionalPosition; i < nSegmentLength; i++) {
 		pSoundBuf[(i << 1) + 0] = pYMF278BBuffer[0][i];
 		pSoundBuf[(i << 1) + 1] = pYMF278BBuffer[1][i];
 	}
@@ -75,9 +83,9 @@ void BurnYMF278BUpdate(int nSegmentEnd)
 	nFractionalPosition = nSegmentLength;
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSegmentEnd - nBurnSoundLen;
+		INT32 nExtraSamples = nSegmentEnd - nBurnSoundLen;
 
-		for (int i = 0; i < nExtraSamples; i++) {
+		for (INT32 i = 0; i < nExtraSamples; i++) {
 			pYMF278BBuffer[0][i] = pYMF278BBuffer[0][nBurnSoundLen + i];
 			pYMF278BBuffer[1][i] = pYMF278BBuffer[1][nBurnSoundLen + i];
 		}
@@ -91,8 +99,12 @@ void BurnYMF278BUpdate(int nSegmentEnd)
 
 // ----------------------------------------------------------------------------
 
-void BurnYMF278BSelectRegister(int nRegister, unsigned char nValue)
+void BurnYMF278BSelectRegister(INT32 nRegister, UINT8 nValue)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BSelectRegister called without init\n"));
+#endif
+
 	switch (nRegister) {
 		case 0:
 //			bprintf(PRINT_NORMAL, _T("    YMF278B register A -> %i\n"), nValue);
@@ -107,8 +119,12 @@ void BurnYMF278BSelectRegister(int nRegister, unsigned char nValue)
 			break;
 	}
 }
-void BurnYMF278BWriteRegister(int nRegister, unsigned char nValue)
+void BurnYMF278BWriteRegister(INT32 nRegister, UINT8 nValue)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BWriteRegister called without init\n"));
+#endif
+
 	switch (nRegister) {
 		case 0:
 			BurnYMF278BUpdate(BurnYMF278BStreamCallback(nBurnSoundRate));
@@ -124,14 +140,22 @@ void BurnYMF278BWriteRegister(int nRegister, unsigned char nValue)
 	}
 }
 
-unsigned char BurnYMF278BReadStatus()
+UINT8 BurnYMF278BReadStatus()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BReadStatus called without init\n"));
+#endif
+
 	BurnYMF278BUpdate(BurnYMF278BStreamCallback(nBurnSoundRate));
 	return YMF278B_status_port_0_r();
 }
 
-unsigned char BurnYMF278BReadData()
+UINT8 BurnYMF278BReadData()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BReadData called without init\n"));
+#endif
+
 	return YMF278B_data_port_0_r();
 }
 
@@ -139,22 +163,36 @@ unsigned char BurnYMF278BReadData()
 
 void BurnYMF278BReset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BReset called without init\n"));
+#endif
+
 	BurnTimerReset();
 }
 
 void BurnYMF278BExit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BExit called without init\n"));
+#endif
+
 	YMF278B_sh_stop();
 
 	BurnTimerExit();
 
-	free(pBuffer);
-	pBuffer = NULL;
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
+	
+	DebugSnd_YMF278BInitted = 0;
 }
 
-int BurnYMF278BInit(int /* nClockFrequency */, unsigned char* YMF278BROM, void (*IRQCallback)(int, int), int (*StreamCallback)(int))
+INT32 BurnYMF278BInit(INT32 /* nClockFrequency */, UINT8* YMF278BROM, void (*IRQCallback)(INT32, INT32), INT32 (*StreamCallback)(INT32))
 {
-	BurnYMF278BExit();
+	DebugSnd_YMF278BInitted = 1;
+	BurnYMF278BExit();	
+	DebugSnd_YMF278BInitted = 1;
 
 	BurnYMF278BStreamCallback = YMF278BStreamCallbackDummy;
 	if (StreamCallback) {
@@ -164,8 +202,8 @@ int BurnYMF278BInit(int /* nClockFrequency */, unsigned char* YMF278BROM, void (
 	ymf278b_start(0, YMF278BROM, IRQCallback, BurnYMFTimerCallback, YMF278B_STD_CLOCK, nBurnSoundRate);
 	BurnTimerInit(ymf278b_timer_over, NULL);
 
-	pBuffer = (short*)malloc(4096 * 2 * sizeof(short));
-	memset(pBuffer, 0, 4096 * 2 * sizeof(short));
+	pBuffer = (INT16*)malloc(4096 * 2 * sizeof(INT16));
+	memset(pBuffer, 0, 4096 * 2 * sizeof(INT16));
 
 	nYMF278BPosition = 0;
 
@@ -174,7 +212,11 @@ int BurnYMF278BInit(int /* nClockFrequency */, unsigned char* YMF278BROM, void (
 	return 0;
 }
 
-void BurnYMF278BScan(int nAction, int* pnMin)
+void BurnYMF278BScan(INT32 nAction, INT32* pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YMF278BInitted) bprintf(PRINT_ERROR, _T("BurnYMF278BScan called without init\n"));
+#endif
+
 	BurnTimerScan(nAction, pnMin);
 }

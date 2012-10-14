@@ -2,6 +2,7 @@
 // Based on MAME driver by Zsolt Vasvari
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "8255ppi.h"
 #include "bitswap.h"
 #include "driver.h"
@@ -9,30 +10,30 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvVidRAM;
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvVidRAM;
+static UINT32  *Palette;
+static UINT32  *DrvPalette;
 
-static short* pAY8910Buffer[3];
+static INT16* pAY8910Buffer[3];
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvDips[2];
-static unsigned char DrvInputs[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvDips[2];
+static UINT8 DrvInputs[2];
+static UINT8 DrvReset;
 
-static unsigned char *DrvPaletteBank;
-static unsigned char *DealerZ80Bank;
-static unsigned char *DealerZ80Bank2;
+static UINT8 *DrvPaletteBank;
+static UINT8 *DealerZ80Bank;
+static UINT8 *DealerZ80Bank2;
 
 static struct BurnInputInfo MegadonInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -250,7 +251,7 @@ static struct BurnDIPInfo DealerDIPList[]=
 
 STDDIPINFO(Dealer)
 
-unsigned char __fastcall epos_read_port(unsigned short port)
+UINT8 __fastcall epos_read_port(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -270,7 +271,7 @@ unsigned char __fastcall epos_read_port(unsigned short port)
 	return 0;
 }
 
-void __fastcall epos_write_port(unsigned short port, unsigned char data)
+void __fastcall epos_write_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -297,9 +298,9 @@ static void dealer_set_bank()
 	ZetMapArea(0x0000, 0x5fff, 2, DrvZ80ROM + (*DealerZ80Bank << 16));
 }
 
-static void dealer_bankswitch(int offset)
+static void dealer_bankswitch(INT32 offset)
 {
-	int nBank = *DealerZ80Bank;
+	INT32 nBank = *DealerZ80Bank;
 
 	if (offset & 4) {
 		nBank = (nBank + 1) & 3;
@@ -312,16 +313,16 @@ static void dealer_bankswitch(int offset)
 	dealer_set_bank();
 }
 
-static void dealer_bankswitch2(int data)
+static void dealer_bankswitch2(INT32 data)
 {
 	*DealerZ80Bank2 = data & 1;
 
-	int nBank = 0x6000 + ((data & 1) << 12);
+	INT32 nBank = 0x6000 + ((data & 1) << 12);
 	ZetMapArea(0x6000, 0x6fff, 0, DrvZ80ROM + nBank);
 	ZetMapArea(0x6000, 0x6fff, 2, DrvZ80ROM + nBank);
 }
 
-unsigned char __fastcall dealer_read_port(unsigned short port)
+UINT8 __fastcall dealer_read_port(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -338,7 +339,7 @@ unsigned char __fastcall dealer_read_port(unsigned short port)
 	return 0;
 }
 
-void __fastcall dealer_write_port(unsigned short port, unsigned char data)
+void __fastcall dealer_write_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -359,17 +360,17 @@ void __fastcall dealer_write_port(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char DealerPPIReadA()
+UINT8 DealerPPIReadA()
 {
 	return DrvInputs[1];
 }
 
-void DealerPPIWriteC(unsigned char data)
+void DealerPPIWriteC(UINT8 data)
 {
 	dealer_bankswitch2(data);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -386,9 +387,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void DrvPaletteInit(int num)
+static void DrvPaletteInit(INT32 num)
 {
-	unsigned char prom[32] = { // in case the set lacks a prom dump
+	UINT8 prom[32] = { // in case the set lacks a prom dump
 		0x00, 0xE1, 0xC3, 0xFC, 0xEC, 0xF8, 0x34, 0xFF,
 		0x17, 0xF0, 0xEE, 0xEF, 0xAC, 0xC2, 0x1C, 0x07,
 		0x00, 0xE1, 0xC3, 0xFC, 0xEC, 0xF8, 0x34, 0xFF,
@@ -399,40 +400,40 @@ static void DrvPaletteInit(int num)
 
 	BurnLoadRom(DrvColPROM, num, 1);
 	
-	for (int i = 0; i < 0x20; i++) {
+	for (INT32 i = 0; i < 0x20; i++) {
 		Palette[i] = BITSWAP24(DrvColPROM[i], 7,6,5,7,6,6,7,5,4,3,2,4,3,3,4,2,1,0,1,0,1,1,0,1);
 	}
 }
 
 static void DealerDecode()
 {
-	for (int i = 0;i < 0x8000;i++)
+	for (INT32 i = 0;i < 0x8000;i++)
 		DrvZ80ROM[i + 0x00000] = BITSWAP08(DrvZ80ROM[i] ^ 0xbd, 2,6,4,0,5,7,1,3);
 
-	for (int i = 0;i < 0x8000;i++)
+	for (INT32 i = 0;i < 0x8000;i++)
 		DrvZ80ROM[i + 0x10000] = BITSWAP08(DrvZ80ROM[i] ^ 0x00, 7,5,4,6,3,2,1,0);
 
-	for (int i = 0;i < 0x8000;i++)
+	for (INT32 i = 0;i < 0x8000;i++)
 		DrvZ80ROM[i + 0x20000] = BITSWAP08(DrvZ80ROM[i] ^ 0x01, 7,6,5,4,3,0,2,1);
 
-	for (int i = 0;i < 0x8000;i++)
+	for (INT32 i = 0;i < 0x8000;i++)
 		DrvZ80ROM[i + 0x30000] = BITSWAP08(DrvZ80ROM[i] ^ 0x01, 7,5,4,6,3,0,2,1);
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM	 = Next; Next += 0x040000;
 
 	DrvColPROM	 = Next; Next += 0x000020;
 
-	Palette	 	 = (unsigned int*)Next; Next += 0x0020 * sizeof(int);
-	DrvPalette	 = (unsigned int*)Next; Next += 0x0020 * sizeof(int);
+	Palette	 	 = (UINT32*)Next; Next += 0x0020 * sizeof(UINT32);
+	DrvPalette	 = (UINT32*)Next; Next += 0x0020 * sizeof(UINT32);
 
-	pAY8910Buffer[0] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2] = (short *)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 
 	AllRam		 = Next;
 
@@ -450,12 +451,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -472,7 +473,7 @@ static int DrvInit()
 		DrvPaletteInit(8);
 	}
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x77ff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x77ff, 2, DrvZ80ROM);
@@ -496,12 +497,12 @@ static int DrvInit()
 	return 0;
 }
 
-static int DealerInit()
+static INT32 DealerInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -515,7 +516,7 @@ static int DealerInit()
 		DealerDecode();
 	}
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x6fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x6fff, 2, DrvZ80ROM);
@@ -543,7 +544,7 @@ static int DealerInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -554,18 +555,17 @@ static int DrvExit()
 		ppi8255_exit();
 	}
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		unsigned char r,g,b;
-		for (int i = 0; i < 0x20; i++) {
-			int rgb = Palette[i];
+		UINT8 r,g,b;
+		for (INT32 i = 0; i < 0x20; i++) {
+			INT32 rgb = Palette[i];
 			r = (rgb >> 16) & 0xff;
 			g = (rgb >>  8) & 0xff;
 			b = (rgb >>  0) & 0xff;
@@ -574,10 +574,10 @@ static int DrvDraw()
 		}
 	}
 
-	for (int i = 0; i < 0x8000; i++)
+	for (INT32 i = 0; i < 0x8000; i++)
 	{
-		int x = (i % 136) << 1;
-		int y = (i / 136);
+		INT32 x = (i % 136) << 1;
+		INT32 y = (i / 136);
 		if (y > 235) break;
 
 		pTransDraw[(y * nScreenWidth) + x + 0] = *DrvPaletteBank | ((DrvVidRAM[i] >> 0) & 0x0f);
@@ -589,7 +589,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -598,7 +598,7 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = DrvDips[1];
 		DrvInputs[1] = 0xff;
-		for (int i = 0; i < 8; i++)
+		for (INT32 i = 0; i < 8; i++)
 		{
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
@@ -611,22 +611,16 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pAY8910Buffer[0][n];
 			nSample += pAY8910Buffer[1][n];
 			nSample += pAY8910Buffer[2][n];
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -640,7 +634,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -915,7 +909,7 @@ static struct BurnRomInfo revengerRomDesc[] = {
 STD_ROM_PICK(revenger)
 STD_ROM_FN(revenger)
 
-struct BurnDriver BurnDrvRevenger = {
+struct BurnDriverD BurnDrvRevenger = {
 	"revenger", NULL, NULL, NULL, "1984",
 	"Revenger\0", "Bad dump", "Epos Corporation", "EPOS Tristar",
 	NULL, NULL, NULL, NULL,

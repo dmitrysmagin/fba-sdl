@@ -5,40 +5,41 @@
  */
 
 #include "burnint.h"
+#include "sek.h"
 #include "driver.h"
 
 #include "msm6295.h"
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-static unsigned char *Rom68K;
-static unsigned char *RomGfx;
-static unsigned char *DeRomGfx;
-static unsigned char *RomSnd;
+static UINT8 *Rom68K;
+static UINT8 *RomGfx;
+static UINT8 *DeRomGfx;
+static UINT8 *RomSnd;
 
-static unsigned short *Ram68K;
-static unsigned short *RamPal;
-static unsigned short *RamFg;
-static unsigned short *RamBg;
-static unsigned short *RamSpr;
-static unsigned short *RamBgM;
+static UINT16 *Ram68K;
+static UINT16 *RamPal;
+static UINT16 *RamFg;
+static UINT16 *RamBg;
+static UINT16 *RamSpr;
+static UINT16 *RamBgM;
 
-static unsigned int *RamCurPal;
-static unsigned int *RamCTB64k;
+static UINT32 *RamCurPal;
+static UINT32 *RamCTB64k;
 
-static unsigned char DrvButton[7] = {0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[7] = {0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[7] = {0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0, 0, 0, 0, 0, 0};
-static unsigned char DrvReset = 0;
-//static unsigned short GalPanicCoin = 0;
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0, 0, 0, 0, 0, 0};
+static UINT8 DrvReset = 0;
+//static UINT16 GalPanicCoin = 0;
 
-unsigned char RecalcBgPalette;
+UINT8 RecalcBgPalette;
 
-static int nCyclesDone[1], nCyclesTotal[1];
-static int nCyclesSegment;
-static int SndBank;
+static INT32 nCyclesDone[1], nCyclesTotal[1];
+static INT32 nCyclesSegment;
+static INT32 SndBank;
 
 static struct BurnInputInfo GalpanicInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 2,	"p1 coin"},
@@ -98,7 +99,7 @@ static struct BurnInputInfo GalhustlInputList[] = {
 
 STDINPUTINFO(Galhustl)
 
-inline void ComadClearOpposites(unsigned char* nJoystickInputs)
+inline void ComadClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -607,9 +608,9 @@ STD_ROM_PICK(Zipzap)
 STD_ROM_FN(Zipzap)
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom68K 		= Next; Next += 0x400000;			// 68000 ROM
 	RomGfx		= Next; Next += 0x200100;			// Graphics, 1M 16x16x4bit decode to 2M + 64byte safe
 	DeRomGfx	= RomGfx     +  0x000100;
@@ -617,23 +618,23 @@ static int MemIndex()
 
 	RamStart	= Next;
 
-	RamFg		= (unsigned short *) Next; Next += 0x020000;
-	RamBg		= (unsigned short *) Next; Next += 0x020000;
-	RamPal	= (unsigned short *) Next; Next += 0x000800;
-	RamSpr	= (unsigned short *) Next; Next += 0x004800;
+	RamFg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamBg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamPal	= (UINT16 *) Next; Next += 0x000400 * sizeof(UINT16);
+	RamSpr	= (UINT16 *) Next; Next += 0x002400 * sizeof(UINT16);
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned int *) Next; Next += 0x000400 * sizeof(unsigned int);
-	RamCTB64k	= (unsigned int *) Next; Next += 0x008000 * sizeof(unsigned int);
+	RamCurPal	= (UINT32 *) Next; Next += 0x000400 * sizeof(UINT32);
+	RamCTB64k	= (UINT32 *) Next; Next += 0x008000 * sizeof(UINT32);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static int MemIndex2()
+static INT32 MemIndex2()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "galhustl")) {
 	Rom68K 		= Next; Next += 0x100000;			// 68000 ROM
 		} else {
@@ -649,29 +650,29 @@ static int MemIndex2()
 
 	RamStart	= Next;
 
-	Ram68K	= (unsigned short *) Next; Next += 0x010040;
-	RamFg		= (unsigned short *) Next; Next += 0x020000;
-	RamBg		= (unsigned short *) Next; Next += 0x020000;
-	RamPal	= (unsigned short *) Next; Next += 0x001000;
-	RamSpr	= (unsigned short *) Next; Next += 0x001000;
-	RamBgM	= (unsigned short *) Next; Next += 0x004000;
+	Ram68K	= (UINT16 *) Next; Next += 0x008020 * sizeof(UINT16);
+	RamFg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamBg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamPal	= (UINT16 *) Next; Next += 0x000800 * sizeof(UINT16);
+	RamSpr	= (UINT16 *) Next; Next += 0x000800 * sizeof(UINT16);
+	RamBgM	= (UINT16 *) Next; Next += 0x002000 * sizeof(UINT16);
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned int *) Next; Next += 0x000400 * sizeof(unsigned int);
-	RamCTB64k	= (unsigned int *) Next; Next += 0x008000 * sizeof(unsigned int);
+	RamCurPal	= (UINT32 *) Next; Next += 0x000400 * sizeof(UINT32);
+	RamCTB64k	= (UINT32 *) Next; Next += 0x008000 * sizeof(UINT32);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-unsigned char __fastcall GalpanicReadByte(unsigned int sekAddress)
+UINT8 __fastcall GalpanicReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400001:
@@ -682,7 +683,7 @@ unsigned char __fastcall GalpanicReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall GalpanicReadWord(unsigned int sekAddress)
+UINT16 __fastcall GalpanicReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x800000:
@@ -697,7 +698,7 @@ unsigned short __fastcall GalpanicReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall GalpanicWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall GalpanicWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x900000:
@@ -717,7 +718,7 @@ void __fastcall GalpanicWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-unsigned char __fastcall ComadReadByte(unsigned int sekAddress)
+UINT8 __fastcall ComadReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xC80000:
@@ -739,7 +740,7 @@ unsigned char __fastcall ComadReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall ComadWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall ComadWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x900000:
@@ -760,12 +761,12 @@ void __fastcall ComadWriteByte(unsigned int sekAddress, unsigned char byteValue)
 	}
 }
 
-void __fastcall GalhustlWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall GalhustlWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 
 if (sekAddress >= 0x580000 && sekAddress <= 0x583fff) {
-      for (int i = 0; i < 8; i++) {
-         int Offs = (sekAddress - 0x580000) >> 1;
+      for (INT32 i = 0; i < 8; i++) {
+         INT32 Offs = (sekAddress - 0x580000) >> 1;
          RamBgM = (UINT16*)RamBg;
          RamBgM[Offs * 8 + i] = wordValue;
       }
@@ -786,7 +787,7 @@ if (sekAddress >= 0x580000 && sekAddress <= 0x583fff) {
 	}
 }
 
-unsigned short __fastcall GalhustlReadWord(unsigned int sekAddress)
+UINT16 __fastcall GalhustlReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x800000:
@@ -804,7 +805,7 @@ unsigned short __fastcall GalhustlReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned char __fastcall GalhustlReadByte(unsigned int sekAddress)
+UINT8 __fastcall GalhustlReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xC00000:
@@ -829,7 +830,7 @@ unsigned char __fastcall GalhustlReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
   SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
@@ -843,9 +844,9 @@ static int DrvDoReset()
 
 void DeCodeGfx()
 {
-	for (int c=8192-1; c>=0; c--) {
-		int fx = 8;
-		for (int y=15; y>=0; y--) {
+	for (INT32 c=8192-1; c>=0; c--) {
+		INT32 fx = 8;
+		for (INT32 y=15; y>=0; y--) {
 			if (y == 7) fx = 0;
 			DeRomGfx[(c * 256) + (y * 16) + 15] = RomGfx[0x00023 + ((y + fx) * 4) + (c * 128)] & 0x0f;
 			DeRomGfx[(c * 256) + (y * 16) + 14] = RomGfx[0x00023 + ((y + fx) * 4) + (c * 128)] >> 4;
@@ -868,14 +869,14 @@ void DeCodeGfx()
 	}
 }
 
-static int GalpanicInit()
+static INT32 GalpanicInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -907,13 +908,13 @@ static int GalpanicInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x3FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x6007FF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x7047FF, SM_RAM);	// sprites
 
 		SekSetReadWordHandler(0, GalpanicReadWord);
@@ -932,14 +933,14 @@ static int GalpanicInit()
 	return 0;
 }
 
-static int FantasiaInit()
+static INT32 FantasiaInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -970,21 +971,21 @@ static int FantasiaInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x4FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamBgM,
+		SekMapMemory((UINT8 *)RamBgM,
 									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0x680000, 0x68001F, SM_WRITE);	// regs?
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K+0x000020,
+		SekMapMemory((UINT8 *)Ram68K+0x000020,
 									0x780000, 0x78001F, SM_WRITE);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x000040,
+		SekMapMemory((UINT8 *)Ram68K+0x000040,
 									0xC80000, 0xC8FFFF, SM_RAM);	// work ram?
 
 
@@ -1004,14 +1005,14 @@ static int FantasiaInit()
 	return 0;
 }
 
-static int Missw96Init()
+static INT32 Missw96Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1040,21 +1041,21 @@ static int Missw96Init()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x4FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamBgM,
+		SekMapMemory((UINT8 *)RamBgM,
 									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0xC00000, 0xC0FFFF, SM_RAM);	// work ram?
-		SekMapMemory((unsigned char *)Ram68K+0x010000,
+		SekMapMemory((UINT8 *)Ram68K+0x010000,
 									0x680000, 0x68001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x010020,
+		SekMapMemory((UINT8 *)Ram68K+0x010020,
 									0x780000, 0x78001F, SM_RAM);	// regs?
 
 		SekSetReadWordHandler(0, GalpanicReadWord);
@@ -1073,14 +1074,14 @@ static int Missw96Init()
 	return 0;
 }
 
-static int Fantsia2Init()
+static INT32 Fantsia2Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1112,21 +1113,21 @@ static int Fantsia2Init()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x4FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamBgM,
+		SekMapMemory((UINT8 *)RamBgM,
 									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0xF80000, 0xF8FFFF, SM_RAM);	// work ram?
-		SekMapMemory((unsigned char *)Ram68K+0x010000,
+		SekMapMemory((UINT8 *)Ram68K+0x010000,
 									0x680000, 0x68001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x010020,
+		SekMapMemory((UINT8 *)Ram68K+0x010020,
 									0x780000, 0x78001F, SM_RAM);	// regs?
 
 		SekSetReadWordHandler(0, GalpanicReadWord);
@@ -1145,14 +1146,14 @@ static int Fantsia2Init()
 	return 0;
 }
 
-static int WownfantInit()
+static INT32 WownfantInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1178,21 +1179,21 @@ static int WownfantInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x4FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamBgM,
+		SekMapMemory((UINT8 *)RamBgM,
 									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0xF80000, 0xF8FFFF, SM_RAM);	// work ram?
-		SekMapMemory((unsigned char *)Ram68K+0x010000,
+		SekMapMemory((UINT8 *)Ram68K+0x010000,
 									0x680000, 0x68001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x010020,
+		SekMapMemory((UINT8 *)Ram68K+0x010020,
 									0x780000, 0x78001F, SM_RAM);	// regs?
 
 		SekSetReadWordHandler(0, GalpanicReadWord);
@@ -1211,14 +1212,14 @@ static int WownfantInit()
 	return 0;
 }
 
-static int GalhustlInit()
+static INT32 GalhustlInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1241,22 +1242,22 @@ static int GalhustlInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x0FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-//		SekMapMemory((unsigned char *)RamBgM,
+//		SekMapMemory((UINT8 *)RamBgM,
 //									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
 //		SekMapHandler(1,				0x580000, 0x583FFF, SM_WRITE);
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0x680000, 0x68001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x000020,
+		SekMapMemory((UINT8 *)Ram68K+0x000020,
 									0x780000, 0x78001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x000040,
+		SekMapMemory((UINT8 *)Ram68K+0x000040,
 									0xE80000, 0xE8FFFF, SM_RAM);	// work ram?
 
 		SekSetReadWordHandler(0, GalhustlReadWord);
@@ -1276,14 +1277,14 @@ static int GalhustlInit()
 	return 0;
 }
 
-static int ZipzapInit()
+static INT32 ZipzapInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex2();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1317,24 +1318,24 @@ static int ZipzapInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x4FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamFg,
+		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x520000, 0x53FFFF, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamBgM,
+		SekMapMemory((UINT8 *)RamBgM,
 									0x580000, 0x583FFF, SM_RAM);	// another tilemap?
 //		SekMapHandler(1,				0x580000, 0x583FFF, SM_WRITE);
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x600000, 0x600FFF, SM_RAM);	// palette
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x700000, 0x700FFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)Ram68K,
+		SekMapMemory((UINT8 *)Ram68K,
 									0xC80000, 0xC8FFFF, SM_RAM);	// work ram?
-		SekMapMemory((unsigned char *)Ram68K+0x010000,
+		SekMapMemory((UINT8 *)Ram68K+0x010000,
 									0x680000, 0x68001F, SM_RAM);	// regs?
-		SekMapMemory((unsigned char *)Ram68K+0x010020,
+		SekMapMemory((UINT8 *)Ram68K+0x010020,
 									0x780000, 0x78001F, SM_RAM);	// regs?
-//		SekMapMemory((unsigned char *)Ram68K+0x010040,
+//		SekMapMemory((UINT8 *)Ram68K+0x010040,
 //									0x701000, 0x71FFFF, SM_RAM);	// work ram?
 
 		SekSetReadWordHandler(0, GalhustlReadWord);
@@ -1353,23 +1354,22 @@ static int ZipzapInit()
 	return 0;
 }
 
-static int GalpanicExit()
+static INT32 GalpanicExit()
 {
 	SekExit();
 	MSM6295Exit(0);
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	RecalcBgPalette = 0;
 	return 0;
 }
 
-static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
-	unsigned short * p = (unsigned short *) pBurnDraw;
-	unsigned char * q = DeRomGfx + (code) * 256;
-	unsigned int * pal = RamCurPal + 256;
+	UINT16 * p = (UINT16 *) pBurnDraw;
+	UINT8 * q = DeRomGfx + (code) * 256;
+	UINT32 * pal = RamCurPal + 256;
 
 	p += sy * 256 + sx;
 
@@ -1384,7 +1384,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 			if (!flipx) {
 
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] && ((sx + 15) >= 0) && ((sx + 15)<256)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] && ((sx + 14) >= 0) && ((sx + 14)<256)) p[14] = pal[ q[ 1] | color];
@@ -1410,7 +1410,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 			} else {
 
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] && ((sx +  0) >= 0) && ((sx +  0)<256)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] && ((sx +  1) >= 0) && ((sx +  1)<256)) p[ 1] = pal[ q[ 1] | color];
@@ -1439,7 +1439,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 			if (!flipx) {
 
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] && ((sx + 15) >= 0) && ((sx + 15)<256)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] && ((sx + 14) >= 0) && ((sx + 14)<256)) p[14] = pal[ q[ 1] | color];
@@ -1465,7 +1465,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 			} else {
 
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] && ((sx +  0) >= 0) && ((sx +  0)<256)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] && ((sx +  1) >= 0) && ((sx +  1)<256)) p[ 1] = pal[ q[ 1] | color];
@@ -1500,7 +1500,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 		if (!flipx) {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0]) p[15] = pal[ q[ 0] | color];
 				if (q[ 1]) p[14] = pal[ q[ 1] | color];
 				if (q[ 2]) p[13] = pal[ q[ 2] | color];
@@ -1525,7 +1525,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0]) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1]) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2]) p[ 2] = pal[ q[ 2] | color];
@@ -1553,7 +1553,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 		if (!flipx) {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0]) p[15] = pal[ q[ 0] | color];
 				if (q[ 1]) p[14] = pal[ q[ 1] | color];
 				if (q[ 2]) p[13] = pal[ q[ 2] | color];
@@ -1578,7 +1578,7 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0]) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1]) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2]) p[ 2] = pal[ q[ 2] | color];
@@ -1607,32 +1607,32 @@ static void drawgfx(unsigned int code,unsigned int color,int flipx,int flipy,int
 
 }
 
-static int GalpanicDraw()
+static INT32 GalpanicDraw()
 {
  	if (RecalcBgPalette) {
-	 	for (int i = 0; i < 32768; i++) {
-			int r = pal5bit(i >> 5);
-			int g = pal5bit(i >> 10);
-			int b = pal5bit(i >> 0);
+	 	for (INT32 i = 0; i < 32768; i++) {
+			INT32 r = pal5bit(i >> 5);
+			INT32 g = pal5bit(i >> 10);
+			INT32 b = pal5bit(i >> 0);
 			RamCTB64k[i] = BurnHighCol(r, g, b, 0);
 		}
 
 		RecalcBgPalette = 0;
 	}
 
- 	for (int i = 0; i < 1024; i++) {
- 		unsigned short nColour = RamPal[i];
- 		int r = pal5bit(nColour >> 6);
- 		int g = pal5bit(nColour >> 11);
- 		int b = pal5bit(nColour >> 1);
+ 	for (INT32 i = 0; i < 1024; i++) {
+ 		UINT16 nColour = RamPal[i];
+ 		INT32 r = pal5bit(nColour >> 6);
+ 		INT32 g = pal5bit(nColour >> 11);
+ 		INT32 b = pal5bit(nColour >> 1);
  		RamCurPal[i] = BurnHighCol(r, g, b, 0);
  	} 	
 
- 	unsigned short * d = (unsigned short *)pBurnDraw + ( 224 * 256 ) - 1;
- 	unsigned short * s = (unsigned short *)RamBg;
- 	unsigned short * f = (unsigned short *)RamFg;
-	for (int j=0;j<224;j++) {
-		for (int i=0;i<256;i++) {
+ 	UINT16 * d = (UINT16 *)pBurnDraw + ( 224 * 256 ) - 1;
+ 	UINT16 * s = (UINT16 *)RamBg;
+ 	UINT16 * f = (UINT16 *)RamFg;
+	for (INT32 j=0;j<224;j++) {
+		for (INT32 i=0;i<256;i++) {
 			if (*f)	*d = RamCurPal[*f];
 			else 	*d = RamCTB64k[*s >> 1];
 			d--;
@@ -1641,10 +1641,10 @@ static int GalpanicDraw()
 		}
 	}
 
-	int sx, sy;
+	INT32 sx, sy;
 	sx = sy = 0;
-	for (int offs=0; offs<0x002400; offs+=0x08) {
-		int x,y,code,color,flipx,flipy,attr1,attr2;
+	for (INT32 offs=0; offs<0x002400; offs+=0x08) {
+		INT32 x,y,code,color,flipx,flipy,attr1,attr2;
 
 		attr1 = RamSpr[offs + 3];
 		x = RamSpr[offs + 4] - ((attr1 & 0x01) << 8);
@@ -1676,32 +1676,32 @@ static int GalpanicDraw()
 	return 0;
 }
 
-static int ComadDraw()
+static INT32 ComadDraw()
 {
  	if (RecalcBgPalette) {
-	 	for (int i = 0; i < 32768; i++) {
-			int r = pal5bit(i >> 5);
-			int g = pal5bit(i >> 10);
-			int b = pal5bit(i >> 0);
+	 	for (INT32 i = 0; i < 32768; i++) {
+			INT32 r = pal5bit(i >> 5);
+			INT32 g = pal5bit(i >> 10);
+			INT32 b = pal5bit(i >> 0);
 			RamCTB64k[i] = BurnHighCol(r, g, b, 0);
 		}
 
 		RecalcBgPalette = 0;
 	}
 
- 	for (int i = 0; i < 1024; i++) {
- 		unsigned short nColour = RamPal[i];
- 		int r = pal5bit(nColour >> 6);
- 		int g = pal5bit(nColour >> 11);
- 		int b = pal5bit(nColour >> 1);
+ 	for (INT32 i = 0; i < 1024; i++) {
+ 		UINT16 nColour = RamPal[i];
+ 		INT32 r = pal5bit(nColour >> 6);
+ 		INT32 g = pal5bit(nColour >> 11);
+ 		INT32 b = pal5bit(nColour >> 1);
  		RamCurPal[i] = BurnHighCol(r, g, b, 0);
  	}
 
- 	unsigned short * d = (unsigned short *)pBurnDraw + ( 224 * 256 ) - 1;
- 	unsigned short * s = (unsigned short *)RamBg;
- 	unsigned short * f = (unsigned short *)RamFg;
-	for (int j=0;j<224;j++) {
-		for (int i=0;i<256;i++) {
+ 	UINT16 * d = (UINT16 *)pBurnDraw + ( 224 * 256 ) - 1;
+ 	UINT16 * s = (UINT16 *)RamBg;
+ 	UINT16 * f = (UINT16 *)RamFg;
+	for (INT32 j=0;j<224;j++) {
+		for (INT32 i=0;i<256;i++) {
 			if (*f)	*d = RamCurPal[*f];
 			else 	*d = RamCTB64k[*s >> 1];
 			d--;
@@ -1710,10 +1710,10 @@ static int ComadDraw()
 		}
 	}
 
-	int sx, sy;
+	INT32 sx, sy;
 	sx = sy = 0;
-	for (int offs=0; offs<0x000800; offs+=4) {
-		int code,color,flipx,flipy;
+	for (INT32 offs=0; offs<0x000800; offs+=4) {
+		INT32 code,color,flipx,flipy;
 
 		code = RamSpr[offs + 1] & 0x1fff;
 		color = (RamSpr[offs] & 0x003c) << 2;
@@ -1740,7 +1740,7 @@ static int ComadDraw()
 	return 0;
 }
 
-static int GalpanicFrame()
+static INT32 GalpanicFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
@@ -1748,24 +1748,24 @@ static int GalpanicFrame()
 	DrvInput[1] = 0x0000;													// Joy1
 	DrvInput[3] = 0x0000;													// Joy2
 	DrvInput[5] = 0x0000;													// Buttons
-	for (int i = 0; i < 5; i++) {
+	for (INT32 i = 0; i < 5; i++) {
 		DrvInput[1] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[3] |= (DrvJoy2[i] & 1) << i;
 	}
-	for (int i = 0; i < 7; i++) {
+	for (INT32 i = 0; i < 7; i++) {
 		DrvInput[5] |= (DrvButton[i] & 1) << i;
 	}
 
-	nCyclesTotal[0] = (int)((long long)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 
 	SekNewFrame();
 
 	SekOpen(0);
 
+	SekRun(nCyclesTotal[0] / 2);
 	SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);						// let game run ???
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 2);
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);						// update palette
-	SekRun(nCyclesTotal[0]);
 
 	SekClose();
 
@@ -1777,7 +1777,7 @@ static int GalpanicFrame()
 	return 0;
 }
 
-static int ComadFrame()
+static INT32 ComadFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
@@ -1785,11 +1785,11 @@ static int ComadFrame()
 	DrvInput[1] = 0x0000;													// Joy1
 	DrvInput[3] = 0x0000;													// Joy2
 	DrvInput[5] = 0x0000;													// Buttons
-	for (int i = 0; i < 5; i++) {
+	for (INT32 i = 0; i < 5; i++) {
 		DrvInput[1] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[3] |= (DrvJoy2[i] & 1) << i;
 	}
-	for (int i = 0; i < 7; i++) {
+	for (INT32 i = 0; i < 7; i++) {
 		DrvInput[5] |= (DrvButton[i] & 1) << i;
 	}
 
@@ -1798,21 +1798,21 @@ static int ComadFrame()
 	ComadClearOpposites(&DrvInput[3]);
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "supmodel") || !strcmp(BurnDrvGetTextA(DRV_NAME), "fantsia2") || !strcmp(BurnDrvGetTextA(DRV_NAME), "fantsia2a") || !strcmp(BurnDrvGetTextA(DRV_NAME), "wownfant")) {
-	nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 		} else {
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 		}
 
 	SekOpen(0);
 	SekNewFrame();
 
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);						// let game run
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);						// enable icons
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);						// update palette
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 
 	SekClose();
 
@@ -1825,7 +1825,7 @@ static int ComadFrame()
 	return 0;
 }
 
-static int GalhustlFrame()
+static INT32 GalhustlFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
@@ -1833,21 +1833,21 @@ static int GalhustlFrame()
 	DrvInput[1] = 0x0000;													// Joy1
 	DrvInput[3] = 0x0000;													// Joy2
 	DrvInput[5] = 0x0000;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[1] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[3] |= (DrvJoy2[i] & 1) << i;
 	}
-	for (int i = 0; i < 7; i++) {
+	for (INT32 i = 0; i < 7; i++) {
 		DrvInput[5] |= (DrvButton[i] & 1) << i;
 	}
 
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
-	nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		SekOpen(nCurrentCPU);
@@ -1869,7 +1869,7 @@ static int GalhustlFrame()
 	return 0;
 }
 
-static int GalpanicScan(int nAction,int *pnMin)
+static INT32 GalpanicScan(INT32 nAction,INT32 *pnMin)
 {
 struct BurnArea ba;
 
@@ -2012,7 +2012,7 @@ struct BurnDriver BurnDrvGalhustl = {
 	256, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvZipzap = {
+struct BurnDriver BurnDrvZipzap = {
 	"zipzap", NULL, NULL, NULL, "1995",
 	"Zip & Zap\0", "Imperfect GFXs, No Sound", "Barko Corp", "Miscellaneous",
 	NULL, NULL, NULL, NULL,

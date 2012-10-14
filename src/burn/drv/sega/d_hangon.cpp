@@ -4,7 +4,7 @@
 Input Defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo EndurorInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 0, "p1 coin"    },
@@ -814,7 +814,7 @@ void HangonPPI1WritePortA(UINT8 data)
 	System16AnalogSelect = (data >> 2) & 3;
 	
 	if (!(data & 0x40)) {
-		int nLastCPU = nSekActive;
+		INT32 nLastCPU = nSekActive;
 		SekClose();
 		SekOpen(1);
 		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
@@ -822,7 +822,7 @@ void HangonPPI1WritePortA(UINT8 data)
 		SekOpen(nLastCPU);
 	}
 	if (data & 0x20) {
-		int nLastCPU = nSekActive;
+		INT32 nLastCPU = nSekActive;
 		SekClose();
 		SekOpen(1);
 		SekReset();
@@ -831,7 +831,7 @@ void HangonPPI1WritePortA(UINT8 data)
 	}
 }
 
-unsigned short __fastcall HangonReadWord(unsigned int a)
+UINT16 __fastcall HangonReadWord(UINT32 a)
 {
 	switch (a) {	
 		case 0xe00000:
@@ -861,7 +861,7 @@ unsigned short __fastcall HangonReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall HangonReadByte(unsigned int a)
+UINT8 __fastcall HangonReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xe00001:
@@ -903,7 +903,7 @@ unsigned char __fastcall HangonReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall HangonWriteByte(unsigned int a, unsigned char d)
+void __fastcall HangonWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x403fff) {
 		System16ATileByteWrite((a - 0x400000) ^ 1, d);
@@ -943,7 +943,7 @@ void __fastcall HangonWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-void __fastcall HangonWriteWord(unsigned int a, unsigned short d)
+void __fastcall HangonWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x403fff) {
 		System16ATileWordWrite(a - 0x400000, d);
@@ -965,11 +965,11 @@ void __fastcall HangonWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-unsigned short __fastcall SharrierReadWord(unsigned int a)
+UINT16 __fastcall SharrierReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x140010: {
-			return (unsigned short)(0xff - System16Input[0]);
+			return (UINT16)(0xff - System16Input[0]);
 		}
 		
 		case 0x140012: {
@@ -977,18 +977,18 @@ unsigned short __fastcall SharrierReadWord(unsigned int a)
 		}
 
 		case 0x140014: {
-			return (unsigned short)System16Dip[0];
+			return (UINT16)System16Dip[0];
 		}
 		
 		case 0x140016: {
-			return (unsigned short)System16Dip[1];
+			return (UINT16)System16Dip[1];
 		}
 	}
 
 	return 0;
 }
 
-unsigned char __fastcall SharrierReadByte(unsigned int a)
+UINT8 __fastcall SharrierReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x140001:
@@ -1022,7 +1022,7 @@ unsigned char __fastcall SharrierReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall SharrierWriteByte(unsigned int a, unsigned char d)
+void __fastcall SharrierWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x100000 && a <= 0x107fff) {
 		System16ATileByteWrite((a - 0x100000) ^ 1, d);
@@ -1052,7 +1052,7 @@ void __fastcall SharrierWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall SharrierWriteWord(unsigned int a, unsigned short d)
+void __fastcall SharrierWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x100000 && a <= 0x107fff) {
 		System16ATileWordWrite(a - 0x100000, d);
@@ -1064,9 +1064,9 @@ void __fastcall SharrierWriteWord(unsigned int a, unsigned short d)
 Driver Inits
 ====================================================*/
 
-unsigned char EndurorProcessAnalogControls(UINT16 value)
+UINT8 EndurorProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1102,7 +1102,7 @@ unsigned char EndurorProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -1114,9 +1114,9 @@ unsigned char EndurorProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char HangonProcessAnalogControls(UINT16 value)
+UINT8 HangonProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1125,7 +1125,7 @@ unsigned char HangonProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -1151,9 +1151,9 @@ unsigned char HangonProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char SharrierProcessAnalogControls(UINT16 value)
+UINT8 SharrierProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1162,7 +1162,7 @@ unsigned char SharrierProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -1177,7 +1177,7 @@ unsigned char SharrierProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort1 >> 4);
 			}
@@ -1212,7 +1212,7 @@ void SharrierMap68K()
 	SekClose();
 }
 
-static int EndurorInit()
+static INT32 EndurorInit()
 {
 	System16Map68KDo = SharrierMap68K;
 	
@@ -1222,19 +1222,19 @@ static int EndurorInit()
 	
 	System16PCMDataSizePreAllocate = 0x18000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
-	unsigned char *pTemp = (unsigned char*)malloc(0x10000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x10000);
 	memcpy(pTemp, System16PCMData, 0x10000);
 	memset(System16PCMData, 0, 0x18000);
 	memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
 	memcpy(System16PCMData + 0x10000, pTemp + 0x08000, 0x8000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	return nRet;
 }
 
-static int Enduror1Init()
+static INT32 Enduror1Init()
 {
 	System16Map68KDo = SharrierMap68K;
 	
@@ -1242,15 +1242,13 @@ static int Enduror1Init()
 	
 	System16ClockSpeed = 10000000;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-int EnduroblLoadRom()
+INT32 EnduroblLoadRom()
 {
-	int nRet = 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0x40000);
+	INT32 nRet = 1;
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x40000);
 	
 	if (pTemp) {
 		memcpy(pTemp, System16Rom, 0x40000);
@@ -1258,14 +1256,14 @@ int EnduroblLoadRom()
 		memcpy(System16Rom + 0x00000, pTemp + 0x10000, 0x10000);
 		memcpy(System16Rom + 0x10000, pTemp + 0x20000, 0x20000);
 		memcpy(System16Rom + 0x30000, pTemp + 0x00000, 0x10000);
-		free(pTemp);
+		BurnFree(pTemp);
 		nRet = 0;
 	}
-		
+
 	return nRet;
 }
 
-static int EnduroblDecryptOpCode()
+static INT32 EnduroblDecryptOpCode()
 {
 	UINT16 *rom = (UINT16*)System16Rom;
 	UINT16 *decrypt = (UINT16*)System16Code;
@@ -1275,7 +1273,7 @@ static int EnduroblDecryptOpCode()
 	return 0;
 }
 
-static int EnduroblInit()
+static INT32 EnduroblInit()
 {
 	System16CustomLoadRomDo = EnduroblLoadRom;
 	
@@ -1287,31 +1285,29 @@ static int EnduroblInit()
 	
 	System16ClockSpeed = 10000000;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-static int HangonInit()
+static INT32 HangonInit()
 {
 	System16ProcessAnalogControlsDo = HangonProcessAnalogControls;
 	
 	System16ClockSpeed = 25174800 / 4;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) Hangon = true;
 	
 	return nRet;
 }
 
-static int ShangonrbInit()
+static INT32 ShangonrbInit()
 {
 	System16ProcessAnalogControlsDo = HangonProcessAnalogControls;
 	
 	System16ClockSpeed = 10000000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) Hangon = true;
 	
@@ -1321,10 +1317,10 @@ static int ShangonrbInit()
 void Sharrier_Sim8751()
 {
 	// Inputs
-	*((unsigned short*)(System16Ram + 0x0492)) = (unsigned short)((SharrierProcessAnalogControls(0) << 8) | SharrierProcessAnalogControls(1));
+	*((UINT16*)(System16Ram + 0x0492)) = BURN_ENDIAN_SWAP_INT16((UINT16)((SharrierProcessAnalogControls(0) << 8) | SharrierProcessAnalogControls(1)));
 }
 
-static int SharrierInit()
+static INT32 SharrierInit()
 {	
 	Simulate8751 = Sharrier_Sim8751;
 	
@@ -1332,9 +1328,7 @@ static int SharrierInit()
 	
 	System16ClockSpeed = 10000000;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
 /*====================================================

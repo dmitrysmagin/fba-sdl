@@ -9,19 +9,19 @@ enum SekRegister {
 	SEK_REG_CACR, SEK_REG_CAAR
 };
 
-extern void (*SekDbgBreakpointHandlerRead)(unsigned int, int);
-extern void (*SekDbgBreakpointHandlerFetch)(unsigned int, int);
-extern void (*SekDbgBreakpointHandlerWrite)(unsigned int, int);
+extern void (*SekDbgBreakpointHandlerRead)(UINT32, INT32);
+extern void (*SekDbgBreakpointHandlerFetch)(UINT32, INT32);
+extern void (*SekDbgBreakpointHandlerWrite)(UINT32, INT32);
 
 void SekDbgDisableBreakpoints();
 void SekDbgEnableBreakpoints();
 void SekDbgEnableSingleStep();
 
-int SekDbgSetBreakpointDataRead(unsigned int nAddress, int nIdentifier);
-int SekDbgSetBreakpointDataWrite(unsigned int nAddress, int nIdentifier);
-int SekDbgSetBreakpointFetch(unsigned int nAddress, int nIdentifier);
+INT32 SekDbgSetBreakpointDataRead(UINT32 nAddress, INT32 nIdentifier);
+INT32 SekDbgSetBreakpointDataWrite(UINT32 nAddress, INT32 nIdentifier);
+INT32 SekDbgSetBreakpointFetch(UINT32 nAddress, INT32 nIdentifier);
 
-int SekDbgGetCPUType();
-int SekDbgGetPendingIRQ();
-unsigned int SekDbgGetRegister(SekRegister nRegister);
-bool SekDbgSetRegister(SekRegister nRegister, unsigned int nValue);
+INT32 SekDbgGetCPUType();
+INT32 SekDbgGetPendingIRQ();
+UINT32 SekDbgGetRegister(SekRegister nRegister);
+bool SekDbgSetRegister(SekRegister nRegister, UINT32 nValue);

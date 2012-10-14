@@ -22,26 +22,27 @@
 //
 
 #include "burnint.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "burn_ym2151.h"
 #include "burn_ym2203.h"
 #include "msm6295.h"
 #include "bitswap.h"
 
-static unsigned char main2sub[2];
-static unsigned char sub2main[2];
-static int main2sub_pending;
-static int sub2main_pending;
-static int SeibuSoundBank;
+static UINT8 main2sub[2];
+static UINT8 sub2main[2];
+static INT32 main2sub_pending;
+static INT32 sub2main_pending;
+static INT32 SeibuSoundBank;
 
-unsigned char *SeibuZ80DecROM;
-unsigned char *SeibuZ80ROM;
-unsigned char *SeibuZ80RAM;
-int seibu_coin_input;
+UINT8 *SeibuZ80DecROM;
+UINT8 *SeibuZ80ROM;
+UINT8 *SeibuZ80RAM;
+INT32 seibu_coin_input;
 
-static int seibu_sndcpu_frequency;
-static int seibu_snd_type;
-static int is_sdgndmps = 0;
+static INT32 seibu_sndcpu_frequency;
+static INT32 seibu_snd_type;
+static INT32 is_sdgndmps = 0;
 
 enum
 {
@@ -52,9 +53,9 @@ enum
 	RST18_CLEAR
 };
 
-static void update_irq_lines(int param)
+static void update_irq_lines(INT32 param)
 {
-	static int irq1,irq2;
+	static INT32 irq1,irq2;
 
 	switch(param)
 	{
@@ -89,8 +90,12 @@ static void update_irq_lines(int param)
 	}
 }
 
-unsigned char seibu_main_word_read(int offset)
+UINT8 seibu_main_word_read(INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_main_word_read called without init\n"));
+#endif
+
 	offset = (offset >> 1) & 7;
 
 	switch (offset)
@@ -105,8 +110,12 @@ unsigned char seibu_main_word_read(int offset)
 	}
 }
 
-void seibu_main_word_write(int offset, unsigned char data)
+void seibu_main_word_write(INT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_main_word_write called without init\n"));
+#endif
+
 	offset = (offset >> 1) & 7;
 
 	switch (offset)
@@ -131,15 +140,19 @@ void seibu_main_word_write(int offset, unsigned char data)
 	}
 }
 
-void seibu_sound_mustb_write_word(int /*offset*/, unsigned char data)
+void seibu_sound_mustb_write_word(INT32 /*offset*/, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_mustb_write_word called without init\n"));
+#endif
+
 	main2sub[0] = data & 0xff;
-	main2sub[1] = data >> 8;
+	main2sub[1] = 0; // originally data >> 8 which is effectively 0
 	
 	update_irq_lines(RST18_ASSERT);
 }
 
-static void seibu_z80_bank(int data)
+static void seibu_z80_bank(INT32 data)
 {
 	SeibuSoundBank = data & 1;
 
@@ -147,8 +160,12 @@ static void seibu_z80_bank(int data)
 	ZetMapArea(0x8000, 0xffff, 2, SeibuZ80ROM + 0x10000 + (data & 1) * 0x8000);
 }
 
-void __fastcall seibu_sound_write(unsigned short address, unsigned char data)
+void __fastcall seibu_sound_write(UINT16 address, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_write called without init\n"));
+#endif
+
 	switch (address)
 	{
 		case 0x4000:
@@ -231,8 +248,12 @@ void __fastcall seibu_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall seibu_sound_read(unsigned short address)
+UINT8 __fastcall seibu_sound_read(UINT16 address)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_read called without init\n"));
+#endif
+
 	switch (address)
 	{
 		case 0x4008:
@@ -274,7 +295,7 @@ unsigned char __fastcall seibu_sound_read(unsigned short address)
 	return 0;
 }
 
-static unsigned char decrypt_data(int a,int src)
+static UINT8 decrypt_data(INT32 a,INT32 src)
 {
 	if ( BIT(a,9)  &  BIT(a,8))             src ^= 0x80;
 	if ( BIT(a,11) &  BIT(a,4) &  BIT(a,1)) src ^= 0x40;
@@ -288,7 +309,7 @@ static unsigned char decrypt_data(int a,int src)
 	return src;
 }
 
-static unsigned char decrypt_opcode(int a,int src)
+static UINT8 decrypt_opcode(INT32 a,INT32 src)
 {
 	if ( BIT(a,9)  &  BIT(a,8))             src ^= 0x80;
 	if ( BIT(a,11) &  BIT(a,4) &  BIT(a,1)) src ^= 0x40;
@@ -307,23 +328,23 @@ static unsigned char decrypt_opcode(int a,int src)
 	return src;
 }
 
-static void seibu_sound_decrypt(int length)
+static void seibu_sound_decrypt(INT32 length)
 {
-	for (int i = 0; i < length; i++)
+	for (INT32 i = 0; i < length; i++)
 	{
-		unsigned char src = SeibuZ80ROM[i];
+		UINT8 src = SeibuZ80ROM[i];
 
 		SeibuZ80ROM[i] = decrypt_data(i,src);
 		SeibuZ80DecROM[i] = decrypt_opcode(i,src);
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / seibu_sndcpu_frequency;
+	return (INT64)ZetTotalCycles() * nSoundRate / seibu_sndcpu_frequency;
 }
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		update_irq_lines(RST10_ASSERT);
@@ -332,7 +353,7 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static void Drv2151FMIRQHandler(int nStatus)
+static void Drv2151FMIRQHandler(INT32 nStatus)
 {
 	DrvFMIRQHandler(0, nStatus);
 }
@@ -344,6 +365,10 @@ static double Drv2203GetTime()
 
 void seibu_sound_reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_reset called without init\n"));
+#endif
+
 	ZetOpen(0);
 	ZetReset();
 	update_irq_lines(VECTOR_INIT);
@@ -376,8 +401,10 @@ void seibu_sound_reset()
 	SeibuSoundBank = 0;
 }
 
-void seibu_sound_init(int type, int len, int freq0 /*cpu*/, int freq1 /*ym*/, int freq2 /*oki*/)
+void seibu_sound_init(INT32 type, INT32 len, INT32 freq0 /*cpu*/, INT32 freq1 /*ym*/, INT32 freq2 /*oki*/)
 {
+	DebugDev_SeibuSndInitted = 1;
+	
 	seibu_snd_type = type;
 
 	if (len && SeibuZ80DecROM != NULL) {
@@ -388,7 +415,7 @@ void seibu_sound_init(int type, int len, int freq0 /*cpu*/, int freq1 /*ym*/, in
 
 	seibu_sndcpu_frequency	= freq0;
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x1fff, 0, SeibuZ80ROM);
 	ZetMapArea(0x0000, 0x1fff, 2, SeibuZ80DecROM, SeibuZ80ROM);
@@ -429,6 +456,10 @@ void seibu_sound_init(int type, int len, int freq0 /*cpu*/, int freq1 /*ym*/, in
 
 void seibu_sound_exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_exit called without init\n"));
+#endif
+
 	switch (seibu_snd_type & 3)
 	{
 		case 0:
@@ -456,10 +487,16 @@ void seibu_sound_exit()
 	SeibuZ80RAM = NULL;
 	seibu_sndcpu_frequency = 0;
 	is_sdgndmps = 0;
+	
+	DebugDev_SeibuSndInitted = 0;
 }
 
-void seibu_sound_update(short *pbuf, int nLen)
+void seibu_sound_update(INT16 *pbuf, INT32 nLen)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_update called without init\n"));
+#endif
+
 	switch (seibu_snd_type & 3)
 	{
 		case 0:
@@ -476,12 +513,16 @@ void seibu_sound_update(short *pbuf, int nLen)
 	}
 
 	if (seibu_snd_type & 4) 
-		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
-	MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+		MSM6295Render(1, pbuf, nLen);
+	MSM6295Render(0, pbuf, nLen);
 }
 
-void seibu_sound_scan(int *pnMin, int nAction)
+void seibu_sound_scan(INT32 *pnMin, INT32 nAction)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_scan called without init\n"));
+#endif
+
 	if (nAction & ACB_VOLATILE)
 	{		
 		ZetScan(nAction);
@@ -522,4 +563,3 @@ void seibu_sound_scan(int *pnMin, int nAction)
 		ZetClose();
 	}
 }
-			

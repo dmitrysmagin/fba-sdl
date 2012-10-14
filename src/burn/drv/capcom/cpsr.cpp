@@ -2,26 +2,26 @@
 
 // CPS Scroll2 with Row scroll support
 
-unsigned char *CpsrBase=NULL; // Tile data base
-int nCpsrScrX=0,nCpsrScrY=0; // Basic scroll info
-unsigned short *CpsrRows=NULL; // Row scroll table, 0x400 words long
+UINT8 *CpsrBase=NULL; // Tile data base
+INT32 nCpsrScrX=0,nCpsrScrY=0; // Basic scroll info
+UINT16 *CpsrRows=NULL; // Row scroll table, 0x400 words long
 int nCpsrRowStart=0; // Start of row scroll (can wrap?)
-static int nShiftY=0;
-static int EndLineInfo=0;
+static INT32 nShiftY=0;
+static INT32 EndLineInfo=0;
 
 struct CpsrLineInfo CpsrLineInfo[15];
 
-static void GetRowsRange(int *pnStart,int *pnWidth,int nRowFrom,int nRowTo)
+static void GetRowsRange(INT32 *pnStart,INT32 *pnWidth,INT32 nRowFrom,INT32 nRowTo)
 {
-  int i,nStart,nWidth;
+  INT32 i,nStart,nWidth;
 
   // Get the range of scroll values within nRowCount rows
   // Start with zero range
-  nStart=CpsrRows[nRowFrom&0x3ff]; nStart&=0x3ff; nWidth=0;
+  nStart = BURN_ENDIAN_SWAP_INT16(CpsrRows[nRowFrom&0x3ff]); nStart&=0x3ff; nWidth=0;
   for (i=nRowFrom;i<nRowTo;i++)
   {
-    int nViz; int nDiff;
-    nViz=CpsrRows[i&0x3ff]; nViz&=0x3ff;
+    INT32 nViz; INT32 nDiff;
+    nViz = BURN_ENDIAN_SWAP_INT16(CpsrRows[i&0x3ff]); nViz&=0x3ff;
     // Work out if this is on the left or the right of our
     // start point.
     nDiff=nViz-nStart;
@@ -47,9 +47,9 @@ static void GetRowsRange(int *pnStart,int *pnWidth,int nRowFrom,int nRowTo)
 }
 
 
-static int PrepareRows()
+static INT32 PrepareRows()
 {
-  int y; int r;
+  INT32 y; INT32 r;
   struct CpsrLineInfo *pli;
   // Calculate the amount of pixels to shift each
   // row of the tile lines, assuming we draw tile x at
@@ -59,18 +59,18 @@ static int PrepareRows()
   for (y = -1, pli = CpsrLineInfo; y < EndLineInfo; y++, pli++)
   {
     // Maximum row scroll left and right on this line
-    int nMaxLeft=0,nMaxRight=0;
-    int ty; short *pr;
+    INT32 nMaxLeft=0,nMaxRight=0;
+    INT32 ty; INT16 *pr;
 
     if (CpsrRows==NULL)
     {
       // No row shift - all the same
-      int v;
+      INT32 v;
       v =(pli->nTileStart<<4)-nCpsrScrX;
       nMaxLeft=v; nMaxRight=v;
       for (ty=0,pr=pli->Rows; ty<16; ty++,pr++)
       {
-        *pr=(short)v;
+        *pr=(INT16)v;
       }
     }
     else
@@ -80,12 +80,12 @@ static int PrepareRows()
         // Get the row offset, if it's in range
         if (r>=0 && r<nEndline)
         {
-          int v;
+          INT32 v;
           v =(pli->nTileStart<<4)-nCpsrScrX;
-          v-=CpsrRows[(nCpsrRowStart+r)&0x3ff];
+          v -= BURN_ENDIAN_SWAP_INT16(CpsrRows[(nCpsrRowStart+r)&0x3ff]);
           // clip to 10-bit signed
           v+=0x200; v&=0x3ff; v-=0x200;
-          *pr=(short)v;
+          *pr=(INT16)v;
                if (v<nMaxLeft)  nMaxLeft=v;
           else if (v>nMaxRight) nMaxRight=v;
         }
@@ -107,9 +107,9 @@ static int PrepareRows()
 // row scroll each tile line uses (pli->nStart/nWidth),
 // and finding which tiles are visible onscreen (pli->nTileStart/End).
 
-int Cps1rPrepare()
+INT32 Cps1rPrepare()
 {
-  int y; struct CpsrLineInfo *pli;
+  INT32 y; struct CpsrLineInfo *pli;
   if (CpsrBase==NULL) return 1;
 
   nEndline = 224;
@@ -118,11 +118,11 @@ int Cps1rPrepare()
 
   for (y=-1,pli=CpsrLineInfo; y<EndLineInfo; y++,pli++)
   {
-    int nStart=0,nWidth=0;
+    INT32 nStart=0,nWidth=0;
 
     if (CpsrRows!=NULL)
     {
-      int nRowFrom,nRowTo;
+      INT32 nRowFrom,nRowTo;
       // Find out which rows we need to check
       nRowFrom=(y<<4)+nShiftY;
       nRowTo=nRowFrom+16;
@@ -152,9 +152,9 @@ int Cps1rPrepare()
   return 0;
 }
 
-int Cps2rPrepare()
+INT32 Cps2rPrepare()
 {
-  int y;
+  INT32 y;
   struct CpsrLineInfo *pli;
   if (CpsrBase==NULL) return 1;
 
@@ -163,11 +163,11 @@ int Cps2rPrepare()
   nShiftY=16-(nCpsrScrY&15);
   for (y = -1, pli = CpsrLineInfo; y < EndLineInfo; y++, pli++)
   {
-    int nStart=0,nWidth=0;
+    INT32 nStart=0,nWidth=0;
 
     if (CpsrRows!=NULL)
     {
-      int nRowFrom,nRowTo;
+      INT32 nRowFrom,nRowTo;
       // Find out which rows we need to check
       nRowFrom=(y<<4)+nShiftY;
       nRowTo=nRowFrom+16;

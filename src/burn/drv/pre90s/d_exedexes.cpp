@@ -2,32 +2,33 @@
 // Based on MAME driver by Richard Davies, Paul Swan, and various others
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "sn76496.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *MemEnd;
-static unsigned char *Rom0, *Rom1, *Gfx0, *Gfx1, *Gfx2, *Gfx3, *Gfx4, *Prom;
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
-static unsigned int *Palette, *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT8 *Mem, *MemEnd;
+static UINT8 *Rom0, *Rom1, *Gfx0, *Gfx1, *Gfx2, *Gfx3, *Gfx4, *Prom;
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
+static UINT32 *Palette, *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *fg_tile_transp;
+static UINT8 *fg_tile_transp;
 
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvInputs[3], DrvReset;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvInputs[3], DrvReset;
 
-static unsigned char exedexes_soundlatch;
+static UINT8 exedexes_soundlatch;
 
-static unsigned char exedexes_txt_enable;
-static unsigned char exedexes_obj_enable;
-static unsigned char exedexes_bg_enable;
-static unsigned char exedexes_fg_enable;
+static UINT8 exedexes_txt_enable;
+static UINT8 exedexes_obj_enable;
+static UINT8 exedexes_bg_enable;
+static UINT8 exedexes_fg_enable;
 
-static unsigned short exedexes_nbg_yscroll;
-static unsigned short exedexes_nbg_xscroll;
-static unsigned short exedexes_bg_xscroll;
+static UINT16 exedexes_nbg_yscroll;
+static UINT16 exedexes_nbg_xscroll;
+static UINT16 exedexes_bg_xscroll;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -125,7 +126,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-unsigned char __fastcall exedexes_cpu0_read(unsigned short address)
+UINT8 __fastcall exedexes_cpu0_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -142,7 +143,7 @@ unsigned char __fastcall exedexes_cpu0_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall exedexes_cpu0_write(unsigned short address, unsigned char data)
+void __fastcall exedexes_cpu0_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -189,7 +190,7 @@ void __fastcall exedexes_cpu0_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall exedexes_cpu1_read(unsigned short address)
+UINT8 __fastcall exedexes_cpu1_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -200,7 +201,7 @@ unsigned char __fastcall exedexes_cpu1_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall exedexes_cpu1_write(unsigned short address, unsigned char data)
+void __fastcall exedexes_cpu1_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -220,14 +221,14 @@ static inline void DrvMakeInputs()
 {
 	DrvInputs[0] = DrvInputs[1] = DrvInputs[2] = 0xff;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -243,7 +244,7 @@ static int DrvDoReset()
 	exedexes_nbg_xscroll = 0;
 	exedexes_bg_xscroll = 0;
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -254,9 +255,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom0           = Next; Next += 0x10000;
 	Rom1           = Next; Next += 0x05000;
@@ -272,72 +273,72 @@ static int MemIndex()
 
 	fg_tile_transp = Next; Next += 0x00100;
 
-	Palette	       = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
-	DrvPalette     = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Palette	       = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	DrvPalette     = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
-	pFMBuffer      = (short*)Next; Next += (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer      = (INT16*)Next; Next += (nBurnSoundLen * 3 * sizeof(INT16));
 
 	MemEnd         = Next;
 
 	return 0;
 }
 
-static int PaletteInit()
+static INT32 PaletteInit()
 {
-	unsigned int *tmp = (unsigned int*)malloc(0x100 * sizeof(int));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x100 * sizeof(UINT32));
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < 0x100; i++)
+	for (INT32 i = 0; i < 0x100; i++)
 	{
-		int r = Prom[i + 0x000];
-		int g = Prom[i + 0x100];
-		int b = Prom[i + 0x200];
+		INT32 r = Prom[i + 0x000];
+		INT32 g = Prom[i + 0x100];
+		INT32 b = Prom[i + 0x200];
 
 		tmp[i] = (r << 20) | (r << 16) | (g << 12) | (g << 8) | (b << 4) | b;
 	}
 
 	Prom += 0x300;
 
-	for (int i = 0; i < 0x100; i++) {
+	for (INT32 i = 0; i < 0x100; i++) {
 		Palette[i] = tmp[Prom[i] | 0xc0];
 	}
 
-	for (int i = 0x100; i < 0x200; i++) {
+	for (INT32 i = 0x100; i < 0x200; i++) {
 		Palette[i] = tmp[Prom[i] | 0x00];
 	}
 
-	for (int i = 0x200; i < 0x300; i++) {
+	for (INT32 i = 0x200; i < 0x300; i++) {
 		Palette[i] = tmp[Prom[i] | 0x40];
 	}
 
-	for (int i = 0x300; i < 0x400; i++) {
-		int entry = Prom[i] | (Prom[i + 0x100] << 4) | 0x80;
+	for (INT32 i = 0x300; i < 0x400; i++) {
+		INT32 entry = Prom[i] | (Prom[i + 0x100] << 4) | 0x80;
 		Palette[i] = tmp[entry];
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int GraphicsDecode()
+static INT32 GraphicsDecode()
 {
-	static int TilePlanes[2] = { 0x004, 0x000 };
-	static int SpriPlanes[4] = { 0x20004, 0x20000, 0x00004, 0x00000 };
-	static int TileXOffs[32] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b, 
+	static INT32 TilePlanes[2] = { 0x004, 0x000 };
+	static INT32 SpriPlanes[4] = { 0x20004, 0x20000, 0x00004, 0x00000 };
+	static INT32 TileXOffs[32] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b, 
 				     0x200, 0x201, 0x202, 0x203, 0x208, 0x209, 0x20a, 0x20b, 
 				     0x400, 0x401, 0x402, 0x403, 0x408, 0x409, 0x40a, 0x40b, 
 				     0x600, 0x601, 0x602, 0x603, 0x608, 0x609, 0x60a, 0x60b };
-	static int SpriXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b, 
+	static INT32 SpriXOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b, 
 				     0x100, 0x101, 0x102, 0x103, 0x108, 0x109, 0x10a, 0x10b };
-	static int TileYOffs[32] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070, 
+	static INT32 TileYOffs[32] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070, 
 				     0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0, 
 				     0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170, 
 				     0x180, 0x190, 0x1a0, 0x1b0, 0x1c0, 0x1d0, 0x1e0, 0x1f0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x8000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x8000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -358,32 +359,32 @@ static int GraphicsDecode()
 
 	GfxDecode(0x100, 4, 16, 16, SpriPlanes, SpriXOffs, TileYOffs, 0x200, tmp, Gfx3);
 
-	for (int i = 0; i < 0x10000; i++) {
+	for (INT32 i = 0; i < 0x10000; i++) {
 		if (Gfx2[i]) fg_tile_transp[i>>8] = 1;
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		pAY8910Buffer[i] = pFMBuffer + nBurnSoundLen * i;
 	}
 
 	{
-		for (int i = 0; i < 3; i++) {
+		for (INT32 i = 0; i < 3; i++) {
 			if (BurnLoadRom(Rom0 + i * 0x4000, i +  0, 1)) return 1;
 		}
 
@@ -391,13 +392,13 @@ static int DrvInit()
 		if (BurnLoadRom(Gfx0, 4, 1)) return 1;
 		if (BurnLoadRom(Gfx1, 5, 1)) return 1;
 
-		for (int i = 0; i < 2; i++) {
+		for (INT32 i = 0; i < 2; i++) {
 			if (BurnLoadRom(Gfx2 + i * 0x4000, i +  6, 1)) return 1;
 			if (BurnLoadRom(Gfx3 + i * 0x4000, i +  8, 1)) return 1;
 			if (BurnLoadRom(Gfx4 + i * 0x4000, i + 10, 1)) return 1;
 		}
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(Prom + i * 0x0100, i + 12, 1)) return 1;
 		}
 
@@ -405,7 +406,7 @@ static int DrvInit()
 		if (PaletteInit()) return 1;
 	}
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xbfff, 0, Rom0 + 0x0000);
 	ZetMapArea(0x0000, 0xbfff, 2, Rom0 + 0x0000);
@@ -421,6 +422,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x3fff, 0, Rom1 + 0x0000);
 	ZetMapArea(0x0000, 0x3fff, 2, Rom1 + 0x0000);
@@ -436,6 +438,8 @@ static int DrvInit()
 
 	SN76489Init(0, 3000000, 0);
 	SN76489Init(1, 3000000, 1);
+	SN76496SetVolShift(0, 2);
+	SN76496SetVolShift(1, 2);
 
 	GenericTilesInit();
 
@@ -444,18 +448,18 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	AY8910Exit(0);
 	SN76496Exit();
 	ZetExit();
 	GenericTilesExit();
 
-	free (Mem);
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Gfx3 = Gfx4 = Prom = NULL;
-	for (int i = 0; i < 3; i++) pAY8910Buffer[3] = NULL;
+	for (INT32 i = 0; i < 3; i++) pAY8910Buffer[i] = NULL;
 	Palette = DrvPalette = NULL;
 	fg_tile_transp = NULL;
 	pFMBuffer = NULL;
@@ -465,20 +469,20 @@ static int DrvExit()
 }
 
 
-static void draw_sprites(int priority)
+static void draw_sprites(INT32 priority)
 {
 	if (!exedexes_obj_enable) return;
 
-	for (int offs = 0x0fe0; offs >= 0; offs -= 0x20)
+	for (INT32 offs = 0x0fe0; offs >= 0; offs -= 0x20)
 	{
 		if ((Rom0[0xf000 + offs + 1] & 0x40) == priority)
 		{
-			int code  = Rom0[0xf000 + offs];
-			int color = Rom0[0xf001 + offs] & 0x0f;
-			int flipx = Rom0[0xf001 + offs] & 0x10;
-			int flipy = Rom0[0xf001 + offs] & 0x20;
-			int sx    = Rom0[0xf003 + offs] - ((Rom0[0xf001 + offs] & 0x80) << 1);
-			int sy    = Rom0[0xf002 + offs] - 0x10;
+			INT32 code  = Rom0[0xf000 + offs];
+			INT32 color = Rom0[0xf001 + offs] & 0x0f;
+			INT32 flipx = Rom0[0xf001 + offs] & 0x10;
+			INT32 flipy = Rom0[0xf001 + offs] & 0x20;
+			INT32 sx    = Rom0[0xf003 + offs] - ((Rom0[0xf001 + offs] & 0x80) << 1);
+			INT32 sy    = Rom0[0xf002 + offs] - 0x10;
 
 			if (flipy) {
 				if (flipx) {
@@ -497,16 +501,16 @@ static void draw_sprites(int priority)
 	}
 }
 
-static inline void draw_8x8(int sx, int sy, int code, int color)
+static inline void draw_8x8(INT32 sx, INT32 sy, INT32 code, INT32 color)
 {
-	unsigned char *src = Gfx0 + (code << 6);
+	UINT8 *src = Gfx0 + (code << 6);
 	color <<= 2;
 
-	for (int y = sy; y < sy + 8; y++) {
-		for (int x = sx; x < sx + 8; x++, src++) {
+	for (INT32 y = sy; y < sy + 8; y++) {
+		for (INT32 x = sx; x < sx + 8; x++, src++) {
 			if (y < 0 || x < 0 || y >= nScreenHeight || x >= nScreenWidth) continue;
 
-			int pxl = color | *src;
+			INT32 pxl = color | *src;
 			if (Prom[pxl] == 0x0f) continue;
 
 			pTransDraw[(y * nScreenWidth) + x] = pxl;
@@ -514,35 +518,35 @@ static inline void draw_8x8(int sx, int sy, int code, int color)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x400; i++) {
-			int col = Palette[i];
+		for (INT32 i = 0; i < 0x400; i++) {
+			INT32 col = Palette[i];
 			DrvPalette[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 	}
 
 	if (exedexes_bg_enable)
 	{
-		for (int i = 0; i < 16 * 8; i++) {
-			int sx = ((i & 0x0f) << 5);
-			int sy = (i >> 4) << 5;
+		for (INT32 i = 0; i < 16 * 8; i++) {
+			INT32 sx = ((i & 0x0f) << 5);
+			INT32 sy = (i >> 4) << 5;
 
-			int sxscr = sx + exedexes_bg_xscroll;
+			INT32 sxscr = sx + exedexes_bg_xscroll;
 
 			sx -= (exedexes_bg_xscroll & 0x1f);
 
 			if (sx > 0x100) continue;
 			sy -= 0x10;
 
-			int offset = ((sxscr & 0xe0) >> 5) | ((sy & 0xe0) >> 2) | ((sxscr & 0x3f00) >> 1) | 0x4000;
+			INT32 offset = ((sxscr & 0xe0) >> 5) | ((sy & 0xe0) >> 2) | ((sxscr & 0x3f00) >> 1) | 0x4000;
 
-			int attr  = Gfx4[offset];
-			int color = Gfx4[offset + 0x40];
-			int code  = attr & 0x3f;
-			int flipx = attr & 0x40;
-			int flipy = attr & 0x80;
+			INT32 attr  = Gfx4[offset];
+			INT32 color = Gfx4[offset + 0x40];
+			INT32 code  = attr & 0x3f;
+			INT32 flipx = attr & 0x40;
+			INT32 flipy = attr & 0x80;
 
 			if (flipy) {
 				if (flipx) {
@@ -559,28 +563,28 @@ static int DrvDraw()
 			}
 		}
 	} else {
-		memset(pTransDraw, 0, nScreenWidth * nScreenHeight * sizeof (short));
+		memset(pTransDraw, 0, nScreenWidth * nScreenHeight * sizeof (UINT16));
 	}
 
 	draw_sprites(0x40);
 
 	if (exedexes_fg_enable)
 	{
-		for (int i = 0; i < 32 * 16; i++) {
-			int sx = (i & 0x1f) << 4;
-			int sy = (i >> 5) << 4;
+		for (INT32 i = 0; i < 32 * 16; i++) {
+			INT32 sx = (i & 0x1f) << 4;
+			INT32 sy = (i >> 5) << 4;
 
-			int vx = sx + exedexes_nbg_yscroll;
-			int vy = sy + exedexes_nbg_xscroll;
+			INT32 vx = sx + exedexes_nbg_yscroll;
+			INT32 vy = sy + exedexes_nbg_xscroll;
 
 			sx -= exedexes_nbg_yscroll & 0x0f;
 			sy -= exedexes_nbg_xscroll & 0x0f;
 
 			if (sx > 0x100) continue;
 
-			int offset = ((vx & 0xf0) >> 4) | (vy & 0xf0) | (vx & 0x700) | ((vy & 0x700) << 3);
+			INT32 offset = ((vx & 0xf0) >> 4) | (vy & 0xf0) | (vx & 0x700) | ((vy & 0x700) << 3);
 
-			int code = Gfx4[offset];
+			INT32 code = Gfx4[offset];
 
 			if (!fg_tile_transp[code]) continue; 
 			sy -= 0x10;
@@ -593,11 +597,11 @@ static int DrvDraw()
 
 	if (exedexes_txt_enable)
 	{
-		for (int i = 0x40; i < 0x3c0; i++) {
-			int sx    = (i & 0x1f) << 3;
-			int sy    = ((i >> 5) << 3) - 0x10;
-			int code  = Rom0[0xd000 | i] | ((Rom0[0xd400 | i] & 0x80) << 1);
-			int color = Rom0[0xd400 | i] & 0x3f;
+		for (INT32 i = 0x40; i < 0x3c0; i++) {
+			INT32 sx    = (i & 0x1f) << 3;
+			INT32 sy    = ((i >> 5) << 3) - 0x10;
+			INT32 code  = Rom0[0xd000 | i] | ((Rom0[0xd400 | i] & 0x80) << 1);
+			INT32 color = Rom0[0xd400 | i] & 0x3f;
 
 			if (code == 0x0024) continue;
 
@@ -611,7 +615,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -619,35 +623,42 @@ static int DrvFrame()
 
 	DrvMakeInputs();
 
-	int nInterleave = 16;
-	int nCyclesDone[2] = { 0, 0 };
-	int nCyclesTotal[2] = { 4000000 / 60, 3000000 / 60 };
+	INT32 nInterleave = 16;
+	INT32 nCyclesDone[2] = { 0, 0 };
+	INT32 nCyclesTotal[2] = { 4000000 / 60, 3000000 / 60 };
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nCycleSegment;
-
-		ZetOpen(0);
-		nCycleSegment = (nCyclesTotal[0] - nCyclesDone[0]) / (nInterleave - i);
-		nCyclesDone[0] += ZetRun(nCycleSegment);
-		if (i == ((nInterleave / 2) - 1)) {
-//			ZetRaiseIrq(0xd7);
-			ZetSetVector(0xd7);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
-		}
-		if (i == ( nInterleave      - 1)) {
-//			ZetRaiseIrq(0xcf);
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
+		
+		nCurrentCPU = 0;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == 0) {
 			ZetSetVector(0xcf);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			nCyclesDone[nCurrentCPU] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		}
+		if (i == ( nInterleave - 2)) {
+			ZetSetVector(0xd7);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			nCyclesDone[nCurrentCPU] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 		}
 		ZetClose();
-
-		ZetOpen(1);
-		nCycleSegment = (nCyclesTotal[1] - nCyclesDone[1]) / (nInterleave - i);
-		nCyclesDone[1] += ZetRun(nCycleSegment);
+		
+		nCurrentCPU = 1;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		if ((i & 3) == 3) {
-			ZetRaiseIrq(0);
-			nCyclesDone[1] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 		}
 		ZetClose();
 	}
@@ -656,26 +667,20 @@ static int DrvFrame()
 		SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
 		SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
 
-		int nSample;
+		INT32 nSample;
 		if (nBurnSoundLen) {
 			AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-			for (int n = 0; n < nBurnSoundLen; n++) {
+			for (INT32 n = 0; n < nBurnSoundLen; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
-				nSample >>= 2;
+				nSample >>= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
-
-				pBurnSoundOut[(n << 1) | 0] |= nSample;
-				pBurnSoundOut[(n << 1) | 1] |= nSample;
+				nSample = BURN_SND_CLIP(nSample);
+				
+				pBurnSoundOut[(n << 1) + 0] += nSample;
+				pBurnSoundOut[(n << 1) + 1] += nSample;
  			}
 		}
 	}
@@ -687,7 +692,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -770,7 +775,7 @@ struct BurnDriver BurnDrvExedexes = {
 	"exedexes", NULL, NULL, NULL, "1985",
 	"Exed Exes\0", NULL, "Capcom", "Miscellaneous",
 	L"Exed Exes\0\u30A8\u30B0\u30BC\u30C9 \u30A8\u30B0\u30BC\u30B9\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, exedexesRomInfo, exedexesRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	224, 256, 3, 4
@@ -821,7 +826,7 @@ struct BurnDriver BurnDrvSavgbees = {
 	"savgbees", "exedexes", NULL, NULL, "1985",
 	"Savage Bees\0", NULL, "Capcom (Memetron license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, savgbeesRomInfo, savgbeesRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	224, 256, 3, 4

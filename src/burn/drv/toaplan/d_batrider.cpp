@@ -1,21 +1,21 @@
 #include "toaplan.h"
 // Batrider
 
-static unsigned char drvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char drvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char drvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char drvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char drvRegion = 0;
-static unsigned char drvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 drvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 drvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 drvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 drvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 drvRegion = 0;
+static UINT8 drvReset = 0;
+static UINT8 bDrawScreen;
 
-static unsigned char nIRQPending;
+static UINT8 nIRQPending;
 static bool bVBlank;
 
-static int nData;
+static INT32 nData;
 
-static int nCurrentBank;
-static int nTextROMStatus;
+static INT32 nCurrentBank;
+static INT32 nTextROMStatus;
 
 static void Map68KTextROM(bool bMapTextROM);
 
@@ -244,16 +244,16 @@ STDDIPINFOEXT(batridc, batridcRegion, batrider)
 STDDIPINFOEXT(batridk, batridkRegion, batrider)
 STDDIPINFOEXT(batridta, batridtaRegion, batrider)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *RamPal;
-unsigned char *RamShared;
-static int nColCount = 0x0800;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *Ram02, *RamPal;
+UINT8 *RamShared;
+static INT32 nColCount = 0x0800;
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x200000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x040000;			// Z80 ROM
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// Tile data
@@ -266,10 +266,10 @@ static int MemIndex()
 	RamPal		= Next; Next += 0x001000;			// Palette
 	RamZ80		= Next; Next += 0x004000;			// Z80 RAM
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamShared	= Next; Next += 0x000008;			// Shared data
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int*)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32*)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
  	ExtraTSelect= Ram01;							// Extra text layer scroll
@@ -278,11 +278,11 @@ static int MemIndex()
 	return 0;
 }
 
-static void drvZ80Bankswitch(int nBank)
+static void drvZ80Bankswitch(INT32 nBank)
 {
 	nBank &= 0x0F;
 	if (nBank != nCurrentBank) {
-		unsigned char* nStartAddress = RomZ80 + (nBank << 14);
+		UINT8* nStartAddress = RomZ80 + (nBank << 14);
 		ZetMapArea(0x8000, 0xBFFF, 0, nStartAddress);
 		ZetMapArea(0x8000, 0xBFFF, 2, nStartAddress);
 
@@ -291,7 +291,7 @@ static void drvZ80Bankswitch(int nBank)
 }
 
 // Scan ram
-static int drvScan(int nAction, int* pnMin)
+static INT32 drvScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 
@@ -301,7 +301,7 @@ static int drvScan(int nAction, int* pnMin)
 	if (nAction & ACB_VOLATILE) {		// Scan volatile ram
 
 		memset(&ba, 0, sizeof(ba));
-    ba.Data		= RamStart;
+		ba.Data		= RamStart;
 		ba.nLen		= RamEnd - RamStart;
 		ba.szName	= "RAM";
 		BurnAcb(&ba);
@@ -322,20 +322,24 @@ static int drvScan(int nAction, int* pnMin)
 		SCAN_VAR(drvInput);
 
 		if (nAction & ACB_WRITE) {
-			int n = nTextROMStatus;
+			INT32 n = nTextROMStatus;
 			nTextROMStatus = -1;
+			SekOpen(0);
 			Map68KTextROM(n);
+			SekClose();
 
 			n = nCurrentBank;
 			nCurrentBank = -1;
+			ZetOpen(0);
 			drvZ80Bankswitch(n);
+			ZetClose();
 		}
 	}
 
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROMs
 	if (ToaLoadCode(Rom01, 0, 4)) {
@@ -357,7 +361,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall batriderZIn(unsigned short nAddress)
+UINT8 __fastcall batriderZIn(UINT16 nAddress)
 {
 	nAddress &= 0xFF;
 
@@ -380,7 +384,7 @@ unsigned char __fastcall batriderZIn(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall batriderZOut(unsigned short nAddress, unsigned char nValue)
+void __fastcall batriderZOut(UINT16 nAddress, UINT8 nValue)
 {
 	nAddress &= 0xFF;
 
@@ -444,10 +448,11 @@ void __fastcall batriderZOut(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int drvZInit()
+static INT32 drvZInit()
 {
 	// Init the Z80
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 
 	ZetSetInHandler(batriderZIn);
 	ZetSetOutHandler(batriderZOut);
@@ -464,13 +469,14 @@ static int drvZInit()
 	ZetMapArea(0xC000, 0xDFFF, 2, RamZ80);			//
 
 	ZetMemEnd();
+	ZetClose();
 
 	nCurrentBank = 2;
 
 	return 0;
 }
 
-unsigned char __fastcall batriderReadByte(unsigned int sekAddress)
+UINT8 __fastcall batriderReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -499,7 +505,7 @@ unsigned char __fastcall batriderReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall batriderReadWord(unsigned int sekAddress)
+UINT16 __fastcall batriderReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x500006:
@@ -523,7 +529,7 @@ unsigned short __fastcall batriderReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall batriderWriteByte(unsigned int sekAddress, unsigned char)	// unsigned char byteValue
+void __fastcall batriderWriteByte(UINT32 sekAddress, UINT8)	// UINT8 byteValue
 {
 	switch (sekAddress) {
 
@@ -535,7 +541,7 @@ void __fastcall batriderWriteByte(unsigned int sekAddress, unsigned char)	// uns
 	}
 }
 
-void __fastcall batriderWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall batriderWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x500020: {
@@ -604,7 +610,7 @@ void __fastcall batriderWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-unsigned short __fastcall batriderReadWordGP9001(unsigned int sekAddress)
+UINT16 __fastcall batriderReadWordGP9001(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400008:
@@ -617,7 +623,7 @@ unsigned short __fastcall batriderReadWordGP9001(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall batriderWriteWordGP9001(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall batriderWriteWordGP9001(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -640,12 +646,12 @@ void __fastcall batriderWriteWordGP9001(unsigned int sekAddress, unsigned short 
 	}
 }
 
-unsigned char __fastcall batriderReadByteZ80ROM(unsigned int sekAddress)
+UINT8 __fastcall batriderReadByteZ80ROM(UINT32 sekAddress)
 {
 	return RomZ80[(sekAddress & 0x7FFFF) >> 1];
 }
 
-unsigned short __fastcall batriderReadWordZ80ROM(unsigned int sekAddress)
+UINT16 __fastcall batriderReadWordZ80ROM(UINT32 sekAddress)
 {
 	return RomZ80[(sekAddress & 0x7FFFF) >> 1];
 }
@@ -669,12 +675,12 @@ static void Map68KTextROM(bool bMapTextROM)
 	}
 }
 
-static int drvDoReset()
+static INT32 drvDoReset()
 {
 	// Insert region code into 68K ROM, code by BisonSAS
-	unsigned char nRegion = drvRegion & 0x1F;
+	UINT8 nRegion = drvRegion & 0x1F;
   if (nRegion<=25) {
-  	Rom01[0x00000^1]=(unsigned char)(nRegion<<13) | (drvRegion & 0x1F);
+  	Rom01[0x00000^1]=(UINT8)(nRegion<<13) | (drvRegion & 0x1F);
   }
 
 	SekOpen(0);
@@ -687,7 +693,9 @@ static int drvDoReset()
 	SekReset();
 	SekClose();
 
+	ZetOpen(0);
 	ZetReset();
+	ZetClose();
 
 	MSM6295Reset(0);
 	MSM6295Reset(1);
@@ -696,9 +704,9 @@ static int drvDoReset()
 	return 0;
 }
 
-static int drvInit()
+static INT32 drvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -709,8 +717,8 @@ static int drvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char*)0;
-	if ((Mem = (unsigned char*)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8*)0;
+	if ((Mem = (UINT8*)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// Zero memory
@@ -772,18 +780,14 @@ static int drvInit()
 	nTextROMStatus = -1;
 	bDrawScreen = true;
 
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
-
 	drvDoReset(); // Reset machine
 	return 0;
 }
 
-static int drvExit()
+static INT32 drvExit()
 {
-	MSM6295Exit(1);
 	MSM6295Exit(0);
+	MSM6295Exit(1);
 	BurnYM2151Exit();
 
 	ToaPalExit();
@@ -792,30 +796,17 @@ static int drvExit()
 	ToaZExit();				// Z80 exit
 	SekExit();				// Deallocate 68000
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-#if 1 && defined USE_SPEEDHACKS
-	int nCurrentPC = SekGetPC(-1);
-
-	if (!nIRQPending &&
-		((nCurrentPC >= 0x0009F4 && nCurrentPC <= 0x0009FA) ||
-		 (nCurrentPC >= 0x001FF6 && nCurrentPC <= 0x001FFC) ||
-		 (nCurrentPC >= 0x003C7C && nCurrentPC <= 0x003C82)))
-	{
-		return 1;
-	}
-#endif
-
 	return 0;
 }
 
-static int drvDraw()
+static INT32 drvDraw()
 {
 	ToaClearScreen(0);
 
@@ -830,9 +821,9 @@ static int drvDraw()
 	return 0;
 }
 
-static int drvFrame()
+static INT32 drvFrame()
 {
-	int nInterleave = 8;
+	INT32 nInterleave = 8;
 
 	if (drvReset) {														// Reset machine
 		drvDoReset();
@@ -842,7 +833,7 @@ static int drvFrame()
 	drvInput[0] = 0x00;													// Buttons
 	drvInput[1] = 0x00;													// Player 1
 	drvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		drvInput[0] |= (drvJoy1[i] & 1) << i;
 		drvInput[1] |= (drvJoy2[i] & 1) << i;
 		drvInput[2] |= (drvButton[i] & 1) << i;
@@ -852,21 +843,23 @@ static int drvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = TOA_Z80_SPEED / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
+	SekOpen(0);
+	
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
-	SekOpen(0);
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	ZetOpen(0);
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -911,8 +904,8 @@ static int drvFrame()
 
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
@@ -922,12 +915,12 @@ static int drvFrame()
 	}
 
 	SekClose();
-
+	
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -935,6 +928,8 @@ static int drvFrame()
 			}
 		}
 	}
+	
+	ZetClose();
 
 	return 0;
 }

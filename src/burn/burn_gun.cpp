@@ -4,14 +4,14 @@
 // Generic Light Gun support for FBA
 // written by Barry Harris (Treble Winner) based on the code in Kev's opwolf driver
 
-int nBurnGunNumPlayers = 0;
+INT32 nBurnGunNumPlayers = 0;
 static bool bBurnGunDrawTargets = true;
 
-static int nBurnGunMaxX = 0;
-static int nBurnGunMaxY = 0;
+static INT32 nBurnGunMaxX = 0;
+static INT32 nBurnGunMaxY = 0;
 
-int BurnGunX[MAX_GUNS];
-int BurnGunY[MAX_GUNS];
+INT32 BurnGunX[MAX_GUNS];
+INT32 BurnGunY[MAX_GUNS];
 
 #define P1Colour	0xfc, 0x12, 0xee
 #define P2Colour	0x1c, 0xfc, 0x1c
@@ -21,7 +21,7 @@ int BurnGunY[MAX_GUNS];
 #define a 0,
 #define b 1,
 
-unsigned char BurnGunTargetData[18][18] = {
+UINT8 BurnGunTargetData[18][18] = {
 	{ a a a a  a a a a  b a a a  a a a a  a a },
 	{ a a a a  a a b b  b b b a  a a a a  a a },
 	{ a a a a  b b a a  b a a b  b a a a  a a },
@@ -44,28 +44,43 @@ unsigned char BurnGunTargetData[18][18] = {
 #undef b
 #undef a
 
-unsigned char BurnGunReturnX(int num)
+UINT8 BurnGunReturnX(INT32 num)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunReturnX called without init\n"));
+	if (num >= nBurnGunNumPlayers) bprintf(PRINT_ERROR, _T("BurnGunReturnX called with invalid player %x\n"), num);
+#endif
+
 	if (num > MAX_GUNS - 1) return 0xff;
 
 	float temp = (float)((BurnGunX[num] >> 8) + 8) / nBurnGunMaxX * 0xff;
-	return (unsigned char)temp;
+	return (UINT8)temp;
 }
 
-unsigned char BurnGunReturnY(int num)
+UINT8 BurnGunReturnY(INT32 num)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunReturnY called without init\n"));
+	if (num >= nBurnGunNumPlayers) bprintf(PRINT_ERROR, _T("BurnGunReturnY called with invalid player %x\n"), num);
+#endif
+
 	if (num > MAX_GUNS - 1) return 0xff;
 	
 	float temp = (float)((BurnGunY[num] >> 8) + 8) / nBurnGunMaxY * 0xff;
-	return (unsigned char)temp;
+	return (UINT8)temp;
 }
 
-void BurnGunMakeInputs(int num, short x, short y)
+void BurnGunMakeInputs(INT32 num, INT16 x, INT16 y)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunMakeInputs called without init\n"));
+	if (num >= nBurnGunNumPlayers) bprintf(PRINT_ERROR, _T("BurnGunMakeInputs called with invalid player %x\n"), num);
+#endif
+
 	if (num > MAX_GUNS - 1) return;
 	
-	const int MinX = -8 * 0x100;
-	const int MinY = -8 * 0x100;
+	const INT32 MinX = -8 * 0x100;
+	const INT32 MinY = -8 * 0x100;
 	
 	BurnGunX[num] += x;
 	BurnGunY[num] += y;
@@ -76,8 +91,10 @@ void BurnGunMakeInputs(int num, short x, short y)
 	if (BurnGunY[num] > MinY + nBurnGunMaxY * 0x100) BurnGunY[num] = MinY + nBurnGunMaxY * 0x100;
 }
 	
-void BurnGunInit(int nNumPlayers, bool bDrawTargets)
+void BurnGunInit(INT32 nNumPlayers, bool bDrawTargets)
 {
+	Debug_BurnGunInitted = 1;
+	
 	if (nNumPlayers > MAX_GUNS) nNumPlayers = MAX_GUNS;
 	nBurnGunNumPlayers = nNumPlayers;
 	bBurnGunDrawTargets = bDrawTargets;
@@ -88,7 +105,7 @@ void BurnGunInit(int nNumPlayers, bool bDrawTargets)
 		BurnDrvGetVisibleSize(&nBurnGunMaxX, &nBurnGunMaxY);
 	}
 	
-	for (int i = 0; i < MAX_GUNS; i++) {
+	for (INT32 i = 0; i < MAX_GUNS; i++) {
 		BurnGunX[i] = ((nBurnGunMaxX / 2) - 7) << 8;
 		BurnGunY[i] = ((nBurnGunMaxY / 2) - 8) << 8;
 	}
@@ -96,39 +113,54 @@ void BurnGunInit(int nNumPlayers, bool bDrawTargets)
 
 void BurnGunExit()
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunExit called without init\n"));
+#endif
+
 	nBurnGunNumPlayers = 0;
 	bBurnGunDrawTargets = true;
 	
 	nBurnGunMaxX = 0;
 	nBurnGunMaxY = 0;
 	
-	for (int i = 0; i < MAX_GUNS; i++) {
+	for (INT32 i = 0; i < MAX_GUNS; i++) {
 		BurnGunX[i] = 0;
 		BurnGunY[i] = 0;
 	}
+	
+	Debug_BurnGunInitted = 0;
 }
 
 void BurnGunScan()
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunScan called without init\n"));
+#endif
+
 	SCAN_VAR(BurnGunX);
 	SCAN_VAR(BurnGunY);
 }
 
-void BurnGunDrawTarget(int num, int x, int y)
+void BurnGunDrawTarget(INT32 num, INT32 x, INT32 y)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnGunInitted) bprintf(PRINT_ERROR, _T("BurnGunDrawTarget called without init\n"));
+	if (num >= nBurnGunNumPlayers) bprintf(PRINT_ERROR, _T("BurnGunDrawTarget called with invalid player %x\n"), num);
+#endif
+
 	if (bBurnGunDrawTargets == false) return;
 	
 	if (num > MAX_GUNS - 1) return;
 	
-	unsigned char* pTile = pBurnDraw + nBurnGunMaxX * nBurnBpp * (y - 1) + nBurnBpp * x;
+	UINT8* pTile = pBurnDraw + nBurnGunMaxX * nBurnBpp * (y - 1) + nBurnBpp * x;
 	
-	unsigned int nTargetCol = 0;
+	UINT32 nTargetCol = 0;
 	if (num == 0) nTargetCol = BurnHighCol(P1Colour, 0);
 	if (num == 1) nTargetCol = BurnHighCol(P2Colour, 0);
 	if (num == 2) nTargetCol = BurnHighCol(P3Colour, 0);
 	if (num == 3) nTargetCol = BurnHighCol(P4Colour, 0);
 
-	for (int y2 = 0; y2 < 17; y2++) {
+	for (INT32 y2 = 0; y2 < 17; y2++) {
 
 		pTile += nBurnGunMaxX * nBurnBpp;
 
@@ -136,7 +168,7 @@ void BurnGunDrawTarget(int num, int x, int y)
 			continue;
 		}
 
-		for (int x2 = 0; x2 < 17; x2++) {
+		for (INT32 x2 = 0; x2 < 17; x2++) {
 
 			if ((x + x2) < 0 || (x + x2) > nBurnGunMaxX - 1) {
 				continue;
@@ -144,9 +176,9 @@ void BurnGunDrawTarget(int num, int x, int y)
 
 			if (BurnGunTargetData[y2][x2]) {
 				if (nBurnBpp == 2) {
-					((unsigned short*)pTile)[x2] = (unsigned short)nTargetCol;
+					((UINT16*)pTile)[x2] = (UINT16)nTargetCol;
 				} else {
-					((unsigned int*)pTile)[x2] = nTargetCol;
+					((UINT32*)pTile)[x2] = nTargetCol;
 				}
 			}
 		}

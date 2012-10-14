@@ -1,42 +1,43 @@
 #include "tiles_generic.h"
+#include "zet.h"
 #include "namco_snd.h"
 #include "samples.h"
 
-static unsigned char DrvInputPort0[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]            = {0, 0};
-static unsigned char DrvInput[3]          = {0, 0, 0};
-static unsigned char DrvReset             = 0;
+static UINT8 DrvInputPort0[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8]     = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]            = {0, 0};
+static UINT8 DrvInput[3]          = {0, 0, 0};
+static UINT8 DrvReset             = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvZ80Rom1          = NULL;
-static unsigned char *DrvZ80Rom2          = NULL;
-static unsigned char *DrvZ80Ram1          = NULL;
-static unsigned char *DrvZ80Ram2          = NULL;
-static unsigned char *DrvVideoRam         = NULL;
-static unsigned char *DrvRadarAttrRam     = NULL;
-static unsigned char *DrvPromPalette      = NULL;
-static unsigned char *DrvPromLookup       = NULL;
-static unsigned char *DrvPromVidLayout    = NULL;
-static unsigned char *DrvPromVidTiming    = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvDots             = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvZ80Rom1          = NULL;
+static UINT8 *DrvZ80Rom2          = NULL;
+static UINT8 *DrvZ80Ram1          = NULL;
+static UINT8 *DrvZ80Ram2          = NULL;
+static UINT8 *DrvVideoRam         = NULL;
+static UINT8 *DrvRadarAttrRam     = NULL;
+static UINT8 *DrvPromPalette      = NULL;
+static UINT8 *DrvPromLookup       = NULL;
+static UINT8 *DrvPromVidLayout    = NULL;
+static UINT8 *DrvPromVidTiming    = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvDots             = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
-static unsigned char DrvCPUFireIRQ;
-static unsigned char DrvCPUIRQVector;
-static unsigned char xScroll;
-static unsigned char yScroll;
-static unsigned char DrvLastBang;
+static UINT8 DrvCPUFireIRQ;
+static UINT8 DrvCPUIRQVector;
+static UINT8 xScroll;
+static UINT8 yScroll;
+static UINT8 DrvLastBang;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo DrvInputList[] =
 {
@@ -98,7 +99,7 @@ static inline void DrvMakeInputs()
 	DrvInput[1] = 0xfe;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] -= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 	}
@@ -112,7 +113,7 @@ static inline void JunglerMakeInputs()
 	DrvInput[2] = 0xff;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] -= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] -= (DrvInputPort1[i] & 1) << i;
@@ -317,16 +318,20 @@ STD_ROM_PICK(Jungler)
 STD_ROM_FN(Jungler)
 
 static struct BurnSampleInfo RallyxSampleDesc[] = {
+#if !defined (ROM_VERIFY)
    { "bang.wav", SAMPLE_NOLOOP },
+#else
+	{ "bang", SAMPLE_NOLOOP },
+#endif
    { "", 0 }
 };
 
 STD_SAMPLE_PICK(Rallyx)
 STD_SAMPLE_FN(Rallyx)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvZ80Rom1             = Next; Next += 0x04000;	
 	DrvPromPalette         = Next; Next += 0x00020;
@@ -346,16 +351,16 @@ static int MemIndex()
 	DrvChars               = Next; Next += 0x100 * 8 * 8;
 	DrvSprites             = Next; Next += 0x040 * 16 * 16;
 	DrvDots                = Next; Next += 0x008 * 4 * 4;
-	DrvPalette             = (unsigned int*)Next; Next += 260 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 260 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int JunglerMemIndex()
+static INT32 JunglerMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvZ80Rom1             = Next; Next += 0x08000;
 	DrvZ80Rom2             = Next; Next += 0x02000;
@@ -376,14 +381,14 @@ static int JunglerMemIndex()
 	DrvChars               = Next; Next += 0x100 * 8 * 8;
 	DrvSprites             = Next; Next += 0x040 * 16 * 16;
 	DrvDots                = Next; Next += 0x008 * 4 * 4;
-	DrvPalette             = (unsigned int*)Next; Next += 324 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 324 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	ZetOpen(0);
 	ZetReset();
@@ -400,7 +405,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int JunglerDoReset()
+static INT32 JunglerDoReset()
 {
 	ZetOpen(0);
 	ZetReset();
@@ -414,7 +419,7 @@ static int JunglerDoReset()
 	return 0;
 }
 
-unsigned char __fastcall RallyxZ80ProgRead(unsigned short a)
+UINT8 __fastcall RallyxZ80ProgRead(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -437,7 +442,7 @@ unsigned char __fastcall RallyxZ80ProgRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall RallyxZ80ProgWrite(unsigned short a, unsigned char d)
+void __fastcall RallyxZ80ProgWrite(UINT16 a, UINT8 d)
 {
 	if (a >= 0xa100 && a <= 0xa11f) { NamcoSoundWrite(a - 0xa100, d); return; }
 	
@@ -463,7 +468,7 @@ void __fastcall RallyxZ80ProgWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0xa180: {
-			unsigned char Bit = d & 0x01;
+			UINT8 Bit = d & 0x01;
 			if (Bit == 0 && DrvLastBang != 0) {
 				BurnSamplePlay(0);
 			}
@@ -513,7 +518,7 @@ void __fastcall RallyxZ80ProgWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall RallyxZ80PortRead(unsigned short a)
+UINT8 __fastcall RallyxZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -526,7 +531,7 @@ unsigned char __fastcall RallyxZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall RallyxZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall RallyxZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -543,7 +548,7 @@ void __fastcall RallyxZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JunglerZ80ProgRead1(unsigned short a)
+UINT8 __fastcall JunglerZ80ProgRead1(UINT16 a)
 {
 	switch (a) {
 		case 0xa000: {
@@ -570,7 +575,7 @@ unsigned char __fastcall JunglerZ80ProgRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall JunglerZ80ProgWrite1(unsigned short a, unsigned char d)
+void __fastcall JunglerZ80ProgWrite1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa080: {
@@ -599,7 +604,7 @@ void __fastcall JunglerZ80ProgWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JunglerZ80PortRead1(unsigned short a)
+UINT8 __fastcall JunglerZ80PortRead1(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -612,7 +617,7 @@ unsigned char __fastcall JunglerZ80PortRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall JunglerZ80PortWrite1(unsigned short a, unsigned char d)
+void __fastcall JunglerZ80PortWrite1(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -623,7 +628,7 @@ void __fastcall JunglerZ80PortWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JunglerZ80ProgRead2(unsigned short a)
+UINT8 __fastcall JunglerZ80ProgRead2(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -634,7 +639,7 @@ unsigned char __fastcall JunglerZ80ProgRead2(unsigned short a)
 	return 0;
 }
 
-void __fastcall JunglerZ80ProgWrite2(unsigned short a, unsigned char d)
+void __fastcall JunglerZ80ProgWrite2(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -643,7 +648,7 @@ void __fastcall JunglerZ80ProgWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JunglerZ80PortRead2(unsigned short a)
+UINT8 __fastcall JunglerZ80PortRead2(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -656,7 +661,7 @@ unsigned char __fastcall JunglerZ80PortRead2(unsigned short a)
 	return 0;
 }
 
-void __fastcall JunglerZ80PortWrite2(unsigned short a, unsigned char d)
+void __fastcall JunglerZ80PortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -667,22 +672,22 @@ void __fastcall JunglerZ80PortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[2]          = { 0, 4 };
-static int CharXOffsets[8]              = { 64, 65, 66, 67, 0, 1, 2, 3 };
-static int CharYOffsets[8]              = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int JunglerCharPlaneOffsets[2]   = { 4, 0 };
-static int SpritePlaneOffsets[2]        = { 0, 4 };
-static int SpriteXOffsets[16]           = { 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195, 0, 1, 2, 3 };
-static int SpriteYOffsets[16]           = { 0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312 };
-static int JunglerSpritePlaneOffsets[2] = { 4, 0 };
-static int JunglerSpriteXOffsets[16]    = { 64, 65, 66, 67, 0, 1, 2, 3, 192, 193, 194, 195, 128, 129, 130, 131 };
-static int DotPlaneOffsets[2]           = { 6, 7 };
-static int DotXOffsets[4]               = { 0, 8, 16, 24 };
-static int DotYOffsets[4]               = { 0, 32, 64, 96 };
+static INT32 CharPlaneOffsets[2]          = { 0, 4 };
+static INT32 CharXOffsets[8]              = { 64, 65, 66, 67, 0, 1, 2, 3 };
+static INT32 CharYOffsets[8]              = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 JunglerCharPlaneOffsets[2]   = { 4, 0 };
+static INT32 SpritePlaneOffsets[2]        = { 0, 4 };
+static INT32 SpriteXOffsets[16]           = { 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195, 0, 1, 2, 3 };
+static INT32 SpriteYOffsets[16]           = { 0, 8, 16, 24, 32, 40, 48, 56, 256, 264, 272, 280, 288, 296, 304, 312 };
+static INT32 JunglerSpritePlaneOffsets[2] = { 4, 0 };
+static INT32 JunglerSpriteXOffsets[16]    = { 64, 65, 66, 67, 0, 1, 2, 3, 192, 193, 194, 195, 128, 129, 130, 131 };
+static INT32 DotPlaneOffsets[2]           = { 6, 7 };
+static INT32 DotXOffsets[4]               = { 0, 8, 16, 24 };
+static INT32 DotYOffsets[4]               = { 0, 32, 64, 96 };
 
 static void MachineInit()
 {
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(RallyxZ80ProgRead);
 	ZetSetWriteHandler(RallyxZ80ProgWrite);
@@ -710,7 +715,7 @@ static void MachineInit()
 
 static void JunglerMachineInit()
 {
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(JunglerZ80ProgRead1);
 	ZetSetWriteHandler(JunglerZ80ProgWrite1);
@@ -728,25 +733,28 @@ static void JunglerMachineInit()
 	ZetMapArea(0xa030, 0xa03f, 1, DrvRadarAttrRam);	
 	ZetMemEnd();
 	ZetClose();
+
+	ZetInit(1);
+	// not used?
 	
 	GenericTilesInit();
 
 	JunglerDoReset();
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -771,26 +779,26 @@ static int DrvInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,      9, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       10, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
 	return 0;
 }
 
-static int DrvaInit()
+static INT32 DrvaInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -820,26 +828,26 @@ static int DrvaInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,     14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       15, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
 	return 0;
 }
 
-static int NrallyxInit()
+static INT32 NrallyxInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvTempRom, 0, 1); if (nRet != 0) return 1;
@@ -874,26 +882,26 @@ static int NrallyxInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,    10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,      11, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
 	return 0;
 }
 
-static int JunglerInit()
+static INT32 JunglerInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	JunglerMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	JunglerMemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -921,22 +929,21 @@ static int JunglerInit()
 	nRet = BurnLoadRom(DrvPromVidLayout,     10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromVidTiming,     11, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	JunglerMachineInit();
 
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	NamcoSoundExit();
 	BurnSampleExit();
 	ZetExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	DrvCPUFireIRQ = 0;
 	DrvCPUIRQVector = 0;
@@ -952,28 +959,28 @@ static int DrvExit()
 #define Combine2Weights(tab,w0,w1)	((int)(((tab)[0]*(w0) + (tab)[1]*(w1)) + 0.5))
 #define Combine3Weights(tab,w0,w1,w2)	((int)(((tab)[0]*(w0) + (tab)[1]*(w1) + (tab)[2]*(w2)) + 0.5))
 
-static double ComputeResistorWeights(int MinVal, int MaxVal, double Scaler, int Count1, const int *Resistances1, double *Weights1, int PullDown1, int PullUp1,	int Count2, const int *Resistances2, double *Weights2, int PullDown2, int PullUp2, int Count3, const int *Resistances3, double *Weights3, int PullDown3, int PullUp3)
+static double ComputeResistorWeights(INT32 MinVal, INT32 MaxVal, double Scaler, INT32 Count1, const INT32 *Resistances1, double *Weights1, INT32 PullDown1, INT32 PullUp1,	INT32 Count2, const INT32 *Resistances2, double *Weights2, INT32 PullDown2, INT32 PullUp2, INT32 Count3, const INT32 *Resistances3, double *Weights3, INT32 PullDown3, INT32 PullUp3)
 {
-	int NetworksNum;
+	INT32 NetworksNum;
 
-	int ResCount[MAX_NETS];
+	INT32 ResCount[MAX_NETS];
 	double r[MAX_NETS][MAX_RES_PER_NET];
 	double w[MAX_NETS][MAX_RES_PER_NET];
 	double ws[MAX_NETS][MAX_RES_PER_NET];
-	int r_pd[MAX_NETS];
-	int r_pu[MAX_NETS];
+	INT32 r_pd[MAX_NETS];
+	INT32 r_pu[MAX_NETS];
 
 	double MaxOut[MAX_NETS];
 	double *Out[MAX_NETS];
 
-	int i, j, n;
+	INT32 i, j, n;
 	double Scale;
 	double Max;
 
 	NetworksNum = 0;
 	for (n = 0; n < MAX_NETS; n++) {
-		int Count, pd, pu;
-		const int *Resistances;
+		INT32 Count, pd, pu;
+		const INT32 *Resistances;
 		double *Weights;
 
 		switch (n) {
@@ -1076,17 +1083,17 @@ static double ComputeResistorWeights(int MinVal, int MaxVal, double Scaler, int 
 
 static void DrvCalcPalette()
 {
-	static const int ResistancesRG[3] = { 1000, 470, 220 };
-	static const int ResistancesB[2] = { 470, 220 };
+	static const INT32 ResistancesRG[3] = { 1000, 470, 220 };
+	static const INT32 ResistancesB[2] = { 470, 220 };
 	double rWeights[3], gWeights[3], bWeights[2];
-	unsigned int Palette[32];
-	unsigned int i;
+	UINT32 Palette[32];
+	UINT32 i;
 	
 	ComputeResistorWeights(0, 255, -1.0, 3, &ResistancesRG[0], rWeights, 0, 0, 3, &ResistancesRG[0], gWeights, 0, 0, 2, &ResistancesB[0], bWeights, 1000, 0);
 	
 	for (i = 0; i < 32; i++) {
-		int Bit0, Bit1, Bit2;
-		int r, g, b;
+		INT32 Bit0, Bit1, Bit2;
+		INT32 r, g, b;
 
 		Bit0 = (DrvPromPalette[i] >> 0) & 0x01;
 		Bit1 = (DrvPromPalette[i] >> 1) & 0x01;
@@ -1108,7 +1115,7 @@ static void DrvCalcPalette()
 	}
 	
 	for (i = 0; i < 256; i++) {
-		unsigned char PaletteEntry = DrvPromLookup[i] & 0x0f;
+		UINT8 PaletteEntry = DrvPromLookup[i] & 0x0f;
 		DrvPalette[i] = Palette[PaletteEntry];
 	}
 	
@@ -1124,7 +1131,7 @@ static void DrvCalcPalette()
 
 static void DrvRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -1187,7 +1194,7 @@ static void DrvRenderBgLayer()
 
 static void DrvRenderFgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex, Flip, xFlip, yFlip;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 8; mx++) {
@@ -1242,19 +1249,19 @@ static void DrvRenderFgLayer()
 	}
 }
 
-static void DrvRenderSprites(int Displacement)
+static void DrvRenderSprites(INT32 Displacement)
 {
-	unsigned int SpriteRamBase = 0x14;
-	unsigned char *SpriteRam = DrvVideoRam;
-	unsigned char *SpriteRam2 = DrvVideoRam + 0x800;
+	UINT32 SpriteRamBase = 0x14;
+	UINT8 *SpriteRam = DrvVideoRam;
+	UINT8 *SpriteRam2 = DrvVideoRam + 0x800;
 	
-	for (unsigned int Offs = 0x20 - 2; Offs >= SpriteRamBase; Offs -= 2) {
-		int sx = SpriteRam[Offs + 1] + ((SpriteRam2[Offs + 1] & 0x80) << 1) - Displacement;
-		int sy = 241 - SpriteRam2[Offs] - Displacement;
-		int Colour = SpriteRam2[Offs + 1] & 0x3f;
-		int xFlip = SpriteRam[Offs] & 1;
-		int yFlip = SpriteRam[Offs] & 2;
-		int Code = (SpriteRam[Offs] & 0xfc) >> 2;
+	for (UINT32 Offs = 0x20 - 2; Offs >= SpriteRamBase; Offs -= 2) {
+		INT32 sx = SpriteRam[Offs + 1] + ((SpriteRam2[Offs + 1] & 0x80) << 1) - Displacement;
+		INT32 sy = 241 - SpriteRam2[Offs] - Displacement;
+		INT32 Colour = SpriteRam2[Offs + 1] & 0x3f;
+		INT32 xFlip = SpriteRam[Offs] & 1;
+		INT32 yFlip = SpriteRam[Offs] & 2;
+		INT32 Code = (SpriteRam[Offs] & 0xfc) >> 2;
 
 //		if (flip_screen_get(machine))
 //			sx -= 2 * displacement;
@@ -1296,12 +1303,12 @@ static void DrvRenderSprites(int Displacement)
 
 static void DrvRenderBullets()
 {
-	unsigned int SpriteRamBase = 0x14;
-	unsigned char *RadarX = DrvVideoRam + 0x020;
-	unsigned char *RadarY = DrvVideoRam + 0x820;
+	UINT32 SpriteRamBase = 0x14;
+	UINT8 *RadarX = DrvVideoRam + 0x020;
+	UINT8 *RadarY = DrvVideoRam + 0x820;
 	
-	for (unsigned int Offs = SpriteRamBase; Offs < 0x20; Offs++) {
-		int x, y, Code;
+	for (UINT32 Offs = SpriteRamBase; Offs < 0x20; Offs++) {
+		INT32 x, y, Code;
 
 		x = RadarX[Offs] + ((~DrvRadarAttrRam[Offs & 0x0f] & 0x01) << 8);
 		y = 253 - RadarY[Offs];
@@ -1342,23 +1349,23 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = nBurnSoundLen;
+	INT32 nInterleave = nBurnSoundLen;
 	
 	if (DrvReset) DrvDoReset();
 
 	DrvMakeInputs();
 	
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	nCyclesTotal[0] = (18432000 / 6) / 60;
 	nCyclesDone[0] = 0;
 	
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 		
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -1374,8 +1381,8 @@ static int DrvFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (nSegmentLength) {
 				NamcoSoundUpdate(pSoundBuf, nSegmentLength);
@@ -1386,8 +1393,8 @@ static int DrvFrame()
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			NamcoSoundUpdate(pSoundBuf, nSegmentLength);
@@ -1400,15 +1407,15 @@ static int DrvFrame()
 	return 0;
 }
 
-static int JunglerFrame()
+static INT32 JunglerFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 	
 	if (DrvReset) JunglerDoReset();
 
 	JunglerMakeInputs();
 	
-//	int nSoundBufferPos = 0;
+//	INT32 nSoundBufferPos = 0;
 
 	nCyclesTotal[0] = (18432000 / 6) / 60;
 	nCyclesTotal[1] = (14318180 / 8) / 60;
@@ -1416,8 +1423,8 @@ static int JunglerFrame()
 	
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 		
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -1432,8 +1439,8 @@ static int JunglerFrame()
 		ZetClose();
 		
 /*		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (nSegmentLength) {
 				NamcoSoundUpdate(pSoundBuf, nSegmentLength);
@@ -1444,8 +1451,8 @@ static int JunglerFrame()
 	}
 	
 /*	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			NamcoSoundUpdate(pSoundBuf, nSegmentLength);
@@ -1458,7 +1465,7 @@ static int JunglerFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1482,7 +1489,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-struct BurnDriverD BurnDrvRallyx = {
+struct BurnDriver BurnDrvRallyx = {
 	"rallyx", NULL, NULL, "rallyx", "1980",
 	"Rally X (32k Ver.?))\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1492,7 +1499,7 @@ struct BurnDriverD BurnDrvRallyx = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvRallyxa = {
+struct BurnDriver BurnDrvRallyxa = {
 	"rallyxa", "rallyx", NULL, "rallyx", "1980",
 	"Rally X\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1502,7 +1509,7 @@ struct BurnDriverD BurnDrvRallyxa = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvRallyxm = {
+struct BurnDriver BurnDrvRallyxm = {
 	"rallyxm", "rallyx", NULL, "rallyx", "1980",
 	"Rally X (Midway)\0", NULL, "Namco (Midway License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1512,7 +1519,7 @@ struct BurnDriverD BurnDrvRallyxm = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvNrallyx = {
+struct BurnDriver BurnDrvNrallyx = {
 	"nrallyx", NULL, NULL, "rallyx", "1981",
 	"New Rally X\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1528,7 +1535,7 @@ struct BurnDriverD BurnDrvJungler = {
 	"jungler", NULL, NULL, NULL, "1981",
 	"Jungler\0", NULL, "Konami", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, JunglerRomInfo, JunglerRomName, NULL, NULL, JunglerInputInfo, JunglerDIPInfo,
 	JunglerInit, DrvExit, JunglerFrame, NULL, DrvScan,
 	NULL, 324, 224, 288, 3, 4

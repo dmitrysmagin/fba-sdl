@@ -2,29 +2,29 @@
 #include "pgm.h"
 #include "bitswap.h"
 
-static unsigned char *USER1;
-static unsigned short *sharedprotram;
+static UINT8 *USER1;
+static UINT16 *sharedprotram;
 
-static int ptr;
+static INT32 ptr;
 
-int pstarsScan(int nAction,int */*pnMin*/);
-int killbldScan(int nAction,int */*pnMin*/);
-int kov_asic27Scan(int nAction,int */*pnMin*/);
-int asic3Scan(int nAction,int */*pnMin*/);
-int asic27aScan(int nAction,int *);
-int oldsScan(int nAction, int */*pnMin*/);
-int oldsplus_asic27aScan(int nAction, int */*pnMin*/);
-int kovsh_asic27aScan(int nAction,int *);
-int svg_asic27aScan(int nAction,int *);
-int ddp3Scan(int nAction, int */*pnMin*/);
+INT32 pstarsScan(INT32 nAction,INT32 *);
+INT32 killbldScan(INT32 nAction,INT32 *);
+INT32 kov_asic27Scan(INT32 nAction,INT32 *);
+INT32 asic3Scan(INT32 nAction,INT32 *);
+INT32 asic27aScan(INT32 nAction,INT32 *);
+INT32 oldsScan(INT32 nAction, INT32 *);
+INT32 oldsplus_asic27aScan(INT32 nAction, INT32 *);
+INT32 kovsh_asic27aScan(INT32 nAction,INT32 *);
+INT32 svg_asic27aScan(INT32 nAction,INT32 *);
+INT32 ddp3Scan(INT32 nAction, INT32 *);
 
 //-----------------------------------------------------------------------------------------------------
 // ASIC3 - Oriental Legends
 
-static unsigned char asic3_reg, asic3_latch[3], asic3_x, asic3_y, asic3_z, asic3_h1, asic3_h2;
-static unsigned short asic3_hold;
+static UINT8 asic3_reg, asic3_latch[3], asic3_x, asic3_y, asic3_z, asic3_h1, asic3_h2;
+static UINT16 asic3_hold;
 
-static unsigned int bt(unsigned int v, int bit)
+static UINT32 bt(UINT32 v, INT32 bit)
 {
 	return (v & (1<<bit)) != 0;
 }
@@ -32,8 +32,8 @@ static unsigned int bt(unsigned int v, int bit)
 static void asic3_compute_hold()
 {
 	// The mode is dependant on the region
-	static int modes[4] = { 1, 1, 3, 2 };
-	int mode = modes[PgmInput[7] & 3];
+	static INT32 modes[4] = { 1, 1, 3, 2 };
+	INT32 mode = modes[PgmInput[7] & 3];
 
 	switch(mode) {
 	case 1:
@@ -63,9 +63,9 @@ static void asic3_compute_hold()
 	}
 }
 
-static unsigned char pgm_asic3_r()
+static UINT8 pgm_asic3_r()
 {
-	unsigned char res = 0;
+	UINT8 res = 0;
 	/* region is supplied by the protection device */
 	switch(asic3_reg) {
 	case 0x00: res = (asic3_latch[0] & 0xf7) | ((PgmInput[7] << 3) & 0x08); break;
@@ -103,7 +103,7 @@ static unsigned char pgm_asic3_r()
 	return res;
 }
 
-static void pgm_asic3_w(unsigned short data)
+static void pgm_asic3_w(UINT16 data)
 {
 	{
 		if(asic3_reg < 3)
@@ -127,12 +127,12 @@ static void pgm_asic3_w(unsigned short data)
 	}
 }
 
-static void pgm_asic3_reg_w(unsigned short data)
+static void pgm_asic3_reg_w(UINT16 data)
 {
 	asic3_reg = data & 0xff;
 }
 
-static void __fastcall asic3_write_word(unsigned int address, unsigned short data)
+static void __fastcall asic3_write_word(UINT32 address, UINT16 data)
 {
 	if (address == 0xc04000) {
 		pgm_asic3_reg_w(data);
@@ -145,7 +145,7 @@ static void __fastcall asic3_write_word(unsigned int address, unsigned short dat
 	}
 }
 
-static unsigned short __fastcall asic3_read_word(unsigned int address)
+static UINT16 __fastcall asic3_read_word(UINT32 address)
 {
 	if (address == 0xc0400e) {
 		return pgm_asic3_r();
@@ -177,217 +177,324 @@ void install_protection_asic3_orlegend()
 //-----------------------------------------------------------------------------------------------------
 // ASIC27 - Knights of Valour
 
-//Not sure if BATABLE is complete
-static const unsigned int BATABLE[0x40]= {
-		0x00,0x29,0x2c,0x35,0x3a,0x41,0x4a,0x4e,	//0x00
-		0x57,0x5e,0x77,0x79,0x7a,0x7b,0x7c,0x7d,	//0x08
-		0x7e,0x7f,0x80,0x81,0x82,0x85,0x86,0x87,	//0x10
-		0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x90,	//0x18
-		0x95,0x96,0x97,0x98,0x99,0x9a,0x9b,0x9c,
-		0x9e,0xa3,0xd4,0xa9,0xaf,0xb5,0xbb,0xc1 };
+static const UINT8 BATABLE[0x40] = {
+	0x00,0x29,0x2c,0x35,0x3a,0x41,0x4a,0x4e,0x57,0x5e,0x77,0x79,0x7a,0x7b,0x7c,0x7d,
+	0x7e,0x7f,0x80,0x81,0x82,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x90,
+	0x95,0x96,0x97,0x98,0x99,0x9a,0x9b,0x9c,0x9e,0xa3,0xd4,0xa9,0xaf,0xb5,0xbb,0xc1
+};
 
-static const unsigned int B0TABLE[16]={2,0,1,4,3}; //maps char portraits to tables
+static const UINT8 B0TABLE[16] = { 2, 0, 1, 4, 3 }; // Maps char portraits to tables
 
-static unsigned short ASIC27KEY;
-static unsigned short ASIC27REGS[10];
-static unsigned short ASICPARAMS[256];
-static unsigned short ASIC27RCNT=0;
-static unsigned int E0REGS[16];
+static UINT32 kov_slots[16];
+static UINT16 kov_internal_slot;
+static UINT16 kov_key;
+static UINT32 kov_response;
+static UINT16 kov_value;
 
-static unsigned short pgm_kov_asic27_r(unsigned short offset)
+static UINT16 kov_c0_value;
+static UINT16 kov_cb_value;
+static UINT16 kov_fe_value;
+
+void __fastcall kov_asic27_write(UINT32 offset, UINT16 data)
 {
-	unsigned int val=(ASIC27REGS[1]<<16)|(ASIC27REGS[0]);
+	switch (offset & 0x06)
+	{
+		case 0: kov_value = data; return;
 
-	switch(ASIC27REGS[1]&0xff) {
-		case 0x67:
-			val=0x880000;
-			break;
+		case 2:
+		{
+			if ((data >> 8) == 0xff) kov_key = 0xffff;
 
-		case 0x8e:
-			val=0x880000;
-			break;
+			kov_value ^= kov_key;
 
-		case 0x99:
-			val=0x880000;
-			break;
-		case 0x9d:	// spr palette
-			val=0xa00000+((ASIC27REGS[0]&0x1f)<<6);
-			break;
-		case 0xb0:
-			val=B0TABLE[ASIC27REGS[0]&0xf];
-			break;
-		case 0xb4:
+		//	bprintf (PRINT_NORMAL, _T("ASIC27 command: %2.2x data: %4.4x\n"), (data ^ kov_key) & 0xff, kov_value);
+
+			switch ((data ^ kov_key) & 0xff)
 			{
-				int v2=ASIC27REGS[0]&0x0f;
-				int v1=(ASIC27REGS[0]&0x0f00)>>8;
-				if(ASIC27REGS[0]==0x102)
-					E0REGS[1]=E0REGS[0];
-				else
-					E0REGS[v1]=E0REGS[v2];
-				val=0x880000;
-			}
-			break;
-		case 0xba:
-			val=BATABLE[ASIC27REGS[0]&0x3f];
-			if(ASIC27REGS[0]>0x2f) {
+				case 0x67: // unknown or status check?
+				case 0x8e:
+				case 0xa3:
+				case 0x33: // kovsgqyz (a3)
+				case 0x3a: // kovplus
+				case 0xc5: // kovplus
+					kov_response = 0x880000;
+				break;
 
-			}
-			break;
-		case 0xc0:
-			val=0x880000;
-			break;
-		case 0xc3:	//TXT tile position Uses C0 to select column
-			val=0x904000+(ASICPARAMS[0xc0]+ASICPARAMS[0xc3]*64)*4;
-			break;
-		case 0xcb:
-			val=0x880000;
-			break;
-		case 0xcc:	//BG
-			{
-	   	 		int y=ASICPARAMS[0xcc];
-	    		if(y&0x400)    //y is signed (probably x too and it also applies to TXT, but I've never seen it used)
-	     			y=-(0x400-(y&0x3ff));
-	    		val=0x900000+(((ASICPARAMS[0xcb]+(y)*64)*4)/*&0x1fff*/);
-   			}
-   			break;
-		case 0xd0:	//txt palette
-			val=0xa01000+(ASIC27REGS[0]<<5);
-			break;
-		case 0xd6:	//???? check it
-			{
-				int v2=ASIC27REGS[0]&0xf;
-				E0REGS[0]=E0REGS[v2];
-				//E0REGS[v2]=0;
-				val=0x880000;
-			}
-			break;
-		case 0xdc:	//bg palette
-			val=0xa00800+(ASIC27REGS[0]<<6);
-			break;
-		case 0xe0:	//spr palette
-			val=0xa00000+((ASIC27REGS[0]&0x1f)<<6);
-			break;
-		case 0xe5:
-			val=0x880000;
-			break;
-		case 0xe7:
-			val=0x880000;
-			break;
-		case 0xf0:
-			val=0x00C000;
-			break;
-		case 0xf8:
-			val=E0REGS[ASIC27REGS[0]&0xf]&0xffffff;
-			break;
-		case 0xfc:	//Adjust damage level to char experience level
-			val=(ASICPARAMS[0xfc]*ASICPARAMS[0xfe])>>6;
-			break;
-		case 0xfe:	//todo
-			val=0x880000;
-			break;
-		default:
-			val=0x880000;
-	}
+				case 0x99: // Reset
+					kov_response = 0x880000;
+					kov_key = 0;
+				break;
 
-	if(offset==0) {
-		unsigned short d=val&0xffff;
-		unsigned short realkey;
-		realkey=ASIC27KEY>>8;
-		realkey|=ASIC27KEY;
-		d^=realkey;
-		return d;
-	}
-	else if(offset==2) {
-		unsigned short d=val>>16;
-		unsigned short realkey;
-		realkey=ASIC27KEY>>8;
-		realkey|=ASIC27KEY;
-		d^=realkey;
-		ASIC27RCNT++;
-		if(!(ASIC27RCNT&0x3)) {
-			ASIC27KEY+=0x100;
-			ASIC27KEY&=0xFF00;
+				case 0x9d: // Sprite palette offset
+					kov_response = 0xa00000 + ((kov_value & 0x1f) * 0x40);
+				break;
+
+				case 0xb0: // Read from data table
+					kov_response = B0TABLE[kov_value & 0x0f];
+				break;
+
+				case 0xb4: // Copy slot 'a' to slot 'b'
+				case 0xb7: // kovsgqyz (b4)
+				{
+					kov_response = 0x880000;
+
+					if (kov_value == 0x0102) kov_value = 0x0100; // why?
+
+					kov_slots[(kov_value >> 8) & 0x0f] = kov_slots[(kov_value >> 0) & 0x0f];
+				}
+				break;
+
+				case 0xba: // Read from data table
+					kov_response = BATABLE[kov_value & 0x3f];
+				break;
+
+				case 0xc0: // Text layer 'x' select
+					kov_response = 0x880000;
+					kov_c0_value = kov_value;
+				break;
+
+				case 0xc3: // Text layer offset
+					kov_response = 0x904000 + ((kov_c0_value + (kov_value * 0x40)) * 4);
+				break;
+
+				case 0xcb: // Background layer 'x' select
+					kov_response = 0x880000;
+					kov_cb_value = kov_value;
+				break;
+
+				case 0xcc: // Background layer offset
+					if (kov_value & 0x400) kov_value = -(0x400 - (kov_value & 0x3ff));
+					kov_response = 0x900000 + ((kov_cb_value + (kov_value * 0x40)) * 4);
+				break;
+
+				case 0xd0: // Text palette offset
+				case 0xcd: // kovsgqyz (d0)
+					kov_response = 0xa01000 + (kov_value * 0x20);
+				break;
+
+				case 0xd6: // Copy slot to slot 0
+					kov_response = 0x880000;
+					kov_slots[0] = kov_slots[kov_value & 0x0f];
+				break;
+
+				case 0xdc: // Background palette offset
+				case 0x11: // kovsgqyz (dc)
+					kov_response = 0xa00800 + (kov_value * 0x40);
+				break;
+
+				case 0xe0: // Sprite palette offset
+				case 0x9e: // kovsgqyz (e0)
+					kov_response = 0xa00000 + ((kov_value & 0x1f) * 0x40);
+				break;
+
+				case 0xe5: // Write slot (low)
+				{
+					kov_response = 0x880000;
+
+					INT32 sel = (kov_internal_slot >> 12) & 0x0f;
+					kov_slots[sel] = (kov_slots[sel] & 0x00ff0000) | ((kov_value & 0xffff) <<  0);
+				}
+				break;
+
+				case 0xe7: // Write slot (and slot select) (high)
+				{
+					kov_response = 0x880000;
+					kov_internal_slot = kov_value;
+
+					INT32 sel = (kov_internal_slot >> 12) & 0x0f;
+					kov_slots[sel] = (kov_slots[sel] & 0x0000ffff) | ((kov_value & 0x00ff) << 16);
+				}
+				break;
+
+				case 0xf0: // Some sort of status read?
+					kov_response = 0x00c000;
+				break;
+
+				case 0xf8: // Read slot
+				case 0xab: // kovsgqyz (f8)
+					kov_response = kov_slots[kov_value & 0x0f] & 0x00ffffff;
+				break;
+
+				case 0xfc: // Adjust damage level to char experience level
+					kov_response = (kov_value * kov_fe_value) >> 6;
+				break;
+
+				case 0xfe: // Damage level adjust
+					kov_response = 0x880000;
+					kov_fe_value = kov_value;
+				break;
+
+				default:
+					kov_response = 0x880000;
+		//			bprintf (PRINT_NORMAL, _T("Unknown ASIC27 command: %2.2x data: %4.4x\n"), (data ^ kov_key) & 0xff, kov_value);
+				break;
+			}
+
+			kov_key = (kov_key + 0x0100) & 0xff00;
+			if (kov_key == 0xff00) kov_key = 0x0100;
+			kov_key |= kov_key >> 8;
 		}
-		return d;
-	}
-	return 0xff;
-}
-
-static void pgm_kov_asic27_w(unsigned short offset, unsigned short data)
-{
-	if(offset==0) {
-		unsigned short realkey;
-		realkey=ASIC27KEY>>8;
-		realkey|=ASIC27KEY;
-		data^=realkey;
-		ASIC27REGS[0]=data;
 		return;
-	}
 
-	if(offset==2) {
-
-		ASIC27KEY = data & 0xff00;
-
-		unsigned short realkey = (ASIC27KEY >> 8) | ASIC27KEY;
-
-		ASIC27REGS[1] = data ^ realkey;
-
-		ASICPARAMS[ASIC27REGS[1]&0xff]=ASIC27REGS[0];
-		if (ASIC27REGS[1]==0xE7) {
-			unsigned int E0R=(ASICPARAMS[0xE7]>>12)&0xf;
-			E0REGS[E0R]&=0xffff;
-			E0REGS[E0R]|=ASIC27REGS[0]<<16;
-		}
-		if (ASIC27REGS[1]==0xE5) {
-			unsigned int E0R=(ASICPARAMS[0xE7]>>12)&0xf;
-			E0REGS[E0R]&=0xff0000;
-			E0REGS[E0R]|=ASIC27REGS[0];
-		}
-		ASIC27RCNT=0;
+		case 4: return;
 	}
 }
 
-static void __fastcall kov_asic27_write_word(unsigned int address, unsigned short data)
+static UINT16 __fastcall kov_asic27_read(UINT32 offset)
 {
-	if ((address & 0xfffffc) == 0x500000) {
-		pgm_kov_asic27_w(address & 3, data);
-	}
-}
-
-static unsigned short __fastcall kov_asic27_read_word(unsigned int address)
-{
-	if ((address & 0xfffffc) == 0x500000) {
-		return pgm_kov_asic27_r(address & 3);
+	switch (offset & 0x02)
+	{
+		case 0: return (kov_response >>  0) ^ kov_key;
+		case 2: return (kov_response >> 16) ^ kov_key;
 	}
 
 	return 0;
 }
 
-static void reset_kov_asic27()
+static void kov_asic27_reset()
 {
-	ASIC27KEY=0;
-	ASIC27RCNT=0;
-	memset(ASIC27REGS, 0, 10);
-	memset(ASICPARAMS, 0, 256);
-	memset(E0REGS, 0, 16);
+//	memset(kov_slots, 0, 16 * sizeof(INT32));
+
+	kov_internal_slot = 0;
+	kov_key = 0;
+	kov_response = 0;
+	kov_value = 0;
+
+	kov_c0_value = 0;
+	kov_cb_value = 0;
+	kov_fe_value = 0;
 
 	memset (PGMUSER0, 0, 0x400);
 
-	*((unsigned short*)(PGMUSER0 + 0x00008)) = PgmInput[7]; // region
+	*((UINT16*)(PGMUSER0 + 0x00008)) = PgmInput[7]; // region
 }
 
 void install_protection_asic27_kov()
 {
 	pPgmScanCallback = kov_asic27Scan;
-	pPgmResetCallback = reset_kov_asic27;
+	pPgmResetCallback = kov_asic27_reset;
 
 	SekOpen(0);
 	SekMapMemory(PGMUSER0,	0x4f0000, 0x4f003f | 0x3ff, SM_READ);
 
 	SekMapHandler(4,	0x500000, 0x500003, SM_READ | SM_WRITE);
+	SekSetReadWordHandler(4, kov_asic27_read);
+	SekSetWriteWordHandler(4, kov_asic27_write);
+	SekClose();
+}
 
-	SekSetReadWordHandler(4, kov_asic27_read_word);
-	SekSetWriteWordHandler(4, kov_asic27_write_word);
+
+// preliminary
+
+static INT32 puzzli_54_trigger = 0;
+
+static void __fastcall puzzli2_asic_write(UINT32 offset, UINT16 data)
+{
+	switch (offset & 0x06)
+	{
+		case 0: kov_value = data; return;
+
+		case 2:
+		{
+			if ((data >> 8) == 0xff) kov_key = 0xffff;
+
+			kov_value ^= kov_key;
+
+		//	bprintf (0, _T("ASIC Command: %2.2x, Value: %4.4x,\n"), (data ^ kov_key) & 0xff, kov_value);
+
+			switch ((data ^ kov_key) & 0xff)
+			{
+				case 0x13: // ASIC status?
+					kov_response = 0x74<<16; // 2d or 74! (based on?)
+				break;
+
+				case 0x31:
+				{
+					// how is this selected? command 54?
+
+					// just a wild guess
+					if (puzzli_54_trigger) {
+						// pc == 1387de
+						kov_response = 0x63<<16; // ?
+					} else {
+						// pc == 14cf58
+						kov_response = 0xd2<<16;
+					}
+
+					puzzli_54_trigger = 0;
+				}
+				break;
+
+				case 0x38: // Reset
+					kov_response = 0x78<<16;
+					kov_key = 0;
+					puzzli_54_trigger = 0;
+				break;
+
+				case 0x41: // ASIC status?
+					kov_response = 0x74<<16;
+				break;
+
+				case 0x47: // ASIC status?
+					kov_response = 0x74<<16;
+				break;
+
+				case 0x52: // ASIC status?
+				{
+					// how is this selected?
+
+					//if (kov_value == 6) {
+						kov_response = (0x74<<16)|1; // |1?
+					//} else {
+					//	kov_response = 0x74<<16;
+					//}
+				}
+				break;
+
+				case 0x54: // ??
+					puzzli_54_trigger = 1;
+					kov_response = 0x36<<16;
+				break;
+
+				case 0x61: // ??
+					kov_response = 0x36<<16;
+				break;
+
+				case 0x63: // probably read from a data table?
+					kov_response = 0; // wrong...
+				break;
+
+				case 0x67: // probably read from a data table?
+					kov_response = 0;
+				break;
+
+				default:
+		//			bprintf (0, _T("ASIC Command %2.2x unknown!\n"), (data ^ kov_key) & 0xff);
+					kov_response = 0x74<<16;
+				break;
+			}
+
+			kov_key = (kov_key + 0x0100) & 0xff00;
+			if (kov_key == 0xff00) kov_key = 0x0100;
+			kov_key |= kov_key >> 8;
+		}
+		return;
+
+		case 4: return;
+	}
+}
+
+void install_protection_asic27a_puzzli2()
+{
+	pPgmScanCallback = kov_asic27Scan;
+	pPgmResetCallback = kov_asic27_reset;
+
+	SekOpen(0);
+	SekMapMemory(PGMUSER0,	0x4f0000, 0x4f003f | 0x3ff, SM_READ);
+
+	SekMapHandler(4,	0x500000, 0x500003, SM_READ | SM_WRITE);
+	SekSetReadWordHandler(4, kov_asic27_read);
+	SekSetWriteWordHandler(4, puzzli2_asic_write);
 	SekClose();
 }
 
@@ -397,12 +504,12 @@ void install_protection_asic27_kov()
 
 #define DW2BITSWAP(s,d,bs,bd)  d=((d&(~(1<<bd)))|(((s>>bs)&1)<<bd))
 
-static unsigned short __fastcall dw2_read_word(unsigned int)
+static UINT16 __fastcall dw2_read_word(UINT32)
 {
 	// The value at 0x80EECE is computed in the routine at 0x107c18
 
-	unsigned short d = SekReadWord(0x80EECE);
-	unsigned short d2 = 0;
+	UINT16 d = SekReadWord(0x80EECE);
+	UINT16 d2 = 0;
 
 	d=(d>>8)|(d<<8);
 	DW2BITSWAP(d,d2,7 ,0);
@@ -432,15 +539,15 @@ void install_protection_asic25_asic12_dw2()
 //-----------------------------------------------------------------------------------------------------
 // Killing Blade
 
-static unsigned short kb_cmd;
-static unsigned short kb_reg;
-static unsigned short kb_ptr;
-static unsigned int   kb_regs[0x100]; //?
+static UINT16 kb_cmd;
+static UINT16 kb_reg;
+static UINT16 kb_ptr;
+static UINT32   kb_regs[0x100]; //?
 
-static void IGS022_do_dma(unsigned short src, unsigned short dst, unsigned short size, unsigned short mode)
+static void IGS022_do_dma(UINT16 src, UINT16 dst, UINT16 size, UINT16 mode)
 {
-	unsigned short param = mode >> 8;
-	unsigned short *PROTROM = (unsigned short*)USER1;
+	UINT16 param = mode >> 8;
+	UINT16 *PROTROM = (UINT16*)USER1;
 
 	mode &= 0x0f;
 
@@ -451,13 +558,13 @@ static void IGS022_do_dma(unsigned short src, unsigned short dst, unsigned short
 		case 2:
 		case 3:
 		{
-			for (int x = 0; x < size; x++)
+			for (INT32 x = 0; x < size; x++)
 			{
-				unsigned short dat2 = PROTROM[src + x];
+				UINT16 dat2 = BURN_ENDIAN_SWAP_INT16(PROTROM[src + x]);
 
-				unsigned char extraoffset = param & 0xfe;
-				unsigned char* dectable = (unsigned char *)PROTROM;
-				unsigned short extraxor = ((dectable[((x*2)+0+extraoffset)&0xff]) << 8) | (dectable[((x*2)+1+extraoffset)&0xff] << 0);
+				UINT8 extraoffset = param & 0xfe;
+				UINT8* dectable = (UINT8 *)PROTROM;
+				UINT16 extraxor = ((dectable[((x*2)+0+extraoffset)&0xff]) << 8) | (dectable[((x*2)+1+extraoffset)&0xff] << 0);
 
 				dat2 = ((dat2 & 0x00ff)<<8) | ((dat2 & 0xff00)>>8);
 
@@ -466,16 +573,16 @@ static void IGS022_do_dma(unsigned short src, unsigned short dst, unsigned short
 				if (mode==2) dat2 += extraxor;
 				if (mode==1) dat2 -= extraxor;
 
-				sharedprotram[dst + x] = dat2;
+				sharedprotram[dst + x] = BURN_ENDIAN_SWAP_INT16(dat2);
 			}
 
-			if ((mode==3) && (param==0x54) && (src*2==0x2120) && (dst*2==0x2600)) sharedprotram[0x2600 / 2] = 0x4e75; // hack
+			if ((mode==3) && (param==0x54) && (src*2==0x2120) && (dst*2==0x2600)) sharedprotram[0x2600 / 2] = BURN_ENDIAN_SWAP_INT16(0x4e75); // hack
 		}
 		break;
 
 		case 5: // copy
 		{
-			for (int x = 0; x < size; x++) {
+			for (INT32 x = 0; x < size; x++) {
 				sharedprotram[dst + x] = PROTROM[src + x];
 			}
 		}
@@ -483,9 +590,9 @@ static void IGS022_do_dma(unsigned short src, unsigned short dst, unsigned short
 
 		case 6: // swap bytes and nibbles
 		{
-			for (int x = 0; x < size; x++)
+			for (INT32 x = 0; x < size; x++)
 			{
-				unsigned short dat = PROTROM[src + x];
+				UINT16 dat = PROTROM[src + x];
 
 				dat = ((dat & 0xf000) >> 12) | ((dat & 0x0f00) >> 4) | ((dat & 0x00f0) << 4) | ((dat & 0x000f) << 12);
 
@@ -503,51 +610,51 @@ static void IGS022_do_dma(unsigned short src, unsigned short dst, unsigned short
 
 static void IGS022_handle_command()
 {
-	unsigned short cmd = sharedprotram[0x200/2];
+	UINT16 cmd = BURN_ENDIAN_SWAP_INT16(sharedprotram[0x200/2]);
 
 	if (cmd == 0x6d) // Store values to asic ram
 	{
-		unsigned int p1 = (sharedprotram[0x298/2] << 16) | sharedprotram[0x29a/2];
-		unsigned int p2 = (sharedprotram[0x29c/2] << 16) | sharedprotram[0x29e/2];
+		UINT32 p1 = BURN_ENDIAN_SWAP_INT16((sharedprotram[0x298/2] << 16)) | BURN_ENDIAN_SWAP_INT16(sharedprotram[0x29a/2]);
+		UINT32 p2 = BURN_ENDIAN_SWAP_INT16((sharedprotram[0x29c/2] << 16)) | BURN_ENDIAN_SWAP_INT16(sharedprotram[0x29e/2]);
 
 		if ((p2 & 0xffff) == 0x9)	// Set value
 		{
-			int reg = (p2 >> 16) & 0xffff;
+			INT32 reg = (p2 >> 16) & 0xffff;
 			if (reg & 0x200) kb_regs[reg & 0xff] = p1;
 		}
 		if ((p2 & 0xffff) == 0x6)	// Add value
 		{
-			int src1 = (p1 >> 16) & 0x00ff;
-			int src2 = (p1 >>  0) & 0x00ff;
-			int dst  = (p2 >> 16) & 0x00ff;
+			INT32 src1 = (p1 >> 16) & 0x00ff;
+			INT32 src2 = (p1 >>  0) & 0x00ff;
+			INT32 dst  = (p2 >> 16) & 0x00ff;
 			kb_regs[dst] = kb_regs[src2] - kb_regs[src1];
 		}
 		if ((p2 & 0xffff) == 0x1)	// Add Imm?
 		{
-			int reg = (p2 >> 16) & 0x00ff;
-			int imm = (p1 >>  0) & 0xffff;
+			INT32 reg = (p2 >> 16) & 0x00ff;
+			INT32 imm = (p1 >>  0) & 0xffff;
 			kb_regs[reg] += imm;
 		}
 		if ((p2 & 0xffff) == 0xa)	// Get value
 		{
-			int reg = (p1 >> 16) & 0x00ff;
-			sharedprotram[0x29c/2] = (kb_regs[reg] >> 16) & 0xffff;
-			sharedprotram[0x29e/2] = (kb_regs[reg] >>  0) & 0xffff;
+			INT32 reg = (p1 >> 16) & 0x00ff;
+			sharedprotram[0x29c/2] = BURN_ENDIAN_SWAP_INT16((kb_regs[reg] >> 16) & 0xffff);
+			sharedprotram[0x29e/2] = BURN_ENDIAN_SWAP_INT16((kb_regs[reg] >>  0) & 0xffff);
 		}
 	}
 
 	if (cmd == 0x4f) // memcpy with encryption / scrambling
 	{
-		unsigned short src  = sharedprotram[0x290 / 2] >> 1; // ?
-		unsigned short dst  = sharedprotram[0x292 / 2];
-		unsigned short size = sharedprotram[0x294 / 2];
-		unsigned short mode = sharedprotram[0x296 / 2];
+		UINT16 src  = BURN_ENDIAN_SWAP_INT16(sharedprotram[0x290 / 2]) >> 1; // ?
+		UINT16 dst  = BURN_ENDIAN_SWAP_INT16(sharedprotram[0x292 / 2]);
+		UINT16 size = BURN_ENDIAN_SWAP_INT16(sharedprotram[0x294 / 2]);
+		UINT16 mode = BURN_ENDIAN_SWAP_INT16(sharedprotram[0x296 / 2]);
 
 		IGS022_do_dma(src, dst, size, mode);
 	}
 }
 
-static void killbld_igs025_prot_write(unsigned int offset, unsigned short data)
+static void killbld_igs025_prot_write(UINT32 offset, UINT16 data)
 {
 	offset &= 0xf;
 
@@ -582,7 +689,7 @@ static void killbld_igs025_prot_write(unsigned int offset, unsigned short data)
 	}
 }
 
-static unsigned short killbld_igs025_prot_read(unsigned int offset)
+static UINT16 killbld_igs025_prot_read(UINT32 offset)
 {
 	offset &= 0xf;
 
@@ -594,7 +701,7 @@ static unsigned short killbld_igs025_prot_read(unsigned int offset)
 		}
 		else if (kb_cmd == 5)
 		{
-			unsigned int protvalue = 0x89911400 | PgmInput[7];
+			UINT32 protvalue = 0x89911400 | PgmInput[7];
 			return (protvalue >> (8 * (kb_ptr - 1))) & 0xff;
 		}
 	}
@@ -602,19 +709,19 @@ static unsigned short killbld_igs025_prot_read(unsigned int offset)
 	return 0;
 }
 
-static void __fastcall killbld_write_word(unsigned int address, unsigned short data)
+static void __fastcall killbld_write_word(UINT32 address, UINT16 data)
 {
 	killbld_igs025_prot_write(address / 2, data);
 }
 
-static unsigned short __fastcall killbld_read_word(unsigned int address)
+static UINT16 __fastcall killbld_read_word(UINT32 address)
 {
 	return killbld_igs025_prot_read(address / 2);
 }
 
 static void IGS022Reset()
 {
-	sharedprotram = (unsigned short*)PGMUSER0;
+	sharedprotram = (UINT16*)PGMUSER0;
 	USER1 = PGMUSER0 + 0x10000;
 
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "killbld") == 0) {
@@ -625,16 +732,16 @@ static void IGS022Reset()
 
 	BurnByteswap(USER1, 0x10000);
 
-	unsigned short *PROTROM = (unsigned short*)USER1;
+	UINT16 *PROTROM = (UINT16*)USER1;
 
-	for (int i = 0; i < 0x4000/2; i++)
+	for (INT32 i = 0; i < 0x4000/2; i++)
 		sharedprotram[i] = 0xa55a;
 
-	unsigned short src  = PROTROM[0x100 / 2];
-	unsigned short dst  = PROTROM[0x102 / 2];
-	unsigned short size = PROTROM[0x104 / 2];
-	unsigned short mode = PROTROM[0x106 / 2];
-	unsigned short tmp  = PROTROM[0x114 / 2];
+	UINT16 src  = PROTROM[0x100 / 2];
+	UINT16 dst  = PROTROM[0x102 / 2];
+	UINT16 size = PROTROM[0x104 / 2];
+	UINT16 mode = PROTROM[0x106 / 2];
+	UINT16 tmp  = PROTROM[0x114 / 2];
 
 	src  = (( src & 0xff00) >> 8) | (( src & 0x00ff) << 8);
 	dst  = (( dst & 0xff00) >> 8) | (( dst & 0x00ff) << 8);
@@ -649,7 +756,7 @@ static void IGS022Reset()
 	sharedprotram[0x2a2/2] = tmp; // crc check?
 
 	kb_cmd = kb_reg = kb_ptr = 0;
-	memset (kb_regs, 0, 0x100 * sizeof(int));
+	memset (kb_regs, 0, 0x100 * sizeof(INT32));
 }
 
 void install_protection_asic25_asic22_killbld()
@@ -657,7 +764,7 @@ void install_protection_asic25_asic22_killbld()
 	pPgmScanCallback = killbldScan;
 	pPgmResetCallback = IGS022Reset;
 
-	sharedprotram = (unsigned short*)PGMUSER0;
+	sharedprotram = (UINT16*)PGMUSER0;
 
 	SekOpen(0);
 	SekMapMemory(PGMUSER0,	0x300000, 0x303fff, SM_RAM);
@@ -671,46 +778,46 @@ void install_protection_asic25_asic22_killbld()
 // Puzzle Stars
 
 
-static unsigned short PSTARSKEY;
-static unsigned short PSTARSINT[2];
-static unsigned int PSTARS_REGS[16];
-static unsigned int PSTARS_VAL;
+static UINT16 PSTARSKEY;
+static UINT16 PSTARSINT[2];
+static UINT32 PSTARS_REGS[16];
+static UINT32 PSTARS_VAL;
 
-static unsigned short pstar_e7,pstar_b1,pstar_ce;
-static unsigned short pstar_ram[3];
+static UINT16 pstar_e7,pstar_b1,pstar_ce;
+static UINT16 pstar_ram[3];
 
-static int Pstar_ba[0x1E]={
+static INT32 Pstar_ba[0x1E]={
 	0x02,0x00,0x00,0x01,0x00,0x03,0x00,0x00, //0
 	0x02,0x00,0x06,0x00,0x22,0x04,0x00,0x03, //8
 	0x00,0x00,0x06,0x00,0x20,0x07,0x00,0x03, //10
 	0x00,0x21,0x01,0x00,0x00,0x63
 };
 
-static int Pstar_b0[0x10]={
+static INT32 Pstar_b0[0x10]={
 	0x09,0x0A,0x0B,0x00,0x01,0x02,0x03,0x04,
 	0x05,0x06,0x07,0x08,0x00,0x00,0x00,0x00
 };
 
-static int Pstar_ae[0x10]={
+static INT32 Pstar_ae[0x10]={
 	0x5D,0x86,0x8C ,0x8B,0xE0,0x8B,0x62,0xAF,
 	0xB6,0xAF,0x10A,0xAF,0x00,0x00,0x00,0x00
 };
 
-static int Pstar_a0[0x10]={
+static INT32 Pstar_a0[0x10]={
 	0x02,0x03,0x04,0x05,0x06,0x01,0x0A,0x0B,
 	0x0C,0x0D,0x0E,0x09,0x00,0x00,0x00,0x00,
 };
 
-static int Pstar_9d[0x10]={
+static INT32 Pstar_9d[0x10]={
 	0x05,0x03,0x00,0x00,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 };
 
-static int Pstar_90[0x10]={
+static INT32 Pstar_90[0x10]={
 	0x0C,0x10,0x0E,0x0C,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
-static int Pstar_8c[0x23]={
+static INT32 Pstar_8c[0x23]={
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x01,0x01,0x01,
 	0x01,0x01,0x01,0x01,0x02,0x02,0x02,0x02,
@@ -718,7 +825,7 @@ static int Pstar_8c[0x23]={
 	0x03,0x03,0x03
 };
 
-static int Pstar_80[0x1a3]={
+static INT32 Pstar_80[0x1a3]={
 	0x03,0x03,0x04,0x04,0x04,0x04,0x05,0x05,
 	0x05,0x05,0x06,0x06,0x03,0x03,0x04,0x04,
 	0x05,0x05,0x05,0x05,0x06,0x06,0x07,0x07,
@@ -774,7 +881,7 @@ static int Pstar_80[0x1a3]={
 	0x00,0x00,0x00
 };
 
-static unsigned short PSTARS_protram_r(unsigned int offset)
+static UINT16 PSTARS_protram_r(UINT32 offset)
 {
 	offset >>= 1;
 
@@ -787,7 +894,7 @@ static unsigned short PSTARS_protram_r(unsigned int offset)
 	return 0x0000;
 }
 
-static unsigned short PSTARS_r16(unsigned int offset)
+static UINT16 PSTARS_r16(UINT32 offset)
 {
 	offset >>= 1;
 
@@ -813,7 +920,7 @@ static unsigned short PSTARS_r16(unsigned int offset)
 	return 0xff;
 }
 
-static void PSTARS_w16(unsigned int offset, unsigned short data)
+static void PSTARS_w16(UINT32 offset, UINT16 data)
 {
 	offset >>= 1;
 
@@ -963,14 +1070,14 @@ static void PSTARS_w16(unsigned int offset, unsigned short data)
 	}
 }
 
-void __fastcall pstars_write_word(unsigned int address, unsigned short data)
+void __fastcall pstars_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffffc) == 0x500000) {
 		PSTARS_w16(address & 3, data);
 	}
 }
 
-unsigned char __fastcall pstars_read_byte(unsigned int address)
+UINT8 __fastcall pstars_read_byte(UINT32 address)
 {
 	if ((address & 0xff0000) == 0x4f0000) {
 		return PSTARS_protram_r(address & 0xffff);
@@ -983,7 +1090,7 @@ unsigned char __fastcall pstars_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall pstars_read_word(unsigned int address)
+UINT16 __fastcall pstars_read_word(UINT32 address)
 {
 	if ((address & 0xff0000) == 0x4f0000) {
 		return PSTARS_protram_r(address & 0xffff);
@@ -1024,39 +1131,62 @@ void install_protection_asic27a_puzlstar()
 //-----------------------------------------------------------------------------------------------------
 // ASIC27A - Kov2, Martmast, etc
 
-static unsigned char asic27a_to_arm = 0;
-static unsigned char asic27a_to_68k = 0;
+static UINT8 asic27a_to_arm = 0;
+static UINT8 asic27a_to_68k = 0;
 
 static inline void pgm_cpu_sync()
 {
-	int nCycles = SekTotalCycles() - Arm7TotalCycles();
+	INT32 nCycles = SekTotalCycles() - Arm7TotalCycles();
 
 	if (nCycles > 0) {
 		Arm7Run(nCycles);
 	}
 }
 
-static void __fastcall asic27a_write_byte(unsigned int /*address*/, unsigned char /*data*/)
+static void __fastcall asic27a_write_byte(UINT32 address, UINT8 data)
 {
+#if 0
+	if ((address & 0xff0000) == 0xd00000) {
+		//pgm_cpu_sync();
+		PGMARMShareRAM[(address & 0xffff)^1] = data;
+		return;
+	}
+#endif
 
-}
-
-static void __fastcall asic27a_write_word(unsigned int address, unsigned short data)
-{
-	if ((address & 0xfffffe) == 0xd10000) {
-	//	pgm_cpu_sync();
-		asic27a_to_arm = data & 0xff;
-		Arm7SetIRQLine(ARM7_FIRQ_LINE, ARM7_HOLD_LINE);
+	if ((address & 0xfffffe) == 0xd10000) {	// ddp2
+		pgm_cpu_sync();
+		asic27a_to_arm = data;
+		Arm7SetIRQLine(ARM7_FIRQ_LINE, ARM7_ASSERT_LINE);
 		return;
 	}
 }
 
-static unsigned char __fastcall asic27a_read_byte(unsigned int address)
+static void __fastcall asic27a_write_word(UINT32 address, UINT16 data)
 {
+#if 0
 	if ((address & 0xff0000) == 0xd00000) {
+		//pgm_cpu_sync();
+		*((UINT16*)(PGMARMShareRAM + (address & 0xfffe))) = BURN_ENDIAN_SWAP_INT16(data);
+		return;
+	}
+#endif
+
+	if ((address & 0xfffffe) == 0xd10000) {
 		pgm_cpu_sync();
+		asic27a_to_arm = data & 0xff;
+		Arm7SetIRQLine(ARM7_FIRQ_LINE, ARM7_ASSERT_LINE);
+		return;
+	}
+}
+
+static UINT8 __fastcall asic27a_read_byte(UINT32 address)
+{
+#if 0
+	if ((address & 0xff0000) == 0xd00000) {
+		//pgm_cpu_sync();
 		return PGMARMShareRAM[(address & 0xffff)^1];
 	}
+#endif
 
 	if ((address & 0xfffffc) == 0xd10000) {
 		pgm_cpu_sync();
@@ -1066,12 +1196,14 @@ static unsigned char __fastcall asic27a_read_byte(unsigned int address)
 	return 0;
 }
 
-static unsigned short __fastcall asic27a_read_word(unsigned int address)
+static UINT16 __fastcall asic27a_read_word(UINT32 address)
 {
+#if 0
 	if ((address & 0xff0000) == 0xd00000) {
-		pgm_cpu_sync();
-		return *((unsigned short*)(PGMARMShareRAM + (address & 0xfffe)));
+		//pgm_cpu_sync();
+		return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(PGMARMShareRAM + (address & 0xfffe))));
 	}
+#endif
 
 	if ((address & 0xfffffc) == 0xd10000) {
 		pgm_cpu_sync();
@@ -1081,7 +1213,7 @@ static unsigned short __fastcall asic27a_read_word(unsigned int address)
 	return 0;
 }
 
-static void asic27a_arm7_write_byte(unsigned int address, unsigned char data)
+static void asic27a_arm7_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -1091,11 +1223,12 @@ static void asic27a_arm7_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-static unsigned char asic27a_arm7_read_byte(unsigned int address)
+static UINT8 asic27a_arm7_read_byte(UINT32 address)
 {
 	switch (address)
 	{
 		case 0x38000000:
+			Arm7SetIRQLine(ARM7_FIRQ_LINE, ARM7_CLEAR_LINE);
 			return asic27a_to_arm;
 	}
 
@@ -1109,15 +1242,13 @@ void install_protection_asic27a_martmast()
 
 	SekOpen(0);
 
-	SekMapMemory(PGMARMShareRAM,	0xd00000, 0xd0ffff, SM_FETCH | SM_WRITE);
+	SekMapMemory(PGMARMShareRAM,	0xd00000, 0xd0ffff, SM_RAM);
 
-	SekMapHandler(4,		0xd00000, 0xd10003, SM_READ);
-	SekMapHandler(5,		0xd10000, 0xd10003, SM_WRITE);
-
+	SekMapHandler(4,		0xd10000, 0xd10003, SM_READ | SM_WRITE);
 	SekSetReadWordHandler(4, asic27a_read_word);
 	SekSetReadByteHandler(4, asic27a_read_byte);
-	SekSetWriteWordHandler(5, asic27a_write_word);
-	SekSetWriteByteHandler(5, asic27a_write_byte);
+	SekSetWriteWordHandler(4, asic27a_write_word);
+	SekSetWriteByteHandler(4, asic27a_write_byte);
 	SekClose();
 
 	Arm7Init(1);
@@ -1137,13 +1268,13 @@ void install_protection_asic27a_martmast()
 //----------------------------------------------------------------------------------------------------------
 // Kovsh/Photoy2k/Photoy2k2 asic27a emulation... (thanks to XingXing!)
 
-static unsigned short kovsh_highlatch_arm_w = 0;
-static unsigned short kovsh_lowlatch_arm_w = 0;
-static unsigned short kovsh_highlatch_68k_w = 0;
-static unsigned short kovsh_lowlatch_68k_w = 0;
-static unsigned int kovsh_counter = 1;
+static UINT16 kovsh_highlatch_arm_w = 0;
+static UINT16 kovsh_lowlatch_arm_w = 0;
+static UINT16 kovsh_highlatch_68k_w = 0;
+static UINT16 kovsh_lowlatch_68k_w = 0;
+static UINT32 kovsh_counter = 1;
 
-static void __fastcall kovsh_asic27a_write_word(unsigned int address, unsigned short data)
+static void __fastcall kovsh_asic27a_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -1159,10 +1290,10 @@ static void __fastcall kovsh_asic27a_write_word(unsigned int address, unsigned s
 	}
 }
 
-static unsigned short __fastcall kovsh_asic27a_read_word(unsigned int address)
+static UINT16 __fastcall kovsh_asic27a_read_word(UINT32 address)
 {
 	if ((address & 0xffffc0) == 0x4f0000) {
-		return *((unsigned short*)(PGMARMShareRAM + (address & 0x3e)));
+		return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(PGMARMShareRAM + (address & 0x3e))));
 	}
 
 	switch (address)
@@ -1181,16 +1312,16 @@ static unsigned short __fastcall kovsh_asic27a_read_word(unsigned int address)
 	return 0;
 }
 
-static void kovsh_asic27a_arm7_write_word(unsigned int address, unsigned short data)
+static void kovsh_asic27a_arm7_write_word(UINT32 address, UINT16 data)
 {
 	// written... but never read?
 	if ((address & 0xffffff80) == 0x50800000) {
-		*((unsigned short*)(PGMARMShareRAM + ((address>>1) & 0x3e))) = data;
+		*((UINT16*)(PGMARMShareRAM + ((address>>1) & 0x3e))) = BURN_ENDIAN_SWAP_INT16(data);
 		return;
 	}
 }
 
-static void kovsh_asic27a_arm7_write_long(unsigned int address, unsigned int data)
+static void kovsh_asic27a_arm7_write_long(UINT32 address, UINT32 data)
 {
 	switch (address)
 	{
@@ -1206,7 +1337,7 @@ static void kovsh_asic27a_arm7_write_long(unsigned int address, unsigned int dat
 	}
 }
 
-static unsigned int kovsh_asic27a_arm7_read_long(unsigned int address)
+static UINT32 kovsh_asic27a_arm7_read_long(UINT32 address)
 {
 	switch (address)
 	{
@@ -1248,14 +1379,14 @@ void install_protection_asic27a_kovsh()
 //----------------------------------------------------------------------------------------------------------
 // olds
 
-static int rego;
-static unsigned short olds_bs,olds_cmd3;
+static INT32 rego;
+static UINT16 olds_bs,olds_cmd3;
 
-static unsigned int olds_prot_addr( unsigned short addr )
+static UINT32 olds_prot_addr( UINT16 addr )
 {
-	unsigned int mode = addr & 0xff;
-	unsigned int offset = addr >> 8;
-	unsigned int realaddr;
+	UINT32 mode = addr & 0xff;
+	UINT32 offset = addr >> 8;
+	UINT32 realaddr;
 
 	switch(mode)
 	{
@@ -1300,21 +1431,21 @@ static unsigned int olds_prot_addr( unsigned short addr )
 	return realaddr;
 }
 
-static unsigned int olds_read_reg(unsigned short addr)
+static UINT32 olds_read_reg(UINT16 addr)
 {
-	unsigned int protaddr = (olds_prot_addr(addr) - 0x400000) / 2;
+	UINT32 protaddr = (olds_prot_addr(addr) - 0x400000) / 2;
 	return sharedprotram[protaddr] << 16 | sharedprotram[protaddr + 1];
 }
 
-static void olds_write_reg(unsigned short addr, unsigned int val)
+static void olds_write_reg(UINT16 addr, UINT32 val)
 {
 	sharedprotram[(olds_prot_addr(addr) - 0x400000) / 2]     = val >> 16;
 	sharedprotram[(olds_prot_addr(addr) - 0x400000) / 2 + 1] = val & 0xffff;
 }
 
-unsigned short __fastcall olds_protection_read(unsigned int address)
+UINT16 __fastcall olds_protection_read(UINT32 address)
 {
-	unsigned short res = 0;
+	UINT16 res = 0;
 
 	if (address & 2)
 	{
@@ -1326,7 +1457,7 @@ unsigned short __fastcall olds_protection_read(unsigned int address)
 			res = olds_cmd3;
 		else if (kb_cmd == 5)
 		{
-			unsigned int protvalue = 0x900000 | PgmInput[7]; // region from protection device.
+			UINT32 protvalue = 0x900000 | PgmInput[7]; // region from protection device.
 			res = (protvalue >> (8 * (kb_ptr - 1))) & 0xff; // includes region 1 = taiwan , 2 = china, 3 = japan (title = orlegend special), 4 = korea, 5 = hongkong, 6 = world
 
 		}
@@ -1335,7 +1466,7 @@ unsigned short __fastcall olds_protection_read(unsigned int address)
 	return res;
 }
 
-void __fastcall olds_protection_write(unsigned int address, unsigned short data)
+void __fastcall olds_protection_write(UINT32 address, UINT16 data)
 {
 	if ((address & 2) == 0)
 		kb_cmd = data;
@@ -1345,7 +1476,7 @@ void __fastcall olds_protection_write(unsigned int address, unsigned short data)
 			kb_reg = data;
 		else if(kb_cmd == 2)	//a bitswap=
 		{
-			int reg = 0;
+			INT32 reg = 0;
 			if (data & 0x01) reg |= 0x40;
 			if (data & 0x02) reg |= 0x80;
 			if (data & 0x04) reg |= 0x20;
@@ -1354,7 +1485,7 @@ void __fastcall olds_protection_write(unsigned int address, unsigned short data)
 		}
 		else if (kb_cmd == 3)
 		{
-			unsigned short cmd = sharedprotram[0x3026 / 2];
+			UINT16 cmd = sharedprotram[0x3026 / 2];
 
 			switch (cmd)
 			{
@@ -1363,8 +1494,8 @@ void __fastcall olds_protection_write(unsigned int address, unsigned short data)
 						break;
 				case 0x64:
 					{
-						unsigned short cmd0 = sharedprotram[0x3082 / 2];
-						unsigned short val0 = sharedprotram[0x3050 / 2];	//CMD_FORMAT
+						UINT16 cmd0 = sharedprotram[0x3082 / 2];
+						UINT16 val0 = sharedprotram[0x3050 / 2];	//CMD_FORMAT
 						{
 							if ((cmd0 & 0xff) == 0x2)
 								olds_write_reg(val0, olds_read_reg(val0) + 0x10000);
@@ -1384,14 +1515,14 @@ void __fastcall olds_protection_write(unsigned int address, unsigned short data)
 	}
 }
 
-static unsigned short __fastcall olds_mainram_read_word(unsigned int address)
+static UINT16 __fastcall olds_mainram_read_word(UINT32 address)
 {
 	if (SekGetPC(-1) >= 0x100000 && address != 0x8178d8) SekWriteWord(0x8178f4, SekReadWord(0x8178D8));
 
-	return *((unsigned short*)(PGM68KRAM + (address & 0x1fffe)));
+	return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(PGM68KRAM + (address & 0x1fffe))));
 }
 
-static unsigned char __fastcall olds_mainram_read_byte(unsigned int address)
+static UINT8 __fastcall olds_mainram_read_byte(UINT32 address)
 {
 	return PGM68KRAM[(address & 0x1ffff)^1];
 }
@@ -1407,7 +1538,7 @@ void install_protection_asic25_asic28_olds()
 	pPgmScanCallback = oldsScan;
 	pPgmResetCallback = reset_olds;
 
-	sharedprotram = (unsigned short*)PGMUSER0;
+	sharedprotram = (UINT16*)PGMUSER0;
 
 	// no protection rom and different offset for olds100a
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "olds100a") == 0) {
@@ -1422,10 +1553,10 @@ void install_protection_asic25_asic28_olds()
 	}
 
 	{
-		unsigned short *gptr = (unsigned short*)(PGMUSER0 + 0x10000);
+		UINT16 *gptr = (UINT16*)(PGMUSER0 + 0x10000);
 
-		for(int i = 0; i < 0x4000 / 2; i++) {
-			if (gptr[i] == (0xffff - i)) gptr[i] = 0x4e75;
+		for(INT32 i = 0; i < 0x4000 / 2; i++) {
+			if (gptr[i] == (0xffff - i)) gptr[i] = BURN_ENDIAN_SWAP_INT16(0x4e75);
 		}
 	}
 
@@ -1447,42 +1578,42 @@ void install_protection_asic25_asic28_olds()
 //-------------------------------------------------------------------------------------------
 // Oriental Legends Special Plus! (Creamy Mami)
 
-static unsigned short m_oldsplus_key;
-static unsigned short m_oldsplus_int[2];
-static unsigned int m_oldsplus_val;
-static unsigned int m_oldsplus_regs[0x100];
-static unsigned int m_oldsplus_ram[0x100];
+static UINT16 m_oldsplus_key;
+static UINT16 m_oldsplus_int[2];
+static UINT32 m_oldsplus_val;
+static UINT32 m_oldsplus_regs[0x100];
+static UINT32 m_oldsplus_ram[0x100];
 
-static const int oldsplus_80[0x5]={
+static const INT32 oldsplus_80[0x5]={
 	0xbb8,0x1770,0x2328,0x2ee0,0xf4240
 };
 
-static const unsigned char oldsplus_fc[0x20]={
+static const UINT8 oldsplus_fc[0x20]={
 	0x00,0x00,0x0a,0x3a,0x4e,0x2e,0x03,0x40,
 	0x33,0x43,0x26,0x2c,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x44,0x4d,0x0b,0x27,0x3d,0x0f,
 	0x37,0x2b,0x02,0x2f,0x15,0x45,0x0e,0x30
 };
 
-static const unsigned short oldsplus_a0[0x20]={
+static const UINT16 oldsplus_a0[0x20]={
 	0x000,0x023,0x046,0x069,0x08c,0x0af,0x0d2,0x0f5,
 	0x118,0x13b,0x15e,0x181,0x1a4,0x1c7,0x1ea,0x20d,
 	0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,
 	0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,0x20d,
 };
 
-static const unsigned short oldsplus_90[0x7]={
+static const UINT16 oldsplus_90[0x7]={
 	0x50,0xa0,0xc8,0xf0,0x190,0x1f4,0x258
 };
 
-static const unsigned char oldsplus_5e[0x20]={
+static const UINT8 oldsplus_5e[0x20]={
 	0x04,0x04,0x04,0x04,0x04,0x03,0x03,0x03,
 	0x02,0x02,0x02,0x01,0x01,0x01,0x01,0x01,
 	0x01,0x01,0x01,0x01,0x01,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 };
 
-static const unsigned char oldsplus_b0[0xe0]={
+static const UINT8 oldsplus_b0[0xe0]={
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -1519,7 +1650,7 @@ static const unsigned char oldsplus_b0[0xe0]={
 	0x1c,0x1d,0x1e,0x1f,0x1f,0x1f,0x1f,0x1f
 };
 
-static const unsigned char oldsplus_ae[0xe0]={
+static const UINT8 oldsplus_ae[0xe0]={
 	0x50,0x50,0x50,0x50,0x50,0x50,0x50,0x50,
 	0x50,0x50,0x50,0x50,0x50,0x50,0x50,0x50,
 	0x50,0x50,0x50,0x50,0x50,0x50,0x50,0x50,
@@ -1556,11 +1687,11 @@ static const unsigned char oldsplus_ae[0xe0]={
 	0x23,0x23,0x23,0x23,0x23,0x23,0x23,0x23
 };
 
-static const unsigned short oldsplus_ba[0x4]={
+static const UINT16 oldsplus_ba[0x4]={
 	0x3138,0x2328,0x1C20,0x1518
 };
 
-static const unsigned short oldsplus_9d[0x111]={
+static const UINT16 oldsplus_9d[0x111]={
 	0x0000,0x0064,0x00c8,0x012c,0x0190,0x01f4,0x0258,0x02bc,
 	0x02f8,0x0334,0x0370,0x03ac,0x03e8,0x0424,0x0460,0x049c,
 	0x04d8,0x0514,0x0550,0x058c,0x05c8,0x0604,0x0640,0x06bc,
@@ -1598,14 +1729,14 @@ static const unsigned short oldsplus_9d[0x111]={
 	0x06bc
 };
 
-static const unsigned short oldsplus_8c[0x20]={
+static const UINT16 oldsplus_8c[0x20]={
 	0x0032,0x0032,0x0064,0x0096,0x0096,0x00fa,0x012c,0x015e,
 	0x0032,0x0064,0x0096,0x00c8,0x00c8,0x012c,0x015e,0x0190,
 	0x0064,0x0096,0x00c8,0x00fa,0x00fa,0x015e,0x0190,0x01c2,
 	0x0096,0x00c8,0x00fa,0x012c,0x012c,0x0190,0x01c2,0x01f4
 };
 
-unsigned short __fastcall oldsplus_prot_read(unsigned int address)
+UINT16 __fastcall oldsplus_prot_read(UINT32 address)
 {
 	if (address == 0x500000)
 	{
@@ -1627,7 +1758,7 @@ unsigned short __fastcall oldsplus_prot_read(unsigned int address)
 	return 0xff;
 }
 
-void __fastcall oldsplus_prot_write(unsigned int address, unsigned short data)
+void __fastcall oldsplus_prot_write(UINT32 address, UINT16 data)
 {
 	if (address == 0x500000)
 	{
@@ -1637,7 +1768,7 @@ void __fastcall oldsplus_prot_write(unsigned int address, unsigned short data)
 
 	if (address == 0x500002)
 	{
-		unsigned short realkey;
+		UINT16 realkey;
 		if ((data >> 8) == 0xff) m_oldsplus_key = 0xff00;
 		realkey = m_oldsplus_key >> 8;
 		realkey |= m_oldsplus_key;
@@ -1823,13 +1954,13 @@ static void reset_asic27a_oldsplus()
 {
 	m_oldsplus_key = 0;
 	m_oldsplus_val = 0;
-	memset (m_oldsplus_int,  0, sizeof(short) * 2);
-	memset (m_oldsplus_regs, 0, sizeof(int) * 0x100);
-	memset (m_oldsplus_ram,  0, sizeof(int) * 0x100);
+	memset (m_oldsplus_int,  0, sizeof(INT16) * 2);
+	memset (m_oldsplus_regs, 0, sizeof(INT32) * 0x100);
+	memset (m_oldsplus_ram,  0, sizeof(INT32) * 0x100);
 
 	memset (PGMUSER0, 0, 0x400);
 
-	*((unsigned short*)(PGMUSER0 + 0x00008)) = PgmInput[7]; // region
+	*((UINT16*)(PGMUSER0 + 0x00008)) = PgmInput[7]; // region
 }
 
 void install_protection_asic27a_oldsplus()
@@ -1851,19 +1982,19 @@ void install_protection_asic27a_oldsplus()
 // add this to the bottom of pgm_prot.cpp (i added it after the oldsScan function)
 
 
-int oldsplus_asic27aScan(int nAction, int */*pnMin*/)
+INT32 oldsplus_asic27aScan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
 	if (nAction & ACB_MEMORY_RAM) {
-		ba.Data		= (unsigned char*)m_oldsplus_ram;
-		ba.nLen		= 0x0000100 * sizeof(int);
+		ba.Data		= (UINT8*)m_oldsplus_ram;
+		ba.nLen		= 0x0000100 * sizeof(INT32);
 		ba.nAddress	= 0xfffc00;
 		ba.szName	= "Prot RAM";
 		BurnAcb(&ba);
 
-		ba.Data		= (unsigned char*)m_oldsplus_regs;
-		ba.nLen		= 0x0000100 * sizeof(int);
+		ba.Data		= (UINT8*)m_oldsplus_regs;
+		ba.nLen		= 0x0000100 * sizeof(INT32);
 		ba.nAddress	= 0xfff800;
 		ba.szName	= "Prot REGs";
 		BurnAcb(&ba);
@@ -1882,17 +2013,17 @@ int oldsplus_asic27aScan(int nAction, int */*pnMin*/)
 //-------------------------------------------------------------------------------------------
 // S.V.G. - Spectral vs Generation / Demon Front / The Gladiator / The Killing Blade EX / Happy 6in1
 
-static unsigned char svg_ram_sel = 0;
-static unsigned char *svg_ram[2];
+static UINT8 svg_ram_sel = 0;
+static UINT8 *svg_ram[2];
 
-static void svg_set_ram_bank(int data)
+static void svg_set_ram_bank(INT32 data)
 {
 	svg_ram_sel = data & 1;
 	Arm7MapMemory(svg_ram[svg_ram_sel],	0x38000000, 0x3801ffff, ARM7_RAM);
 	SekMapMemory(svg_ram[svg_ram_sel^1],	0x500000, 0x51ffff, SM_FETCH);
 }
 
-static void __fastcall svg_write_byte(unsigned int address, unsigned char data)
+static void __fastcall svg_write_byte(UINT32 address, UINT8 data)
 {
 	pgm_cpu_sync();
 
@@ -1910,12 +2041,12 @@ static void __fastcall svg_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-static void __fastcall svg_write_word(unsigned int address, unsigned short data)
+static void __fastcall svg_write_word(UINT32 address, UINT16 data)
 {
 	pgm_cpu_sync();
 
 	if ((address & 0xffe0000) == 0x0500000) {
-		*((unsigned short*)(svg_ram[svg_ram_sel^1] + (address & 0x1fffe))) = data;
+		*((UINT16*)(svg_ram[svg_ram_sel^1] + (address & 0x1fffe))) = BURN_ENDIAN_SWAP_INT16(data);
 		
 		return;
 	}
@@ -1932,12 +2063,12 @@ static void __fastcall svg_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-static unsigned char __fastcall svg_read_byte(unsigned int address)
+static UINT8 __fastcall svg_read_byte(UINT32 address)
 {
 	if ((address & 0xffe0000) == 0x0500000) {
 		pgm_cpu_sync();
 
-		int d = svg_ram[svg_ram_sel^1][(address & 0x1ffff)^1];
+		INT32 d = svg_ram[svg_ram_sel^1][(address & 0x1ffff)^1];
 		return d;
 	}
 
@@ -1951,12 +2082,12 @@ static unsigned char __fastcall svg_read_byte(unsigned int address)
 	return 0;
 }
 
-static unsigned short __fastcall svg_read_word(unsigned int address)
+static UINT16 __fastcall svg_read_word(UINT32 address)
 {
 	if ((address & 0xffe0000) == 0x0500000) {
 		pgm_cpu_sync();
 
-		return *((unsigned short*)(svg_ram[svg_ram_sel^1] + (address & 0x1fffe)));
+		return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(svg_ram[svg_ram_sel^1] + (address & 0x1fffe))));
 	}
 
 	switch (address)
@@ -1973,7 +2104,7 @@ static unsigned short __fastcall svg_read_word(unsigned int address)
 	return 0;
 }
 
-static void svg_arm7_write_byte(unsigned int address, unsigned char data)
+static void svg_arm7_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -1987,12 +2118,12 @@ static void svg_arm7_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-static void svg_arm7_write_word(unsigned int /*address*/, unsigned short /*data*/)
+static void svg_arm7_write_word(UINT32 /*address*/, UINT16 /*data*/)
 {
 
 }
 
-static void svg_arm7_write_long(unsigned int address, unsigned int data)
+static void svg_arm7_write_long(UINT32 address, UINT32 data)
 {
 	switch (address)
 	{
@@ -2006,7 +2137,7 @@ static void svg_arm7_write_long(unsigned int address, unsigned int data)
 	}
 }
 
-static unsigned char svg_arm7_read_byte(unsigned int address)
+static UINT8 svg_arm7_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -2020,7 +2151,7 @@ static unsigned char svg_arm7_read_byte(unsigned int address)
 	return 0;
 }
 
-static unsigned short svg_arm7_read_word(unsigned int address)
+static UINT16 svg_arm7_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -2032,7 +2163,7 @@ static unsigned short svg_arm7_read_word(unsigned int address)
 	return 0;
 }
 
-static unsigned int svg_arm7_read_long(unsigned int address)
+static UINT32 svg_arm7_read_long(UINT32 address)
 {
 	switch (address)
 	{
@@ -2082,13 +2213,13 @@ void install_protection_asic27a_svg()
 //-------------------------------------------------------------------------------------------
 // ketsui / espgaluda / ddp3
 
-static unsigned short ddp3value;
-static unsigned short ddp3key;
-static unsigned int   ddp3response;
-static unsigned char  ddp3internal_slot;
-static unsigned int   ddp3slots[0x100];
+static UINT16 ddp3value;
+static UINT16 ddp3key;
+static UINT32   ddp3response;
+static UINT8  ddp3internal_slot;
+static UINT32   ddp3slots[0x100];
 
-void __fastcall ddp3_asic_write(unsigned int offset, unsigned short data)
+void __fastcall ddp3_asic_write(UINT32 offset, UINT16 data)
 {
 	switch (offset & 0x06)
 	{
@@ -2135,7 +2266,7 @@ void __fastcall ddp3_asic_write(unsigned int offset, unsigned short data)
 	}
 }
 
-static unsigned short __fastcall ddp3_asic_read(unsigned int offset)
+static UINT16 __fastcall ddp3_asic_read(UINT32 offset)
 {
 	switch (offset & 0x02)
 	{
@@ -2153,7 +2284,7 @@ static void reset_ddp3()
 	ddp3response = 0;
 	ddp3internal_slot = 0;
 
-	memset (ddp3slots, 0, 0x100 * sizeof(int));
+	memset (ddp3slots, 0, 0x100 * sizeof(INT32));
 }
 
 void install_protection_asic27a_ketsui()
@@ -2184,39 +2315,33 @@ void install_protection_asic27a_ddp3()
 //-----------------------------------------------------------------------------------------------------
 // Save states
 
-int kov_asic27Scan(int nAction, int */*pnMin*/)
+INT32 kov_asic27Scan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
 	if (nAction & ACB_MEMORY_RAM) {
-		ba.Data		= (unsigned char*)ASIC27REGS;
-		ba.nLen		= 0x000000a * sizeof(short);
+		ba.Data		= (UINT8*)kov_slots;
+		ba.nLen		= 0x0000010 * sizeof(INT32);
 		ba.nAddress	= 0xff0000;
-		ba.szName	= "Asic Registers";
-		BurnAcb(&ba);
-
-		ba.Data		= (unsigned char*)ASICPARAMS;
-		ba.nLen		= 0x0000100 * sizeof(short);
-		ba.nAddress	= 0xff1000;
-		ba.szName	= "Asic Parameters";
-		BurnAcb(&ba);
-
-		ba.Data		= (unsigned char*)E0REGS;
-		ba.nLen		= 0x0000010 * sizeof(short);
-		ba.nAddress	= 0xff2000;
-		ba.szName	= "Asic E0 Registers";
+		ba.szName	= "Asic Slot Registers";
 		BurnAcb(&ba);
 	}
 
 	if (nAction & ACB_DRIVER_DATA) {
-		SCAN_VAR(ASIC27KEY);
-		SCAN_VAR(ASIC27RCNT);
+		SCAN_VAR(kov_internal_slot);
+		SCAN_VAR(kov_key);
+		SCAN_VAR(kov_response);
+		SCAN_VAR(kov_value);
+
+		SCAN_VAR(kov_c0_value);
+		SCAN_VAR(kov_cb_value);
+		SCAN_VAR(kov_fe_value);
 	}
 
 	return 0;
 }
 
-int asic3Scan(int nAction, int */*pnMin*/)
+INT32 asic3Scan(INT32 nAction, INT32 *)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(asic3_reg);
@@ -2234,7 +2359,7 @@ int asic3Scan(int nAction, int */*pnMin*/)
 	return 0;
 }
 
-int killbldScan(int nAction, int */*pnMin*/)
+INT32 killbldScan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
@@ -2245,8 +2370,8 @@ int killbldScan(int nAction, int */*pnMin*/)
 		ba.szName	= "ProtRAM";
 		BurnAcb(&ba);
 
-		ba.Data		= (unsigned char*)kb_regs;
-		ba.nLen		= 0x00100 * sizeof(int);
+		ba.Data		= (UINT8*)kb_regs;
+		ba.nLen		= 0x00100 * sizeof(INT32);
 		ba.nAddress	= 0xfffffc00;
 		ba.szName	= "Protection Registers";
 		BurnAcb(&ba);
@@ -2261,19 +2386,19 @@ int killbldScan(int nAction, int */*pnMin*/)
 	return 0;
 }
 
-int pstarsScan(int nAction, int */*pnMin*/)
+INT32 pstarsScan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
 	if (nAction & ACB_MEMORY_RAM) {
-		ba.Data		= (unsigned char*)PSTARS_REGS;
-		ba.nLen		= 0x0000010 * sizeof(int);
+		ba.Data		= (UINT8*)PSTARS_REGS;
+		ba.nLen		= 0x0000010 * sizeof(INT32);
 		ba.nAddress	= 0xff1000;
 		ba.szName	= "Asic Register";
 		BurnAcb(&ba);
 
-		ba.Data		= (unsigned char*)pstar_ram;
-		ba.nLen		= 0x0000003 * sizeof(short);
+		ba.Data		= (UINT8*)pstar_ram;
+		ba.nLen		= 0x0000003 * sizeof(INT16);
 		ba.nAddress	= 0xff2000;
 		ba.szName	= "Asic RAM";
 		BurnAcb(&ba);
@@ -2292,7 +2417,7 @@ int pstarsScan(int nAction, int */*pnMin*/)
 	return 0;
 }
 
-int asic27aScan(int nAction,int *)
+INT32 asic27aScan(INT32 nAction,INT32 *)
 {
 	struct BurnArea ba;
 
@@ -2332,7 +2457,7 @@ int asic27aScan(int nAction,int *)
  	return 0;
 }
 
-int oldsScan(int nAction, int */*pnMin*/)
+INT32 oldsScan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
@@ -2355,7 +2480,7 @@ int oldsScan(int nAction, int */*pnMin*/)
 	return 0;
 }
 
-int kovsh_asic27aScan(int nAction,int *)
+INT32 kovsh_asic27aScan(INT32 nAction,INT32 *)
 {
 	struct BurnArea ba;
 
@@ -2392,7 +2517,7 @@ int kovsh_asic27aScan(int nAction,int *)
  	return 0;
 }
 
-int svg_asic27aScan(int nAction,int *)
+INT32 svg_asic27aScan(INT32 nAction,INT32 *)
 {
 	struct BurnArea ba;
 
@@ -2440,13 +2565,13 @@ int svg_asic27aScan(int nAction,int *)
  	return 0;
 }
 
-int ddp3Scan(int nAction, int */*pnMin*/)
+INT32 ddp3Scan(INT32 nAction, INT32 *)
 {
 	struct BurnArea ba;
 
 	if (nAction & ACB_MEMORY_RAM) {
-		ba.Data		= (unsigned char*)ddp3slots;
-		ba.nLen		= 0x0000100 * sizeof(int);
+		ba.Data		= (UINT8*)ddp3slots;
+		ba.nLen		= 0x0000100 * sizeof(INT32);
 		ba.nAddress	= 0xff00000;
 		ba.szName	= "ProtRAM";
 		BurnAcb(&ba);
@@ -2460,86 +2585,4 @@ int ddp3Scan(int nAction, int */*pnMin*/)
 	}
 
 	return 0;
-}
-
-//-------------------------------------------------------------------------------------------
-// ddp2 - preliminary (kludgy)
-
-static int ddp2_asic27_0xd10000 = 0;
-
-static void __fastcall Ddp2WriteByte(unsigned int address, unsigned char data)
-{
-	if ((address & 0xffe000) == 0xd00000) {
-		PGMUSER0[(address & 0x1fff)^1] = data;
-		*((unsigned short*)(PGMUSER0 + 0x0010)) = 0;
-		*((unsigned short*)(PGMUSER0 + 0x0020)) = 1;
-		return;
-	}
-
-	if ((address & 0xffffffe) == 0xd10000) {
-		ddp2_asic27_0xd10000=data;
-		return;
-	}
-}
-
-static void __fastcall Ddp2WriteWord(unsigned int address, unsigned short data)
-{
-	if ((address & 0xffe000) == 0xd00000) {
-		*((unsigned short*)(PGMUSER0 + (address & 0x1ffe))) = data;
-		*((unsigned short*)(PGMUSER0 + 0x0010)) = 0;
-		*((unsigned short*)(PGMUSER0 + 0x0020)) = 1;
-		return;
-	}
-
-	if ((address & 0xffffffe) == 0xd10000) {
-		ddp2_asic27_0xd10000=data;
-		return;
-	}
-}
-
-static unsigned char __fastcall Ddp2ReadByte(unsigned int address)
-{
-	if ((address & 0xfffffe) == 0xd10000) {
-		ddp2_asic27_0xd10000++;
-		ddp2_asic27_0xd10000&=0x7f;
-		return ddp2_asic27_0xd10000;
-	}
-
-	if ((address & 0xffe000) == 0xd00000) {
-		*((unsigned short*)(PGMUSER0 + 0x0002)) = PgmInput[7]; // region
-		*((unsigned short*)(PGMUSER0 + 0x1f00)) = 0;
-		return PGMUSER0[(address & 0x1fff)^1];
-	}
-
-	return 0;
-}
-
-static unsigned short __fastcall Ddp2ReadWord(unsigned int address)
-{
-	if ((address & 0xfffffe) == 0xd10000) {
-		ddp2_asic27_0xd10000++;
-		ddp2_asic27_0xd10000&=0x7f;
-		return ddp2_asic27_0xd10000;
-	}
-
-	if ((address & 0xffe000) == 0xd00000) {
-		*((unsigned short*)(PGMUSER0 + 0x0002)) = PgmInput[7]; // region
-		*((unsigned short*)(PGMUSER0 + 0x1f00)) = 0;
-      		return *((unsigned short*)(PGMUSER0 + (address & 0x1ffe)));
-	}
-
-	return 0;
-}
-
-void install_protection_asic27a_ddp2()
-{
-	memset (PGMUSER0, 0, 0x2000);
-
-	SekOpen(0);
-	SekMapHandler(4,             0xd00000, 0xd1ffff, SM_READ | SM_WRITE);
-	SekSetReadWordHandler(4,    Ddp2ReadWord);
-	SekSetReadByteHandler(4,    Ddp2ReadByte);
-	SekSetWriteWordHandler(4,    Ddp2WriteWord);
-	SekSetWriteByteHandler(4,    Ddp2WriteByte);
-	SekClose();
 }

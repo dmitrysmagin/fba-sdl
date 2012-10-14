@@ -3,45 +3,45 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *TC0100SCNRam[TC0100SCN_MAX_CHIPS];
+UINT8 *TC0100SCNRam[TC0100SCN_MAX_CHIPS];
 UINT16 TC0100SCNCtrl[TC0100SCN_MAX_CHIPS][8];
-unsigned char TC0100SCNBgLayerUpdate[TC0100SCN_MAX_CHIPS];
-unsigned char TC0100SCNFgLayerUpdate[TC0100SCN_MAX_CHIPS];
-static unsigned char *TC0100SCNChars[TC0100SCN_MAX_CHIPS];
-static int BgScrollX[TC0100SCN_MAX_CHIPS];
-static int BgScrollY[TC0100SCN_MAX_CHIPS];
-static int FgScrollX[TC0100SCN_MAX_CHIPS];
-static int FgScrollY[TC0100SCN_MAX_CHIPS];
-static int CharScrollX[TC0100SCN_MAX_CHIPS];
-static int CharScrollY[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNXOffset[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNYOffset[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNFlipScreenX[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNFlip[TC0100SCN_MAX_CHIPS];
-static unsigned char *TC0100SCNPriorityMap[TC0100SCN_MAX_CHIPS] = { NULL, };
-static int TC0100SCNColourDepth[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNGfxBank[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNGfxMask[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNDblWidth[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNClipWidth[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNClipHeight[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNClipStartX[TC0100SCN_MAX_CHIPS];
-static int TC0100SCNPaletteOffset[TC0100SCN_MAX_CHIPS];
-static unsigned short *pTC0100SCNBgTempDraw[TC0100SCN_MAX_CHIPS] = { NULL, };
-static unsigned short *pTC0100SCNFgTempDraw[TC0100SCN_MAX_CHIPS] = { NULL, };
-static int TC0100SCNNum = 0;
+UINT8 TC0100SCNBgLayerUpdate[TC0100SCN_MAX_CHIPS];
+UINT8 TC0100SCNFgLayerUpdate[TC0100SCN_MAX_CHIPS];
+static UINT8 *TC0100SCNChars[TC0100SCN_MAX_CHIPS];
+static INT32 BgScrollX[TC0100SCN_MAX_CHIPS];
+static INT32 BgScrollY[TC0100SCN_MAX_CHIPS];
+static INT32 FgScrollX[TC0100SCN_MAX_CHIPS];
+static INT32 FgScrollY[TC0100SCN_MAX_CHIPS];
+static INT32 CharScrollX[TC0100SCN_MAX_CHIPS];
+static INT32 CharScrollY[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNXOffset[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNYOffset[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNFlipScreenX[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNFlip[TC0100SCN_MAX_CHIPS];
+static UINT8 *TC0100SCNPriorityMap[TC0100SCN_MAX_CHIPS] = { NULL, };
+static INT32 TC0100SCNColourDepth[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNGfxBank[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNGfxMask[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNDblWidth[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNClipWidth[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNClipHeight[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNClipStartX[TC0100SCN_MAX_CHIPS];
+static INT32 TC0100SCNPaletteOffset[TC0100SCN_MAX_CHIPS];
+static UINT16 *pTC0100SCNBgTempDraw[TC0100SCN_MAX_CHIPS] = { NULL, };
+static UINT16 *pTC0100SCNFgTempDraw[TC0100SCN_MAX_CHIPS] = { NULL, };
+static INT32 TC0100SCNNum = 0;
 
 #define PLOTPIXEL(x, po) pPixel[x] = nPalette | pTileData[x] | po;
 #define PLOTPIXEL_FLIPX(x, a, po) pPixel[x] = nPalette | pTileData[a] | po;
 
-static void RenderTile(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, int nTilemapWidth, unsigned char *pTile)
+static void RenderTile(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, INT32 nTilemapWidth, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 
-	unsigned short* pPixel = pDestDraw + (StartY * nTilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * nTilemapWidth) + StartX;
 
-	for (int y = 0; y < 8; y++, pPixel += nTilemapWidth, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += nTilemapWidth, pTileData += 8) {
 		PLOTPIXEL( 0, nPaletteOffset);
 		PLOTPIXEL( 1, nPaletteOffset);
 		PLOTPIXEL( 2, nPaletteOffset);
@@ -53,14 +53,14 @@ static void RenderTile(unsigned short* pDestDraw, int nTileNumber, int StartX, i
 	}
 }
 
-static void RenderTile_FlipX(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, int nTilemapWidth, unsigned char *pTile)
+static void RenderTile_FlipX(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, INT32 nTilemapWidth, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 
-	unsigned short* pPixel = pDestDraw + (StartY * nTilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * nTilemapWidth) + StartX;
 
-	for (int y = 0; y < 8; y++, pPixel += nTilemapWidth, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += nTilemapWidth, pTileData += 8) {
 		PLOTPIXEL_FLIPX( 7, 0, nPaletteOffset);
 		PLOTPIXEL_FLIPX( 6, 1, nPaletteOffset);
 		PLOTPIXEL_FLIPX( 5, 2, nPaletteOffset);
@@ -72,14 +72,14 @@ static void RenderTile_FlipX(unsigned short* pDestDraw, int nTileNumber, int Sta
 	}
 }
 
-static void RenderTile_FlipY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, int nTilemapWidth, unsigned char *pTile)
+static void RenderTile_FlipY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, INT32 nTilemapWidth, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 7) * nTilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 7) * nTilemapWidth) + StartX;
 
-	for (int y = 7; y >= 0; y--, pPixel -= nTilemapWidth, pTileData += 8) {
+	for (INT32 y = 7; y >= 0; y--, pPixel -= nTilemapWidth, pTileData += 8) {
 		PLOTPIXEL( 0, nPaletteOffset);
 		PLOTPIXEL( 1, nPaletteOffset);
 		PLOTPIXEL( 2, nPaletteOffset);
@@ -91,14 +91,14 @@ static void RenderTile_FlipY(unsigned short* pDestDraw, int nTileNumber, int Sta
 	}
 }
 
-static void RenderTile_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, int nTilemapWidth, unsigned char *pTile)
+static void RenderTile_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, INT32 nTilemapWidth, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 7) * nTilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 7) * nTilemapWidth) + StartX;
 
-	for (int y = 7; y >= 0; y--, pPixel -= nTilemapWidth, pTileData += 8) {
+	for (INT32 y = 7; y >= 0; y--, pPixel -= nTilemapWidth, pTileData += 8) {
 		PLOTPIXEL_FLIPX( 7, 0, nPaletteOffset);
 		PLOTPIXEL_FLIPX( 6, 1, nPaletteOffset);
 		PLOTPIXEL_FLIPX( 5, 2, nPaletteOffset);
@@ -113,7 +113,7 @@ static void RenderTile_FlipXY(unsigned short* pDestDraw, int nTileNumber, int St
 #undef PLOTPIXEL
 #undef PLOTPIXEL_FLIPX
 
-void TC0100SCNCtrlWordWrite(int Chip, unsigned int Offset, UINT16 Data)
+void TC0100SCNCtrlWordWrite(INT32 Chip, UINT32 Offset, UINT16 Data)
 {
 	TC0100SCNCtrl[Chip][Offset] = Data;
 	
@@ -164,20 +164,20 @@ void TC0100SCNCtrlWordWrite(int Chip, unsigned int Offset, UINT16 Data)
 	bprintf(PRINT_IMPORTANT, _T("TC0100 Ctrl Word Write %02X, %04X\n"), Offset, Data);
 }
 
-int TC0100SCNBottomLayer(int Chip)
+INT32 TC0100SCNBottomLayer(INT32 Chip)
 {
 	return (TC0100SCNCtrl[Chip][6] & 0x08) >> 3;
 }
 
-void TC0100SCNRenderBgLayer(int Chip, int Opaque, unsigned char *pSrc)
+void TC0100SCNRenderBgLayer(INT32 Chip, INT32 Opaque, UINT8 *pSrc)
 {
-	int mx, my, Attr, Code, Colour, x, y, xSrc = 0, ySrc = 0, TileIndex = 0, Offset, Flip, xFlip, yFlip, p, dxScroll, dyScroll;
+	INT32 mx, my, Attr, Code, Colour, x, y, xSrc = 0, ySrc = 0, TileIndex = 0, Offset, Flip, xFlip, yFlip, p, dxScroll, dyScroll;
 	
 	UINT16 *VideoRam = (UINT16*)TC0100SCNRam[Chip];
 	UINT16 *ScrollRam = (UINT16*)TC0100SCNRam[Chip] + (0xc000 / 2);
-	int Columns = 64;
-	int WidthMask = 0x1ff;
-	int HeightMask = 0x1ff;
+	INT32 Columns = 64;
+	INT32 WidthMask = 0x1ff;
+	INT32 HeightMask = 0x1ff;
 	
 	if (TC0100SCNDblWidth[Chip]) {
 		VideoRam = (UINT16*)TC0100SCNRam[Chip];
@@ -192,8 +192,8 @@ void TC0100SCNRenderBgLayer(int Chip, int Opaque, unsigned char *pSrc)
 		for (my = 0; my < 64; my++) {
 			for (mx = 0; mx < Columns; mx++) {
 				Offset = 2 * TileIndex;
-				Attr = VideoRam[Offset];
-				Code = (VideoRam[Offset + 1] & TC0100SCNGfxMask[Chip]) + (TC0100SCNGfxBank[Chip] << 15);
+				Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset]);
+				Code = (BURN_ENDIAN_SWAP_INT16(VideoRam[Offset + 1]) & TC0100SCNGfxMask[Chip]) + (TC0100SCNGfxBank[Chip] << 15);
 				Colour = Attr & 0xff;
 				Flip = (Attr & 0xc000) >> 14;
 				xFlip = (Flip >> 0) & 0x01;
@@ -242,7 +242,7 @@ void TC0100SCNRenderBgLayer(int Chip, int Opaque, unsigned char *pSrc)
 	if (TC0100SCNFlip[Chip]) ySrc = (256 + 16 - ySrc) & HeightMask;
 	
 	for (y = 0; y < TC0100SCNClipHeight[Chip]; y++) {
-		xSrc = (BgScrollX[Chip] - ScrollRam[(y + dyScroll) & 0x1ff] + dxScroll + TC0100SCNClipStartX[Chip]) & WidthMask;
+		xSrc = (BgScrollX[Chip] - BURN_ENDIAN_SWAP_INT16(ScrollRam[(y + dyScroll) & 0x1ff]) + dxScroll + TC0100SCNClipStartX[Chip]) & WidthMask;
 		if(TC0100SCNFlip[Chip]) xSrc = (256 - 58 - xSrc) & WidthMask;
 		if (TC0100SCNFlipScreenX[Chip]) xSrc = (256 - 64 - xSrc) & WidthMask;
 		
@@ -262,16 +262,16 @@ void TC0100SCNRenderBgLayer(int Chip, int Opaque, unsigned char *pSrc)
 	}
 }
 
-void TC0100SCNRenderFgLayer(int Chip, int Opaque, unsigned char *pSrc)
+void TC0100SCNRenderFgLayer(INT32 Chip, INT32 Opaque, UINT8 *pSrc)
 {
-	int mx, my, Attr, Code, Colour, x, y, xSrc = 0, ySrc = 0, TileIndex = 0, Offset, Flip, xFlip, yFlip, p, ColumnOffset, dxScroll, dyScroll;
+	INT32 mx, my, Attr, Code, Colour, x, y, xSrc = 0, ySrc = 0, TileIndex = 0, Offset, Flip, xFlip, yFlip, p, ColumnOffset, dxScroll, dyScroll;
 	
 	UINT16 *VideoRam = (UINT16*)TC0100SCNRam[Chip] + (0x8000 / 2);
 	UINT16 *ScrollRam = (UINT16*)TC0100SCNRam[Chip] + (0xc400 / 2);
 	UINT16 *ColumnRam = (UINT16*)TC0100SCNRam[Chip] + (0xe000 / 2);
-	int Columns = 64;
-	int WidthMask = 0x1ff;
-	int HeightMask = 0x1ff;
+	INT32 Columns = 64;
+	INT32 WidthMask = 0x1ff;
+	INT32 HeightMask = 0x1ff;
 	
 	if (TC0100SCNDblWidth[Chip]) {
 		VideoRam = (UINT16*)TC0100SCNRam[Chip] + (0x8000 / 2);
@@ -287,8 +287,8 @@ void TC0100SCNRenderFgLayer(int Chip, int Opaque, unsigned char *pSrc)
 		for (my = 0; my < 64; my++) {
 			for (mx = 0; mx < Columns; mx++) {
 				Offset = 2 * TileIndex;
-				Attr = VideoRam[Offset];
-				Code = (VideoRam[Offset + 1] & TC0100SCNGfxMask[Chip]) + (TC0100SCNGfxBank[Chip] << 15);
+				Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset]);
+				Code = (BURN_ENDIAN_SWAP_INT16(VideoRam[Offset + 1]) & TC0100SCNGfxMask[Chip]) + (TC0100SCNGfxBank[Chip] << 15);
 				Colour = Attr & 0xff;
 				Flip = (Attr & 0xc000) >> 14;
 				xFlip = (Flip >> 0) & 0x01;
@@ -337,12 +337,12 @@ void TC0100SCNRenderFgLayer(int Chip, int Opaque, unsigned char *pSrc)
 	if (TC0100SCNFlip[Chip]) ySrc = (256 + 16 - ySrc) & HeightMask;
 	
 	for (y = 0; y < TC0100SCNClipHeight[Chip]; y++) {
-		xSrc = (FgScrollX[Chip] - ScrollRam[(y + dyScroll) & 0x1ff] + dxScroll + TC0100SCNClipStartX[Chip]) & WidthMask;
+		xSrc = (FgScrollX[Chip] - BURN_ENDIAN_SWAP_INT16(ScrollRam[(y + dyScroll) & 0x1ff]) + dxScroll + TC0100SCNClipStartX[Chip]) & WidthMask;
 		if (TC0100SCNFlip[Chip]) xSrc = (256 - 58 - xSrc) & WidthMask;
 		if (TC0100SCNFlipScreenX[Chip]) xSrc = (256 - 64 - xSrc) & WidthMask;
 		
 		for (x = TC0100SCNClipStartX[Chip]; x < TC0100SCNClipStartX[Chip] + TC0100SCNClipWidth[Chip]; x++) {
-			ColumnOffset = ColumnRam[(xSrc & 0x3ff) / 8];
+			ColumnOffset = BURN_ENDIAN_SWAP_INT16(ColumnRam[(xSrc & 0x3ff) / 8]);
 			p = pTC0100SCNFgTempDraw[Chip][(((ySrc - ColumnOffset) & HeightMask) * Columns * 8) + xSrc];
 
 			if ((p & 0x0f) != 0 || Opaque) {
@@ -358,18 +358,18 @@ void TC0100SCNRenderFgLayer(int Chip, int Opaque, unsigned char *pSrc)
 	}
 }
 
-static int TC0100SCNPlaneOffsets[2] = { 8, 0 };
-static int TC0100SCNXOffsets[8]     = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TC0100SCNYOffsets[8]     = { 0, 16, 32, 48, 64, 80, 96, 112 };
+static INT32 TC0100SCNPlaneOffsets[2] = { 8, 0 };
+static INT32 TC0100SCNXOffsets[8]     = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TC0100SCNYOffsets[8]     = { 0, 16, 32, 48, 64, 80, 96, 112 };
 
-void TC0100SCNRenderCharLayer(int Chip)
+void TC0100SCNRenderCharLayer(INT32 Chip)
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)TC0100SCNRam[Chip] + (0x4000 / 2);
 	UINT16 *CharRam = (UINT16*)TC0100SCNRam[Chip] + (0x6000 / 2);
-	int Columns = 64;
-	int Rows = 64;
+	INT32 Columns = 64;
+	INT32 Rows = 64;
 	
 	if (TC0100SCNDblWidth[Chip]) {
 		VideoRam = (UINT16*)TC0100SCNRam[Chip] + (0x12000 / 2);
@@ -382,7 +382,7 @@ void TC0100SCNRenderCharLayer(int Chip)
 	
 	for (my = 0; my < Rows; my++) {
 		for (mx = 0; mx < Columns; mx++) {
-			Attr = VideoRam[TileIndex];
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex]);
 			Code = Attr & 0xff;
 			Colour = (Attr >> 6) & 0xfc;
 			Flip = (Attr & 0xc000) >> 14;
@@ -435,23 +435,23 @@ void TC0100SCNRenderCharLayer(int Chip)
 				if (y >= 256) y -= 256;
 			}
 			
-			int px, py;
+			INT32 px, py;
 			
 			UINT32 nPalette = Colour << 2;
 			
 			for (py = 0; py < 8; py++) {
 				for (px = 0; px < 8; px++) {
-					unsigned char c = TC0100SCNChars[Chip][(Code * 64) + (py * 8) + px];
+					UINT8 c = TC0100SCNChars[Chip][(Code * 64) + (py * 8) + px];
 					if (xFlip) c = TC0100SCNChars[Chip][(Code * 64) + (py * 8) + (7 - px)];
 					if (yFlip) c = TC0100SCNChars[Chip][(Code * 64) + ((7 - py) * 8) + px];
 					if (xFlip && yFlip) c = TC0100SCNChars[Chip][(Code * 64) + ((7 - py) * 8) + (7 - px)];
 					
 					if (c) {
-						int xPos = x + px + TC0100SCNClipStartX[Chip];
-						int yPos = y + py;
+						INT32 xPos = x + px + TC0100SCNClipStartX[Chip];
+						INT32 yPos = y + py;
 
 						if (yPos >= 0 && yPos < TC0100SCNClipHeight[Chip]) {
-							unsigned short* pPixel = pTransDraw + (yPos * nScreenWidth);
+							UINT16* pPixel = pTransDraw + (yPos * nScreenWidth);
 						
 							if (xPos >= TC0100SCNClipStartX[Chip] && xPos < TC0100SCNClipStartX[Chip] + TC0100SCNClipWidth[Chip]) {
 								pPixel[xPos] = c | nPalette | TC0100SCNPaletteOffset[Chip];
@@ -470,7 +470,7 @@ void TC0100SCNRenderCharLayer(int Chip)
 
 void TC0100SCNReset()
 {
-	for (int i = 0;i < TC0100SCNNum; i++) {
+	for (INT32 i = 0;i < TC0100SCNNum; i++) {
 		memset(TC0100SCNCtrl[i], 0, 8);	
 		memset(TC0100SCNChars[i], 0, 256 * 8 * 8);
 		
@@ -488,18 +488,18 @@ void TC0100SCNReset()
 	}
 }
 
-void TC0100SCNInit(int Chip, int nNumTiles, int xOffset, int yOffset, int xFlip, unsigned char *PriorityMap)
+void TC0100SCNInit(INT32 Chip, INT32 nNumTiles, INT32 xOffset, INT32 yOffset, INT32 xFlip, UINT8 *PriorityMap)
 {
-	TC0100SCNRam[Chip] = (unsigned char*)malloc(0x14000);
+	TC0100SCNRam[Chip] = (UINT8*)BurnMalloc(0x14000);
 	memset(TC0100SCNRam[Chip], 0, 0x14000);
 		
-	TC0100SCNChars[Chip] = (unsigned char*)malloc(256 * 8 * 8);
+	TC0100SCNChars[Chip] = (UINT8*)BurnMalloc(256 * 8 * 8);
 	memset(TC0100SCNChars[Chip], 0, 256 * 8 * 8);
 	
-	pTC0100SCNBgTempDraw[Chip] = (UINT16*)malloc(1024 * 512 * sizeof(UINT16));
+	pTC0100SCNBgTempDraw[Chip] = (UINT16*)BurnMalloc(1024 * 512 * sizeof(UINT16));
 	memset(pTC0100SCNBgTempDraw[Chip], 0, 1024 * 512 * sizeof(UINT16));
 	
-	pTC0100SCNFgTempDraw[Chip] = (UINT16*)malloc(1024 * 512 * sizeof(UINT16));
+	pTC0100SCNFgTempDraw[Chip] = (UINT16*)BurnMalloc(1024 * 512 * sizeof(UINT16));
 	memset(pTC0100SCNFgTempDraw[Chip], 0, 1024 * 512 * sizeof(UINT16));
 	
 	TC0100SCNXOffset[Chip] = xOffset;
@@ -522,47 +522,40 @@ void TC0100SCNInit(int Chip, int nNumTiles, int xOffset, int yOffset, int xFlip,
 	TC0100SCNNum++;
 }
 
-void TC0100SCNSetColourDepth(int Chip, int ColourDepth)
+void TC0100SCNSetColourDepth(INT32 Chip, INT32 ColourDepth)
 {
 	TC0100SCNColourDepth[Chip] = ColourDepth;
 }
 
-void TC0100SCNSetGfxMask(int Chip, int Mask)
+void TC0100SCNSetGfxMask(INT32 Chip, INT32 Mask)
 {
 	TC0100SCNGfxMask[Chip] = Mask;
 }
 
-void TC0100SCNSetGfxBank(int Chip, int Bank)
+void TC0100SCNSetGfxBank(INT32 Chip, INT32 Bank)
 {
 	TC0100SCNGfxBank[Chip] = Bank & 0x01;
 }
 
-void TC0100SCNSetClipArea(int Chip, int ClipWidth, int ClipHeight, int ClipStartX)
+void TC0100SCNSetClipArea(INT32 Chip, INT32 ClipWidth, INT32 ClipHeight, INT32 ClipStartX)
 {
 	TC0100SCNClipWidth[Chip] = ClipWidth;
 	TC0100SCNClipHeight[Chip] = ClipHeight;
 	TC0100SCNClipStartX[Chip] = ClipStartX;
 }
 
-void TC0100SCNSetPaletteOffset(int Chip, int PaletteOffset)
+void TC0100SCNSetPaletteOffset(INT32 Chip, INT32 PaletteOffset)
 {
 	TC0100SCNPaletteOffset[Chip] = PaletteOffset;
 }
 
 void TC0100SCNExit()
 {
-	for (int i = 0; i < TC0100SCNNum; i++) {
-		free(TC0100SCNRam[i]);
-		TC0100SCNRam[i] = NULL;
-		
-		free(TC0100SCNChars[i]);
-		TC0100SCNChars[i] = NULL;
-		
-		free(pTC0100SCNBgTempDraw[i]);
-		pTC0100SCNBgTempDraw[i] = NULL;
-		
-		free(pTC0100SCNFgTempDraw[i]);
-		pTC0100SCNFgTempDraw[i] = NULL;
+	for (INT32 i = 0; i < TC0100SCNNum; i++) {
+		BurnFree(TC0100SCNRam[i]);
+		BurnFree(TC0100SCNChars[i]);
+		BurnFree(pTC0100SCNBgTempDraw[i]);
+		BurnFree(pTC0100SCNFgTempDraw[i]);
 		
 		memset(TC0100SCNCtrl[i], 0, 8);
 		
@@ -592,7 +585,7 @@ void TC0100SCNExit()
 	TC0100SCNNum = 0;
 }
 
-void TC0100SCNScan(int nAction)
+void TC0100SCNScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

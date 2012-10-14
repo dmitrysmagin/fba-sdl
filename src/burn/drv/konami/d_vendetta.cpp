@@ -2,54 +2,55 @@
 // Based on MAME driver by Ernesto Corvi
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "konami_intf.h"
 #include "konamiic.h"
 #include "k053260.h"
 #include "eeprom.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvKonROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvKonRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvKonROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvKonRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int *Palette;
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *nDrvBank;
+static UINT8 *nDrvBank;
 
-static int videobank;
-static int init_eeprom_count;
-static int irq_enabled;
-static int vblank = 0;
-static int bankoffset;
+static INT32 videobank;
+static INT32 init_eeprom_count;
+static INT32 irq_enabled;
+static INT32 vblank = 0;
+static INT32 bankoffset;
 
-static int bg_colorbase;
-static int sprite_colorbase;
-static int layer_colorbase[3];
-static int layerpri[3];
+static INT32 bg_colorbase;
+static INT32 sprite_colorbase;
+static INT32 layer_colorbase[3];
+static INT32 layerpri[3];
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvJoy6;
-static unsigned char DrvReset;
-static unsigned char DrvInputs[5];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvJoy6;
+static UINT8 DrvReset;
+static UINT8 DrvInputs[5];
 
-static int nCyclesDone[2];
+static INT32 nCyclesDone[2];
 
 static struct BurnInputInfo Vendet4pInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 coin"	},
@@ -190,7 +191,7 @@ static struct BurnInputInfo EsckidsjInputList[] = {
 
 STDINPUTINFO(Esckidsj)
 
-void vendetta_main_write(unsigned short address, unsigned char data)
+void vendetta_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -256,7 +257,7 @@ void vendetta_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char vendetta_main_read(unsigned short address)
+UINT8 vendetta_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -274,7 +275,7 @@ unsigned char vendetta_main_read(unsigned short address)
 
 		case 0x5fd0:
 		{
-			int res = (EEPROMRead() & 1) | vblank | ((DrvJoy6 << 2) ^ 0xf6);
+			INT32 res = (EEPROMRead() & 1) | vblank | ((DrvJoy6 << 2) ^ 0xf6);
 
 			if (init_eeprom_count > 0)
 			{
@@ -326,7 +327,7 @@ unsigned char vendetta_main_read(unsigned short address)
 	return 0;
 }
 
-void esckids_main_write(unsigned short address, unsigned char data)
+void esckids_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -387,7 +388,7 @@ void esckids_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char esckids_main_read(unsigned short address)
+UINT8 esckids_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -405,7 +406,7 @@ unsigned char esckids_main_read(unsigned short address)
 
 		case 0x3f92:
 		{
-			int res = (EEPROMRead() & 1) | vblank | ((DrvJoy6 << 2) ^ 0xf6);
+			INT32 res = (EEPROMRead() & 1) | vblank | ((DrvJoy6 << 2) ^ 0xf6);
 
 			if (init_eeprom_count > 0)
 			{
@@ -451,7 +452,7 @@ unsigned char esckids_main_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall vendetta_sound_write(unsigned short address, unsigned char data)
+void __fastcall vendetta_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -475,7 +476,7 @@ void __fastcall vendetta_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall vendetta_sound_read(unsigned short address)
+UINT8 __fastcall vendetta_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -494,7 +495,7 @@ unsigned char __fastcall vendetta_sound_read(unsigned short address)
 	return 0;
 }
 
-static void vendetta_set_lines(int lines)
+static void vendetta_set_lines(INT32 lines)
 {
 	nDrvBank[0] = lines;
 
@@ -503,21 +504,21 @@ static void vendetta_set_lines(int lines)
 	}
 }
 
-static void K052109Callback(int layer, int bank, int *code, int *color, int *, int *)
+static void K052109Callback(INT32 layer, INT32 bank, INT32 *code, INT32 *color, INT32 *, INT32 *)
 {
 	*code |= ((*color & 0x03) << 8) | ((*color & 0x30) << 6) | ((*color & 0x0c) << 10) | (bank << 14);
 	*color = layer_colorbase[layer] + ((*color & 0xc0) >> 6);
 }
 
-static void EsckidsK052109Callback(int layer, int bank, int *code, int *color, int *, int *)
+static void EsckidsK052109Callback(INT32 layer, INT32 bank, INT32 *code, INT32 *color, INT32 *, INT32 *)
 {
 	*code |= ((*color & 0x03) << 8) | ((*color & 0x10) << 6) | ((*color & 0x0c) <<  9) | (bank << 13);
 	*color = layer_colorbase[layer] + ((*color & 0xe0) >>  5);
 }
 
-static void K053247Callback(int *code, int *color, int *priority)
+static void K053247Callback(INT32 *code, INT32 *color, INT32 *priority)
 {
-	int pri = (*color & 0x03e0) >> 4;
+	INT32 pri = (*color & 0x03e0) >> 4;
 	if (pri <= layerpri[2])					*priority = 0;
 	else if (pri > layerpri[2] && pri <= layerpri[1])	*priority = 1;
 	else if (pri > layerpri[1] && pri <= layerpri[0])	*priority = 2;
@@ -528,7 +529,7 @@ static void K053247Callback(int *code, int *color, int *priority)
 	*color = sprite_colorbase + (*color & 0x001f);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -564,9 +565,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvKonROM		= Next; Next += 0x050000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -578,8 +579,8 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x100000;
 
-	Palette			= (unsigned int*)Next; Next += 0x800 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -596,11 +597,11 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
-	int XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
-	int YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
+	INT32 Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
+	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
+	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, 0x100000);
 	konami_rom_deinterleave_4(DrvGfxROM1, 0x400000);
@@ -625,12 +626,12 @@ static const eeprom_interface vendetta_eeprom_intf =
 	0
 };
 
-static int DrvInit(int nGame)
+static INT32 DrvInit(INT32 nGame)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -697,7 +698,7 @@ static int DrvInit(int nGame)
 		bankoffset = 0;
 	}
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0xefff, 2, DrvZ80ROM);
@@ -722,7 +723,7 @@ static int DrvInit(int nGame)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -736,18 +737,17 @@ static int DrvExit()
 	BurnYM2151Exit();
 	K053260Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		unsigned short d = (p[i] << 8) | (p[i] >> 8);
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		UINT16 d = BURN_ENDIAN_SWAP_INT16((p[i] << 8) | (p[i] >> 8));
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -762,12 +762,12 @@ static void DrvRecalcPal()
 	}
 }
 
-static void sortlayers(int *layer,int *pri)
+static void sortlayers(INT32 *layer,INT32 *pri)
 {
 #define SWAP(a,b) \
 	if (pri[a] < pri[b]) \
 	{ \
-		int t; \
+		INT32 t; \
 		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
 		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
 	}
@@ -777,7 +777,7 @@ static void sortlayers(int *layer,int *pri)
 	SWAP(1,2)
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
@@ -785,7 +785,7 @@ static int DrvDraw()
 
 	K052109UpdateScroll();
 
-	int layer[3];
+	INT32 layer[3];
 
 	bg_colorbase       = K053251GetPaletteIndex(0);
 	sprite_colorbase   = K053251GetPaletteIndex(1);
@@ -823,7 +823,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -834,7 +834,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -853,9 +853,9 @@ static int DrvFrame()
 		if ((DrvInputs[3] & 0x03) == 0) DrvInputs[3] |= 0x03;
 	}
 
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 6000000 / 60, 3579545 / 60 };
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 6000000 / 60, 3579545 / 60 };
 	
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
@@ -864,10 +864,10 @@ static int DrvFrame()
 
 	vblank = 8;
 
-	int trigger_vblank = (nInterleave / 256) * 240;
+	INT32 trigger_vblank = (nInterleave / 256) * 240;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext, nCyclesSegment;
 
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
@@ -882,8 +882,8 @@ static int DrvFrame()
 		if (i == trigger_vblank) vblank = 0; // or 8?
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -893,8 +893,8 @@ static int DrvFrame()
 	if (irq_enabled) konamiSetIrqLine(KONAMI_IRQ_LINE, KONAMI_HOLD_LINE);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
@@ -911,7 +911,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -975,7 +975,7 @@ static struct BurnRomInfo vendettaRomDesc[] = {
 STD_ROM_PICK(vendetta)
 STD_ROM_FN(vendetta)
 
-static int VendettaInit()
+static INT32 VendettaInit()
 {
 	return DrvInit(0);
 }
@@ -1184,7 +1184,7 @@ static struct BurnRomInfo esckidsRomDesc[] = {
 STD_ROM_PICK(esckids)
 STD_ROM_FN(esckids)
 
-static int EsckidsInit()
+static INT32 EsckidsInit()
 {
 	return DrvInit(1);
 }

@@ -8,40 +8,39 @@
 	#define HARDWARE_CAPCOM_CPS3_NO_CD	HARDWARE_CAPCOM_CPS3
 #endif
 
-extern unsigned char cps3_reset;
-extern unsigned char cps3_palette_change;
+extern UINT8 cps3_reset;
+extern UINT8 cps3_palette_change;
 
-extern unsigned short *Cps3CurPal;
+extern UINT16 *Cps3CurPal;
 
-extern unsigned int cps3_key1, cps3_key2, cps3_isSpecial;
-extern unsigned int cps3_bios_test_hack, cps3_game_test_hack;
-extern unsigned int cps3_speedup_ram_address, cps3_speedup_code_address;
-extern unsigned char cps3_dip;
-extern unsigned int cps3_region_address, cps3_ncd_address;
+extern UINT32 cps3_key1, cps3_key2, cps3_isSpecial;
+extern UINT32 cps3_bios_test_hack, cps3_game_test_hack;
+extern UINT32 cps3_speedup_ram_address, cps3_speedup_code_address;
+extern UINT8 cps3_dip;
+extern UINT32 cps3_region_address, cps3_ncd_address;
 
-extern unsigned char Cps3But1[16];
-extern unsigned char Cps3But2[16];
-extern unsigned char Cps3But3[16];
+extern UINT8 Cps3But1[16];
+extern UINT8 Cps3But2[16];
+extern UINT8 Cps3But3[16];
 
-int cps3Init();
-int cps3Exit();
-int cps3Frame();
-int cps3Scan(int nAction,int *pnMin);
+INT32 cps3Init();
+INT32 cps3Exit();
+INT32 cps3Frame();
+INT32 cps3Scan(INT32 nAction,INT32 *pnMin);
 
 // sound 
 
-unsigned char __fastcall cps3SndReadByte(unsigned int addr);
-unsigned short __fastcall cps3SndReadWord(unsigned int addr);
-unsigned int __fastcall cps3SndReadLong(unsigned int addr);
+UINT8 __fastcall cps3SndReadByte(UINT32 addr);
+UINT16 __fastcall cps3SndReadWord(UINT32 addr);
+UINT32 __fastcall cps3SndReadLong(UINT32 addr);
 
-void __fastcall cps3SndWriteByte(unsigned int addr, unsigned char data);
-void __fastcall cps3SndWriteWord(unsigned int addr, unsigned short data);
-void __fastcall cps3SndWriteLong(unsigned int addr, unsigned int data);
+void __fastcall cps3SndWriteByte(UINT32 addr, UINT8 data);
+void __fastcall cps3SndWriteWord(UINT32 addr, UINT16 data);
+void __fastcall cps3SndWriteLong(UINT32 addr, UINT32 data);
 
-int cps3SndInit(unsigned char *);
+INT32 cps3SndInit(UINT8 *);
 void cps3SndReset();
 void cps3SndExit();
 void cps3SndUpdate();
 
-int cps3SndScan(int);
-
+INT32 cps3SndScan(INT32);

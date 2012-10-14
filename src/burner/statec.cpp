@@ -3,16 +3,16 @@
 
 #include "burnint.h"
 
-static unsigned char* Comp = NULL;		// Compressed data buffer
-static int nCompLen = 0;
-static int nCompFill = 0;				// How much of the buffer has been filled so far
+static UINT8* Comp = NULL;		// Compressed data buffer
+static INT32 nCompLen = 0;
+static INT32 nCompFill = 0;				// How much of the buffer has been filled so far
 
 static z_stream Zstr;					// Deflate stream
 
 // -----------------------------------------------------------------------------
 // Compression
 
-static int CompEnlarge(int nAdd)
+static INT32 CompEnlarge(INT32 nAdd)
 {
 	void* NewMem = NULL;
 
@@ -22,17 +22,17 @@ static int CompEnlarge(int nAdd)
 		return 1;
 	}
 
-	Comp = (unsigned char*)NewMem;
+	Comp = (UINT8*)NewMem;
 	memset(Comp + nCompLen, 0, nAdd);
 	nCompLen += nAdd;
 
 	return 0;
 }
 
-static int CompGo(int bFinish)
+static INT32 CompGo(INT32 bFinish)
 {
-	int nResult = 0;
-	int nAvailOut = 0;
+	INT32 nResult = 0;
+	INT32 nAvailOut = 0;
 
 	bool bRetry, bOverflow;
 
@@ -40,7 +40,7 @@ static int CompGo(int bFinish)
 
 		bRetry = false;
 
-		// Point to the remainder of out buffer
+		// PoINT32 to the remainder of out buffer
 		Zstr.next_out = Comp + nCompFill;
 		nAvailOut = nCompLen - nCompFill;
 		if (nAvailOut < 0) {
@@ -78,10 +78,10 @@ static int CompGo(int bFinish)
 	return 0;
 }
 
-static int __cdecl StateCompressAcb(struct BurnArea* pba)
+static INT32 __cdecl StateCompressAcb(struct BurnArea* pba)
 {
 	// Set the data as the next available input
-	Zstr.next_in = (unsigned char*)pba->Data;
+	Zstr.next_in = (UINT8*)pba->Data;
 	Zstr.avail_in = pba->nLen;
 
 	CompGo(0);													// Compress this Area
@@ -93,7 +93,7 @@ static int __cdecl StateCompressAcb(struct BurnArea* pba)
 }
 
 // Compress a state using deflate
-int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll)
+INT32 BurnStateCompress(UINT8** pDef, INT32* pnDefLen, INT32 bAll)
 {
 	void* NewMem = NULL;
 
@@ -119,7 +119,7 @@ int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll)
 	// Size down
 	NewMem = realloc(Comp, nCompFill);
 	if (NewMem) {
-		Comp = (unsigned char*)NewMem;
+		Comp = (UINT8*)NewMem;
 		nCompLen = nCompFill;
 	}
 
@@ -137,9 +137,9 @@ int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll)
 // -----------------------------------------------------------------------------
 // Decompression
 
-static int __cdecl StateDecompressAcb(struct BurnArea* pba)
+static INT32 __cdecl StateDecompressAcb(struct BurnArea* pba)
 {
-	Zstr.next_out =(unsigned char*)pba->Data;
+	Zstr.next_out =(UINT8*)pba->Data;
 	Zstr.avail_out = pba->nLen;
 
 	inflate(&Zstr, Z_SYNC_FLUSH);
@@ -150,13 +150,13 @@ static int __cdecl StateDecompressAcb(struct BurnArea* pba)
 	return 0;
 }
 
-int BurnStateDecompress(unsigned char* Def, int nDefLen, int bAll)
+INT32 BurnStateDecompress(UINT8* Def, INT32 nDefLen, INT32 bAll)
 {
 	memset(&Zstr, 0, sizeof(Zstr));
 	inflateInit(&Zstr);
 
 	// Set all of the buffer as available input
-	Zstr.next_in = (unsigned char*)Def;
+	Zstr.next_in = (UINT8*)Def;
 	Zstr.avail_in = nDefLen;
 
 	BurnAcb = StateDecompressAcb;								// callback our function with each area

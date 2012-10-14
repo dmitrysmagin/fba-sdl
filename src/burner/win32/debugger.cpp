@@ -30,6 +30,10 @@ static int nMemdumpAttrib;
 
 static bool bBreakpointHit;
 
+#if defined FBA_DEBUG
+extern UINT8 DebugCPU_SekInitted;
+#endif
+
 struct DbgM68000State {
 	unsigned int a[8]; unsigned int d[8];
 	unsigned int pc;
@@ -1505,8 +1509,10 @@ int DebugExit()
 
 #if defined (FBA_DEBUG)
 
-	free(DbgMemoryAreaInfo);
-	DbgMemoryAreaInfo = NULL;
+	if (DbgMemoryAreaInfo) {
+		free(DbgMemoryAreaInfo);
+		DbgMemoryAreaInfo = NULL;
+	}
 
 	EnableWindow(hScrnWnd, TRUE);
 	DestroyWindow(hDbgDlg);
@@ -1532,6 +1538,10 @@ int DebugCreate()
 {
 
 #if defined (FBA_DEBUG)
+
+	if (DebugCPU_SekInitted == 0) {
+		return 1;
+	}
 
 	if (bDrvOkay == 0) {
 		return 1;

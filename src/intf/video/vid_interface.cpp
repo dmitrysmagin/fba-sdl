@@ -11,11 +11,12 @@
 	extern struct VidOut VidOutD3D;
 	extern struct VidOut VidOutDDrawFX;
 	extern struct VidOut VidOutDX9;
+	extern struct VidOut VidOutDX9Alt;
 #elif defined (BUILD_SDL)
 	extern struct VidOut VidOutSDLFX;
 	extern struct VidOut VidOutSDLOpenGL;
-#elif defined (BUILD_WXW)
-	extern struct VidOut VidOutWXWOpenGL;
+#elif defined (_XBOX)
+	extern struct VidOut VidOutD3D;
 #endif
 
 static struct VidOut *pVidOut[] = {
@@ -24,54 +25,56 @@ static struct VidOut *pVidOut[] = {
 	&VidOutD3D,
 	&VidOutDDrawFX,
 	&VidOutDX9,
+	&VidOutDX9Alt,
 #elif defined (BUILD_SDL)
 	&VidOutSDLFX,
 	&VidOutSDLOpenGL,
-#elif defined (BUILD_WXW)
-	&VidOutWXWOpenGL,
+#elif defined (_XBOX)
+	&VidOutD3D,
 #endif
 };
 
 #define VID_LEN (sizeof(pVidOut) / sizeof(pVidOut[0]))
 
-long long nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (meaning depens on module)
+INT64 nVidBlitterOpt[VID_LEN] = {0, };			// Options for the blitter module (meaning depens on module)
 
 static InterfaceInfo VidInfo = { NULL, NULL, NULL };
 
-unsigned int nVidSelect = 0;					// Which video output is selected
-static unsigned int nVidActive = 0;
+UINT32 nVidSelect = 0;					// Which video output is selected
+static UINT32 nVidActive = 0;
 
 bool bVidOkay = false;
 
-int nVidWidth		= 640, nVidHeight		= 480, nVidDepth = 16, nVidRefresh = 0;
+INT32 nVidWidth		= 640, nVidHeight		= 480, nVidDepth = 16, nVidRefresh = 0;
 
-int nVidHorWidth	= 640, nVidHorHeight	= 480;	// Default Horizontal oritated resolution
-int nVidVerWidth	= 640, nVidVerHeight	= 480;	// Default Vertical oriented resoultion
+INT32 nVidHorWidth	= 640, nVidHorHeight	= 480;	// Default Horizontal oritated resolution
+INT32 nVidVerWidth	= 640, nVidVerHeight	= 480;	// Default Vertical oriented resoultion
 
-int nVidFullscreen = 0;
-int bVidFullStretch = 0;						// 1 = stretch to fill the entire window/screen
-int bVidCorrectAspect = 1;						// 1 = stretch to fill the window/screen while maintaining the correct aspect ratio
-int bVidVSync = 0;								// 1 = sync blits/pageflips/presents to the screen
-int bVidTripleBuffer = 0;						// 1 = use triple buffering
-int bVidBilinear = 1;							// 1 = enable bi-linear filtering (D3D blitter)
-int bVidScanlines = 0;							// 1 = draw scanlines
-int bVidScanRotate = 1;							// 1 = rotate scanlines and RGB effects for rotated games
-int bVidScanBilinear = 1;						// 1 = use bi-linear filtering for scanlines (D3D blitter, debug variable)
-int nVidScanIntensity = 0x00BFBFBF;				// The maximum colour-value for the scanlines (D3D blitter)
-int bVidScanHalf = 1;							// Draw scanlines at half intensity instead of black (DDraw blitter)
-int bVidScanDelay = 0;							// Blend the previous image with the current one
-int nVidFeedbackIntensity = 0x40;				// Blend factor for previous frame (D3D blitter)
-int nVidFeedbackOverSaturation = 0x00;			// Add this to the current frame blend factor
-int bVidUseHardwareGamma = 1;					// Use the video hardware when correcting gamma
-int bVidAutoSwitchFull = 0;						// 1 = auto switch to fullscreen on loading driver
-int bVidArcaderes = 0;							// Use game resolution for fullscreen modes
+INT32 nVidFullscreen = 0;
+INT32 bVidFullStretch = 0;						// 1 = stretch to fill the entire window/screen
+INT32 bVidCorrectAspect = 1;						// 1 = stretch to fill the window/screen while maintaining the correct aspect ratio
+INT32 bVidVSync = 0;								// 1 = sync blits/pageflips/presents to the screen
+INT32 bVidTripleBuffer = 0;						// 1 = use triple buffering
+INT32 bVidBilinear = 1;							// 1 = enable bi-linear filtering (D3D blitter)
+INT32 bVidScanlines = 0;							// 1 = draw scanlines
+INT32 bVidScanRotate = 1;							// 1 = rotate scanlines and RGB effects for rotated games
+INT32 bVidScanBilinear = 1;						// 1 = use bi-linear filtering for scanlines (D3D blitter, debug variable)
+INT32 nVidScanIntensity = 0x00BFBFBF;				// The maximum colour-value for the scanlines (D3D blitter)
+INT32 bVidScanHalf = 1;							// Draw scanlines at half intensity instead of black (DDraw blitter)
+INT32 bVidScanDelay = 0;							// Blend the previous image with the current one
+INT32 nVidFeedbackIntensity = 0x40;				// Blend factor for previous frame (D3D blitter)
+INT32 nVidFeedbackOverSaturation = 0x00;			// Add this to the current frame blend factor
+INT32 bVidUseHardwareGamma = 1;					// Use the video hardware when correcting gamma
+INT32 bVidAutoSwitchFull = 0;						// 1 = auto switch to fullscreen on loading driver
+INT32 bVidArcaderes = 0;							// Use game resolution for fullscreen modes
 
-int bVidArcaderesHor = 0;
-int bVidArcaderesVer = 0;
+INT32 bVidArcaderesHor = 0;
+INT32 bVidArcaderesVer = 0;
 
-int nVidRotationAdjust = 0;						// & 1: do not rotate the graphics for vertical games,  & 2: Reverse flipping for vertical games
-int bVidForce16bit = 1;							// Emulate the game in 16-bit even when the screen is 32-bit (D3D blitter)
-int nVidTransferMethod = -1;					// How to transfer the game image to video memory and/or a texture --
+INT32 nVidRotationAdjust = 0;						// & 1: do not rotate the graphics for vertical games,  & 2: Reverse flipping for vertical games
+INT32 bVidForce16bit = 1;							// Emulate the game in 16-bit even when the screen is 32-bit (D3D blitter)
+INT32 bVidForceFlip = 0;							// Force flipping (DDraw blitter, hardware detection seems to fail on all? graphics hardware)
+INT32 nVidTransferMethod = -1;					// How to transfer the game image to video memory and/or a texture --
 												//  0 = blit from system memory / use driver/DirectX texture management
 												//  1 = copy to a video memory surface, then use bltfast()
 												// -1 = autodetect for ddraw, equals 1 for d3d
@@ -80,31 +83,39 @@ float fVidScreenCurvature = 0.698132f;			// The angle of the maximum screen curv
 double dVidCubicB = 0.0;						// Paremeters for the cubic filter (default is the CAtmull-Rom spline, DX9 blitter)
 double dVidCubicC = 0.5;						//
 
+INT32 bVidDX9Bilinear = 1;							// 1 = enable bi-linear filtering (D3D9 Alt blitter)
+INT32 bVidHardwareVertex = 0;			// 1 = use hardware vertex processing
+INT32 bVidMotionBlur = 0;				// 1 = motion blur
+
 #ifdef BUILD_WIN32
  HWND hVidWnd = NULL;							// Actual window used for video
 #endif
 
-int nVidScrnWidth = 0, nVidScrnHeight = 0;		// Actual Screen dimensions (0 if in windowed mode)
-int nVidScrnDepth = 0;							// Actual screen depth
+#if defined (_XBOX)
+  HWND hVidWnd = NULL;							// Actual window used for video
+#endif
 
-int nVidScrnAspectX = 4, nVidScrnAspectY = 3;	// Aspect ratio of the display screen
+INT32 nVidScrnWidth = 0, nVidScrnHeight = 0;		// Actual Screen dimensions (0 if in windowed mode)
+INT32 nVidScrnDepth = 0;							// Actual screen depth
 
-unsigned char* pVidImage = NULL;				// Memory buffer
-int nVidImageWidth = DEFAULT_IMAGE_WIDTH;		// Memory buffer size
-int nVidImageHeight = DEFAULT_IMAGE_HEIGHT;		//
-int nVidImageLeft = 0, nVidImageTop = 0;		// Memory buffer visible area offsets
-int nVidImagePitch = 0, nVidImageBPP = 0;		// Memory buffer pitch and bytes per pixel
-int nVidImageDepth = 0;							// Memory buffer bits per pixel
+INT32 nVidScrnAspectX = 4, nVidScrnAspectY = 3;	// Aspect ratio of the display screen
 
-unsigned int (__cdecl *VidHighCol) (int r, int g, int b, int i);
+UINT8* pVidImage = NULL;				// Memory buffer
+INT32 nVidImageWidth = DEFAULT_IMAGE_WIDTH;		// Memory buffer size
+INT32 nVidImageHeight = DEFAULT_IMAGE_HEIGHT;		//
+INT32 nVidImageLeft = 0, nVidImageTop = 0;		// Memory buffer visible area offsets
+INT32 nVidImagePitch = 0, nVidImageBPP = 0;		// Memory buffer pitch and bytes per pixel
+INT32 nVidImageDepth = 0;							// Memory buffer bits per pixel
+
+UINT32 (__cdecl *VidHighCol) (INT32 r, INT32 g, INT32 b, INT32 i);
 static bool bVidRecalcPalette;
 
-static unsigned char* pVidTransImage = NULL;
-static unsigned int* pVidTransPalette = NULL;
+static UINT8* pVidTransImage = NULL;
+static UINT32* pVidTransPalette = NULL;
 
-static unsigned int __cdecl HighCol15(int r, int g, int b, int  /* i */)
+static UINT32 __cdecl HighCol15(INT32 r, INT32 g, INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 
 	t  = (r << 7) & 0x7C00;
 	t |= (g << 2) & 0x03E0;
@@ -113,7 +124,7 @@ static unsigned int __cdecl HighCol15(int r, int g, int b, int  /* i */)
 	return t;
 }
 
-int VidSelect(unsigned int nPlugin)
+INT32 VidSelect(UINT32 nPlugin)
 {
 	if (nPlugin < VID_LEN) {
 		nVidSelect = nPlugin;
@@ -124,14 +135,14 @@ int VidSelect(unsigned int nPlugin)
 }
 
 // Forward to VidOut functions
-int VidInit()
+INT32 VidInit()
 {
 #if defined (BUILD_WIN32) && defined (ENABLE_PREVIEW)
 	HBITMAP hbitmap = NULL;
 	BITMAP bitmap;
 #endif
 
-	int nRet = 1;
+	INT32 nRet = 1;
 
 	VidExit();
 
@@ -161,8 +172,8 @@ int VidInit()
 			if (bDrvOkay && (BurnDrvGetFlags() & BDF_16BIT_ONLY) && nVidImageBPP > 2) {
 				nBurnBpp = 2;
 
-				pVidTransPalette = (unsigned int*)malloc(32768 * sizeof(int));
-				pVidTransImage = (unsigned char*)malloc(nVidImageWidth * nVidImageHeight * sizeof(short));
+				pVidTransPalette = (UINT32*)malloc(32768 * sizeof(UINT32));
+				pVidTransImage = (UINT8*)malloc(nVidImageWidth * nVidImageHeight * sizeof(INT16));
 
 				BurnHighCol = HighCol15;
 
@@ -177,7 +188,7 @@ int VidInit()
 #if defined (BUILD_WIN32) && defined (ENABLE_PREVIEW)
 	if (bVidOkay && hbitmap) {
 		BITMAPINFO bitmapinfo;
-		unsigned char* pLineBuffer = (unsigned char*)malloc(bitmap.bmWidth * 4);
+		UINT8* pLineBuffer = (UINT8*)malloc(bitmap.bmWidth * 4);
 		HDC hDC = GetDC(hVidWnd);
 
 		if (hDC && pLineBuffer) {
@@ -190,17 +201,17 @@ int VidInit()
 			bitmapinfo.bmiHeader.biBitCount = 24;
 			bitmapinfo.bmiHeader.biCompression = BI_RGB;
 			
-			for (int y = 0; y < nVidImageHeight; y++) {
-				unsigned char* pd = pVidImage + y * nVidImagePitch;
-				unsigned char* ps = pLineBuffer;
+			for (INT32 y = 0; y < nVidImageHeight; y++) {
+				UINT8* pd = pVidImage + y * nVidImagePitch;
+				UINT8* ps = pLineBuffer;
 
 				GetDIBits(hDC, hbitmap, nVidImageHeight - 1 - y, 1, ps, &bitmapinfo, DIB_RGB_COLORS);
 
-				for (int x = 0; x < nVidImageWidth; x++, ps += 3) {
-					unsigned int nColour = VidHighCol(ps[2], ps[1], ps[0], 0);
+				for (INT32 x = 0; x < nVidImageWidth; x++, ps += 3) {
+					UINT32 nColour = VidHighCol(ps[2], ps[1], ps[0], 0);
 					switch (nVidImageBPP) {
 						case 2:
-							*((unsigned short*)pd) = (unsigned short)nColour;
+							*((UINT16*)pd) = (UINT16)nColour;
 							pd += 2;
 							break;
 						case 3:
@@ -210,7 +221,7 @@ int VidInit()
 							pd += 3;
 							break;
 						case 4:
-							*((unsigned int*)pd) = nColour;
+							*((UINT32*)pd) = nColour;
 							pd += 4;
 							break;
 					}
@@ -220,7 +231,10 @@ int VidInit()
 		if (hDC) {
 			ReleaseDC(hVidWnd, hDC);
 		}
-		free(pLineBuffer);
+		if (pLineBuffer) {
+			free(pLineBuffer);
+			pLineBuffer = NULL;
+		}
 	}
 
 	if (hbitmap) {
@@ -231,12 +245,12 @@ int VidInit()
 	return nRet;
 }
 
-int VidExit()
+INT32 VidExit()
 {
 	IntInfoFree(&VidInfo);
 
 	if (bVidOkay) {
-		int nRet = pVidOut[nVidActive]->Exit();
+		INT32 nRet = pVidOut[nVidActive]->Exit();
 
 #if defined (BUILD_WIN32)
 		hVidWnd = NULL;
@@ -249,10 +263,14 @@ int VidExit()
 		nVidImageBPP = nVidImageDepth = 0;
 		nBurnPitch = nBurnBpp = 0;
 
-		free(pVidTransPalette);
-		pVidTransPalette = NULL;
-		free(pVidTransImage);
-		pVidTransImage = NULL;
+		if (pVidTransPalette) {
+			free(pVidTransPalette);
+			pVidTransPalette = NULL;
+		}
+		if (pVidTransImage) {
+			free(pVidTransImage);
+			pVidTransImage = NULL;
+		}
 
 		return nRet;
 	} else {
@@ -260,18 +278,18 @@ int VidExit()
 	}
 }
 
-static int VidDoFrame(bool bRedraw)
+static INT32 VidDoFrame(bool bRedraw)
 {
-	int nRet;
+	INT32 nRet;
 	
 	if (pVidTransImage) {
-		unsigned short* pSrc = (unsigned short*)pVidTransImage;
-		unsigned char* pDest = pVidImage;
+		UINT16* pSrc = (UINT16*)pVidTransImage;
+		UINT8* pDest = pVidImage;
 
 		if (bVidRecalcPalette) {
-			for (int r = 0; r < 256; r += 8) {
-				for (int g = 0; g < 256; g += 8) {
-					for (int b = 0; b < 256; b += 8) {
+			for (INT32 r = 0; r < 256; r += 8) {
+				for (INT32 g = 0; g < 256; g += 8) {
+					for (INT32 b = 0; b < 256; b += 8) {
 						pVidTransPalette[(r << 7) | (g << 2) | (b >> 3)] = VidHighCol(r | (r >> 5), g | (g >> 5), b | (b >> 5), 0);
 					}
 				}
@@ -290,9 +308,9 @@ static int VidDoFrame(bool bRedraw)
 
 		switch (nVidImageBPP) {
 			case 3: {
-				for (int y = 0; y < nVidImageHeight; y++, pSrc += nVidImageWidth, pDest += nVidImagePitch) {
-					for (int x = 0; x < nVidImageWidth; x++) {
-						unsigned int c = pVidTransPalette[pSrc[x]];
+				for (INT32 y = 0; y < nVidImageHeight; y++, pSrc += nVidImageWidth, pDest += nVidImagePitch) {
+					for (INT32 x = 0; x < nVidImageWidth; x++) {
+						UINT32 c = pVidTransPalette[pSrc[x]];
 						*(pDest + (x * 3) + 0) = c & 0xFF;
 						*(pDest + (x * 3) + 1) = (c >> 8) & 0xFF;
 						*(pDest + (x * 3) + 2) = c >> 16;
@@ -301,9 +319,9 @@ static int VidDoFrame(bool bRedraw)
 				break;
 			}
 			case 4: {
-				for (int y = 0; y < nVidImageHeight; y++, pSrc += nVidImageWidth, pDest += nVidImagePitch) {
-					for (int x = 0; x < nVidImageWidth; x++) {
-						((unsigned int*)pDest)[x] = pVidTransPalette[pSrc[x]];
+				for (INT32 y = 0; y < nVidImageHeight; y++, pSrc += nVidImageWidth, pDest += nVidImagePitch) {
+					for (INT32 x = 0; x < nVidImageWidth; x++) {
+						((UINT32*)pDest)[x] = pVidTransPalette[pSrc[x]];
 					}
 				}
 				break;
@@ -322,15 +340,18 @@ static int VidDoFrame(bool bRedraw)
 	return nRet;
 }
 
-int VidReInitialise()
+INT32 VidReInitialise()
 {
-	free(pVidTransImage);
-	pVidTransImage = (unsigned char*)malloc(nVidImageWidth * nVidImageHeight * sizeof(short));
+	if (pVidTransImage) {
+		free(pVidTransImage);
+		pVidTransImage = NULL;
+	}
+	pVidTransImage = (UINT8*)malloc(nVidImageWidth * nVidImageHeight * sizeof(INT16));
 	
 	return 0;
 }
 
-int VidFrame()
+INT32 VidFrame()
 {
 	if (bVidOkay && bDrvOkay) {
 		return VidDoFrame(0);
@@ -339,7 +360,7 @@ int VidFrame()
 	}
 }
 
-int VidRedraw()
+INT32 VidRedraw()
 {
 	if (bVidOkay /* && bDrvOkay */) {
 		return VidDoFrame(1);
@@ -348,7 +369,7 @@ int VidRedraw()
 	}
 }
 
-int VidRecalcPal()
+INT32 VidRecalcPal()
 {
 	bVidRecalcPalette = true;
 
@@ -356,7 +377,7 @@ int VidRecalcPal()
 }
 
 // If bValidate & 1, the video code should use ValidateRect() to validate the rectangle it draws.
-int VidPaint(int bValidate)
+INT32 VidPaint(INT32 bValidate)
 {
 	if (bVidOkay /* && bDrvOkay */) {
 		return pVidOut[nVidActive]->Paint(bValidate);
@@ -365,7 +386,7 @@ int VidPaint(int bValidate)
 	}
 }
 
-int VidImageSize(RECT* pRect, int nGameWidth, int nGameHeight)
+INT32 VidImageSize(RECT* pRect, INT32 nGameWidth, INT32 nGameHeight)
 {
  	if (bVidOkay) {
 		return pVidOut[nVidActive]->ImageSize(pRect, nGameWidth, nGameHeight);
@@ -387,7 +408,6 @@ const TCHAR* VidGetModuleName()
 	if (pszName) {
 		return pszName;
 	}
-
 #if defined (BUILD_WIN32)
 	return FBALoadStringEx(hAppInst, IDS_ERR_UNKNOWN, true);
 #else

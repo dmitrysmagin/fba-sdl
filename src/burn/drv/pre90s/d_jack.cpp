@@ -2,6 +2,7 @@
 // Based on MAME driver by Brad Oliver
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "bitswap.h"
 #include "driver.h"
 extern "C" {
@@ -9,20 +10,20 @@ extern "C" {
 }
 
 
-static unsigned char *Mem, *Rom0, *Rom1, *Gfx, *Prom, *User;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvJoy4[8], DrvReset, DrvDips[2];
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
-static int tri_fix, joinem, loverb, suprtriv;
-static int timer_rate, flip_screen;
-static unsigned int *Palette, *DrvPal;
-static unsigned char DrvCalcPal;
+static UINT8 *Mem, *Rom0, *Rom1, *Gfx, *Prom, *User;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvJoy4[8], DrvReset, DrvDips[2];
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
+static INT32 tri_fix, joinem, loverb, suprtriv;
+static INT32 timer_rate, flip_screen;
+static UINT32 *Palette, *DrvPal;
+static UINT8 DrvCalcPal;
 
-static unsigned char soundlatch;
-static int question_address, question_rom, remap_address[16];
-static int joinem_snd_bit;
+static UINT8 soundlatch;
+static INT32 question_address, question_rom, remap_address[16];
+static INT32 joinem_snd_bit;
 
-static int nCyclesSegment;
-static int nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
 
 static struct BurnInputInfo JackInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -602,7 +603,7 @@ STDDIPINFO(Loverboy)
 static struct BurnDIPInfo StrivDIPList[]=
 {
 	// Default Values
-	{0x0A, 0xff, 0xff, 0x80, NULL},
+	{0x0A, 0xff, 0xff, 0xfd, NULL},
 
 	// DSW1
 	{0   , 0xfe, 0   , 2   , "Monitor"},
@@ -638,18 +639,18 @@ static struct BurnDIPInfo StrivDIPList[]=
 
 STDDIPINFO(Striv)
 
-static unsigned char timer_r(unsigned int)
+static UINT8 timer_r(UINT32)
 {
 	return ZetTotalCycles() / timer_rate;
 }
 
-static unsigned char soundlatch_r(unsigned int)
+static UINT8 soundlatch_r(UINT32)
 {
 	ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 	return soundlatch;
 }
 
-static unsigned char __fastcall striv_question_r(unsigned short offset)
+static UINT8 __fastcall striv_question_r(UINT16 offset)
 {
 	if((offset & 0xc00) == 0x800)
 	{
@@ -662,8 +663,8 @@ static unsigned char __fastcall striv_question_r(unsigned short offset)
 	}
 	else
 	{
-		unsigned char *ROM = User;
-		int real_address;
+		UINT8 *ROM = User;
+		INT32 real_address;
 
 		real_address = question_address | (offset & 0x3f0) | remap_address[offset & 0x0f];
 
@@ -678,9 +679,9 @@ static unsigned char __fastcall striv_question_r(unsigned short offset)
 	return 0;
 }
 
-void jack_paletteram_w(unsigned short offset, unsigned char data)
+void jack_paletteram_w(UINT16 offset, UINT8 data)
 {
-	unsigned int *pl = Palette + (offset & 0x1f);
+	UINT32 *pl = Palette + (offset & 0x1f);
 
 	Rom0[offset] = data;
 
@@ -699,9 +700,9 @@ void jack_paletteram_w(unsigned short offset, unsigned char data)
 	*pl |= ((data & 3) <<  6) | ((data & 3) <<  4) | ((data & 3) <<  2) | (data & 3);
 }
 
-unsigned char __fastcall jack_cpu0_read(unsigned short address)
+UINT8 __fastcall jack_cpu0_read(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address)
 	{
@@ -718,21 +719,21 @@ unsigned char __fastcall jack_cpu0_read(unsigned short address)
 
 		case 0xb502:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy1[i] << i;
 
 			return ret;
 		}
 
 		case 0xb503:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy2[i] << i;
 
 			return ret;
 		}
 
 		case 0xb504:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy3[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy3[i] << i;
 			if (joinem || loverb) ret |= 0x40;
 
 			return ret;
@@ -740,7 +741,7 @@ unsigned char __fastcall jack_cpu0_read(unsigned short address)
 
 		case 0xb505:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy4[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy4[i] << i;
 
 			return ret;
 		}
@@ -758,7 +759,7 @@ unsigned char __fastcall jack_cpu0_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall jack_cpu0_write(unsigned short address, unsigned char data)
+void __fastcall jack_cpu0_write(UINT16 address, UINT8 data)
 {
 	if (address >= 0xb600 && address <= 0xb61f)
 	{
@@ -788,7 +789,7 @@ void __fastcall jack_cpu0_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall jack_in_port(unsigned short port)
+UINT8 __fastcall jack_in_port(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -799,7 +800,7 @@ unsigned char __fastcall jack_in_port(unsigned short port)
 	return 0;
 }
 
-void __fastcall jack_out_port(unsigned short address, unsigned char data)
+void __fastcall jack_out_port(UINT16 address, UINT8 data)
 {
 	switch (address & 0xff)
 	{
@@ -818,7 +819,7 @@ void __fastcall jack_cpu1_write()
 }
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	flip_screen = 0;
 	DrvReset = 0;
@@ -827,19 +828,19 @@ static int DrvDoReset()
 	if (loverb || joinem) {
 		memset (Rom0 + 0x8000, 0, 0x1000);
 	} else {
-		memset ((unsigned char*)Palette, 0, 0x400);
+		memset ((UINT8*)Palette, 0, 0x400);
 		memset (Rom0 + 0x4000, 0, 0x1000);
 	}
 
 	memset (Rom0 + 0xb000, 0, 0x1000);
 	memset (Rom1 + 0x4000, 0, 0x0400);
-	memset ((unsigned char*)remap_address, 0, 0x40); 
+	memset ((UINT8*)remap_address, 0, 0x40); 
 
 	question_address = question_rom = 0;
 	joinem_snd_bit = 0;
 	soundlatch = 0;
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -850,19 +851,19 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int GetRoms()
+static INT32 GetRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *Load0 = Rom0;
-	unsigned char *Load1 = Rom1;
-	unsigned char *Loadg = Gfx;
-	unsigned char *Loadt = User;
-	int gCount = 0;
+	UINT8 *Load0 = Rom0;
+	UINT8 *Load1 = Rom1;
+	UINT8 *Loadg = Gfx;
+	UINT8 *Loadt = User;
+	INT32 gCount = 0;
 
 	if (!joinem && !loverb) Loadg += 0x2000;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -909,7 +910,7 @@ static int GetRoms()
 			i++;
 
 			// Roms are nibbles, (1/2 byte), #0 is low, #1 is high
-			for (int j = 0; j < 0x200; j++) {
+			for (INT32 j = 0; j < 0x200; j++) {
 				Prom[j] = Prom[j] | (Prom[j + 0x200] << 4);
 			}
 
@@ -935,28 +936,28 @@ static int GetRoms()
 
 static void gfx_decode()
 {
-	unsigned char* tmp = (unsigned char*)malloc( 0x2000 * 3 );
+	UINT8* tmp = (UINT8*)BurnMalloc( 0x2000 * 3 );
 	if (!tmp) return;
 
 	memcpy (tmp, Gfx, 0x6000);
 
-	static int Planes[3] = { 0, 1024*8*8, 1024*8*8*2 };
-	static int YOffs[8]  = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	static int XOffs[8]  = { 56, 48, 40, 32, 24, 16, 8, 0 };
+	static INT32 Planes[3] = { 0, 1024*8*8, 1024*8*8*2 };
+	static INT32 YOffs[8]  = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	static INT32 XOffs[8]  = { 56, 48, 40, 32, 24, 16, 8, 0 };
 
 	GfxDecode(1024, 3, 8, 8, Planes, XOffs, YOffs, 64, tmp, Gfx);
 
-	free (tmp);
+	BurnFree (tmp);
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char *)malloc (0x100000);
+	Mem = (UINT8 *)BurnMalloc (0x100000);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -966,14 +967,14 @@ static int DrvInit()
 	Gfx  = Mem + 0x20000;
 	User = Mem + 0x30000;
 	Prom = Mem + 0xb0000;
-	Palette = (unsigned int*)(Mem + 0xc0000);
-	DrvPal  = (unsigned int*)(Mem + 0xc1000);
+	Palette = (UINT32*)(Mem + 0xc0000);
+	DrvPal  = (UINT32*)(Mem + 0xc1000);
 
 	GetRoms();
 	
 	gfx_decode();
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(jack_cpu0_read);
 	ZetSetWriteHandler(jack_cpu0_write);
@@ -1016,6 +1017,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetInHandler(jack_in_port);
 	ZetSetOutHandler(jack_out_port);
@@ -1040,14 +1042,14 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 	AY8910Exit(0);
 	GenericTilesExit();
 
-	free (pFMBuffer);
-	free (Mem);
+	BurnFree (pFMBuffer);
+	BurnFree (Mem);
 
 	DrvPal = Palette = NULL;
 	pFMBuffer = NULL;
@@ -1063,21 +1065,21 @@ static int DrvExit()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvCalcPal)
 	{
-		for (int i = 0; i < 0x100; i++) {
-			unsigned int col = Palette[i];
+		for (INT32 i = 0; i < 0x100; i++) {
+			UINT32 col = Palette[i];
 			DrvPal[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 		DrvCalcPal = 0;
 	}
 
-	unsigned char *sram = Rom0 + 0xb000; // sprite ram
-	unsigned char *vram = Rom0 + 0xb800; // video ram
-	unsigned char *cram = Rom0 + 0xbc00; // color ram
-	int offs, sx, sy, num, color, flipx, flipy;
+	UINT8 *sram = Rom0 + 0xb000; // sprite ram
+	UINT8 *vram = Rom0 + 0xb800; // video ram
+	UINT8 *cram = Rom0 + 0xbc00; // color ram
+	INT32 offs, sx, sy, num, color, flipx, flipy;
 
 	for (offs = 0; offs < 0x400; offs++)
 	{
@@ -1145,19 +1147,19 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	if (joinem || loverb) {
-		for (int i = 0; i < 6; i++)
+		for (INT32 i = 0; i < 6; i++)
 			Rom0[0xb500 + i] = jack_cpu0_read(0xb500 + i);
 	}
 
-	int nInterleave = 1000;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 1000;
+	INT32 nSoundBufferPos = 0;
 
 	nCyclesTotal[0] = 3000000 / 60;
 	nCyclesTotal[1] = 1500000 / 60;
@@ -1165,8 +1167,8 @@ static int DrvFrame()
 	
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #0
 		nCurrentCPU = 0;
@@ -1187,6 +1189,7 @@ static int DrvFrame()
 				if (!DrvJoy3[7]) ZetNmi();
 			} else if (loverb) {				// loverboy
 				ZetNmi();
+
 			} else {					// other
 				ZetRaiseIrq(0);
 			}
@@ -1205,24 +1208,18 @@ static int DrvFrame()
 		
 		// Render Sound Segment
 		if (pBurnSoundOut && !suprtriv) {	// disable sound for suprtriv
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -1233,25 +1230,19 @@ static int DrvFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut && !suprtriv) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -1271,7 +1262,7 @@ static int DrvFrame()
 // Save states
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1297,13 +1288,13 @@ static int DrvScan(int nAction,int *pnMin)
 		BurnAcb(&ba);
 
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = (unsigned char*)Palette;
+		ba.Data	  = (UINT8*)Palette;
 		ba.nLen	  = 0x00400;
 		ba.szName = "Palette";
 		BurnAcb(&ba);
 
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = (unsigned char*)remap_address;
+		ba.Data	  = (UINT8*)remap_address;
 		ba.nLen	  = 0x00040;
 		ba.szName = "striv question addresses";
 		BurnAcb(&ba);
@@ -1345,7 +1336,7 @@ static struct BurnRomInfo jackRomDesc[] = {
 STD_ROM_PICK(jack)
 STD_ROM_FN(jack)
 
-static int jackInit()
+static INT32 jackInit()
 {
 	timer_rate = 128;
 
@@ -1456,7 +1447,7 @@ STD_ROM_FN(treahunt)
 
 static void treahunt_decode()
 {
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
 		if (i & 0x1000)
 		{
@@ -1475,11 +1466,11 @@ static void treahunt_decode()
 	ZetClose();
 }
 
-static int treahuntInit()
+static INT32 treahuntInit()
 {
 	timer_rate = 128;
 
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	treahunt_decode();
 
@@ -1521,7 +1512,7 @@ static struct BurnRomInfo zzyzzyxxRomDesc[] = {
 STD_ROM_PICK(zzyzzyxx)
 STD_ROM_FN(zzyzzyxx)
 
-static int zzyzzyxxInit()
+static INT32 zzyzzyxxInit()
 {
 	timer_rate = 16;
 
@@ -1695,7 +1686,7 @@ static struct BurnRomInfo tripoolRomDesc[] = {
 STD_ROM_PICK(tripool)
 STD_ROM_FN(tripool)
 
-static int tripoolInit()
+static INT32 tripoolInit()
 {
 	tri_fix = 1;
 	timer_rate = 128;
@@ -1767,9 +1758,9 @@ STD_ROM_FN(joinem)
 
 static void joinem_palette_init()
 {
-	for (int i = 0; i < 0x100; i++)
+	for (INT32 i = 0; i < 0x100; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (Prom[i] >> 0) & 1;
 		bit1 = (Prom[i] >> 1) & 1;
@@ -1790,12 +1781,12 @@ static void joinem_palette_init()
 	}
 }
 
-static int joinemInit()
+static INT32 joinemInit()
 {
 	joinem = 1;
 	timer_rate = 16;
 
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	joinem_palette_init();
 
@@ -1834,12 +1825,12 @@ static struct BurnRomInfo loverboyRomDesc[] = {
 STD_ROM_PICK(loverboy)
 STD_ROM_FN(loverboy)
 
-static int loverboyInit()
+static INT32 loverboyInit()
 {
 	loverb = 1;
 	timer_rate = 16;
 
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	// Hack (Protection?)
 	Rom0[0x12] = 0x9d;
@@ -1852,7 +1843,7 @@ static int loverboyInit()
 
 struct BurnDriver BurnDrvloverboy = {
 	"loverboy", NULL, NULL, NULL, "1983",
-	"Lover Boy\0", NULL, "G.T Enterprise Inc", "Jack the Giantkiller",
+	"Lover Boy\0", "No sound", "G.T Enterprise Inc", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, loverboyRomInfo, loverboyRomName, NULL, NULL, LoverboyInputInfo, LoverboyDIPInfo,
@@ -1896,14 +1887,14 @@ static struct BurnRomInfo strivRomDesc[] = {
 STD_ROM_PICK(striv)
 STD_ROM_FN(striv)
 
-static int strivInit()
+static INT32 strivInit()
 {
 	suprtriv = 1;
 	timer_rate = 128;
 
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
 		if (i & 0x1000)
 		{

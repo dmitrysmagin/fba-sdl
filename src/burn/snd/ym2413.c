@@ -27,6 +27,7 @@ to do:
 */
 
 #include "driver.h"
+#include "state.h"
 #include "ym2413.h"
 
 #define MAME_INLINE static inline
@@ -1248,12 +1249,10 @@ static void OPLCloseTable( void )
 #endif
 }
 
-
-
 static void OPLL_initalize(YM2413 *chip)
 {
 	int i;
-
+	
 	/* frequency base */
 	chip->freqbase  = (chip->rate) ? ((double)chip->clock / 72.0) / chip->rate  : 0;
 #if 0
@@ -1261,8 +1260,6 @@ static void OPLL_initalize(YM2413 *chip)
 	chip->freqbase  = 1.0;
 	logerror("freqbase=%f\n", chip->freqbase);
 #endif
-
-
 
 	/* make fnumber -> increment counter table */
 	for( i = 0 ; i < 1024; i++ )
@@ -1971,7 +1968,10 @@ static YM2413 *OPLLCreate(int clock, int rate)
 static void OPLLDestroy(YM2413 *chip)
 {
 	OPLL_UnLockTable();
-	free(chip);
+	if (chip) {
+		free(chip);
+		chip = NULL;
+	}
 }
 
 /* Option handlers */
@@ -2064,6 +2064,11 @@ void YM2413Write(int which, int a, int v)
 	OPLLWrite(OPLL_YM2413[which], a, v);
 }
 
+void YM2413WriteReg(int which, int r, int v)
+{
+	OPLLWriteReg(OPLL_YM2413[which], r, v);
+}
+
 unsigned char YM2413Read(int which, int a)
 {
 	return OPLLRead(OPLL_YM2413[which], a) & 0x03 ;
@@ -2154,4 +2159,77 @@ void YM2413UpdateOne(int which, INT16 **buffers, int length)
 		advance(chip);
 	}
 
+}
+
+void YM2413Scan(INT32 which, INT32 nAction)
+{
+	YM2413 *chip  = OPLL_YM2413[which];
+	
+	if (nAction & ACB_DRIVER_DATA) {
+		INT32 chnum;
+		INT32 slotnum;
+		
+		SCAN_VAR(chip->instvol_r);
+		SCAN_VAR(chip->eg_cnt);
+		SCAN_VAR(chip->eg_timer);
+		SCAN_VAR(chip->eg_timer_add);
+		SCAN_VAR(chip->eg_timer_overflow);
+		SCAN_VAR(chip->rhythm);
+		SCAN_VAR(chip->lfo_am_cnt);
+		SCAN_VAR(chip->lfo_am_inc);
+		SCAN_VAR(chip->lfo_pm_cnt);
+		SCAN_VAR(chip->lfo_pm_inc);
+		SCAN_VAR(chip->noise_rng);
+		SCAN_VAR(chip->noise_p);
+		SCAN_VAR(chip->noise_f);
+		SCAN_VAR(chip->inst_tab);
+		SCAN_VAR(chip->address);
+		SCAN_VAR(chip->status);
+		
+		for (chnum = 0; chnum < 9; chnum++) {
+			YM2413_OPLL_CH *ch = &chip->P_CH[chnum];
+		
+			SCAN_VAR(ch->block_fnum);
+			SCAN_VAR(ch->fc);
+			SCAN_VAR(ch->ksl_base);
+			SCAN_VAR(ch->kcode);
+			SCAN_VAR(ch->sus);
+			
+			for (slotnum = 0; slotnum < 2; slotnum++) {
+				YM2413_OPLL_SLOT *sl = &ch->SLOT[slotnum];
+				
+				SCAN_VAR(sl->ar);
+				SCAN_VAR(sl->dr);
+				SCAN_VAR(sl->rr);
+				SCAN_VAR(sl->KSR);
+				SCAN_VAR(sl->ksl);
+				SCAN_VAR(sl->ksr);
+				SCAN_VAR(sl->mul);
+				SCAN_VAR(sl->phase);
+				SCAN_VAR(sl->freq);
+				SCAN_VAR(sl->fb_shift);
+				SCAN_VAR(sl->op1_out);
+				SCAN_VAR(sl->eg_type);
+				SCAN_VAR(sl->state);
+				SCAN_VAR(sl->TL);
+				SCAN_VAR(sl->TLL);
+				SCAN_VAR(sl->volume);
+				SCAN_VAR(sl->sl);
+				SCAN_VAR(sl->eg_sh_dp);
+				SCAN_VAR(sl->eg_sel_dp);
+				SCAN_VAR(sl->eg_sh_ar);
+				SCAN_VAR(sl->eg_sel_ar);
+				SCAN_VAR(sl->eg_sh_dr);
+				SCAN_VAR(sl->eg_sel_dr);
+				SCAN_VAR(sl->eg_sh_rr);
+				SCAN_VAR(sl->eg_sel_rr);
+				SCAN_VAR(sl->eg_sh_rs);
+				SCAN_VAR(sl->eg_sel_rs);
+				SCAN_VAR(sl->key);
+				SCAN_VAR(sl->AMmask);
+				SCAN_VAR(sl->vib);
+				SCAN_VAR(sl->wavetable);
+			}
+		}
+	}
 }

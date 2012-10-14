@@ -3,33 +3,33 @@
 #define REFRESHRATE 60
 #define VBLANK_LINES (32)
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPalRAM2;
-static unsigned char *DrvShareRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPalRAM2;
+static UINT8 *DrvShareRAM;
 
-static unsigned char DrvInputs[3];
-static unsigned char DrvDips[3];
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvReset;
+static UINT8 DrvInputs[3];
+static UINT8 DrvDips[3];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvReset;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-static unsigned char bDrawScreen;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
 static bool bEnableInterrupts;
 
 static bool bUseAsm68KCoreOldValue = false;
-static int demonwld_hack;
+static INT32 demonwld_hack;
 
 static struct BurnInputInfo DemonwldInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 3,	"p1 coin"	},
@@ -182,7 +182,7 @@ static struct BurnDIPInfo Demonwl1DIPList[]=
 
 STDDIPINFO(Demonwl1)
 
-void __fastcall demonwldWriteWord(unsigned int a, unsigned short d)
+void __fastcall demonwldWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a)
 	{
@@ -263,12 +263,12 @@ void __fastcall demonwldWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall demonwldWriteByte(unsigned int , unsigned char )
+void __fastcall demonwldWriteByte(UINT32 , UINT8 )
 {
 	return;
 }
 
-unsigned short __fastcall demonwldReadWord(unsigned int a)
+UINT16 __fastcall demonwldReadWord(UINT32 a)
 {
 	switch (a)
 	{
@@ -313,7 +313,7 @@ unsigned short __fastcall demonwldReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall demonwldReadByte(unsigned int a)
+UINT8 __fastcall demonwldReadByte(UINT32 a)
 {
 	switch (a)
 	{
@@ -325,24 +325,26 @@ unsigned char __fastcall demonwldReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall demonwld_sound_write_port(unsigned short p, unsigned char d)
+void __fastcall demonwld_sound_write_port(UINT16 p, UINT8 d)
 {
 	switch (p & 0xff)
 	{
-		case 0x00:
+		case 0x00: {
 			BurnYM3812Write(0, d);
-		return;
+			return;
+		}
 
-		case 0x01:
+		case 0x01: {
 			BurnYM3812Write(1, d);
-		return;
+			return;
+		}
 
 		case 0x40: // toaplan1_coin_w
 		return;
 	}
 }
 
-unsigned char __fastcall demonwld_sound_read_port(unsigned short p)
+UINT8 __fastcall demonwld_sound_read_port(UINT16 p)
 {
 	switch (p & 0xff)
 	{
@@ -372,7 +374,7 @@ unsigned char __fastcall demonwld_sound_read_port(unsigned short p)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -390,9 +392,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x040000 + 0x400;
 	DrvZ80ROM	= Next; Next += 0x010000;
@@ -414,22 +416,22 @@ static int MemIndex()
 
 	RamEnd		= Next;
 
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
-	ToaPalette2	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
+	ToaPalette2	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	if (bBurnUseASMCPUEmulation) {
 		bUseAsm68KCoreOldValue = bBurnUseASMCPUEmulation;
 		bBurnUseASMCPUEmulation = false;
 	}
 
-	int nLen;
+	INT32 nLen;
 
 //	bToaRotateScreen = true;
 
@@ -441,8 +443,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(AllMem, 0, nLen);
@@ -475,7 +477,7 @@ static int DrvInit()
 		SekSetWriteWordHandler(1, 		toaplan1WriteWordZ80RAM);
 		SekClose();
 
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 		ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -506,25 +508,23 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM3812Exit();
 	ToaPalExit();
 
 	ToaExitBCU2();
 	ToaZExit();
-	ZetExit();
 	SekExit();
 
-	free(AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	ToaClearScreen(0);
+	ToaClearScreen(0x120);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -542,21 +542,21 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	memset (DrvInputs, 0, 3);
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] |= (DrvJoy3[i] & 1) << i;
@@ -564,25 +564,25 @@ static int DrvFrame()
 	ToaClearOpposites(&DrvInputs[0]);
 	ToaClearOpposites(&DrvInputs[1]);
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
 	ZetNewFrame();
+	
+	SekOpen(0);
+	ZetOpen(0);
 
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
 
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
-	nCyclesTotal[1] = int(28000000.0 / 8 / REFRESHRATE);
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
+	nCyclesTotal[1] = INT32(28000000.0 / 8 / REFRESHRATE);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 
@@ -613,11 +613,13 @@ static int DrvFrame()
 		} else {
 			SekIdle(nCyclesSegment);
 		}
+		
+		BurnTimerUpdateYM3812(i * (nCyclesTotal[1] / nInterleave));
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 
@@ -631,7 +633,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 
@@ -661,17 +663,17 @@ static int DrvScan(int nAction, int* pnMin)
 // set check the crc and rather than dealing with that, I'm seperating
 // the opcodes and data and just patching the opcodes. 
 // Taito set patches from MAME 0.36b10.
-static void map_hack(int hack_off)
+static void map_hack(INT32 hack_off)
 {
-	int cpy_off = hack_off & ~0x3ff;
+	INT32 cpy_off = hack_off & ~0x3ff;
 
 	memcpy (Drv68KROM + 0x40000, Drv68KROM + cpy_off, 0x400);
 
 	hack_off -= cpy_off;
 	hack_off += 0x40000;
 
-	*((unsigned short*)(Drv68KROM + hack_off + 0)) = 0x4e71;
-	*((unsigned short*)(Drv68KROM + hack_off + 8)) = 0x600a;
+	*((UINT16*)(Drv68KROM + hack_off + 0)) = 0x4e71;
+	*((UINT16*)(Drv68KROM + hack_off + 8)) = 0x600a;
 
 	SekOpen(0);
 	SekMapMemory(Drv68KROM + 0x40000, cpy_off, cpy_off + 0x3ff, SM_FETCH);
@@ -707,9 +709,9 @@ static struct BurnRomInfo demonwldRomDesc[] = {
 STD_ROM_PICK(demonwld)
 STD_ROM_FN(demonwld)
 
-static int demonwldInit()
+static INT32 demonwldInit()
 {
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
 		map_hack(0x1430);
@@ -757,9 +759,9 @@ static struct BurnRomInfo demonwld1RomDesc[] = {
 STD_ROM_PICK(demonwld1)
 STD_ROM_FN(demonwld1)
 
-static int demonwld1Init()
+static INT32 demonwld1Init()
 {
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
 		map_hack(0x181c);
@@ -846,9 +848,9 @@ static struct BurnRomInfo demonwld3RomDesc[] = {
 STD_ROM_PICK(demonwld3)
 STD_ROM_FN(demonwld3)
 
-static int demonwld3Init()
+static INT32 demonwld3Init()
 {
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
 		map_hack(0x1828);
@@ -864,44 +866,5 @@ struct BurnDriver BurnDrvDemonwld3 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING, GBF_PLATFORM, 0,
 	NULL, demonwld3RomInfo, demonwld3RomName, NULL, NULL, DemonwldInputInfo, Demonwl1DIPInfo,
 	demonwld3Init, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette, 0x800,
-	320, 240, 4, 3
-};
-
-
-// Demon's World / Horror Story (set 5)
-
-static struct BurnRomInfo demonwld4RomDesc[] = {
-	{ "o16_10ii",		0x20000, 0x84ee5218, BRF_PRG | BRF_ESS }, //  0 CPU #0 code
-	{ "o16_09ii",		0x20000, 0xcf474cb2, BRF_PRG | BRF_ESS }, //  1
-
-	{ "rom11",		0x08000, 0x397eca1b, BRF_PRG | BRF_ESS }, //  2 CPU #1 code
-
-	{ "dsp_21.bin",		0x00800, 0x2d135376, BRF_PRG | BRF_ESS }, //  3 MCU code
-	{ "dsp_22.bin",		0x00800, 0x79389a71, BRF_PRG | BRF_ESS }, //  4
-
-	{ "rom05",		0x20000, 0x6506c982, BRF_GRA },           //  5 Tile data
-	{ "rom07",		0x20000, 0xa3a0d993, BRF_GRA },           //  6
-	{ "rom06",		0x20000, 0x4fc5e5f3, BRF_GRA },           //  7
-	{ "rom08",		0x20000, 0xeb53ab09, BRF_GRA },           //  8
-
-	{ "rom01",		0x20000, 0x1b3724e9, BRF_GRA },           //  9
-	{ "rom02",		0x20000, 0x7b20a44d, BRF_GRA },           // 10
-	{ "rom03",		0x20000, 0x2cacdcd0, BRF_GRA },           // 11
-	{ "rom04",		0x20000, 0x76fd3201, BRF_GRA },           // 12
-
-	{ "prom12.bpr",		0x00020, 0xbc88cced, BRF_GRA },           // 13 Sprite attribute PROM
-	{ "prom13.bpr",		0x00020, 0xa1e17492, BRF_GRA },           // 14
-};
-
-STD_ROM_PICK(demonwld4)
-STD_ROM_FN(demonwld4)
-
-struct BurnDriver BurnDrvDemonwld4 = {
-	"demonwld4", "demonwld", NULL, NULL, "1989",
-	"Demon's World / Horror Story (set 5)\0", NULL, "Toaplan", "Toaplan BCU-2 / FCU-2 based",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING, GBF_PLATFORM, 0,
-	NULL, demonwld4RomInfo, demonwld4RomName, NULL, NULL, DemonwldInputInfo, Demonwl1DIPInfo,
-	demonwld1Init, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette, 0x800,
 	320, 240, 4, 3
 };

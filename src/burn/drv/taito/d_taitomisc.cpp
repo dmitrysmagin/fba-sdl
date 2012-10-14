@@ -1,6 +1,8 @@
 // PC080SN & PC090OJ based games
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "taito.h"
 #include "taito_ic.h"
 #include "msm5205.h"
@@ -8,34 +10,34 @@
 #include "burn_ym2203.h"
 #include "burn_gun.h"
 
-static unsigned int RastanADPCMPos;
-static int RastanADPCMData;
-static unsigned char OpwolfADPCM_B[0x08];
-static unsigned char OpwolfADPCM_C[0x08];
-static unsigned int OpwolfADPCMPos[2];
-static unsigned int OpwolfADPCMEnd[2];
-static int OpwolfADPCMData[2];
-static int OpWolfGunXOffset;
-static int OpWolfGunYOffset;
+static UINT32 RastanADPCMPos;
+static INT32 RastanADPCMData;
+static UINT8 OpwolfADPCM_B[0x08];
+static UINT8 OpwolfADPCM_C[0x08];
+static UINT32 OpwolfADPCMPos[2];
+static UINT32 OpwolfADPCMEnd[2];
+static INT32 OpwolfADPCMData[2];
+static INT32 OpWolfGunXOffset;
+static INT32 OpWolfGunYOffset;
 
-static unsigned char DariusADPCMCommand;
-static int DariusNmiEnable;
+static UINT8 DariusADPCMCommand;
+static INT32 DariusNmiEnable;
 static UINT16 DariusCoinWord;
 
 static UINT16 VolfiedVidCtrl;
 static UINT16 VolfiedVidMask;
 
-static unsigned short *pTopspeedTempDraw = NULL;
+static UINT16 *pTopspeedTempDraw = NULL;
 
 static void DariusDraw();
 static void OpwolfDraw();
-static void RainbowDraw();
+static void RbislandDraw();
 static void JumpingDraw();
 static void RastanDraw();
 static void TopspeedDraw();
 static void VolfiedDraw();
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo DariusInputList[] =
 {
@@ -87,7 +89,7 @@ static struct BurnInputInfo OpwolfInputList[] =
 
 STDINPUTINFO(Opwolf)
 
-static struct BurnInputInfo RainbowInputList[] =
+static struct BurnInputInfo RbislandInputList[] =
 {
 	{"Coin 1"            , BIT_DIGITAL   , TaitoInputPort1 + 0, "p1 coin"   },
 	{"Start 1"           , BIT_DIGITAL   , TaitoInputPort0 + 6, "p1 start"  },
@@ -111,7 +113,7 @@ static struct BurnInputInfo RainbowInputList[] =
 	{"Dip 2"             , BIT_DIPSWITCH , TaitoDip + 1       , "dip"       },
 };
 
-STDINPUTINFO(Rainbow)
+STDINPUTINFO(Rbisland)
 
 static struct BurnInputInfo JumpingInputList[] =
 {
@@ -279,7 +281,7 @@ static void OpwolfMakeInputs()
 	if (TaitoInputPort1[6]) TaitoInput[1] -= 0x40;
 	if (TaitoInputPort1[7]) TaitoInput[1] -= 0x80;
 	
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
 	
 	OpwolfCChipUpdate(TaitoInput[0], TaitoInput[1]);
 }
@@ -310,10 +312,10 @@ static void OpwolfbMakeInputs()
 	if (TaitoInputPort1[6]) TaitoInput[1] -= 0x40;
 	if (TaitoInputPort1[7]) TaitoInput[1] -= 0x80;
 	
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
 }
 
-static void RainbowMakeInputs()
+static void RbislandMakeInputs()
 {
 	// Reset Inputs
 	TaitoInput[0] = 0xff;
@@ -819,7 +821,7 @@ static struct BurnDIPInfo OpwolfbDIPList[]=
 
 STDDIPINFO(Opwolfb)
 
-static struct BurnDIPInfo RainbowDIPList[]=
+static struct BurnDIPInfo RbislandDIPList[]=
 {
 	// Default Values
 	{0x0f, 0xff, 0xff, 0xfe, NULL                             },
@@ -880,7 +882,7 @@ static struct BurnDIPInfo RainbowDIPList[]=
 	{0x10, 0x01, 0x40, 0x40, "Japanese"                       },
 };
 
-STDDIPINFO(Rainbow)
+STDDIPINFO(Rbisland)
 
 static struct BurnDIPInfo JumpingDIPList[]=
 {
@@ -1645,7 +1647,7 @@ static struct BurnRomInfo OpwolfbRomDesc[] = {
 STD_ROM_PICK(Opwolfb)
 STD_ROM_FN(Opwolfb)
 
-static struct BurnRomInfo RainbowRomDesc[] = {
+static struct BurnRomInfo RbislandRomDesc[] = {
 	{ "b22-10-1.19",   0x10000, 0xe34a50ca, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b22-11-1.20",   0x10000, 0x6a31a093, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b22-08-1.21",   0x10000, 0x15d6e17a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -1660,12 +1662,14 @@ static struct BurnRomInfo RainbowRomDesc[] = {
 	{ "b22-02.5",      0x80000, 0x1b87ecf0, BRF_GRA | TAITO_SPRITESA },
 	{ "b22-12.7",      0x10000, 0x67a76dc6, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
 	{ "b22-13.6",      0x10000, 0x2fda099f, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
+	
+	{ "cchip_b22-15.53", 0x10000, 0x00000000, BRF_OPT | BRF_NODUMP },
 };
 
-STD_ROM_PICK(Rainbow)
-STD_ROM_FN(Rainbow)
+STD_ROM_PICK(Rbisland)
+STD_ROM_FN(Rbisland)
 
-static struct BurnRomInfo RainbowoRomDesc[] = {
+static struct BurnRomInfo RbislandoRomDesc[] = {
 	{ "b22-10.19",     0x10000, 0x3b013495, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b22-11.20",     0x10000, 0x80041a3d, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b22-08.21",     0x10000, 0x962fb845, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -1680,12 +1684,14 @@ static struct BurnRomInfo RainbowoRomDesc[] = {
 	{ "b22-02.5",      0x80000, 0x1b87ecf0, BRF_GRA | TAITO_SPRITESA },
 	{ "b22-12.7",      0x10000, 0x67a76dc6, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
 	{ "b22-13.6",      0x10000, 0x2fda099f, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
+	
+	{ "cchip_b22-15.53", 0x10000, 0x00000000, BRF_OPT | BRF_NODUMP },
 };
 
-STD_ROM_PICK(Rainbowo)
-STD_ROM_FN(Rainbowo)
+STD_ROM_PICK(Rbislando)
+STD_ROM_FN(Rbislando)
 
-static struct BurnRomInfo RainboweRomDesc[] = {
+static struct BurnRomInfo RbislandeRomDesc[] = {
 	{ "b39-01.19",     0x10000, 0x50690880, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b39-02.20",     0x10000, 0x4dead71f, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b39-03.21",     0x10000, 0x4a4cb785, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -1700,10 +1706,12 @@ static struct BurnRomInfo RainboweRomDesc[] = {
 	{ "b22-02.5",      0x80000, 0x1b87ecf0, BRF_GRA | TAITO_SPRITESA },
 	{ "b22-12.7",      0x10000, 0x67a76dc6, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
 	{ "b22-13.6",      0x10000, 0x2fda099f, BRF_GRA | TAITO_SPRITESA_BYTESWAP },
+	
+	{ "cchip_b39-05.53", 0x10000, 0x00000000, BRF_OPT | BRF_NODUMP },
 };
 
-STD_ROM_PICK(Rainbowe)
-STD_ROM_FN(Rainbowe)
+STD_ROM_PICK(Rbislande)
+STD_ROM_FN(Rbislande)
 
 static struct BurnRomInfo JumpingRomDesc[] = {
 	{ "jb1_h4",        0x10000, 0x3fab6b31, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -1823,9 +1831,9 @@ STD_ROM_FN(Rastanu2)
 static struct BurnRomInfo RastsagaRomDesc[] = {
 	{ "b04-38.19",   0x10000, 0xa38ac909, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b04-37.7",    0x10000, 0xbad60872, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "b04-40.20",   0x10000, 0x6bcf70dc, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b04-40(__rastsaga).20", 0x10000, 0x6bcf70dc, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b04-39.8",    0x10000, 0x8838ecc5, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "b04-42.21",   0x10000, 0xb626c439, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b04-42(__rastsaga).21", 0x10000, 0xb626c439, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b04-43.9",    0x10000, 0xc928a516, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 
 	{ "b04-19.49",   0x10000, 0xee81fdd8, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
@@ -2088,7 +2096,7 @@ STD_ROM_FN(Volfiedu)
 
 static int MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                        = Next; Next += Taito68KRom1Size;
 	Taito68KRom2                        = Next; Next += Taito68KRom2Size;
@@ -2112,14 +2120,14 @@ static int MemIndex()
 	TaitoChars                          = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
 	TaitoCharsB                         = Next; Next += TaitoNumCharB * TaitoCharBWidth * TaitoCharBHeight;
 	TaitoSpritesA                       = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                        = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	TaitoPalette                        = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 
 	TaitoMemEnd                         = Next;
 
 	return 0;
 }
 
-static int DariusDoReset()
+static INT32 DariusDoReset()
 {
 	TaitoDoReset();
 	
@@ -2130,9 +2138,47 @@ static int DariusDoReset()
 	return 0;
 }
 
-static int OpwolfDoReset()
+static INT32 RbislandDoReset()
 {
+#if 0
+	// This resets the YM2151 which calls DrvSoundBankSwitch via the port callback
 	TaitoDoReset();
+#else
+	SekOpen(0);
+	SekReset();
+	SekClose();
+	
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	ZetOpen(0);
+	BurnYM2151Reset();
+	ZetClose();
+#endif
+	
+	return 0;
+}
+
+static INT32 OpwolfDoReset()
+{
+#if 0
+	// This resets the YM2151 which calls DrvSoundBankSwitch via the port callback
+	TaitoDoReset();
+#else
+	SekOpen(0);
+	SekReset();
+	SekClose();
+	
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+	
+	ZetOpen(0);
+	BurnYM2151Reset();
+	ZetClose();
+	MSM5205Reset();
+#endif
 	
 	memset(OpwolfADPCM_B, 0, 8);
 	memset(OpwolfADPCM_C, 0, 8);
@@ -2146,7 +2192,7 @@ static int OpwolfDoReset()
 	return 0;
 }
 
-static int RastanDoReset()
+static INT32 RastanDoReset()
 {
 	TaitoDoReset();
 	
@@ -2156,7 +2202,7 @@ static int RastanDoReset()
 	return 0;
 }
 
-static int VolfiedDoReset()
+static INT32 VolfiedDoReset()
 {
 	TaitoDoReset();
 	
@@ -2166,7 +2212,7 @@ static int VolfiedDoReset()
 	return 0;
 }
 
-static int TopspeedDoReset()
+static INT32 TopspeedDoReset()
 {
 	TaitoDoReset();
 	
@@ -2188,7 +2234,7 @@ static void TaitoMiscCpuAReset(UINT16 d)
 	}
 }
 
-unsigned char __fastcall Darius68K1ReadByte(unsigned int a)
+UINT8 __fastcall Darius68K1ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc00010: {
@@ -2207,7 +2253,7 @@ unsigned char __fastcall Darius68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Darius68K1WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -2216,7 +2262,7 @@ void __fastcall Darius68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Darius68K1ReadWord(unsigned int a)
+UINT16 __fastcall Darius68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xc00002: {	
@@ -2247,7 +2293,7 @@ unsigned short __fastcall Darius68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Darius68K1WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x0a0000: {
@@ -2318,7 +2364,7 @@ void __fastcall Darius68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Darius68K2ReadByte(unsigned int a)
+UINT8 __fastcall Darius68K2ReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -2329,7 +2375,7 @@ unsigned char __fastcall Darius68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Darius68K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -2338,7 +2384,7 @@ void __fastcall Darius68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Darius68K2ReadWord(unsigned int a)
+UINT16 __fastcall Darius68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -2349,7 +2395,7 @@ unsigned short __fastcall Darius68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Darius68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc00050: {
@@ -2363,7 +2409,7 @@ void __fastcall Darius68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Opwolf68KReadByte(unsigned int a)
+UINT8 __fastcall Opwolf68KReadByte(UINT32 a)
 {
 	if (a >= 0x0ff000 && a <= 0x0ff7ff) {
 		return OpwolfCChipDataRead((a - 0x0ff000) >> 1);
@@ -2378,7 +2424,7 @@ unsigned char __fastcall Opwolf68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolf68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Opwolf68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x0ff000 && a <= 0x0ff7ff) {
 		OpwolfCChipDataWrite(Taito68KRom1, (a - 0x0ff000) >> 1, d);
@@ -2398,7 +2444,7 @@ void __fastcall Opwolf68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Opwolf68KReadWord(unsigned int a)
+UINT16 __fastcall Opwolf68KReadWord(UINT32 a)
 {
 	if (a >= 0x0f0000 && a <= 0x0f07ff) {
 		return OpwolfCChipDataRead((a - 0x0f0000) >> 1);
@@ -2410,7 +2456,7 @@ unsigned short __fastcall Opwolf68KReadWord(unsigned int a)
 	
 	switch (a) {
 		case 0x3a0000: {
-			int scaled = (BurnGunReturnX(0) * 320) / 256;
+			INT32 scaled = (BurnGunReturnX(0) * 320) / 256;
 			return scaled + 0x15 + OpWolfGunXOffset;
 		}
 		
@@ -2434,7 +2480,7 @@ unsigned short __fastcall Opwolf68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolf68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Opwolf68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x0ff000 && a <= 0x0ff7ff) {
 		OpwolfCChipDataWrite(Taito68KRom1, (a - 0x0ff000) >> 1, d);
@@ -2481,7 +2527,7 @@ void __fastcall Opwolf68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Opwolfb68KReadByte(unsigned int a)
+UINT8 __fastcall Opwolfb68KReadByte(UINT32 a)
 {
 	if (a >= 0x0ff000 && a <= 0x0fffff) {
 		return TaitoZ80Ram2[(a - 0x0ff000) >> 1];
@@ -2496,7 +2542,7 @@ unsigned char __fastcall Opwolfb68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolfb68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Opwolfb68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x0ff000 && a <= 0x0fffff) {
 		TaitoZ80Ram2[(a - 0x0ff000) >> 1] = d ;
@@ -2516,7 +2562,7 @@ void __fastcall Opwolfb68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Opwolfb68KReadWord(unsigned int a)
+UINT16 __fastcall Opwolfb68KReadWord(UINT32 a)
 {
 	if (a >= 0x0ff000 && a <= 0x0fffff) {
 		return TaitoZ80Ram2[(a - 0x0ff000) >> 1];
@@ -2540,7 +2586,7 @@ unsigned short __fastcall Opwolfb68KReadWord(unsigned int a)
 		}
 		
 		case 0x3a0000: {
-			int scaled = (BurnGunReturnX(0) * 320) / 256;
+			INT32 scaled = (BurnGunReturnX(0) * 320) / 256;
 			return scaled + 0x15 + OpWolfGunXOffset;
 		}
 		
@@ -2552,7 +2598,7 @@ unsigned short __fastcall Opwolfb68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolfb68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Opwolfb68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x0ff000 && a <= 0x0fffff) {
 		TaitoZ80Ram2[(a - 0x0ff000) >> 1] = d & 0xff;
@@ -2589,7 +2635,7 @@ void __fastcall Opwolfb68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Rainbow68KReadByte(unsigned int a)
+UINT8 __fastcall Rbisland68KReadByte(UINT32 a)
 {
 	if (a >= 0x800000 && a <= 0x8007ff) {
 		return RainbowCChipRamRead((a - 0x800000) >> 1);
@@ -2604,7 +2650,7 @@ unsigned char __fastcall Rainbow68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Rainbow68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Rbisland68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x800000 && a <= 0x8007ff) {
 		RainbowCChipRamWrite((a - 0x800000) >> 1, d);
@@ -2639,7 +2685,7 @@ void __fastcall Rainbow68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Rainbow68KReadWord(unsigned int a)
+UINT16 __fastcall Rbisland68KReadWord(UINT32 a)
 {
 	if (a >= 0x800000 && a <= 0x8007ff) {
 		return RainbowCChipRamRead((a - 0x800000) >> 1);
@@ -2658,7 +2704,7 @@ unsigned short __fastcall Rainbow68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Rainbow68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Rbisland68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x3c0000: {
@@ -2685,7 +2731,7 @@ void __fastcall Rainbow68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Jumping68KReadByte(unsigned int a)
+UINT8 __fastcall Jumping68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x401001: {
@@ -2705,7 +2751,7 @@ unsigned char __fastcall Jumping68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Jumping68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Jumping68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x800000 && a <= 0x80ffff) return;
 	
@@ -2725,7 +2771,7 @@ void __fastcall Jumping68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Jumping68KReadWord(unsigned int a)
+UINT16 __fastcall Jumping68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x400000: {
@@ -2740,7 +2786,7 @@ unsigned short __fastcall Jumping68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Jumping68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Jumping68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x3c0000: {
@@ -2766,7 +2812,7 @@ void __fastcall Jumping68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Rastan68KReadByte(unsigned int a)
+UINT8 __fastcall Rastan68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x390001: {
@@ -2801,7 +2847,7 @@ unsigned char __fastcall Rastan68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Rastan68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Rastan68KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3e0001: {
@@ -2816,7 +2862,7 @@ void __fastcall Rastan68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Rastan68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Rastan68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x350008: {
@@ -2857,7 +2903,7 @@ static UINT8 TopspeedInputBypassRead()
 {
 	UINT8 Port = TC0220IOCPortRead();
 	
-	int Steer = (TaitoAnalogPort0 >> 4);
+	INT32 Steer = (TaitoAnalogPort0 >> 4);
 	
 	switch (Port) {
 		case 0x0c: {
@@ -2874,7 +2920,7 @@ static UINT8 TopspeedInputBypassRead()
 	}
 }
 
-unsigned char __fastcall Topspeed68K1ReadByte(unsigned int a)
+UINT8 __fastcall Topspeed68K1ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x7e0003: {
@@ -2889,7 +2935,7 @@ unsigned char __fastcall Topspeed68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Topspeed68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Topspeed68K1WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x7e0001: {
@@ -2908,7 +2954,7 @@ void __fastcall Topspeed68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Topspeed68K1ReadWord(unsigned int a)
+UINT16 __fastcall Topspeed68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -2919,7 +2965,7 @@ unsigned short __fastcall Topspeed68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Topspeed68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Topspeed68K1WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0xe10000 && a <= 0xe1ffff) {
 		// ???
@@ -2979,10 +3025,10 @@ void __fastcall Topspeed68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Topspeed68K2ReadByte(unsigned int a)
+UINT8 __fastcall Topspeed68K2ReadByte(UINT32 a)
 {
 	if (a >= 0x900000 && a <= 0x9003ff) {
-		int Offset = (a - 0x900000) >> 1;
+		INT32 Offset = (a - 0x900000) >> 1;
 		
 		switch (Offset) {
 			case 0x000: return rand() & 0xff;
@@ -2999,7 +3045,7 @@ unsigned char __fastcall Topspeed68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Topspeed68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Topspeed68K2WriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x900000 && a <= 0x9003ff) {
 		return;		
@@ -3012,7 +3058,7 @@ void __fastcall Topspeed68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Topspeed68K2ReadWord(unsigned int a)
+UINT16 __fastcall Topspeed68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x880000: {
@@ -3031,7 +3077,7 @@ unsigned short __fastcall Topspeed68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Topspeed68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Topspeed68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x810000: {
@@ -3055,10 +3101,10 @@ void __fastcall Topspeed68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Volfied68KReadByte(unsigned int a)
+UINT8 __fastcall Volfied68KReadByte(UINT32 a)
 {
 	if (a >= 0xf00000 && a <= 0xf007ff) {
-		int Offset = (a - 0xf00000) >> 1;
+		INT32 Offset = (a - 0xf00000) >> 1;
 		return VolfiedCChipRamRead(Offset);
 	}
 	
@@ -3083,11 +3129,11 @@ unsigned char __fastcall Volfied68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Volfied68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Volfied68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x47ffff) {
-		int Offset = (a - 0x400000);
-		int Mask;
+		INT32 Offset = (a - 0x400000);
+		INT32 Mask;
 		if (Offset & 1) {
 			Mask = VolfiedVidMask >> 8;
 		} else {
@@ -3098,7 +3144,7 @@ void __fastcall Volfied68KWriteByte(unsigned int a, unsigned char d)
 	}
 	
 	if (a >= 0xf00000 && a <= 0xf007ff) {
-		int Offset = (a - 0xf00000) >> 1;
+		INT32 Offset = (a - 0xf00000) >> 1;
 		VolfiedCChipRamWrite(Offset, d);
 		return;
 	}
@@ -3130,10 +3176,10 @@ void __fastcall Volfied68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Volfied68KReadWord(unsigned int a)
+UINT16 __fastcall Volfied68KReadWord(UINT32 a)
 {
 	if (a >= 0xf00000 && a <= 0xf007ff) {
-		int Offset = (a - 0xf00000) >> 1;
+		INT32 Offset = (a - 0xf00000) >> 1;
 		return VolfiedCChipRamRead(Offset);
 	}
 	
@@ -3154,17 +3200,17 @@ unsigned short __fastcall Volfied68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Volfied68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Volfied68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x47ffff) {
 		UINT16 *Ram = (UINT16*)TaitoVideoRam;
-		int Offset = (a - 0x400000) >> 1;
+		INT32 Offset = (a - 0x400000) >> 1;
 		Ram[Offset] = (Ram[Offset] & ~VolfiedVidMask) | (d & VolfiedVidMask);
 		return;
 	}
 
 	if (a >= 0xf00000 && a <= 0xf007ff) {
-		int Offset = (a - 0xf00000) >> 1;
+		INT32 Offset = (a - 0xf00000) >> 1;
 		VolfiedCChipRamWrite(Offset, d & 0xff);
 		return;
 	}
@@ -3201,7 +3247,7 @@ void __fastcall Volfied68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall DariusZ80Read(unsigned short a)
+UINT8 __fastcall DariusZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3232,7 +3278,7 @@ unsigned char __fastcall DariusZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall DariusZ80Write(unsigned short a, unsigned char d)
+void __fastcall DariusZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3313,7 +3359,7 @@ void __fastcall DariusZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall DariusZ802ReadPort(unsigned short a)
+UINT8 __fastcall DariusZ802ReadPort(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -3340,7 +3386,7 @@ unsigned char __fastcall DariusZ802ReadPort(unsigned short a)
 	return 0;
 }
 
-void __fastcall DariusZ802WritePort(unsigned short a, unsigned char d)
+void __fastcall DariusZ802WritePort(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -3367,7 +3413,7 @@ void __fastcall DariusZ802WritePort(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall OpwolfZ80Read(unsigned short a)
+UINT8 __fastcall OpwolfZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9001: {
@@ -3382,7 +3428,7 @@ unsigned char __fastcall OpwolfZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall OpwolfZ80Write(unsigned short a, unsigned char d)
+void __fastcall OpwolfZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3412,9 +3458,9 @@ void __fastcall OpwolfZ80Write(unsigned short a, unsigned char d)
 		case 0xb004:
 		case 0xb005:
 		case 0xb006: {
-			int nStart;
-			int nEnd;
-			int Offset = a - 0xb000;
+			INT32 nStart;
+			INT32 nEnd;
+			INT32 Offset = a - 0xb000;
 
 			OpwolfADPCM_B[Offset] = d;
 			if (Offset == 0x04) {
@@ -3436,9 +3482,9 @@ void __fastcall OpwolfZ80Write(unsigned short a, unsigned char d)
 		case 0xc004:
 		case 0xc005:
 		case 0xc006: {
-			int nStart;
-			int nEnd;
-			int Offset = a - 0xc000;
+			INT32 nStart;
+			INT32 nEnd;
+			INT32 Offset = a - 0xc000;
 
 			OpwolfADPCM_C[Offset] = d;
 			if (Offset == 0x04) {
@@ -3460,7 +3506,7 @@ void __fastcall OpwolfZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall RainbowZ80Read(unsigned short a)
+UINT8 __fastcall RbislandZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9001: {
@@ -3475,7 +3521,7 @@ unsigned char __fastcall RainbowZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall RainbowZ80Write(unsigned short a, unsigned char d)
+void __fastcall RbislandZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3500,7 +3546,7 @@ void __fastcall RainbowZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall JumpingZ80Read(unsigned short a)
+UINT8 __fastcall JumpingZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xb000: {
@@ -3520,7 +3566,7 @@ unsigned char __fastcall JumpingZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall JumpingZ80Write(unsigned short a, unsigned char d)
+void __fastcall JumpingZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xb000: {
@@ -3550,7 +3596,7 @@ void __fastcall JumpingZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall RastanZ80Read(unsigned short a)
+UINT8 __fastcall RastanZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9001: {
@@ -3565,7 +3611,7 @@ unsigned char __fastcall RastanZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall RastanZ80Write(unsigned short a, unsigned char d)
+void __fastcall RastanZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3606,7 +3652,7 @@ void __fastcall RastanZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TopspeedZ80Read(unsigned short a)
+UINT8 __fastcall TopspeedZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9001: {
@@ -3625,7 +3671,7 @@ unsigned char __fastcall TopspeedZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TopspeedZ80Write(unsigned short a, unsigned char d)
+void __fastcall TopspeedZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -3678,7 +3724,7 @@ void __fastcall TopspeedZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall VolfiedZ80Read(unsigned short a)
+UINT8 __fastcall VolfiedZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x8801: {
@@ -3701,7 +3747,7 @@ unsigned char __fastcall VolfiedZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall VolfiedZ80Write(unsigned short a, unsigned char d)
+void __fastcall VolfiedZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x8800: {
@@ -3735,7 +3781,7 @@ void __fastcall VolfiedZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall OpwolfbCChipSubZ80Read(unsigned short a)
+UINT8 __fastcall OpwolfbCChipSubZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x8800: {
@@ -3750,7 +3796,7 @@ unsigned char __fastcall OpwolfbCChipSubZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall OpwolfbCChipSubZ80Write(unsigned short a, unsigned char)
+void __fastcall OpwolfbCChipSubZ80Write(UINT16 a, UINT8)
 {
 	switch (a) {
 		case 0x9000:
@@ -3761,7 +3807,7 @@ void __fastcall OpwolfbCChipSubZ80Write(unsigned short a, unsigned char)
 	}
 }
 
-static void TaitoYM2151IRQHandler(int Irq)
+static void TaitoYM2151IRQHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -3770,7 +3816,7 @@ static void TaitoYM2151IRQHandler(int Irq)
 	}
 }
 
-static void TaitoYM2203IRQHandler(int, int nStatus)
+static void TaitoYM2203IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -3779,9 +3825,9 @@ static void TaitoYM2203IRQHandler(int, int nStatus)
 	}
 }
 
-inline static int TaitoSynchroniseStream(int nSoundRate)
+inline static INT32 TaitoSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)(ZetTotalCycles() * nSoundRate / 4000000);
+	return (INT64)(ZetTotalCycles() * nSoundRate / 4000000);
 }
 
 inline static double TaitoGetTime()
@@ -3789,7 +3835,7 @@ inline static double TaitoGetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-static void RainbowBankSwitch(unsigned int, unsigned int Data)
+static void RbislandBankSwitch(UINT32, UINT32 Data)
 {
 	TaitoZ80Bank = (Data - 1) & 3;
 	
@@ -3797,7 +3843,7 @@ static void RainbowBankSwitch(unsigned int, unsigned int Data)
 	ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
 }
 
-static void RastanBankSwitch(unsigned int, unsigned int Data)
+static void RastanBankSwitch(UINT32, UINT32 Data)
 {
 	Data &= 3;
 	if (Data != 0) {
@@ -3851,7 +3897,7 @@ static void RastanMSM5205Vck()
 	}
 }
 
-static void TopspeedBankSwitch(unsigned int, unsigned int Data)
+static void TopspeedBankSwitch(UINT32, UINT32 Data)
 {
 	Data &= 3;
 	if (Data != 0) {
@@ -3874,62 +3920,62 @@ static void TopspeedMSM5205Vck()
 	}
 }
 
-static unsigned char VolfiedDip1Read(unsigned int)
+static UINT8 VolfiedDip1Read(UINT32)
 {
 	return TaitoDip[0];
 }
 
-static unsigned char VolfiedDip2Read(unsigned int)
+static UINT8 VolfiedDip2Read(UINT32)
 {
 	return TaitoDip[1];
 }
 
-static int DariusCharPlaneOffsets[4]     = { 0, 1, 2, 3 };
-static int DariusCharXOffsets[8]         = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int DariusCharYOffsets[8]         = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int DariusCharBPlaneOffsets[2]    = { 0, 8 };
-static int DariusCharBXOffsets[8]        = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int DariusCharBYOffsets[8]        = { 0, 16, 32, 48, 64, 80, 96, 112 };
-static int DariusSpritePlaneOffsets[4]   = { 24, 8, 16, 0 };
-static int DariusSpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
-static int DariusSpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int OpwolfbCharPlaneOffsets[4]    = { 0, 1, 2, 3 };
-static int OpwolfbCharXOffsets[8]        = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int OpwolfbCharYOffsets[8]        = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int OpwolfbSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
-static int OpwolfbSpriteXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
-static int OpwolfbSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int RainbowCharPlaneOffsets[4]    = { 0, 1, 2, 3 };
-static int RainbowCharXOffsets[8]        = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int RainbowCharYOffsets[8]        = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int RainbowSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
-static int RainbowSpriteXOffsets[16]     = { 8, 12, 0, 4, 24, 28, 16, 20, 40, 44, 32, 36, 56, 60, 48, 52 };
-static int RainbowSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int JumpingCharPlaneOffsets[4]    = { 0, 0x20000*8, 0x40000*8, 0x60000*8 };
-static int JumpingCharXOffsets[8]        = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int JumpingCharYOffsets[8]        = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int JumpingSpritePlaneOffsets[4]  = { 0x78000*8, 0x50000*8, 0x28000*8, 0 };
-static int JumpingSpriteXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int JumpingSpriteYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
-static int RastanCharPlaneOffsets[4]     = { 0, 1, 2, 3 };
-static int RastanCharXOffsets[8]         = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c };
-static int RastanCharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
-static int RastanSpritePlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int RastanSpriteXOffsets[16]      = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c, 16, 20, 0x200010, 0x200014, 24, 28, 0x200018, 0x20001c };
-static int RastanSpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
-static int TopspeedCharPlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int TopspeedCharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int TopspeedCharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int TopspeedSpritePlaneOffsets[4] = { 0, 8, 16, 24 };
-static int TopspeedSpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TopspeedSpriteYOffsets[8]     = { 0, 64, 128, 192, 256, 320, 384, 448 };
-static int VolfiedSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
-static int VolfiedSpriteXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
-static int VolfiedSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 DariusCharPlaneOffsets[4]     = { 0, 1, 2, 3 };
+static INT32 DariusCharXOffsets[8]         = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 DariusCharYOffsets[8]         = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 DariusCharBPlaneOffsets[2]    = { 0, 8 };
+static INT32 DariusCharBXOffsets[8]        = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 DariusCharBYOffsets[8]        = { 0, 16, 32, 48, 64, 80, 96, 112 };
+static INT32 DariusSpritePlaneOffsets[4]   = { 24, 8, 16, 0 };
+static INT32 DariusSpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
+static INT32 DariusSpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 OpwolfbCharPlaneOffsets[4]    = { 0, 1, 2, 3 };
+static INT32 OpwolfbCharXOffsets[8]        = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 OpwolfbCharYOffsets[8]        = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 OpwolfbSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
+static INT32 OpwolfbSpriteXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
+static INT32 OpwolfbSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 RbislandCharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 RbislandCharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 RbislandCharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 RbislandSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 RbislandSpriteXOffsets[16]    = { 8, 12, 0, 4, 24, 28, 16, 20, 40, 44, 32, 36, 56, 60, 48, 52 };
+static INT32 RbislandSpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 JumpingCharPlaneOffsets[4]    = { 0, 0x20000*8, 0x40000*8, 0x60000*8 };
+static INT32 JumpingCharXOffsets[8]        = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 JumpingCharYOffsets[8]        = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 JumpingSpritePlaneOffsets[4]  = { 0x78000*8, 0x50000*8, 0x28000*8, 0 };
+static INT32 JumpingSpriteXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 JumpingSpriteYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 RastanCharPlaneOffsets[4]     = { 0, 1, 2, 3 };
+static INT32 RastanCharXOffsets[8]         = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c };
+static INT32 RastanCharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
+static INT32 RastanSpritePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 RastanSpriteXOffsets[16]      = { 0, 4, 0x200000, 0x200004, 8, 12, 0x200008, 0x20000c, 16, 20, 0x200010, 0x200014, 24, 28, 0x200018, 0x20001c };
+static INT32 RastanSpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
+static INT32 TopspeedCharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 TopspeedCharXOffsets[8]       = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 TopspeedCharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 TopspeedSpritePlaneOffsets[4] = { 0, 8, 16, 24 };
+static INT32 TopspeedSpriteXOffsets[16]    = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TopspeedSpriteYOffsets[8]     = { 0, 64, 128, 192, 256, 320, 384, 448 };
+static INT32 VolfiedSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
+static INT32 VolfiedSpriteXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
+static INT32 VolfiedSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
 
-static int DariusInit()
+static INT32 DariusInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -3971,8 +4017,8 @@ static int DariusInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -3983,7 +4029,7 @@ static int DariusInit()
 		memset(Taito68KRom1 + 0x20000, 0xff, 0x20000);
 	}
 	
-	for (int i = 3; i >= 0; i--) {
+	for (INT32 i = 3; i >= 0; i--) {
 		memcpy(TaitoZ80Rom1 + 0x8000 * i + 0x10000, TaitoZ80Rom1             , 0x4000);
 		memcpy(TaitoZ80Rom1 + 0x8000 * i + 0x14000, TaitoZ80Rom1 + 0x4000 * i, 0x4000);
 	}
@@ -4023,7 +4069,7 @@ static int DariusInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(DariusZ80Read);
 	ZetSetWriteHandler(DariusZ80Write);
@@ -4034,7 +4080,8 @@ static int DariusInit()
 	ZetMapArea(0x8000, 0x8fff, 2, TaitoZ80Ram1               );
 	ZetMemEnd();
 	ZetClose();
-	
+
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetInHandler(DariusZ802ReadPort);
 	ZetSetOutHandler(DariusZ802WritePort);
@@ -4044,9 +4091,10 @@ static int DariusInit()
 	ZetClose();
 	
 	BurnYM2203Init(2, 4000000, TaitoYM2203IRQHandler, TaitoSynchroniseStream, TaitoGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(8000000 / 2);
 	
-	MSM5205Init(0, TaitoSynchroniseStream, 384000, DariusAdpcmInt, MSM5205_S48_4B, 100, 1);
+	MSM5205Init(0, TaitoSynchroniseStream, 384000, DariusAdpcmInt, MSM5205_S48_4B, 50, 1);
 	
 	GenericTilesInit();
 	
@@ -4066,26 +4114,26 @@ static int DariusInit()
 	return 0;
 }
 
-static int OpwolfInit()
+static INT32 OpwolfInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
 	TaitoCharWidth = 8;
 	TaitoCharHeight = 8;
-	TaitoCharPlaneOffsets = RainbowCharPlaneOffsets;
-	TaitoCharXOffsets = RainbowCharXOffsets;
-	TaitoCharYOffsets = RainbowCharYOffsets;
+	TaitoCharPlaneOffsets = RbislandCharPlaneOffsets;
+	TaitoCharXOffsets = RbislandCharXOffsets;
+	TaitoCharYOffsets = RbislandCharYOffsets;
 	TaitoNumChar = 0x4000;
 	
 	TaitoSpriteAModulo = 0x400;
 	TaitoSpriteANumPlanes = 4;
 	TaitoSpriteAWidth = 16;
 	TaitoSpriteAHeight = 16;
-	TaitoSpriteAPlaneOffsets = RainbowSpritePlaneOffsets;
-	TaitoSpriteAXOffsets = RainbowSpriteXOffsets;
-	TaitoSpriteAYOffsets = RainbowSpriteYOffsets;
+	TaitoSpriteAPlaneOffsets = RbislandSpritePlaneOffsets;
+	TaitoSpriteAXOffsets = RbislandSpriteXOffsets;
+	TaitoSpriteAYOffsets = RbislandSpriteYOffsets;
 	TaitoNumSpriteA = 0x1000;
 	
 	TaitoNum68Ks = 1;
@@ -4098,8 +4146,8 @@ static int OpwolfInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4125,7 +4173,7 @@ static int OpwolfInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(OpwolfZ80Read);
 	ZetSetWriteHandler(OpwolfZ80Write);
@@ -4141,7 +4189,7 @@ static int OpwolfInit()
 	
 	BurnYM2151Init(4000000, 50.0);
 	BurnYM2151SetIrqHandler(&TaitoYM2151IRQHandler);
-	BurnYM2151SetPortHandler(&RainbowBankSwitch);
+	BurnYM2151SetPortHandler(&RbislandBankSwitch);
 	
 	MSM5205Init(0, TaitoSynchroniseStream, 384000, OpwolfMSM5205Vck0, MSM5205_S48_4B, 60, 1);
 	MSM5205Init(1, TaitoSynchroniseStream, 384000, OpwolfMSM5205Vck1, MSM5205_S48_4B, 60, 1);
@@ -4160,7 +4208,7 @@ static int OpwolfInit()
 	UINT16 *Rom = (UINT16*)Taito68KRom1;
 	OpWolfGunXOffset = 0xec - (Rom[0x03ffb0 / 2] & 0xff);
 	OpWolfGunYOffset = 0x1c - (Rom[0x03ffae / 2] & 0xff);
-	int Region = Rom[0x03fffe / 2] & 0xff;
+	INT32 Region = Rom[0x03fffe / 2] & 0xff;
 	OpwolfCChipInit(Region);
 
 	// Reset the driver
@@ -4170,9 +4218,9 @@ static int OpwolfInit()
 	return 0;
 }
 
-static int OpwolfbInit()
+static INT32 OpwolfbInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4202,8 +4250,8 @@ static int OpwolfbInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4229,7 +4277,7 @@ static int OpwolfbInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(OpwolfZ80Read);
 	ZetSetWriteHandler(OpwolfZ80Write);
@@ -4242,7 +4290,8 @@ static int OpwolfbInit()
 	ZetMapArea(0x8000, 0x8fff, 2, TaitoZ80Ram1               );
 	ZetMemEnd();
 	ZetClose();
-	
+
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetReadHandler(OpwolfbCChipSubZ80Read);
 	ZetSetWriteHandler(OpwolfbCChipSubZ80Write);
@@ -4256,7 +4305,7 @@ static int OpwolfbInit()
 	
 	BurnYM2151Init(4000000, 50.0);
 	BurnYM2151SetIrqHandler(&TaitoYM2151IRQHandler);
-	BurnYM2151SetPortHandler(&RainbowBankSwitch);
+	BurnYM2151SetPortHandler(&RbislandBankSwitch);
 	
 	MSM5205Init(0, TaitoSynchroniseStream, 384000, OpwolfMSM5205Vck0, MSM5205_S48_4B, 60, 1);
 	MSM5205Init(1, TaitoSynchroniseStream, 384000, OpwolfMSM5205Vck1, MSM5205_S48_4B, 60, 1);
@@ -4283,26 +4332,26 @@ static int OpwolfbInit()
 	return 0;
 }
 
-static int RainbowInit()
+static INT32 RbislandInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
 	TaitoCharWidth = 8;
 	TaitoCharHeight = 8;
-	TaitoCharPlaneOffsets = RainbowCharPlaneOffsets;
-	TaitoCharXOffsets = RainbowCharXOffsets;
-	TaitoCharYOffsets = RainbowCharYOffsets;
+	TaitoCharPlaneOffsets = RbislandCharPlaneOffsets;
+	TaitoCharXOffsets = RbislandCharXOffsets;
+	TaitoCharYOffsets = RbislandCharYOffsets;
 	TaitoNumChar = 0x4000;
 	
 	TaitoSpriteAModulo = 0x400;
 	TaitoSpriteANumPlanes = 4;
 	TaitoSpriteAWidth = 16;
 	TaitoSpriteAHeight = 16;
-	TaitoSpriteAPlaneOffsets = RainbowSpritePlaneOffsets;
-	TaitoSpriteAXOffsets = RainbowSpriteXOffsets;
-	TaitoSpriteAYOffsets = RainbowSpriteYOffsets;
+	TaitoSpriteAPlaneOffsets = RbislandSpritePlaneOffsets;
+	TaitoSpriteAXOffsets = RbislandSpriteXOffsets;
+	TaitoSpriteAYOffsets = RbislandSpriteYOffsets;
 	TaitoNumSpriteA = 0x1400;
 	
 	TaitoNum68Ks = 1;
@@ -4314,8 +4363,8 @@ static int RainbowInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4334,17 +4383,17 @@ static int RainbowInit()
 	SekMapMemory(Taito68KRam1 + 0x4000  , 0x201000, 0x203fff, SM_RAM);
 	SekMapMemory(PC080SNRam[0]          , 0xc00000, 0xc0ffff, SM_RAM);
 	SekMapMemory(PC090OJRam             , 0xd00000, 0xd03fff, SM_RAM);
-	SekSetReadByteHandler(0, Rainbow68KReadByte);
-	SekSetWriteByteHandler(0, Rainbow68KWriteByte);
-	SekSetReadWordHandler(0, Rainbow68KReadWord);	
-	SekSetWriteWordHandler(0, Rainbow68KWriteWord);
+	SekSetReadByteHandler(0, Rbisland68KReadByte);
+	SekSetWriteByteHandler(0, Rbisland68KWriteByte);
+	SekSetReadWordHandler(0, Rbisland68KReadWord);	
+	SekSetWriteWordHandler(0, Rbisland68KWriteWord);
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
-	ZetSetReadHandler(RainbowZ80Read);
-	ZetSetWriteHandler(RainbowZ80Write);
+	ZetSetReadHandler(RbislandZ80Read);
+	ZetSetWriteHandler(RbislandZ80Write);
 	ZetMapArea(0x0000, 0x3fff, 0, TaitoZ80Rom1               );
 	ZetMapArea(0x0000, 0x3fff, 2, TaitoZ80Rom1               );
 	ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000      );
@@ -4357,31 +4406,31 @@ static int RainbowInit()
 	
 	BurnYM2151Init(16000000 / 4, 50.0);
 	BurnYM2151SetIrqHandler(&TaitoYM2151IRQHandler);
-	BurnYM2151SetPortHandler(&RainbowBankSwitch);
+	BurnYM2151SetPortHandler(&RbislandBankSwitch);
 	
 	GenericTilesInit();
 	
-	TaitoDrawFunction = RainbowDraw;
-	TaitoMakeInputsFunction = RainbowMakeInputs;
+	TaitoDrawFunction = RbislandDraw;
+	TaitoMakeInputsFunction = RbislandMakeInputs;
 	TaitoIrqLine = 4;
 	
 	nTaitoCyclesTotal[0] = (16000000 / 2) / 60;
 	nTaitoCyclesTotal[1] = (16000000 / 4) / 60;
 	
-	int CChipVer = 0;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "rainbowe")) CChipVer = 1;
+	INT32 CChipVer = 0;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "rbislande")) CChipVer = 1;
 	RainbowCChipInit(CChipVer);
 		
 	// Reset the driver
-	TaitoResetFunction = TaitoDoReset;
+	TaitoResetFunction = RbislandDoReset;
 	TaitoResetFunction();
 
 	return 0;
 }
 
-static int JumpingInit()
+static INT32 JumpingInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x40;
 	TaitoCharNumPlanes = 4;
@@ -4411,8 +4460,8 @@ static int JumpingInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4437,7 +4486,7 @@ static int JumpingInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(JumpingZ80Read);
 	ZetSetWriteHandler(JumpingZ80Write);
@@ -4471,9 +4520,9 @@ static int JumpingInit()
 	return 0;
 }
 
-static int RastanInit()
+static INT32 RastanInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x80;
 	TaitoCharNumPlanes = 4;
@@ -4503,8 +4552,8 @@ static int RastanInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4528,7 +4577,7 @@ static int RastanInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(RastanZ80Read);
 	ZetSetWriteHandler(RastanZ80Write);
@@ -4564,9 +4613,9 @@ static int RastanInit()
 	return 0;
 }
 
-static int TopspeedInit()
+static INT32 TopspeedInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4596,8 +4645,8 @@ static int TopspeedInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4637,7 +4686,7 @@ static int TopspeedInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(TopspeedZ80Read);
 	ZetSetWriteHandler(TopspeedZ80Write);
@@ -4665,7 +4714,7 @@ static int TopspeedInit()
 	nTaitoCyclesTotal[1] = 12000000 / 60;
 	nTaitoCyclesTotal[2] = 4000000 / 60;
 	
-	pTopspeedTempDraw = (UINT16*)malloc(512 * 512 * sizeof(UINT16));
+	pTopspeedTempDraw = (UINT16*)BurnMalloc(512 * 512 * sizeof(UINT16));
 
 	// Reset the driver
 	TaitoResetFunction = TopspeedDoReset;
@@ -4674,9 +4723,9 @@ static int TopspeedInit()
 	return 0;
 }
 
-static int VolfiedInit()
+static INT32 VolfiedInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoNumChar = 0;
 	TaitoSpriteAModulo = 0x400;
@@ -4697,8 +4746,8 @@ static int VolfiedInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4724,7 +4773,7 @@ static int VolfiedInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(VolfiedZ80Read);
 	ZetSetWriteHandler(VolfiedZ80Write);
@@ -4758,7 +4807,7 @@ static int VolfiedInit()
 	return 0;
 }
 
-static int TaitoMiscExit()
+static INT32 TaitoMiscExit()
 {
 	RastanADPCMPos = 0;
 	RastanADPCMData = 0;
@@ -4778,93 +4827,92 @@ static int TaitoMiscExit()
 	VolfiedVidCtrl = 0;
 	VolfiedVidMask = 0;
 	
-	free(pTopspeedTempDraw);
-	pTopspeedTempDraw = NULL;
+	BurnFree(pTopspeedTempDraw);
 	
 	return TaitoExit();
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
-	r = pal5bit(nColour >>  0);
-	g = pal5bit(nColour >>  5);
-	b = pal5bit(nColour >> 10);
+	r = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >>  0);
+	g = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >>  5);
+	b = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 10);
 
 	return BurnHighCol(r, g, b, 0);
 }
 
-inline static unsigned int OpwolfCalcCol(unsigned short nColour)
+inline static UINT32 OpwolfCalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
-	r = pal4bit(nColour >> 8);
-	g = pal4bit(nColour >> 4);
-	b = pal4bit(nColour >> 0);
+	r = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 8);
+	g = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 4);
+	b = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 0);
 
 	return BurnHighCol(r, g, b, 0);
 }
 
-inline static unsigned int JumpingCalcCol(unsigned short nColour)
+inline static UINT32 JumpingCalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
-	r = pal4bit(nColour >> 0);
-	g = pal4bit(nColour >> 4);
-	b = pal4bit(nColour >> 8);
+	r = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 0);
+	g = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 4);
+	b = pal4bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 8);
 
 	return BurnHighCol(r, g, b, 0);
 }
 
 static void TaitoMiscCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
 static void OpwolfCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
 		*pd = OpwolfCalcCol(*ps);
 	}
 }
 
 static void JumpingCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
 		*pd = JumpingCalcCol(*ps);
 	}
 }
 
-static void DariusDrawSprites(int PriorityDraw)
+static void DariusDrawSprites(INT32 PriorityDraw)
 {
-	int Offset, sx, sy;
+	INT32 Offset, sx, sy;
 	UINT16 Code, Data;
 	UINT8 xFlip, yFlip, Colour, Priority;
 	
@@ -4872,20 +4920,20 @@ static void DariusDrawSprites(int PriorityDraw)
 
 	for (Offset = 0xf000 / 2 - 4; Offset >= 0; Offset -= 4)
 	{
-		Code = SpriteRam[Offset+ 2 ] &0x1fff;
+		Code = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]) & 0x1fff;
 
 		if (Code) {
-			Data = SpriteRam[Offset + 0];
+			Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 			sy = (256 - Data) & 0x1ff;
 
-			Data = SpriteRam[Offset + 1];
+			Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 			sx = Data & 0x3ff;
 
-			Data = SpriteRam[Offset + 2];
+			Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 			xFlip = ((Data & 0x4000) >> 14);
 			yFlip = ((Data & 0x8000) >> 15);
 
-			Data = SpriteRam[Offset + 3];
+			Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 			Priority = (Data & 0x80) >> 7;
 			if (Priority != PriorityDraw) continue;
 			
@@ -4896,7 +4944,7 @@ static void DariusDrawSprites(int PriorityDraw)
  			
  			sy -= 16;
  			
- 			if (sx > 16 && sx < (nScreenWidth < 16) && sy > 16 && sy < (nScreenHeight - 16)) {
+ 			if (sx > 16 && sx < (nScreenWidth - 16) && sy > 16 && sy < (nScreenHeight - 16)) {
  				if (xFlip) {
 					if (yFlip) {
 						Render16x16Tile_Mask_FlipXY(pTransDraw, Code, sx, sy, Colour, 4, 0, 0, TaitoSpritesA);
@@ -4931,14 +4979,14 @@ static void DariusDrawSprites(int PriorityDraw)
 
 static void DariusDrawCharLayer()
 {
-	int mx, my, Code, Attr, Colour, x, y, Flip, xFlip, yFlip, TileIndex = 0;
+	INT32 mx, my, Code, Attr, Colour, x, y, Flip, xFlip, yFlip, TileIndex = 0;
 	
 	UINT16 *VideoRam = (UINT16*)TaitoVideoRam;
 
 	for (my = 0; my < 64; my++) {
 		for (mx = 0; mx < 128; mx++) {
-			Code = VideoRam[TileIndex + 0x2000] & (TaitoNumCharB - 1);
-			Attr = VideoRam[TileIndex + 0x0000];
+			Code = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex + 0x2000]) & (TaitoNumCharB - 1);
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex + 0x0000]);
 			
 			Colour = (Attr & 0xff) << 2;
 			Flip = (Attr & 0xc000) >> 14;
@@ -4985,21 +5033,21 @@ static void DariusDrawCharLayer()
 
 static void JumpingDrawSprites()
 {
-	int SpriteColBank = (PC090OJSpriteCtrl & 0xe0) >> 1;
+	INT32 SpriteColBank = (PC090OJSpriteCtrl & 0xe0) >> 1;
 	
-	for (int Offs = 0x400 - 8; Offs >= 0; Offs -= 8) {
+	for (INT32 Offs = 0x400 - 8; Offs >= 0; Offs -= 8) {
 		UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-		int Tile = SpriteRam[Offs];
+		INT32 Tile = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offs]);
 		if (Tile < 5120) {
-			int sx, sy, Colour, Data1, xFlip, yFlip;
+			INT32 sx, sy, Colour, Data1, xFlip, yFlip;
 
-			sy = ((SpriteRam[Offs + 1] - 0xfff1) ^ 0xffff) & 0x1ff;
+			sy = ((BURN_ENDIAN_SWAP_INT16(SpriteRam[Offs + 1]) - 0xfff1) ^ 0xffff) & 0x1ff;
   			if (sy > 400) sy = sy - 512;
-			sx = (SpriteRam[Offs + 2] - 0x38) & 0x1ff;
+			sx = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offs + 2]) - 0x38) & 0x1ff;
 			if (sx > 400) sx = sx - 512;
 
-			Data1 = SpriteRam[Offs + 3];
-			Colour = (SpriteRam[Offs + 4] & 0x0f) | SpriteColBank;
+			Data1 = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offs + 3]);
+			Colour = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offs + 4]) & 0x0f) | SpriteColBank;
 			xFlip = Data1 & 0x40;
 			yFlip = Data1 & 0x80;
 			
@@ -5039,12 +5087,12 @@ static void JumpingDrawSprites()
 	}
 }
 
-static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, int yFlip, int xScale, int yScale, unsigned char* pSource)
+static void RenderSpriteZoom(INT32 Code, INT32 sx, INT32 sy, INT32 Colour, INT32 xFlip, INT32 yFlip, INT32 xScale, INT32 yScale, UINT8* pSource)
 {
 	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x100);
 	
@@ -5054,14 +5102,14 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}	
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
-		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
+		INT32 dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		INT32 dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (xFlip) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -5078,37 +5126,37 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth) {
-			int Pixels = ex - nScreenWidth;
+			INT32 Pixels = ex - nScreenWidth;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight) {
-			int Pixels = ey - nScreenHeight;
+			INT32 Pixels = ey - nScreenHeight;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x < ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						pPixel[x] = c | Colour;
 					}
@@ -5121,26 +5169,26 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}
 }
 
-static void TopspeedDrawSprites(int PriorityDraw)
+static void TopspeedDrawSprites(INT32 PriorityDraw)
 {
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, MapOffset, x, y, xCur, yCur, SpriteChunk;
+	INT32 Offset, MapOffset, x, y, xCur, yCur, SpriteChunk;
 	UINT16 *SpriteMap = (UINT16*)TaitoVideoRam;
 	UINT16 Data, TileNum, Code, Colour;
 	UINT8 xFlip, yFlip, Priority, BadChunks;
 	UINT8 j, k, px, py, zx, zy, xZoom, yZoom;
 
 	for (Offset = (0x2c0 / 2) - 4; Offset >= 0; Offset -= 4) {
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 
-		TileNum = SpriteRam[Offset + 3] & 0xff;
-		Colour = (SpriteRam[Offset + 3] & 0xff00) >> 8;
+		TileNum = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]) & 0xff;
+		Colour = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]) & 0xff00) >> 8;
 		xFlip = (Data & 0x4000) >> 14;
-		yFlip = (SpriteRam[Offset + 1] & 0x8000) >> 15;
+		yFlip = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]) & 0x8000) >> 15;
 		x = Data & 0x1ff;
-		y = SpriteRam[Offset] & 0x1ff;
-		xZoom = (SpriteRam[Offset + 1] & 0x7f);
-		yZoom = (SpriteRam[Offset] & 0xfe00) >> 9;
+		y = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset]) & 0x1ff;
+		xZoom = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]) & 0x7f);
+		yZoom = (BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset]) & 0xfe00) >> 9;
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != PriorityDraw) continue;
@@ -5205,12 +5253,12 @@ static void OpwolfDraw()
 	PC080SNDrawFgLayer(0, 0, TaitoChars, pTransDraw);
 	BurnTransferCopy(TaitoPalette);
 	
-	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+	for (INT32 i = 0; i < nBurnGunNumPlayers; i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 }
 
-static void RainbowDraw()
+static void RbislandDraw()
 {
 	BurnTransferClear();
 	TaitoMiscCalcPalette();
@@ -5261,9 +5309,9 @@ static void VolfiedDraw()
 	
 	UINT16* p = (UINT16*)TaitoVideoRam;
 	if (VolfiedVidCtrl & 0x01) p += 0x20000;
-	for (int y = 0; y < nScreenHeight + 8; y++) {
-		for (int x = 1; x < nScreenWidth + 1; x++) {
-			int Colour = (p[x] << 2) & 0x700;
+	for (INT32 y = 0; y < nScreenHeight + 8; y++) {
+		for (INT32 x = 1; x < nScreenWidth + 1; x++) {
+			INT32 Colour = (p[x] << 2) & 0x700;
 
 			if (p[x] & 0x8000) {
 				Colour |= 0x800 | ((p[x] >> 9) & 0xf);
@@ -5285,11 +5333,11 @@ static void VolfiedDraw()
 	BurnTransferCopy(TaitoPalette);
 }
 
-static int TaitoMiscFrame()
+static INT32 TaitoMiscFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 	if (TaitoNumMSM5205) nInterleave = MSM5205CalcInterleave(0, 8000000 / 2);
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	if (TaitoReset) TaitoResetFunction();
 
@@ -5300,8 +5348,8 @@ static int TaitoMiscFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -5337,8 +5385,8 @@ static int TaitoMiscFrame()
 		
 		// Render sound segment
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (TaitoNumZ80s >= 1) ZetOpen(0);
 			if (TaitoNumYM2151) BurnYM2151Render(pSoundBuf, nSegmentLength);
 			if (TaitoNumZ80s >= 1) ZetClose();
@@ -5348,8 +5396,8 @@ static int TaitoMiscFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			if (TaitoNumZ80s >= 1) ZetOpen(0);
 			if (TaitoNumYM2151) BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5357,19 +5405,21 @@ static int TaitoMiscFrame()
 		}
 	}
 	
-	if (TaitoNumZ80s >= 1) ZetOpen(0);
-	if (TaitoNumMSM5205) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
-	if (TaitoNumMSM5205 >= 2) MSM5205Render(1, pBurnSoundOut, nBurnSoundLen);
-	if (TaitoNumZ80s >= 1) ZetClose();
+	if (pBurnSoundOut) {
+		if (TaitoNumZ80s >= 1) ZetOpen(0);
+		if (TaitoNumMSM5205) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
+		if (TaitoNumMSM5205 >= 2) MSM5205Render(1, pBurnSoundOut, nBurnSoundLen);
+		if (TaitoNumZ80s >= 1) ZetClose();
+	}
 	
 	if (pBurnDraw) TaitoDrawFunction();
 	
 	return 0;
 }
 
-static int DariusFrame()
+static INT32 DariusFrame()
 {
-	int nInterleave = MSM5205CalcInterleave(0, 8000000 / 2);
+	INT32 nInterleave = MSM5205CalcInterleave(0, 8000000 / 2);
 
 	if (TaitoReset) TaitoResetFunction();
 
@@ -5380,8 +5430,8 @@ static int DariusFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -5419,18 +5469,12 @@ static int DariusFrame()
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[2]);
-	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	// Reduce the YM2203 volume
-	for (int j = 0; j < nBurnSoundLen * 2; j += 2) {
-		pBurnSoundOut[j + 0] /= 10;
-		pBurnSoundOut[j + 1] /= 10;
-	}
 	
 	ZetOpen(1);
 	ZetRun(nTaitoCyclesTotal[3] - nTaitoCyclesDone[3]);
-	MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
 	
 	if (pBurnDraw) TaitoDrawFunction();
@@ -5438,9 +5482,9 @@ static int DariusFrame()
 	return 0;
 }
 
-static int JumpingFrame()
+static INT32 JumpingFrame()
 {
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 	
 	if (TaitoReset) TaitoResetFunction();
 
@@ -5451,8 +5495,8 @@ static int JumpingFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -5471,7 +5515,7 @@ static int JumpingFrame()
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[1]);
-	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
 	
 	if (pBurnDraw) TaitoDrawFunction();
@@ -5479,11 +5523,11 @@ static int JumpingFrame()
 	return 0;
 }
 
-static int TopspeedFrame()
+static INT32 TopspeedFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 	if (TaitoNumMSM5205) nInterleave = MSM5205CalcInterleave(0, 4000000);
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	if (TaitoReset) TaitoResetFunction();
 
@@ -5494,8 +5538,8 @@ static int TopspeedFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -5533,8 +5577,8 @@ static int TopspeedFrame()
 		
 		// Render sound segment
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (TaitoNumZ80s >= 1) ZetOpen(0);
 			if (TaitoNumYM2151) BurnYM2151Render(pSoundBuf, nSegmentLength);
 			if (TaitoNumZ80s >= 1) ZetClose();
@@ -5544,8 +5588,8 @@ static int TopspeedFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			if (TaitoNumZ80s >= 1) ZetOpen(0);
 			if (TaitoNumYM2151) BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5553,16 +5597,18 @@ static int TopspeedFrame()
 		}
 	}
 	
-	if (TaitoNumZ80s >= 1) ZetOpen(0);
-	if (TaitoNumMSM5205) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
-	if (TaitoNumZ80s >= 1) ZetClose();
+	if (pBurnSoundOut) {
+		if (TaitoNumZ80s >= 1) ZetOpen(0);
+		if (TaitoNumMSM5205) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
+		if (TaitoNumZ80s >= 1) ZetClose();
+	}
 	
 	if (pBurnDraw) TaitoDrawFunction();
 	
 	return 0;
 }
 
-static int TaitoMiscScan(int nAction, int *pnMin)
+static INT32 TaitoMiscScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -5710,38 +5756,38 @@ struct BurnDriver BurnDrvOpwolfb = {
 	NULL, 0x2000, 320, 240, 4, 3
 };
 
-struct BurnDriver BurnDrvRainbow = {
-	"rainbow", NULL, NULL, NULL, "1987",
+struct BurnDriver BurnDrvRbisland = {
+	"rbisland", NULL, NULL, NULL, "1987",
 	"Rainbow Islands (new version)\0", NULL, "Taito Corporation", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, RainbowRomInfo, RainbowRomName, NULL, NULL, RainbowInputInfo, RainbowDIPInfo,
-	RainbowInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
+	NULL, RbislandRomInfo, RbislandRomName, NULL, NULL, RbislandInputInfo, RbislandDIPInfo,
+	RbislandInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
 	NULL, 0x2000, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvRainbowo = {
-	"rainbowo", "rainbow", NULL, NULL, "1987",
+struct BurnDriver BurnDrvRbislando = {
+	"rbislando", "rbisland", NULL, NULL, "1987",
 	"Rainbow Islands (old version)\0", NULL, "Taito Corporation", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, RainbowoRomInfo, RainbowoRomName, NULL, NULL, RainbowInputInfo, RainbowDIPInfo,
-	RainbowInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
+	NULL, RbislandoRomInfo, RbislandoRomName, NULL, NULL, RbislandInputInfo, RbislandDIPInfo,
+	RbislandInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
 	NULL, 0x2000, 320, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvRainbowe = {
-	"rainbowe", "rainbow", NULL, NULL, "1988",
+struct BurnDriver BurnDrvRbislande = {
+	"rbislande", "rbisland", NULL, NULL, "1988",
 	"Rainbow Islands (Extra)\0", NULL, "Taito Corporation", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, RainboweRomInfo, RainboweRomName, NULL, NULL, RainbowInputInfo, RainbowDIPInfo,
-	RainbowInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
+	NULL, RbislandeRomInfo, RbislandeRomName, NULL, NULL, RbislandInputInfo, RbislandDIPInfo,
+	RbislandInit, TaitoMiscExit, TaitoMiscFrame, NULL, TaitoMiscScan,
 	NULL, 0x2000, 320, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvJumping = {
-	"jumping", "rainbow", NULL, NULL, "1989",
+	"jumping", "rbisland", NULL, NULL, "1989",
 	"Jumping\0", NULL, "bootleg", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,

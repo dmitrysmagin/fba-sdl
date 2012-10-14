@@ -4,31 +4,31 @@
 
 #define MAX_YM2612	2
 
-void (*BurnYM2612Update)(short* pSoundBuf, int nSegmentEnd);
+void (*BurnYM2612Update)(INT16* pSoundBuf, INT32 nSegmentEnd);
 
-static int (*BurnYM2612StreamCallback)(int nSoundRate);
+static INT32 (*BurnYM2612StreamCallback)(INT32 nSoundRate);
 
-static int nBurnYM2612SoundRate;
+static INT32 nBurnYM2612SoundRate;
 
-static short* pBuffer;
-static short* pYM2612Buffer[2 * MAX_YM2612];
+static INT16* pBuffer;
+static INT16* pYM2612Buffer[2 * MAX_YM2612];
 
-static int nYM2612Position;
+static INT32 nYM2612Position;
 
-static unsigned int nFractionalPosition;
+static INT32 nFractionalPosition;
 
-static int nNumChips = 0;
-static int bYM2612AddSignal;
+static INT32 nNumChips = 0;
+static INT32 bYM2612AddSignal;
 
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void YM2612UpdateDummy(short*, int /* nSegmentEnd */)
+static void YM2612UpdateDummy(INT16*, INT32 /* nSegmentEnd */)
 {
 	return;
 }
 
-static int YM2612StreamCallbackDummy(int /* nSoundRate */)
+static INT32 YM2612StreamCallbackDummy(INT32 /* nSoundRate */)
 {
 	return 0;
 }
@@ -36,8 +36,12 @@ static int YM2612StreamCallbackDummy(int /* nSoundRate */)
 // ----------------------------------------------------------------------------
 // Execute YM2612 for part of a frame
 
-static void YM2612Render(int nSegmentLength)
+static void YM2612Render(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("YM2612Render called without init\n"));
+#endif
+	
 	if (nYM2612Position >= nSegmentLength) {
 		return;
 	}
@@ -64,10 +68,14 @@ static void YM2612Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 
 // Update the sound buffer
-static void YM2612UpdateNormal(short* pSoundBuf, int nSegmentEnd)
+static void YM2612UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
-	int i;
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("YM2612UpdateNormal called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
+	INT32 i;
 
 //	bprintf(PRINT_NORMAL, _T("    YM2612 update        -> %6i\n", nSegmentLength));
 
@@ -88,8 +96,8 @@ static void YM2612UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 		pYM2612Buffer[3] = pBuffer + 4 + 3 * 4096;
 	}
 
-	for (int n = nFractionalPosition; n < nSegmentLength; n++) {
-		int nTotalSample;
+	for (INT32 n = nFractionalPosition; n < nSegmentLength; n++) {
+		INT32 nTotalSample;
 
 		nTotalSample = pYM2612Buffer[0][n];
 		if (nNumChips > 1) nTotalSample += pYM2612Buffer[2][n];
@@ -152,6 +160,10 @@ static void YM2612UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 
 void BurnYM2612UpdateRequest()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("YM2612UpdateRequest called without init\n"));
+#endif
+
 	YM2612Render(BurnYM2612StreamCallback(nBurnYM2612SoundRate));
 }
 
@@ -160,27 +172,42 @@ void BurnYM2612UpdateRequest()
 
 void BurnYM2612Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("BurnYM2612Reset called without init\n"));
+#endif
+
 	BurnTimerReset();
 	
-	for (int i = 0; i < nNumChips; i++) {
+	for (INT32 i = 0; i < nNumChips; i++) {
 		YM2612ResetChip(i);
 	}
 }
 
 void BurnYM2612Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("BurnYM2612Exit called without init\n"));
+#endif
+
 	YM2612Shutdown();
 
 	BurnTimerExit();
 
-	free(pBuffer);
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
 	
 	nNumChips = 0;
 	bYM2612AddSignal = 0;
+	
+	DebugSnd_YM2612Initted = 0;
 }
 
-int BurnYM2612Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int (*StreamCallback)(int), double (*GetTimeCallback)(), int bAddSignal)
+INT32 BurnYM2612Init(INT32 num, INT32 nClockFrequency, FM_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), double (*GetTimeCallback)(), INT32 bAddSignal)
 {
+	DebugSnd_YM2612Initted = 1;
+	
 	if (num > MAX_YM2612) num = MAX_YM2612;
 
 	BurnTimerInit(&YM2612TimerOver, GetTimeCallback);
@@ -201,8 +228,8 @@ int BurnYM2612Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int 
 	
 	YM2612Init(num, nClockFrequency, nBurnYM2612SoundRate, &BurnOPNTimerCallback, IRQCallback);
 
-	pBuffer = (short*)malloc(4096 * 2 * num * sizeof(short));
-	memset(pBuffer, 0, 4096 * 2 * num * sizeof(short));
+	pBuffer = (INT16*)malloc(4096 * 2 * num * sizeof(INT16));
+	memset(pBuffer, 0, 4096 * 2 * num * sizeof(INT16));
 	
 	nYM2612Position = 0;
 	nFractionalPosition = 0;
@@ -213,8 +240,12 @@ int BurnYM2612Init(int num, int nClockFrequency, FM_IRQHANDLER IRQCallback, int 
 	return 0;
 }
 
-void BurnYM2612Scan(int nAction, int* pnMin)
+void BurnYM2612Scan(INT32 nAction, INT32* pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("BurnYM2612Scan called without init\n"));
+#endif
+
 	BurnTimerScan(nAction, pnMin);
 
 	if (nAction & ACB_DRIVER_DATA) {

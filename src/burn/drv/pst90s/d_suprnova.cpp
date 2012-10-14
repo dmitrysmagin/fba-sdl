@@ -1,42 +1,42 @@
 #include "tiles_generic.h"
 #include "sh2.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[1]        = {0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[1]        = {0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvBiosRom          = NULL;
-static unsigned char *DrvPrgRom           = NULL;
-static unsigned char *DrvSpriteRom        = NULL;
-static unsigned char *DrvSampleRom        = NULL;
-static unsigned char *DrvPrgRam           = NULL;
-static unsigned char *DrvBackupRam        = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvSpriteRegs       = NULL;
-static unsigned char *DrvTileARam         = NULL;
-static unsigned char *DrvTileBRam         = NULL;
-static unsigned char *DrvTileBTilesRam    = NULL;
-static unsigned char *DrvTileRegs         = NULL;
-static unsigned char *DrvTileLineRam      = NULL;
-static unsigned char *DrvCacheRam         = NULL;
-static unsigned char *DrvPaletteRam       = NULL;
-static unsigned char *DrvPaletteRegs      = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned char *DrvTilesA8Bpp       = NULL;
-static unsigned char *DrvTilesB8Bpp       = NULL;
-static unsigned char *DrvTilesA4Bpp       = NULL;
-static unsigned char *DrvTilesB4Bpp       = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvBiosRom          = NULL;
+static UINT8 *DrvPrgRom           = NULL;
+static UINT8 *DrvSpriteRom        = NULL;
+static UINT8 *DrvSampleRom        = NULL;
+static UINT8 *DrvPrgRam           = NULL;
+static UINT8 *DrvBackupRam        = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvSpriteRegs       = NULL;
+static UINT8 *DrvTileARam         = NULL;
+static UINT8 *DrvTileBRam         = NULL;
+static UINT8 *DrvTileBTilesRam    = NULL;
+static UINT8 *DrvTileRegs         = NULL;
+static UINT8 *DrvTileLineRam      = NULL;
+static UINT8 *DrvCacheRam         = NULL;
+static UINT8 *DrvPaletteRam       = NULL;
+static UINT8 *DrvPaletteRegs      = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT8 *DrvTilesA8Bpp       = NULL;
+static UINT8 *DrvTilesB8Bpp       = NULL;
+static UINT8 *DrvTilesA4Bpp       = NULL;
+static UINT8 *DrvTilesB4Bpp       = NULL;
+static UINT32 *DrvPalette          = NULL;
 
-static int nCyclesDone[1], nCyclesTotal[1];
-static int nCyclesSegment;
+static INT32 nCyclesDone[1], nCyclesTotal[1];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo CyvernInputList[] =
 {
@@ -67,7 +67,7 @@ static struct BurnInputInfo CyvernInputList[] =
 
 STDINPUTINFO(Cyvern)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -83,7 +83,7 @@ static inline void DrvMakeInputs()
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -139,9 +139,9 @@ static struct BurnRomInfo CyvernRomDesc[] = {
 STD_ROM_PICK(Cyvern)
 STD_ROM_FN(Cyvern)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvBiosRom             = Next; Next += 0x080000;
 	DrvPrgRom              = Next; Next += 0x200000;
@@ -169,7 +169,7 @@ static int MemIndex()
 	DrvTilesB8Bpp          = Next; Next += 0x08000 * 16 * 16;
 	DrvTilesA4Bpp          = Next; Next += 0x10000 * 16 * 16;
 	DrvTilesB4Bpp          = Next; Next += 0x10000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x08000 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x08000 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
@@ -253,9 +253,9 @@ static void hit_recalc(void)
 	hit.flag |= hit.x_in >= 0 && hit.y_in >= 0                  ? 1 : 0;
 }
 
-static void SknsHitWrite(unsigned int offset, unsigned int data)
+static void SknsHitWrite(UINT32 offset, UINT32 data)
 {
-	int adr = offset * 4;
+	INT32 adr = offset * 4;
 
 	switch(adr) {
 	case 0x00:
@@ -316,15 +316,15 @@ static void SknsHitWrite(unsigned int offset, unsigned int data)
 	hit_recalc();
 }
 
-static void SknsHit2Write(unsigned int offset, unsigned int data)
+static void SknsHit2Write(UINT32 offset, UINT32 data)
 {
 //  log_event("HIT", "Set disconnect to %02x", data);
 	hit.disconnect = data;
 }
 
-unsigned int __fastcall SknsHitRead(unsigned int offset)
+UINT32 __fastcall SknsHitRead(UINT32 offset)
 {
-	int adr = offset *4;
+	INT32 adr = offset *4;
 
 //  log_read("HIT", adr, type);
 
@@ -407,16 +407,16 @@ unsigned int __fastcall SknsHitRead(unsigned int offset)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	Sh2Open(0);
-	Sh2Reset(*(unsigned int *)(DrvBiosRom + 0), *(unsigned int *)(DrvBiosRom + 4));
+	Sh2Reset(*(UINT32 *)(DrvBiosRom + 0), *(UINT32 *)(DrvBiosRom + 4));
 	Sh2Close();
 	
 	return 0;
 }
 
-unsigned char __fastcall CyvernReadByte(unsigned int a)
+UINT8 __fastcall CyvernReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x20400007: {
@@ -432,7 +432,7 @@ unsigned char __fastcall CyvernReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall CyvernWriteByte(unsigned int a, unsigned char d)
+void __fastcall CyvernWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x0040000e: {
@@ -462,11 +462,11 @@ void __fastcall CyvernWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall CyvernReadWord(unsigned int a)
+UINT16 __fastcall CyvernReadWord(UINT32 a)
 {
 	if (a >= 0x06000000 && a <= 0x06ffffff) {
 		if (a >= 0x06000028 && a <= 0x0600002b) bprintf(PRINT_NORMAL, _T("Read Word Bios Skip %x, %x\n"), a, Sh2GetPC(0));
-		unsigned int Offset = (a - 0x06000000) / 2;
+		UINT32 Offset = (a - 0x06000000) / 2;
 		UINT16 *Ram = (UINT16*)DrvPrgRam;
 		
 		return Ram[Offset];
@@ -481,7 +481,7 @@ unsigned short __fastcall CyvernReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall CyvernWriteWord(unsigned int a, unsigned short d)
+void __fastcall CyvernWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x05000000: {
@@ -495,17 +495,17 @@ void __fastcall CyvernWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned int __fastcall CyvernReadLong(unsigned int a)
+UINT32 __fastcall CyvernReadLong(UINT32 a)
 {
 	if (a >= 0x02f00000 && a <= 0x02f000ff) {
-		unsigned int Offset = (a - 0x02f00000) / 4;
+		UINT32 Offset = (a - 0x02f00000) / 4;
 		
 		return SknsHitRead(Offset);
 	}
 	
 	if (a >= 0x06000000 && a <= 0x06ffffff) {
 		if (a >= 0x06000028 && a <= 0x0600002b) bprintf(PRINT_NORMAL, _T("Read Long Bios Skip %x, %x\n"), a, Sh2GetPC(0) / 4);
-		unsigned int Offset = (a - 0x06000000) / 4;
+		UINT32 Offset = (a - 0x06000000) / 4;
 		UINT32 *Ram = (UINT32*)DrvPrgRam;
 		
 		return Ram[Offset];
@@ -520,10 +520,10 @@ unsigned int __fastcall CyvernReadLong(unsigned int a)
 	return 0;
 }
 
-void __fastcall CyvernWriteLong(unsigned int a, unsigned int d)
+void __fastcall CyvernWriteLong(UINT32 a, UINT32 d)
 {
 	if (a >= 0x02f00000 && a <= 0x02f000ff) {
-		unsigned int Offset = (a - 0x02f00000) / 4;
+		UINT32 Offset = (a - 0x02f00000) / 4;
 		
 		SknsHitWrite(Offset, d);
 		return;
@@ -536,7 +536,7 @@ void __fastcall CyvernWriteLong(unsigned int a, unsigned int d)
 	}
 }
 
-unsigned char __fastcall BiosSkipReadByte(unsigned int a)
+UINT8 __fastcall BiosSkipReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -547,7 +547,7 @@ unsigned char __fastcall BiosSkipReadByte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall BiosSkipReadWord(unsigned int a)
+UINT16 __fastcall BiosSkipReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -558,7 +558,7 @@ unsigned short __fastcall BiosSkipReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned int __fastcall BiosSkipReadLong(unsigned int a)
+UINT32 __fastcall BiosSkipReadLong(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -569,30 +569,30 @@ unsigned int __fastcall BiosSkipReadLong(unsigned int a)
 	return 0;
 }
 
-static void be_to_le(unsigned char * p, int size)
+static void be_to_le(UINT8 * p, INT32 size)
 {
-	unsigned char c;
-	for(int i=0; i<size; i+=4, p+=4) {
+	UINT8 c;
+	for(INT32 i=0; i<size; i+=4, p+=4) {
 		c = *(p+0);	*(p+0) = *(p+3);	*(p+3) = c;
 		c = *(p+1);	*(p+1) = *(p+2);	*(p+2) = c;
 	}
 }
 
-static int CyvernInit()
+static INT32 CyvernInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	BurnSetRefreshRate(59.5971);
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x800000);
+	DrvTempRom = (UINT8 *)malloc(0x800000);
 
 	// Load BIOS Rom
 	nRet = BurnLoadRom(DrvBiosRom + 0x000000, 0, 1); if (nRet != 0) return 1;
@@ -603,7 +603,10 @@ static int CyvernInit()
 	nRet = BurnLoadRom(DrvPrgRom  + 0x000001, 2, 2); if (nRet != 0) return 1;
 	be_to_le(DrvPrgRom, 0x00200000);
 	
-	free(DrvTempRom);
+	if (DrvTempRom) {
+		free(DrvTempRom);
+		DrvTempRom = NULL;
+	}
 	
 	// Setup the 68000 emulation
 	Sh2Init(1);
@@ -642,14 +645,13 @@ static int CyvernInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	Sh2Exit();
 	
 	GenericTilesExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -658,10 +660,10 @@ static void DrvCalcPalette()
 {
 	UINT32 *PaletteRam = (UINT32*)DrvPaletteRam;
 	
-	for (int Offset = 0; Offset <= 32768; Offset++) {
-		int r = (PaletteRam[Offset] >>  0) & 0x1f;
-		int g = (PaletteRam[Offset] >>  5) & 0x1f;
-		int b = (PaletteRam[Offset] >> 10) & 0x1f;
+	for (INT32 Offset = 0; Offset <= 32768; Offset++) {
+		INT32 r = (PaletteRam[Offset] >>  0) & 0x1f;
+		INT32 g = (PaletteRam[Offset] >>  5) & 0x1f;
+		INT32 b = (PaletteRam[Offset] >> 10) & 0x1f;
 		
 		r <<= 3;
 		g <<= 3;
@@ -673,7 +675,7 @@ static void DrvCalcPalette()
 
 static void DrvRenderTileALayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 	
 	UINT32 *VideoRam = (UINT32*)DrvTileARam;
 	
@@ -712,10 +714,10 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -724,8 +726,8 @@ static int DrvFrame()
 	nCyclesTotal[0] = 28638000 / 60;
 	nCyclesDone[0] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		Sh2Open(0);
@@ -742,7 +744,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -765,7 +767,7 @@ struct BurnDriver BurnDrvCyvern = {
 	"cyvern", NULL, NULL, NULL, "1998",
 	"Cyvern (Japan)\0", NULL, "Kaneko", "Super Kaneko Nova System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_KANEKO_MISC, GBF_VERSHOOT, 0,
 	NULL, CyvernRomInfo, CyvernRomName, NULL, NULL, CyvernInputInfo, DrvDIPInfo,
 	CyvernInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x8000, 240, 320, 3, 4

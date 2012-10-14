@@ -5,35 +5,35 @@
 #include "s2650_intf.h"
 #include "sn76496.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvPrgROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvPrgRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvScrRAM;
-static unsigned char *DrvColRAM;
-static unsigned char *DrvSprRAM0;
-static unsigned char *DrvSprRAM1;
-static unsigned char *DrvSprRAM2;
-static unsigned char *flipscreen;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvPrgROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvPrgRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvScrRAM;
+static UINT8 *DrvColRAM;
+static UINT8 *DrvSprRAM0;
+static UINT8 *DrvSprRAM1;
+static UINT8 *DrvSprRAM2;
+static UINT8 *flipscreen;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char  DrvJoy1[8];
-static unsigned char  DrvJoy2[8];
-static unsigned char  DrvDips[1];
-static unsigned char  DrvInputs[2];
-static unsigned char  DrvReset;
+static UINT8  DrvJoy1[8];
+static UINT8  DrvJoy2[8];
+static UINT8  DrvDips[1];
+static UINT8  DrvInputs[2];
+static UINT8  DrvReset;
 
-static int s2650_bank;
-static int watchdog;
-static int vblank;
+static INT32 s2650_bank;
+static INT32 watchdog;
+static INT32 vblank;
 
 static struct BurnInputInfo DrivfrcpInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 coin"	},
@@ -123,13 +123,13 @@ static struct BurnDIPInfo PorkyDIPList[]=
 
 STDDIPINFO(Porky)
 
-static inline void bankswitch(int data)
+static inline void bankswitch(INT32 data)
 {
-	int bank = (data & 1) ? 0x4000 : 0;
+	INT32 bank = (data & 1) ? 0x4000 : 0;
 
 	if (s2650_bank != (data & 1)) {
 
-		for (int i = 0; i <= 0x8000; i+= 0x8000) {
+		for (INT32 i = 0; i <= 0x8000; i+= 0x8000) {
 			s2650MapMemory(DrvPrgROM + 0x00000 + bank, 0x0000 | i, 0x0fff | i, S2650_ROM);
 			s2650MapMemory(DrvPrgROM + 0x01000 + bank, 0x2000 | i, 0x2fff | i, S2650_ROM);
 			s2650MapMemory(DrvPrgROM + 0x02000 + bank, 0x4000 | i, 0x4fff | i, S2650_ROM);
@@ -140,7 +140,7 @@ static inline void bankswitch(int data)
 	}
 }
 
-static void s2650games_write(unsigned short address, unsigned char data)
+static void s2650games_write(UINT16 address, UINT8 data)
 {
 	switch (address & 0x1fff)
 	{
@@ -171,7 +171,7 @@ static void s2650games_write(unsigned short address, unsigned char data)
 	}
 }
 
-static unsigned char s2650games_read(unsigned short address)
+static UINT8 s2650games_read(UINT16 address)
 {
 	switch (address & 0x1fff)
 	{
@@ -188,7 +188,7 @@ static unsigned char s2650games_read(unsigned short address)
 	return 0;
 }
 
-static void s2650games_write_port(unsigned short port, unsigned char data)
+static void s2650games_write_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0x1ff)
 	{
@@ -198,7 +198,7 @@ static void s2650games_write_port(unsigned short port, unsigned char data)
 	}
 }
 
-static unsigned char s2650games_read_port(unsigned short port)
+static UINT8 s2650games_read_port(UINT16 port)
 {
 	switch (port & 0x1ff)
 	{
@@ -223,7 +223,7 @@ static unsigned char s2650games_read_port(unsigned short port)
 	return 0;
 }
 
-static int DrvDoReset(int clear_ram)
+static INT32 DrvDoReset(INT32 clear_ram)
 {
 	if (clear_ram) {
 		memset (AllRam, 0, RamEnd - AllRam);
@@ -242,44 +242,44 @@ static int DrvDoReset(int clear_ram)
 
 static void DrvPaletteInit()
 {
-	unsigned int tmp[32];
+	UINT32 tmp[32];
 
-	for (int i = 0; i < 32; i++)
+	for (INT32 i = 0; i < 32; i++)
 	{
-		int bit0, bit1, bit2;
+		INT32 bit0, bit1, bit2;
 
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
 		bit1 = (DrvColPROM[i] >> 1) & 0x01;
 		bit2 = (DrvColPROM[i] >> 2) & 0x01;
-		int r = (bit0 * 33) + (bit1 * 71) + (bit2 * 151);
+		INT32 r = (bit0 * 33) + (bit1 * 71) + (bit2 * 151);
 
 		bit0 = (DrvColPROM[i] >> 3) & 0x01;
 		bit1 = (DrvColPROM[i] >> 4) & 0x01;
 		bit2 = (DrvColPROM[i] >> 5) & 0x01;
-		int g = (bit0 * 33) + (bit1 * 71) + (bit2 * 151);
+		INT32 g = (bit0 * 33) + (bit1 * 71) + (bit2 * 151);
 
 		bit0 = (DrvColPROM[i] >> 6) & 0x01;
 		bit1 = (DrvColPROM[i] >> 7) & 0x01;
-		int b = (bit0 * 81) + (bit1 * 174);
+		INT32 b = (bit0 * 81) + (bit1 * 174);
 
 		tmp[i] = BurnHighCol(r, g, b, 0);
 	}
 
-	for (int i = 0; i < 128; i++)
+	for (INT32 i = 0; i < 128; i++)
 	{
-		int ctabentry = DrvColPROM[i + 0x20] &= 0x0f;
+		INT32 ctabentry = DrvColPROM[i + 0x20] &= 0x0f;
 		DrvPalette[i] = tmp[ctabentry];
 	}
 }
 
 static void DrvGfxDecode()
 {
-	int Planes[2]  = { 0, 4 };
-	int XOffs0[8]  = { 8*8, 8*8+1, 8*8+2, 8*8+3, 0, 1, 2, 3 };
-	int XOffs1[16] = { 8*8, 8*8+1, 8*8+2, 8*8+3, 16*8+0, 16*8+1, 16*8+2, 16*8+3, 24*8+0, 24*8+1, 24*8+2, 24*8+3, 0, 1, 2, 3 };
-	int YOffs[16]  = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,32*8, 33*8, 34*8, 35*8, 36*8, 37*8, 38*8, 39*8 };
+	INT32 Planes[2]  = { 0, 4 };
+	INT32 XOffs0[8]  = { 8*8, 8*8+1, 8*8+2, 8*8+3, 0, 1, 2, 3 };
+	INT32 XOffs1[16] = { 8*8, 8*8+1, 8*8+2, 8*8+3, 16*8+0, 16*8+1, 16*8+2, 16*8+3, 24*8+0, 24*8+1, 24*8+2, 24*8+3, 0, 1, 2, 3 };
+	INT32 YOffs[16]  = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,32*8, 33*8, 34*8, 35*8, 36*8, 37*8, 38*8, 39*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc( 0x4000 );
+	UINT8 *tmp = (UINT8*)BurnMalloc( 0x4000 );
 	if (tmp)
 	{
 		memcpy (tmp, DrvGfxROM0, 0x4000);
@@ -287,13 +287,13 @@ static void DrvGfxDecode()
 		GfxDecode(0x400, 2,  8,  8, Planes, XOffs0, YOffs, 0x080, tmp, DrvGfxROM0);
 		GfxDecode(0x100, 2, 16, 16, Planes, XOffs1, YOffs, 0x200, tmp, DrvGfxROM1);
 
-		free (tmp);
+		BurnFree (tmp);
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvPrgROM		= Next; Next += 0x008000;
 
@@ -302,7 +302,7 @@ static int MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000120;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x080 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x080 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -322,12 +322,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit(int game, int swap)
+static INT32 DrvInit(INT32 game, INT32 swap)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -339,13 +339,13 @@ static int DrvInit(int game, int swap)
 			if (BurnLoadRom(DrvPrgROM + 0x4000, 1, 1)) return 1;
 		}
 
-		for (int i = 0; i < 0x8000; i++) {	// porky & 8bpm have data lines scrambled
+		for (INT32 i = 0; i < 0x8000; i++) {	// porky & 8bpm have data lines scrambled
 			DrvPrgROM[i] = (DrvPrgROM[i] & ~(1 | (1 << swap))) | ((DrvPrgROM[i] >> swap) & 1) | ((DrvPrgROM[i] & 1) << swap);
 		}
 
 		if (BurnLoadRom(DrvGfxROM1, 1 + game, 1)) return 1;
 
-		for (int i = 0; i < 0x4000; i++) {
+		for (INT32 i = 0; i < 0x4000; i++) {
 			DrvGfxROM0[((i & 0x2000) >> 1) | ((i & 0x1000) << 1) | (i & 0xfff)] = DrvGfxROM1[i];
 		}
 
@@ -358,7 +358,7 @@ static int DrvInit(int game, int swap)
 
 	s2650Init(1);
 	s2650Open(0);
-	for (int i = 0; i <= 0xe000; i+= 0x2000) {
+	for (INT32 i = 0; i <= 0xe000; i+= 0x2000) {
 		s2650MapMemory(DrvScrRAM,		0x1400 | i, 0x14ff | i, S2650_RAM);
 		s2650MapMemory(DrvVidRAM,		0x1800 | i, 0x1bff | i, S2650_RAM);
 		s2650MapMemory(DrvPrgRAM,		0x1c00 | i, 0x1fff | i, S2650_RAM);
@@ -378,39 +378,38 @@ static int DrvInit(int game, int swap)
 	return 0;
 }
 
-static int drivfrcpInit() { return DrvInit(0,0); }
-static int _8bpmInit()    { return DrvInit(0,6); }
-static int porkyInit()    { return DrvInit(1,4); }
+static INT32 drivfrcpInit() { return DrvInit(0,0); }
+static INT32 _8bpmInit()    { return DrvInit(0,6); }
+static INT32 porkyInit()    { return DrvInit(1,4); }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
 	s2650Exit();
 	SN76496Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void draw_layer()
 {
-	unsigned char *ram = DrvScrRAM + 0x00a0;
+	UINT8 *ram = DrvScrRAM + 0x00a0;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sy = (offs >> 5) << 3;
-		int sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
 
 		sy -= DrvScrRAM[offs & 0x1f] + 16;
 		if (sy < -7) sy += 256;
 
 		if (sy >= nScreenHeight) continue;
 
-		int code  = DrvVidRAM[offs] | ((ram[offs & 0x1f] & 0x03) << 8);
-		int color = DrvColRAM[offs & 0x1f] & 0x1f;
+		INT32 code  = DrvVidRAM[offs] | ((ram[offs & 0x1f] & 0x03) << 8);
+		INT32 color = DrvColRAM[offs & 0x1f] & 0x1f;
 
 		if (*flipscreen) {
 			Render8x8Tile_FlipXY_Clip(pTransDraw, code, 248 - sx, 216 - sy, color, 2, 0, DrvGfxROM0);
@@ -422,15 +421,15 @@ static void draw_layer()
 
 static void draw_sprites()
 {
-	for (int offs = 0x0e; offs >= 0; offs -= 2)
+	for (INT32 offs = 0x0e; offs >= 0; offs -= 2)
 	{
-		int attr  = DrvSprRAM0[offs];
-		int sx    = DrvSprRAM2[offs + 1] ^ 0xff;
-		int sy    = DrvSprRAM2[offs] - 15;
-		int color = DrvSprRAM0[offs + 1] & 0x1f;
-		int code  = (attr >> 2) | ((DrvSprRAM1[offs] & 3) << 6);
-		int flipx = attr & 0x01;
-		int flipy = attr & 0x02;
+		INT32 attr  = DrvSprRAM0[offs];
+		INT32 sx    = DrvSprRAM2[offs + 1] ^ 0xff;
+		INT32 sy    = DrvSprRAM2[offs] - 15;
+		INT32 color = DrvSprRAM0[offs + 1] & 0x1f;
+		INT32 code  = (attr >> 2) | ((DrvSprRAM1[offs] & 3) << 6);
+		INT32 flipx = attr & 0x01;
+		INT32 flipy = attr & 0x02;
 
 		if (offs <= 4) sy += 1; // hack
 
@@ -438,7 +437,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteInit();
@@ -453,7 +452,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset(1);
@@ -466,7 +465,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 2);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
@@ -476,12 +475,12 @@ static int DrvFrame()
 
 	vblank = 0;
 
-	for (int i = 0; i < 32; i++) {
+	for (INT32 i = 0; i < 32; i++) {
 		if (i == 31) {
 			vblank = 1;
 			s2650_set_irq_line(0x03, 1);
 		}
-		int nSegment = (1536000 / 60) / 32;
+		INT32 nSegment = (1536000 / 60) / 32;
 
 		s2650Run(nSegment);
 
@@ -503,7 +502,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -527,7 +526,7 @@ static int DrvScan(int nAction,int *pnMin)
 
 	if (nAction & ACB_WRITE) {
 		s2650Open(0);
-		int bank = s2650_bank;
+		INT32 bank = s2650_bank;
 		s2650_bank = -1;
 		bankswitch(bank);
 		s2650Close();

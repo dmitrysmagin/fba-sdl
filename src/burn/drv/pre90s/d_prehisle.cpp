@@ -1,45 +1,47 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym3812.h"
 #include "upd7759.h"
 
 // Input Related Variables
-static unsigned char PrehisleInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char PrehisleInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char PrehisleInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char PrehisleDip[2]        = {0, 0};
-static unsigned char PrehisleInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char PrehisleReset         = 0;
+static UINT8 PrehisleInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 PrehisleInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 PrehisleInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 PrehisleDip[2]        = {0, 0};
+static UINT8 PrehisleInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 PrehisleReset         = 0;
 
 // Memory Holders
-static unsigned char *Mem                  = NULL;
-static unsigned char *MemEnd               = NULL;
-static unsigned char *RamStart             = NULL;
-static unsigned char *RamEnd               = NULL;
-static unsigned char *PrehisleRom          = NULL;
-static unsigned char *PrehisleZ80Rom       = NULL;
-static unsigned char *PrehisleTileMapRom   = NULL;
-static unsigned char *PrehisleADPCMSamples = NULL;
-static unsigned char *PrehisleRam          = NULL;
-static unsigned char *PrehisleVideoRam     = NULL;
-static unsigned char *PrehisleSpriteRam    = NULL;
-static unsigned char *PrehisleVideo2Ram    = NULL;
-static unsigned char *PrehislePaletteRam   = NULL;
-static unsigned char *PrehisleZ80Ram       = NULL;
-static unsigned int  *PrehislePalette      = NULL;
-static unsigned char *PrehisleTextTiles    = NULL;
-static unsigned char *PrehisleSprites      = NULL;
-static unsigned char *PrehisleBack1Tiles   = NULL;
-static unsigned char *PrehisleBack2Tiles   = NULL;
-static unsigned char *PrehisleTempGfx      = NULL;
+static UINT8 *Mem                  = NULL;
+static UINT8 *MemEnd               = NULL;
+static UINT8 *RamStart             = NULL;
+static UINT8 *RamEnd               = NULL;
+static UINT8 *PrehisleRom          = NULL;
+static UINT8 *PrehisleZ80Rom       = NULL;
+static UINT8 *PrehisleTileMapRom   = NULL;
+static UINT8 *PrehisleADPCMSamples = NULL;
+static UINT8 *PrehisleRam          = NULL;
+static UINT8 *PrehisleVideoRam     = NULL;
+static UINT8 *PrehisleSpriteRam    = NULL;
+static UINT8 *PrehisleVideo2Ram    = NULL;
+static UINT8 *PrehislePaletteRam   = NULL;
+static UINT8 *PrehisleZ80Ram       = NULL;
+static UINT32 *PrehislePalette     = NULL;
+static UINT8 *PrehisleTextTiles    = NULL;
+static UINT8 *PrehisleSprites      = NULL;
+static UINT8 *PrehisleBack1Tiles   = NULL;
+static UINT8 *PrehisleBack2Tiles   = NULL;
+static UINT8 *PrehisleTempGfx      = NULL;
 
 // Misc Variables, system control values, etc.
-static int ControlsInvert;
-static unsigned short VidControl[7];
-static int SoundLatch;
+static INT32 ControlsInvert;
+static UINT16 VidControl[7];
+static INT32 SoundLatch;
 
 // CPU Interleave Variables
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo PrehisleInputList[] = {
@@ -74,7 +76,7 @@ static struct BurnInputInfo PrehisleInputList[] = {
 
 STDINPUTINFO(Prehisle)
 
-inline void PrehisleClearOpposites(unsigned char* nJoystickInputs)
+inline void PrehisleClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -90,7 +92,7 @@ inline void PrehisleMakeInputs()
 	PrehisleInput[0] = PrehisleInput[1] = PrehisleInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		PrehisleInput[0] |= (PrehisleInputPort0[i] & 1) << i;
 		PrehisleInput[1] |= (PrehisleInputPort1[i] & 1) << i;
 		PrehisleInput[2] |= (PrehisleInputPort2[i] & 1) << i;
@@ -244,7 +246,7 @@ STD_ROM_PICK(Gensitou)
 STD_ROM_FN(Gensitou)
 
 // Misc Driver Functions and Memory Handlers
-int PrehisleDoReset()
+INT32 PrehisleDoReset()
 {
 	ControlsInvert = 0;
 	SoundLatch = 0;
@@ -266,7 +268,7 @@ int PrehisleDoReset()
 // ----------------------------------------------------------------------------
 // Callbacks for the FM chip
 
-static void prehisleFMIRQHandler(int, int nStatus)
+static void prehisleFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -275,16 +277,16 @@ static void prehisleFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int prehisleSynchroniseStream(int nSoundRate)
+static INT32 prehisleSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 // VBlank
 
-inline unsigned short PrehisleVBlankRegister()
+inline UINT16 PrehisleVBlankRegister()
 {
-	int nCycles = SekTotalCycles();
+	INT32 nCycles = SekTotalCycles();
 
 	// 262 == approximate number of scanlines on an arcade monitor
 	if (nCycles >= (262 - 16) * ((9000000 / 60) / 262)) {
@@ -298,7 +300,7 @@ inline unsigned short PrehisleVBlankRegister()
 	return 0x00;
 }
 
-unsigned short __fastcall PrehisleReadWord(unsigned int a)
+UINT16 __fastcall PrehisleReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x0e0010: {
@@ -325,7 +327,7 @@ unsigned short __fastcall PrehisleReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall PrehisleWriteWord(unsigned int a, unsigned short d)
+void __fastcall PrehisleWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x0f0000: {
@@ -376,7 +378,7 @@ void __fastcall PrehisleWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall PrehisleZ80PortRead(unsigned short a)
+UINT8 __fastcall PrehisleZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	switch (a) {
@@ -388,7 +390,7 @@ unsigned char __fastcall PrehisleZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall PrehisleZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall PrehisleZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	switch (a) {
@@ -416,7 +418,7 @@ void __fastcall PrehisleZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall PrehisleZ80Read(unsigned short a)
+UINT8 __fastcall PrehisleZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xf800: {
@@ -428,9 +430,9 @@ unsigned char __fastcall PrehisleZ80Read(unsigned short a)
 }
 
 // Function to Allocate and Index required memory
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	PrehisleRom          = Next; Next += 0x40000;
 	PrehisleZ80Rom       = Next; Next += 0x10000;
@@ -452,33 +454,33 @@ static int MemIndex()
 	PrehisleSprites      = Next; Next += (5120 * 16 * 16);
 	PrehisleBack1Tiles   = Next; Next += (2048 * 16 * 16);
 	PrehisleBack2Tiles   = Next; Next += (2048 * 16 * 16);
-	PrehislePalette = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	PrehislePalette = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int CharXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int TileXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 512, 516, 520, 524, 528, 532, 536, 540 };
-static int TileYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
+static INT32 CharPlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 CharYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 TileXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 512, 516, 520, 524, 528, 532, 536, 540 };
+static INT32 TileYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
 
 // Driver Init and Exit Functions
-int PrehisleInit()
+INT32 PrehisleInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	PrehisleTempGfx = (unsigned char*)malloc(0xa0000);
+	PrehisleTempGfx = (UINT8*)BurnMalloc(0xa0000);
 
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(PrehisleRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -505,7 +507,7 @@ int PrehisleInit()
 	nRet = BurnLoadRom(PrehisleTempGfx + 0x80000, 6, 1); if (nRet != 0) return 1;
 	GfxDecode(5120, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, PrehisleTempGfx, PrehisleSprites);
 
-	free(PrehisleTempGfx);
+	BurnFree(PrehisleTempGfx);
 
 	// Load Background2 Tilemap rom
 	nRet = BurnLoadRom(PrehisleTileMapRom, 7, 1); if (nRet != 0) return 1;
@@ -530,7 +532,7 @@ int PrehisleInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, PrehisleZ80Rom);
 	ZetMapArea(0x0000, 0xefff, 2, PrehisleZ80Rom);
@@ -556,7 +558,7 @@ int PrehisleInit()
 	return 0;
 }
 
-int PrehisleExit()
+INT32 PrehisleExit()
 {
 	BurnYM3812Exit();
 	UPD7759Exit();
@@ -566,8 +568,7 @@ int PrehisleExit()
 
 	GenericTilesExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -575,7 +576,7 @@ int PrehisleExit()
 // Graphics Emulation
 void PrehisleRenderBack2TileLayer()
 {
-	int TileBase, mx, my, Tile, Colour, Scrollx, Scrolly, x, y, Flipx;
+	INT32 TileBase, mx, my, Tile, Colour, Scrollx, Scrolly, x, y, Flipx;
 
 	TileBase = ((VidControl[3] >> 4) & 0x3ff) * 32;
 	TileBase &= 0x7fff;
@@ -613,7 +614,7 @@ void PrehisleRenderBack2TileLayer()
 
 void PrehisleRenderBack1TileLayer()
 {
-	int TileBase, mx, my, Tile, Colour, Scrollx, Scrolly, x, y, Flipy;
+	INT32 TileBase, mx, my, Tile, Colour, Scrollx, Scrolly, x, y, Flipy;
 
 	TileBase = ((VidControl[1] >> 4) & 0xff) * 32;
 	TileBase &= 0x1fff;
@@ -651,10 +652,10 @@ void PrehisleRenderBack1TileLayer()
 
 void PrehisleRenderSpriteLayer()
 {
-	int offs;
+	INT32 offs;
 
 	for (offs = 0; offs < 0x800; offs += 8) {
-		int x, y, Sprite, Colour, Flipx, Flipy;
+		INT32 x, y, Sprite, Colour, Flipx, Flipy;
 
 		y = (PrehisleSpriteRam[offs + 1] << 8) + PrehisleSpriteRam[offs + 0];
 		if (y > 254) continue;
@@ -704,7 +705,7 @@ void PrehisleRenderSpriteLayer()
 
 void PrehisleRenderTextLayer()
 {
-	int offs, mx, my, Colour, Tile, x, y;
+	INT32 offs, mx, my, Colour, Tile, x, y;
 
 	mx = -1;
 	my = 0;
@@ -728,9 +729,9 @@ void PrehisleRenderTextLayer()
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 12) & 0x0f;
 	g = (nColour >> 8) & 0x0f;
@@ -743,13 +744,13 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int PrehisleCalcPalette()
+INT32 PrehisleCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)PrehislePaletteRam, pd = PrehislePalette; i < 0x800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)PrehislePaletteRam, pd = PrehislePalette; i < 0x800; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
@@ -767,9 +768,9 @@ void PrehisleDraw()
 }
 
 // Frame Function
-int PrehisleFrame()
+INT32 PrehisleFrame()
 {
-	int nInterleave = 1;
+	INT32 nInterleave = 1;
 	
 	if (PrehisleReset) PrehisleDoReset();
 
@@ -785,8 +786,8 @@ int PrehisleFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -797,8 +798,10 @@ int PrehisleFrame()
 	}
 	
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+		UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	ZetClose();
 	SekClose();
@@ -809,7 +812,7 @@ int PrehisleFrame()
 }
 
 // Scan RAM
-static int PrehisleScan(int nAction,int *pnMin)
+static INT32 PrehisleScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -877,7 +880,7 @@ struct BurnDriver BurnDrvPrehislk = {
 struct BurnDriver BurnDrvGensitou = {
 	"gensitou", "prehisle", NULL, NULL, "1989",
 	"Genshi-Tou 1930's (Japan)\0", NULL, "SNK", "Prehistoric Isle (SNK)",
-	L"Genshi-Tou 1930's (Japan)\0\u539F\u59CB\u5CF6 1930's (Japan)\0", NULL, NULL, NULL,
+	L"Genshi-Tou 1930's (Japan)\0\u539F\u59CB\u5CF6 1930's\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
 	NULL, GensitouRomInfo, GensitouRomName, NULL, NULL, PrehisleInputInfo, PrehisleDIPInfo,
 	PrehisleInit, PrehisleExit, PrehisleFrame, NULL, PrehisleScan,

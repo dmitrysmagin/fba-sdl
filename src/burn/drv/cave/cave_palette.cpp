@@ -1,37 +1,35 @@
 #include "cave.h"
 
-unsigned char* CavePalSrc;
-unsigned char CaveRecalcPalette;	// Set to 1 to force recalculation of the entire palette
+UINT8* CavePalSrc;
+UINT8 CaveRecalcPalette;	// Set to 1 to force recalculation of the entire palette
 
-unsigned int* CavePalette = NULL;
-static unsigned short* CavePalCopy = NULL;
+UINT32* CavePalette = NULL;
+static UINT16* CavePalCopy = NULL;
 
-int CavePalInit(int nPalSize)
+INT32 CavePalInit(INT32 nPalSize)
 {
-	CavePalette = (unsigned int*)malloc(nPalSize * sizeof(int));
-	memset(CavePalette, 0, nPalSize * sizeof(int));
+	CavePalette = (UINT32*)BurnMalloc(nPalSize * sizeof(UINT32));
+	memset(CavePalette, 0, nPalSize * sizeof(UINT32));
 
-	CavePalCopy = (unsigned short*)malloc(nPalSize * sizeof(short));
-	memset(CavePalCopy, 0, nPalSize * sizeof(short));
+	CavePalCopy = (UINT16*)BurnMalloc(nPalSize * sizeof(UINT16));
+	memset(CavePalCopy, 0, nPalSize * sizeof(UINT16));
 	
 	pBurnDrvPalette = CavePalette;
 
 	return 0;
 }
 
-int CavePalExit()
+INT32 CavePalExit()
 {
-	free(CavePalette);
-	CavePalette = NULL;
-	free(CavePalCopy);
-	CavePalCopy = NULL;
+	BurnFree(CavePalette);
+	BurnFree(CavePalCopy);
 
 	return 0;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x03E0) >> 2;	// Red
 	r |= r >> 5;
@@ -43,15 +41,15 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int CavePalUpdate4Bit(int nOffset, int nNumPalettes)
+INT32 CavePalUpdate4Bit(INT32 nOffset, INT32 nNumPalettes)
 {
-	int i, j;
+	INT32 i, j;
 
-	unsigned short* ps = (unsigned short*)CavePalSrc + nOffset;
-	unsigned short* pc;
-	unsigned int* pd;
+	UINT16* ps = (UINT16*)CavePalSrc + nOffset;
+	UINT16* pc;
+	UINT32* pd;
 
-	unsigned short c;
+	UINT16 c;
 
 	if (CaveRecalcPalette) {
 
@@ -64,7 +62,7 @@ int CavePalUpdate4Bit(int nOffset, int nNumPalettes)
 
 				c = *ps;
 				*pc = c;
-				*pd = CalcCol(c);
+				*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(c));
 
 			}
 		}
@@ -84,7 +82,7 @@ int CavePalUpdate4Bit(int nOffset, int nNumPalettes)
 			c = *ps;
 			if (*pc != c) {
 				*pc = c;
-				*pd = CalcCol(c);
+				*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(c));
 			}
 
 		}
@@ -93,16 +91,16 @@ int CavePalUpdate4Bit(int nOffset, int nNumPalettes)
 	return 0;
 }
 
-int CavePalUpdate8Bit(int nOffset, int nNumPalettes)
+INT32 CavePalUpdate8Bit(INT32 nOffset, INT32 nNumPalettes)
 {
 	if (CaveRecalcPalette) {
-		int i, j;
+		INT32 i, j;
 
-		unsigned short* ps = (unsigned short*)CavePalSrc + nOffset;
-		unsigned short* pc;
-		unsigned int* pd;
+		UINT16* ps = (UINT16*)CavePalSrc + nOffset;
+		UINT16* pc;
+		UINT32* pd;
 
-		unsigned short c;
+		UINT16 c;
 
 		for (i = 0; i < nNumPalettes; i++) {
 
@@ -113,7 +111,7 @@ int CavePalUpdate8Bit(int nOffset, int nNumPalettes)
 
 				c = *ps;
 				*pc = c;
-				*pd = CalcCol(c);
+				*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(c));
 
 			}
 		}
@@ -125,22 +123,22 @@ int CavePalUpdate8Bit(int nOffset, int nNumPalettes)
 }
 
 // Update the PC copy of the palette on writes to the palette memory
-void CavePalWriteByte(unsigned int nAddress, unsigned char byteValue)
+void CavePalWriteByte(UINT32 nAddress, UINT8 byteValue)
 {
 	nAddress ^= 1;
 	CavePalSrc[nAddress] = byteValue;							// write byte
 
-	if (*((unsigned char*)(CavePalCopy + nAddress)) != byteValue) {
-		*((unsigned char*)(CavePalCopy + nAddress)) = byteValue;
-		CavePalette[nAddress >> 1] = CalcCol(*(unsigned short*)(CavePalSrc + (nAddress & ~0x01)));
+	if (*((UINT8*)(CavePalCopy + nAddress)) != byteValue) {
+		*((UINT8*)(CavePalCopy + nAddress)) = byteValue;
+		CavePalette[nAddress >> 1] = CalcCol(*(UINT16*)(CavePalSrc + (nAddress & ~0x01)));
 	}
 }
 
-void CavePalWriteWord(unsigned int nAddress, unsigned short wordValue)
+void CavePalWriteWord(UINT32 nAddress, UINT16 wordValue)
 {
 	nAddress >>= 1;
 
-	((unsigned short*)CavePalSrc)[nAddress] = wordValue;		// write word
+	((UINT16*)CavePalSrc)[nAddress] = BURN_ENDIAN_SWAP_INT16(wordValue);		// write word
 
 	if (CavePalCopy[nAddress] != wordValue) {
 		CavePalCopy[nAddress] = wordValue;

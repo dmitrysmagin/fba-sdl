@@ -19,68 +19,70 @@
  */
 
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2610.h"
 
 #define	USE_BURN_HIGHCOL	1
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-static unsigned char DrvInput[10] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvReset = 0;
+static UINT8 DrvInput[10] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvReset = 0;
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *RomZ80;
-static unsigned char *RomBg;
-static unsigned char *RomSpr1;
-static unsigned char *RomSpr2;
-static unsigned char *RomSnd1;
-static unsigned char *RomSnd2;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *RomZ80;
+static UINT8 *RomBg;
+static UINT8 *RomSpr1;
+static UINT8 *RomSpr2;
+static UINT8 *RomSnd1;
+static UINT8 *RomSnd2;
 
-static unsigned char *RamPal;
-static unsigned short *RamRaster;
-static unsigned short *RamBg1V, *RamBg2V;
-static unsigned short *RamSpr1;
-static unsigned short *RamSpr2;
-static unsigned short *RamSpr3;
-static unsigned char *Ram01;
-static unsigned char *RamZ80;
+static UINT8 *RamPal;
+static UINT16 *RamRaster;
+static UINT16 *RamBg1V, *RamBg2V;
+static UINT16 *RamSpr1;
+static UINT16 *RamSpr2;
+static UINT16 *RamSpr3;
+static UINT8 *Ram01;
+static UINT8 *RamZ80;
 
-//static int nCyclesDone[2];
-static int nCyclesTotal[2];
-//static int nCyclesSegment;
+//static INT32 nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+//static INT32 nCyclesSegment;
 
-static unsigned char RamGfxBank[8];
+static UINT8 RamGfxBank[8];
 
-static unsigned short *RamCurPal;
-static unsigned char *DeRomBg;
-static unsigned char *DeRomSpr1;
-static unsigned char *DeRomSpr2;
+static UINT16 *RamCurPal;
+static UINT8 *DeRomBg;
+static UINT8 *DeRomSpr1;
+static UINT8 *DeRomSpr2;
 
-static unsigned int RamSpr1SizeMask;
-static unsigned int RamSpr2SizeMask;
-static unsigned int RomSpr1SizeMask;
-static unsigned int RomSpr2SizeMask;
+static UINT32 RamSpr1SizeMask;
+static UINT32 RamSpr2SizeMask;
+static UINT32 RomSpr1SizeMask;
+static UINT32 RomSpr2SizeMask;
 
-static int pending_command = 0;
-static int RomSndSize1, RomSndSize2;
+static INT32 pending_command = 0;
+static INT32 RomSndSize1, RomSndSize2;
 
-static unsigned short bg1scrollx, bg2scrollx;
-static unsigned short bg1scrolly, bg2scrolly;
+static UINT16 bg1scrollx, bg2scrollx;
+static UINT16 bg1scrolly, bg2scrolly;
 
-static int nAerofgtZ80Bank;
-static unsigned char nSoundlatch;
+static INT32 nAerofgtZ80Bank;
+static UINT8 nSoundlatch;
 
 #if USE_BURN_HIGHCOL
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x001F) << 3;	// Red
 	r |= r >> 5;
@@ -94,7 +96,7 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 #else
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
 	return (nColour & 0x001F) | ((nColour & 0x7FE0) << 1);
 }
@@ -222,9 +224,9 @@ static struct BurnRomInfo aerofgtRomDesc[] = {
 STD_ROM_PICK(aerofgt)
 STD_ROM_FN(aerofgt)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01 		= Next; Next += 0x080000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
 	RomBg		= Next; Next += 0x200040;			// Background, 1M 8x8x4bit decode to 2M + 64Byte safe 
@@ -242,19 +244,19 @@ static int MemIndex()
 	RamStart	= Next;
 	
 	RamPal		= Next; Next += 0x000800;			// 1024 of X1R5G5B5 Palette
-	RamRaster	= (unsigned short *)Next; Next += 0x001000;	// 0x1b0000~0x1b07ff, Raster
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// 0x1b0000~0x1b07ff, Raster
 															// 0x1b0800~0x1b0801, NOP
 															// 0x1b0ff0~0x1b0fff, stack area during boot
-	RamBg1V		= (unsigned short *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (unsigned short *)Next; Next += 0x008000;	// Sprite 1 Ram
-	RamSpr2		= (unsigned short *)Next; Next += 0x002000;	// Sprite 2 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x004000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// Sprite 2 Ram
 	Ram01		= Next; Next += 0x010000;					// Work Ram
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *)Next; Next += 0x000800;	// 1024 colors
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// 1024 colors
 
 	MemEnd		= Next;
 	return 0;
@@ -262,8 +264,8 @@ static int MemIndex()
 
 static void DecodeBg()
 {
-	for (int c=0x8000-1; c>=0; c--) {
-		for (int y=7; y>=0; y--) {
+	for (INT32 c=0x8000-1; c>=0; c--) {
+		for (INT32 y=7; y>=0; y--) {
 			DeRomBg[(c * 64) + (y * 8) + 7] = RomBg[0x00002 + (y * 4) + (c * 32)] & 0x0f;
 			DeRomBg[(c * 64) + (y * 8) + 6] = RomBg[0x00002 + (y * 4) + (c * 32)] >> 4;
 			DeRomBg[(c * 64) + (y * 8) + 5] = RomBg[0x00003 + (y * 4) + (c * 32)] & 0x0f;
@@ -276,10 +278,10 @@ static void DecodeBg()
 	}
 }
 
-static void DecodeSpr(unsigned char *d, unsigned char *s, int cnt)
+static void DecodeSpr(UINT8 *d, UINT8 *s, INT32 cnt)
 {
-	for (int c=cnt-1; c>=0; c--)
-		for (int y=15; y>=0; y--) {
+	for (INT32 c=cnt-1; c>=0; c--)
+		for (INT32 y=15; y>=0; y--) {
 			d[(c * 256) + (y * 16) + 15] = s[0x00006 + (y * 8) + (c * 128)] & 0x0f;
 			d[(c * 256) + (y * 16) + 14] = s[0x00006 + (y * 8) + (c * 128)] >> 4;
 			d[(c * 256) + (y * 16) + 13] = s[0x00007 + (y * 8) + (c * 128)] & 0x0f;
@@ -300,7 +302,7 @@ static void DecodeSpr(unsigned char *d, unsigned char *s, int cnt)
 		}
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	if (BurnLoadRom(Rom01, 0, 1)) {
@@ -326,7 +328,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall aerofgtReadByte(unsigned int sekAddress)
+UINT8 __fastcall aerofgtReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xFFFFA1:
@@ -351,7 +353,7 @@ unsigned char __fastcall aerofgtReadByte(unsigned int sekAddress)
 }
 
 /*
-unsigned short __fastcall aerofgtReadWord(unsigned int sekAddress)
+UINT16 __fastcall aerofgtReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -363,10 +365,10 @@ unsigned short __fastcall aerofgtReadWord(unsigned int sekAddress)
 }
 */
 
-static void SoundCommand(unsigned char nCommand)
+static void SoundCommand(UINT8 nCommand)
 {
 //	bprintf(PRINT_NORMAL, _T("  - Sound command sent (0x%02X).\n"), nCommand);
-	int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]);
+	INT32 nCycles = ((INT64)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]);
 	if (nCycles <= ZetTotalCycles()) return;
 	
 	BurnTimerUpdate(nCycles);
@@ -375,7 +377,7 @@ static void SoundCommand(unsigned char nCommand)
 	ZetNmi();
 }
 
-void __fastcall aerofgtWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall aerofgtWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (( sekAddress & 0xFF0000 ) == 0x1A0000) {
 		sekAddress &= 0xFFFF;
@@ -383,7 +385,7 @@ void __fastcall aerofgtWriteByte(unsigned int sekAddress, unsigned char byteValu
 			RamPal[sekAddress^1] = byteValue;
 			// palette byte write at boot self-test only ?!
 			// if (sekAddress & 1)
-			//	RamCurPal[sekAddress>>1] = CalcCol( *((unsigned short *)&RamPal[sekAddress]) );
+			//	RamCurPal[sekAddress>>1] = CalcCol( *((UINT16 *)&RamPal[sekAddress]) );
 		}
 		return;	
 	}
@@ -408,12 +410,12 @@ void __fastcall aerofgtWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall aerofgtWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall aerofgtWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (( sekAddress & 0xFF0000 ) == 0x1A0000) {
 		sekAddress &= 0xFFFF;
 		if (sekAddress < 0x800)
-			*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+			*((UINT16 *)&RamPal[sekAddress]) = BURN_ENDIAN_SWAP_INT16(wordValue);
 			RamCurPal[sekAddress>>1] = CalcCol( wordValue );
 		return;	
 	}
@@ -458,7 +460,7 @@ void __fastcall aerofgtWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static void aerofgtFMIRQHandler(int, int nStatus)
+static void aerofgtFMIRQHandler(INT32, INT32 nStatus)
 {
 //	bprintf(PRINT_NORMAL, _T("  - IRQ -> %i.\n"), nStatus);
 	if (nStatus) {
@@ -468,9 +470,9 @@ static void aerofgtFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int aerofgtSynchroniseStream(int nSoundRate)
+static INT32 aerofgtSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double aerofgtGetTime()
@@ -479,7 +481,7 @@ static double aerofgtGetTime()
 }
 
 /*
-static unsigned char __fastcall aerofgtZ80Read(unsigned short a)
+static UINT8 __fastcall aerofgtZ80Read(UINT16 a)
 {
 	switch (a) {
 
@@ -489,7 +491,7 @@ static unsigned char __fastcall aerofgtZ80Read(unsigned short a)
 	return 0;
 }
 
-static void __fastcall aerofgtZ80Write(unsigned short a,unsigned char v)
+static void __fastcall aerofgtZ80Write(UINT16 a,UINT8 v)
 {
 	switch (a) {
 
@@ -499,7 +501,7 @@ static void __fastcall aerofgtZ80Write(unsigned short a,unsigned char v)
 }
 */
 
-static void aerofgtSndBankSwitch(unsigned char v)
+static void aerofgtSndBankSwitch(UINT8 v)
 {
 /*
 	UINT8 *rom = memory_region(REGION_CPU2) + 0x10000;
@@ -507,14 +509,14 @@ static void aerofgtSndBankSwitch(unsigned char v)
 */
 	v &= 0x03;
 	if (v != nAerofgtZ80Bank) {
-		unsigned char* nStartAddress = RomZ80 + 0x10000 + (v << 15);
+		UINT8* nStartAddress = RomZ80 + 0x10000 + (v << 15);
 		ZetMapArea(0x8000, 0xFFFF, 0, nStartAddress);
 		ZetMapArea(0x8000, 0xFFFF, 2, nStartAddress);
 		nAerofgtZ80Bank = v;
 	}
 }
 
-unsigned char __fastcall aerofgtZ80PortRead(unsigned short p)
+UINT8 __fastcall aerofgtZ80PortRead(UINT16 p)
 {
 	switch (p & 0xFF) {
 		case 0x00:
@@ -529,7 +531,7 @@ unsigned char __fastcall aerofgtZ80PortRead(unsigned short p)
 	return 0;
 }
 
-void __fastcall aerofgtZ80PortWrite(unsigned short p, unsigned char v)
+void __fastcall aerofgtZ80PortWrite(UINT16 p, UINT8 v)
 {
 	switch (p & 0x0FF) {
 		case 0x00:
@@ -550,7 +552,7 @@ void __fastcall aerofgtZ80PortWrite(unsigned short p, unsigned char v)
 }
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	nAerofgtZ80Bank = -1;
 		
@@ -571,12 +573,12 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int aerofgtInit()
+static INT32 aerofgtInit()
 {
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -595,15 +597,15 @@ static int aerofgtInit()
 		// Map 68000 memory:
 		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(RamPal,		0x1A0000, 0x1A07FF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamRaster,
+		SekMapMemory((UINT8 *)RamRaster,
 									0x1B0000, 0x1B0FFF, SM_RAM);	// Raster / MRA_NOP / MRA_BANK7
-		SekMapMemory((unsigned char *)RamBg1V,		
+		SekMapMemory((UINT8 *)RamBg1V,		
 									0x1B2000, 0x1B3FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
+		SekMapMemory((UINT8 *)RamBg2V,		
 									0x1B4000, 0x1B5FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamSpr1,
+		SekMapMemory((UINT8 *)RamSpr1,
 									0x1C0000, 0x1C7FFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr2,
+		SekMapMemory((UINT8 *)RamSpr2,
 									0x1D0000, 0x1D1FFF, SM_RAM);
 		SekMapMemory(Ram01,			0xFEF000, 0xFFEFFF, SM_RAM);	// 64K Work RAM
 
@@ -616,7 +618,7 @@ static int aerofgtInit()
 	}
 	
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		
 		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
@@ -643,26 +645,26 @@ static int aerofgtInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM2610Exit();
 	
 	ZetExit();
 	SekExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
+	
 	return 0;
 }
 
 
-static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,int scalex,int scaley)
+static void drawgfxzoom(INT32 bank,UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy,INT32 scalex,INT32 scaley)
 {
 	if (!scalex || !scaley) return;
 			
-	unsigned short * p = (unsigned short *) pBurnDraw;
-	unsigned char * q;
-	unsigned short * pal;
+	UINT16 * p = (UINT16 *) pBurnDraw;
+	UINT8 * q;
+	UINT16 * pal;
 	
 	if (bank) {
 		q = DeRomSpr2 + (code) * 256;
@@ -685,7 +687,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 			
 			if (flipx) {
 			
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
@@ -711,7 +713,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 			
 			} else {
 	
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
@@ -740,7 +742,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 			
 			if (flipx) {
 			
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
@@ -766,7 +768,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 			
 			} else {
 	
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
@@ -803,7 +805,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -828,7 +830,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -856,7 +858,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -881,7 +883,7 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -910,29 +912,29 @@ static void drawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,
 
 }
 
-static void aerofgt_drawsprites(int priority)
+static void aerofgt_drawsprites(INT32 priority)
 {
 	priority <<= 12;
-	int offs = 0;
+	INT32 offs = 0;
 	
-	while (offs < 0x0400 && (RamSpr2[offs] & 0x8000) == 0) {
-		int attr_start = (RamSpr2[offs] & 0x03ff) * 4;
+	while (offs < 0x0400 && (BURN_ENDIAN_SWAP_INT16(RamSpr2[offs]) & 0x8000) == 0) {
+		INT32 attr_start = (BURN_ENDIAN_SWAP_INT16(RamSpr2[offs]) & 0x03ff) * 4;
 		
 		/* is the way I handle priority correct? Or should I just check bit 13? */
-		if ((RamSpr2[attr_start + 2] & 0x3000) == priority) {
-			int map_start;
-			int ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color;
+		if ((BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 2]) & 0x3000) == priority) {
+			INT32 map_start;
+			INT32 ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color;
 
-			ox = RamSpr2[attr_start + 1] & 0x01ff;
-			xsize = (RamSpr2[attr_start + 1] & 0x0e00) >> 9;
-			zoomx = (RamSpr2[attr_start + 1] & 0xf000) >> 12;
-			oy = RamSpr2[attr_start + 0] & 0x01ff;
-			ysize = (RamSpr2[attr_start + 0] & 0x0e00) >> 9;
-			zoomy = (RamSpr2[attr_start + 0] & 0xf000) >> 12;
-			flipx = RamSpr2[attr_start + 2] & 0x4000;
-			flipy = RamSpr2[attr_start + 2] & 0x8000;
-			color = (RamSpr2[attr_start + 2] & 0x0f00) >> 4;
-			map_start = RamSpr2[attr_start + 3] & 0x3fff;
+			ox = BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 1]) & 0x01ff;
+			xsize = (BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 1]) & 0x0e00) >> 9;
+			zoomx = (BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 1]) & 0xf000) >> 12;
+			oy = BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 0]) & 0x01ff;
+			ysize = (BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 0]) & 0x0e00) >> 9;
+			zoomy = (BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 0]) & 0xf000) >> 12;
+			flipx = BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 2]) & 0x4000;
+			flipy = BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 2]) & 0x8000;
+			color = (BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 2]) & 0x0f00) >> 4;
+			map_start = BURN_ENDIAN_SWAP_INT16(RamSpr2[attr_start + 3]) & 0x3fff;
 
 			ox += (xsize*zoomx+2)/4;
 			oy += (ysize*zoomy+2)/4;
@@ -941,7 +943,7 @@ static void aerofgt_drawsprites(int priority)
 			zoomy = 32 - zoomy;
 		
 			for (y = 0;y <= ysize;y++) {
-				int sx,sy;
+				INT32 sx,sy;
 
 				if (flipy) sy = ((oy + zoomy * (ysize - y)/2 + 16) & 0x1ff) - 16;
 				else sy = ((oy + zoomy * y / 2 + 16) & 0x1ff) - 16;
@@ -951,7 +953,7 @@ static void aerofgt_drawsprites(int priority)
 					else sx = ((ox + zoomx * x / 2 + 16) & 0x1ff) - 16;
 
 					//if (map_start < 0x2000)
-					int code = RamSpr1[map_start] & 0x1fff;
+					INT32 code = BURN_ENDIAN_SWAP_INT16(RamSpr1[map_start]) & 0x1fff;
 					
 					drawgfxzoom(map_start&0x2000,code,color,flipx,flipy,sx,sy,zoomx<<11, zoomy<<11);
 
@@ -973,9 +975,9 @@ static void aerofgt_drawsprites(int priority)
  * 
  */
 
-static void TileBackground_1(unsigned short *bg, unsigned short *pal)
+static void TileBackground_1(UINT16 *bg, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -986,7 +988,7 @@ static void TileBackground_1(unsigned short *bg, unsigned short *pal)
 			my++;
 		}
 
-		x = mx * 8 - RamRaster[0x0000] + 18;
+		x = mx * 8 - BURN_ENDIAN_SWAP_INT16(RamRaster[0x0000]) + 18;
 		if (x <= -192) x += 512;
 		
 		y = my * 8 - (bg1scrolly & 0x1FF);
@@ -997,11 +999,11 @@ static void TileBackground_1(unsigned short *bg, unsigned short *pal)
 		else
 		if ( x >=0 && x < 312 && y >= 0 && y < 216) {
 			
-			unsigned char *d = DeRomBg + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = DeRomBg + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				p[0] = pal[ d[0] | c ];
  				p[1] = pal[ d[1] | c ];
  				p[2] = pal[ d[2] | c ];
@@ -1016,11 +1018,11 @@ static void TileBackground_1(unsigned short *bg, unsigned short *pal)
  			}
 		} else {
 
-			unsigned char *d = DeRomBg + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = DeRomBg + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<224 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<320) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<320) p[1] = pal[ d[1] | c ];
@@ -1040,9 +1042,9 @@ static void TileBackground_1(unsigned short *bg, unsigned short *pal)
 	}
 }
 
-static void TileBackground_2(unsigned short *bg, unsigned short *pal)
+static void TileBackground_2(UINT16 *bg, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -1053,7 +1055,7 @@ static void TileBackground_2(unsigned short *bg, unsigned short *pal)
 			my++;
 		}
 
-		x = mx * 8 - RamRaster[0x0200] + 20;
+		x = mx * 8 - BURN_ENDIAN_SWAP_INT16(RamRaster[0x0200]) + 20;
 		if (x <= -192) x += 512;
 		
 		y = my * 8 - (bg2scrolly & 0x1FF);
@@ -1064,11 +1066,11 @@ static void TileBackground_2(unsigned short *bg, unsigned short *pal)
 		else
 		if ( x >=0 && x < 312 && y >= 0 && y < 216) {
 			
-			unsigned char *d = DeRomBg + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = DeRomBg + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				
  				if (d[0] != 15) p[0] = pal[ d[0] | c ];
  				if (d[1] != 15) p[1] = pal[ d[1] | c ];
@@ -1084,11 +1086,11 @@ static void TileBackground_2(unsigned short *bg, unsigned short *pal)
  			}
 		} else {
 
-			unsigned char *d = DeRomBg + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = DeRomBg + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<224 ) {
 	 				if (d[0] != 15 && (x + 0) >= 0 && (x + 0)<320) p[0] = pal[ d[0] | c ];
 	 				if (d[1] != 15 && (x + 1) >= 0 && (x + 1)<320) p[1] = pal[ d[1] | c ];
@@ -1108,7 +1110,7 @@ static void TileBackground_2(unsigned short *bg, unsigned short *pal)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
  	// background 1
  	TileBackground_1(RamBg1V, RamCurPal);
@@ -1125,7 +1127,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	
 	if (DrvReset) {														// Reset machine
@@ -1136,7 +1138,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Joy1
 	DrvInput[1] = 0x00;													// Joy2
 	DrvInput[2] = 0x00;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -1157,7 +1159,7 @@ static int DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -1169,7 +1171,7 @@ static int DrvFrame()
 
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1190,9 +1192,9 @@ static int DrvScan(int nAction,int *pnMin)
 		
 		if (nAction & ACB_WRITE) {
 			// update palette while loaded
-			unsigned short* ps = (unsigned short*) RamPal;
-			unsigned short* pd = RamCurPal;
-			for (int i=0; i<1024; i++, ps++, pd++)
+			UINT16* ps = (UINT16*) RamPal;
+			UINT16* pd = RamCurPal;
+			for (INT32 i=0; i<1024; i++, ps++, pd++)
 				*pd = CalcCol(*ps);
 		}
 	}
@@ -1213,7 +1215,7 @@ static int DrvScan(int nAction,int *pnMin)
 		SCAN_VAR(nAerofgtZ80Bank);
 		
 		if (nAction & ACB_WRITE) {
-			int nBank = nAerofgtZ80Bank;
+			INT32 nBank = nAerofgtZ80Bank;
 			nAerofgtZ80Bank = -1;
 			aerofgtSndBankSwitch(nBank);
 		}
@@ -1349,7 +1351,7 @@ static struct BurnRomInfo turbofrcRomDesc[] = {
 STD_ROM_PICK(turbofrc)
 STD_ROM_FN(turbofrc)
 
-unsigned char __fastcall turbofrcReadByte(unsigned int sekAddress)
+UINT8 __fastcall turbofrcReadByte(UINT32 sekAddress)
 {
 	sekAddress &= 0x0FFFFF;
 	switch (sekAddress) {
@@ -1376,7 +1378,7 @@ unsigned char __fastcall turbofrcReadByte(unsigned int sekAddress)
 }
 
 /*
-unsigned short __fastcall turbofrcReadWord(unsigned int sekAddress)
+UINT16 __fastcall turbofrcReadWord(UINT32 sekAddress)
 {
 //	sekAddress &= 0x0FFFFF;
 //	switch (sekAddress) {
@@ -1389,14 +1391,14 @@ unsigned short __fastcall turbofrcReadWord(unsigned int sekAddress)
 }
 */
 
-void __fastcall turbofrcWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall turbofrcWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (( sekAddress & 0x0FF000 ) == 0x0FE000) {
 		sekAddress &= 0x07FF;
 		RamPal[sekAddress^1] = byteValue;
 		// palette byte write at boot self-test only ?!
 		//if (sekAddress & 1)
-		//	RamCurPal[sekAddress>>1] = CalcCol( *((unsigned short *)&RamPal[sekAddress & 0xFFE]) );
+		//	RamCurPal[sekAddress>>1] = CalcCol( *((UINT16 *)&RamPal[sekAddress & 0xFFE]) );
 		return;	
 	}
 	
@@ -1413,11 +1415,11 @@ void __fastcall turbofrcWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall turbofrcWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall turbofrcWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (( sekAddress & 0x0FF000 ) == 0x0FE000) {
 		sekAddress &= 0x07FE;
-		*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+		*((UINT16 *)&RamPal[sekAddress]) = BURN_ENDIAN_SWAP_INT16(wordValue);
 		RamCurPal[sekAddress>>1] = CalcCol( wordValue );
 		return;	
 	}
@@ -1455,7 +1457,7 @@ void __fastcall turbofrcWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-unsigned char __fastcall turbofrcZ80PortRead(unsigned short p)
+UINT8 __fastcall turbofrcZ80PortRead(UINT16 p)
 {
 	switch (p & 0xFF) {
 		case 0x14:
@@ -1470,7 +1472,7 @@ unsigned char __fastcall turbofrcZ80PortRead(unsigned short p)
 	return 0;
 }
 
-void __fastcall turbofrcZ80PortWrite(unsigned short p, unsigned char v)
+void __fastcall turbofrcZ80PortWrite(UINT16 p, UINT8 v)
 {
 	switch (p & 0x0FF) {
 		case 0x18:
@@ -1490,9 +1492,9 @@ void __fastcall turbofrcZ80PortWrite(unsigned short p, unsigned char v)
 	}
 }
 
-static int turbofrcMemIndex()
+static INT32 turbofrcMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01 		= Next; Next += 0x0C0000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
 	
@@ -1512,12 +1514,12 @@ static int turbofrcMemIndex()
 	
 	RamStart	= Next;
 
-	RamBg1V		= (unsigned short *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (unsigned short *)Next; Next += 0x004000;	// Sprite 1 Ram
-	RamSpr2		= (unsigned short *)Next; Next += 0x004000;	// Sprite 2 Ram
-	RamSpr3		= (unsigned short *)Next; Next += 0x000800;	// Sprite 3 Ram
-	RamRaster	= (unsigned short *)Next; Next += 0x001000;	// Raster Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// Raster Ram
 	
 	RamSpr1SizeMask = 0x1FFF;
 	RamSpr2SizeMask = 0x1FFF;
@@ -1531,16 +1533,16 @@ static int turbofrcMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static void pspikesDecodeBg(int cnt)
+static void pspikesDecodeBg(INT32 cnt)
 {
-	for (int c=cnt-1; c>=0; c--) {
-		for (int y=7; y>=0; y--) {
+	for (INT32 c=cnt-1; c>=0; c--) {
+		for (INT32 y=7; y>=0; y--) {
 			DeRomBg[(c * 64) + (y * 8) + 7] = RomBg[0x00003 + (y * 4) + (c * 32)] >> 4;
 			DeRomBg[(c * 64) + (y * 8) + 6] = RomBg[0x00003 + (y * 4) + (c * 32)] & 0x0f;
 			DeRomBg[(c * 64) + (y * 8) + 5] = RomBg[0x00002 + (y * 4) + (c * 32)] >> 4;
@@ -1553,10 +1555,10 @@ static void pspikesDecodeBg(int cnt)
 	}
 }
 
-static void pspikesDecodeSpr(unsigned char *d, unsigned char *s, int cnt)
+static void pspikesDecodeSpr(UINT8 *d, UINT8 *s, INT32 cnt)
 {
-	for (int c=cnt-1; c>=0; c--)
-		for (int y=15; y>=0; y--) {
+	for (INT32 c=cnt-1; c>=0; c--)
+		for (INT32 y=15; y>=0; y--) {
 			d[(c * 256) + (y * 16) + 15] = s[0x00007 + (y * 8) + (c * 128)] >> 4;
 			d[(c * 256) + (y * 16) + 14] = s[0x00007 + (y * 8) + (c * 128)] & 0x0f;
 			d[(c * 256) + (y * 16) + 13] = s[0x00005 + (y * 8) + (c * 128)] >> 4;
@@ -1578,12 +1580,12 @@ static void pspikesDecodeSpr(unsigned char *d, unsigned char *s, int cnt)
 }
 
 
-static int turbofrcInit()
+static INT32 turbofrcInit()
 {
 	Mem = NULL;
 	turbofrcMemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	turbofrcMemIndex();	
 	
@@ -1621,23 +1623,23 @@ static int turbofrcInit()
 		// Map 68000 memory:
 		SekMapMemory(Rom01,			0x000000, 0x0BFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram01,			0x0C0000, 0x0CFFFF, SM_RAM);	// 64K Work RAM
-		SekMapMemory((unsigned char *)RamBg1V,		
+		SekMapMemory((UINT8 *)RamBg1V,		
 									0x0D0000, 0x0D1FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
+		SekMapMemory((UINT8 *)RamBg2V,		
 									0x0D2000, 0x0D3FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamSpr1,
+		SekMapMemory((UINT8 *)RamSpr1,
 									0x0E0000, 0x0E3FFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr2,
+		SekMapMemory((UINT8 *)RamSpr2,
 									0x0E4000, 0x0E7FFF, SM_RAM);
 		SekMapMemory(Ram01+0x10000,	0x0F8000, 0x0FBFFF, SM_RAM);	// Work RAM
 		SekMapMemory(Ram01+0x10000,	0xFF8000, 0xFFBFFF, SM_RAM);	// Work RAM
-		SekMapMemory((unsigned char *)RamSpr3,
+		SekMapMemory((UINT8 *)RamSpr3,
 									0x0FC000, 0x0FC7FF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr3,
+		SekMapMemory((UINT8 *)RamSpr3,
 									0xFFC000, 0xFFC7FF, SM_RAM);
-		SekMapMemory((unsigned char *)RamRaster,
+		SekMapMemory((UINT8 *)RamRaster,
 									0x0FD000, 0x0FDFFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamRaster,
+		SekMapMemory((UINT8 *)RamRaster,
 									0xFFD000, 0xFFDFFF, SM_RAM);
 		SekMapMemory(RamPal,		0x0FE000, 0x0FE7FF, SM_ROM);	// Palette
 
@@ -1650,7 +1652,7 @@ static int turbofrcInit()
 	}
 	
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		
 		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
@@ -1676,9 +1678,9 @@ static int turbofrcInit()
 	return 0;
 }
 
-static void turbofrcTileBackground_1(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void turbofrcTileBackground_1(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -1689,7 +1691,7 @@ static void turbofrcTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 
-		x = mx * 8 - (RamRaster[7] & 0x1FF) - 11;
+		x = mx * 8 - (BURN_ENDIAN_SWAP_INT16(RamRaster[7]) & 0x1FF) - 11;
 		if (x <= (352-512)) x += 512;
 		
 		y = my * 8 - (bg1scrolly & 0x1FF) - 2;
@@ -1701,11 +1703,11 @@ static void turbofrcTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (352-8) && y >= 0 && y < (240-8)) {
 			
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				p[0] = pal[ d[0] | c ];
  				p[1] = pal[ d[1] | c ];
  				p[2] = pal[ d[2] | c ];
@@ -1720,11 +1722,11 @@ static void turbofrcTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<240 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -1744,9 +1746,9 @@ static void turbofrcTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static void turbofrcTileBackground_2(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void turbofrcTileBackground_2(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 
 	mx = -1;
 	my = 0;
@@ -1768,11 +1770,11 @@ static void turbofrcTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (352-8) && y >= 0 && y < (240-8)) {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				
  				if (d[0] != 15) p[0] = pal[ d[0] | c ];
  				if (d[1] != 15) p[1] = pal[ d[1] | c ];
@@ -1788,11 +1790,11 @@ static void turbofrcTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<240 ) {
 	 				if (d[0] != 15 && (x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if (d[1] != 15 && (x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -1812,13 +1814,13 @@ static void turbofrcTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,int scalex,int scaley)
+static void pdrawgfxzoom(INT32 bank,UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy,INT32 scalex,INT32 scaley)
 {
 	if (!scalex || !scaley) return;
 			
-	unsigned short * p = (unsigned short *) pBurnDraw;
-	unsigned char * q;
-	unsigned short * pal;
+	UINT16 * p = (UINT16 *) pBurnDraw;
+	UINT8 * q;
+	UINT16 * pal;
 	
 	if (bank) {
 		//if (code > RomSpr2SizeMask)
@@ -1845,7 +1847,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 			
 			if (flipx) {
 			
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<240)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<352)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<352)) p[14] = pal[ q[ 1] | color];
@@ -1871,7 +1873,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 			
 			} else {
 	
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<240)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<352)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<352)) p[ 1] = pal[ q[ 1] | color];
@@ -1900,7 +1902,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 			
 			if (flipx) {
 			
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<240)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<352)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<352)) p[14] = pal[ q[ 1] | color];
@@ -1926,7 +1928,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 			
 			} else {
 	
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<240)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<352)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<352)) p[ 1] = pal[ q[ 1] | color];
@@ -1963,7 +1965,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -1988,7 +1990,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -2016,7 +2018,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -2041,7 +2043,7 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -2070,35 +2072,35 @@ static void pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx
 
 }
 
-static void turbofrc_drawsprites(int chip,int chip_disabled_pri)
+static void turbofrc_drawsprites(INT32 chip,INT32 chip_disabled_pri)
 {
-	int attr_start,base,first;
+	INT32 attr_start,base,first;
 
 	base = chip * 0x0200;
-	first = 4 * RamSpr3[0x1fe + base];
+	first = 4 * BURN_ENDIAN_SWAP_INT16(RamSpr3[0x1fe + base]);
 
 	//for (attr_start = base + 0x0200-8;attr_start >= first + base;attr_start -= 4) {
 	for (attr_start = first + base; attr_start <= base + 0x0200-8; attr_start += 4) {
-		int map_start;
-		int ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color,pri;
+		INT32 map_start;
+		INT32 ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color,pri;
 // some other drivers still use this wrong table, they have to be upgraded
-//      int zoomtable[16] = { 0,7,14,20,25,30,34,38,42,46,49,52,54,57,59,61 };
+//      INT32 zoomtable[16] = { 0,7,14,20,25,30,34,38,42,46,49,52,54,57,59,61 };
 
-		if (!(RamSpr3[attr_start + 2] & 0x0080)) continue;
-		pri = RamSpr3[attr_start + 2] & 0x0010;
+		if (!(BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0080)) continue;
+		pri = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0010;
 		if ( chip_disabled_pri & !pri) continue;
 		if (!chip_disabled_pri & (pri>>4)) continue;
-		ox = RamSpr3[attr_start + 1] & 0x01ff;
-		xsize = (RamSpr3[attr_start + 2] & 0x0700) >> 8;
-		zoomx = (RamSpr3[attr_start + 1] & 0xf000) >> 12;
-		oy = RamSpr3[attr_start + 0] & 0x01ff;
-		ysize = (RamSpr3[attr_start + 2] & 0x7000) >> 12;
-		zoomy = (RamSpr3[attr_start + 0] & 0xf000) >> 12;
-		flipx = RamSpr3[attr_start + 2] & 0x0800;
-		flipy = RamSpr3[attr_start + 2] & 0x8000;
-		color = (RamSpr3[attr_start + 2] & 0x000f) << 4;	// + 16 * spritepalettebank;
+		ox = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 1]) & 0x01ff;
+		xsize = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0700) >> 8;
+		zoomx = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 1]) & 0xf000) >> 12;
+		oy = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 0]) & 0x01ff;
+		ysize = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x7000) >> 12;
+		zoomy = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 0]) & 0xf000) >> 12;
+		flipx = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0800;
+		flipy = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x8000;
+		color = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x000f) << 4;	// + 16 * spritepalettebank;
 
-		map_start = RamSpr3[attr_start + 3];
+		map_start = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 3]);
 
 // aerofgt has this adjustment, but doing it here would break turbo force title screen
 //      ox += (xsize*zoomx+2)/4;
@@ -2108,19 +2110,19 @@ static void turbofrc_drawsprites(int chip,int chip_disabled_pri)
 		zoomy = 32 - zoomy;
 
 		for (y = 0;y <= ysize;y++) {
-			int sx,sy;
+			INT32 sx,sy;
 
 			if (flipy) sy = ((oy + zoomy * (ysize - y)/2 + 16) & 0x1ff) - 16;
 			else sy = ((oy + zoomy * y / 2 + 16) & 0x1ff) - 16;
 
 			for (x = 0;x <= xsize;x++) {
-				int code;
+				INT32 code;
 
 				if (flipx) sx = ((ox + zoomx * (xsize - x) / 2 + 16) & 0x1ff) - 16 - 8;
 				else sx = ((ox + zoomx * x / 2 + 16) & 0x1ff) - 16 - 8;
 
-				if (chip == 0)	code = RamSpr1[map_start & RamSpr1SizeMask];
-				else			code = RamSpr2[map_start & RamSpr2SizeMask];
+				if (chip == 0)	code = BURN_ENDIAN_SWAP_INT16(RamSpr1[map_start & RamSpr1SizeMask]);
+				else			code = BURN_ENDIAN_SWAP_INT16(RamSpr2[map_start & RamSpr2SizeMask]);
 
 				pdrawgfxzoom(chip,code,color,flipx,flipy,sx,sy,zoomx << 11, zoomy << 11);
 
@@ -2135,7 +2137,7 @@ static void turbofrc_drawsprites(int chip,int chip_disabled_pri)
 	}
 }
 
-static int turbofrcDraw()
+static INT32 turbofrcDraw()
 {
 	turbofrcTileBackground_1(RamBg1V, DeRomBg, RamCurPal);
  	turbofrcTileBackground_2(RamBg2V, DeRomBg + 0x140000, RamCurPal + 256);
@@ -2158,7 +2160,7 @@ static int turbofrcDraw()
 	return 0;
 }
 
-static int turbofrcFrame()
+static INT32 turbofrcFrame()
 {
 	if (DrvReset) DrvDoReset();
 	
@@ -2168,7 +2170,7 @@ static int turbofrcFrame()
 	DrvInput[1] = 0x00;													// Joy2
 	DrvInput[2] = 0x00;													// Joy3
 	DrvInput[3] = 0x00;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy3[i] & 1) << i;
@@ -2188,7 +2190,7 @@ static int turbofrcFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -2397,7 +2399,7 @@ static struct BurnRomInfo karatbljRomDesc[] = {
 STD_ROM_PICK(karatblj)
 STD_ROM_FN(karatblj)
 
-unsigned char __fastcall karatblzReadByte(unsigned int sekAddress)
+UINT8 __fastcall karatblzReadByte(UINT32 sekAddress)
 {
 	sekAddress &= 0x0FFFFF;
 	
@@ -2432,7 +2434,7 @@ unsigned char __fastcall karatblzReadByte(unsigned int sekAddress)
 }
 
 /*
-unsigned short __fastcall karatblzReadWord(unsigned int sekAddress)
+UINT16 __fastcall karatblzReadWord(UINT32 sekAddress)
 {
 	sekAddress &= 0x0FFFFF;
 	
@@ -2446,7 +2448,7 @@ unsigned short __fastcall karatblzReadWord(unsigned int sekAddress)
 }
 */
 
-void __fastcall karatblzWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall karatblzWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	sekAddress &= 0x0FFFFF;
 	
@@ -2474,11 +2476,11 @@ void __fastcall karatblzWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall karatblzWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall karatblzWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (( sekAddress & 0x0FF000 ) == 0x0FE000) {
 		sekAddress &= 0x07FF;
-		*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+		*((UINT16 *)&RamPal[sekAddress]) = wordValue;
 		RamCurPal[sekAddress>>1] = CalcCol( wordValue );
 		return;	
 	}
@@ -2504,9 +2506,9 @@ void __fastcall karatblzWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int karatblzMemIndex()
+static INT32 karatblzMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01 		= Next; Next += 0x080000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
 	
@@ -2526,11 +2528,11 @@ static int karatblzMemIndex()
 	
 	RamStart	= Next;
 
-	RamBg1V		= (unsigned short *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (unsigned short *)Next; Next += 0x010000;	// Sprite 1 Ram
-	RamSpr2		= (unsigned short *)Next; Next += 0x010000;	// Sprite 2 Ram
-	RamSpr3		= (unsigned short *)Next; Next += 0x000800;	// Sprite 3 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x008000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x008000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
 	Ram01		= Next; Next += 0x014000;					// Work Ram 1 + Work Ram 1
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
@@ -2542,18 +2544,18 @@ static int karatblzMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static int karatblzInit()
+static INT32 karatblzInit()
 {
 	Mem = NULL;
 	karatblzMemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	karatblzMemIndex();	
 	
@@ -2587,18 +2589,18 @@ static int karatblzInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamBg1V,		
+		SekMapMemory((UINT8 *)RamBg1V,		
 									0x080000, 0x081FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
+		SekMapMemory((UINT8 *)RamBg2V,		
 									0x082000, 0x083FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamSpr1,
+		SekMapMemory((UINT8 *)RamSpr1,
 									0x0A0000, 0x0AFFFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr2,
+		SekMapMemory((UINT8 *)RamSpr2,
 									0x0B0000, 0x0BFFFF, SM_RAM);
 		SekMapMemory(Ram01,			0x0C0000, 0x0CFFFF, SM_RAM);	// 64K Work RAM
 		SekMapMemory(Ram01+0x10000,	0x0F8000, 0x0FBFFF, SM_RAM);	// Work RAM
 		SekMapMemory(Ram01+0x10000,	0xFF8000, 0xFFBFFF, SM_RAM);	// Work RAM
-		SekMapMemory((unsigned char *)RamSpr3,
+		SekMapMemory((UINT8 *)RamSpr3,
 									0x0FC000, 0x0FC7FF, SM_RAM);
 		SekMapMemory(RamPal,		0x0FE000, 0x0FE7FF, SM_ROM);	// Palette
 
@@ -2611,7 +2613,7 @@ static int karatblzInit()
 	}
 	
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		
 		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
@@ -2637,9 +2639,9 @@ static int karatblzInit()
 	return 0;
 }
 
-static void karatblzTileBackground_1(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void karatblzTileBackground_1(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -2650,7 +2652,7 @@ static void karatblzTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 		
-		x = mx * 8 - (((signed short)bg1scrollx + 8)& 0x1FF);
+		x = mx * 8 - (((INT16)bg1scrollx + 8)& 0x1FF);
 		if (x <= (352-512)) x += 512;
 		
 		y = my * 8 - (bg1scrolly & 0x1FF);
@@ -2662,11 +2664,11 @@ static void karatblzTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (352-8) && y >= 0 && y < (240-8)) {
 			
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x1FFF) + ( RamGfxBank[0] << 13 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1FFF) + ( RamGfxBank[0] << 13 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				p[0] = pal[ d[0] | c ];
  				p[1] = pal[ d[1] | c ];
  				p[2] = pal[ d[2] | c ];
@@ -2681,11 +2683,11 @@ static void karatblzTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x1FFF) + ( RamGfxBank[0] << 13 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1FFF) + ( RamGfxBank[0] << 13 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<240 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -2705,9 +2707,9 @@ static void karatblzTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static void karatblzTileBackground_2(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void karatblzTileBackground_2(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 
 	mx = -1;
 	my = 0;
@@ -2718,7 +2720,7 @@ static void karatblzTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 
-		x = mx * 8 - ( ((signed short)bg2scrollx + 4) & 0x1FF);
+		x = mx * 8 - ( ((INT16)bg2scrollx + 4) & 0x1FF);
 		if (x <= (352-512)) x += 512;
 		
 		y = my * 8 - (bg2scrolly & 0x1FF);
@@ -2729,11 +2731,11 @@ static void karatblzTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (352-8) && y >= 0 && y < (240-8)) {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x1FFF) + ( RamGfxBank[1] << 13 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1FFF) + ( RamGfxBank[1] << 13 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				
  				if (d[0] != 15) p[0] = pal[ d[0] | c ];
  				if (d[1] != 15) p[1] = pal[ d[1] | c ];
@@ -2749,11 +2751,11 @@ static void karatblzTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x1FFF) + ( RamGfxBank[1] << 13 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1FFF) + ( RamGfxBank[1] << 13 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<240 ) {
 	 				if (d[0] != 15 && (x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if (d[1] != 15 && (x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -2773,7 +2775,7 @@ static void karatblzTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static int karatblzDraw()
+static INT32 karatblzDraw()
 {
 	karatblzTileBackground_1(RamBg1V, DeRomBg, RamCurPal);
  	karatblzTileBackground_2(RamBg2V, DeRomBg + 0x100000, RamCurPal + 256);
@@ -2793,7 +2795,7 @@ static int karatblzDraw()
 	return 0;
 }
 
-static int karatblzFrame()
+static INT32 karatblzFrame()
 {
 	if (DrvReset) DrvDoReset();
 	
@@ -2804,13 +2806,13 @@ static int karatblzFrame()
 	DrvInput[3] = 0x00;													// Joy4
 	DrvInput[4] = 0x00;													// Buttons1
 	DrvInput[5] = 0x00;													// Buttons2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy3[i] & 1) << i;
 		DrvInput[3] |= (DrvJoy4[i] & 1) << i;
 	}
-	for (int i = 0; i < 4; i++) {
+	for (INT32 i = 0; i < 4; i++) {
 		DrvInput[4] |= (DrvButton[i] & 1) << i;
 		DrvInput[5] |= (DrvButton[i+4] & 1) << i;
 	}
@@ -2828,7 +2830,7 @@ static int karatblzFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3152,7 +3154,7 @@ STD_ROM_PICK(spinlbrj)
 STD_ROM_FN(spinlbrj)
 
 /*
-unsigned char __fastcall spinlbrkReadByte(unsigned int sekAddress)
+UINT8 __fastcall spinlbrkReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -3163,7 +3165,7 @@ unsigned char __fastcall spinlbrkReadByte(unsigned int sekAddress)
 }
 */
 
-unsigned short __fastcall spinlbrkReadWord(unsigned int sekAddress)
+UINT16 __fastcall spinlbrkReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xFFF000:
@@ -3180,7 +3182,7 @@ unsigned short __fastcall spinlbrkReadWord(unsigned int sekAddress)
 }
 
 
-void __fastcall spinlbrkWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall spinlbrkWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0xFFF401:
@@ -3198,12 +3200,12 @@ void __fastcall spinlbrkWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall spinlbrkWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall spinlbrkWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 
 	if (( sekAddress & 0xFFF000 ) == 0xFFE000) {
 		sekAddress &= 0x07FF;
-		*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+		*((UINT16 *)&RamPal[sekAddress]) = BURN_ENDIAN_SWAP_INT16(wordValue);
 		RamCurPal[sekAddress>>1] = CalcCol( wordValue );
 		return;	
 	}
@@ -3225,9 +3227,9 @@ void __fastcall spinlbrkWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int spinlbrkMemIndex()
+static INT32 spinlbrkMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01 		= Next; Next += 0x040000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
 	
@@ -3246,16 +3248,16 @@ static int spinlbrkMemIndex()
 	RomSndSize1 = 0x100000;
 	RomSndSize2 = 0x100000;
 	
-	RamSpr2		= (unsigned short *)Next; Next += 0x020000;	// Sprite 2 Ram
-	RamSpr1		= (unsigned short *)Next; Next += 0x004000;	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x010000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
 		
 	RamStart	= Next;
 
-	RamBg1V		= (unsigned short *)Next; Next += 0x001000;	// BG1 Video Ram
-	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
 	Ram01		= Next; Next += 0x004000;					// Work Ram
-	RamSpr3		= (unsigned short *)Next; Next += 0x000800;	// Sprite 3 Ram
-	RamRaster	= (unsigned short *)Next; Next += 0x000200;	// Raster
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
+	RamRaster	= (UINT16 *)Next; Next += 0x000100 * sizeof(UINT16);	// Raster
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
 
@@ -3267,18 +3269,18 @@ static int spinlbrkMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static int spinlbrkInit()
+static INT32 spinlbrkInit()
 {
 	Mem = NULL;
 	spinlbrkMemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	spinlbrkMemIndex();	
 	
@@ -3304,8 +3306,8 @@ static int spinlbrkInit()
 	BurnLoadRom(RomSpr1+0x200001, 14, 2);
 	pspikesDecodeSpr(DeRomSpr1, RomSpr1, 0x6000);
 	
-	BurnLoadRom((unsigned char *)RamSpr2+0x000001, 15, 2);
-	BurnLoadRom((unsigned char *)RamSpr2+0x000000, 16, 2);
+	BurnLoadRom((UINT8 *)RamSpr2+0x000001, 15, 2);
+	BurnLoadRom((UINT8 *)RamSpr2+0x000000, 16, 2);
 	
 	// Load Z80 ROM
 	if (BurnLoadRom(RomZ80+0x00000, 17, 1)) return 1;
@@ -3320,14 +3322,14 @@ static int spinlbrkInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom01,			0x000000, 0x04FFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamBg1V,		
+		SekMapMemory((UINT8 *)RamBg1V,		
 									0x080000, 0x080FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
+		SekMapMemory((UINT8 *)RamBg2V,		
 									0x082000, 0x083FFF, SM_RAM);
 		SekMapMemory(Ram01,			0xFF8000, 0xFFBFFF, SM_RAM);	// Work RAM
-		SekMapMemory((unsigned char *)RamSpr3,
+		SekMapMemory((UINT8 *)RamSpr3,
 									0xFFC000, 0xFFC7FF, SM_RAM);
-		SekMapMemory((unsigned char *)RamRaster,
+		SekMapMemory((UINT8 *)RamRaster,
 									0xFFD000, 0xFFD1FF, SM_RAM);
 		SekMapMemory(RamPal,		0xFFE000, 0xFFE7FF, SM_ROM);	// Palette
 
@@ -3340,7 +3342,7 @@ static int spinlbrkInit()
 	}
 	
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		
 		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
@@ -3363,17 +3365,17 @@ static int spinlbrkInit()
 	
 	bg2scrollx = 0;	// 
 	
-	for (unsigned short i=0; i<0x2000;i++)
-		RamSpr1[i] = i;
+	for (UINT16 i=0; i<0x2000;i++)
+		RamSpr1[i] = BURN_ENDIAN_SWAP_INT16(i);
 	
 	DrvDoReset();	
 	
 	return 0;
 }
 
-static void spinlbrkTileBackground_1(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void spinlbrkTileBackground_1(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -3384,7 +3386,7 @@ static void spinlbrkTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 		
-		x = mx * 8 - (RamRaster[my*8] & 0x1FF); // + 8
+		x = mx * 8 - (BURN_ENDIAN_SWAP_INT16(RamRaster[my*8]) & 0x1FF); // + 8
 		if (x <= (352-512)) x += 512;
 		
 		y = my * 8;
@@ -3395,11 +3397,11 @@ static void spinlbrkTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (352-8) && y >= 0 && y < (240-8)) {
 			
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x0FFF) + ( RamGfxBank[0] << 12 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xF000) >> 8;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x0FFF) + ( RamGfxBank[0] << 12 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xF000) >> 8;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				p[0] = pal[ d[0] | c ];
  				p[1] = pal[ d[1] | c ];
  				p[2] = pal[ d[2] | c ];
@@ -3414,11 +3416,11 @@ static void spinlbrkTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x0FFF) + ( RamGfxBank[0] << 12 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xF000) >> 8;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 352 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x0FFF) + ( RamGfxBank[0] << 12 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xF000) >> 8;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 352 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<240 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -3438,7 +3440,7 @@ static void spinlbrkTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static int spinlbrkDraw()
+static INT32 spinlbrkDraw()
 {
 	spinlbrkTileBackground_1(RamBg1V, DeRomBg, RamCurPal);
 	karatblzTileBackground_2(RamBg2V, DeRomBg + 0x200000, RamCurPal + 256);
@@ -3449,10 +3451,10 @@ static int spinlbrkDraw()
 	turbofrc_drawsprites(0,-1); 
 
 /*
-	unsigned short *ps = RamCurPal;
-	unsigned short *pd = (unsigned short *)pBurnDraw;
-	for (int j=0;j<32;j++) {
-		for (int i=0;i<32;i++) {
+	UINT16 *ps = RamCurPal;
+	UINT16 *pd = (UINT16 *)pBurnDraw;
+	for (INT32 j=0;j<32;j++) {
+		for (INT32 i=0;i<32;i++) {
 			*pd = *ps;
 			pd ++;
 			ps ++;
@@ -3463,7 +3465,7 @@ static int spinlbrkDraw()
 	return 0;
 }
 
-static int spinlbrkFrame()
+static INT32 spinlbrkFrame()
 {
 	if (DrvReset) DrvDoReset();
 	
@@ -3471,7 +3473,7 @@ static int spinlbrkFrame()
 	DrvInput[0] = 0x00;													// Joy1
 	DrvInput[1] = 0x00;													// Joy2
 	DrvInput[2] = 0x00;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -3490,7 +3492,7 @@ static int spinlbrkFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3610,7 +3612,7 @@ static struct BurnRomInfo sonicwiRomDesc[] = {
 STD_ROM_PICK(sonicwi)
 STD_ROM_FN(sonicwi)
 
-unsigned char __fastcall aerofgtbReadByte(unsigned int sekAddress)
+UINT8 __fastcall aerofgtbReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x0FE000:
@@ -3636,7 +3638,7 @@ unsigned char __fastcall aerofgtbReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall aerofgtbReadWord(unsigned int sekAddress)
+UINT16 __fastcall aerofgtbReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -3647,14 +3649,14 @@ unsigned short __fastcall aerofgtbReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall aerofgtbWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall aerofgtbWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (( sekAddress & 0x0FF000 ) == 0x0FD000) {
 		sekAddress &= 0x07FF;
 		RamPal[sekAddress^1] = byteValue;
 		// palette byte write at boot self-test only ?!
 		//if (sekAddress & 1)
-		//	RamCurPal[sekAddress>>1] = CalcCol( *((unsigned short *)&RamPal[sekAddress & 0xFFE]) );
+		//	RamCurPal[sekAddress>>1] = CalcCol( *((UINT16 *)&RamPal[sekAddress & 0xFFE]) );
 		return;	
 	}
 	
@@ -3675,11 +3677,11 @@ void __fastcall aerofgtbWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall aerofgtbWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall aerofgtbWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (( sekAddress & 0x0FF000 ) == 0x0FD000) {
 		sekAddress &= 0x07FE;
-		*((unsigned short *)&RamPal[sekAddress]) = wordValue;
+		*((UINT16 *)&RamPal[sekAddress]) = BURN_ENDIAN_SWAP_INT16(wordValue);
 		RamCurPal[sekAddress>>1] = CalcCol( wordValue );
 		return;	
 	}
@@ -3715,9 +3717,9 @@ void __fastcall aerofgtbWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int aerofgtbMemIndex()
+static INT32 aerofgtbMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01 		= Next; Next += 0x080000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x030000;			// Z80 ROM
 	RomBg		= Next; Next += 0x200040;			// Background, 1M 8x8x4bit decode to 2M + 64Byte safe 
@@ -3736,13 +3738,13 @@ static int aerofgtbMemIndex()
 	RamStart	= Next;
 	
 	Ram01		= Next; Next += 0x014000;					// Work Ram 
-	RamBg1V		= (unsigned short *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (unsigned short *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (unsigned short *)Next; Next += 0x004000;	// Sprite 1 Ram
-	RamSpr2		= (unsigned short *)Next; Next += 0x004000;	// Sprite 2 Ram
-	RamSpr3		= (unsigned short *)Next; Next += 0x000800;	// Sprite 3 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
-	RamRaster	= (unsigned short *)Next; Next += 0x001000;	// Raster
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// Raster
 
 	RamSpr1SizeMask = 0x1FFF;
 	RamSpr2SizeMask = 0x1FFF;
@@ -3753,16 +3755,16 @@ static int aerofgtbMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *)Next; Next += 0x000800;	// 1024 colors
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// 1024 colors
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static void aerofgtbDecodeSpr(unsigned char *d, unsigned char *s, int cnt)
+static void aerofgtbDecodeSpr(UINT8 *d, UINT8 *s, INT32 cnt)
 {
-	for (int c=cnt-1; c>=0; c--)
-		for (int y=15; y>=0; y--) {
+	for (INT32 c=cnt-1; c>=0; c--)
+		for (INT32 y=15; y>=0; y--) {
 			d[(c * 256) + (y * 16) + 15] = s[0x00005 + (y * 8) + (c * 128)] >> 4;
 			d[(c * 256) + (y * 16) + 14] = s[0x00005 + (y * 8) + (c * 128)] & 0x0f;
 			d[(c * 256) + (y * 16) + 13] = s[0x00007 + (y * 8) + (c * 128)] >> 4;
@@ -3783,12 +3785,12 @@ static void aerofgtbDecodeSpr(unsigned char *d, unsigned char *s, int cnt)
 		}
 }
 
-static int aerofgtbInit()
+static INT32 aerofgtbInit()
 {
 	Mem = NULL;
 	aerofgtbMemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -3824,19 +3826,19 @@ static int aerofgtbInit()
 		// Map 68000 memory:
 		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram01,			0x0C0000, 0x0CFFFF, SM_RAM);	// 64K Work RAM
-		SekMapMemory((unsigned char *)RamBg1V,		
+		SekMapMemory((UINT8 *)RamBg1V,		
 									0x0D0000, 0x0D1FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamBg2V,		
+		SekMapMemory((UINT8 *)RamBg2V,		
 									0x0D2000, 0x0D3FFF, SM_RAM);	
-		SekMapMemory((unsigned char *)RamSpr1,
+		SekMapMemory((UINT8 *)RamSpr1,
 									0x0E0000, 0x0E3FFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamSpr2,
+		SekMapMemory((UINT8 *)RamSpr2,
 									0x0E4000, 0x0E7FFF, SM_RAM);
 		SekMapMemory(Ram01+0x10000,	0x0F8000, 0x0FBFFF, SM_RAM);	// Work RAM
-		SekMapMemory((unsigned char *)RamSpr3,
+		SekMapMemory((UINT8 *)RamSpr3,
 									0x0FC000, 0x0FC7FF, SM_RAM);
 		SekMapMemory(RamPal,		0x0FD000, 0x0FD7FF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamRaster,
+		SekMapMemory((UINT8 *)RamRaster,
 									0x0FF000, 0x0FFFFF, SM_RAM);	// Raster 
 
 		SekSetReadWordHandler(0, aerofgtbReadWord);
@@ -3848,7 +3850,7 @@ static int aerofgtbInit()
 	}
 	
 	{
-		ZetInit(1);
+		ZetInit(0);
 		ZetOpen(0);
 		
 		ZetMapArea(0x0000, 0x77FF, 0, RomZ80);
@@ -3875,9 +3877,9 @@ static int aerofgtbInit()
 	return 0;
 }
 
-static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void aerofgtbTileBackground_1(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	
 	mx = -1;
 	my = 0;
@@ -3888,10 +3890,10 @@ static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 
-		x = mx * 8 - (RamRaster[7] & 0x1FF);
+		x = mx * 8 - (BURN_ENDIAN_SWAP_INT16(RamRaster[7]) & 0x1FF);
 		if (x <= (320-512)) x += 512;
 		
-		y = my * 8 - (((signed short)bg1scrolly + 2) & 0x1FF);
+		y = my * 8 - (((INT16)bg1scrolly + 2) & 0x1FF);
 		if (y <= (224-512)) y += 512;
 		
 		if ( x<=-8 || x>=320 || y<=-8 || y>= 224 ) 
@@ -3900,11 +3902,11 @@ static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (320-8) && y >= 0 && y < (224-8)) {
 			
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				p[0] = pal[ d[0] | c ];
  				p[1] = pal[ d[1] | c ];
  				p[2] = pal[ d[2] | c ];
@@ -3919,11 +3921,11 @@ static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11)] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11)] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<224 ) {
 	 				if ((x + 0) >= 0 && (x + 0)<320) p[0] = pal[ d[0] | c ];
 	 				if ((x + 1) >= 0 && (x + 1)<320) p[1] = pal[ d[1] | c ];
@@ -3943,9 +3945,9 @@ static void aerofgtbTileBackground_1(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, unsigned short *pal)
+static void aerofgtbTileBackground_2(UINT16 *bg, UINT8 *BgGfx, UINT16 *pal)
 {
-	int offs, mx, my, x, y;
+	INT32 offs, mx, my, x, y;
 	//printf(" %5d%5d%5d%5d\n", (signed short)RamRaster[7],(signed short)bg1scrolly, (signed short)bg2scrollx,(signed short)bg2scrolly);
 	mx = -1;
 	my = 0;
@@ -3956,10 +3958,10 @@ static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 			my++;
 		}
 
-		x = mx * 8 - (((signed short)bg2scrollx + 5) & 0x1FF);
+		x = mx * 8 - (((INT16)bg2scrollx + 5) & 0x1FF);
 		if (x <= (320-512)) x += 512;
 		
-		y = my * 8 - (((signed short)bg2scrolly + 2) & 0x1FF);
+		y = my * 8 - (((INT16)bg2scrolly + 2) & 0x1FF);
 		if (y <= (224-512)) y += 512;
 		
 		if ( x<=-8 || x>=320 || y<=-8 || y>= 224 ) 
@@ -3967,11 +3969,11 @@ static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 		else
 		if ( x >=0 && x < (320-8) && y >= 0 && y < (224-8)) {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				
  				if (d[0] != 15) p[0] = pal[ d[0] | c ];
  				if (d[1] != 15) p[1] = pal[ d[1] | c ];
@@ -3987,11 +3989,11 @@ static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
  			}
 		} else {
 
-			unsigned char *d = BgGfx + ( (bg[offs] & 0x07FF) + ( RamGfxBank[((bg[offs] & 0x1800) >> 11) + 4] << 11 ) ) * 64;
- 			unsigned short c = (bg[offs] & 0xE000) >> 9;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 320 + x;
+			UINT8 *d = BgGfx + ( (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x07FF) + ( RamGfxBank[((BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0x1800) >> 11) + 4] << 11 ) ) * 64;
+ 			UINT16 c = (BURN_ENDIAN_SWAP_INT16(bg[offs]) & 0xE000) >> 9;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 320 + x;
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
 				if ( (y+k)>=0 && (y+k)<224 ) {
 	 				if (d[0] != 15 && (x + 0) >= 0 && (x + 0)<352) p[0] = pal[ d[0] | c ];
 	 				if (d[1] != 15 && (x + 1) >= 0 && (x + 1)<352) p[1] = pal[ d[1] | c ];
@@ -4011,13 +4013,13 @@ static void aerofgtbTileBackground_2(unsigned short *bg, unsigned char *BgGfx, u
 	}
 }
 
-static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,int scalex,int scaley)
+static void aerofgtb_pdrawgfxzoom(INT32 bank,UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy,INT32 scalex,INT32 scaley)
 {
 	if (!scalex || !scaley) return;
 			
-	unsigned short * p = (unsigned short *) pBurnDraw;
-	unsigned char * q;
-	unsigned short * pal;
+	UINT16 * p = (UINT16 *) pBurnDraw;
+	UINT8 * q;
+	UINT16 * pal;
 	
 	if (bank) {
 		//if (code > RomSpr2SizeMask)
@@ -4044,7 +4046,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 			
 			if (flipx) {
 			
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
@@ -4070,7 +4072,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 			
 			} else {
 	
-				for (int i=15;i>=0;i--) {
+				for (INT32 i=15;i>=0;i--) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
@@ -4099,7 +4101,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 			
 			if (flipx) {
 			
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx + 15) >= 0) && ((sx + 15)<320)) p[15] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx + 14) >= 0) && ((sx + 14)<320)) p[14] = pal[ q[ 1] | color];
@@ -4125,7 +4127,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 			
 			} else {
 	
-				for (int i=0;i<16;i++) {
+				for (INT32 i=0;i<16;i++) {
 					if (((sy+i)>=0) && ((sy+i)<224)) {
 						if (q[ 0] != 15 && ((sx +  0) >= 0) && ((sx +  0)<320)) p[ 0] = pal[ q[ 0] | color];
 						if (q[ 1] != 15 && ((sx +  1) >= 0) && ((sx +  1)<320)) p[ 1] = pal[ q[ 1] | color];
@@ -4162,7 +4164,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -4187,7 +4189,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -4215,7 +4217,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 		
 		if (flipx) {
 		
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[15] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[14] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[13] = pal[ q[ 2] | color];
@@ -4240,7 +4242,7 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 		
 		} else {
 
-			for (int i=0;i<16;i++) {
+			for (INT32 i=0;i<16;i++) {
 				if (q[ 0] != 15) p[ 0] = pal[ q[ 0] | color];
 				if (q[ 1] != 15) p[ 1] = pal[ q[ 1] | color];
 				if (q[ 2] != 15) p[ 2] = pal[ q[ 2] | color];
@@ -4269,35 +4271,35 @@ static void aerofgtb_pdrawgfxzoom(int bank,unsigned int code,unsigned int color,
 
 }
 
-static void aerofgtb_drawsprites(int chip,int chip_disabled_pri)
+static void aerofgtb_drawsprites(INT32 chip,INT32 chip_disabled_pri)
 {
-	int attr_start,base,first;
+	INT32 attr_start,base,first;
 
 	base = chip * 0x0200;
-	first = 4 * RamSpr3[0x1fe + base];
+	first = 4 * BURN_ENDIAN_SWAP_INT16(RamSpr3[0x1fe + base]);
 
 	//for (attr_start = base + 0x0200-8;attr_start >= first + base;attr_start -= 4) {
 	for (attr_start = first + base; attr_start <= base + 0x0200-8; attr_start += 4) {
-		int map_start;
-		int ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color,pri;
+		INT32 map_start;
+		INT32 ox,oy,x,y,xsize,ysize,zoomx,zoomy,flipx,flipy,color,pri;
 // some other drivers still use this wrong table, they have to be upgraded
-//      int zoomtable[16] = { 0,7,14,20,25,30,34,38,42,46,49,52,54,57,59,61 };
+//      INT32 zoomtable[16] = { 0,7,14,20,25,30,34,38,42,46,49,52,54,57,59,61 };
 
-		if (!(RamSpr3[attr_start + 2] & 0x0080)) continue;
-		pri = RamSpr3[attr_start + 2] & 0x0010;
+		if (!(BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0080)) continue;
+		pri = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0010;
 		if ( chip_disabled_pri & !pri) continue;
 		if (!chip_disabled_pri & (pri>>4)) continue;
-		ox = RamSpr3[attr_start + 1] & 0x01ff;
-		xsize = (RamSpr3[attr_start + 2] & 0x0700) >> 8;
-		zoomx = (RamSpr3[attr_start + 1] & 0xf000) >> 12;
-		oy = RamSpr3[attr_start + 0] & 0x01ff;
-		ysize = (RamSpr3[attr_start + 2] & 0x7000) >> 12;
-		zoomy = (RamSpr3[attr_start + 0] & 0xf000) >> 12;
-		flipx = RamSpr3[attr_start + 2] & 0x0800;
-		flipy = RamSpr3[attr_start + 2] & 0x8000;
-		color = (RamSpr3[attr_start + 2] & 0x000f) << 4;	// + 16 * spritepalettebank;
+		ox = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 1]) & 0x01ff;
+		xsize = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0700) >> 8;
+		zoomx = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 1]) & 0xf000) >> 12;
+		oy = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 0]) & 0x01ff;
+		ysize = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x7000) >> 12;
+		zoomy = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 0]) & 0xf000) >> 12;
+		flipx = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x0800;
+		flipy = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x8000;
+		color = (BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 2]) & 0x000f) << 4;	// + 16 * spritepalettebank;
 
-		map_start = RamSpr3[attr_start + 3];
+		map_start = BURN_ENDIAN_SWAP_INT16(RamSpr3[attr_start + 3]);
 
 // aerofgt has this adjustment, but doing it here would break turbo force title screen
 //      ox += (xsize*zoomx+2)/4;
@@ -4307,19 +4309,19 @@ static void aerofgtb_drawsprites(int chip,int chip_disabled_pri)
 		zoomy = 32 - zoomy;
 
 		for (y = 0;y <= ysize;y++) {
-			int sx,sy;
+			INT32 sx,sy;
 
 			if (flipy) sy = ((oy + zoomy * (ysize - y)/2 + 16) & 0x1ff) - 16 - 1;
 			else sy = ((oy + zoomy * y / 2 + 16) & 0x1ff) - 16 - 1;
 
 			for (x = 0;x <= xsize;x++) {
-				int code;
+				INT32 code;
 
 				if (flipx) sx = ((ox + zoomx * (xsize - x) / 2 + 16) & 0x1ff) - 16 - 8;
 				else sx = ((ox + zoomx * x / 2 + 16) & 0x1ff) - 16 - 8;
 
-				if (chip == 0)	code = RamSpr1[map_start & RamSpr1SizeMask];
-				else			code = RamSpr2[map_start & RamSpr2SizeMask];
+				if (chip == 0)	code = BURN_ENDIAN_SWAP_INT16(RamSpr1[map_start & RamSpr1SizeMask]);
+				else			code = BURN_ENDIAN_SWAP_INT16(RamSpr2[map_start & RamSpr2SizeMask]);
 
 				aerofgtb_pdrawgfxzoom(chip,code,color,flipx,flipy,sx,sy,zoomx << 11, zoomy << 11);
 
@@ -4334,7 +4336,7 @@ static void aerofgtb_drawsprites(int chip,int chip_disabled_pri)
 	}
 }
 
-static int aerofgtbDraw()
+static INT32 aerofgtbDraw()
 {
 	aerofgtbTileBackground_1(RamBg1V, DeRomBg, RamCurPal);
 	aerofgtbTileBackground_2(RamBg2V, DeRomBg + 0x100000, RamCurPal + 256);
@@ -4347,7 +4349,7 @@ static int aerofgtbDraw()
 	return 0;
 }
 
-static int aerofgtbFrame()
+static INT32 aerofgtbFrame()
 {
 	if (DrvReset) DrvDoReset();
 	
@@ -4355,7 +4357,7 @@ static int aerofgtbFrame()
 	DrvInput[0] = 0x00;													// Joy1
 	DrvInput[1] = 0x00;													// Joy2
 	DrvInput[2] = 0x00;													// Buttons
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -4374,7 +4376,7 @@ static int aerofgtbFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();

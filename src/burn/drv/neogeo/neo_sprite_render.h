@@ -21,18 +21,18 @@
 
 #if BPP == 16
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-   	*((unsigned short*)pPixel) = (unsigned short)pTilePalette[b];	\
+   	*((UINT16*)pPixel) = (UINT16)pTilePalette[b];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	unsigned int nRGB = pTilePalette[b];							\
-	pPixel[0] = (unsigned char)nRGB;								\
-	pPixel[1] = (unsigned char)(nRGB >> 8);							\
-	pPixel[2] = (unsigned char)(nRGB >> 16);						\
+	UINT32 nRGB = pTilePalette[b];							\
+	pPixel[0] = (UINT8)nRGB;								\
+	pPixel[1] = (UINT8)(nRGB >> 8);							\
+	pPixel[2] = (UINT8)(nRGB >> 16);						\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	 *((unsigned int*)pPixel) = (unsigned int)pTilePalette[b];		\
+	 *((UINT32*)pPixel) = (UINT32)pTilePalette[b];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -475,369 +475,177 @@
 #define NORMALOFFSET(x) (x)
 #define MIRROROFFSET(x) (XZOOM - x)
 
+// #undef USE_SPEEDHACKS
+
 static void FUNCTIONNAME(BPP,XZOOM,CLIP,OPACITY)()
 {
-	unsigned char *pTileRow, *pPixel;
-	int y;
-	int nColour;
-	int nTileNumber;
-	int nTile, nLine;
-	int nPrevTile;
-	int nSize, nMax;
-	int nPass;
+	UINT8 *pTileRow, *pPixel;
+	INT32 nColour = 0, nTransparent = 0;
+	INT32 nTileNumber, nTileAttrib = 0;
+	INT32 nTile, nLine;
+	INT32 nPrevTile;
+	INT32 nYPos;
 
-	int nTileAttrib = -1;
-	unsigned char nTransparent = 0;
-	unsigned char nFullWrap = 0;
+	UINT8* pZoomValue = NeoZoomROM + (nBankYZoom << 8);
 
-	unsigned char* pZoomValue = NeoZoomROM + (nBankYZoom << 8);
+	INT32 nLinesTotal = (nBankSize >= 0x20) ? 0x01FF : ((nBankSize << 4) - 1);
+	INT32 nLinesDone  = 0;
 
-	pTileRow = pBurnDraw + (nSliceStart - 0x10) * (BPP >> 3) * nNeoScreenWidth + nBankXPos * (BPP >> 3);
+	while (nLinesDone <= nLinesTotal) {
+		nLine = (nBankYPos + nLinesDone) & 0x01FF;
+		nYPos = nLine;
 
-	// Draw the first 16 tiles from top to bottom, starting at the sprite position
+//		bprintf(PRINT_NORMAL, _T("  - s:%i l:%i y:%i %i z:%i\n"), nLinesTotal, nLinesDone, nYPos, nBankYPos, nBankYZoom);
 
-	nSize = (nBankSize << 4) - 1;
-	if (nSize > nBankYZoom) {
-		nSize = nBankYZoom;
-	}
-
-	nPass = 0;
-
-	if (nBankYPos < nSliceStart) {							// Sprite starts in top 16 pixels
-		if (nBankYPos < 0x10) {
-			nPass = 1;
+		// Skip everything above the part of the display we need to render
+		if (nYPos < nSliceStart) {
+			nLinesDone += nSliceStart - nYPos;
+			continue;
+		}
+		// Skip everything below the part of the display we need to render
+		if (nYPos >= nSliceEnd) {
+			nLinesDone += nSliceStart + 512 - nYPos;
+			continue;
 		}
 
-		y = nSliceStart - nBankYPos;
-		nMax = nSize + 1;
-		if (nMax > y + nSliceSize) {
-			nMax = y + nSliceSize;
-		}
-	} else {
-		if (nBankYPos < nSliceEnd) {						// Sprite starts on screen
-			y = 0;
-			pTileRow += (nBankYPos - nSliceStart) * (BPP >> 3) * nNeoScreenWidth;
-			nMax = nSize + 1;
-			if (nMax > nSliceSize - (nBankYPos - nSliceStart)) {
-				nMax = nSliceSize - (nBankYPos - nSliceStart);
-			}
-		} else {											// Sprite wraps around completely
-			if (nBankYPos >= 240) {
-				y = (nBankYPos + nBankYZoom + nBankYZoom + 2) & 0x01FF;
-				if (nBankSize == 0x20 && y < nSliceEnd && y < nBankYPos - nBankYZoom) {
-					if (y > nSliceStart) {
-						y -= nSliceStart;
-						nMax = nSize + 1;
-						if (nMax > nSliceSize - y) {
-							nMax = nSliceSize - y;
-						}
-						pTileRow += y * (BPP >> 3) * nNeoScreenWidth;
+		// This part of the sprite strip is in the part of the display we need to render
+		{
+			INT32 nStartTile = (nLinesDone >= 0x0100) ? 0x10 : 0;
+			INT32 nStartLine = nLinesDone & 0xFF;
+			INT32 nEndLine   = (nLinesDone < 0x0100 && nLinesTotal >= 0x0100) ? 0xFF : nLinesTotal & 0xFF;
 
-						nFullWrap = y;
-						y = 0;
-					} else {
-						if (y < 0x10) {						// Sprite starts in top 16 pixels
-							nPass = 1;
+			INT32 nThisLine;
+
+			// Handle wraparound for full-size sprite strips
+			if (nBankSize > 0x10 && nBankYZoom != 0xFF) {
+
+				if (nBankSize <= 0x20) {
+
+					// normal wrap
+
+					if (nLinesDone >= 0x0100) {
+						if (nLinesDone < (0x01FF - nBankYZoom)) {
+							nLinesDone = (0x01FF - nBankYZoom);
+
+							continue;
 						}
-						y = nSliceStart - y;
-						nMax = nSize + 1;
-						if (nMax > nSliceSize + y) {
-							nMax = nSliceSize + y;
-						}
+
+						nStartLine -= 0xFF - nBankYZoom;
+						nEndLine -= 0xFF - nBankYZoom;
 					}
+
 				} else {
-					y = 0;
-					nMax = 0;
-				}
-			} else {
-				y = 0;
-				nMax = 0;
-			}
-		}
-	}
 
-	nPrevTile = -1;
+					// Full strip, full wrap
 
-	do {
-		if (y >= nMax) {
-			if (nPass) {
-				break;
-			}
-			nPass++;
+					if (nLinesDone >= 0x0100) {
+						nStartLine -= 0xFF - nBankYZoom;
+						if (nStartLine < 0) {
 
-			// Check if part of the sprite wraps around and is visible
-			y = 0x0210 - nBankYPos;
-			if (y >= nSize) {
-				if (nBankSize != 0x20 || y > nSize * 2 || nBankYPos >= 240) {
-					break;
-				}
-
-				y = nSize - (nBankYPos - 0x10 - nSize - 1);
-
-				if (y < 0 || y > nSize || y <= (240 - nBankYPos)) {
-					break;
-				}
-			}
-
-			y += nSliceStart - 0x10;
-
-			nMax = nSize + 1;
-			if (nMax > nSliceSize + y) {
-				nMax = nSliceSize + y;
-			} else {
-				if (y >= nMax) {
-#if 0
-					if (nBankSize < 0x20) {
-						break;
-					}
-					y = nSize + nBankYZoom - 0xFF;
+#if 1 && defined USE_SPEEDHACKS
+							nStartLine += nBankYZoom + 1;
+							if (nStartLine < 0) {
+								nLinesDone = 0x200;
+								continue;
+							}
 #else
-					break;
+							nStartLine = nBankYZoom - (-nStartLine - 1) % (nBankYZoom + 1);
 #endif
+
+							nStartTile = 0;
+						}
+					} else {
+						if (nStartLine > nBankYZoom) {
+
+#if 1 && defined USE_SPEEDHACKS
+							nStartLine -= nBankYZoom + 1;
+							if (nStartLine > nBankYZoom) {
+								nLinesDone = 0x0100;
+								continue;
+							}
+#else
+							nStartLine %= nBankYZoom + 1;
+#endif
+
+							nStartTile = 0x10;
+						}
+					}
+
+					nEndLine = nBankYZoom;
 				}
 			}
 
-			pTileRow = pBurnDraw + (nSliceStart - 0x10) * (BPP >> 3) * nNeoScreenWidth + nBankXPos * (BPP >> 3);
-#if 0
-			if (y < 0) {
-				pTileRow -= y * (BPP >> 3) * nNeoScreenWidth;
-				y = 0;
+			nLinesDone += nEndLine - nStartLine + 1;
+
+#if 1 && defined USE_SPEEDHACKS
+			if (nBankSize <= 0x20 && nEndLine > nBankYZoom) {
+				nEndLine = nBankYZoom;
+//				nLinesDone |= 0x00FF;
 			}
 #endif
-		}
 
-        nTile = pZoomValue[y] >> 4;
-
-		if (nTile != nPrevTile) {
-			nPrevTile = nTile;
-
-			nTileNumber = pBank[nTile << 1];
-			nTileAttrib = pBank[(nTile << 1) + 1];
-
-			nTileNumber += (nTileAttrib & 0xF0) << 12;
-			nTileNumber &= nNeoTileMask;
-
-			if (nTileAttrib & 8) {
-				nTileNumber &= ~7;
-				nTileNumber |= nNeoSpriteFrame08;
-			} else {
-				if (nTileAttrib & 4) {
-					nTileNumber &= ~3;
-					nTileNumber |= nNeoSpriteFrame04;
-				}
+			// Clip to the part of the screen we need to render
+			if (nEndLine - nStartLine > nSliceEnd - nYPos - 1) {
+				nEndLine = nStartLine + nSliceEnd - nYPos - 1;
 			}
 
-			nTransparent = NeoTileAttrib[nTileNumber];
+			pTileRow = pBurnDraw + (nYPos - 0x10) * (BPP >> 3) * nNeoScreenWidth + nBankXPos * (BPP >> 3);
+			nThisLine = nStartLine;
 
-			if (nTransparent == 0) {
-				pTileData = (unsigned int*)(NeoSpriteROM + (nTileNumber << 7));
-				pTilePalette = &NeoPalette[(nTileAttrib & 0xFF00) >> 4];
-			}
-		}
+			nPrevTile = ~0;
 
-		if (nTransparent == 0) {
-			nLine = (pZoomValue[y] & 0x0F) << 1;
-			if (nTileAttrib & 2) {							// Flip Y
-				nLine ^= 0x1E;
-			}
+			while (nThisLine <= nEndLine) {
 
-			if (nTileAttrib & 1) {							// Flip X
-				pPixel = pTileRow + XZOOM * (BPP >> 3);
-				PLOTLINE(MIRROROFFSET,pPixel -= (BPP >> 3));
-			} else {
-				pPixel = pTileRow;
-				PLOTLINE(NORMALOFFSET,pPixel += (BPP >> 3));
-			}
-		}
+				nTile = nStartTile + (pZoomValue[nThisLine] >> 4);
 
-		y++;
-		pTileRow += ((BPP >> 3) * nNeoScreenWidth);
+				if (nTile != nPrevTile) {
+					nPrevTile = nTile;
 
-	} while (1);
+					nTileNumber = pBank[nTile << 1];
+					nTileAttrib = pBank[(nTile << 1) + 1];
 
-	if (nBankSize <= 0x10) {
-		return;
-	}
+					nTileNumber += (nTileAttrib & 0xF0) << 12;
+					nTileNumber &= nNeoTileMaskActive;
 
-	// Draw the next tile(s) from the bottom up, starting at the sprite position
+					if (nTileAttrib & 8) {
+						nTileNumber &= ~7;
+						nTileNumber |= nNeoSpriteFrame08;
+					} else {
+						if (nTileAttrib & 4) {
+							nTileNumber &= ~3;
+							nTileNumber |= nNeoSpriteFrame04;
+						}
+					}
 
-	nPrevTile = -1;
+					nTransparent = NeoTileAttribActive[nTileNumber];
 
-	nSize = ((nBankSize - 0x10) << 4) - 1;
-	if (nSize > nBankYZoom) {
-		nSize = nBankYZoom;
-	}
-
-	nPass = 0;
-
-	if (nBankYPos <= 240) {
-		int nYPos = nBankYPos;
-
-		if ((nBankSize != 0x20 && nBankYPos < (0x0100 - nSize)) || (nBankSize == 0x18 && nBankYPos >= 0x80)) {
-			nYPos = (nBankYPos + nBankYZoom + nSize + 2) & 0x01FF;
-			if (nYPos > 240) {
-				y = 0;
-				nMax = 0;
-			}
-		}
-
-		if (nYPos <= nSliceStart) {									// Sprite starts above the screen
-			y = nYPos;
-			nMax = y;
-		} else {													// Sprite starts on the screen
-			if (nYPos <= nSliceEnd) {
-				pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nYPos - 0x11) * (BPP >> 3) * nNeoScreenWidth;
-				y = 0;
-				nMax = nSize + 1;
-				if (nMax >= nYPos - nSliceStart) {
-					nMax = nYPos - nSliceStart;
-				} else {
-					nPass = 1;
-				}
-			} else {
-				pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nSliceEnd - 0x11) * (BPP >> 3) * nNeoScreenWidth;
-				y = nYPos - nSliceEnd;
-				nMax = nSize + 1;
-				if (nMax >= y + nSliceSize) {
-					nMax = y + nSliceSize;
-				} else {
-					nPass = 1;
-				}
-			}
-		}
-	} else {
-		if (nBankYPos >= 240 && nBankYPos <= 240 + nBankYZoom) {	// Sprite starts below the screen and is partly visible
-			int nSlice;
-
-			y = nBankYPos - nSliceEnd;
-
-			if (y <= nBankYZoom) {
-				nMax = nBankYZoom + 1;
-
-				nSlice = nSliceSize;
-				if (y < nBankYZoom - nSize) {
-					nSlice -= nBankYZoom - nSize - y;
-					y = nBankYZoom - nSize;
-				}
-
-#if 0
-				if (nBankSize == 0x20) {
-					y -= 0xFF - nBankYZoom;
-				}
-#endif
-				pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nSliceStart + nSlice - 0x11) * (BPP >> 3) * nNeoScreenWidth;
-
-				if (nMax > nSlice + y) {
-					nMax = nSlice + y;
-				}
-			} else {
-				y = 0;
-				nMax = 0;
-			}
-		}
-	}
-
-	do {
-
-		if (y >= nMax) {
-			if (nPass) {
-				break;
-			}
-			nPass++;
-
-			if (nFullWrap > 0 || nBankYPos >= 0x01F0) {
-				// Sprite wraps around completely
-
-				if (nFullWrap) {
-					y = nFullWrap;
-				} else {
-					y = nBankYPos - (nBankYZoom + nBankYZoom + 2 + nSliceStart);
-					if (y <= 0 || y > nBankYPos - nSliceEnd || (!nFullWrap && y < nBankYZoom)) {
-						break;
+					if (nTransparent == 0) {
+						pTileData = (UINT32*)(NeoSpriteROMActive + (nTileNumber << 7));
+						pTilePalette = &NeoPalette[(nTileAttrib & 0xFF00) >> 4];
 					}
 				}
 
-				nMax = nBankYZoom + 1;
-				if (y < 224) {
-					pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nSliceStart - 0x11 + y) * (BPP >> 3) * nNeoScreenWidth;
-					if (nMax > y) {
-						nMax = y;
+				if (nTransparent == 0) {
+					nLine = (pZoomValue[nThisLine] & 0x0F) << 1;
+					if (nTileAttrib & 2) {							// Flip Y
+						nLine ^= 0x1E;
 					}
-					y = 0;
-				} else {
-					pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nSliceEnd - 0x11) * (BPP >> 3) * nNeoScreenWidth;
-					if (nMax > nSliceSize) {
-						nMax = nSliceSize;
+
+					if (nTileAttrib & 1) {							// Flip X
+						pPixel = pTileRow + XZOOM * (BPP >> 3);
+						PLOTLINE(MIRROROFFSET,pPixel -= (BPP >> 3));
+					} else {
+						pPixel = pTileRow;
+						PLOTLINE(NORMALOFFSET,pPixel += (BPP >> 3));
 					}
-					y -= nSliceSize;
-				}
-			} else {
-				// Check if part of the sprite wraps around
-
-				y = nBankYZoom - (nSliceEnd - 1 - nBankYPos - nBankYZoom);
-				if (y < 0 || y >= nBankYZoom || y < nMax) {
-					break;
 				}
 
-				nMax = nBankYZoom + 1;
+				pTileRow += ((BPP >> 3) * nNeoScreenWidth);
 
-				if (nMax > nSliceSize + y) {
-					nMax = nSliceSize + y;
-				}
-
-				pTileRow = pBurnDraw + nBankXPos * (BPP >> 3) + (nSliceEnd - 0x11) * (BPP >> 3) * nNeoScreenWidth;
+				nThisLine++;
 			}
 		}
-
-		nTile = 0x10 + ((pZoomValue[y] >> 4) ^ 0x0F);
-
-		if (nTile != nPrevTile) {
-			nPrevTile = nTile;
-
-			nTileNumber = pBank[nTile << 1];
-			nTileAttrib = pBank[(nTile << 1) + 1];
-
-			nTileNumber += (nTileAttrib & 0xF0) << 12;
-			nTileNumber &= nNeoTileMask;
-
-			if (nTileAttrib & 8) {
-				nTileNumber &= ~7;
-				nTileNumber |= nNeoSpriteFrame08;
-			} else {
-				if (nTileAttrib & 4) {
-					nTileNumber &= ~3;
-					nTileNumber |= nNeoSpriteFrame04;
-				}
-			}
-
-			nTransparent = NeoTileAttrib[nTileNumber];
-
-			if (nTransparent == 0) {
-				pTileData = (unsigned int*)(NeoSpriteROM + (nTileNumber << 7));
-				pTilePalette = &NeoPalette[(nTileAttrib & 0xFF00) >> 4];
-			}
-		}
-
-		if (nTransparent == 0) {
-			nLine = (pZoomValue[y] & 0x0F) << 1;
-			if ((nTileAttrib & 2) == 0) {				// Flip Y
-				nLine ^= 0x1E;
-			}
-
-			if (nTileAttrib & 1) {						// Flip X
-				pPixel = pTileRow + XZOOM * (BPP >> 3);
-
-				PLOTLINE(MIRROROFFSET,pPixel -= (BPP >> 3));
-			} else {
-				pPixel = pTileRow;
-				PLOTLINE(NORMALOFFSET,pPixel += (BPP >> 3));
-			}
-		}
-
-		y++;
-		pTileRow -= (BPP >> 3) * nNeoScreenWidth;
-
-	} while (1);
+	}
 }
 
 #undef PLOTLINE

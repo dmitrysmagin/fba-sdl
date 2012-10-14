@@ -7,6 +7,8 @@
 #define DIRECTSOUND_VERSION  0x0300			// Only need version from DirectX 3
 #include <dsound.h>
 
+#include "dsound_core.h"
+
 // Sound is split into a series of 'segs', one seg for each frame
 // The Loop buffer is a multiple of this seg length.
 
@@ -92,7 +94,7 @@ static int DxSoundCheck()
 	}
 
 	if (nDSoundNextSeg == nPlaySeg) {
-		//Sleep(2);													// Don't need to do anything for a bit
+		Sleep(2);													// Don't need to do anything for a bit
 		//bRunFrame = true;
 		return 0;
 	}
@@ -117,7 +119,7 @@ static int DxSoundCheck()
 			pdsbLoop->Unlock(pData, cbLen, pData2, 0);
 		}
 
-		bDraw = (nFollowingSeg == nPlaySeg)	/*|| bAlwaysDrawFrames*/;	// If this is the last seg of sound, flag bDraw (to draw the graphics)
+		bDraw = (nFollowingSeg == nPlaySeg)	|| bAlwaysDrawFrames;	// If this is the last seg of sound, flag bDraw (to draw the graphics)
 
 		if(bDraw) {
 			DSoundGetNextSound(bDraw);									// get more sound into nAudNextSound
@@ -143,8 +145,10 @@ static int DxSoundExit()
 {
 	DspExit();
 
-	free(nAudNextSound);
-	nAudNextSound = NULL;
+	if (nAudNextSound) {
+		free(nAudNextSound);
+		nAudNextSound = NULL;
+	}
 
 	DSoundGetNextSound = NULL;
 
@@ -185,7 +189,7 @@ static int DxSoundInit()
 	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 
 	// Create the DirectSound interface
-	if (FAILED(DirectSoundCreate(NULL, &pDS, NULL))) {
+	if (FAILED(_DirectSoundCreate(NULL, &pDS, NULL))) {
 		return 1;
 	}
 

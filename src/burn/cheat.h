@@ -1,14 +1,14 @@
-#define CHEAT_MAX_ADDRESS ( 64)
-#define CHEAT_MAX_OPTIONS (192)
+#define CHEAT_MAX_ADDRESS (512)
+#define CHEAT_MAX_OPTIONS (512)
 #define CHEAT_MAX_NAME	  (128)
 
 extern bool bCheatsAllowed;
 
 struct CheatAddressInfo {
-	int nCPU;
-	int nAddress;
-	unsigned int nValue;
-	unsigned int nOriginalValue;
+	INT32 nCPU;
+	INT32 nAddress;
+	UINT32 nValue;
+	UINT32 nOriginalValue;
 };
 
 struct CheatOption {
@@ -19,31 +19,35 @@ struct CheatOption {
 struct CheatInfo {
 	struct CheatInfo* pNext;
 	struct CheatInfo* pPrevious;
-	int nType;									// Cheat type
-	int nStatus;								// 0 = Inactive
-	int nCurrent;								// Currently selected option
-	int nDefault;								// Default option
+	INT32 nType;									// Cheat type
+	INT32 nStatus;								// 0 = Inactive
+	INT32 nCurrent;								// Currently selected option
+	INT32 nDefault;								// Default option
 	TCHAR szCheatName[CHEAT_MAX_NAME];
 	struct CheatOption* pOption[CHEAT_MAX_OPTIONS];
 };
 
 extern CheatInfo* pCheatInfo;
 
-int CheatUpdate();
-int CheatEnable(int nCheat, int nOption);
-int CheatApply();
-int CheatInit();
+INT32 CheatUpdate();
+INT32 CheatEnable(INT32 nCheat, INT32 nOption);
+INT32 CheatApply();
+INT32 CheatInit();
 void CheatExit();
 
 #define CHEATSEARCH_SHOWRESULTS		3
-extern unsigned int CheatSearchShowResultAddresses[CHEATSEARCH_SHOWRESULTS];
-extern unsigned int CheatSearchShowResultValues[CHEATSEARCH_SHOWRESULTS];
+extern UINT32 CheatSearchShowResultAddresses[CHEATSEARCH_SHOWRESULTS];
+extern UINT32 CheatSearchShowResultValues[CHEATSEARCH_SHOWRESULTS];
 
-int CheatSearchInit();
+INT32 CheatSearchInit();
 void CheatSearchExit();
 void CheatSearchStart();
-unsigned int CheatSearchValueNoChange();
-unsigned int CheatSearchValueChange();
-unsigned int CheatSearchValueDecreased();
-unsigned int CheatSearchValueIncreased();
+UINT32 CheatSearchValueNoChange();
+UINT32 CheatSearchValueChange();
+UINT32 CheatSearchValueDecreased();
+UINT32 CheatSearchValueIncreased();
 void CheatSearchDumptoFile();
+
+typedef void (*CheatSearchInitCallback)();
+extern CheatSearchInitCallback CheatSearchInitCallbackFunction;
+void CheatSearchExcludeAddressRange(UINT32 nStart, UINT32 nEnd);

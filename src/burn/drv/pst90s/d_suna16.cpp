@@ -2,6 +2,8 @@
 // Based on MAME driver by Luca Elia
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "burn_ym3526.h"
 #include "driver.h"
@@ -10,54 +12,55 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvZ80ROM2;
-static unsigned char *DrvGfxROM0;
-static unsigned int  nGfxROM0Len;
-static unsigned char *DrvGfxROM1;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvSprRAM0;
-static unsigned char *DrvSprRAM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPalRAM2;
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvZ80ROM2;
+static UINT8 *DrvGfxROM0;
+static UINT32 nGfxROM0Len;
+static UINT8 *DrvGfxROM1;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvSprRAM0;
+static UINT8 *DrvSprRAM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPalRAM2;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 
-static short *pFMBuffer;
-static short *pAY8910Buffer[3];
+static INT16 *pFMBuffer;
+static INT16 *pAY8910Buffer[3];
+static INT16 *pSoundBuffer;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvJoy4[16];
-static unsigned char DrvJoy5[16];
-static unsigned char DrvJoy6[16];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvJoy4[16];
+static UINT8 DrvJoy5[16];
+static UINT8 DrvJoy6[16];
 
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
 
-static unsigned short DrvInputs[6];
+static UINT16 DrvInputs[6];
 
-static int game_select = 0;
+static INT32 game_select = 0;
 
-static unsigned char soundlatch;
-static unsigned char soundlatch2;
-static unsigned char soundlatch3;
-static unsigned char flipscreen;
-static unsigned char color_bank;
+static UINT8 soundlatch;
+static UINT8 soundlatch2;
+static UINT8 soundlatch3;
+static UINT8 flipscreen;
+static UINT8 color_bank;
 
-static unsigned char bestofbest_prot = 0;
+static UINT8 bestofbest_prot = 0;
 
-static unsigned char z80bankdata[2];
+static UINT8 z80bankdata[2];
 
 static struct BurnInputInfo BestbestInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 15,	 "p1 coin"  },
@@ -308,7 +311,7 @@ STDDIPINFO(bssoccer)
 
 static struct BurnDIPInfo sunaqDIPList[]=
 {
-	{0x0e, 0xff, 0xff, 0xff, NULL },
+	{0x0e, 0xff, 0xff, 0xcf, NULL },
 
 	{0x0e, 0xfe, 0,       8, "Coinage" },
 	{0x0e, 0x01, 0x07, 0x00, "5C 1C" },
@@ -401,10 +404,10 @@ STDDIPINFO(uballoon)
 //-------------------------------------------------------------------------------------------------
 // Generic functions
 
-static void suna_palette_write(int offset)
+static void suna_palette_write(INT32 offset)
 {
-	unsigned char r, b, g;
-	unsigned short data = *((unsigned short*)(DrvPalRAM + offset));
+	UINT8 r, b, g;
+	UINT16 data = BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM + offset)));
 
 	r = (data >>  0) & 0x1f;
 	r = (r << 3) | (r >> 2);
@@ -421,12 +424,6 @@ static void suna_palette_write(int offset)
 	return;
 }
 
-static void write_dac(int data)
-{
-	DACWrite(((data & 0x0f) * 0x11)>>1);
-	return;
-}
-
 //-------------------------------------------------------------------------------------------------
 // Memory handlers
 
@@ -438,7 +435,7 @@ static void write_dac(int data)
 //------------------
 // 68k
 
-unsigned short __fastcall bestbest_read_word(unsigned int address)
+UINT16 __fastcall bestbest_read_word(UINT32 address)
 {
 	switch (address & ~1)
 	{
@@ -455,7 +452,7 @@ unsigned short __fastcall bestbest_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall bestbest_read_byte(unsigned int address)
+UINT8 __fastcall bestbest_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -478,10 +475,10 @@ unsigned char __fastcall bestbest_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall bestbest_write_word(unsigned int address, unsigned short data)
+void __fastcall bestbest_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0x540000) {
-		*((unsigned short*)(DrvPalRAM + (address & 0x0fff))) = data;
+		*((UINT16*)(DrvPalRAM + (address & 0x0fff))) = BURN_ENDIAN_SWAP_INT16(data);
 		suna_palette_write(address & 0xffe);
 		return;
 	}
@@ -500,7 +497,7 @@ void __fastcall bestbest_write_word(unsigned int address, unsigned short data)
 	return;
 }
 
-void __fastcall bestbest_write_byte(unsigned int address, unsigned char data)
+void __fastcall bestbest_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfff000) == 0x540000) {
 		DrvPalRAM[address & 0xfff] = data;
@@ -536,7 +533,7 @@ void __fastcall bestbest_write_byte(unsigned int address, unsigned char data)
 //------------------
 // Z80 #0
 
-void __fastcall bestbest_sound0_write(unsigned short address, unsigned char data)
+void __fastcall bestbest_sound0_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -558,7 +555,7 @@ void __fastcall bestbest_sound0_write(unsigned short address, unsigned char data
 	return;
 }
 
-unsigned char __fastcall bestbest_sound0_read(unsigned short address)
+UINT8 __fastcall bestbest_sound0_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -572,25 +569,21 @@ unsigned char __fastcall bestbest_sound0_read(unsigned short address)
 //------------------
 // Z80 #1
 
-void __fastcall bestbest_sound1_out(unsigned short port, unsigned char data)
+void __fastcall bestbest_sound1_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
-		case 0x00:
-		case 0x01:
-			write_dac(data);;
-		return;
+		case 0x00: { DACWrite(0, (data & 0xf) * 0x11); return; }
+		case 0x01: { DACWrite(1, (data & 0xf) * 0x11); return; }
 
-		case 0x02:
-		case 0x03:
-			write_dac(data);
-		return;
+		case 0x02: { DACWrite(2, (data & 0xf) * 0x11); return; }
+		case 0x03: { DACWrite(3, (data & 0xf) * 0x11); return; }
 	}
 
 	return;
 }
 
-unsigned char __fastcall bestbest_sound1_in(unsigned short port)
+UINT8 __fastcall bestbest_sound1_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -609,14 +602,14 @@ unsigned char __fastcall bestbest_sound1_in(unsigned short port)
 //------------------
 // 68k
 
-unsigned short __fastcall sunaq_read_word(unsigned int address)
+UINT16 __fastcall sunaq_read_word(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x540000) {
 		if (address & 0x200) {
-			return *((unsigned short*)(DrvPalRAM2 + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM2 + (address & 0xffe))));
 		} else {
 			address += color_bank << 9;
-			return *((unsigned short*)(DrvPalRAM + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM + (address & 0xffe))));
 		}
 	}
 
@@ -638,7 +631,7 @@ unsigned short __fastcall sunaq_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall sunaq_read_byte(unsigned int address)
+UINT8 __fastcall sunaq_read_byte(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x540000) {
 		if (address & 0x200) {
@@ -671,14 +664,14 @@ unsigned char __fastcall sunaq_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall sunaq_write_word(unsigned int address, unsigned short data)
+void __fastcall sunaq_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0x540000) {
 		if (address & 0x200) {
-			*((unsigned short*)(DrvPalRAM2 + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM2 + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 		} else {
 			address += color_bank << 9;
-			*((unsigned short*)(DrvPalRAM + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 			suna_palette_write(address & 0xffff);
 		}
 		return;
@@ -702,7 +695,7 @@ void __fastcall sunaq_write_word(unsigned int address, unsigned short data)
 	return;
 }
 
-void __fastcall sunaq_write_byte(unsigned int address, unsigned char data)
+void __fastcall sunaq_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfff000) == 0x540000) {
 		if (address & 0x200) {
@@ -740,7 +733,7 @@ void __fastcall sunaq_write_byte(unsigned int address, unsigned char data)
 //------------------
 // Z80 #0
 
-void __fastcall sunaq_sound0_write(unsigned short address, unsigned char data)
+void __fastcall sunaq_sound0_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -768,14 +761,14 @@ void __fastcall sunaq_sound0_write(unsigned short address, unsigned char data)
 //------------------
 // 68k
 
-unsigned short __fastcall uballoon_read_word(unsigned int address)
+UINT16 __fastcall uballoon_read_word(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x200000) {
 		if (address & 0x200) {
-			return *((unsigned short*)(DrvPalRAM2 + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM2 + (address & 0xffe))));
 		} else {
 			address += color_bank << 9;
-			return *((unsigned short*)(DrvPalRAM + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM + (address & 0xffe))));
 		}
 	}
 
@@ -797,7 +790,7 @@ unsigned short __fastcall uballoon_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall uballoon_read_byte(unsigned int address)
+UINT8 __fastcall uballoon_read_byte(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x200000) {
 		if (address & 0x200) {
@@ -830,14 +823,14 @@ unsigned char __fastcall uballoon_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall uballoon_write_word(unsigned int address, unsigned short data)
+void __fastcall uballoon_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0x200000) {
 		if (address & 0x200) {
-			*((unsigned short*)(DrvPalRAM2 + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM2 + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 		} else {
 			address += color_bank << 9;
-			*((unsigned short*)(DrvPalRAM + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 			suna_palette_write(address & 0xffff);
 		}
 		return;
@@ -857,7 +850,7 @@ void __fastcall uballoon_write_word(unsigned int address, unsigned short data)
 	return;
 }
 
-void __fastcall uballoon_write_byte(unsigned int address, unsigned char data)
+void __fastcall uballoon_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfff000) == 0x200000) {
 		if (address & 0x200) {
@@ -889,24 +882,22 @@ void __fastcall uballoon_write_byte(unsigned int address, unsigned char data)
 //------------------
 // Z80 #1
 
-static void uballoon_bankswitch(int data)
+static void uballoon_bankswitch(INT32 data)
 {
 	z80bankdata[0] = data;
 
-	int bank = ((data & 1) << 16) | 0x400;
-
+	INT32 bank = ((data & 1) << 16) | 0x400;
+	
 	ZetMapArea(0x0400, 0xffff, 0, DrvZ80ROM1 + bank);
 	ZetMapArea(0x0400, 0xffff, 2, DrvZ80ROM1 + bank);
 }
 
-void __fastcall uballoon_sound1_out(unsigned short port, unsigned char data)
+void __fastcall uballoon_sound1_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
-		case 0x00:
-		case 0x01:
-			write_dac(data);
-		return;
+		case 0x00: { DACWrite(0, (data & 0xf) * 0x11); return; }
+		case 0x01: { DACWrite(1, (data & 0xf) * 0x11); return; }
 
 		case 0x03:
 			uballoon_bankswitch(data);
@@ -916,7 +907,7 @@ void __fastcall uballoon_sound1_out(unsigned short port, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall uballoon_sound1_in(unsigned short port)
+UINT8 __fastcall uballoon_sound1_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -935,14 +926,14 @@ unsigned char __fastcall uballoon_sound1_in(unsigned short port)
 //------------------
 // 68k
 
-unsigned short __fastcall bssoccer_read_word(unsigned int address)
+UINT16 __fastcall bssoccer_read_word(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x400000) {
 		if (address & 0x200) {
-			return *((unsigned short*)(DrvPalRAM2 + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM2 + (address & 0xffe))));
 		} else {
 			address += color_bank << 9;
-			return *((unsigned short*)(DrvPalRAM + (address & 0xffe)));
+			return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(DrvPalRAM + (address & 0xffe))));
 		}
 	}
 
@@ -971,7 +962,7 @@ unsigned short __fastcall bssoccer_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall bssoccer_read_byte(unsigned int address)
+UINT8 __fastcall bssoccer_read_byte(UINT32 address)
 {
 	if ((address & 0xfff000) == 0x400000) {
 		if (address & 0x200) {
@@ -1012,14 +1003,14 @@ unsigned char __fastcall bssoccer_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall bssoccer_write_word(unsigned int address, unsigned short data)
+void __fastcall bssoccer_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0x400000) {
 		if (address & 0x200) {
-			*((unsigned short*)(DrvPalRAM2 + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM2 + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 		} else {
 			address += color_bank << 9;
-			*((unsigned short*)(DrvPalRAM + (address & 0xffff))) = data;
+			*((UINT16*)(DrvPalRAM + (address & 0xffff))) = BURN_ENDIAN_SWAP_INT16(data);
 			suna_palette_write(address & 0xffff);
 		}
 		return;
@@ -1039,7 +1030,7 @@ void __fastcall bssoccer_write_word(unsigned int address, unsigned short data)
 	return;
 }
 
-void __fastcall bssoccer_write_byte(unsigned int address, unsigned char data)
+void __fastcall bssoccer_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfff000) == 0x400000) {
 		if (address & 0x200) {
@@ -1071,17 +1062,17 @@ void __fastcall bssoccer_write_byte(unsigned int address, unsigned char data)
 //------------------
 // Z80 #0
 
-static void bssoccer_bankswitch_w(unsigned char *z80data, int p, int data)
+static void bssoccer_bankswitch_w(UINT8 *z80data, INT32 p, INT32 data)
 {
 	z80bankdata[p] = data;
 
-	int bank = ((data & 7) << 16) | 0x1000;
+	INT32 bank = ((data & 7) << 16) | 0x1000;
 
 	ZetMapArea(0x1000, 0xffff, 0, z80data + bank);
 	ZetMapArea(0x1000, 0xffff, 2, z80data + bank);
 }
 
-void __fastcall bssoccer_sound0_write(unsigned short address, unsigned char data)
+void __fastcall bssoccer_sound0_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -1105,7 +1096,7 @@ void __fastcall bssoccer_sound0_write(unsigned short address, unsigned char data
 	return;
 }
 
-unsigned char __fastcall bssoccer_sound0_read(unsigned short address)
+UINT8 __fastcall bssoccer_sound0_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -1122,14 +1113,12 @@ unsigned char __fastcall bssoccer_sound0_read(unsigned short address)
 //------------------
 // Z80 #1
 
-void __fastcall bssoccer_sound1_out(unsigned short port, unsigned char data)
+void __fastcall bssoccer_sound1_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
-		case 0x00:
-		case 0x01:
-			write_dac(data);
-		return;
+		case 0x00: { DACWrite(0, (data & 0xf) * 0x11); return; }
+		case 0x01: { DACWrite(1, (data & 0xf) * 0x11); return; }
 
 		case 0x03:
 			bssoccer_bankswitch_w(DrvZ80ROM1, 0, data);
@@ -1139,7 +1128,7 @@ void __fastcall bssoccer_sound1_out(unsigned short port, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall bssoccer_sound1_in(unsigned short port)
+UINT8 __fastcall bssoccer_sound1_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -1153,13 +1142,12 @@ unsigned char __fastcall bssoccer_sound1_in(unsigned short port)
 //------------------
 // Z80 #2
 
-void __fastcall bssoccer_sound2_out(unsigned short port, unsigned char data)
+void __fastcall bssoccer_sound2_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
-		case 0x00:
-		case 0x01:
-			write_dac(data);
+		case 0x00: { DACWrite(2, (data & 0xf) * 0x11); return; }
+		case 0x01: { DACWrite(3, (data & 0xf) * 0x11); return; }
 		return;
 
 		case 0x03:
@@ -1170,7 +1158,7 @@ void __fastcall bssoccer_sound2_out(unsigned short port, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall bssoccer_sound2_in(unsigned short port)
+UINT8 __fastcall bssoccer_sound2_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -1185,7 +1173,7 @@ unsigned char __fastcall bssoccer_sound2_in(unsigned short port)
 //-------------------------------------------------------------------------------------------------
 // Initialization routines
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -1195,8 +1183,14 @@ static int DrvDoReset()
 	SekReset();
 	SekClose();
 
-	for (int j = 0; j < 3; j++) {
+	for (INT32 j = 0; j < 2; j++) {
 		ZetOpen(j);
+		ZetReset();
+		ZetClose();
+	}
+	
+	if (game_select == 3) {
+		ZetOpen(2);
 		ZetReset();
 		ZetClose();
 	}
@@ -1220,8 +1214,14 @@ static int DrvDoReset()
 	}
 
 	if (game_select == 2) {
-		ZetOpen(0);
+		ZetOpen(1);
 		uballoon_bankswitch(z80bankdata[0]);
+		ZetClose();
+	}
+	
+	if (game_select == 1) {
+		ZetOpen(1);
+		bssoccer_bankswitch_w(DrvZ80ROM1, 0, z80bankdata[0]);
 		ZetClose();
 	}
 
@@ -1238,9 +1238,9 @@ static int DrvDoReset()
 }
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x0200000;
 	DrvZ80ROM0	= Next; Next += 0x0010000;
@@ -1252,15 +1252,17 @@ static int MemIndex()
 		DrvGfxROM1	= Next; Next += 0x0800000;
 	}
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x01000 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x01000 * sizeof(UINT32);
 
-	pFMBuffer	= (short*)Next; Next += nBurnSoundLen * 3 * sizeof(short);
+	pFMBuffer	= (INT16*)Next; Next += nBurnSoundLen * 3 * sizeof(INT16);
+	pSoundBuffer = (INT16*)Next; Next += nBurnSoundLen * 2 * sizeof(INT16);
 
 	AllRam		= Next;
 
 	Drv68KRAM	= Next; Next += 0x0010000;
 
-	DrvZ80RAM0	= Next; Next += 0x0000800;
+//	DrvZ80RAM0	= Next; Next += 0x0000800;
+	DrvZ80RAM0	= Next; Next += 0x0001000;
 
 	DrvSprRAM0	= Next; Next += 0x0020000;
 	DrvSprRAM1	= Next; Next += 0x0020000;
@@ -1268,7 +1270,7 @@ static int MemIndex()
 	DrvPalRAM	= Next; Next += 0x0001000;
 	DrvPalRAM2	= Next; Next += 0x0010000;
 
-	Palette		= (unsigned int*)Next; Next += 0x01000 * sizeof(int);
+	Palette		= (UINT32*)Next; Next += 0x01000 * sizeof(UINT32);
 
 	RamEnd		= Next;
 
@@ -1277,42 +1279,42 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode(unsigned char *gfx_base, int len)
+static INT32 DrvGfxDecode(UINT8 *gfx_base, INT32 len)
 {
-	int Plane[4] = {(len << 2) + 0, (len << 2) + 4, 0, 4 };
-	int XOffs[8] = {  3,  2,  1,  0, 11, 10,  9,  8 };
-	int YOffs[8] = {  0, 16, 32, 48, 64, 80, 96, 112 };
+	INT32 Plane[4] = {(len << 2) + 0, (len << 2) + 4, 0, 4 };
+	INT32 XOffs[8] = {  3,  2,  1,  0, 11, 10,  9,  8 };
+	INT32 YOffs[8] = {  0, 16, 32, 48, 64, 80, 96, 112 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < len; i++) tmp[i] = gfx_base[i] ^ 0xff; // copy & invert
+	for (INT32 i = 0; i < len; i++) tmp[i] = gfx_base[i] ^ 0xff; // copy & invert
 
 	GfxDecode(((len * 8) / 4) / 64, 4, 8, 8, Plane, XOffs, YOffs, 0x80, tmp, gfx_base);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvLoadRoms()
+static INT32 DrvLoadRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
 
-	unsigned char *Load68K = Drv68KROM;
-	unsigned char *Loadz0  = DrvZ80ROM0;
-	unsigned char *Loadz1  = DrvZ80ROM1;
-	unsigned char *Loadz2  = DrvZ80ROM2;
-	unsigned char *Loadg0  = DrvGfxROM0;
-	unsigned char *Loadg1  = DrvGfxROM1;
+	UINT8 *Load68K = Drv68KROM;
+	UINT8 *Loadz0  = DrvZ80ROM0;
+	UINT8 *Loadz1  = DrvZ80ROM1;
+	UINT8 *Loadz2  = DrvZ80ROM2;
+	UINT8 *Loadg0  = DrvGfxROM0;
+	UINT8 *Loadg1  = DrvGfxROM1;
 
-	int gfx0_len = 0;
-	int gfx1_len = 0;
+	INT32 gfx0_len = 0;
+	INT32 gfx1_len = 0;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -1370,11 +1372,11 @@ static int DrvLoadRoms()
 	return 0;
 }
 
-void bestbest_ay8910_write_a(unsigned int,unsigned int)
+void bestbest_ay8910_write_a(UINT32,UINT32)
 {
 }
 
-static void bestbestFMIRQHandler(int, int nStatus)
+static void bestbestFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -1383,25 +1385,35 @@ static void bestbestFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int bestbestSynchroniseStream(int nSoundRate)
+static INT32 bestbestSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 6000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 6000000;
 }
 
-static int BestbestInit()
+static INT32 bestbestSyncDAC()
 {
-	int nLen;
+	return (INT32)(float)(nBurnSoundLen * (ZetTotalCycles() / (6000000.0000 / (nBurnFPS / 100.0000))));
+}
+
+static INT32 bssoccerSyncDAC()
+{
+	return (INT32)(float)(nBurnSoundLen * (ZetTotalCycles() / (5000000.0000 / (nBurnFPS / 100.0000))));
+}
+
+static INT32 BestbestInit()
+{
+	INT32 nLen;
 
 	game_select = 0;
 
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		pAY8910Buffer[i] = pFMBuffer + nBurnSoundLen * i;
 	}
 
@@ -1425,7 +1437,7 @@ static int BestbestInit()
 	SekSetReadWordHandler(0,	   bestbest_read_word);
 	SekClose();
 
-	ZetInit(3); // actually 2
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xbfff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xbfff, 2, DrvZ80ROM0);
@@ -1437,6 +1449,7 @@ static int BestbestInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0xffff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0xffff, 2, DrvZ80ROM1);
@@ -1449,7 +1462,14 @@ static int BestbestInit()
 	
 	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, bestbest_ay8910_write_a, NULL);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1, bestbestSyncDAC);
+	DACInit(1, 0, 1, bestbestSyncDAC);
+	DACInit(2, 0, 1, bestbestSyncDAC);
+	DACInit(3, 0, 1, bestbestSyncDAC);
+	DACSetVolShift(0, 2);
+	DACSetVolShift(1, 2);
+	DACSetVolShift(2, 2);
+	DACSetVolShift(3, 2);
 
 	DrvDoReset();
 
@@ -1458,16 +1478,16 @@ static int BestbestInit()
 	return 0;
 }
 
-static int SunaqInit()
+static INT32 SunaqInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	game_select = 1;
 
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1485,7 +1505,7 @@ static int SunaqInit()
 	SekSetReadWordHandler(0,	   sunaq_read_word);
 	SekClose();
 
-	ZetInit(3); // actually 2
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xefff, 2, DrvZ80ROM0);
@@ -1497,6 +1517,7 @@ static int SunaqInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x0fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x0fff, 2, DrvZ80ROM1);
@@ -1509,7 +1530,10 @@ static int SunaqInit()
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 2, bestbestSyncDAC);
+	DACInit(1, 0, 2, bestbestSyncDAC);
+	DACSetVolShift(0, 2);
+	DACSetVolShift(1, 2);
 
 	DrvDoReset();
 
@@ -1519,16 +1543,16 @@ static int SunaqInit()
 }
 
 
-static int UballoonInit()
+static INT32 UballoonInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	game_select = 2;
 
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1547,7 +1571,7 @@ static int UballoonInit()
 	SekSetReadWordHandler(0,	   uballoon_read_word);
 	SekClose();
 
-	ZetInit(3); // actually 2
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0xefff, 2, DrvZ80ROM0);
@@ -1559,6 +1583,7 @@ static int UballoonInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x03ff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x03ff, 2, DrvZ80ROM1);
@@ -1570,16 +1595,19 @@ static int UballoonInit()
 	ZetClose();
 
 	// Patch out the protection checks
-	*((unsigned short*)(Drv68KROM + 0x0113c)) = 0x4e71;
-	*((unsigned short*)(Drv68KROM + 0x0113e)) = 0x4e71;
-	*((unsigned short*)(Drv68KROM + 0x01784)) = 0x600c;
-	*((unsigned short*)(Drv68KROM + 0x018e2)) = 0x600c;
-	*((unsigned short*)(Drv68KROM + 0x03c54)) = 0x600c;
-	*((unsigned short*)(Drv68KROM + 0x126a0)) = 0x4e71;
+	*((UINT16*)(Drv68KROM + 0x0113c)) = BURN_ENDIAN_SWAP_INT16(0x4e71);
+	*((UINT16*)(Drv68KROM + 0x0113e)) = BURN_ENDIAN_SWAP_INT16(0x4e71);
+	*((UINT16*)(Drv68KROM + 0x01784)) = BURN_ENDIAN_SWAP_INT16(0x600c);
+	*((UINT16*)(Drv68KROM + 0x018e2)) = BURN_ENDIAN_SWAP_INT16(0x600c);
+	*((UINT16*)(Drv68KROM + 0x03c54)) = BURN_ENDIAN_SWAP_INT16(0x600c);
+	*((UINT16*)(Drv68KROM + 0x126a0)) = BURN_ENDIAN_SWAP_INT16(0x4e71);
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1, bssoccerSyncDAC);
+	DACInit(1, 0, 1, bssoccerSyncDAC);
+	DACSetVolShift(0, 2);
+	DACSetVolShift(1, 2);
 
 	GenericTilesInit();
 
@@ -1588,16 +1616,16 @@ static int UballoonInit()
 	return 0;
 }
 
-static int BssoccerInit()
+static INT32 BssoccerInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	game_select = 3;
 
 	AllMem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1615,7 +1643,7 @@ static int BssoccerInit()
 	SekSetReadWordHandler(0,	   bssoccer_read_word);
 	SekClose();
 
-	ZetInit(3);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM0);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM0);
@@ -1627,6 +1655,7 @@ static int BssoccerInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x0fff, 0, DrvZ80ROM1);
 	ZetMapArea(0x0000, 0x0fff, 2, DrvZ80ROM1);
@@ -1637,6 +1666,7 @@ static int BssoccerInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(2);
 	ZetOpen(2);
 	ZetMapArea(0x0000, 0x0fff, 0, DrvZ80ROM2);
 	ZetMapArea(0x0000, 0x0fff, 2, DrvZ80ROM2);
@@ -1649,7 +1679,14 @@ static int BssoccerInit()
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1, bssoccerSyncDAC);
+	DACInit(1, 0, 1, bssoccerSyncDAC);
+	DACInit(2, 0, 1, bssoccerSyncDAC);
+	DACInit(3, 0, 1, bssoccerSyncDAC);
+	DACSetVolShift(0, 2);
+	DACSetVolShift(1, 2);
+	DACSetVolShift(2, 2);
+	DACSetVolShift(3, 2);
 
 	DrvDoReset();
 
@@ -1658,15 +1695,15 @@ static int BssoccerInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	if (game_select) {
 		BurnYM2151Exit();
 	} else {
 		AY8910Exit(0);
+		BurnYM3526Exit();
 	}
 
 	DACExit();
@@ -1684,26 +1721,26 @@ static int DrvExit()
 // Drawing & CPU/sound emulation routines
 
 
-static void draw_sprites(unsigned short *sprites, unsigned char *gfx_base, int max_tile)
+static void draw_sprites(UINT16 *sprites, UINT8 *gfx_base, INT32 max_tile)
 {
-	int offs;
+	INT32 offs;
 
-	int max_x = (256 - 0) - 8;
-	int max_y = (256 - 0) - 8;
+	INT32 max_x = (256 - 0) - 8;
+	INT32 max_y = (256 - 0) - 8;
 
 	for (offs = 0xfc00/2; offs < 0x10000/2 ; offs += 4/2)
 	{
-		int srcpg, srcx,srcy, dimx,dimy;
-		int tile_x, tile_xinc, tile_xstart;
-		int tile_y, tile_yinc;
-		int dx, dy;
-		int flipx, y0;
+		INT32 srcpg, srcx,srcy, dimx,dimy;
+		INT32 tile_x, tile_xinc, tile_xstart;
+		INT32 tile_y, tile_yinc;
+		INT32 dx, dy;
+		INT32 flipx, y0;
 
-		int y		=	sprites[ offs + 0 + 0x00000 / 2 ];
-		int x		=	sprites[ offs + 1 + 0x00000 / 2 ];
-		int dim 	=	sprites[ offs + 0 + 0x10000 / 2 ];
+		INT32 y		=	BURN_ENDIAN_SWAP_INT16(sprites[ offs + 0 + 0x00000 / 2 ]);
+		INT32 x		=	BURN_ENDIAN_SWAP_INT16(sprites[ offs + 1 + 0x00000 / 2 ]);
+		INT32 dim 	=	BURN_ENDIAN_SWAP_INT16(sprites[ offs + 0 + 0x10000 / 2 ]);
 
-		int bank	=	(x >> 12) & 0xf;
+		INT32 bank	=	(x >> 12) & 0xf;
 
 		srcpg	=	((y & 0xf000) >> 12) + ((x & 0x0200) >> 5);
 		srcx	=	((y   >> 8) & 0xf) * 2;
@@ -1735,18 +1772,18 @@ static void draw_sprites(unsigned short *sprites, unsigned char *gfx_base, int m
 
 			for (dx = 0; dx < dimx * 8; dx += 8)
 			{
-				int addr	=	(srcpg * 0x20 * 0x20) +
+				INT32 addr	=	(srcpg * 0x20 * 0x20) +
 								((srcx + tile_x) & 0x1f) * 0x20 +
 								((srcy + tile_y) & 0x1f);
 
-				int tile	=	sprites[ addr + 0x00000 / 2 ];
-				int color	=	sprites[ addr + 0x10000 / 2 ];
+				INT32 tile	=	BURN_ENDIAN_SWAP_INT16(sprites[ addr + 0x00000 / 2 ]);
+				INT32 color	=	BURN_ENDIAN_SWAP_INT16(sprites[ addr + 0x10000 / 2 ]);
 
-				int sx		=	x + dx;
-				int sy		=	(y + dy) & 0xff;
+				INT32 sx		=	x + dx;
+				INT32 sy		=	(y + dy) & 0xff;
 
-				int tile_flipx	=	tile & 0x4000;
-				int tile_flipy	=	tile & 0x8000;
+				INT32 tile_flipx	=	tile & 0x4000;
+				INT32 tile_flipy	=	tile & 0x8000;
 
 				if (flipx)	tile_flipx ^= 0x4000;
 
@@ -1793,22 +1830,22 @@ static void draw_sprites(unsigned short *sprites, unsigned char *gfx_base, int m
 
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x1000; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x1000; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0xff;
 	}
 
-	draw_sprites((unsigned short*)DrvSprRAM0, DrvGfxROM0, nGfxROM0Len);
+	draw_sprites((UINT16*)DrvSprRAM0, DrvGfxROM0, nGfxROM0Len);
 	if (!game_select) {
-		draw_sprites((unsigned short*)DrvSprRAM1, DrvGfxROM1, 0x20000);
+		draw_sprites((UINT16*)DrvSprRAM1, DrvGfxROM1, 0x20000);
 	}
 
 	BurnTransferCopy(DrvPalette);
@@ -1818,9 +1855,9 @@ static int DrvDraw()
 
 static inline void AssembleInputs()
 {
-	memset (DrvInputs, 0xff, 6 * sizeof(short));
+	memset (DrvInputs, 0xff, 6 * sizeof(UINT16));
 
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		DrvInputs[0] ^= DrvJoy1[i] << i;
 		DrvInputs[1] ^= DrvJoy2[i] << i;
 		DrvInputs[2] ^= DrvJoy3[i] << i;
@@ -1862,11 +1899,12 @@ static inline void AssembleInputs()
 	return;
 }
 
-static int BestbestFrame()
+static INT32 BestbestFrame()
 {
-	int nCyclesTotal[3];
+	INT32 nCyclesTotal[3];
 
-	int nInterleave = 100;
+	INT32 nInterleave = 50;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -1882,52 +1920,77 @@ static int BestbestFrame()
 	ZetNewFrame();
 	
 	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
+	for (INT32 i = 0; i < nInterleave; i++) {
 
-		SekRun(nCyclesTotal[0] / 2);
+		SekRun(nCyclesTotal[0] / nInterleave);
 		if (i == (nInterleave / 2)-1) SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 		if (i == (nInterleave    )-1) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 
 		ZetOpen(0);
-		BurnTimerUpdateYM3526(nCyclesTotal[1] / nInterleave);
+		BurnTimerUpdateYM3526(i * (nCyclesTotal[1] / nInterleave));
 		ZetClose();
 		
 		ZetOpen(1);
 		ZetRun(nCyclesTotal[2] / nInterleave);
 		ZetClose();
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pSoundBuffer + (nSoundBufferPos << 1);
+			INT32 nSample;
+
+			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
+			for (INT32 n = 0; n < nSegmentLength; n++) {
+				nSample  = pAY8910Buffer[0][n];
+				nSample += pAY8910Buffer[1][n];
+				nSample += pAY8910Buffer[2][n];
+
+				nSample /= 4;
+
+				nSample = BURN_SND_CLIP(nSample);
+				
+				pSoundBuf[(n << 1) + 0] = nSample;
+				pSoundBuf[(n << 1) + 1] = nSample;
+			}
+			
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 	SekClose();
 	
+	if (pBurnSoundOut) {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pSoundBuffer + (nSoundBufferPos << 1);
+		INT32 nSample;
+
+		if (nSegmentLength) {
+			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
+			for (INT32 n = 0; n < nSegmentLength; n++) {
+				nSample  = pAY8910Buffer[0][n];
+				nSample += pAY8910Buffer[1][n];
+				nSample += pAY8910Buffer[2][n];
+
+				nSample /= 4;
+
+				nSample = BURN_SND_CLIP(nSample);
+				
+				pSoundBuf[(n << 1) + 0] = nSample;
+				pSoundBuf[(n << 1) + 1] = nSample;
+			}
+		}
+	}
+	
 	ZetOpen(0);
 	BurnTimerEndFrameYM3526(nCyclesTotal[1]);
-	BurnYM3526Update(pBurnSoundOut, nBurnSoundLen);
-	ZetClose();
-
 	if (pBurnSoundOut) {
-		int nSample;
-
-		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
-			nSample  = pAY8910Buffer[0][n];
-			nSample += pAY8910Buffer[1][n];
-			nSample += pAY8910Buffer[2][n];
-
-			nSample /= 4;
-
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
-
-			pBurnSoundOut[(n << 1) + 0] += nSample;
-			pBurnSoundOut[(n << 1) + 1] += nSample;
+		BurnYM3526Update(pBurnSoundOut, nBurnSoundLen);
+		for (INT32 i = 0; i < nBurnSoundLen; i++) {
+			pBurnSoundOut[(i << 1) + 0] += pSoundBuffer[(i << 1) + 0];
+			pBurnSoundOut[(i << 1) + 1] += pSoundBuffer[(i << 1) + 1];
 		}
-
 		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
+	ZetClose();
 
 	if (pBurnDraw) {
 		DrvDraw();
@@ -1936,11 +1999,11 @@ static int BestbestFrame()
 	return 0;
 }
 
-static int SunaqFrame()
+static INT32 SunaqFrame()
 {
-	int nInterleave = nBurnSoundLen ? nBurnSoundLen : 10;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[3];
+	INT32 nInterleave = 50;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[3];
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -1951,39 +2014,41 @@ static int SunaqFrame()
 	nCyclesTotal[0] = 6000000 / 60;
 	nCyclesTotal[1] = 3579500 / 60;
 	nCyclesTotal[2] = 6000000 / 60;
-
+	
+	SekNewFrame();
+	ZetNewFrame();
+	
 	SekOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		SekRun(nCyclesTotal[0] / nInterleave);
 		if (i == (nInterleave    )-1) SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
-		for (int j = 0; j < 2; j++) {
+		for (INT32 j = 0; j < 2; j++) {
 			ZetOpen(j);
 			ZetRun(nCyclesTotal[j+1] / nInterleave);
 			ZetClose();
 		}
-
+		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
-	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 		}
+		
+		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	SekClose();
@@ -1995,11 +2060,11 @@ static int SunaqFrame()
 	return 0;
 }
 
-static int UballoonFrame()
+static INT32 UballoonFrame()
 {
-	int nInterleave = nBurnSoundLen ? nBurnSoundLen : 10;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[3];
+	INT32 nInterleave = 50;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[3];
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -2010,25 +2075,27 @@ static int UballoonFrame()
 	nCyclesTotal[0] = 8000000 / 60;
 	nCyclesTotal[1] = 3579500 / 60;
 	nCyclesTotal[2] = 5000000 / 60;
+	
+	SekNewFrame();
+	ZetNewFrame();
 
 	SekOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		SekRun(nCyclesTotal[0] / nInterleave);
 		if (i == (nInterleave    )-1) SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
-		for (int j = 0; j < 2; j++) {
+		for (INT32 j = 0; j < 2; j++) {
 			ZetOpen(j);
 			ZetRun(nCyclesTotal[j+1] / nInterleave);
 			ZetClose();
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -2036,13 +2103,14 @@ static int UballoonFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 		}
+		
+		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	SekClose();
@@ -2055,11 +2123,11 @@ static int UballoonFrame()
 }
 
 
-static int BssoccerFrame()
+static INT32 BssoccerFrame()
 {
-	int nInterleave = nBurnSoundLen ? nBurnSoundLen : 10;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[4];
+	INT32 nInterleave = 50;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[4];
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -2071,39 +2139,42 @@ static int BssoccerFrame()
 	nCyclesTotal[1] = 3579500 / 60;
 	nCyclesTotal[2] = 5000000 / 60;
 	nCyclesTotal[3] = 5000000 / 60;
+	
+	SekNewFrame();
+	ZetNewFrame();
 
 	SekOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		SekRun(nCyclesTotal[0] / nInterleave);
 		if (i == (nInterleave / 2)-1) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 		if (i == (nInterleave    )-1) SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
-		for (int j = 0; j < 3; j++) {
+		for (INT32 j = 0; j < 3; j++) {
 			ZetOpen(j);
 			ZetRun(nCyclesTotal[j+1] / nInterleave);
 			ZetClose();
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
 		}
+		
+		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	SekClose();
@@ -2116,7 +2187,7 @@ static int BssoccerFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

@@ -178,7 +178,7 @@ bad       11100000 10101011 10111001 (flaky 317-0049)
 
 *****************************************************************************/
 
-#include "driver.h"
+#include "burnint.h"
 #include "fd1094.h"
 #include "bitswap.h"
 
@@ -281,12 +281,12 @@ static const UINT16 masked_opcodes[] =
 static UINT8 masked_opcodes_lookup[2][65536/8/2];
 static UINT8 masked_opcodes_created = FALSE;
 
-static int final_decrypt(int i,int moreffff)
+static INT32 final_decrypt(INT32 i,INT32 moreffff)
 {
-	unsigned int j;
+	UINT32 j;
 
 	/* final "obfuscation": invert bits 7 and 14 following a fixed pattern */
-	int dec = i;
+	INT32 dec = i;
 	if ((i & 0xf080) == 0x8000) dec ^= 0x0080;
 	if ((i & 0xf080) == 0xc080) dec ^= 0x0080;
 	if ((i & 0xb080) == 0x8000) dec ^= 0x4000;
@@ -312,19 +312,19 @@ static int final_decrypt(int i,int moreffff)
 	if ((masked_opcodes_lookup[moreffff][dec >> 4] >> ((dec >> 1) & 7)) & 1)
 		dec = 0xffff;
 
-	return dec;
+	return BURN_ENDIAN_SWAP_INT16(dec);
 }
 
 
 /* note: address is the word offset (physical address / 2) */
-static int decode(int address,int val,unsigned char *main_key,int gkey1,int gkey2,int gkey3,int vector_fetch)
+static INT32 decode(INT32 address,INT32 val,UINT8 *main_key,INT32 gkey1,INT32 gkey2,INT32 gkey3,INT32 vector_fetch)
 {
-	int mainkey,key_F,key_6a,key_7a,key_6b;
-	int key_0a,key_0b,key_0c;
-	int key_1a,key_1b,key_2a,key_2b,key_3a,key_3b,key_4a,key_4b,key_5a,key_5b;
-	int global_xor0,global_xor1;
-	int global_swap0a,global_swap1,global_swap2,global_swap3,global_swap4;
-	int global_swap0b;
+	INT32 mainkey,key_F,key_6a,key_7a,key_6b;
+	INT32 key_0a,key_0b,key_0c;
+	INT32 key_1a,key_1b,key_2a,key_2b,key_3a,key_3b,key_4a,key_4b,key_5a,key_5b;
+	INT32 global_xor0,global_xor1;
+	INT32 global_swap0a,global_swap1,global_swap2,global_swap3,global_swap4;
+	INT32 global_swap0b;
 
 
 	/* for address xx0000-xx0006 (but only if >= 000008), use key xx2000-xx2006 */
@@ -435,18 +435,18 @@ static int decode(int address,int val,unsigned char *main_key,int gkey1,int gkey
 }
 
 
-static int global_key1,global_key2,global_key3;
+static INT32 global_key1,global_key2,global_key3;
 
-int fd1094_decode(int address,int val,unsigned char *key,int vector_fetch)
+INT32 fd1094_decode(INT32 address,INT32 val,UINT8 *key,INT32 vector_fetch)
 {
 	if (!key) return 0;
 
-	return decode(address,val,key,global_key1,global_key2,global_key3,vector_fetch);
+	return decode(address,BURN_ENDIAN_SWAP_INT16(val),key,global_key1,global_key2,global_key3,vector_fetch);
 }
 
-int fd1094_set_state(unsigned char *key,int state)
+INT32 fd1094_set_state(UINT8 *key,INT32 state)
 {
-	static int selected_state,irq_mode;
+	static INT32 selected_state,irq_mode;
 
 	if (!key) return 0;
 

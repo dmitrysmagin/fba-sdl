@@ -4,7 +4,7 @@
 Input Defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo Gforce2InputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 6, "p1 coin"    },
@@ -505,8 +505,8 @@ static struct BurnRomInfo Gforce2RomDesc[] = {
 	{ "epr-11875.81",     0x20000, 0xc81701c6, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	{ "epr-11874.80",     0x20000, 0x5301fd79, SYS16_ROM_PROG2 | BRF_ESS | BRF_PRG },
 	
-	{ "epr-11816.54",     0x20000, 0x317dd0c2, SYS16_ROM_PROG3 | BRF_ESS | BRF_PRG },
-	{ "epr-11815.53",     0x20000, 0xf1fb22f1, SYS16_ROM_PROG3 | BRF_ESS | BRF_PRG },
+	{ "epr-11816b.54",    0x20000, 0x317dd0c2, SYS16_ROM_PROG3 | BRF_ESS | BRF_PRG },
+	{ "epr-11815b.53",    0x20000, 0xf1fb22f1, SYS16_ROM_PROG3 | BRF_ESS | BRF_PRG },
 
 	{ "mpr-11468.14",     0x20000, 0x74ca9ca5, SYS16_ROM_SPRITES | BRF_GRA },
 	{ "mpr-11467.16",     0x20000, 0x6e60e736, SYS16_ROM_SPRITES | BRF_GRA },
@@ -1265,7 +1265,7 @@ Memory Handlers
 static UINT8 misc_io_data[0x10];
 static UINT8 analog_data[4];
 
-static unsigned char io_chip_r(unsigned int offset)
+static UINT8 io_chip_r(UINT32 offset)
 {
 	switch (offset) {
 		case 0x00:
@@ -1322,7 +1322,7 @@ static unsigned char io_chip_r(unsigned int offset)
 	return 0xff;
 }
 
-static void io_chip_w(unsigned int offset, unsigned short d)
+static void io_chip_w(UINT32 offset, UINT16 d)
 {
 	misc_io_data[offset] = d;	
 	
@@ -1331,7 +1331,7 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 			System16VideoEnable = d & 0x80;
 			
 			if (d & 0x04) {
-				int nLastCPU = nSekActive;
+				INT32 nLastCPU = nSekActive;
 				SekClose();
 				SekOpen(2);
 				SekReset();
@@ -1340,7 +1340,7 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 			}
 			
 			if (d & 0x08) {
-				int nLastCPU = nSekActive;
+				INT32 nLastCPU = nSekActive;
 				SekClose();
 				SekOpen(1);
 				SekReset();
@@ -1359,14 +1359,14 @@ static void io_chip_w(unsigned int offset, unsigned short d)
 	}
 }
 
-static unsigned char analog_r(unsigned int offset)
+static UINT8 analog_r(UINT32 offset)
 {
-	int result = analog_data[offset] & 0x80;
+	INT32 result = analog_data[offset] & 0x80;
 	analog_data[offset] <<= 1;
 	return result;
 }
 
-static void analog_w(unsigned int offset, unsigned short /*d*/)
+static void analog_w(UINT32 offset, UINT16 /*d*/)
 {
 	if (offset == 3) {
 		if (System16ProcessAnalogControlsDo) analog_data[offset] = System16ProcessAnalogControlsDo(3 + (misc_io_data[0x08/2] & 3));
@@ -1375,7 +1375,7 @@ static void analog_w(unsigned int offset, unsigned short /*d*/)
 	}
 }
 
-unsigned short __fastcall YBoardReadWord(unsigned int a)
+UINT16 __fastcall YBoardReadWord(UINT32 a)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
 		return System16MultiplyChipRead(0, (a - 0x080000) >> 1);
@@ -1392,7 +1392,7 @@ unsigned short __fastcall YBoardReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall YBoardReadByte(unsigned int a)
+UINT8 __fastcall YBoardReadByte(UINT32 a)
 {
 	if (a >= 0x100000 && a <= 0x10001f) {
 		return io_chip_r((a - 0x100000) >> 1);
@@ -1409,7 +1409,7 @@ unsigned char __fastcall YBoardReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall YBoardWriteWord(unsigned int a, unsigned short d)
+void __fastcall YBoardWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x100000 && a <= 0x10001f) {
 		io_chip_w((a - 0x100000) >> 1, d);
@@ -1431,7 +1431,7 @@ void __fastcall YBoardWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall YBoardWriteByte(unsigned int a, unsigned char d)
+void __fastcall YBoardWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x100000 && a <= 0x10001f) {
 		io_chip_w((a - 0x100000) >> 1, d);
@@ -1458,7 +1458,7 @@ void __fastcall YBoardWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned short __fastcall YBoard2ReadWord(unsigned int a)
+UINT16 __fastcall YBoard2ReadWord(UINT32 a)
 {	
 	if (a >= 0x080000 && a <= 0x080007) {
 		return System16MultiplyChipRead(1, (a - 0x080000) >> 1);
@@ -1475,7 +1475,7 @@ unsigned short __fastcall YBoard2ReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
+void __fastcall YBoard2WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
 		System16MultiplyChipWrite(1, (a - 0x080000) >> 1, d);
@@ -1492,7 +1492,7 @@ void __fastcall YBoard2WriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-unsigned short __fastcall YBoard3ReadWord(unsigned int a)
+UINT16 __fastcall YBoard3ReadWord(UINT32 a)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
 		return System16MultiplyChipRead(2, (a - 0x080000) >> 1);
@@ -1508,7 +1508,7 @@ unsigned short __fastcall YBoard3ReadWord(unsigned int a)
 			UINT32 *src = (UINT32 *)System16RotateRam;
 			UINT32 *dst = (UINT32 *)System16RotateRamBuff;
 			
-			for (unsigned int i = 0; i < System16RotateRamSize/4; i++) {
+			for (UINT32 i = 0; i < System16RotateRamSize/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1524,7 +1524,7 @@ unsigned short __fastcall YBoard3ReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall YBoard3ReadByte(unsigned int a)
+UINT8 __fastcall YBoard3ReadByte(UINT32 a)
 {
 	if (a >= 0x084000 && a <= 0x08401f) {
 		return System16DivideChipRead(2, (a - 0x084000) >> 1);
@@ -1537,7 +1537,7 @@ unsigned char __fastcall YBoard3ReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall YBoard3WriteWord(unsigned int a, unsigned short d)
+void __fastcall YBoard3WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x080000 && a <= 0x080007) {
 		System16MultiplyChipWrite(2, (a - 0x080000) >> 1, d);
@@ -1558,9 +1558,9 @@ void __fastcall YBoard3WriteWord(unsigned int a, unsigned short d)
 Driver Inits
 ====================================================*/
 
-unsigned char Gforce2ProcessAnalogControls(UINT16 value)
+UINT8 Gforce2ProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 		
@@ -1582,7 +1582,7 @@ unsigned char Gforce2ProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort1 >> 4);
 			}
@@ -1623,9 +1623,9 @@ unsigned char Gforce2ProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char GlocProcessAnalogControls(UINT16 value)
+UINT8 GlocProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1634,7 +1634,7 @@ unsigned char GlocProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort1 >> 4);
 			}
@@ -1671,9 +1671,9 @@ unsigned char GlocProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char Glocr360ProcessAnalogControls(UINT16 value)
+UINT8 Glocr360ProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1710,7 +1710,7 @@ unsigned char Glocr360ProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
-				temp = (unsigned char)(0x7f - 0xf82);
+				temp = (UINT8)(0x7f - 0xf82);
 			} else {
 				temp = 0x7f - (System16AnalogPort1 >> 4);
 			}
@@ -1737,9 +1737,9 @@ unsigned char Glocr360ProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char PdriftProcessAnalogControls(UINT16 value)
+UINT8 PdriftProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1774,7 +1774,7 @@ unsigned char PdriftProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char RchaseProcessAnalogControls(UINT16 value)
+UINT8 RchaseProcessAnalogControls(UINT16 value)
 {
 	switch (value) {
 		case 0: {
@@ -1797,15 +1797,15 @@ unsigned char RchaseProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-static int Gforce2Init()
+static INT32 Gforce2Init()
 {
 	System16ProcessAnalogControlsDo = Gforce2ProcessAnalogControls;
 	
 	System16PCMDataSizePreAllocate = 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
-	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x0c0000);
 	memcpy(pTemp, System16PCMData, 0x0c0000);
 	memset(System16PCMData, 0, 0x180000);
 	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
@@ -1817,30 +1817,26 @@ static int Gforce2Init()
 	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
 	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
 	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
-	free(pTemp);
+	BurnFree(pTemp);
 	
 	return nRet;
 }
 
-static int GlocInit()
+static INT32 GlocInit()
 {
 	System16ProcessAnalogControlsDo = GlocProcessAnalogControls;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-static int Glocr360Init()
+static INT32 Glocr360Init()
 {
 	System16ProcessAnalogControlsDo = Glocr360ProcessAnalogControls;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-static int PdriftInit()
+static INT32 PdriftInit()
 {
 	System16ProcessAnalogControlsDo = PdriftProcessAnalogControls;
 	
@@ -1848,11 +1844,9 @@ static int PdriftInit()
 	
 	System16PCMDataSizePreAllocate = 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
-	if (!nRet) YBoardIrq2Scanline = 0;
-	
-	unsigned char *pTemp = (unsigned char*)malloc(0x0c0000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x0c0000);
 	memcpy(pTemp, System16PCMData, 0x0c0000);
 	memset(System16PCMData, 0, 0x180000);
 	memcpy(System16PCMData + 0x000000, pTemp + 0x000000, 0x80000);
@@ -1864,23 +1858,21 @@ static int PdriftInit()
 	memcpy(System16PCMData + 0x120000, pTemp + 0x0a0000, 0x20000);
 	memcpy(System16PCMData + 0x140000, pTemp + 0x0a0000, 0x20000);
 	memcpy(System16PCMData + 0x160000, pTemp + 0x0a0000, 0x20000);
-	free(pTemp);
+	BurnFree(pTemp);
 
 	return nRet;
 }
 
-static int RchaseInit()
+static INT32 RchaseInit()
 {
 	BurnGunInit(2, false);
 	
 	System16ProcessAnalogControlsDo = RchaseProcessAnalogControls;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-static int YBoardExit()
+static INT32 YBoardExit()
 {
 	memset(misc_io_data, 0, sizeof(misc_io_data));
 	memset(analog_data, 0, sizeof(analog_data));
@@ -1888,7 +1880,7 @@ static int YBoardExit()
 	return System16Exit();
 }
 
-static int YBoardScan(int nAction,int *pnMin)
+static INT32 YBoardScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;

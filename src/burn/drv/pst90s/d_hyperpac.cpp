@@ -1,53 +1,54 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "timer.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
 #include "burn_ym3812.h"
 #include "bitswap.h"
 
-static unsigned char HyperpacInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char HyperpacInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char HyperpacInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char HyperpacDip[2]        = {0, 0};
-static unsigned char HyperpacInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char HyperpacReset         = 0;
+static UINT8 HyperpacInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 HyperpacInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 HyperpacInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 HyperpacDip[2]        = {0, 0};
+static UINT8 HyperpacInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 HyperpacReset         = 0;
 
-static unsigned char *Mem                  = NULL;
-static unsigned char *MemEnd               = NULL;
-static unsigned char *RamStart             = NULL;
-static unsigned char *RamEnd               = NULL;
-static unsigned char *HyperpacRom          = NULL;
-static unsigned char *HyperpacZ80Rom       = NULL;
-static unsigned char *HyperpacRam          = NULL;
-static unsigned char *HyperpacPaletteRam   = NULL;
-static unsigned char *HyperpacSpriteRam    = NULL;
-static unsigned char *HyperpacZ80Ram       = NULL;
-static unsigned int  *HyperpacPalette      = NULL;
-static unsigned char *HyperpacSprites      = NULL;
-static unsigned char *HyperpacSprites8bpp  = NULL;
-static unsigned char *HyperpacTempGfx      = NULL;
-static unsigned char *HyperpacProtData     = NULL;
+static UINT8 *Mem                  = NULL;
+static UINT8 *MemEnd               = NULL;
+static UINT8 *RamStart             = NULL;
+static UINT8 *RamEnd               = NULL;
+static UINT8 *HyperpacRom          = NULL;
+static UINT8 *HyperpacZ80Rom       = NULL;
+static UINT8 *HyperpacRam          = NULL;
+static UINT8 *HyperpacPaletteRam   = NULL;
+static UINT8 *HyperpacSpriteRam    = NULL;
+static UINT8 *HyperpacZ80Ram       = NULL;
+static UINT32 *HyperpacPalette     = NULL;
+static UINT8 *HyperpacSprites      = NULL;
+static UINT8 *HyperpacSprites8bpp  = NULL;
+static UINT8 *HyperpacTempGfx      = NULL;
+static UINT8 *HyperpacProtData     = NULL;
 
-static int HyperpacSoundLatch;
-static int Moremore = 0;
-static int Threein1semi = 0;
-static int Cookbib3 = 0;
-static int Fourin1boot = 0;
-static int Finalttr = 0;
-static int Twinadv = 0;
-static int Honeydol = 0;
-static int Wintbob = 0;
+static INT32 HyperpacSoundLatch;
+static INT32 Moremore = 0;
+static INT32 Threein1semi = 0;
+static INT32 Cookbib3 = 0;
+static INT32 Fourin1boot = 0;
+static INT32 Finalttr = 0;
+static INT32 Twinadv = 0;
+static INT32 Honeydol = 0;
+static INT32 Wintbob = 0;
+static INT32 Snowbro3 = 0;
 
-static int HyperpacNumTiles = 0;
-static int HyperpacNumTiles8bpp = 0;
+static INT32 HyperpacNumTiles = 0;
+static INT32 HyperpacNumTiles8bpp = 0;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
-static short* pFMBuffer;
-
-static int Snowbro3MusicPlaying;
-static int Snowbro3Music;
+static INT32 Snowbro3MusicPlaying;
+static INT32 Snowbro3Music;
 
 static struct BurnInputInfo HyperpacInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , HyperpacInputPort2 + 2, "p1 coin"   },
@@ -110,7 +111,7 @@ static struct BurnInputInfo SnowbrosInputList[] = {
 
 STDINPUTINFO(Snowbros)
 
-inline void HyperpacClearOpposites(unsigned char* nJoystickInputs)
+static inline void HyperpacClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -120,13 +121,13 @@ inline void HyperpacClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-inline void HyperpacMakeInputs()
+static inline void HyperpacMakeInputs()
 {
 	// Reset Inputs
 	HyperpacInput[0] = HyperpacInput[1] = HyperpacInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		HyperpacInput[0] |= (HyperpacInputPort0[i] & 1) << i;
 		HyperpacInput[1] |= (HyperpacInputPort1[i] & 1) << i;
 		HyperpacInput[2] |= (HyperpacInputPort2[i] & 1) << i;
@@ -1090,7 +1091,7 @@ static struct BurnRomInfo Snowbro3RomDesc[] = {
 STD_ROM_PICK(Snowbro3)
 STD_ROM_FN(Snowbro3)
 
-int HyperpacDoReset()
+static INT32 HyperpacDoReset()
 {
 	HyperpacSoundLatch = 0;
 	
@@ -1112,7 +1113,7 @@ int HyperpacDoReset()
 	return 0;
 }
 
-int SnowbrosDoReset()
+static INT32 SnowbrosDoReset()
 {
 	HyperpacSoundLatch = 0;
 
@@ -1129,7 +1130,7 @@ int SnowbrosDoReset()
 	return 0;
 }
 
-int Snowbro3DoReset()
+static INT32 Snowbro3DoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -1143,7 +1144,7 @@ int Snowbro3DoReset()
 	return 0;
 }
 
-void HyperpacYM2151IrqHandler(int Irq)
+static void HyperpacYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1155,11 +1156,11 @@ void HyperpacYM2151IrqHandler(int Irq)
 // ----------------------------------------------------------------------------
 // CPU synchronisation
 
-static int nCycles68KSync;
+static INT32 nCycles68KSync;
 
-static inline void snowbrosSynchroniseZ80(int nExtraCycles)
+static inline void snowbrosSynchroniseZ80(INT32 nExtraCycles)
 {
-	int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
+	INT32 nCycles = ((INT64)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
 
 	if (nCycles <= ZetTotalCycles()) {
 		return;
@@ -1172,7 +1173,7 @@ static inline void snowbrosSynchroniseZ80(int nExtraCycles)
 
 // Callbacks for the FM chip
 
-static void snowbrosFMIRQHandler(int, int nStatus)
+static void snowbrosFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -1181,17 +1182,17 @@ static void snowbrosFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int snowbrosSynchroniseStream(int nSoundRate)
+static INT32 snowbrosSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 6000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 6000000;
 }
 
-static int HoneydolSynchroniseStream(int nSoundRate)
+static INT32 HoneydolSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
-static void Snowbro3PlayMusic(int data)
+static void Snowbro3PlayMusic(INT32 data)
 {
 	Snowbro3Music = data;
 	
@@ -1241,9 +1242,9 @@ static void Snowbro3PlayMusic(int data)
 	}
 }
 
-static void Snowbro3PlaySound(int data)
+static void Snowbro3PlaySound(INT32 data)
 {
-	int Status = MSM6295ReadStatus(0);
+	INT32 Status = MSM6295ReadStatus(0);
 	
 	if ((Status & 0x01) == 0x00) {
 		MSM6295Command(0, 0x80 | data);
@@ -1263,7 +1264,7 @@ static void Snowbro3PlaySound(int data)
 
 // ----------------------------------------------------------------------------
 
-unsigned char __fastcall HyperpacReadByte(unsigned int a)
+UINT8 __fastcall HyperpacReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x200000: {
@@ -1302,7 +1303,7 @@ unsigned char __fastcall HyperpacReadByte(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall HyperpacReadByteLow(unsigned int a)
+UINT8 __fastcall HyperpacReadByteLow(UINT32 a)
 {
 	switch (a) {
 		case 0x200001: {
@@ -1341,7 +1342,7 @@ unsigned char __fastcall HyperpacReadByteLow(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall HyperpacWriteByte(unsigned int a, unsigned char d)
+void __fastcall HyperpacWriteByte(UINT32 a, UINT8 d)
 {
 	if (a < 0x100000) return;
 
@@ -1357,7 +1358,7 @@ void __fastcall HyperpacWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall TwinadvWriteByte(unsigned int a, unsigned char d)
+void __fastcall TwinadvWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x200000:
@@ -1377,7 +1378,7 @@ void __fastcall TwinadvWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall HyperpacReadWord(unsigned int a)
+UINT16 __fastcall HyperpacReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x200000: {
@@ -1392,7 +1393,7 @@ unsigned short __fastcall HyperpacReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall HyperpacReadWordLow(unsigned int a)
+UINT16 __fastcall HyperpacReadWordLow(UINT32 a)
 {
 	switch (a) {
 		case 0x500000:
@@ -1410,7 +1411,7 @@ unsigned short __fastcall HyperpacReadWordLow(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall HyperpacWriteWord(unsigned int a, unsigned short d)
+void __fastcall HyperpacWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x00b7d6: 
@@ -1444,7 +1445,7 @@ void __fastcall HyperpacWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall HoneydolReadByte(unsigned int a)
+UINT8 __fastcall HoneydolReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x900000: {
@@ -1477,14 +1478,13 @@ unsigned char __fastcall HoneydolReadByte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall HoneydolReadWord(unsigned int a)
+UINT16 __fastcall HoneydolReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x900000:
 		case 0x900002:
 		case 0x900004: {
 			SEK_DEF_READ_WORD(0, a);
-			return 0;
 		}
 	}
 	
@@ -1493,7 +1493,7 @@ unsigned short __fastcall HoneydolReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall HoneydolWriteByte(unsigned int a, unsigned char d)
+void __fastcall HoneydolWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x300000: {
@@ -1511,7 +1511,7 @@ void __fastcall HoneydolWriteByte(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Write byte -> %06X, %02X\n"), a, d);
 }
 
-void __fastcall HoneydolWriteWord(unsigned int a, unsigned short d)
+void __fastcall HoneydolWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x200000: {
@@ -1539,7 +1539,7 @@ void __fastcall HoneydolWriteWord(unsigned int a, unsigned short d)
 	bprintf(PRINT_NORMAL, _T("Write word -> %06X, %04X\n"), a, d);
 }
 
-unsigned char __fastcall HyperpacZ80Read(unsigned short a)
+UINT8 __fastcall HyperpacZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xf001: {
@@ -1562,7 +1562,7 @@ unsigned char __fastcall HyperpacZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall HyperpacZ80Write(unsigned short a, unsigned char d)
+void __fastcall HyperpacZ80Write(UINT16 a, UINT8 d)
 {
 	d &= 0xff;
 	
@@ -1588,7 +1588,7 @@ void __fastcall HyperpacZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TwinadvZ80PortRead(unsigned short a)
+UINT8 __fastcall TwinadvZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1607,7 +1607,7 @@ unsigned char __fastcall TwinadvZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall TwinadvZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall TwinadvZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1618,7 +1618,7 @@ void __fastcall TwinadvZ80PortWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0x04: {
-			int bank = (d &0x02) >> 1;
+			INT32 bank = (d &0x02) >> 1;
 			memcpy(MSM6295ROM + 0x00000, MSM6295ROM + (0x40000 * bank), 0x40000);
 			return;
 		}
@@ -1632,7 +1632,7 @@ void __fastcall TwinadvZ80PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Z80 Port Write -> %02X, %02x\n"), a, d);
 }
 
-unsigned char __fastcall HoneydolZ80Read(unsigned short a)
+UINT8 __fastcall HoneydolZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe010: {
@@ -1645,7 +1645,7 @@ unsigned char __fastcall HoneydolZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall HoneydolZ80Write(unsigned short a, unsigned char d)
+void __fastcall HoneydolZ80Write(UINT16 a, UINT8 d)
 {
 	d &= 0xff;
 	
@@ -1659,7 +1659,7 @@ void __fastcall HoneydolZ80Write(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02x\n"), a, d);
 }
 
-unsigned short __fastcall SnowbrosReadWord(unsigned int a)
+UINT16 __fastcall SnowbrosReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x300000:
@@ -1673,7 +1673,7 @@ unsigned short __fastcall SnowbrosReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall SnowbrosReadByte(unsigned int a)
+UINT8 __fastcall SnowbrosReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300001: {
@@ -1705,7 +1705,7 @@ unsigned char __fastcall SnowbrosReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall SnowbrosWriteWord(unsigned int a, unsigned short d)
+void __fastcall SnowbrosWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x300000: {
@@ -1715,7 +1715,7 @@ void __fastcall SnowbrosWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall SnowbrosWriteByte(unsigned int a, unsigned char d)
+void __fastcall SnowbrosWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x300001: {
@@ -1727,7 +1727,7 @@ void __fastcall SnowbrosWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Snowbro3ReadWord(unsigned int a)
+UINT16 __fastcall Snowbro3ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x300000: {
@@ -1746,7 +1746,7 @@ unsigned short __fastcall Snowbro3ReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall Snowbro3ReadByte(unsigned int a)
+UINT8 __fastcall Snowbro3ReadByte(UINT32 a)
 {
 	switch (a) {
 /*		case 0x300001: {
@@ -1784,7 +1784,7 @@ unsigned char __fastcall Snowbro3ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Snowbro3WriteWord(unsigned int a, unsigned short d)
+void __fastcall Snowbro3WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x300000: {
@@ -1813,7 +1813,7 @@ void __fastcall Snowbro3WriteWord(unsigned int a, unsigned short d)
 	bprintf(PRINT_NORMAL, _T("68000 Write Word %06X -> %04X\n"), a, d);
 }
 
-void __fastcall Snowbro3WriteByte(unsigned int a, unsigned char d)
+void __fastcall Snowbro3WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x300000: {
@@ -1835,7 +1835,7 @@ void __fastcall Snowbro3WriteByte(unsigned int a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte %06X -> %02X\n"), a, d);
 }
 
-unsigned char __fastcall SnowbrosZ80PortRead(unsigned short a)
+UINT8 __fastcall SnowbrosZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 
@@ -1853,7 +1853,7 @@ unsigned char __fastcall SnowbrosZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall SnowbrosZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall SnowbrosZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 
@@ -1875,9 +1875,9 @@ void __fastcall SnowbrosZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	HyperpacRom          = Next; Next += 0x100000;
 	HyperpacZ80Rom       = Next; Next += 0x10000;
@@ -1904,9 +1904,9 @@ static int MemIndex()
 	HyperpacSprites8bpp  = Next; Next += (HyperpacNumTiles8bpp * 16 * 16);
 	HyperpacProtData     = Next; Next += 0x00200;
 	if (Honeydol) {
-		HyperpacPalette      = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+		HyperpacPalette      = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 	} else {
-		HyperpacPalette      = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
+		HyperpacPalette      = (UINT32*)Next; Next += 0x00200 * sizeof(UINT32);
 	}
 	MemEnd = Next;
 
@@ -1914,9 +1914,9 @@ static int MemIndex()
 }
 
 
-static int SnowbrosMemIndex()
+static INT32 SnowbrosMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	HyperpacRom          = Next; Next += 0x40000;
 	HyperpacZ80Rom       = Next; Next += (Wintbob) ? 0x10000 : 0x08000;
@@ -1931,16 +1931,15 @@ static int SnowbrosMemIndex()
 	RamEnd = Next;
 
 	HyperpacSprites      = Next; Next += (HyperpacNumTiles * 16 * 16);
-	HyperpacPalette      = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
-	pFMBuffer = (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	HyperpacPalette      = (UINT32*)Next; Next += 0x00200 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int Snowbro3MemIndex()
+static INT32 Snowbro3MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	HyperpacRom          = Next; Next += 0x40000;
 	MSM6295ROM           = Next; Next += 0xe0000;
@@ -1955,13 +1954,13 @@ static int Snowbro3MemIndex()
 
 	HyperpacSprites      = Next; Next += (HyperpacNumTiles * 16 * 16);
 	HyperpacSprites8bpp  = Next; Next += (HyperpacNumTiles8bpp * 16 * 16);
-	HyperpacPalette      = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	HyperpacPalette      = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-int HyperpacMachineInit()
+static INT32 HyperpacMachineInit()
 {
 	BurnSetRefreshRate(57.5);
 	
@@ -1988,7 +1987,7 @@ int HyperpacMachineInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xcfff, 0, HyperpacZ80Rom);
 	ZetMapArea(0x0000, 0xcfff, 2, HyperpacZ80Rom);
@@ -2015,37 +2014,37 @@ int HyperpacMachineInit()
 	return 0;
 }
 
-static int HyperpacSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
-static int HyperpacSpriteXOffsets[16]    = { 4, 0, 260, 256, 20, 16, 276, 272, 12, 8, 268, 264, 28, 24, 284, 280 };
-static int HyperpacSpriteYOffsets[16]    = { 0, 64, 32, 96, 512, 576, 544, 608, 128, 192, 160, 224, 640, 704, 672, 736 };
-static int SnowbrosSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
-static int SnowbrosSpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-static int SnowbrosSpriteYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int WintbobSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
-static int WintbobSpriteXOffsets[16]     = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
-static int WintbobSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int Honeydol8BppPlaneOffsets[8]   = { 0, 1, 2, 3, 0x800000, 0x800001, 0x800002, 0x800003 };
-static int Honeydol8BppXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-static int Honeydol8BppYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int Snowbro38BppPlaneOffsets[8]   = { 8, 9, 10, 11, 0, 1, 2, 3 };
-static int Snowbro38BppXOffsets[16]      = { 0, 4, 16, 20, 32, 36, 48, 52, 512, 516, 528, 532, 544, 548, 560, 564 };
-static int Snowbro38BppYOffsets[16]      = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
+static INT32 HyperpacSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 HyperpacSpriteXOffsets[16]    = { 4, 0, 260, 256, 20, 16, 276, 272, 12, 8, 268, 264, 28, 24, 284, 280 };
+static INT32 HyperpacSpriteYOffsets[16]    = { 0, 64, 32, 96, 512, 576, 544, 608, 128, 192, 160, 224, 640, 704, 672, 736 };
+static INT32 SnowbrosSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 SnowbrosSpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static INT32 SnowbrosSpriteYOffsets[16]    = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 WintbobSpritePlaneOffsets[4]  = { 0, 1, 2, 3 };
+static INT32 WintbobSpriteXOffsets[16]     = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
+static INT32 WintbobSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 Honeydol8BppPlaneOffsets[8]   = { 0, 1, 2, 3, 0x800000, 0x800001, 0x800002, 0x800003 };
+static INT32 Honeydol8BppXOffsets[16]      = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static INT32 Honeydol8BppYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 Snowbro38BppPlaneOffsets[8]   = { 8, 9, 10, 11, 0, 1, 2, 3 };
+static INT32 Snowbro38BppXOffsets[16]      = { 0, 4, 16, 20, 32, 36, 48, 52, 512, 516, 528, 532, 544, 548, 560, 564 };
+static INT32 Snowbro38BppYOffsets[16]      = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
 
-int HyperpacInit()
+static INT32 HyperpacInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 6144;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x0c0000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x0c0000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2077,7 +2076,7 @@ int HyperpacInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x40000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x80000, 4, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 6, 1); if (nRet != 0) return 1;
@@ -2087,21 +2086,21 @@ int HyperpacInit()
 	return 0;
 }
 
-int Cookbib2Init()
+static INT32 Cookbib2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 10240;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x140000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x140000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2115,47 +2114,37 @@ int Cookbib2Init()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 6, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 8, 1); if (nRet) return 1;
-		
-	unsigned char *pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-int Cookbib3Init()
+static INT32 Cookbib3Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
-	//HyperpacNumTiles = 12288;
 	HyperpacNumTiles = 16384;
 	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "cookbib3")) Cookbib3 = 1;
+	Cookbib3 = 1;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x200000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2163,45 +2152,36 @@ int Cookbib3Init()
 	
 	// Load and descramble Z80 Program Rom
 	nRet = BurnLoadRom(HyperpacZ80Rom, 5, 1); if (nRet != 0) return 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0x10000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x10000);
 	memcpy(pTemp, HyperpacZ80Rom, 0x10000);
 	memcpy(HyperpacZ80Rom + 0xc000, pTemp + 0x0000, 0x4000);
 	memcpy(HyperpacZ80Rom + 0x8000, pTemp + 0x4000, 0x4000);
 	memcpy(HyperpacZ80Rom + 0x4000, pTemp + 0x8000, 0x4000);
 	memcpy(HyperpacZ80Rom + 0x0000, pTemp + 0xc000, 0x4000);
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 6, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 8, 1); if (nRet) return 1;
-		
-	pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-int MoremoreInit()
+static INT32 MoremoreInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 16384;
 	
@@ -2211,12 +2191,12 @@ int MoremoreInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x200000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2231,44 +2211,35 @@ int MoremoreInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x180000, 5, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 7, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 9, 1); if (nRet) return 1;
-		
-	unsigned char *pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-int TwinkleInit()
+static INT32 TwinkleInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 4096;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x080000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x080000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2280,44 +2251,35 @@ int TwinkleInit()
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 4, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 6, 1); if (nRet) return 1;
-		
-	unsigned char *pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-int PzlbreakInit()
+static INT32 PzlbreakInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 8192;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x100000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x100000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2330,79 +2292,70 @@ int PzlbreakInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 5, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 7, 1); if (nRet) return 1;
-		
-	unsigned char *pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-void Fourin1bootDescrambleRom()
+static void Fourin1bootDescrambleRom()
 {
-	unsigned char *buffer;
+	UINT8 *buffer;
 	UINT8 *src = HyperpacRom;
-	int len = 0x100000;
+	INT32 len = 0x100000;
 
 	/* strange order */
-	if ((buffer = (unsigned char*)malloc(len)))
+	if ((buffer = (UINT8*)BurnMalloc(len)))
 	{
-		int i;
+		INT32 i;
 		for (i = 0;i < len; i++)
 			if (i&1) buffer[i] = BITSWAP08(src[i],6,7,5,4,3,2,1,0);
 			else buffer[i] = src[i];
 
 		memcpy(src,buffer,len);
-		free(buffer);
+		BurnFree(buffer);
 	}
 
 	src = HyperpacZ80Rom;
 	len = 0x10000;
 
 	/* strange order */
-	if ((buffer = (unsigned char*)malloc(len)))
+	if ((buffer = (UINT8*)BurnMalloc(len)))
 	{
-		int i;
+		INT32 i;
 		for (i = 0;i < len; i++) {
 			buffer[i] = src[i ^ 0x4000];
 		}
 		memcpy(src,buffer,len);
-		free(buffer);
+		BurnFree(buffer);
 	}
 }
 
-int Fourin1bootInit()
+static INT32 Fourin1bootInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 16384;
 	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "4in1boot")) Fourin1boot = 1;
+	Fourin1boot = 1;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x200000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2416,7 +2369,7 @@ int Fourin1bootInit()
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x000000, 2, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 4, 1); if (nRet != 0) return 1;
@@ -2426,23 +2379,23 @@ int Fourin1bootInit()
 	return 0;
 }
 
-int FinalttrInit()
+static INT32 FinalttrInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 8192;
 	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "finalttr")) Finalttr = 1;
+	Finalttr = 1;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x100000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x100000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2457,32 +2410,23 @@ int FinalttrInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x0c0000, 5, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, HyperpacSpritePlaneOffsets, HyperpacSpriteXOffsets, HyperpacSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);	
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 7, 1); if (nRet != 0) return 1;
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 9, 1); if (nRet) return 1;
-		
-	unsigned char *pTemp = (unsigned char*)malloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (int i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	free(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
 	return 0;
 }
 
-int TwinadvInit()
+static INT32 TwinadvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 12288;
 	
@@ -2491,12 +2435,12 @@ int TwinadvInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x180000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x180000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2510,7 +2454,7 @@ int TwinadvInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x080000, 3, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 4, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Roms
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 6, 1); if (nRet != 0) return 1;
@@ -2532,7 +2476,8 @@ int TwinadvInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, HyperpacZ80Rom);
 	ZetMapArea(0x0000, 0x7fff, 2, HyperpacZ80Rom);
 	ZetMapArea(0x8000, 0x87ff, 0, HyperpacZ80Ram);
@@ -2554,9 +2499,9 @@ int TwinadvInit()
 	return 0;
 }
 
-int HoneydolInit()
+static INT32 HoneydolInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	HyperpacNumTiles = 4096;
 	HyperpacNumTiles8bpp = 8192;
@@ -2566,12 +2511,12 @@ int HoneydolInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x200000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -2591,7 +2536,7 @@ int HoneydolInit()
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x100000, 5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x180000, 6, 1); if (nRet != 0) return 1;
 	GfxDecode(HyperpacNumTiles8bpp, 8, 16, 16, Honeydol8BppPlaneOffsets, Honeydol8BppXOffsets, Honeydol8BppYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites8bpp);
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Load Sample Roms
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 8, 1); if (nRet != 0) return 1;
@@ -2612,7 +2557,7 @@ int HoneydolInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, HyperpacZ80Rom);
 	ZetMapArea(0x0000, 0x7fff, 2, HyperpacZ80Rom);
@@ -2640,9 +2585,9 @@ int HoneydolInit()
 	return 0;
 }
 
-int SnowbrosInit()
+static INT32 SnowbrosInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	BurnSetRefreshRate(57.5);
 	
@@ -2653,12 +2598,12 @@ int SnowbrosInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	SnowbrosMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	SnowbrosMemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x80000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x80000);
 
 	if (Wintbob) {
 		// Load and byte-swap 68000 Program roms
@@ -2680,7 +2625,7 @@ int SnowbrosInit()
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x60000, 10, 2); if (nRet != 0) return 1;
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x60001, 11, 2); if (nRet != 0) return 1;
 		GfxDecode(HyperpacNumTiles, 4, 16, 16, WintbobSpritePlaneOffsets, WintbobSpriteXOffsets, WintbobSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
-		free(HyperpacTempGfx);
+		BurnFree(HyperpacTempGfx);
 	} else {
 		// Load and byte-swap 68000 Program roms
 		nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2692,7 +2637,7 @@ int SnowbrosInit()
 		// Load and Decode Sprite Roms
 		nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
 		GfxDecode(HyperpacNumTiles, 4, 16, 16, SnowbrosSpritePlaneOffsets, SnowbrosSpriteXOffsets, SnowbrosSpriteYOffsets, 0x400, HyperpacTempGfx, HyperpacSprites);		
-		free(HyperpacTempGfx);
+		BurnFree(HyperpacTempGfx);
 	}
 
 	// Setup the 68000 emulation
@@ -2709,7 +2654,7 @@ int SnowbrosInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, HyperpacZ80Rom);
 	ZetMapArea(0x0000, 0x7fff, 2, HyperpacZ80Rom);
@@ -2732,9 +2677,11 @@ int SnowbrosInit()
 	return 0;
 }
 
-int Snowbro3Init()
+static INT32 Snowbro3Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
+	
+	Snowbro3 = 1;
 
 	HyperpacNumTiles = 0x1000;
 	HyperpacNumTiles8bpp = 0x4000;
@@ -2742,12 +2689,12 @@ int Snowbro3Init()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	Snowbro3MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	Snowbro3MemIndex();
 
-	HyperpacTempGfx = (unsigned char*)malloc(0x400000);
+	HyperpacTempGfx = (UINT8*)BurnMalloc(0x400000);
 
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(HyperpacRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2755,12 +2702,12 @@ int Snowbro3Init()
 	
 	// Decode 68000 Program Rom
 	UINT8 *buffer;
-	buffer = (UINT8*)malloc(0x40000);
-	for (int i = 0; i < 0x40000; i++) {
+	buffer = (UINT8*)BurnMalloc(0x40000);
+	for (INT32 i = 0; i < 0x40000; i++) {
 		buffer[i] = HyperpacRom[BITSWAP24(i,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,3,4,1,2,0)];
 	}
 	memcpy(HyperpacRom, buffer, 0x40000);
-	free(buffer);
+	BurnFree(buffer);
 
 	// Load and Decode Sprite Roms
 	nRet = BurnLoadRom(HyperpacTempGfx + 0x00000, 2, 1); if (nRet != 0) return 1;
@@ -2777,7 +2724,7 @@ int Snowbro3Init()
 	nRet = BurnLoadRom(HyperpacTempGfx, 5, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM + 0x00000, HyperpacTempGfx + 0x00000, 0x20000);
 	memcpy(MSM6295ROM + 0x80000, HyperpacTempGfx + 0x20000, 0x60000);
-	free(HyperpacTempGfx);
+	BurnFree(HyperpacTempGfx);
 
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -2803,19 +2750,19 @@ int Snowbro3Init()
 	return 0;
 }
 
-int HyperpacExit()
+static INT32 HyperpacExit()
 {
-	BurnYM3812Exit();
-	BurnYM2151Exit();
 	MSM6295Exit(0);
 
 	SekExit();
 	ZetExit();
-
+	
 	GenericTilesExit();
+	
+	if (!Twinadv && !Honeydol) BurnYM2151Exit();
+	if (Honeydol) BurnYM3812Exit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	HyperpacNumTiles = 0;
 	HyperpacNumTiles8bpp = 0;
@@ -2827,22 +2774,22 @@ int HyperpacExit()
 	Finalttr = 0;
 	Twinadv = 0;
 	Honeydol = 0;
+	Snowbro3 = 0;
 	
 	return 0;
 }
 
-int SnowbrosExit()
+static INT32 SnowbrosExit()
 {
-	BurnYM3812Exit();
-	MSM6295Exit(0);
+	if (!Snowbro3) BurnYM3812Exit();
+	if (Snowbro3) MSM6295Exit(0);
 
 	SekExit();
-	ZetExit();
+	if (!Snowbro3) ZetExit();
 
 	GenericTilesExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	HyperpacNumTiles = 0;
 	HyperpacNumTiles8bpp = 0;
@@ -2850,24 +2797,25 @@ int SnowbrosExit()
 	
 	Snowbro3Music = 0;
 	Snowbro3MusicPlaying = 0;
+	Snowbro3 = 0;
 
 	return 0;
 }
 
-void HyperpacRenderSpriteLayer()
+static void HyperpacRenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 
 	for (Offs = 0; Offs < 0x2000; Offs += 16) {
-		int dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
-		int dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
-		int TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
-		int Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
-		int Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
-		int FlipX      = Attr & 0x80;
-		int FlipY      = (Attr & 0x40) << 1;
-		int Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
-		int Colour     = (TileColour & 0xf0) >> 4;
+		INT32 dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
+		INT32 dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
+		INT32 TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
+		INT32 Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
+		INT32 Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
+		INT32 FlipX      = Attr & 0x80;
+		INT32 FlipY      = (Attr & 0x40) << 1;
+		INT32 Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
+		INT32 Colour     = (TileColour & 0xf0) >> 4;
 
 		if (TileColour & 1) dx = -1 - (dx ^ 0xff);
 		if (TileColour & 2) dy = -1 - (dy ^ 0xff);
@@ -2915,20 +2863,20 @@ void HyperpacRenderSpriteLayer()
 	}
 }
 
-void TwinadvRenderSpriteLayer()
+static void TwinadvRenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 
 	for (Offs = 0; Offs < 0x2000; Offs += 16) {
-		int dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
-		int dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
-		int TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
-		int Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
-		int Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
-		int FlipX      = Attr & 0x80;
-		int FlipY      = (Attr & 0x40) << 1;
-		int Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
-		int Colour     = (TileColour & 0xf0) >> 4;
+		INT32 dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
+		INT32 dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
+		INT32 TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
+		INT32 Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
+		INT32 Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
+		INT32 FlipX      = Attr & 0x80;
+		INT32 FlipY      = (Attr & 0x40) << 1;
+		INT32 Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
+		INT32 Colour     = (TileColour & 0xf0) >> 4;
 		Colour        ^= 0xf;
 
 		x = dx;
@@ -2970,20 +2918,20 @@ void TwinadvRenderSpriteLayer()
 	}
 }
 
-void HoneydolRenderSpriteLayer()
+static void HoneydolRenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 
 	for (Offs = 0; Offs < 0x2000; Offs += 16) {
-		int dx         = (((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) >> 8) & 0xff;
-		int dy         = (((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) >> 8) & 0xff;
-		int TileColour = (((HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6]) >> 8) & 3;
-		int Attr       = ((HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14]) >> 8;
-		int Attr2      = (((HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12]) >> 8) & 0xff;
-		int FlipX      = Attr & 0x80;
-		int FlipY      = (Attr & 0x40) << 1;
-		int Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
-		int Colour     = TileColour;
+		INT32 dx         = (((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) >> 8) & 0xff;
+		INT32 dy         = (((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) >> 8) & 0xff;
+		INT32 TileColour = (((HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6]) >> 8) & 3;
+		INT32 Attr       = ((HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14]) >> 8;
+		INT32 Attr2      = (((HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12]) >> 8) & 0xff;
+		INT32 FlipX      = Attr & 0x80;
+		INT32 FlipY      = (Attr & 0x40) << 1;
+		INT32 Tile       = ((Attr & 0x3f) << 8) + (Attr2 & 0xff);
+		INT32 Colour     = TileColour;
 
 		x = dx;
 		y = dy;
@@ -3075,20 +3023,20 @@ void HoneydolRenderSpriteLayer()
 	}
 }
 
-void SnowbrosRenderSpriteLayer()
+static void SnowbrosRenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 
 	for (Offs = 0; Offs < 0x2000; Offs += 16) {
-		int dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
-		int dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
-		int TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
-		int Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
-		int Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
-		int FlipX      = Attr & 0x80;
-		int FlipY      = (Attr & 0x40) << 1;
-		int Tile       = ((Attr & 0x1f) << 8) + (Attr2 & 0xff);
-		int Colour     = (TileColour & 0xf0) >> 4;
+		INT32 dx         = ((HyperpacSpriteRam[Offs +  9]  << 8) + HyperpacSpriteRam[Offs +  8]) & 0xff;
+		INT32 dy         = ((HyperpacSpriteRam[Offs + 11]  << 8) + HyperpacSpriteRam[Offs + 10]) & 0xff;
+		INT32 TileColour = (HyperpacSpriteRam[Offs +  7]  << 8) + HyperpacSpriteRam[Offs +  6];
+		INT32 Attr       = (HyperpacSpriteRam[Offs + 15]  << 8) + HyperpacSpriteRam[Offs + 14];
+		INT32 Attr2      = (HyperpacSpriteRam[Offs + 13]  << 8) + HyperpacSpriteRam[Offs + 12];
+		INT32 FlipX      = Attr & 0x80;
+		INT32 FlipY      = (Attr & 0x40) << 1;
+		INT32 Tile       = ((Attr & 0x1f) << 8) + (Attr2 & 0xff);
+		INT32 Colour     = (TileColour & 0xf0) >> 4;
 
 		if (TileColour & 1) dx = -1 - (dx ^ 0xff);
 		if (TileColour & 2) dy = -1 - (dy ^ 0xff);
@@ -3136,23 +3084,23 @@ void SnowbrosRenderSpriteLayer()
 	}
 }
 
-void WintbobRenderSpriteLayer()
+static void WintbobRenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 	
 	UINT16 *SpriteRam = (UINT16*)HyperpacSpriteRam;
 
 	for (Offs = 0; Offs < 0x2000 >> 1; Offs += 8) {
 		x              = SpriteRam[Offs + 0] & 0xff;
 		y              = SpriteRam[Offs + 4] & 0xff;
-		int Attr       = SpriteRam[Offs + 1];
-		int Disbl      = Attr & 0x02;
-		int Wrapr      = Attr & 0x08;
-		int Colour     = (Attr & 0xf0) >> 4;
-		int Attr2      = SpriteRam[Offs + 2];
-		int Tile       = (Attr2 << 8) | (SpriteRam[Offs + 3] & 0xff);
-		int FlipX      = Attr2 & 0x80;
-		int FlipY      = (Attr2 & 0x40) << 1;
+		INT32 Attr       = SpriteRam[Offs + 1];
+		INT32 Disbl      = Attr & 0x02;
+		INT32 Wrapr      = Attr & 0x08;
+		INT32 Colour     = (Attr & 0xf0) >> 4;
+		INT32 Attr2      = SpriteRam[Offs + 2];
+		INT32 Tile       = (Attr2 << 8) | (SpriteRam[Offs + 3] & 0xff);
+		INT32 FlipX      = Attr2 & 0x80;
+		INT32 FlipY      = (Attr2 & 0x40) << 1;
 
 		if (Wrapr == 8) x -= 256;
 
@@ -3193,23 +3141,23 @@ void WintbobRenderSpriteLayer()
 	}
 }
 
-void Snowbro3RenderSpriteLayer()
+static void Snowbro3RenderSpriteLayer()
 {
-	int x = 0, y = 0, Offs;
+	INT32 x = 0, y = 0, Offs;
 	
 	UINT16 *SpriteRam = (UINT16*)HyperpacSpriteRam;
-	unsigned char *pTile = NULL;
-	int ColourDepth = 0;
+	UINT8 *pTile = NULL;
+	INT32 ColourDepth = 0;
 
 	for (Offs = 0; Offs < 0x2200 >> 1; Offs += 8) {
-		int dx         = SpriteRam[Offs + 4] & 0xff;
-		int dy         = SpriteRam[Offs + 5] & 0xff;
-		int TileColour = SpriteRam[Offs + 3];
-		int Attr       = SpriteRam[Offs + 7];
-		int Attr2      = SpriteRam[Offs + 6];
-		int FlipX      = Attr & 0x80;
-		int FlipY      = (Attr & 0x40) << 1;
-		int Tile       = ((Attr & 0xff) << 8) + (Attr2 & 0xff);
+		INT32 dx         = SpriteRam[Offs + 4] & 0xff;
+		INT32 dy         = SpriteRam[Offs + 5] & 0xff;
+		INT32 TileColour = SpriteRam[Offs + 3];
+		INT32 Attr       = SpriteRam[Offs + 7];
+		INT32 Attr2      = SpriteRam[Offs + 6];
+		INT32 FlipX      = Attr & 0x80;
+		INT32 FlipY      = (Attr & 0x40) << 1;
+		INT32 Tile       = ((Attr & 0xff) << 8) + (Attr2 & 0xff);
 		
 		if (TileColour & 1) dx = -1 - (dx ^ 0xff);
 		if (TileColour & 2) dy = -1 - (dy ^ 0xff);
@@ -3235,7 +3183,7 @@ void Snowbro3RenderSpriteLayer()
 			pTile = HyperpacSprites;
 		}
 		
-		int Colour     = (TileColour & 0xf0) >> 4;
+		INT32 Colour     = (TileColour & 0xf0) >> 4;
 
 		if (x > 15 && x < 240 && (y - 16) > 15 && (y - 16) <= 208) {
 			if (!FlipY) {
@@ -3270,9 +3218,9 @@ void Snowbro3RenderSpriteLayer()
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >>  0) & 0x1f;
 	g = (nColour >>  5) & 0x1f;
@@ -3285,50 +3233,50 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int HyperpacCalcPalette()
+static INT32 HyperpacCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x200; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x200; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
 	return 0;
 }
 
-int HoneydolCalcPalette()
+static INT32 HoneydolCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x800; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
 	return 0;
 }
 
-int Snowbro3CalcPalette()
+static INT32 Snowbro3CalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x400; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x400; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
 	return 0;
 }
 
-void HyperpacRender()
+static void HyperpacRender()
 {
 	HyperpacCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xf0;	
 	}
 	
@@ -3336,11 +3284,11 @@ void HyperpacRender()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-void PzlbreakRender()
+static void PzlbreakRender()
 {
 	HyperpacCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xc0;	
 	}
 	
@@ -3348,11 +3296,11 @@ void PzlbreakRender()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-void TwinadvRender()
+static void TwinadvRender()
 {
 	HyperpacCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xf0;	
 	}
 	
@@ -3360,11 +3308,11 @@ void TwinadvRender()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-void HoneydolRender()
+static void HoneydolRender()
 {
 	HoneydolCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xf0;	
 	}
 	
@@ -3372,11 +3320,11 @@ void HoneydolRender()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-void SnowbrosRender()
+static void SnowbrosRender()
 {
 	HyperpacCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xf0;	
 	}
 	
@@ -3388,11 +3336,11 @@ void SnowbrosRender()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-void Snowbro3Render()
+static void Snowbro3Render()
 {
 	Snowbro3CalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0xf0;
 	
 	}
@@ -3401,9 +3349,9 @@ void Snowbro3Render()
 	BurnTransferCopy(HyperpacPalette);
 }
 
-int HyperpacFrame()
+static INT32 HyperpacFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (HyperpacReset) HyperpacDoReset();
 
@@ -3413,157 +3361,15 @@ int HyperpacFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
-
-	SekNewFrame();
-	ZetNewFrame();
-
-	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
-
-		// Run 68000
-		nCurrentCPU = 0;
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-
-		// Run Z80
-		nCurrentCPU = 1;
-		ZetOpen(0);
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = ZetRun(nCyclesSegment);
-		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		ZetClose();
-
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
-
-		if (i == 1) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
-		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
-	}
-
-	SekClose();
-
-	// Make sure the buffer is entirely filled.
-	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-		}
-	}
-
-	if (pBurnDraw) HyperpacRender();
-
-	return 0;
-}
-
-int PzlbreakFrame()
-{
-	int nInterleave = 4;
-
-	if (HyperpacReset) HyperpacDoReset();
-
-	HyperpacMakeInputs();
-
-	nCyclesTotal[0] = 16000000 / 60;
-	nCyclesTotal[1] = 4000000 / 60;
-	nCyclesDone[0] = nCyclesDone[1] = 0;
-
-	int nSoundBufferPos = 0;
-
-	SekNewFrame();
-	ZetNewFrame();
-
-	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
-
-		// Run 68000
-		nCurrentCPU = 0;
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-
-		// Run Z80
-		nCurrentCPU = 1;
-		ZetOpen(0);
-		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
-		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
-		nCyclesSegment = ZetRun(nCyclesSegment);
-		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		ZetClose();
-
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
-
-		if (i == 1) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
-		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
-	}
-
-	SekClose();
-
-	// Make sure the buffer is entirely filled.
-	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-		}
-	}
-
-	if (pBurnDraw) PzlbreakRender();
-
-	return 0;
-}
-
-int FinalttrFrame()
-{
-	int nInterleave = 4;
-
-	if (HyperpacReset) HyperpacDoReset();
-
-	HyperpacMakeInputs();
-
-	nCyclesTotal[0] = 12000000 / 60;
-	nCyclesTotal[1] = 3578545 / 60;
-	nCyclesDone[0] = nCyclesDone[1] = 0;
-
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
 
 	SekOpen(0);
 	ZetOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -3579,8 +3385,8 @@ int FinalttrFrame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -3595,8 +3401,8 @@ int FinalttrFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -3611,9 +3417,9 @@ int FinalttrFrame()
 	return 0;
 }
 
-int TwinadvFrame()
+static INT32 PzlbreakFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (HyperpacReset) HyperpacDoReset();
 
@@ -3623,15 +3429,151 @@ int TwinadvFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
 
 	SekOpen(0);
 	ZetOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
+
+		// Run 68000
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+
+		// Run Z80
+		nCurrentCPU = 1;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
+
+		if (i == 1) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
+		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	}
+
+	SekClose();
+
+	// Make sure the buffer is entirely filled.
+	if (pBurnSoundOut) {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		}
+	}
+	
+	ZetClose();
+
+	if (pBurnDraw) PzlbreakRender();
+
+	return 0;
+}
+
+static INT32 FinalttrFrame()
+{
+	INT32 nInterleave = 4;
+
+	if (HyperpacReset) HyperpacDoReset();
+
+	HyperpacMakeInputs();
+
+	nCyclesTotal[0] = 12000000 / 60;
+	nCyclesTotal[1] = 3578545 / 60;
+	nCyclesDone[0] = nCyclesDone[1] = 0;
+
+	INT32 nSoundBufferPos = 0;
+
+	SekNewFrame();
+	ZetNewFrame();
+
+	SekOpen(0);
+	ZetOpen(0);
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
+
+		// Run 68000
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+
+		// Run Z80
+		nCurrentCPU = 1;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
+
+		if (i == 1) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
+		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	}
+
+	SekClose();
+
+	// Make sure the buffer is entirely filled.
+	if (pBurnSoundOut) {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		}
+	}
+	
+	ZetClose();
+
+	if (pBurnDraw) HyperpacRender();
+
+	return 0;
+}
+
+static INT32 TwinadvFrame()
+{
+	INT32 nInterleave = 4;
+
+	if (HyperpacReset) HyperpacDoReset();
+
+	HyperpacMakeInputs();
+
+	nCyclesTotal[0] = 16000000 / 60;
+	nCyclesTotal[1] = 4000000 / 60;
+	nCyclesDone[0] = nCyclesDone[1] = 0;
+
+	INT32 nSoundBufferPos = 0;
+
+	SekNewFrame();
+	ZetNewFrame();
+
+	SekOpen(0);
+	ZetOpen(0);
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -3648,8 +3590,8 @@ int TwinadvFrame()
 		if (i == 2) ZetRaiseIrq(0);
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -3664,8 +3606,8 @@ int TwinadvFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -3677,19 +3619,19 @@ int TwinadvFrame()
 	return 0;
 }
 
-int HoneydolFrame()
+static INT32 HoneydolFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (HyperpacReset) HyperpacDoReset();
 
 	HyperpacMakeInputs();
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
 	ZetNewFrame();
+	
+	SekOpen(0);
+	ZetOpen(0);
 
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
@@ -3697,8 +3639,8 @@ int HoneydolFrame()
 	nCyclesTotal[0] = 16000000 / 60;
 	nCyclesTotal[1] = 4000000 / 60;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -3711,12 +3653,12 @@ int HoneydolFrame()
 		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 	}
 
-	SekClose();
-
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	if (pBurnSoundOut) MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+	}
 	
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
@@ -3731,19 +3673,19 @@ int HoneydolFrame()
 	return 0;
 }
 
-int SnowbrosFrame()
+static INT32 SnowbrosFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (HyperpacReset) SnowbrosDoReset();
 
 	HyperpacMakeInputs();
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
-	ZetNewFrame();
+	ZetNewFrame();	
+	
+	SekOpen(0);
+	ZetOpen(0);	
 
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
@@ -3751,8 +3693,8 @@ int SnowbrosFrame()
 	nCyclesTotal[0] = (Wintbob) ? 12000000 / 60 : 8000000 / 60;
 	nCyclesTotal[1] = 6000000 / 60;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -3765,11 +3707,9 @@ int SnowbrosFrame()
 		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 	}
 
-	SekClose();
-
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
@@ -3784,9 +3724,9 @@ int SnowbrosFrame()
 	return 0;
 }
 
-int Snowbro3Frame()
+static INT32 Snowbro3Frame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (HyperpacReset) Snowbro3DoReset();
 
@@ -3800,8 +3740,8 @@ int Snowbro3Frame()
 
 	nCyclesTotal[0] = 16000000 / 60;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -3813,7 +3753,7 @@ int Snowbro3Frame()
 		if (i == 2) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
 		if (i == 3) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 		
-		int Status = MSM6295ReadStatus(0);
+		INT32 Status = MSM6295ReadStatus(0);
 		if (Snowbro3MusicPlaying) {
 			if ((Status & 0x08) == 0x00) {
 				MSM6295Command(0, 0x80 | Snowbro3Music);
@@ -3826,8 +3766,6 @@ int Snowbro3Frame()
 		}
 	}
 
-	SekClose();
-
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 
 	SekClose();
@@ -3839,7 +3777,7 @@ int Snowbro3Frame()
 	return 0;
 }
 
-static int HyperpacScan(int nAction,int *pnMin)
+static INT32 HyperpacScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -3871,7 +3809,7 @@ static int HyperpacScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int SnowbrosScan(int nAction,int *pnMin)
+static INT32 SnowbrosScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -3904,7 +3842,7 @@ static int SnowbrosScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int Snowbro3Scan(int nAction,int *pnMin)
+static INT32 Snowbro3Scan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

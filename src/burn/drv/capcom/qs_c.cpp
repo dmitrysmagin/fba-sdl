@@ -4,45 +4,45 @@
 #include "cps.h"
 #include "burn_sound.h"
 
-static const int nQscClock = 4000000;
-static const int nQscClockDivider = 166;
+static const INT32 nQscClock = 4000000;
+static const INT32 nQscClockDivider = 166;
 
-static int nQscRate = 0;
-static int nQscVolumeShift;
+static INT32 nQscRate = 0;
+static INT32 nQscVolumeShift;
 
-static int Tams = -1;
-static int* Qs_s = NULL;
+static INT32 Tams = -1;
+static INT32* Qs_s = NULL;
 
-static int nPos;
+static INT32 nPos;
 
 struct QChan {
-		unsigned char bKey;				// 1 if channel is playing
-		char nBank;						// Bank we are currently playing a sample from
+		UINT8 bKey;				// 1 if channel is playing
+		INT8 nBank;						// Bank we are currently playing a sample from
 
-		char* PlayBank;					// Pointer to current bank
+		INT8* PlayBank;					// Pointer to current bank
 
-		int nPlayStart;					// Start of being played
-		int nStart;						// Start of sample 16.12
-		int nEnd;						// End of sample   16.12
-		int nLoop;						// Loop offset from end
-		int nPos;						// Current position within the bank 16.12
-		int nAdvance;					// Sample size
+		INT32 nPlayStart;					// Start of being played
+		INT32 nStart;						// Start of sample 16.12
+		INT32 nEnd;						// End of sample   16.12
+		INT32 nLoop;						// Loop offset from end
+		INT32 nPos;						// Current position within the bank 16.12
+		INT32 nAdvance;					// Sample size
 
-		int nMasterVolume;				// Master volume for the channel
-		int nVolume[2];					// Left & right side volumes (panning)
+		INT32 nMasterVolume;				// Master volume for the channel
+		INT32 nVolume[2];					// Left & right side volumes (panning)
 
-		int nPitch;						// Playback frequency
+		INT32 nPitch;						// Playback frequency
 
-		char nEndBuffer[8];				// Buffer to enable correct cubic interpolation
+		INT8 nEndBuffer[8];				// Buffer to enable correct cubic interpolation
 };
 
 static struct QChan QChan[16];
 
-static int PanningVolumes[33];
+static INT32 PanningVolumes[33];
 
 static void MapBank(struct QChan* pc)
 {
-	unsigned int nBank;
+	UINT32 nBank;
 
 	nBank = (pc->nBank & 0x7F) << 16;	// Banks are 0x10000 samples long
 
@@ -51,7 +51,7 @@ static void MapBank(struct QChan* pc)
 	if ((nBank + 0x10000) > nCpsQSamLen) {
 		nBank = 0;
 	}
-	pc->PlayBank = (char*)CpsQSam + nBank;
+	pc->PlayBank = (INT8*)CpsQSam + nBank;
 }
 
 static void UpdateEndBuffer(struct QChan* pc)
@@ -59,19 +59,19 @@ static void UpdateEndBuffer(struct QChan* pc)
 	if (pc->bKey) {
 		// prepare a buffer to correctly interpolate the last 4 samples
 		if (nInterpolation >= 3) {
-			for (int i = 0; i < 4; i++) {
+			for (INT32 i = 0; i < 4; i++) {
 				pc->nEndBuffer[i] = pc->PlayBank[(pc->nEnd >> 12) - 4 + i];
 			}
 
 			if (pc->nLoop) {
-				for (int i = 0, j = 0; i < 4; i++, j++) {
+				for (INT32 i = 0, j = 0; i < 4; i++, j++) {
 					if (j >= (pc->nLoop >> 12)) {
 						j = 0;
 					}
 					pc->nEndBuffer[i + 4] = pc->PlayBank[((pc->nEnd - pc->nLoop) >> 12) + j];
 				}
 			} else {
-				for (int i = 0; i < 4; i++) {
+				for (INT32 i = 0; i < 4; i++) {
 					pc->nEndBuffer[i + 4] = pc->nEndBuffer[3];
 				}
 			}
@@ -82,7 +82,7 @@ static void UpdateEndBuffer(struct QChan* pc)
 static void CalcAdvance(struct QChan* pc)
 {
 	if (nQscRate) {
-		pc->nAdvance = (long long)pc->nPitch * nQscClock / nQscClockDivider / nQscRate;
+		pc->nAdvance = (INT64)pc->nPitch * nQscClock / nQscClockDivider / nQscRate;
 	}
 }
 
@@ -91,8 +91,8 @@ void QscReset()
 	memset(QChan, 0, sizeof(QChan));
 
 	// Point all to bank 0
-	for (int i = 0; i < 16; i++) {
-		QChan[i].PlayBank = (char*)CpsQSam;
+	for (INT32 i = 0; i < 16; i++) {
+		QChan[i].PlayBank = (INT8*)CpsQSam;
 	}
 }
 
@@ -100,19 +100,18 @@ void QscExit()
 {
 	nQscRate = 0;
 
-	free(Qs_s);
-	Qs_s = NULL;
+	BurnFree(Qs_s);
 	Tams = -1;
 }
 
-int QscInit(int nRate, int nVolumeShift)
+INT32 QscInit(INT32 nRate, INT32 nVolumeShift)
 {
 	nQscRate = nRate;
 
 	nQscVolumeShift = 10 + nVolumeShift;
 
-	for (int i = 0; i < 33; i++) {
-		PanningVolumes[i] = (int)((256.0 / sqrt(32.0)) * sqrt((double)i));
+	for (INT32 i = 0; i < 33; i++) {
+		PanningVolumes[i] = (INT32)((256.0 / sqrt(32.0)) * sqrt((double)i));
 	}
 
 	QscReset();
@@ -120,13 +119,13 @@ int QscInit(int nRate, int nVolumeShift)
 	return 0;
 }
 
-int QscScan(int nAction)
+INT32 QscScan(INT32 nAction)
 {
 	SCAN_VAR(QChan);
 
 	if (nAction & ACB_WRITE) {
 		// Update bank pointers with new banks, and recalc nAdvance
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			MapBank(QChan + i);
 			CalcAdvance(QChan + i);
 		}
@@ -145,10 +144,10 @@ static inline void QscSyncQsnd()
 	if (pBurnSoundOut) QscUpdate(ZetTotalCycles() * nBurnSoundLen / nCpsZ80Cycles);
 }
 
-void QscWrite(int a, int d)
+void QscWrite(INT32 a, INT32 d)
 {
 	struct QChan* pc;
-	int nChanNum, r;
+	INT32 nChanNum, r;
 
 	// unknown
 	if (a >= 0x90) {
@@ -159,7 +158,7 @@ void QscWrite(int a, int d)
 	QscSyncQsnd();
 
 	if (a >= 0x80) {									// Set panning for channel
-		int nPan;
+		INT32 nPan;
 
 		nChanNum = a & 15;
 
@@ -247,9 +246,9 @@ void QscWrite(int a, int d)
 	}
 }
 
-int QscUpdate(int nEnd)
+INT32 QscUpdate(INT32 nEnd)
 {
-	int nLen;
+	INT32 nLen;
 
 	if (nEnd > nBurnSoundLen) {
 		nEnd = nBurnSoundLen;
@@ -262,27 +261,25 @@ int QscUpdate(int nEnd)
 	}
 
 	if (Tams < nLen) {
-		if (Qs_s) {
-			free(Qs_s);
-		}
+		BurnFree(Qs_s);
 		Tams = nLen;
-		Qs_s = (int*)malloc(sizeof(int) * 2 * Tams);
+		Qs_s = (INT32*)BurnMalloc(sizeof(INT32) * 2 * Tams);
 	}
 
-	memset(Qs_s, 0, nLen * 2 * sizeof(int));
+	memset(Qs_s, 0, nLen * 2 * sizeof(INT32));
 
 	if (nInterpolation < 3) {
 
 		// Go through all channels
-		for (int c = 0; c < 16; c++) {
+		for (INT32 c = 0; c < 16; c++) {
 
 			// If the channel is playing, add the samples to the buffer
 			if (QChan[c].bKey) {
-				int VolL = (QChan[c].nMasterVolume * QChan[c].nVolume[0]) >> nQscVolumeShift;
-				int VolR = (QChan[c].nMasterVolume * QChan[c].nVolume[1]) >> nQscVolumeShift;
-				int* pTemp = Qs_s;
-				int i = nLen;
-				int s, p;
+				INT32 VolL = (QChan[c].nMasterVolume * QChan[c].nVolume[0]) >> nQscVolumeShift;
+				INT32 VolR = (QChan[c].nMasterVolume * QChan[c].nVolume[1]) >> nQscVolumeShift;
+				INT32* pTemp = Qs_s;
+				INT32 i = nLen;
+				INT32 s, p;
 
 				if (QChan[c].bKey & 2) {
 					QChan[c].bKey &= ~2;
@@ -341,20 +338,20 @@ int QscUpdate(int nEnd)
 	}
 
 	// Go through all channels
-	for (int c = 0; c < 16; c++) {
+	for (INT32 c = 0; c < 16; c++) {
 
 		// If the channel is playing, add the samples to the buffer
 		if (QChan[c].bKey) {
-			int VolL = (QChan[c].nMasterVolume * QChan[c].nVolume[0]) >> nQscVolumeShift;
-			int VolR = (QChan[c].nMasterVolume * QChan[c].nVolume[1]) >> nQscVolumeShift;
-			int* pTemp = Qs_s;
-			int i = nLen;
+			INT32 VolL = (QChan[c].nMasterVolume * QChan[c].nVolume[0]) >> nQscVolumeShift;
+			INT32 VolR = (QChan[c].nMasterVolume * QChan[c].nVolume[1]) >> nQscVolumeShift;
+			INT32* pTemp = Qs_s;
+			INT32 i = nLen;
 
 			// handle 1st sample
 			if (QChan[c].bKey & 2) {
 				while (QChan[c].nPos < 0x1000 && i) {
-					int p = QChan[c].nPlayStart >> 12;
-					int s = INTERPOLATE4PS_CUSTOM(QChan[c].nPos,
+					INT32 p = QChan[c].nPlayStart >> 12;
+					INT32 s = INTERPOLATE4PS_CUSTOM(QChan[c].nPos,
 												  0,
 												  QChan[c].PlayBank[p + 0],
 												  QChan[c].PlayBank[p + 1],
@@ -377,24 +374,24 @@ int QscUpdate(int nEnd)
 
 			if (bBurnUseMMX && i > 0) {
 #if defined BUILD_X86_ASM
-				QChan[c].bKey = (unsigned char)ChannelMix_QS_A(pTemp, i,
-															   QChan[c].PlayBank,
+				QChan[c].bKey = (UINT8)ChannelMix_QS_A(pTemp, i,
+															   (char*)QChan[c].PlayBank,
 															   QChan[c].nEnd,
 															   &(QChan[c].nPos),
 															   VolL,
 															   VolR,
 															   QChan[c].nLoop,
 															   QChan[c].nAdvance,
-															   QChan[c].nEndBuffer);
+															   (char*)QChan[c].nEndBuffer);
 #endif
 			} else {
 				while (i > 0) {
-					int s, p;
+					INT32 s, p;
 
 					// Check for end of sample
 					if (QChan[c].nPos >= (QChan[c].nEnd - 0x3000)) {
 						if (QChan[c].nPos < QChan[c].nEnd) {
-							int nIndex = 4 - ((QChan[c].nEnd - QChan[c].nPos) >> 12);
+							INT32 nIndex = 4 - ((QChan[c].nEnd - QChan[c].nPos) >> 12);
 							s = INTERPOLATE4PS_CUSTOM((QChan[c].nPos) & ((1 << 12) - 1),
 													  QChan[c].nEndBuffer[nIndex + 0],
 													  QChan[c].nEndBuffer[nIndex + 1],

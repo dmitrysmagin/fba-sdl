@@ -7,43 +7,45 @@
 
 #include "z80.h"
 
-extern int nHasZet;
-void ZetWriteByte(unsigned short address, unsigned char data);
-unsigned char ZetReadByte(unsigned short address);
-void ZetWriteRom(unsigned short address, unsigned char data);
-int ZetInit(int nCount);
+extern INT32 nHasZet;
+void ZetWriteByte(UINT16 address, UINT8 data);
+UINT8 ZetReadByte(UINT16 address);
+void ZetWriteRom(UINT16 address, UINT8 data);
+INT32 ZetInit(INT32 nCount);
 void ZetExit();
 void ZetNewFrame();
-void ZetOpen(int nCPU);
+void ZetOpen(INT32 nCPU);
 void ZetClose();
-int ZetGetActive();
-int ZetMemCallback(int nStart,int nEnd,int nMode);
-int ZetMemEnd();
-int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem);
-int ZetMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem01, unsigned char *Mem02);
-int ZetReset();
-int ZetPc(int n);
-int ZetBc(int n);
-int ZetDe(int n);
-int ZetHL(int n);
-int ZetScan(int nAction);
-int ZetRun(int nCycles);
+INT32 ZetGetActive();
+INT32 ZetMemCallback(INT32 nStart,INT32 nEnd,INT32 nMode);
+INT32 ZetMemEnd();
+INT32 ZetMapArea(INT32 nStart, INT32 nEnd, INT32 nMode, UINT8 *Mem);
+INT32 ZetMapArea(INT32 nStart, INT32 nEnd, INT32 nMode, UINT8 *Mem01, UINT8 *Mem02);
+void ZetReset();
+INT32 ZetPc(INT32 n);
+INT32 ZetBc(INT32 n);
+INT32 ZetDe(INT32 n);
+INT32 ZetHL(INT32 n);
+INT32 ZetScan(INT32 nAction);
+INT32 ZetRun(INT32 nCycles);
 void ZetRunEnd();
-void ZetSetIRQLine(const int line, const int status);
-void ZetSetVector(int vector);
-int ZetNmi();
-int ZetIdle(int nCycles);
-int ZetSegmentCycles();
-int ZetTotalCycles();
+void ZetSetIRQLine(const INT32 line, const INT32 status);
+void ZetSetVector(INT32 vector);
+INT32 ZetNmi();
+INT32 ZetIdle(INT32 nCycles);
+INT32 ZetSegmentCycles();
+INT32 ZetTotalCycles();
 
 #define ZET_IRQSTATUS_NONE 0
 #define ZET_IRQSTATUS_ACK  1
 #define ZET_IRQSTATUS_AUTO 2
 
 #define ZetRaiseIrq(n) ZetSetIRQLine(n, ZET_IRQSTATUS_AUTO)
-#define ZetLowerIrq(n) ZetSetIRQLine(0, Z80_CLEAR_LINE)
+#define ZetLowerIrq() ZetSetIRQLine(0, Z80_CLEAR_LINE)
 
-void ZetSetReadHandler(unsigned char (__fastcall *pHandler)(unsigned short));
-void ZetSetWriteHandler(void (__fastcall *pHandler)(unsigned short, unsigned char));
-void ZetSetInHandler(unsigned char (__fastcall *pHandler)(unsigned short));
-void ZetSetOutHandler(void (__fastcall *pHandler)(unsigned short, unsigned char));
+void ZetSetReadHandler(UINT8 (__fastcall *pHandler)(UINT16));
+void ZetSetWriteHandler(void (__fastcall *pHandler)(UINT16, UINT8));
+void ZetSetInHandler(UINT8 (__fastcall *pHandler)(UINT16));
+void ZetSetOutHandler(void (__fastcall *pHandler)(UINT16, UINT8));
+
+void ZetSetBUSREQLine(INT32 nStatus);

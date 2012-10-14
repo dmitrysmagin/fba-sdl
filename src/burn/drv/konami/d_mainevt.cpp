@@ -2,45 +2,46 @@
 // Based on MAME driver by Bryan McPhail
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "hd6309_intf.h"
 #include "konamiic.h"
 #include "burn_ym2151.h"
-#include "UPD7759.h"
+#include "upd7759.h"
 #include "k007232.h"
 
-static unsigned char *AllMem;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
-static unsigned char *DrvHD6309ROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *DrvHD6309RAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *soundlatch;
-static unsigned char *irq_enable;
-static unsigned char *nmi_enable;
+static UINT8 *AllMem;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
+static UINT8 *DrvHD6309ROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *DrvHD6309RAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *soundlatch;
+static UINT8 *irq_enable;
+static UINT8 *nmi_enable;
 
-static unsigned char *nDrvBank;
+static UINT8 *nDrvBank;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvInputs[5];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvInputs[5];
+static UINT8 DrvReset;
 
-static int nGame;
+static INT32 nGame;
 
 static struct BurnInputInfo MainevtInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -418,18 +419,18 @@ static struct BurnDIPInfo Devstors2DIPList[]=
 
 STDDIPINFO(Devstors2)
 
-static void bankswitch(int data)
+static void bankswitch(INT32 data)
 {
 	nDrvBank[0] = data & 3;
 
-	int nBank = 0x10000 + nDrvBank[0] * 0x2000;
+	INT32 nBank = 0x10000 + nDrvBank[0] * 0x2000;
 
 	HD6309MapMemory(DrvHD6309ROM + nBank, 0x6000, 0x7fff, HD6309_ROM);
 
 	K052109RMRDLine = data & 0x40;
 }
 
-unsigned char mainevt_main_read(unsigned short address)
+UINT8 mainevt_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -469,7 +470,7 @@ unsigned char mainevt_main_read(unsigned short address)
 	return 0;
 }
 
-void mainevt_main_write(unsigned short address, unsigned char data)
+void mainevt_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -505,9 +506,9 @@ void mainevt_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-static void soundbankswitch(int data)
+static void soundbankswitch(INT32 data)
 {
-	int bank_A,bank_B,bank_C;
+	INT32 bank_A,bank_B,bank_C;
 
 	nDrvBank[1] = data;
 
@@ -520,7 +521,7 @@ static void soundbankswitch(int data)
 	memcpy (DrvSndROM1, DrvSndROM1 + bank_C, 0x20000);
 }
 
-void __fastcall mainevt_sound_write(unsigned short address, unsigned char data)
+void __fastcall mainevt_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -554,7 +555,7 @@ void __fastcall mainevt_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall mainevt_sound_read(unsigned short address)
+UINT8 __fastcall mainevt_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -578,7 +579,7 @@ unsigned char __fastcall mainevt_sound_read(unsigned short address)
 	return 0;
 }
 
-static void K052109Callback(int layer, int , int *code, int *color, int *flipx, int *priority)
+static void K052109Callback(INT32 layer, INT32 , INT32 *code, INT32 *color, INT32 *flipx, INT32 *priority)
 {
 	*flipx = *color & 0x02;
 
@@ -588,13 +589,13 @@ static void K052109Callback(int layer, int , int *code, int *color, int *flipx, 
 	*color = ((layer & 2) << 1) + ((layer & 1) << 2) + ((*color & 0xc0) >> 6);
 }
 
-static void DvK052109Callback(int layer, int, int *code, int *color, int *, int *)
+static void DvK052109Callback(INT32 layer, INT32, INT32 *code, INT32 *color, INT32 *, INT32 *)
 {
 	*code |= ((*color & 0x01) << 8) | ((*color & 0x3c) << 7);
 	*color = ((layer & 2) << 1) + ((*color & 0xc0) >> 6);
 }
 
-static void K051960Callback(int *, int *color, int *priority, int *)
+static void K051960Callback(INT32 *, INT32 *color, INT32 *priority, INT32 *)
 {
 	if (*color & 0x20)	*priority = 0;
 	else if (*color & 0x40)	*priority = 1;
@@ -603,18 +604,18 @@ static void K051960Callback(int *, int *color, int *priority, int *)
 	*color = 0x0c + (*color & 0x03);
 }
 
-static void DvK051960Callback(int *, int *color, int *, int *)
+static void DvK051960Callback(INT32 *, INT32 *color, INT32 *, INT32 *)
 {
 	*color = 0x08 + (*color & 0x07);
 }
 
-static void DrvK007232VolCallback(int v)
+static void DrvK007232VolCallback(INT32 v)
 {
 	K007232SetVolume(0, 0, (v >> 0x4) * 0x11, 0);
 	K007232SetVolume(0, 1, 0, (v & 0x0f) * 0x11);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -637,9 +638,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvHD6309ROM		= Next; Next += 0x020000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -652,7 +653,7 @@ static int MemIndex()
 	DrvSndROM0		= Next; Next += 0x080000;
 	DrvSndROM1		= Next; Next += 0x0a0000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x100 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x100 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -672,13 +673,13 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode(int gfxlen0)
+static INT32 DrvGfxDecode(INT32 gfxlen0)
 {
-	int Plane0[4] = { 0x018, 0x010, 0x008, 0x000 };
-	int Plane1[4] = { 0x000, 0x008, 0x010, 0x018 };
-	int XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	INT32 Plane0[4] = { 0x018, 0x010, 0x008, 0x000 };
+	INT32 Plane1[4] = { 0x000, 0x008, 0x010, 0x018 };
+	INT32 XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 			  0x100, 0x101, 0x102, 0x103, 0x104, 0x105, 0x106, 0x107 };
-	int YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	INT32 YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			  0x200, 0x220, 0x240, 0x260, 0x280, 0x2a0, 0x2c0, 0x2e0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, gfxlen0);
@@ -690,18 +691,18 @@ static int DrvGfxDecode(int gfxlen0)
 	return 0;
 }
 
-static int DrvInit(int type)
+static INT32 DrvInit(INT32 type)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 	nGame = type;
 
-	int gfx0_offset = 0x10000 << nGame;
+	INT32 gfx0_offset = 0x10000 << nGame;
 
 	{
 		if (BurnLoadRom(DrvHD6309ROM  + 0x010000,  0, 1)) return 1;
@@ -734,7 +735,7 @@ static int DrvInit(int type)
 	HD6309SetReadByteHandler(mainevt_main_read);
 	HD6309Close();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -768,7 +769,7 @@ static int DrvInit(int type)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -781,13 +782,12 @@ static int DrvExit()
 	UPD7759Exit();
 	BurnYM2151Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		KonamiRecalcPal(DrvHD6309RAM + 0x1e00, DrvPalette, 0x200);
@@ -826,7 +826,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -834,7 +834,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -853,20 +853,20 @@ static int DrvFrame()
 		if ((DrvInputs[4] & 0x03) == 0) DrvInputs[4] |= 0x03;
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = nBurnSoundLen;
-	int nCyclesTotal[2] = { 12000000 / 60, 3579545 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nCyclesTotal[2] = { 12000000 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	ZetOpen(0);
 	HD6309Open(0);
 
-	int nCyclesSoundIrq = nInterleave / (8 >> nGame);
-	int nCyclesSoundIrqTrigger = nCyclesSoundIrq;
+	INT32 nCyclesSoundIrq = nInterleave / (8 >> nGame);
+	INT32 nCyclesSoundIrqTrigger = nCyclesSoundIrq;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
+		INT32 nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
 
 		nCyclesDone[0] += HD6309Run(nSegment - nCyclesDone[0]);
 
@@ -883,8 +883,8 @@ static int DrvFrame()
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			UPD7759Update(0, pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
@@ -899,9 +899,9 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		if (nSegmentLength) {
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			UPD7759Update(0, pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
@@ -918,7 +918,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	return 1; // hd6309 isn't hooked up...
 
@@ -983,7 +983,7 @@ static struct BurnRomInfo mainevtRomDesc[] = {
 STD_ROM_PICK(mainevt)
 STD_ROM_FN(mainevt)
 
-static int mainevtInit()
+static INT32 mainevtInit()
 {
 	return DrvInit(0);
 }
@@ -1131,7 +1131,7 @@ static struct BurnRomInfo devstorsRomDesc[] = {
 STD_ROM_PICK(devstors)
 STD_ROM_FN(devstors)
 
-static int devstorsInit()
+static INT32 devstorsInit()
 {
 	return DrvInit(1);
 }

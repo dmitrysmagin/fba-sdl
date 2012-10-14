@@ -4,7 +4,7 @@
 Input defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo System16bInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , System16InputPort0 + 0, "p1 coin"   },
@@ -2049,6 +2049,44 @@ STD_ROM_PICK(Altbeast4)
 STD_ROM_FN(Altbeast4)
 
 static struct BurnRomInfo Altbeast5RomDesc[] = {
+	{ "epr-11742.a7",   0x20000, 0x61839534, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+	{ "epr-11741.a5",   0x20000, 0x9b2159cb, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
+
+	{ "epr-11722.a14",  0x10000, 0xadaa8db5, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-11736.b14",  0x10000, 0xe9ad5e89, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-11723.a15",  0x10000, 0x131a3f9a, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-11737.b15",  0x10000, 0x2e420023, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-11724.a16",  0x10000, 0x6f2ed50a, SYS16_ROM_TILES | BRF_GRA },
+	{ "epr-11738.b16",  0x10000, 0xde3d6d02, SYS16_ROM_TILES | BRF_GRA },
+	
+	{ "epr-11725.b1",   0x10000, 0xf8b3684e, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11729.b5",   0x10000, 0xae3c2793, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11726.b2",   0x10000, 0x3cce5419, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11730.b6",   0x10000, 0x3af62b55, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11727.b3",   0x10000, 0xb0390078, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11731.b7",   0x10000, 0x2a87744a, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11728.b4",   0x10000, 0xf3a43fd8, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11732.b8",   0x10000, 0x2fb3e355, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11717.a1",   0x10000, 0x676be0cb, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11733.b10",  0x10000, 0x802cac94, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11718.a2",   0x10000, 0x882864c2, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11734.b11",  0x10000, 0x76c704d2, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11719.a3",   0x10000, 0x339987f7, SYS16_ROM_SPRITES | BRF_GRA },
+	{ "epr-11735.b12",  0x10000, 0x4fe406aa, SYS16_ROM_SPRITES | BRF_GRA },
+
+	{ "epr-11671.a10",  0x08000, 0x2b71343b, SYS16_ROM_Z80PROG | BRF_ESS | BRF_PRG },
+	
+	{ "opr-11672.a11",  0x20000, 0xbbd7f460, SYS16_ROM_UPD7759DATA | BRF_SND },
+	{ "opr-11673.a12",  0x20000, 0x400c4a36, SYS16_ROM_UPD7759DATA | BRF_SND },
+	
+	{ "317-0069.key",   0x02000, 0x959e256a, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+};
+
+
+STD_ROM_PICK(Altbeast5)
+STD_ROM_FN(Altbeast5)
+
+static struct BurnRomInfo Altbeast6RomDesc[] = {
 	{ "epr-11883.a7",   0x20000, 0xc5b3e8f7, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 	{ "epr-11882.a5",   0x20000, 0x9c01170b, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
 
@@ -2083,8 +2121,8 @@ static struct BurnRomInfo Altbeast5RomDesc[] = {
 };
 
 
-STD_ROM_PICK(Altbeast5)
-STD_ROM_FN(Altbeast5)
+STD_ROM_PICK(Altbeast6)
+STD_ROM_FN(Altbeast6)
 
 static struct BurnRomInfo AtomicpRomDesc[] = {
 	{ "ap-t2.bin",      0x10000, 0x97421047, SYS16_ROM_PROG | BRF_ESS | BRF_PRG },
@@ -4015,7 +4053,7 @@ STD_ROM_FN(Wrestwar2)
 Bootleg Z80 Handling
 ====================================================*/
 
-unsigned char __fastcall BootlegZ80PortRead(unsigned short a)
+UINT8 __fastcall BootlegZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -4037,7 +4075,7 @@ unsigned char __fastcall BootlegZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall BootlegZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall BootlegZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	d &= 0xff;
@@ -4059,7 +4097,7 @@ void __fastcall BootlegZ80PortWrite(unsigned short a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall BootlegZ80Read(unsigned short a)
+UINT8 __fastcall BootlegZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000:
@@ -4077,7 +4115,7 @@ unsigned char __fastcall BootlegZ80Read(unsigned short a)
 }
 
 #if 0 && defined FBA_DEBUG
-void __fastcall BootlegZ80Write(unsigned short a, unsigned char d)
+void __fastcall BootlegZ80Write(UINT16 a, UINT8 d)
 {
 
 	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
@@ -4106,7 +4144,7 @@ void BootlegMapZ80()
 Memory Handlers
 ====================================================*/
 
-unsigned char __fastcall System16BReadByte(unsigned int a)
+UINT8 __fastcall System16BReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -4141,7 +4179,7 @@ unsigned char __fastcall System16BReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall System16BWriteByte(unsigned int a, unsigned char d)
+void __fastcall System16BWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -4169,7 +4207,7 @@ void __fastcall System16BWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-void __fastcall System16BWriteWord(unsigned int a, unsigned short d)
+void __fastcall System16BWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileWordWrite(a - 0x400000, d);
@@ -4181,7 +4219,7 @@ void __fastcall System16BWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall AliensynWriteByte(unsigned int a, unsigned char d)
+void __fastcall AliensynWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc00007: {
@@ -4195,7 +4233,7 @@ void __fastcall AliensynWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall AtomicpReadByte(unsigned int a)
+UINT8 __fastcall AtomicpReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -4215,14 +4253,14 @@ unsigned char __fastcall AtomicpReadByte(unsigned int a)
 		}
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 
 	return 0xff;
 }
 
-void __fastcall AtomicpWriteByte(unsigned int a, unsigned char d)
+void __fastcall AtomicpWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -4268,12 +4306,12 @@ void __fastcall AtomicpWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
-void __fastcall AurailWriteByte(unsigned int a, unsigned char d)
+void __fastcall AurailWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfc0001: {
@@ -4300,7 +4338,7 @@ void __fastcall AurailWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall BayrouteReadByte(unsigned int a)
+UINT8 __fastcall BayrouteReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x901001: {
@@ -4327,7 +4365,7 @@ unsigned char __fastcall BayrouteReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall BayrouteWriteByte(unsigned int a, unsigned char d)
+void __fastcall BayrouteWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x700000 && a <= 0x70ffff) {
 		System16BTileByteWrite((a - 0x700000) ^ 1, d);
@@ -4352,7 +4390,7 @@ void __fastcall BayrouteWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall BayrouteWriteWord(unsigned int a, unsigned short d)
+void __fastcall BayrouteWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x700000 && a <= 0x70ffff) {
 		System16BTileWordWrite(a - 0x700000, d);
@@ -4360,7 +4398,7 @@ void __fastcall BayrouteWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall BulletReadByte(unsigned int a)
+UINT8 __fastcall BulletReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -4391,7 +4429,7 @@ unsigned char __fastcall BulletReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall BulletWriteByte(unsigned int a, unsigned char d)
+void __fastcall BulletWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc00007: {
@@ -4405,7 +4443,7 @@ void __fastcall BulletWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CottonReadByte(unsigned int a)
+UINT8 __fastcall CottonReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x601001: {
@@ -4440,7 +4478,7 @@ unsigned char __fastcall CottonReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall CottonWriteByte(unsigned int a, unsigned char d)
+void __fastcall CottonWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -4486,7 +4524,7 @@ void __fastcall CottonWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall CottonWriteWord(unsigned int a, unsigned short d)
+void __fastcall CottonWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileWordWrite(a - 0x400000, d);
@@ -4494,7 +4532,7 @@ void __fastcall CottonWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall DduxWriteByte(unsigned int a, unsigned char d)
+void __fastcall DduxWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3f0001: {
@@ -4521,7 +4559,7 @@ void __fastcall DduxWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall DduxblGfxWriteByte(unsigned int a, unsigned char d)
+void __fastcall DduxblGfxWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc46021: {
@@ -4554,7 +4592,7 @@ void __fastcall DduxblGfxWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-void __fastcall DduxblGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall DduxblGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc46000: {
@@ -4583,7 +4621,7 @@ void __fastcall DduxblGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall DduxblWriteByte(unsigned int a, unsigned char d)
+void __fastcall DduxblWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc40001: {
@@ -4607,14 +4645,14 @@ void __fastcall DduxblWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-static short DunkshotTrack1X = 0;
-static short DunkshotTrack1Y = 0;
-static short DunkshotTrack2X = 0;
-static short DunkshotTrack2Y = 0;
-static short DunkshotTrack3X = 0;
-static short DunkshotTrack3Y = 0;
-static short DunkshotTrack4X = 0;
-static short DunkshotTrack4Y = 0;
+static INT16 DunkshotTrack1X = 0;
+static INT16 DunkshotTrack1Y = 0;
+static INT16 DunkshotTrack2X = 0;
+static INT16 DunkshotTrack2Y = 0;
+static INT16 DunkshotTrack3X = 0;
+static INT16 DunkshotTrack3Y = 0;
+static INT16 DunkshotTrack4X = 0;
+static INT16 DunkshotTrack4Y = 0;
 
 void DunkshotMakeAnalogInputs()
 {
@@ -4659,7 +4697,7 @@ void DunkshotMakeAnalogInputs()
 	if (DunkshotTrack4Y < 0) DunkshotTrack4Y = 0xfc0;
 }
 
-unsigned char __fastcall DunkshotReadByte(unsigned int a)
+UINT8 __fastcall DunkshotReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc43001: {
@@ -4730,27 +4768,27 @@ unsigned char __fastcall DunkshotReadByte(unsigned int a)
 	return 0xff;
 }
 
-unsigned short __fastcall EswatMultiply0ReadWord(unsigned int a)
+UINT16 __fastcall EswatMultiply0ReadWord(UINT32 a)
 {
 	return System16MultiplyChipRead(0, (a - 0x3e0000) >> 1);
 }
 
-void __fastcall EswatMultiply0WriteWord(unsigned int a, unsigned short d)
+void __fastcall EswatMultiply0WriteWord(UINT32 a, UINT16 d)
 {
 	System16MultiplyChipWrite(0, (a - 0x3e0000) >> 1, d);
 }
 
-unsigned short __fastcall EswatCompare0ReadWord(unsigned int a)
+UINT16 __fastcall EswatCompare0ReadWord(UINT32 a)
 {
 	return System16CompareTimerChipRead(0, (a - 0x3e1000) >> 1);
 }
 
-void __fastcall EswatCompare0WriteWord(unsigned int a, unsigned short d)
+void __fastcall EswatCompare0WriteWord(UINT32 a, UINT16 d)
 {
 	System16CompareTimerChipWrite(0, (a - 0x3e1000) >> 1, d);
 }
 
-void __fastcall EswatSoundWriteByte(unsigned int a, unsigned char d)
+void __fastcall EswatSoundWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x123407: {
@@ -4764,7 +4802,7 @@ void __fastcall EswatSoundWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall EswatWriteByte(unsigned int a, unsigned char d)
+void __fastcall EswatWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3e2001: {
@@ -4791,7 +4829,7 @@ void __fastcall EswatWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall EswatblSoundWriteByte(unsigned int a, unsigned char d)
+void __fastcall EswatblSoundWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc42007: {
@@ -4805,7 +4843,7 @@ void __fastcall EswatblSoundWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall EswatblGfxWriteByte(unsigned int a, unsigned char d)
+void __fastcall EswatblGfxWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x418031: {
@@ -4815,7 +4853,7 @@ void __fastcall EswatblGfxWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall EswatblGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall EswatblGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x418000: {
@@ -4859,10 +4897,10 @@ void __fastcall EswatblGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-static short ExctleagTrack1X = 0;
-static short ExctleagTrack1Y = 0;
-static short ExctleagTrack2X = 0;
-static short ExctleagTrack2Y = 0;
+static INT16 ExctleagTrack1X = 0;
+static INT16 ExctleagTrack1Y = 0;
+static INT16 ExctleagTrack2X = 0;
+static INT16 ExctleagTrack2Y = 0;
 
 void ExctleagMakeAnalogInputs()
 {
@@ -4887,7 +4925,7 @@ void ExctleagMakeAnalogInputs()
 	if (ExctleagTrack2Y < 0) ExctleagTrack2Y = 0xfc;
 }
 
-unsigned char __fastcall ExctleagReadByte(unsigned int a)
+UINT8 __fastcall ExctleagReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -4938,7 +4976,7 @@ unsigned char __fastcall ExctleagReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall Fantzn2xWriteByte(unsigned int a, unsigned char d)
+void __fastcall Fantzn2xWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3f0001: {
@@ -4964,12 +5002,12 @@ void __fastcall Fantzn2xWriteByte(unsigned int a, unsigned char d)
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
-unsigned char __fastcall FpointblReadByte(unsigned int a)
+UINT8 __fastcall FpointblReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x601001: {
@@ -5000,7 +5038,7 @@ unsigned char __fastcall FpointblReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall FpointblWriteByte(unsigned int a, unsigned char d)
+void __fastcall FpointblWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x600007: {
@@ -5025,7 +5063,7 @@ void __fastcall FpointblWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-void __fastcall FpointblGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall FpointblGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc46000: {
@@ -5069,47 +5107,47 @@ void __fastcall FpointblGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall GoldnaxeTileWriteByte(unsigned int a, unsigned char d)
+void __fastcall GoldnaxeTileWriteByte(UINT32 a, UINT8 d)
 {
 	System16BTileByteWrite((a - 0x100000) ^ 1, d);
 }
 
-void __fastcall GoldnaxeTileWriteWord(unsigned int a, unsigned short d)
+void __fastcall GoldnaxeTileWriteWord(UINT32 a, UINT16 d)
 {
 	System16BTileWordWrite(a - 0x100000, d);
 }
 
-unsigned short __fastcall GoldnaxeMultiply0ReadWord(unsigned int a)
+UINT16 __fastcall GoldnaxeMultiply0ReadWord(UINT32 a)
 {
 	return System16MultiplyChipRead(0, (a - 0x1f0000) >> 1);
 }
 
-void __fastcall GoldnaxeMultiply0WriteWord(unsigned int a, unsigned short d)
+void __fastcall GoldnaxeMultiply0WriteWord(UINT32 a, UINT16 d)
 {
 	System16MultiplyChipWrite(0, (a - 0x1f0000) >> 1, d);
 }
 
-unsigned short __fastcall GoldnaxeCompare0ReadWord(unsigned int a)
+UINT16 __fastcall GoldnaxeCompare0ReadWord(UINT32 a)
 {
 	return System16CompareTimerChipRead(0, (a - 0x1f1000) >> 1);
 }
 
-void __fastcall GoldnaxeCompare0WriteWord(unsigned int a, unsigned short d)
+void __fastcall GoldnaxeCompare0WriteWord(UINT32 a, UINT16 d)
 {
 	System16CompareTimerChipWrite(0, (a - 0x1f1000) >> 1, d);
 }
 
-unsigned short __fastcall GoldnaxeCompare1ReadWord(unsigned int a)
+UINT16 __fastcall GoldnaxeCompare1ReadWord(UINT32 a)
 {
 	return System16CompareTimerChipRead(1, (a - 0x1e0000) >> 1);
 }
 
-void __fastcall GoldnaxeCompare1WriteWord(unsigned int a, unsigned short d)
+void __fastcall GoldnaxeCompare1WriteWord(UINT32 a, UINT16 d)
 {
 	System16CompareTimerChipWrite(1, (a - 0x1e0000) >> 1, d);
 }
 
-void __fastcall Goldnaxe1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Goldnaxe1WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x1f2001: {
@@ -5136,7 +5174,7 @@ void __fastcall Goldnaxe1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Goldnaxe3WriteByte(unsigned int a, unsigned char d)
+void __fastcall Goldnaxe3WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x1f0001: {
@@ -5165,7 +5203,7 @@ void __fastcall Goldnaxe3WriteByte(unsigned int a, unsigned char d)
 
 static UINT8 HwchampInputVal;
 
-unsigned short __fastcall HwchampCtrlReadWord(unsigned int a)
+UINT16 __fastcall HwchampCtrlReadWord(UINT32 a)
 {
 	UINT16 result;
 	
@@ -5182,9 +5220,9 @@ unsigned short __fastcall HwchampCtrlReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall HwchampCtrlWriteWord(unsigned int a, unsigned short /*d*/)
+void __fastcall HwchampCtrlWriteWord(UINT32 a, UINT16 /*d*/)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (a) {
 		case 0xc43020: {
@@ -5211,7 +5249,7 @@ void __fastcall HwchampCtrlWriteWord(unsigned int a, unsigned short /*d*/)
 	}
 }
 
-void __fastcall HwchampWriteByte(unsigned int a, unsigned char d)
+void __fastcall HwchampWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3f0001: {
@@ -5238,7 +5276,7 @@ void __fastcall HwchampWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall MvpWriteByte(unsigned int a, unsigned char d)
+void __fastcall MvpWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3f2001: {
@@ -5265,7 +5303,7 @@ void __fastcall MvpWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall MvpjWriteByte(unsigned int a, unsigned char d)
+void __fastcall MvpjWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3f0001: {
@@ -5292,7 +5330,7 @@ void __fastcall MvpjWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall PassshtWriteByte(unsigned int a, unsigned char d)
+void __fastcall PassshtWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc00007: {
@@ -5306,7 +5344,7 @@ void __fastcall PassshtWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall PassshtaReadByte(unsigned int a)
+UINT8 __fastcall PassshtaReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc43001: {
@@ -5329,7 +5367,7 @@ unsigned char __fastcall PassshtaReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall PassshtbGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall PassshtbGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc46000: {
@@ -5373,7 +5411,7 @@ void __fastcall PassshtbGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-unsigned char __fastcall RiotcityReadByte(unsigned int a)
+UINT8 __fastcall RiotcityReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xf81001: {
@@ -5400,7 +5438,7 @@ unsigned char __fastcall RiotcityReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall RiotcityWriteByte(unsigned int a, unsigned char d)
+void __fastcall RiotcityWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0xfa0000 && a <= 0xfaffff) {
 		System16BTileByteWrite((a - 0xfa0000) ^ 1, d);
@@ -5447,7 +5485,7 @@ void __fastcall RiotcityWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall RiotcityWriteWord(unsigned int a, unsigned short d)
+void __fastcall RiotcityWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0xfa0000 && a <= 0xfaffff) {
 		System16BTileWordWrite(a - 0xfa0000, d);
@@ -5455,7 +5493,7 @@ void __fastcall RiotcityWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned short __fastcall RyukyuReadWord(unsigned int a)
+UINT16 __fastcall RyukyuReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x601000: {
@@ -5478,7 +5516,7 @@ unsigned short __fastcall RyukyuReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall RyukyuWriteWord(unsigned int a, unsigned short d)
+void __fastcall RyukyuWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileWordWrite(a - 0x400000, d);
@@ -5516,7 +5554,7 @@ void __fastcall RyukyuWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall RyukyuWriteByte(unsigned int a, unsigned char d)
+void __fastcall RyukyuWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xff0007: {
@@ -5530,10 +5568,10 @@ void __fastcall RyukyuWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-static short SdiTrack1X = 0;
-static short SdiTrack1Y = 0;
-static short SdiTrack2X = 0;
-static short SdiTrack2Y = 0;
+static INT16 SdiTrack1X = 0;
+static INT16 SdiTrack1Y = 0;
+static INT16 SdiTrack2X = 0;
+static INT16 SdiTrack2Y = 0;
 
 void SdibMakeAnalogInputs()
 {
@@ -5544,7 +5582,7 @@ void SdibMakeAnalogInputs()
 	SdiTrack2Y += (System16AnalogPort3 >> 8) & 0xff;
 }
 
-unsigned char __fastcall SdibReadByte(unsigned int a)
+UINT8 __fastcall SdibReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -5583,7 +5621,7 @@ unsigned char __fastcall SdibReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall SdibSoundWriteByte(unsigned int a, unsigned char d)
+void __fastcall SdibSoundWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x123407: {
@@ -5599,14 +5637,14 @@ void __fastcall SdibSoundWriteByte(unsigned int a, unsigned char d)
 
 static UINT8 MahjongInputNum;
 
-unsigned short __fastcall SjryukoReadWord(unsigned int a)
+UINT16 __fastcall SjryukoReadWord(UINT32 a)
 {
 	SEK_DEF_READ_WORD(0, a);
 	
 	return 0xffff;
 }
 
-unsigned char __fastcall SjryukoReadByte(unsigned int a)
+UINT8 __fastcall SjryukoReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -5634,7 +5672,7 @@ unsigned char __fastcall SjryukoReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall SjryukoWriteByte(unsigned int a, unsigned char d)
+void __fastcall SjryukoWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc40003: {
@@ -5655,7 +5693,7 @@ void __fastcall SjryukoWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall SonicbomReadWord(unsigned int a)
+UINT16 __fastcall SonicbomReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xc42000: {
@@ -5670,7 +5708,7 @@ unsigned short __fastcall SonicbomReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall SonicbomWriteByte(unsigned int a, unsigned char d)
+void __fastcall SonicbomWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x123407: {
@@ -5684,7 +5722,7 @@ void __fastcall SonicbomWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall TetrisblGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall TetrisblGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x418000: {
@@ -5728,7 +5766,7 @@ void __fastcall TetrisblGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall TetrisblSndWriteByte(unsigned int a, unsigned char d)
+void __fastcall TetrisblSndWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc42007: {
@@ -5742,7 +5780,7 @@ void __fastcall TetrisblSndWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall ToryumonReadByte(unsigned int a)
+UINT8 __fastcall ToryumonReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xe41001: {
@@ -5773,7 +5811,7 @@ unsigned char __fastcall ToryumonReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall ToryumonWriteByte(unsigned int a, unsigned char d)
+void __fastcall ToryumonWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x3e2001: {
@@ -5815,7 +5853,7 @@ void __fastcall ToryumonWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TturfReadByte(unsigned int a)
+UINT8 __fastcall TturfReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x602001: {
@@ -5830,7 +5868,7 @@ unsigned char __fastcall TturfReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall TturfWriteByte(unsigned int a, unsigned char d)
+void __fastcall TturfWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -5846,7 +5884,7 @@ void __fastcall TturfWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Wb3WriteByte(unsigned int a, unsigned char d)
+void __fastcall Wb3WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xdf0007: {
@@ -5860,7 +5898,7 @@ void __fastcall Wb3WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Wb3bblGfxWriteWord(unsigned int a, unsigned short d)
+void __fastcall Wb3bblGfxWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xc46000: {
@@ -5904,17 +5942,17 @@ void __fastcall Wb3bblGfxWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall WrestwarTileWriteByte(unsigned int a, unsigned char d)
+void __fastcall WrestwarTileWriteByte(UINT32 a, UINT8 d)
 {
 	System16BTileByteWrite((a - 0x100000) ^ 1, d);
 }
 
-void __fastcall WrestwarTileWriteWord(unsigned int a, unsigned short d)
+void __fastcall WrestwarTileWriteWord(UINT32 a, UINT16 d)
 {
 	System16BTileWordWrite(a - 0x100000, d);
 }
 
-void __fastcall WrestwarWriteByte(unsigned int a, unsigned char d)
+void __fastcall WrestwarWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x400001: {
@@ -5945,13 +5983,13 @@ void __fastcall WrestwarWriteByte(unsigned int a, unsigned char d)
 Driver Inits
 ====================================================*/
 
-static int Fantzn2xPlaneOffsets[3] = { 1, 2, 3 };
-static int Fantzn2xXOffsets[8]     = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int Fantzn2xYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 Fantzn2xPlaneOffsets[3] = { 1, 2, 3 };
+static INT32 Fantzn2xXOffsets[8]     = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 Fantzn2xYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
 
-static int AliensynInit()
+static INT32 AliensynInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -5963,9 +6001,9 @@ static int AliensynInit()
 	return nRet;
 }
 
-static int Aliensyn3Init()
+static INT32 Aliensyn3Init()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -5980,83 +6018,81 @@ static int Aliensyn3Init()
 void Altbeast_Sim8751()
 {
 	// System Inputs
-	*((unsigned short*)(System16Ram + 0x30c2)) = (unsigned short)(System16Input[0] << 8);
+	*((UINT16*)(System16Ram + 0x30c2)) = BURN_ENDIAN_SWAP_INT16((UINT16)(System16Input[0] << 8));
 	
 	// Tile Banking
 	System16TileBanks[1] = ((System16Ram[0x3094 + 1] << 8) | System16Ram[0x3094 + 0]) & 7;
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x30c4 + 1] << 8) | System16Ram[0x30c4 + 0];
+	UINT16 temp = (System16Ram[0x30c4 + 1] << 8) | System16Ram[0x30c4 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x30c4)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x30c4)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
 void Altbeastj_Sim8751()
 {
 	// System Inputs
-	*((unsigned short*)(System16Ram + 0x30d0)) = (unsigned short)(System16Input[0] << 8);
+	*((UINT16*)(System16Ram + 0x30d0)) = BURN_ENDIAN_SWAP_INT16((UINT16)(System16Input[0] << 8));
 	
 	// Tile Banking
 	System16TileBanks[1] = ((System16Ram[0x3094 + 1] << 8) | System16Ram[0x3094 + 0]) & 7;
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x30d4 + 1] << 8) | System16Ram[0x30d4 + 0];
+	UINT16 temp = (System16Ram[0x30d4 + 1] << 8) | System16Ram[0x30d4 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x30d4)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x30d4)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-void Altbeast5_Sim8751()
+void Altbeast6_Sim8751()
 {
 	// System Inputs
-	*((unsigned short*)(System16Ram + 0x3096)) = (unsigned short)(System16Input[0] << 8);
+	*((UINT16*)(System16Ram + 0x3096)) = BURN_ENDIAN_SWAP_INT16((UINT16)(System16Input[0] << 8));
 	
 	// Tile Banking
 	System16TileBanks[1] = ((System16Ram[0x3094 + 1] << 8) | System16Ram[0x3094 + 0]) & 7;
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x3098 + 1] << 8) | System16Ram[0x3098 + 0];
+	UINT16 temp = (System16Ram[0x3098 + 1] << 8) | System16Ram[0x3098 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x3098)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x3098)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-static int AltbeastInit()
+static INT32 AltbeastInit()
 {
 	Simulate8751 = Altbeast_Sim8751;
 
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
-static int AltbeastjInit()
+static INT32 AltbeastjInit()
 {
 	Simulate8751 = Altbeastj_Sim8751;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1a0000 - 0xe0000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0xe0000);
 			memset(System16Sprites, 0, 0x1a0000);
@@ -6070,23 +6106,23 @@ static int AltbeastjInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Altbeast5Init()
+static INT32 Altbeast6Init()
 {
-	Simulate8751 = Altbeast5_Sim8751;
+	Simulate8751 = Altbeast6_Sim8751;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1a0000 - 0xe0000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0xe0000);
 			memset(System16Sprites, 0, 0x1a0000);
@@ -6100,21 +6136,21 @@ static int Altbeast5Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Altbeastj3Init()
+static INT32 Altbeastj3Init()
 {
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1a0000 - 0xe0000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0xe0000);
 			memset(System16Sprites, 0, 0x1a0000);
@@ -6128,21 +6164,21 @@ static int Altbeastj3Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Altbeast4Init()
+static INT32 Altbeast4Init()
 {
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1a0000 - 0xe0000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0xe0000);
 			memset(System16Sprites, 0, 0x1a0000);
@@ -6156,7 +6192,7 @@ static int Altbeast4Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
@@ -6178,11 +6214,11 @@ void AtomicpMap68K()
 	SekClose();
 }
 
-static int AtomicpInit()
+static INT32 AtomicpInit()
 {
 	System16Map68KDo = AtomicpMap68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	System16IgnoreVideoEnable = 1;
 	System16YM2413IRQInterval = 166;
@@ -6190,11 +6226,11 @@ static int AtomicpInit()
 	return nRet;
 }
 
-static int AurailInit()
+static INT32 AurailInit()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6206,11 +6242,11 @@ static int AurailInit()
 	return nRet;
 }
 
-static int Aurail1Init()
+static INT32 Aurail1Init()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6222,11 +6258,11 @@ static int Aurail1Init()
 	return nRet;
 }
 
-static int AurailjInit()
+static INT32 AurailjInit()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6255,22 +6291,22 @@ void BayrouteMap68K()
 	SekClose();
 }
 
-static int BayrouteInit()
+static INT32 BayrouteInit()
 {
 	System16Map68KDo = BayrouteMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
 
-static int Bayroute1Init()
+static INT32 Bayroute1Init()
 {
 	System16Map68KDo = BayrouteMap68K;
 	System16CustomLoadRomDo = CustomLoadRom20000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
@@ -6293,16 +6329,15 @@ void Blox16bMap68K()
 	SekClose();
 }
 
-static int Blox16bLoadRom()
+static INT32 Blox16bLoadRom()
 {
 	if (BurnLoadRom(System16Rom + 0x00000, 0, 1)) return 1;
 	
-	System16TempGfx = (unsigned char*)malloc(System16TileRomSize);
+	System16TempGfx = (UINT8*)BurnMalloc(System16TileRomSize);
 	BurnLoadRom(System16TempGfx, 1, 1);
 	GfxDecode(0x2000, 3, 8, 8, Fantzn2xPlaneOffsets, Fantzn2xXOffsets, Fantzn2xYOffsets, 0x100, System16TempGfx, System16Tiles);
 	System16NumTiles = 0x2000;
-	free(System16TempGfx);
-	System16TempGfx = NULL;
+	BurnFree(System16TempGfx);
 	
 	BurnLoadRom(System16Sprites, 2, 1);
 	BurnByteswap(System16Sprites, System16SpriteRomSize);
@@ -6313,20 +6348,20 @@ static int Blox16bLoadRom()
 	return 0;
 }
 
-static int Blox16bInit()
+static INT32 Blox16bInit()
 {
 	System16Map68KDo = Blox16bMap68K;
 	System16CustomLoadRomDo = Blox16bLoadRom;
 	System16UPD7759DataSize = 0x08000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
 
-static int BulletInit()
+static INT32 BulletInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6355,12 +6390,12 @@ void CottonMap68K()
 	SekClose();
 }
 
-static int CottonInit()
+static INT32 CottonInit()
 {
 	System16Map68KDo = CottonMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
@@ -6368,22 +6403,22 @@ static int CottonInit()
 void Ddux_Sim8751()
 {
 	// Sound command
-	unsigned short temp = (System16Ram[0x0bd0 + 1] << 8) | System16Ram[0x0bd0 + 0];
+	UINT16 temp = (System16Ram[0x0bd0 + 1] << 8) | System16Ram[0x0bd0 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x0bd0)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x0bd0)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-static int DduxInit()
+static INT32 DduxInit()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6395,12 +6430,12 @@ static int DduxInit()
 	return nRet;
 }
 
-static int Ddux1Init()
+static INT32 Ddux1Init()
 {
 	Simulate8751 = Ddux_Sim8751;
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6412,7 +6447,7 @@ static int Ddux1Init()
 	return nRet;
 }
 
-static int DduxblInit()
+static INT32 DduxblInit()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
@@ -6420,7 +6455,7 @@ static int DduxblInit()
 	
 	System16MapZ80Do = BootlegMapZ80;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6438,7 +6473,7 @@ static int DduxblInit()
 	return nRet;
 }
 
-static int DunkshotInit()
+static INT32 DunkshotInit()
 {
 	System16MakeAnalogInputsDo = DunkshotMakeAnalogInputs;
 	
@@ -6447,7 +6482,7 @@ static int DunkshotInit()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x80000 - 0x40000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6455,7 +6490,7 @@ static int DunkshotInit()
 		SekSetReadByteHandler(1, DunkshotReadByte);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x80000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x80000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x80000);
 			memset(System16Sprites, 0, 0x80000);
@@ -6470,13 +6505,13 @@ static int DunkshotInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int DunkshotExit()
+static INT32 DunkshotExit()
 {
 	DunkshotTrack1X = 0;
 	DunkshotTrack1Y = 0;
@@ -6490,7 +6525,7 @@ static int DunkshotExit()
 	return System16Exit();
 }
 
-static int DunkshotScan(int nAction,int *pnMin)
+static INT32 DunkshotScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -6527,14 +6562,14 @@ void EswatMap68K()
 	SekClose();
 }
 
-static int EswatInit()
+static INT32 EswatInit()
 {
 	System16Map68KDo = EswatMap68K;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6553,7 +6588,7 @@ static int EswatInit()
 		SekSetWriteByteHandler(4, EswatWriteByte);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6566,13 +6601,13 @@ static int EswatInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int EswatblInit()
+static INT32 EswatblInit()
 {
 	System16Map68KDo = EswatMap68K;
 	
@@ -6581,7 +6616,7 @@ static int EswatblInit()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6597,7 +6632,7 @@ static int EswatblInit()
 
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6610,7 +6645,7 @@ static int EswatblInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 		
 		bSystem16BootlegRender = true;
 	}
@@ -6618,11 +6653,11 @@ static int EswatblInit()
 	return nRet;
 }
 
-static int ExctleagInit()
+static INT32 ExctleagInit()
 {
 	System16MakeAnalogInputsDo = ExctleagMakeAnalogInputs;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6633,7 +6668,7 @@ static int ExctleagInit()
 	return nRet;
 }
 
-static int ExctleagExit()
+static INT32 ExctleagExit()
 {
 	ExctleagTrack1X = 0;
 	ExctleagTrack1Y = 0;
@@ -6643,7 +6678,7 @@ static int ExctleagExit()
 	return System16Exit();
 }
 
-static int ExctleagScan(int nAction,int *pnMin)
+static INT32 ExctleagScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -6678,17 +6713,16 @@ void Fantzn2xMap68K()
 	SekClose();
 }
 
-static int Fantzn2xLoadRom()
+static INT32 Fantzn2xLoadRom()
 {
 	if (BurnLoadRom(System16Rom + 0x00000, 0, 1)) return 1;
 	if (BurnLoadRom(System16Rom + 0x40000, 1, 1)) return 1;
 	
-	System16TempGfx = (unsigned char*)malloc(System16TileRomSize);
+	System16TempGfx = (UINT8*)BurnMalloc(System16TileRomSize);
 	BurnLoadRom(System16TempGfx, 2, 1);
 	GfxDecode(0x4000, 3, 8, 8, Fantzn2xPlaneOffsets, Fantzn2xXOffsets, Fantzn2xYOffsets, 0x100, System16TempGfx, System16Tiles);
 	System16NumTiles = 0x4000;
-	free(System16TempGfx);
-	System16TempGfx = NULL;
+	BurnFree(System16TempGfx);
 	
 	BurnLoadRom(System16Sprites, 3, 1);
 	
@@ -6698,13 +6732,13 @@ static int Fantzn2xLoadRom()
 	return 0;
 }
 
-static int Fantzn2xInit()
+static INT32 Fantzn2xInit()
 {
 	System16Map68KDo = Fantzn2xMap68K;
 	System16CustomLoadRomDo = Fantzn2xLoadRom;
 	System16UPD7759DataSize = 0x20000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
@@ -6727,16 +6761,15 @@ void FantzntaMap68K()
 	SekClose();
 }
 
-static int FantzntaLoadRom()
+static INT32 FantzntaLoadRom()
 {
 	if (BurnLoadRom(System16Rom + 0x00000, 0, 1)) return 1;
 	
-	System16TempGfx = (unsigned char*)malloc(System16TileRomSize);
+	System16TempGfx = (UINT8*)BurnMalloc(System16TileRomSize);
 	BurnLoadRom(System16TempGfx, 1, 1);
 	GfxDecode(0x2000, 3, 8, 8, Fantzn2xPlaneOffsets, Fantzn2xXOffsets, Fantzn2xYOffsets, 0x100, System16TempGfx, System16Tiles);
 	System16NumTiles = 0x2000;
-	free(System16TempGfx);
-	System16TempGfx = NULL;
+	BurnFree(System16TempGfx);
 	
 	BurnLoadRom(System16Sprites, 2, 1);
 	BurnByteswap(System16Sprites, System16SpriteRomSize);
@@ -6747,22 +6780,22 @@ static int FantzntaLoadRom()
 	return 0;
 }
 
-static int FantzntaInit()
+static INT32 FantzntaInit()
 {
 	System16Map68KDo = FantzntaMap68K;
 	System16CustomLoadRomDo = FantzntaLoadRom;
 	System16UPD7759DataSize = 0x10000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
 
-static int FpointblInit()
+static INT32 FpointblInit()
 {
 	System16MapZ80Do = BootlegMapZ80;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	System16SpriteXOffset = 109;
 	
@@ -6811,34 +6844,34 @@ void GoldnaxeMap68K()
 void Goldnaxe_Sim8751()
 {
 	// Protection MCU
-	unsigned short temp1 = (System16Ram[0x2cd8 + 1] << 8) | System16Ram[0x2cd8 + 0];
-	unsigned short temp2 = (System16Ram[0x2cda + 1] << 8) | System16Ram[0x2cda + 0];
-	unsigned short temp3 = (System16Ram[0x2cdc + 1] << 8) | System16Ram[0x2cdc + 0];
-	unsigned short temp4 = (System16Ram[0x2cde + 1] << 8) | System16Ram[0x2cde + 0];
+	UINT16 temp1 = (System16Ram[0x2cd8 + 1] << 8) | System16Ram[0x2cd8 + 0];
+	UINT16 temp2 = (System16Ram[0x2cda + 1] << 8) | System16Ram[0x2cda + 0];
+	UINT16 temp3 = (System16Ram[0x2cdc + 1] << 8) | System16Ram[0x2cdc + 0];
+	UINT16 temp4 = (System16Ram[0x2cde + 1] << 8) | System16Ram[0x2cde + 0];
 	if (temp1 == 0 && temp2 == 0 && temp3 == 0 && temp4 == 0) {
-		*((unsigned short*)(System16Ram + 0x2cd8)) = 0x048c;
-		*((unsigned short*)(System16Ram + 0x2cda)) = 0x159d;
-		*((unsigned short*)(System16Ram + 0x2cdc)) = 0x26ae;
-		*((unsigned short*)(System16Ram + 0x2cde)) = 0x37bf;
+		*((UINT16*)(System16Ram + 0x2cd8)) = BURN_ENDIAN_SWAP_INT16(0x048c);
+		*((UINT16*)(System16Ram + 0x2cda)) = BURN_ENDIAN_SWAP_INT16(0x159d);
+		*((UINT16*)(System16Ram + 0x2cdc)) = BURN_ENDIAN_SWAP_INT16(0x26ae);
+		*((UINT16*)(System16Ram + 0x2cde)) = BURN_ENDIAN_SWAP_INT16(0x37bf);
 	}
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x2cfc + 1] << 8) | System16Ram[0x2cfc + 0];
+	UINT16 temp = (System16Ram[0x2cfc + 1] << 8) | System16Ram[0x2cfc + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x2cfc)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x2cfc)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 	
 	// Inputs
-	*((unsigned short*)(System16Ram + 0x2cd0)) = (unsigned short)(~((System16Input[1] << 8) | System16Input[2]));
-	*((unsigned short*)(System16Ram + 0x2c96)) = (unsigned short)(~System16Input[0] << 8);
+	*((UINT16*)(System16Ram + 0x2cd0)) = BURN_ENDIAN_SWAP_INT16((UINT16)(~((System16Input[1] << 8) | System16Input[2])));
+	*((UINT16*)(System16Ram + 0x2c96)) = BURN_ENDIAN_SWAP_INT16((UINT16)(~System16Input[0] << 8));
 }
 
-static int GoldnaxeInit()
+static INT32 GoldnaxeInit()
 {
 	Simulate8751 = Goldnaxe_Sim8751;
 	System16Map68KDo = GoldnaxeMap68K;
@@ -6846,7 +6879,7 @@ static int GoldnaxeInit()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6866,7 +6899,7 @@ static int GoldnaxeInit()
 		SekSetWriteByteHandler(5, Goldnaxe1WriteByte);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6879,20 +6912,20 @@ static int GoldnaxeInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Goldnaxe1Init()
+static INT32 Goldnaxe1Init()
 {
 	System16Map68KDo = GoldnaxeMap68K;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6912,7 +6945,7 @@ static int Goldnaxe1Init()
 		SekSetWriteByteHandler(5, Goldnaxe1WriteByte);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6925,13 +6958,13 @@ static int Goldnaxe1Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Goldnaxe2Init()
+static INT32 Goldnaxe2Init()
 {
 	Simulate8751 = Goldnaxe_Sim8751;
 	System16Map68KDo = GoldnaxeMap68K;
@@ -6940,7 +6973,7 @@ static int Goldnaxe2Init()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6948,7 +6981,7 @@ static int Goldnaxe2Init()
 		SekSetWriteByteHandler(2, Goldnaxe3WriteByte);
 		SekClose();
 	
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6961,13 +6994,13 @@ static int Goldnaxe2Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Goldnaxe3Init()
+static INT32 Goldnaxe3Init()
 {
 	System16Map68KDo = GoldnaxeMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
@@ -6975,7 +7008,7 @@ static int Goldnaxe3Init()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -6983,7 +7016,7 @@ static int Goldnaxe3Init()
 		SekSetWriteByteHandler(2, Goldnaxe3WriteByte);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -6996,15 +7029,15 @@ static int Goldnaxe3Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int HwchampInit()
+static INT32 HwchampInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7020,14 +7053,14 @@ static int HwchampInit()
 	return nRet;
 }
 
-static int HwchampExit()
+static INT32 HwchampExit()
 {
 	HwchampInputVal = 0;
 	
 	return System16Exit();
 }
 
-static int HwchampScan(int nAction,int *pnMin)
+static INT32 HwchampScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -7040,9 +7073,9 @@ static int HwchampScan(int nAction,int *pnMin)
 	return System16Scan(nAction, pnMin);;
 }
 
-static int MvpInit()
+static INT32 MvpInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7050,7 +7083,7 @@ static int MvpInit()
 		SekSetWriteByteHandler(1, MvpWriteByte);
 		SekClose();
 	
-		unsigned char *pTemp = (unsigned char*)malloc(0x200000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x200000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x200000);
 			memset(System16Sprites, 0, 0x200000);
@@ -7065,20 +7098,20 @@ static int MvpInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int MvpjInit()
+static INT32 MvpjInit()
 {
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x200000 - 0x180000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7086,7 +7119,7 @@ static int MvpjInit()
 		SekSetWriteByteHandler(1, MvpjWriteByte);
 		SekClose();
 	
-		unsigned char *pTemp = (unsigned char*)malloc(0x200000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x200000);
 		if (pTemp) {
 			memset(pTemp, 0, 0x200000);
 			memcpy(pTemp, System16Sprites, 0x200000);
@@ -7096,15 +7129,15 @@ static int MvpjInit()
 		} else {
 			nRet = 1;
 		}		
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int PassshtInit()
+static INT32 PassshtInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7116,9 +7149,9 @@ static int PassshtInit()
 	return nRet;
 }
 
-static int PassshtaInit()
+static INT32 PassshtaInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7132,9 +7165,9 @@ static int PassshtaInit()
 	return nRet;
 }
 
-static int PassshtbInit()
+static INT32 PassshtbInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 //	System16SpriteXOffset = 114;
 	
@@ -7173,7 +7206,7 @@ void RiotcityMap68K()
 	SekClose();
 }
 
-static int RiotcityInit()
+static INT32 RiotcityInit()
 {
 	System16Map68KDo = RiotcityMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
@@ -7181,10 +7214,10 @@ static int RiotcityInit()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x1c0000 - 0x180000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0x1c0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x1c0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x1c0000);
 			memset(System16Sprites, 0, 0x1c0000);
@@ -7197,7 +7230,7 @@ static int RiotcityInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
@@ -7222,20 +7255,20 @@ void RyukyuMap68K()
 	SekClose();
 }
 
-static int RyukyuInit()
+static INT32 RyukyuInit()
 {
 	System16Map68KDo = RyukyuMap68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
 
-static int SdibInit()
+static INT32 SdibInit()
 {
 	System16MakeAnalogInputsDo = SdibMakeAnalogInputs;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7248,11 +7281,11 @@ static int SdibInit()
 	return nRet;
 }
 
-static int SdiblInit()
+static INT32 SdiblInit()
 {
 	System16MakeAnalogInputsDo = SdibMakeAnalogInputs;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7265,7 +7298,7 @@ static int SdiblInit()
 	return nRet;
 }
 
-static int SdibExit()
+static INT32 SdibExit()
 {
 	SdiTrack1X = 0;
 	SdiTrack1Y = 0;
@@ -7275,7 +7308,7 @@ static int SdibExit()
 	return System16Exit();
 }
 
-static int SdibScan(int nAction,int *pnMin)
+static INT32 SdibScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -7291,11 +7324,11 @@ static int SdibScan(int nAction,int *pnMin)
 	return System16Scan(nAction, pnMin);;
 }
 
-static int SjryukoInit()
+static INT32 SjryukoInit()
 {
 	System16BTileAlt = true;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7308,14 +7341,14 @@ static int SjryukoInit()
 	return nRet;
 }
 
-static int SjryukoExit()
+static INT32 SjryukoExit()
 {
 	MahjongInputNum = 0;
 	
 	return System16Exit();
 }
 
-static int SjryukoScan(int nAction,int *pnMin)
+static INT32 SjryukoScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
@@ -7328,11 +7361,11 @@ static int SjryukoScan(int nAction,int *pnMin)
 	return System16Scan(nAction, pnMin);;
 }
 
-static int SnapperInit()
+static INT32 SnapperInit()
 {
 	System16Map68KDo = AtomicpMap68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	System16IgnoreVideoEnable = 1;
 	System16YM2413IRQInterval = 41;
@@ -7340,9 +7373,9 @@ static int SnapperInit()
 	return nRet;
 }
 
-static int SonicbomInit()
+static INT32 SonicbomInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7356,9 +7389,9 @@ static int SonicbomInit()
 	return nRet;
 }
 
-static int TetrisblInit()
+static INT32 TetrisblInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	System16SpriteXOffset = 114;
 	
@@ -7377,17 +7410,17 @@ static int TetrisblInit()
 	return nRet;
 }
 
-static int TimescanInit()
+static INT32 TimescanInit()
 {
 	System16BTileAlt = true;
 
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0x80000 - 0x40000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0x80000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x80000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x40000);
 			memset(System16Sprites, 0, 0x80000);
@@ -7398,15 +7431,15 @@ static int TimescanInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int ToryumonInit()
+static INT32 ToryumonInit()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7441,23 +7474,23 @@ void TturfMap68K()
 void Tturf_Sim8751()
 {
 	// Inputs
-	*((unsigned short*)(System16Ram + 0x01e6)) = (unsigned short)(~System16Input[0] << 8);
-	*((unsigned short*)(System16Ram + 0x01e8)) = (unsigned short)(~System16Input[1] << 8);
-	*((unsigned short*)(System16Ram + 0x01ea)) = (unsigned short)(~System16Input[2] << 8);
+	*((UINT16*)(System16Ram + 0x01e6)) = BURN_ENDIAN_SWAP_INT16((UINT16)(~System16Input[0] << 8));
+	*((UINT16*)(System16Ram + 0x01e8)) = BURN_ENDIAN_SWAP_INT16((UINT16)(~System16Input[1] << 8));
+	*((UINT16*)(System16Ram + 0x01ea)) = BURN_ENDIAN_SWAP_INT16((UINT16)(~System16Input[2] << 8));
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x01d0 + 1] << 8) | System16Ram[0x01d0 + 0];
+	UINT16 temp = (System16Ram[0x01d0 + 1] << 8) | System16Ram[0x01d0 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp & 0xff;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x01d0)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x01d0)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-static int TturfInit()
+static INT32 TturfInit()
 {
 	Simulate8751 = Tturf_Sim8751;
 	System16Map68KDo = TturfMap68K;
@@ -7465,10 +7498,10 @@ static int TturfInit()
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0xe0000 - 0x80000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x80000);
 			memset(System16Sprites, 0, 0xe0000);
@@ -7479,18 +7512,18 @@ static int TturfInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int TturfuInit()
+static INT32 TturfuInit()
 {
 	Simulate8751 = Tturf_Sim8751;
 	System16Map68KDo = TturfMap68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	return nRet;
 }
@@ -7498,28 +7531,28 @@ static int TturfuInit()
 void Wb3_Sim8751()
 {
 	// Sound command
-	unsigned short temp = (System16Ram[0x0008 + 1] << 8) | System16Ram[0x0008 + 0];
+	UINT16 temp = (System16Ram[0x0008 + 1] << 8) | System16Ram[0x0008 + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp >> 8;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x0008)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x0008)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-static int Wb3Init()
+static INT32 Wb3Init()
 {
 	Simulate8751 = Wb3_Sim8751;
 	
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0xe0000 - 0x80000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x80000);
 			memset(System16Sprites, 0, 0xe0000);
@@ -7530,15 +7563,15 @@ static int Wb3Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int Wb32Init()
+static INT32 Wb32Init()
 {
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7550,12 +7583,12 @@ static int Wb32Init()
 	return nRet;
 }
 
-static int Wb33Init()
+static INT32 Wb33Init()
 {
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0xe0000 - 0x80000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7563,7 +7596,7 @@ static int Wb33Init()
 		SekSetWriteByteHandler(1, Wb3WriteByte);
 		SekClose();
 	
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x80000);
 			memset(System16Sprites, 0, 0xe0000);
@@ -7574,18 +7607,18 @@ static int Wb33Init()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 
 	return nRet;
 }
 
-static int Wb3bblInit()
+static INT32 Wb3bblInit()
 {
 	// Start off with some sprite rom and let the load routine add on the rest
 	System16SpriteRomSize = 0xe0000 - 0x80000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -7593,7 +7626,7 @@ static int Wb3bblInit()
 		SekSetWriteWordHandler(1, Wb3bblGfxWriteWord);
 		SekClose();
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0xe0000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0xe0000);
 		if (pTemp) {
 			memcpy(pTemp, System16Sprites, 0x80000);
 			memset(System16Sprites, 0, 0xe0000);
@@ -7604,7 +7637,7 @@ static int Wb3bblInit()
 		} else {
 			nRet = 1;
 		}
-		free(pTemp);
+		BurnFree(pTemp);
 		
 		bSystem16BootlegRender = true;
 	}
@@ -7636,39 +7669,35 @@ void WrestwarMap68K()
 void Wrestwar_Sim8751()
 {
 	// System Inputs
-	*((unsigned short*)(System16Ram + 0x2082)) = (unsigned short)~System16Input[0];
+	*((UINT16*)(System16Ram + 0x2082)) = BURN_ENDIAN_SWAP_INT16((UINT16)~System16Input[0]);
 	
 	// Sound command
-	unsigned short temp = (System16Ram[0x208e + 1] << 8) | System16Ram[0x208e + 0];
+	UINT16 temp = (System16Ram[0x208e + 1] << 8) | System16Ram[0x208e + 0];
 	if ((temp & 0xff00) != 0x0000) {
 		System16SoundLatch = temp & 0xff;
 		ZetOpen(0);
 //		ZetRaiseIrq(0);
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		ZetClose();
-		*((unsigned short*)(System16Ram + 0x208e)) = (unsigned short)(temp & 0xff);
+		*((UINT16*)(System16Ram + 0x208e)) = BURN_ENDIAN_SWAP_INT16((UINT16)(temp & 0xff));
 	}
 }
 
-static int WrestwarInit()
+static INT32 WrestwarInit()
 {
 	Simulate8751 = Wrestwar_Sim8751;
 	System16Map68KDo = WrestwarMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int Wrestwar1Init()
+static INT32 Wrestwar1Init()
 {
 	System16Map68KDo = WrestwarMap68K;
 	System16CustomLoadRomDo = CustomLoadRom40000;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
 /*====================================================
@@ -7717,7 +7746,7 @@ struct BurnDriver BurnDrvAliensynj = {
 
 struct BurnDriver BurnDrvAltbeast = {
 	"altbeast", NULL, NULL, NULL, "1988",
-	"Altered Beast (set 7, 8751 317-0078)\0", NULL, "Sega", "System 16B",
+	"Altered Beast (set 8, 8751 317-0078)\0", NULL, "Sega", "System 16B",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5521, GBF_SCRFIGHT, 0,
 	NULL, AltbeastRomInfo, AltbeastRomName, NULL, NULL, System16bfire3InputInfo, AltbeastDIPInfo,
@@ -7727,8 +7756,8 @@ struct BurnDriver BurnDrvAltbeast = {
 
 struct BurnDriver BurnDrvAltbeastj = {
 	"altbeastj", "altbeast", NULL, NULL, "1988",
-	"Juuouki (set 6, Japan, 8751 317-0077)\0", NULL, "Sega", "System 16B",
-	L"Juuoki (set 6, Japan, 8751 317-0077)\0\u7363\u738B\u8A18\0", NULL, NULL, NULL,
+	"Juuouki (set 7, Japan, 8751 317-0077)\0", NULL, "Sega", "System 16B",
+	L"Juuoki (set 7, Japan, 8751 317-0077)\0\u7363\u738B\u8A18\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5521, GBF_SCRFIGHT, 0,
 	NULL, AltbeastjRomInfo, AltbeastjRomName, NULL, NULL, System16bfire3InputInfo, AltbeastDIPInfo,
 	AltbeastjInit, System16Exit, System16BFrame, NULL, System16Scan,
@@ -7767,11 +7796,21 @@ struct BurnDriver BurnDrvAltbeast4 = {
 
 struct BurnDriver BurnDrvAltbeast5 = {
 	"altbeast5", "altbeast", NULL, NULL, "1988",
-	"Altered Beast (set 5, 8751 317-0076)\0", NULL, "Sega", "System 16B",
+	"Altered Beast (set 5, FD1094 317-0069)\0", NULL, "Sega", "System 16B",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5521 | HARDWARE_SEGA_FD1094_ENC, GBF_SCRFIGHT, 0,
+	NULL, Altbeast5RomInfo, Altbeast5RomName, NULL, NULL, System16bfire3InputInfo, AltbeastDIPInfo,
+	Altbeast4Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, 0x1800, 320, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvAltbeast6 = {
+	"altbeast6", "altbeast", NULL, NULL, "1988",
+	"Altered Beast (set 6, 8751 317-0076)\0", NULL, "Sega", "System 16B",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_5521, GBF_SCRFIGHT, 0,
-	NULL, Altbeast5RomInfo, Altbeast5RomName, NULL, NULL, System16bfire3InputInfo, AltbeastDIPInfo,
-	Altbeast5Init, System16Exit, System16BFrame, NULL, System16Scan,
+	NULL, Altbeast6RomInfo, Altbeast6RomName, NULL, NULL, System16bfire3InputInfo, AltbeastDIPInfo,
+	Altbeast6Init, System16Exit, System16BFrame, NULL, System16Scan,
 	NULL, 0x1800, 320, 224, 4, 3
 };
 
@@ -8469,7 +8508,7 @@ struct BurnDriver BurnDrvWrestwar2 = {
 
 static UINT16 IsgsmCartAddrLatch;
 static UINT32 IsgsmCartAddr;
-static int IsgsmType = 0;
+static INT32 IsgsmType = 0;
 static UINT32 IsgsmAddr;
 static UINT8  IsgsmMode;
 static UINT16 IsgsmAddrLatch;
@@ -8477,17 +8516,18 @@ static UINT32 IsgsmSecurity;
 static UINT16 IsgsmSecurityLatch;
 static UINT8 IsgsmRleControlPosition = 8;
 static UINT8 IsgsmRleControlByte;
-static int IsgsmRleLatched;
+static INT32 IsgsmRleLatched;
 static UINT8 IsgsmRleByte;
 static UINT8 IsgsmReadXor;
-static unsigned int nCartSize;
+static UINT32 nCartSize;
+static INT32 GameRomMapped = 0;
 
 typedef UINT32 (*isgsm_security_callback)(UINT32 input);
 isgsm_security_callback IsgsmSecurityCallback;
 
-static int IsgsmTilePlaneOffsets[3] = { 0x200000, 0x100000, 0 };
-static int IsgsmTileXOffsets[8]     = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int IsgsmTileYOffsets[8]     = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 IsgsmTilePlaneOffsets[3] = { 0x200000, 0x100000, 0 };
+static INT32 IsgsmTileXOffsets[8]     = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 IsgsmTileYOffsets[8]     = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
 static struct BurnDIPInfo ShinfzDIPList[]=
 {
@@ -8585,7 +8625,7 @@ static UINT32 TetrbxSecurity(UINT32 input)
 	return input;
 }
 
-unsigned char __fastcall IsgsmReadByte(unsigned int a)
+UINT8 __fastcall IsgsmReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc41001: {
@@ -8609,8 +8649,8 @@ unsigned char __fastcall IsgsmReadByte(unsigned int a)
 		}
 		
 		case 0xe80001: {
-			unsigned int Address;
-			unsigned char Data;
+			UINT32 Address;
+			UINT8 Data;
 			
 			IsgsmCartAddr++;
 			Address = (IsgsmCartAddr & (nCartSize - 1));
@@ -8624,14 +8664,14 @@ unsigned char __fastcall IsgsmReadByte(unsigned int a)
 		}
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Byte -> 0x%06X\n"), a);
 #endif
 
 	return 0xff;
 }
 
-void __fastcall IsgsmWriteByte(unsigned int a, unsigned char d)
+void __fastcall IsgsmWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileByteWrite((a - 0x400000) ^ 1, d);
@@ -8738,7 +8778,7 @@ void __fastcall IsgsmWriteByte(unsigned int a, unsigned char d)
 			}
 
 			if (pDest) {
-				int BytesToWrite;
+				INT32 BytesToWrite;
 				BytesToWrite = 1;
 
 				if (IsgsmMode & 0x04) {
@@ -8764,7 +8804,7 @@ void __fastcall IsgsmWriteByte(unsigned int a, unsigned char d)
 					}
 				}
 
-				for (int i = 0; i < BytesToWrite; i++) {
+				for (INT32 i = 0; i < BytesToWrite; i++) {
 					UINT8 Byte = 0;
 
 					if (IsgsmMode & 0x08) {
@@ -8842,16 +8882,17 @@ void __fastcall IsgsmWriteByte(unsigned int a, unsigned char d)
 		
 		case 0xfe000b: {
 			SekMapMemory(System16Rom + 0x300000, 0x000000, 0x0fffff, SM_ROM);
+			GameRomMapped = 1;
 			return;
 		}
 	}
 
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Byte -> 0x%06X, 0x%02X\n"), a, d);
 #endif
 }
 
-unsigned short __fastcall IsgsmReadWord(unsigned int a)
+UINT16 __fastcall IsgsmReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xe80008: {
@@ -8863,14 +8904,14 @@ unsigned short __fastcall IsgsmReadWord(unsigned int a)
 		}
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Read Word -> 0x%06X\n"), a);
 #endif
 
 	return 0xffff;
 }
 
-void __fastcall IsgsmWriteWord(unsigned int a, unsigned short d)
+void __fastcall IsgsmWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x400000 && a <= 0x40ffff) {
 		System16BTileWordWrite(a - 0x400000, d);
@@ -8915,12 +8956,12 @@ void __fastcall IsgsmWriteWord(unsigned int a, unsigned short d)
 		}
 	}
 	
-#if 1 && defined FBA_DEBUG
+#if 0 && defined FBA_DEBUG
 	bprintf(PRINT_NORMAL, _T("68000 Write Word -> 0x%06X, 0x%04X\n"), a, d);
 #endif
 }
 
-void IsgsmMap68K()
+static void IsgsmMap68K()
 {
 	SekInit(0, 0x68000);
 	SekOpen(0);
@@ -8939,7 +8980,7 @@ void IsgsmMap68K()
 	SekClose();
 }
 
-static int IsgsmInit()
+static INT32 IsgsmInit()
 {
 	System16RomSize        = 0x400000;
 	System16TileRomSize    = 0x60000;
@@ -8948,34 +8989,34 @@ static int IsgsmInit()
 	
 	System16Map68KDo = IsgsmMap68K;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		memset(System16Rom, 0, 0x400000);
 		
 		// Load and Decrypt BIOS
-		UINT16 *pTemp = (UINT16*)malloc(0x20000);
+		UINT16 *pTemp = (UINT16*)BurnMalloc(0x20000);
 		memset(pTemp, 0, 0x20000);
 		UINT16 *Rom = (UINT16*)System16Rom;
 		
 		nRet = BurnLoadRom(System16Rom, 0x80, 1); if (nRet) return 1;
 		
-		for (unsigned int i = 0; i < 0x10000; i++) {
+		for (UINT32 i = 0; i < 0x10000; i++) {
 			pTemp[i ^ 0x4127] = BITSWAP16(Rom[i], 6, 14, 4, 2, 12, 10, 8, 0, 1, 9, 11, 13, 3, 5, 7, 15);
 		}
 		
 		memcpy(Rom, pTemp, 0x20000);
-		free(pTemp);
+		BurnFree(pTemp);
 		
 		// Load program ROM
 		nRet = BurnLoadRom(System16Rom + 0x100000, 0, 1); if (nRet) return 1;
 		
-		System16TempGfx = (unsigned char*)malloc(System16TileRomSize);
+		System16TempGfx = (UINT8*)BurnMalloc(System16TileRomSize);
 		memset(System16TempGfx, 0, System16TileRomSize);
 		memset(System16Tiles, 0, System16NumTiles * 8 * 8);
 		memset(System16Sprites, 0, System16TileRomSize);
 		
-		System16UPD7759Data = (unsigned char*)(System16Z80Rom + 0x10000);
+		System16UPD7759Data = (UINT8*)(System16Z80Rom + 0x10000);
 	}
 	
 	System16ClockSpeed = 16000000;
@@ -8983,22 +9024,22 @@ static int IsgsmInit()
 	return nRet;
 }
 
-static int ShinfzInit()
+static INT32 ShinfzInit()
 {
-	int nRet = IsgsmInit();
+	INT32 nRet = IsgsmInit();
 	
 	if (!nRet) {
 		nCartSize = 0x200000;
-		UINT16 *pTemp = (UINT16*)malloc(0x200000);
+		UINT16 *pTemp = (UINT16*)BurnMalloc(0x200000);
 		memset(pTemp, 0, 0x200000);
 		UINT16 *Rom = (UINT16*)(System16Rom + 0x100000);
 		
-		for (unsigned int i = 0; i < 0x100000; i++) {
+		for (UINT32 i = 0; i < 0x100000; i++) {
 			pTemp[i ^ 0x68956] = BITSWAP16(Rom[i], 8, 4, 12, 3, 6, 7, 1, 0, 15, 11, 5, 14, 10, 2, 9, 13);
 		}
 		
 		memcpy(Rom, pTemp, 0x200000);
-		free(pTemp);
+		BurnFree(pTemp);
 		
 		IsgsmReadXor = 0x66;
 		IsgsmSecurityCallback = ShinfzSecurity;
@@ -9007,22 +9048,22 @@ static int ShinfzInit()
 	return nRet;
 }
 
-static int TetrbxInit()
+static INT32 TetrbxInit()
 {
-	int nRet = IsgsmInit();
+	INT32 nRet = IsgsmInit();
 	
 	if (!nRet) {
 		nCartSize = 0x80000;
-		UINT16 *pTemp = (UINT16*)malloc(nCartSize);
+		UINT16 *pTemp = (UINT16*)BurnMalloc(nCartSize);
 		memset(pTemp, 0, nCartSize);
 		UINT16 *Rom = (UINT16*)(System16Rom + 0x100000);
 		
-		for (unsigned int i = 0; i < nCartSize >> 1; i++) {
+		for (UINT32 i = 0; i < nCartSize >> 1; i++) {
 			pTemp[i ^ 0x2a6e6] = BITSWAP16(Rom[i], 4, 0, 12, 5, 7, 3, 1, 14, 10, 11, 9, 6, 15, 2, 13, 8);
 		}
 		
 		memcpy(Rom, pTemp, nCartSize);
-		free(pTemp);
+		BurnFree(pTemp);
 		
 		IsgsmReadXor = 0x73;
 		IsgsmSecurityCallback = TetrbxSecurity;
@@ -9031,12 +9072,11 @@ static int TetrbxInit()
 	return nRet;
 }
 
-static int IsgsmExit()
+static INT32 IsgsmExit()
 {
-	int nRet = System16Exit();
+	INT32 nRet = System16Exit();
 	
-	free(System16TempGfx);
-	System16TempGfx = NULL;
+	BurnFree(System16TempGfx);
 	
 	IsgsmCartAddrLatch = 0;
 	IsgsmCartAddr = 0;
@@ -9053,8 +9093,76 @@ static int IsgsmExit()
 	IsgsmReadXor = 0;
 	nCartSize = 0;
 	IsgsmSecurityCallback = NULL;
+	GameRomMapped = 0;
 	
 	return nRet;
+}
+
+static INT32 IsgsmScan(INT32 nAction,INT32 *pnMin)
+{
+	if (pnMin != NULL) {
+		*pnMin =  0x029719;
+	}
+	
+	struct BurnArea ba;
+	
+	if (nAction & ACB_DRIVER_DATA) {
+		memset(&ba, 0, sizeof(ba));
+		ba.Data		= System16Sprites;
+		ba.nLen		= System16SpriteRomSize - 1;
+		ba.nAddress = 0;
+		ba.szName	= "SpriteROM";
+		BurnAcb(&ba);
+		
+		memset(&ba, 0, sizeof(ba));
+		ba.Data		= System16TempGfx;
+		ba.nLen		= System16TileRomSize - 1;
+		ba.nAddress = 0;
+		ba.szName	= "TileROM";
+		BurnAcb(&ba);
+		
+		memset(&ba, 0, sizeof(ba));
+		ba.Data		= System16Z80Rom;
+		ba.nLen		= 0x3ffff;
+		ba.nAddress = 0;
+		ba.szName	= "Z80ROM";
+		BurnAcb(&ba);
+		
+		memset(&ba, 0, sizeof(ba));
+		ba.Data		= System16Rom + 0x300000;
+		ba.nLen		= 0xfffff;
+		ba.nAddress = 0;
+		ba.szName	= "GameROM";
+		BurnAcb(&ba);
+		
+		SCAN_VAR(IsgsmCartAddrLatch);
+		SCAN_VAR(IsgsmCartAddr);
+		SCAN_VAR(IsgsmType);
+		SCAN_VAR(IsgsmAddr);
+		SCAN_VAR(IsgsmMode);
+		SCAN_VAR(IsgsmAddrLatch);
+		SCAN_VAR(IsgsmSecurity);
+		SCAN_VAR(IsgsmSecurityLatch);
+		SCAN_VAR(IsgsmRleControlPosition);
+		SCAN_VAR(IsgsmRleControlByte);
+		SCAN_VAR(IsgsmRleLatched);
+		SCAN_VAR(IsgsmRleByte);
+		SCAN_VAR(GameRomMapped);
+		
+		if (nAction & ACB_WRITE) {
+			if (GameRomMapped) {
+				SekOpen(0);
+				SekMapMemory(System16Rom + 0x300000, 0x000000, 0x0fffff, SM_ROM);
+				SekClose();
+			}
+			
+			for (UINT32 i = 0; i < System16TileRomSize; i++) {
+				GfxDecodeSingle((i & 0x1ffff) / 8, 3, 8, 8, IsgsmTilePlaneOffsets, IsgsmTileXOffsets, IsgsmTileYOffsets, 0x40, System16TempGfx, System16Tiles);
+			}
+		}
+	}
+
+	return System16Scan(nAction, pnMin);
 }
 
 struct BurnDriver BurnDrvIsgsm = {
@@ -9063,7 +9171,7 @@ struct BurnDriver BurnDrvIsgsm = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_BOARDROM, 0, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_ISGSM | HARDWARE_SEGA_5521, GBF_BIOS, 0,
 	NULL, IsgsmRomInfo, IsgsmRomName, NULL, NULL, System16bDip3InputInfo, NULL,
-	IsgsmInit, IsgsmExit, System16BFrame, NULL, System16Scan,
+	IsgsmInit, IsgsmExit, System16BFrame, NULL, IsgsmScan,
 	NULL, 0x1800, 320, 224, 4, 3
 };
 
@@ -9073,7 +9181,7 @@ struct BurnDriver BurnDrvShinfz = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_ISGSM | HARDWARE_SEGA_5521, GBF_SCRFIGHT, 0,
 	NULL, ShinfzRomInfo, ShinfzRomName, NULL, NULL, System16bDip3InputInfo, ShinfzDIPInfo,
-	ShinfzInit, IsgsmExit, System16BFrame, NULL, System16Scan,
+	ShinfzInit, IsgsmExit, System16BFrame, NULL, IsgsmScan,
 	NULL, 0x1800, 320, 224, 4, 3
 };
 
@@ -9083,6 +9191,6 @@ struct BurnDriver BurnDrvTetrbx = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM16B | HARDWARE_SEGA_ISGSM | HARDWARE_SEGA_5521, GBF_SCRFIGHT, 0,
 	NULL, TetrbxRomInfo, TetrbxRomName, NULL, NULL, System16bDip3InputInfo, TetrbxDIPInfo,
-	TetrbxInit, IsgsmExit, System16BFrame, NULL, System16Scan,
+	TetrbxInit, IsgsmExit, System16BFrame, NULL, IsgsmScan,
 	NULL, 0x1800, 320, 224, 4, 3
 };

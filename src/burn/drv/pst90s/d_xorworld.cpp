@@ -2,27 +2,29 @@
 // Based on MAME driver by Manuel Abadia
 
 #include "tiles_generic.h"
-// saa1099
+#include "sek.h"
+#include "zet.h"
+#include "saa1099.h"
 #include "eeprom.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvGfxROM;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvSprRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvGfxROM;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvSprRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvDips[1];
-static unsigned char DrvReset;
-static unsigned char DrvInputs[2];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvDips[1];
+static UINT8 DrvReset;
+static UINT8 DrvInputs[2];
 
 static struct BurnInputInfo XorworldInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 coin"	},
@@ -80,16 +82,16 @@ static struct BurnDIPInfo XorworldDIPList[]=
 
 STDDIPINFO(Xorworld)
 
-void __fastcall xorworld_write_byte(unsigned int address, unsigned char data)
+void __fastcall xorworld_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
 		case 0x800001:
-			// saa1099_data_w
+			saa1099DataWrite(0, data);
 		return;
 	
 		case 0x800003:
-			// saa1099_control_w
+			saa1099ControlWrite(0, data);
 		return;
 
 		case 0xa00009:
@@ -106,7 +108,7 @@ void __fastcall xorworld_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall xorworld_read_byte(unsigned int address)
+UINT8 __fastcall xorworld_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -123,7 +125,7 @@ unsigned char __fastcall xorworld_read_byte(unsigned int address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -133,14 +135,14 @@ static int DrvDoReset()
 
 	EEPROMReset();
 
-	// saa1099
+	saa1099Reset(0);
 
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x020000;
 
@@ -148,7 +150,7 @@ static int MemIndex()
 
 	DrvColPROM	= Next; Next += 0x000300;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0100 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0100 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -164,8 +166,8 @@ static int MemIndex()
 
 static void DrvPaletteInit()
 {
-	for (int i = 0; i < 0x100; i++) {
-		int r,g,b;
+	for (INT32 i = 0; i < 0x100; i++) {
+		INT32 r,g,b;
 
 		r  = ((DrvColPROM[i + 0x000] >> 0) & 0x01) * 0x0e;
 		r += ((DrvColPROM[i + 0x000] >> 1) & 0x01) * 0x1e;
@@ -186,13 +188,13 @@ static void DrvPaletteInit()
 	}
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x80000, 0x80004, 0x00000, 0x00004 };
-	int XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b };
-	int YOffs[8] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070 };
+	INT32 Plane[4] = { 0x80000, 0x80004, 0x00000, 0x00004 };
+	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b };
+	INT32 YOffs[8] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070 };
 
-	unsigned char *tmp = (unsigned char*)BurnMalloc(0x20000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x20000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -201,14 +203,14 @@ static int DrvGfxDecode()
 
 	GfxDecode((0x20000 * 2) / 0x40, 4, 8, 8, Plane, XOffs, YOffs, 0x080, tmp, DrvGfxROM);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static void xorworldPatch() // protection hack
 {
-	unsigned short *rom = (unsigned short*)Drv68KROM;
+	UINT16 *rom = (UINT16*)Drv68KROM;
 
 	rom[0x1390 / 2] = 0x4239;
 	rom[0x1392 / 2] = 0x00ff;
@@ -231,12 +233,12 @@ static void xorworldPatch() // protection hack
 	rom[0x13b4 / 2] = 0x31ff;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)BurnMalloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -266,7 +268,7 @@ static int DrvInit()
 	SekSetReadByteHandler(0,	xorworld_read_byte);
 	SekClose();
 
-	// saa1099
+	saa1099Init(0, 8000000, 1000, 0);
 
 	EEPROMInit(&eeprom_interface_93C46);
 
@@ -277,7 +279,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -285,25 +287,24 @@ static int DrvExit()
 
 	SekExit();
 
-	// saa1099
+	saa1099Exit(0);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void draw_layer()
 {
-	unsigned short *ram = (unsigned short*)DrvVidRAM;
+	UINT16 *ram = (UINT16*)DrvVidRAM;
 
-	for (int offs = 32 * 2; offs < (32 * 32) - (32 * 2); offs++)
+	for (INT32 offs = 32 * 2; offs < (32 * 32) - (32 * 2); offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int code  = ram[offs] & 0x0fff;
-		int color = ram[offs] >> 12;
+		INT32 code  = ram[offs] & 0x0fff;
+		INT32 color = ram[offs] >> 12;
 
 		Render8x8Tile(pTransDraw, code, sx, sy - 16, color, 4, 0, DrvGfxROM);
 	}
@@ -311,14 +312,14 @@ static void draw_layer()
 
 static void draw_sprites()
 {
-	unsigned short *ram = (unsigned short*)DrvSprRAM;
+	UINT16 *ram = (UINT16*)DrvSprRAM;
 
-	for (int i = 0; i < 0x40; i += 2)
+	for (INT32 i = 0; i < 0x40; i += 2)
 	{
-		int sx    = ram[i] & 0xff;
-		int sy    = (240 - (ram[i] >> 8)) - 16;
-		int code  = ram[i+1] & 0x0ffc;
-		int color = ram[i+1] >> 12;
+		INT32 sx    = ram[i] & 0xff;
+		INT32 sy    = (240 - (ram[i] >> 8)) - 16;
+		INT32 code  = ram[i+1] & 0x0ffc;
+		INT32 color = ram[i+1] >> 12;
 
 		Render8x8Tile_Mask_Clip(pTransDraw, code + 0, sx + 0, sy + 0, color, 4, 0, 0, DrvGfxROM);
 		Render8x8Tile_Mask_Clip(pTransDraw, code + 1, sx + 0, sy + 8, color, 4, 0, 0, DrvGfxROM);
@@ -327,7 +328,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteInit();
@@ -342,7 +343,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -351,7 +352,7 @@ static int DrvFrame()
 	{
 		memset (DrvInputs, 0xff, 2);
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
@@ -359,7 +360,7 @@ static int DrvFrame()
 
 	SekOpen(0);
 
-	for (int i = 0; i < 4; i++)
+	for (INT32 i = 0; i < 4; i++)
 	{
 		SekRun((10000000 / 60) / 4);
 		if (i == 0 || i == 2) SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
@@ -367,7 +368,7 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		// saa1099
+		saa1099Update(0, pBurnSoundOut, nBurnSoundLen);
 	}
 
 	SekClose();
@@ -379,7 +380,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -398,7 +399,7 @@ static int DrvScan(int nAction, int *pnMin)
 	if (nAction & ACB_DRIVER_DATA) {
 		SekScan(nAction);
 
-		// saa1099
+		saa1099Scan(0, nAction);
 
 		EEPROMScan(nAction, pnMin);
 	}
@@ -426,7 +427,7 @@ STD_ROM_FN(xorworld)
 
 struct BurnDriver BurnDrvXorworld = {
 	"xorworld", NULL, NULL, NULL, "1990",
-	"Xor World (prototype)\0", "No sound. Sound chip not emulated in FBA", "Gaelco", "Miscellaneous",
+	"Xor World (prototype)\0", NULL, "Gaelco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, xorworldRomInfo, xorworldRomName, NULL, NULL, XorworldInputInfo, XorworldDIPInfo,

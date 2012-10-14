@@ -5,14 +5,14 @@ extern "C" {
  #include "ym2151.h"
 }
 
-unsigned char PsndCode, PsndFade;						// Sound code/fade sent to the z80 program
+UINT8 PsndCode, PsndFade;						// Sound code/fade sent to the z80 program
 
-static int nSyncPeriod;
-static int nSyncNext;
+static INT32 nSyncPeriod;
+static INT32 nSyncNext;
 
-static int nCyclesDone;
+static INT32 nCyclesDone;
 
-static void drvYM2151IRQHandler(int nStatus)
+static void drvYM2151IRQHandler(INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -22,7 +22,7 @@ static void drvYM2151IRQHandler(int nStatus)
 	}
 }
 
-int PsndInit()
+INT32 PsndInit()
 {
 	nCpsZ80Cycles = 4000000 * 100 / nBurnFPS;
 	nSyncPeriod = nCpsZ80Cycles / 32;
@@ -44,7 +44,7 @@ int PsndInit()
 	return 0;
 }
 
-int PsndExit()
+INT32 PsndExit()
 {
 	PsmExit();
 	PsndZExit();
@@ -52,7 +52,7 @@ int PsndExit()
 	return 0;
 }
 
-int PsndScan(int nAction)
+INT32 PsndScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(nCyclesDone); SCAN_VAR(nSyncNext);
@@ -72,7 +72,7 @@ void PsndNewFrame()
 	nCyclesDone = 0;
 }
 
-int PsndSyncZ80(int nCycles)
+INT32 PsndSyncZ80(INT32 nCycles)
 {
 	while (nSyncNext < nCycles) {
 		PsmUpdate(nSyncNext * nBurnSoundLen / nCpsZ80Cycles);

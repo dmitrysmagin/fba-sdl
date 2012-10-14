@@ -2,18 +2,20 @@
 // Based on MAME Driver by David Haywood and Phil Stroffolino
 
 #include "tiles_generic.h"
+#include "zet.h"
+
 #include "driver.h"
 extern "C" {
  #include "ay8910.h"
 }
 
 
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvDips, DrvReset;
-static short *pAY8910Buffer[6], *pFMBuffer = NULL;
-static unsigned char *Mem, *Rom, *Gfx0, *Gfx1;
-static int *Palette;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvDips, DrvReset;
+static INT16 *pAY8910Buffer[6], *pFMBuffer = NULL;
+static UINT8 *Mem, *Rom, *Gfx0, *Gfx1;
+static INT32 *Palette;
 
-static int flipscreen, vblank;
+static INT32 flipscreen, vblank;
 
 
 //-------------------------------------------------------------------------------------------------
@@ -81,7 +83,7 @@ STDDIPINFO(Drv)
 // Memory Handlers
 
 
-unsigned char __fastcall pkunwar_read(unsigned short address)
+UINT8 __fastcall pkunwar_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -97,7 +99,7 @@ unsigned char __fastcall pkunwar_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall pkunwar_write(unsigned short address, unsigned char data)
+void __fastcall pkunwar_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -119,7 +121,7 @@ void __fastcall pkunwar_write(unsigned short address, unsigned char data)
 	}
 }
 
-void __fastcall pkunwar_out(unsigned short address, unsigned char data)
+void __fastcall pkunwar_out(UINT16 address, UINT8 data)
 {
 	address &= 0xff;
 
@@ -131,34 +133,34 @@ void __fastcall pkunwar_out(unsigned short address, unsigned char data)
 // AY8910 Ports
 
 
-static unsigned char pkunwar_port_0(unsigned int)
+static UINT8 pkunwar_port_0(UINT32)
 {
-	unsigned char ret = 0x7f | (vblank ^= 0x80);
+	UINT8 ret = 0x7f | (vblank ^= 0x80);
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		ret ^= DrvJoy1[i] << i;
 	}
 
 	return ret;
 }
 
-static unsigned char pkunwar_port_1(unsigned int)
+static UINT8 pkunwar_port_1(UINT32)
 {
-	unsigned char ret = 0xff;
+	UINT8 ret = 0xff;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		ret ^= DrvJoy2[i] << i;
 	}
 
 	return ret;
 }
 
-static unsigned char pkunwar_port_2(unsigned int)
+static UINT8 pkunwar_port_2(UINT32)
 {
 	return 0xff;
 }
 
-static unsigned char pkunwar_port_3(unsigned int)
+static UINT8 pkunwar_port_3(UINT32)
 {
 	return DrvDips;
 }
@@ -168,7 +170,7 @@ static unsigned char pkunwar_port_3(unsigned int)
 // Initialization Routines
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -187,12 +189,12 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void pkunwar_palette_init(unsigned char *Prom)
+static void pkunwar_palette_init(UINT8 *Prom)
 {
-	for (int i = 0; i < 0x200; i++)
+	for (INT32 i = 0; i < 0x200; i++)
 	{
-		int entry;
-		int intensity,r,g,b;
+		INT32 entry;
+		INT32 intensity,r,g,b;
 
 		if ((i & 0xf) == 1)
 		{
@@ -213,16 +215,16 @@ static void pkunwar_palette_init(unsigned char *Prom)
 	}
 }
 
-static void pkunwar_gfx_decode(unsigned char *Gfx)
+static void pkunwar_gfx_decode(UINT8 *Gfx)
 {
-	static int PlaneOffsets[4] = { 0, 1, 2, 3 };
+	static INT32 PlaneOffsets[4] = { 0, 1, 2, 3 };
 
-	static int XOffsets[16] = {
+	static INT32 XOffsets[16] = {
 		0x00000, 0x00004, 0x40000, 0x40004, 0x00008, 0x0000c, 0x40008, 0x4000c,
 		0x00080, 0x00084, 0x40080, 0x40084, 0x00088, 0x0008c, 0x40088, 0x4008c
 	};
 
-	static int YOffsets[16] = {
+	static INT32 YOffsets[16] = {
 		0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 		0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170
 	};
@@ -231,9 +233,9 @@ static void pkunwar_gfx_decode(unsigned char *Gfx)
 	GfxDecode(0x200, 4, 16, 16, PlaneOffsets, XOffsets, YOffsets, 0x200, Gfx, Gfx1);
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -247,8 +249,8 @@ static int LoadRoms()
 	if (BurnLoadRom(Gfx0 + 0x8000, 5, 1)) return 1;
 	if (BurnLoadRom(Gfx0 + 0xc000, 6, 1)) return 1;
 
-	for (int i = 0; i < 8; i++) {
-		int j = ((i & 1) << 2) | ((i >> 1) & 3);
+	for (INT32 i = 0; i < 8; i++) {
+		INT32 j = ((i & 1) << 2) | ((i >> 1) & 3);
 		memcpy (tmp + j * 0x2000, Gfx0 + i * 0x2000, 0x2000);
 	}
 
@@ -258,19 +260,19 @@ static int LoadRoms()
 
 	pkunwar_palette_init(tmp);
 
-	free (tmp);
+	BurnFree(tmp);
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x20000 * 2 + 0x200 * sizeof(int));
+	Mem = (UINT8*)BurnMalloc(0x10000 + (0x20000 * 2) + (0x200 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 6 * sizeof(short));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 6 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -278,11 +280,11 @@ static int DrvInit()
 	Rom  = Mem + 0x00000;
 	Gfx0 = Mem + 0x10000;
 	Gfx1 = Mem + 0x30000;
-	Palette = (int*)(Mem + 0x40000);
+	Palette = (INT32*)(Mem + 0x40000);
 
 	if (LoadRoms()) return 1;
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetOutHandler(pkunwar_out);
 	ZetSetReadHandler(pkunwar_read);
@@ -314,14 +316,14 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	free (pFMBuffer);
-	free (Mem);
+	BurnFree (pFMBuffer);
+	BurnFree (Mem);
 
 	Rom = Gfx0 = Gfx1 = Mem = NULL;
 	Palette = NULL;
@@ -336,15 +338,15 @@ static int DrvExit()
 // Drawing Routines
 
 
-static int DrawChars(int priority)
+static INT32 DrawChars(INT32 priority)
 {
-	int offs;
+	INT32 offs;
 
 	for (offs = 0x3c0 - 1;offs >= 0x40;offs--)
 	{
 		if (Rom[0x8c00 + offs] & 0x08 || !priority)
 		{
-			int sx,sy,num,color,pxl,pos;
+			INT32 sx,sy,num,color,pxl,pos;
 
 			sx = (offs & 0x1f) << 3;
 			sy = (offs >> 2) & 0xf8;
@@ -355,11 +357,11 @@ static int DrawChars(int priority)
 			num = Rom[0x8800 + offs] | ((Rom[0x8c00 + offs] & 7) << 8);
 			color = 0x100 | (Rom[0x8c00 + offs] & 0xf0);
 
-			unsigned char *src = Gfx0 + (num << 6);
+			UINT8 *src = Gfx0 + (num << 6);
 
-			for (int y = sy; y < sy + 8; y++)
+			for (INT32 y = sy; y < sy + 8; y++)
 			{
-				for (int x = sx; x < sx + 8; x++, src++)
+				for (INT32 x = sx; x < sx + 8; x++, src++)
 				{
 					if (!*src && priority) continue;
 
@@ -379,15 +381,15 @@ static int DrawChars(int priority)
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	int offs;
+	INT32 offs;
 
 	DrawChars(0);
 
 	for (offs = 0;offs < 0x800;offs += 32)
 	{
-		int sx,sy,flipx,flipy,num,color,pxl,pos;
+		INT32 sx,sy,flipx,flipy,num,color,pxl,pos;
 
 		sx = Rom[0x8001 + offs];
 		sy = Rom[0x8002 + offs];
@@ -401,15 +403,15 @@ static int DrvDraw()
 		num = ((Rom[0x8000 + offs] & 0xfc) >> 2) + ((Rom[0x8003 + offs] & 7) << 6);
 		color = Rom[0x8003 + offs] & 0xf0;
 
-		unsigned char *src = Gfx1 + (num << 8);
+		UINT8 *src = Gfx1 + (num << 8);
 
 		if (flipy)
 		{
-			for (int y = sy + 15; y >= sy; y--)
+			for (INT32 y = sy + 15; y >= sy; y--)
 			{
 				if (flipx)
 				{
-					for (int x = sx + 15; x >= sx; x--, src++)
+					for (INT32 x = sx + 15; x >= sx; x--, src++)
 					{
 						if (y > 191 || y < 0 || !*src) continue;
 		
@@ -423,7 +425,7 @@ static int DrvDraw()
 						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 		 			}
 				} else {
-					for (int x = sx; x < sx + 16; x++, src++)
+					for (INT32 x = sx; x < sx + 16; x++, src++)
 					{
 						if (y > 191 || y < 0 || !*src) continue;
 		
@@ -439,11 +441,11 @@ static int DrvDraw()
 				}
 			}
 		} else {
-			for (int y = sy; y < sy + 16; y++)
+			for (INT32 y = sy; y < sy + 16; y++)
 			{
 				if (flipx)
 				{
-					for (int x = sx + 15; x >= sx; x--, src++)
+					for (INT32 x = sx + 15; x >= sx; x--, src++)
 					{
 						if (y > 191 || y < 0 || !*src) continue;
 		
@@ -457,7 +459,7 @@ static int DrvDraw()
 						PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 		 			}
 				} else {
-					for (int x = sx; x < sx + 16; x++, src++)
+					for (INT32 x = sx; x < sx + 16; x++, src++)
 					{
 						if (y > 191 || y < 0 || !*src) continue;
 		
@@ -481,7 +483,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -495,13 +497,13 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-   			for (int n = 0; n < nSegmentLength; n++) {
+   			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -509,17 +511,11 @@ static int DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
-    			}
+    		}
 		}
 	}
 
@@ -535,7 +531,7 @@ static int DrvFrame()
 // Save State
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -591,7 +587,7 @@ STD_ROM_FN(pkunwar)
 
 struct BurnDriver BurnDrvpkunwar = {
 	"pkunwar", NULL, NULL, NULL, "1985",
-	"Penguin-Kun Wars (US)\0", NULL, "UPL", "misc",
+	"Penguin-Kun Wars (US)\0", NULL, "UPL", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, pkunwarRomInfo, pkunwarRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
@@ -620,7 +616,7 @@ STD_ROM_FN(pkunwarj)
 
 struct BurnDriver BurnDrvpkunwarj = {
 	"pkunwarj", "pkunwar", NULL, NULL, "1985",
-	"Penguin-Kun Wars (Japan)\0", NULL, "UPL", "misc",
+	"Penguin-Kun Wars (Japan)\0", NULL, "UPL", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, pkunwarjRomInfo, pkunwarjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,

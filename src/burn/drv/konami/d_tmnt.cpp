@@ -1,4 +1,6 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "konamiic.h"
 #include "burn_ym2151.h"
 #include "upd7759.h"
@@ -6,61 +8,61 @@
 #include "k053260.h"
 #include "eeprom.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort5[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[3]        = {0, 0, 0};
-static unsigned char DrvInput[6]      = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort5[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[3]        = {0, 0, 0};
+static UINT8 DrvInput[6]      = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *Drv68KRom           = NULL;
-static unsigned char *Drv68KRam           = NULL;
-static unsigned char *DrvZ80Rom           = NULL;
-static unsigned char *DrvZ80Ram           = NULL;
-static unsigned char *DrvSoundRom         = NULL;
-static unsigned char *DrvUPD7759CRom      = NULL;
-static unsigned char *DrvTileRom          = NULL;
-static unsigned char *DrvSpriteRom        = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvPaletteRam       = NULL;
-static unsigned char *DrvNvRam            = NULL;
-static unsigned char *DrvTiles            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette          = NULL;
-static INT16         *DrvTitleSample      = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *Drv68KRom           = NULL;
+static UINT8 *Drv68KRam           = NULL;
+static UINT8 *DrvZ80Rom           = NULL;
+static UINT8 *DrvZ80Ram           = NULL;
+static UINT8 *DrvSoundRom         = NULL;
+static UINT8 *DrvUPD7759CRom      = NULL;
+static UINT8 *DrvTileRom          = NULL;
+static UINT8 *DrvSpriteRom        = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvPaletteRam       = NULL;
+static UINT8 *DrvNvRam            = NULL;
+static UINT8 *DrvTiles            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *Palette;
+static UINT32 *DrvPalette          = NULL;
+static INT16  *DrvTitleSample      = NULL;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
-static unsigned char bIrqEnable;
-static int LayerColourBase[3];
-static int SpriteColourBase;
-static int LayerPri[3];
-static unsigned char DrvSoundLatch;
-static int PriorityFlag;
+static UINT8 bIrqEnable;
+static INT32 LayerColourBase[3];
+static INT32 SpriteColourBase;
+static INT32 LayerPri[3];
+static UINT8 DrvSoundLatch;
+static INT32 PriorityFlag;
 
-static int dim_c, dim_v;
+static INT32 dim_c, dim_v;
 
-static int DrvNvRamBank;
-static int CuebrickSndIrqFire;
-static int BlswhstlTileRomBank;
+static INT32 DrvNvRamBank;
+static INT32 CuebrickSndIrqFire;
+static INT32 BlswhstlTileRomBank;
 
-static int TitleSoundLatch;
-static int PlayTitleSample;
+static INT32 TitleSoundLatch;
+static INT32 PlayTitleSample;
 double TitleSamplePos = 0;
 
-static unsigned char DrvVBlank;
+static UINT8 DrvVBlank;
 
-static int InitEEPROMCount;
+static INT32 InitEEPROMCount;
 
 static const eeprom_interface BlswhstlEEPROMInterface =
 {
@@ -504,7 +506,7 @@ static struct BurnInputInfo Punkshot2InputList[] = {
 
 STDINPUTINFO(Punkshot2)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -1975,9 +1977,9 @@ static struct BurnRomInfo punkshotjRomDesc[] = {
 STD_ROM_PICK(punkshotj)
 STD_ROM_FN(punkshotj)
 
-static int TmntMemIndex()
+static INT32 TmntMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x060000;
 	DrvZ80Rom              = Next; Next += 0x008000;
@@ -1994,8 +1996,8 @@ static int TmntMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTitleSample         = (INT16*)Next; Next += 0x40000 * sizeof(INT16);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x004000 * 16 * 16;
@@ -2005,9 +2007,9 @@ static int TmntMemIndex()
 	return 0;
 }
 
-static int MiaMemIndex()
+static INT32 MiaMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x040000;
 	DrvZ80Rom              = Next; Next += 0x008000;
@@ -2023,8 +2025,8 @@ static int MiaMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x002000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
 
@@ -2033,9 +2035,9 @@ static int MiaMemIndex()
 	return 0;
 }
 
-static int CuebrickMemIndex()
+static INT32 CuebrickMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x020000;
 	DrvTileRom             = Next; Next += 0x040000;
@@ -2048,8 +2050,8 @@ static int CuebrickMemIndex()
 	
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x002000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x001000 * 16 * 16;
 	DrvNvRam               = Next; Next += 0x400 * 0x20;
@@ -2059,9 +2061,9 @@ static int CuebrickMemIndex()
 	return 0;
 }
 
-static int BlswhstlMemIndex()
+static INT32 BlswhstlMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x080000;
 	DrvZ80Rom              = Next; Next += 0x010000;
@@ -2080,17 +2082,17 @@ static int BlswhstlMemIndex()
 	
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int SsridersMemIndex()
+static INT32 SsridersMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x0c0000;
 	DrvZ80Rom              = Next; Next += 0x010000;
@@ -2107,8 +2109,8 @@ static int SsridersMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x004000 * 16 * 16;
 
@@ -2117,9 +2119,9 @@ static int SsridersMemIndex()
 	return 0;
 }
 
-static int Tmnt2MemIndex()
+static INT32 Tmnt2MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x100000;
 	DrvZ80Rom              = Next; Next += 0x010000;
@@ -2136,8 +2138,8 @@ static int Tmnt2MemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x008000 * 16 * 16;
 
@@ -2146,9 +2148,9 @@ static int Tmnt2MemIndex()
 	return 0;
 }
 
-static int Thndrx2MemIndex()
+static INT32 Thndrx2MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	
 	RamStart               = Next;
 
@@ -2164,8 +2166,8 @@ static int Thndrx2MemIndex()
 	DrvTileRom             = Next; Next += 0x100000;
 	DrvSpriteRom           = Next; Next += 0x100000;
 	
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
 
@@ -2174,9 +2176,9 @@ static int Thndrx2MemIndex()
 	return 0;
 }
 
-static int LgtnfghtMemIndex()
+static INT32 LgtnfghtMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	
 	RamStart               = Next;
 
@@ -2193,8 +2195,8 @@ static int LgtnfghtMemIndex()
 	DrvTileRom             = Next; Next += 0x100000;
 	DrvSpriteRom           = Next; Next += 0x100000;
 
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
 
@@ -2203,9 +2205,9 @@ static int LgtnfghtMemIndex()
 	return 0;
 }
 
-static int PunkshotMemIndex()
+static INT32 PunkshotMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x040000;
 	DrvZ80Rom              = Next; Next += 0x010000;
@@ -2221,8 +2223,8 @@ static int PunkshotMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
-	DrvPalette             = (unsigned int*)Next; Next += 0x00810 * sizeof(unsigned int);
+	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x004000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x004000 * 16 * 16;
 
@@ -2231,7 +2233,7 @@ static int PunkshotMemIndex()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -2255,9 +2257,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int TmntDoReset()
+static INT32 TmntDoReset()
 {
-	int nRet = DrvDoReset();
+	INT32 nRet = DrvDoReset();
 	
 	UPD7759Reset();
 	
@@ -2267,7 +2269,7 @@ static int TmntDoReset()
 	return nRet;
 }
 
-static int CuebrickDoReset()
+static INT32 CuebrickDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -2285,7 +2287,7 @@ static int CuebrickDoReset()
 	return 0;
 }
 
-static int BlswhstlDoReset()
+static INT32 BlswhstlDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -2315,7 +2317,7 @@ static int BlswhstlDoReset()
 	return 0;
 }
 
-static int SsridersDoReset()
+static INT32 SsridersDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -2347,7 +2349,7 @@ static int SsridersDoReset()
 	return 0;
 }
 
-static int PunkshotDoReset()
+static INT32 PunkshotDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -2368,7 +2370,7 @@ static int PunkshotDoReset()
 	return 0;
 }
 
-unsigned char __fastcall Tmnt68KReadByte(unsigned int a)
+UINT8 __fastcall Tmnt68KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x100000)
 	K051937ByteRead(0x140000)
@@ -2415,7 +2417,7 @@ unsigned char __fastcall Tmnt68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Tmnt68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Tmnt68KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x100000)
 	K015937ByteWrite(0x140000)
@@ -2423,7 +2425,7 @@ void __fastcall Tmnt68KWriteByte(unsigned int a, unsigned char d)
 
 	switch (a) {
 		case 0x0a0001: {
-			static int Last;
+			static INT32 Last;
 			if (Last == 0x08 && (d & 0x08) == 0) {
 				ZetOpen(0);
 				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -2463,7 +2465,7 @@ void __fastcall Tmnt68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Tmnt68KReadWord(unsigned int a)
+UINT16 __fastcall Tmnt68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -2474,7 +2476,7 @@ unsigned short __fastcall Tmnt68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Tmnt68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Tmnt68KWriteWord(UINT32 a, UINT16 d)
 {
 	K051960WordWrite(0x140400)
 	
@@ -2485,7 +2487,7 @@ void __fastcall Tmnt68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Mia68KReadByte(unsigned int a)
+UINT8 __fastcall Mia68KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x100000)
 	K051937ByteRead(0x140000)
@@ -2524,7 +2526,7 @@ unsigned char __fastcall Mia68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Mia68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Mia68KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x100000)
 	K015937ByteWrite(0x140000)
@@ -2532,7 +2534,7 @@ void __fastcall Mia68KWriteByte(unsigned int a, unsigned char d)
 	
 	switch (a) {
 		case 0x0a0001: {
-			static int Last;
+			static INT32 Last;
 			if (Last == 0x08 && (d & 0x08) == 0) {
 				ZetOpen(0);
 				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -2567,7 +2569,7 @@ void __fastcall Mia68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Mia68KReadWord(unsigned int a)
+UINT16 __fastcall Mia68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -2578,7 +2580,7 @@ unsigned short __fastcall Mia68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Mia68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Mia68KWriteWord(UINT32 a, UINT16 d)
 {
 	K051960WordWrite(0x140400)
 	
@@ -2589,7 +2591,7 @@ void __fastcall Mia68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Cuebrick68KReadByte(unsigned int a)
+UINT8 __fastcall Cuebrick68KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x100000)
 	K051937ByteRead(0x140000)
@@ -2639,7 +2641,7 @@ unsigned char __fastcall Cuebrick68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Cuebrick68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Cuebrick68KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x100000)
 	K015937ByteWrite(0x140000)
@@ -2684,7 +2686,7 @@ void __fastcall Cuebrick68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Cuebrick68KReadWord(unsigned int a)
+UINT16 __fastcall Cuebrick68KReadWord(UINT32 a)
 {
 	if (a >= 0x0b0000 && a <= 0x0b03ff) {
 		SEK_DEF_READ_WORD(0, a);
@@ -2700,7 +2702,7 @@ unsigned short __fastcall Cuebrick68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Cuebrick68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Cuebrick68KWriteWord(UINT32 a, UINT16 d)
 {
 	K051960WordWrite(0x140400)
 	
@@ -2716,10 +2718,10 @@ void __fastcall Cuebrick68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
+UINT8 __fastcall Blswhstl68KReadByte(UINT32 a)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 		
 		if (a & 1) {
 			return K052109Read(Offset + 0x2000);
@@ -2729,7 +2731,7 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x300000 && a <= 0x303fff) {
-		int Offset = (a - 0x300000);
+		INT32 Offset = (a - 0x300000);
 		
 		if (Offset & (0x31 << 1)) {
 			return DrvSpriteRam[Offset ^ 1];
@@ -2740,7 +2742,7 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x500000 && a <= 0x50003f) {
-		int Offset = (a - 0x500000) >> 1;
+		INT32 Offset = (a - 0x500000) >> 1;
 		if (a & 1) {
 			return K054000Read(Offset);
 		} else {
@@ -2749,7 +2751,7 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x680000 && a <= 0x68001f) {
-		int Offset = (a - 0x680000) >> 1;
+		INT32 Offset = (a - 0x680000) >> 1;
 		Offset &= ~1;
 		
 		if (a & 1) {
@@ -2769,8 +2771,8 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 		}
 		
 		case 0x700005: {
-			unsigned char Res;
-			static int Toggle;
+			UINT8 Res;
+			static INT32 Toggle;
 
 			Res = 0xff - DrvInput[0];
 			
@@ -2790,7 +2792,7 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 		
 		case 0x780601:
 		case 0x780603: {
-			int Offset = (a - 0x780601) >> 1;
+			INT32 Offset = (a - 0x780601) >> 1;
 			return K053260Read(0, Offset + 2);
 		}
 		
@@ -2802,10 +2804,10 @@ unsigned char __fastcall Blswhstl68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Blswhstl68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Blswhstl68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 		
 		if (a & 1) {
 			K052109Write(Offset + 0x2000, d);
@@ -2816,13 +2818,13 @@ void __fastcall Blswhstl68KWriteByte(unsigned int a, unsigned char d)
 	}
 
 	if (a >= 0x300000 && a <= 0x303fff) {
-		int Offset = (a - 0x300000);
+		INT32 Offset = (a - 0x300000);
 		DrvSpriteRam[Offset ^ 1] = d;
 
 		if (!(Offset & (0x31 << 1))) {
 			Offset = ((Offset & (0x000e << 1)) >> 1) | ((Offset & (0x1fc0 << 1)) >> 3);
 
-			int data = K053245ReadWord(0, Offset/2);
+			INT32 data = K053245ReadWord(0, Offset/2);
 
 			if (a & 1) {
 				data &= 0xff00;
@@ -2838,13 +2840,13 @@ void __fastcall Blswhstl68KWriteByte(unsigned int a, unsigned char d)
 	}
 
 	if (a >= 0x500000 && a <= 0x50003f) {
-		int Offset = (a - 0x500000) >> 1;
+		INT32 Offset = (a - 0x500000) >> 1;
 		if (a & 1) K054000Write(Offset, d);
 		return;
 	}
 	
 	if (a >= 0x680000 && a <= 0x68001f) {
-		int Offset = (a - 0x680000) >> 1;
+		INT32 Offset = (a - 0x680000) >> 1;
 		Offset &= ~1;
 		
 		if (a & 1) {
@@ -2896,14 +2898,14 @@ void __fastcall Blswhstl68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Blswhstl68KReadWord(unsigned int a)
+UINT16 __fastcall Blswhstl68KReadWord(UINT32 a)
 {
 	if (a >= 0x300000 && a <= 0x303fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0x300000) >> 1;
+		INT32 Offset = (a - 0x300000) >> 1;
 		
 		if (Offset & 0x31) {
-			return SpriteRam[Offset];
+			return BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset]);
 		} else {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
 			return K053245ReadWord(0, Offset);
@@ -2919,10 +2921,10 @@ unsigned short __fastcall Blswhstl68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Blswhstl68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Blswhstl68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 
 		K052109Write(Offset + 0x2000, d >> 8);
 		K052109Write(Offset + 0x0000, d & 0xff);
@@ -2931,8 +2933,8 @@ void __fastcall Blswhstl68KWriteWord(unsigned int a, unsigned short d)
 	
 	if (a >= 0x300000 && a <= 0x303fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0x300000) >> 1;
-		SpriteRam[Offset] = d;
+		INT32 Offset = (a - 0x300000) >> 1;
+		SpriteRam[Offset] = BURN_ENDIAN_SWAP_INT16(d);
 		
 		if (!(Offset & 0x0031)) {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
@@ -2942,13 +2944,13 @@ void __fastcall Blswhstl68KWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x500000 && a <= 0x50003f) {
-		int Offset = (a - 0x500000) >> 1;
+		INT32 Offset = (a - 0x500000) >> 1;
 		K054000Write(Offset, d & 0xff);
 		return;
 	}
 	
 	if (a >= 0x680000 && a <= 0x68001f) {
-		int Offset = (a - 0x680000) >> 1;
+		INT32 Offset = (a - 0x680000) >> 1;
 		Offset &= ~1;
 		
 		K053244Write(0, Offset + 1, d & 0xff);
@@ -2966,18 +2968,18 @@ void __fastcall Blswhstl68KWriteWord(unsigned int a, unsigned short d)
 static void tmnt2_protection_write()
 {
 	UINT32 src_addr, dst_addr, mod_addr, attr1, code, attr2, cbase, cmod, color;
-	int xoffs, yoffs, xmod, ymod, zmod, xzoom, yzoom, i;
+	INT32 xoffs, yoffs, xmod, ymod, zmod, xzoom, yzoom, i;
 	UINT16 *mcu;
 	UINT16 src[4], mod[24];
 	UINT8 keepaspect, xlock, ylock, zlock;
 
-	mcu = (unsigned short*)(Drv68KRam + 0x4800);
-	if ((mcu[8] & 0xff00) != 0x8200) return;
+	mcu = (UINT16*)(Drv68KRam + 0x4800);
+	if ((BURN_ENDIAN_SWAP_INT16(mcu[8]) & 0xff00) != 0x8200) return;
 
-	src_addr = (mcu[0] | (mcu[1]&0xff)<<16) >> 1;
-	dst_addr = (mcu[2] | (mcu[3]&0xff)<<16) >> 1;
-	mod_addr = (mcu[4] | (mcu[5]&0xff)<<16) >> 1;
-	zlock    = (mcu[8] & 0xff) == 0x0001;
+	src_addr = (BURN_ENDIAN_SWAP_INT16(mcu[0]) | (BURN_ENDIAN_SWAP_INT16(mcu[1])&0xff)<<16) >> 1;
+	dst_addr = (BURN_ENDIAN_SWAP_INT16(mcu[2]) | (BURN_ENDIAN_SWAP_INT16(mcu[3])&0xff)<<16) >> 1;
+	mod_addr = (BURN_ENDIAN_SWAP_INT16(mcu[4]) | (BURN_ENDIAN_SWAP_INT16(mcu[5])&0xff)<<16) >> 1;
+	zlock    = (BURN_ENDIAN_SWAP_INT16(mcu[8]) & 0xff) == 0x0001;
 
 	for (i=0; i< 4; i++) src[i] = SekReadWord((src_addr + i) * 2);
 	for (i=0; i<24; i++) mod[i] = SekReadWord((mod_addr + i) * 2);
@@ -3015,7 +3017,7 @@ static void tmnt2_protection_write()
 		if (i > 0)
 		{
 			i >>= 8;
-			xoffs += (int)(pow(i, /*1.898461*/1.891292) * xoffs / 599.250121);
+			xoffs += (INT32)(pow(i, /*1.898461*/1.891292) * xoffs / 599.250121);
 		}
 		else if (i < 0)
 		{
@@ -3029,7 +3031,7 @@ static void tmnt2_protection_write()
 		if (i > 0)
 		{
 			i >>= 8;
-			yoffs += (int)(pow(i, /*1.898461*/1.891292) * yoffs / 599.250121);
+			yoffs += (INT32)(pow(i, /*1.898461*/1.891292) * yoffs / 599.250121);
 		}
 		else if (i < 0)
 		{
@@ -3049,12 +3051,12 @@ static void tmnt2_protection_write()
 	SekWriteWord((dst_addr + 12) * 2, attr2 | color);
 }
 
-void __fastcall Tmnt268KProtWord(unsigned int a, unsigned short d)
+void __fastcall Tmnt268KProtWord(UINT32 a, UINT16 d)
 {
-	*((unsigned short*)(Drv68KRam + 0x4800 + (a & 0x1e))) = d;
+	*((UINT16*)(Drv68KRam + 0x4800 + (a & 0x1e))) = BURN_ENDIAN_SWAP_INT16(d);
 }
 
-void __fastcall Tmnt268KProtByte(unsigned int a, unsigned char d)
+void __fastcall Tmnt268KProtByte(UINT32 a, UINT8 d)
 {
 	a &= 0x1f;
 	Drv68KRam[0x4801 ^ a] = d;
@@ -3062,10 +3064,10 @@ void __fastcall Tmnt268KProtByte(unsigned int a, unsigned char d)
 	if (a == 0x18) tmnt2_protection_write();
 }
 
-static unsigned short ssriders_protection_r()
+static UINT16 ssriders_protection_r()
 {
-    int data = SekReadWord(0x105a0a);
-    int cmd  = SekReadWord(0x1058fc);
+    INT32 data = SekReadWord(0x105a0a);
+    INT32 cmd  = SekReadWord(0x1058fc);
 
 	switch (cmd)
 	{
@@ -3100,23 +3102,23 @@ static unsigned short ssriders_protection_r()
     }
 }
 
-static void ssriders_protection_w(int offset)
+static void ssriders_protection_w(INT32 offset)
 {
 	offset >>= 1;
 
 	if (offset == 1)
 	{
-		int logical_pri,hardware_pri;
+		INT32 logical_pri,hardware_pri;
 
 		/* create sprite priority attributes */
 		hardware_pri = 1;
 		for (logical_pri = 1;logical_pri < 0x100;logical_pri <<= 1)
 		{
-			int i;
+			INT32 i;
 
 			for (i = 0;i < 128;i++)
 			{
-				if ((SekReadWord(0x180006 + 128*i) >> 8) == (unsigned short)logical_pri)
+				if ((SekReadWord(0x180006 + 128*i) >> 8) == (UINT16)logical_pri)
 				{
 					K053245Write(0,((8*i) * 2)+1,hardware_pri);
 					hardware_pri++;
@@ -3126,10 +3128,10 @@ static void ssriders_protection_w(int offset)
 	}
 }
 
-unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
+UINT8 __fastcall Ssriders68KReadByte(UINT32 a)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
-		int Offset = (a - 0x180000);
+		INT32 Offset = (a - 0x180000);
 		
 		if (Offset & (0x31 << 1)) {
 			return DrvSpriteRam[Offset ^ 1];
@@ -3144,7 +3146,7 @@ unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
 	}
 
 	if (a >= 0x5a0000 && a <= 0x5a001f) {
-		int Offset = (a - 0x5a0000) >> 1;
+		INT32 Offset = (a - 0x5a0000) >> 1;
 		Offset &= ~1;
 		
 		if (a & 1) {
@@ -3155,7 +3157,7 @@ unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
 	}
 	
 	if (a >= 0x600000 && a <= 0x603fff) {
-		int Offset = (a - 0x600000) >> 1;
+		INT32 Offset = (a - 0x600000) >> 1;
 		
 		if (a & 1) {
 			return K052109Read(Offset + 0x2000);
@@ -3190,8 +3192,8 @@ unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
 		}
 		
 		case 0x1c0103: {
-			unsigned char Res;
-			static int Toggle;
+			UINT8 Res;
+			static INT32 Toggle;
 
 			Res = DrvInput[5];
 			if (DrvVBlank) Res |= 0x08;
@@ -3214,7 +3216,7 @@ unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
 		
 		case 0x5c0601:
 		case 0x5c0603: {
-			int Offset = (a - 0x5c0601) >> 1;
+			INT32 Offset = (a - 0x5c0601) >> 1;
 			return K053260Read(0, Offset + 2);
 		}
 		
@@ -3226,16 +3228,16 @@ unsigned char __fastcall Ssriders68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ssriders68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Ssriders68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
-		int Offset = (a - 0x180000);
+		INT32 Offset = (a - 0x180000);
 		DrvSpriteRam[Offset ^ 1] = d;
 
 		if (!(Offset & (0x31 << 1))) {
 			Offset = ((Offset & (0x000e << 1)) >> 1) | ((Offset & (0x1fc0 << 1)) >> 3);
 
-			int data = K053245ReadWord(0, Offset/2);
+			INT32 data = K053245ReadWord(0, Offset/2);
 
 			if (a & 1) {
 				data &= 0xff00;
@@ -3259,16 +3261,16 @@ void __fastcall Ssriders68KWriteByte(unsigned int a, unsigned char d)
 	// extra ram for tmnt2
 	if ((a & 0xffff80) == 0x1c0500) {
 		Drv68KRam[0x4001 ^ (a & 0x7f)] = d;
-		//*((unsigned short*)(Drv68KRam + 0x4000 + (a & 0x7e))) = d;
+		//*((UINT16*)(Drv68KRam + 0x4000 + (a & 0x7e))) = d;
 		return;
 	}
 
 	if (a >= 0x5a0000 && a <= 0x5a001f) {
-		int Offset = (a - 0x5a0000) >> 1;
+		INT32 Offset = (a - 0x5a0000) >> 1;
 		Offset &= ~1;
 		
 		K053244Write(0, Offset + 1, d & 0xff);
-		K053244Write(0, Offset + 0, d >> 8);
+		K053244Write(0, Offset + 0, 0); // originally d >> 8, but that is effectively 0
 		return;
 	}
 	
@@ -3278,7 +3280,7 @@ void __fastcall Ssriders68KWriteByte(unsigned int a, unsigned char d)
 	}
 	
 	if (a >= 0x600000 && a <= 0x603fff) {
-		int Offset = (a - 0x600000) >> 1;
+		INT32 Offset = (a - 0x600000) >> 1;
 		
 		if (a & 1) {
 			K052109Write(Offset + 0x2000, d);
@@ -3326,14 +3328,14 @@ void __fastcall Ssriders68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Ssriders68KReadWord(unsigned int a)
+UINT16 __fastcall Ssriders68KReadWord(UINT32 a)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 		
 		if (Offset & 0x31) {
-			return SpriteRam[Offset];
+			return BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset]);
 		} else {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
 			return K053245ReadWord(0, Offset);
@@ -3341,7 +3343,7 @@ unsigned short __fastcall Ssriders68KReadWord(unsigned int a)
 	}
 
 	if ((a & 0xffff80) == 0x1c0500) {
-		return *((unsigned short*)(Drv68KRam + 0x4000 + (a & 0x7e)));
+		return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(Drv68KRam + 0x4000 + (a & 0x7e))));
 	}
 
 	if (a == 0x1c0800) return ssriders_protection_r();
@@ -3355,12 +3357,12 @@ unsigned short __fastcall Ssriders68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ssriders68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Ssriders68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x180000 && a <= 0x183fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0x180000) >> 1;
-		SpriteRam[Offset] = d;
+		INT32 Offset = (a - 0x180000) >> 1;
+		SpriteRam[Offset] = BURN_ENDIAN_SWAP_INT16(d);
 		
 		if (!(Offset & 0x0031)) {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
@@ -3370,7 +3372,7 @@ void __fastcall Ssriders68KWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x5a0000 && a <= 0x5a001f) {
-		int Offset = (a - 0x5a0000) >> 1;
+		INT32 Offset = (a - 0x5a0000) >> 1;
 		Offset &= ~1;
 		
 		K053244Write(0, Offset + 1, d & 0xff);
@@ -3379,7 +3381,7 @@ void __fastcall Ssriders68KWriteWord(unsigned int a, unsigned short d)
 	}
 
 	if ((a & 0xffff80) == 0x1c0500) {
-		*((unsigned short*)(Drv68KRam + 0x4000 + (a & 0x7e))) = d;
+		*((UINT16*)(Drv68KRam + 0x4000 + (a & 0x7e))) = BURN_ENDIAN_SWAP_INT16(d);
 		return;
 	}
 
@@ -3401,7 +3403,7 @@ void __fastcall Ssriders68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Thndrx268KReadByte(unsigned int a)
+UINT8 __fastcall Thndrx268KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x600000)
 	K051937ByteRead(0x700000)
@@ -3411,7 +3413,7 @@ unsigned char __fastcall Thndrx268KReadByte(unsigned int a)
 	}
 
 	if (a >= 0x500000 && a <= 0x50003f) {
-		int Offset = (a - 0x500000) >> 1;
+		INT32 Offset = (a - 0x500000) >> 1;
 		if (a & 1) {
 			return K054000Read(Offset);
 		} else {
@@ -3427,7 +3429,7 @@ unsigned char __fastcall Thndrx268KReadByte(unsigned int a)
 
 		case 0x500200:
 		{
-			int ret = DrvInput[1]^0xff;
+			INT32 ret = DrvInput[1]^0xff;
 			if (InitEEPROMCount) {
 				ret &= 0xf7;
 				InitEEPROMCount--;
@@ -3440,9 +3442,9 @@ unsigned char __fastcall Thndrx268KReadByte(unsigned int a)
 
 		case 0x500202:
 		{
-			static int toggle;
+			static INT32 toggle;
 			toggle ^= 0x08;
-			int ret = 0xfe;
+			INT32 ret = 0xfe;
 			ret |= (EEPROMRead() & 1);
 			ret ^= toggle;
 
@@ -3457,7 +3459,7 @@ unsigned char __fastcall Thndrx268KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Thndrx268KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Thndrx268KWriteWord(UINT32 a, UINT16 d)
 {
 	if ((a & 0xffffc00) == 0x700400) {
 		K051960Write((a & 0x3fe) | 0, d >> 8);
@@ -3466,7 +3468,7 @@ void __fastcall Thndrx268KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall Thndrx268KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Thndrx268KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x600000)
 	K015937ByteWrite(0x700000)
@@ -3482,7 +3484,7 @@ void __fastcall Thndrx268KWriteByte(unsigned int a, unsigned char d)
 	}
 
 	if (a >= 0x500000 && a <= 0x50003f) {
-		int Offset = (a - 0x500000) >> 1;
+		INT32 Offset = (a - 0x500000) >> 1;
 		if (a & 1) K054000Write(Offset, d);
 		return;
 	}
@@ -3501,7 +3503,7 @@ void __fastcall Thndrx268KWriteByte(unsigned int a, unsigned char d)
 
 		//	EEPROMWrite(d & 0x04, d & 0x02, d & 0x01);
 
-			static int last;
+			static INT32 last;
 			if (last == 0 && (d & 0x20) != 0) {
 				ZetSetVector(0xff);
 				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -3514,14 +3516,14 @@ void __fastcall Thndrx268KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Lgtnfght68KReadWord(unsigned int a)
+UINT16 __fastcall Lgtnfght68KReadWord(UINT32 a)
 {
 	if (a >= 0xb0000 && a <= 0xb3fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0xb0000) >> 1;
+		INT32 Offset = (a - 0xb0000) >> 1;
 		
 		if (Offset & 0x31) {
-			return SpriteRam[Offset];
+			return BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset]);
 		} else {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
 			return K053245ReadWord(0, Offset);
@@ -3531,12 +3533,12 @@ unsigned short __fastcall Lgtnfght68KReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall Lgtnfght68KReadByte(unsigned int a)
+UINT8 __fastcall Lgtnfght68KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x100000)
 
 	if (a >= 0xb0000 && a <= 0xb3fff) {
-		int Offset = (a - 0xb0000);
+		INT32 Offset = (a - 0xb0000);
 		
 		if (Offset & (0x31 << 1)) {
 			return DrvSpriteRam[Offset ^ 1];
@@ -3547,7 +3549,7 @@ unsigned char __fastcall Lgtnfght68KReadByte(unsigned int a)
 	}
 		
 	if (a >= 0xc0000 && a <= 0xc001f) {
-		int Offset = (a - 0xc0000) >> 1;
+		INT32 Offset = (a - 0xc0000) >> 1;
 		Offset &= ~1;
 		
 		if (a & 1) {
@@ -3585,12 +3587,12 @@ unsigned char __fastcall Lgtnfght68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Lgtnfght68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Lgtnfght68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0xb0000 && a <= 0xb3fff) {
 		UINT16 *SpriteRam = (UINT16*)DrvSpriteRam;
-		int Offset = (a - 0xb0000) >> 1;
-		SpriteRam[Offset] = d;
+		INT32 Offset = (a - 0xb0000) >> 1;
+		SpriteRam[Offset] = BURN_ENDIAN_SWAP_INT16(d);
 		
 		if (!(Offset & 0x0031)) {
 			Offset = ((Offset & 0x000e) >> 1) | ((Offset & 0x1fc0) >> 3);
@@ -3600,7 +3602,7 @@ void __fastcall Lgtnfght68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall Lgtnfght68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Lgtnfght68KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x100000)
 
@@ -3610,13 +3612,13 @@ void __fastcall Lgtnfght68KWriteByte(unsigned int a, unsigned char d)
 	}
 
 	if (a >= 0xb0000 && a <= 0xb3fff) {
-		int Offset = (a - 0xb0000);
+		INT32 Offset = (a - 0xb0000);
 		DrvSpriteRam[Offset ^ 1] = d;
 
 		if (!(Offset & (0x31 << 1))) {
 			Offset = ((Offset & (0x000e << 1)) >> 1) | ((Offset & (0x1fc0 << 1)) >> 3);
 
-			int data = K053245ReadWord(0, Offset/2);
+			INT32 data = K053245ReadWord(0, Offset/2);
 
 			if (a & 1) {
 				data &= 0xff00;
@@ -3633,11 +3635,11 @@ void __fastcall Lgtnfght68KWriteByte(unsigned int a, unsigned char d)
 	}
 
 	if (a >= 0xc0000 && a <= 0xc001f) {
-		int Offset = (a - 0xc0000) >> 1;
+		INT32 Offset = (a - 0xc0000) >> 1;
 		Offset &= ~1;
 		
 		K053244Write(0, Offset + 1, d & 0xff);
-		K053244Write(0, Offset + 0, d >> 8);
+		K053244Write(0, Offset + 0, 0); // originally d >> 8, but that is effectively 0
 		return;
 	}
 
@@ -3645,7 +3647,7 @@ void __fastcall Lgtnfght68KWriteByte(unsigned int a, unsigned char d)
 	{
 		case 0xa0019:
 		{
-			static int last;
+			static INT32 last;
 			if (last == 0 && (d & 0x4) != 0) {
 				ZetSetVector(0xff);
 				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -3665,7 +3667,7 @@ void __fastcall Lgtnfght68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Punkshot68KReadWord(unsigned int a)
+UINT16 __fastcall Punkshot68KReadWord(UINT32 a)
 {
 	if ((a & 0xfffc00) == 0x110400) {
 		return K051960Read((a & 0x3fe) | 1) | (K051960Read((a & 0x3fe) | 0) << 8);
@@ -3674,7 +3676,7 @@ unsigned short __fastcall Punkshot68KReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall Punkshot68KReadByte(unsigned int a)
+UINT8 __fastcall Punkshot68KReadByte(UINT32 a)
 {
 	K052109WordNoA12Read(0x100000)
 	K051937ByteRead(0x110000)
@@ -3720,7 +3722,7 @@ unsigned char __fastcall Punkshot68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Punkshot68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Punkshot68KWriteWord(UINT32 a, UINT16 d)
 {
 	if ((a & 0xfffc00) == 0x110400) {
 		K051960Write((a & 0x3fe) | 0, d >> 8);
@@ -3735,7 +3737,7 @@ void __fastcall Punkshot68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall Punkshot68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Punkshot68KWriteByte(UINT32 a, UINT8 d)
 {
 	K052109WordNoA12Write(0x100000)
 	K015937ByteWrite(0x110000)
@@ -3751,7 +3753,7 @@ void __fastcall Punkshot68KWriteByte(unsigned int a, unsigned char d)
 		case 0x0a0020:
 		case 0x0a0021:
 		{
-			static int last;
+			static INT32 last;
 			K052109RMRDLine = d & 0x08;
 
 			if (last == 0x04 && (d & 0x04) == 0x00) {
@@ -3773,7 +3775,7 @@ void __fastcall Punkshot68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TmntZ80Read(unsigned short a)
+UINT8 __fastcall TmntZ80Read(UINT16 a)
 {
 	if (a >= 0xb000 && a <= 0xb00d) {
 		return K007232ReadReg(0, a - 0xb000);
@@ -3805,7 +3807,7 @@ unsigned char __fastcall TmntZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TmntZ80Write(unsigned short a, unsigned char d)
+void __fastcall TmntZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xb000 && a <= 0xb00d) {
 		K007232WriteReg(0, (a - 0xb000), d);
@@ -3852,7 +3854,7 @@ void __fastcall TmntZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MiaZ80Read(unsigned short a)
+UINT8 __fastcall MiaZ80Read(UINT16 a)
 {
 	if (a >= 0xb000 && a <= 0xb00d) {
 		return K007232ReadReg(0, a - 0xb000);
@@ -3876,7 +3878,7 @@ unsigned char __fastcall MiaZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall MiaZ80Write(unsigned short a, unsigned char d)
+void __fastcall MiaZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xb000 && a <= 0xb00d) {
 		K007232WriteReg(0, (a - 0xb000), d);
@@ -3900,7 +3902,7 @@ void __fastcall MiaZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall BlswhstlZ80Read(unsigned short a)
+UINT8 __fastcall BlswhstlZ80Read(UINT16 a)
 {
 	if (a >= 0xfa00 && a <= 0xfa2f) {
 		if (a == 0xfa00) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
@@ -3920,7 +3922,7 @@ unsigned char __fastcall BlswhstlZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall BlswhstlZ80Write(unsigned short a, unsigned char d)
+void __fastcall BlswhstlZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xfa00 && a <= 0xfa2f) {
 		K053260Write(0, (a - 0xfa00), d);
@@ -3950,7 +3952,7 @@ void __fastcall BlswhstlZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Thndrx2Z80Write(unsigned short a, unsigned char d)
+void __fastcall Thndrx2Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xfc00 && a <= 0xfc2f) {
 		K053260Write(0, (a - 0xfc00), d);
@@ -3976,7 +3978,7 @@ void __fastcall Thndrx2Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Thndrx2Z80Read(unsigned short a)
+UINT8 __fastcall Thndrx2Z80Read(UINT16 a)
 {
 	if (a >= 0xfc00 && a <= 0xfc2f) {
 		if (a == 0xfc00) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
@@ -3993,7 +3995,7 @@ unsigned char __fastcall Thndrx2Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall LgtnfghtZ80Write(unsigned short a, unsigned char d)
+void __fastcall LgtnfghtZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xc000 && a <= 0xc02f) {
 		K053260Write(0, (a - 0xc000), d);
@@ -4012,7 +4014,7 @@ void __fastcall LgtnfghtZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall LgtnfghtZ80Read(unsigned short a)
+UINT8 __fastcall LgtnfghtZ80Read(UINT16 a)
 {
 	if (a >= 0xc000 && a <= 0xc02f) {
 		if (a == 0xc000) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
@@ -4028,9 +4030,9 @@ unsigned char __fastcall LgtnfghtZ80Read(unsigned short a)
 	return 0;
 }
 
-static void shuffle(UINT16 *buf, int len)
+static void shuffle(UINT16 *buf, INT32 len)
 {
-	int i;
+	INT32 i;
 	UINT16 t;
 
 	if (len == 2) return;
@@ -4049,9 +4051,9 @@ static void shuffle(UINT16 *buf, int len)
 	shuffle(buf + len,len);
 }
 
-static void byte_shuffle(UINT8 *buf, int len)
+static void byte_shuffle(UINT8 *buf, INT32 len)
 {
-	int i;
+	INT32 i;
 	UINT8 t;
 
 	if (len == 2) return;
@@ -4070,19 +4072,19 @@ static void byte_shuffle(UINT8 *buf, int len)
 	byte_shuffle(buf + len,len);
 }
 
-static void TmntUnscrambleGfx(unsigned char *pSrc, int nLength)
+static void TmntUnscrambleGfx(UINT8 *pSrc, INT32 nLength)
 {
-	int bits[32];
-	for (int i = 0; i < nLength; i += 4) {
-		for (int j = 0; j < 4; j++) {
-			for (int k = 0; k < 8; k++) {
+	INT32 bits[32];
+	for (INT32 i = 0; i < nLength; i += 4) {
+		for (INT32 j = 0; j < 4; j++) {
+			for (INT32 k = 0; k < 8; k++) {
 				bits[8*j + k] = (pSrc[i + j] >> k) & 1;
 			}
 		}
 
-		for (int j = 0; j < 4; j++) {
+		for (INT32 j = 0; j < 4; j++) {
 			pSrc[i + j] = 0;
-			for (int k = 0; k < 8; k++) {
+			for (INT32 k = 0; k < 8; k++) {
 				pSrc[i + j] |= bits[j + 4*k] << k;
 			}
 		}
@@ -4092,13 +4094,13 @@ static void TmntUnscrambleGfx(unsigned char *pSrc, int nLength)
 static void TmntUnscrambleSprites()
 {
 	BurnLoadRom(DrvTempRom + 0x200000, 11, 1);
-	unsigned char *SpriteConvTable = DrvTempRom + 0x200000;
+	UINT8 *SpriteConvTable = DrvTempRom + 0x200000;
 	
 	memcpy(DrvTempRom, DrvSpriteRom, 0x200000);
 	
-	for (int A = 0; A < 0x80000; A++) {
-		int B, i, entry;
-		int bits[10];
+	for (INT32 A = 0; A < 0x80000; A++) {
+		INT32 B, i, entry;
+		INT32 bits[10];
 
 		static const UINT8 bit_pick_table[10][8] = {
 			{ 3,   3,   3,   3,   3,   3,   3,   3 },
@@ -4133,9 +4135,9 @@ static void MiaUnscrambleSprites()
 {
 	memcpy(DrvTempRom, DrvSpriteRom, 0x100000);
 	
-	for (int A = 0; A < 0x40000; A++) {
-		int B, i;
-		int bits[8];
+	for (INT32 A = 0; A < 0x40000; A++) {
+		INT32 B, i;
+		INT32 bits[8];
 		for (i = 0; i < 8; i++) bits[i] = (A >> i) & 0x01;
 
 		B = A & 0x3ff00;
@@ -4169,9 +4171,9 @@ static void MiaUnscrambleSprites()
 
 static void TmntDecodeTitleSample()
 {
-	for (int i = 0; i < 0x40000; i++) {
-		int val = DrvTempRom[2 * i + 0] + (DrvTempRom[(2 * i) + 1] << 8);
-		int expo = val >> 13;
+	for (INT32 i = 0; i < 0x40000; i++) {
+		INT32 val = DrvTempRom[2 * i + 0] + (DrvTempRom[(2 * i) + 1] << 8);
+		INT32 expo = val >> 13;
 
 	  	val = (val >> 3) & (0x3ff);
 		val -= 0x200;
@@ -4182,21 +4184,21 @@ static void TmntDecodeTitleSample()
 	}
 }
 
-static int TilePlaneOffsets[4]     = { 24, 16, 8, 0 };
-static int TileXOffsets[8]         = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TileYOffsets[8]         = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4]   = { 24, 16, 8, 0 };
-static int SpritePlaneOffsets2[4]  = { 0, 8, 16, 24 };
-static int SpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
-static int SpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 TilePlaneOffsets[4]     = { 24, 16, 8, 0 };
+static INT32 TileXOffsets[8]         = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TileYOffsets[8]         = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 SpritePlaneOffsets[4]   = { 24, 16, 8, 0 };
+static INT32 SpritePlaneOffsets2[4]  = { 0, 8, 16, 24 };
+static INT32 SpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
+static INT32 SpriteYOffsets[16]      = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
 
-static void K052109TmntCallback(int Layer, int Bank, int *Code, int *Colour, int* /*xFlip*/, int *)
+static void K052109TmntCallback(INT32 Layer, INT32 Bank, INT32 *Code, INT32 *Colour, INT32*, INT32 *)
 {
 	*Code |= ((*Colour & 0x03) << 8) | ((*Colour & 0x10) << 6) | ((*Colour & 0x0c) << 9) | (Bank << 13);
 	*Colour = LayerColourBase[Layer] + ((*Colour & 0xe0) >> 5);
 }
 
-static void K052109MiaCallback(int Layer, int Bank, int *Code, int *Colour, int *xFlip, int *)
+static void K052109MiaCallback(INT32 Layer, INT32 Bank, INT32 *Code, INT32 *Colour, INT32 *xFlip, INT32 *)
 {
 	*xFlip = *Colour & 0x04;
 	
@@ -4209,7 +4211,7 @@ static void K052109MiaCallback(int Layer, int Bank, int *Code, int *Colour, int 
 	}
 }
 
-static void K052109CuebrickCallback(int Layer, int /*Bank*/, int *Code, int *Colour, int */*xFlip*/, int *)
+static void K052109CuebrickCallback(INT32 Layer, INT32, INT32 *Code, INT32 *Colour, INT32 *, INT32 *)
 {
 	if (K052109RMRDLine == 0 && Layer == 0) {
 		*Code |= ((*Colour & 0x01) << 8);
@@ -4220,32 +4222,32 @@ static void K052109CuebrickCallback(int Layer, int /*Bank*/, int *Code, int *Col
 	}
 }
 
-static void K052109BlswhstlCallback(int Layer, int Bank, int *Code, int *Colour, int */*Flags*/, int */*Priority*/)
+static void K052109BlswhstlCallback(INT32 Layer, INT32 Bank, INT32 *Code, INT32 *Colour, INT32 *, INT32 *)
 {
 	*Code |= ((*Colour & 0x01) << 8) | ((*Colour & 0x10) << 5) | ((*Colour & 0x0c) << 8) | (Bank << 12) | (BlswhstlTileRomBank << 14);
 	*Colour = LayerColourBase[Layer] + ((*Colour & 0xe0) >> 5);
 }
 
-static void K051960TmntCallback(int *Code, int *Colour, int* /*Priority*/, int* /*Shadow*/)
+static void K051960TmntCallback(INT32 *Code, INT32 *Colour, INT32*, INT32*)
 {
 	*Code |= (*Colour & 0x10) << 9;
 	*Colour = SpriteColourBase + (*Colour & 0x0f);
 }
 
-static void K051960MiaCallback(int* /*Code*/, int *Colour, int* /*Priority*/, int* /*Shadow*/)
+static void K051960MiaCallback(INT32* /*Code*/, INT32 *Colour, INT32*, INT32*)
 {
 	*Colour = SpriteColourBase + (*Colour & 0x0f);
 }
 
-static void K051960CuebrickCallback(int* Code, int *Colour, int* /*Priority*/, int* /*Shadow*/)
+static void K051960CuebrickCallback(INT32* Code, INT32 *Colour, INT32*, INT32*)
 {
 	*Colour = SpriteColourBase + (*Colour & 0x0f);
 	*Code &= 0xfff;
 }
 
-static void K051960Thndrx2Callback(int* code, int *color, int* priority, int* /*shadow*/)
+static void K051960Thndrx2Callback(INT32* code, INT32 *color, INT32* priority, INT32*)
 {
-	int pri = 0x20 | ((*color & 0x60) >> 2);
+	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
 	if (pri <= LayerPri[2])					*priority = 0;
 	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
 	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
@@ -4255,9 +4257,9 @@ static void K051960Thndrx2Callback(int* code, int *color, int* priority, int* /*
 	*color = SpriteColourBase + (*color & 0x0f);
 }
 
-static void K051960PunkshotCallback(int *code, int *color, int *priority, int *)
+static void K051960PunkshotCallback(INT32 *code, INT32 *color, INT32 *priority, INT32 *)
 {
-	int pri = 0x20 | ((*color & 0x60) >> 2);
+	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
 	if (pri <= LayerPri[2])					*priority = 0;
 	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
 	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
@@ -4268,9 +4270,9 @@ static void K051960PunkshotCallback(int *code, int *color, int *priority, int *)
 	*color = SpriteColourBase + (*color & 0x0f);
 }
 
-static void K053245BlswhstlCallback(int *Code, int *Colour, int *Priority)
+static void K053245BlswhstlCallback(INT32 *Code, INT32 *Colour, INT32 *Priority)
 {
-	int Pri = 0x20 | ((*Colour & 0x60) >> 2);
+	INT32 Pri = 0x20 | ((*Colour & 0x60) >> 2);
 	if (Pri <= LayerPri[2])                           	*Priority = 0;
 	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 1;
 	else if (Pri > LayerPri[1] && Pri <= LayerPri[0]) 	*Priority = 2;
@@ -4280,9 +4282,9 @@ static void K053245BlswhstlCallback(int *Code, int *Colour, int *Priority)
 	*Colour = SpriteColourBase + (*Colour & 0x1f);
 }
 
-static void K053245SsridersCallback(int */*Code*/, int *Colour, int *Priority)
+static void K053245SsridersCallback(INT32 *, INT32 *Colour, INT32 *Priority)
 {
-	int Pri = 0x20 | ((*Colour & 0x60) >> 2);
+	INT32 Pri = 0x20 | ((*Colour & 0x60) >> 2);
 	if (Pri <= LayerPri[2])                           	*Priority = 0;
 	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 1;
 	else if (Pri > LayerPri[1] && Pri <= LayerPri[0])	*Priority = 2;
@@ -4291,9 +4293,9 @@ static void K053245SsridersCallback(int */*Code*/, int *Colour, int *Priority)
 	*Colour = SpriteColourBase + (*Colour & 0x1f);
 }
 
-static void K053245LgtnfghtCallback(int *code, int *color, int *priority)
+static void K053245LgtnfghtCallback(INT32 *code, INT32 *color, INT32 *priority)
 {
-	int pri = 0x20 | ((*color & 0x60) >> 2);
+	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
 	if (pri <= LayerPri[2])					*priority = 0;
 	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
 	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
@@ -4303,26 +4305,26 @@ static void K053245LgtnfghtCallback(int *code, int *color, int *priority)
 	*code &= 0x3fff;
 }
 
-static void DrvK007232VolCallback(int v)
+static void DrvK007232VolCallback(INT32 v)
 {
 	K007232SetVolume(0, 0, (v >> 4) * 0x11, 0);
 	K007232SetVolume(0, 1, 0, (v & 0x0f) * 0x11);
 }
 
-static void CuebrickYM2151IrqHandler(int Irq)
+static void CuebrickYM2151IrqHandler(INT32 Irq)
 {
 	CuebrickSndIrqFire = Irq;
 }
 
-static int TmntInit()
+static INT32 TmntInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	TmntMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	TmntMemIndex();
 	
@@ -4348,7 +4350,7 @@ static int TmntInit()
 	GfxDecode(0x100000 / 32, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTileRom, DrvTiles);
 	
 	// Load the sprites
-	DrvTempRom = (unsigned char *)malloc(0x200100);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x200100);
 	nRet = BurnLoadRom(DrvSpriteRom + 0x000000,  7, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvSpriteRom + 0x080000,  8, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvSpriteRom + 0x100000,  9, 1); if (nRet != 0) return 1;
@@ -4371,7 +4373,7 @@ static int TmntInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x00000, 15, 1); if (nRet != 0) return 1;
 	TmntDecodeTitleSample();
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4386,7 +4388,7 @@ static int TmntInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(TmntZ80Read);
 	ZetSetWriteHandler(TmntZ80Write);
@@ -4419,15 +4421,15 @@ static int TmntInit()
 	return 0;
 }
 
-static int MiaInit()
+static INT32 MiaInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MiaMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MiaMemIndex();
 	
@@ -4453,7 +4455,7 @@ static int MiaInit()
 	GfxDecode(0x2000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTileRom, DrvTiles);
 	
 	// Load the sprites
-	DrvTempRom = (unsigned char *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 	nRet = BurnLoadRom(DrvSpriteRom + 0x000000,  7, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvSpriteRom + 0x080000,  8, 1); if (nRet != 0) return 1;
 	shuffle((UINT16*)DrvSpriteRom, 0x080000);
@@ -4466,7 +4468,7 @@ static int MiaInit()
 	// Load K007232 Sample Roms
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4482,7 +4484,7 @@ static int MiaInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(MiaZ80Read);
 	ZetSetWriteHandler(MiaZ80Write);
@@ -4513,15 +4515,15 @@ static int MiaInit()
 	return 0;
 }
 
-static int CuebrickInit()
+static INT32 CuebrickInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	CuebrickMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	CuebrickMemIndex();
 	
@@ -4580,15 +4582,15 @@ static int CuebrickInit()
 	return 0;
 }
 
-static int BlswhstlInit()
+static INT32 BlswhstlInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	BlswhstlMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	BlswhstlMemIndex();
 	
@@ -4638,7 +4640,7 @@ static int BlswhstlInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(BlswhstlZ80Read);
 	ZetSetWriteHandler(BlswhstlZ80Write);
@@ -4665,15 +4667,15 @@ static int BlswhstlInit()
 	return 0;
 }
 
-static int SsridersInit()
+static INT32 SsridersInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	SsridersMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	SsridersMemIndex();
 	
@@ -4722,7 +4724,7 @@ static int SsridersInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(BlswhstlZ80Read);
 	ZetSetWriteHandler(BlswhstlZ80Write);
@@ -4749,15 +4751,15 @@ static int SsridersInit()
 	return 0;
 }
 
-static int Thndrx2Init()
+static INT32 Thndrx2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	Thndrx2MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	Thndrx2MemIndex();
 	
@@ -4803,7 +4805,7 @@ static int Thndrx2Init()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(Thndrx2Z80Read);
 	ZetSetWriteHandler(Thndrx2Z80Write);
@@ -4830,15 +4832,15 @@ static int Thndrx2Init()
 	return 0;
 }
 
-static int LgtnfghtInit()
+static INT32 LgtnfghtInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	LgtnfghtMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	LgtnfghtMemIndex();
 	
@@ -4885,7 +4887,7 @@ static int LgtnfghtInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(LgtnfghtZ80Read);
 	ZetSetWriteHandler(LgtnfghtZ80Write);
@@ -4912,15 +4914,15 @@ static int LgtnfghtInit()
 	return 0;
 }
 
-static int Tmnt2Init()
+static INT32 Tmnt2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	Tmnt2MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	Tmnt2MemIndex();
 	
@@ -4975,7 +4977,7 @@ static int Tmnt2Init()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(BlswhstlZ80Read);
 	ZetSetWriteHandler(BlswhstlZ80Write);
@@ -5002,15 +5004,15 @@ static int Tmnt2Init()
 	return 0;
 }
 
-static int QgakumonInit()
+static INT32 QgakumonInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	Tmnt2MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	Tmnt2MemIndex();
 	
@@ -5063,7 +5065,7 @@ static int QgakumonInit()
 	SekClose();
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(BlswhstlZ80Read);
 	ZetSetWriteHandler(BlswhstlZ80Write);
@@ -5090,15 +5092,15 @@ static int QgakumonInit()
 	return 0;
 }
 
-static int PunkshotInit()
+static INT32 PunkshotInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	PunkshotMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PunkshotMemIndex();
 	
@@ -5144,7 +5146,7 @@ static int PunkshotInit()
 	SekSetWriteByteHandler(0, 	Punkshot68KWriteByte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(Thndrx2Z80Read);
 	ZetSetWriteHandler(Thndrx2Z80Write);
@@ -5171,21 +5173,17 @@ static int PunkshotInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 CommonExit()
 {
 	SekExit();
-	ZetExit();
 
 	BurnYM2151Exit();
-	UPD7759Exit();
-	K007232Exit();
-
+	
 	GenericTilesExit();
 
 	KonamiICExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	bIrqEnable = 0;
 	DrvSoundLatch = 0;
@@ -5206,14 +5204,44 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvEEPROMExit()
+static INT32 CommonZ80Exit()
 {
-	EEPROMExit();
-	
-	return DrvExit();
+	ZetExit();
+		
+	return CommonExit();
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static INT32 TmntExit()
+{
+	UPD7759Exit();
+	K007232Exit();
+	
+	return CommonZ80Exit();
+}
+
+static INT32 MiaExit()
+{
+	K007232Exit();
+	
+	return CommonZ80Exit();
+}
+
+static INT32 BlswhstlExit()
+{
+	K053260Exit();
+	EEPROMExit();
+	
+	return CommonZ80Exit();
+}
+
+static INT32 PunkshotExit()
+{
+	K053260Exit();
+	
+	return CommonZ80Exit();
+}
+
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
@@ -5223,9 +5251,9 @@ static void DrvCalcPalette()
 {
 	UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
 	
-	for (int i = 0; i < 0x800; i += 2) {
-		int Offset = i & ~1;
-		UINT32 Data = (PaletteRam[Offset] << 8) | PaletteRam[Offset + 1];
+	for (INT32 i = 0; i < 0x800; i += 2) {
+		INT32 Offset = i & ~1;
+		UINT32 Data = (BURN_ENDIAN_SWAP_INT16(PaletteRam[Offset]) << 8) | BURN_ENDIAN_SWAP_INT16(PaletteRam[Offset + 1]);
 
 		Palette[Offset >> 1] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
 		DrvPalette[Offset >> 1] = BurnHighCol(pal5bit(Data >> 0), pal5bit(Data >> 5), pal5bit(Data >> 10), 0);
@@ -5236,8 +5264,8 @@ static void BlswhstlCalcPalette()
 {
 	UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
 	
-	for (int i = 0; i < 0x800; i++) {
-		UINT32 Data = PaletteRam[i];
+	for (INT32 i = 0; i < 0x800; i++) {
+		UINT32 Data = BURN_ENDIAN_SWAP_INT16(PaletteRam[i]);
 
 		Palette[i] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
 		DrvPalette[i] = BurnHighCol(pal5bit(Data >> 0), pal5bit(Data >> 5), pal5bit(Data >> 10), 0);
@@ -5258,12 +5286,12 @@ static void TmntDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static void sortlayers(int *layer,int *pri)
+static void sortlayers(INT32 *layer,INT32 *pri)
 {
 #define SWAP(a,b) \
 	if (pri[a] < pri[b]) \
 	{ \
-		int t; \
+		INT32 t; \
 		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
 		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
 	}
@@ -5273,12 +5301,12 @@ static void sortlayers(int *layer,int *pri)
 	SWAP(1,2)
 }
 
-static inline void BlswhstlCalcPaletteWithContrast(int i, int brt)
+static inline void BlswhstlCalcPaletteWithContrast(INT32 i, INT32 brt)
 {
-	int r,g,b;
+	INT32 r,g,b;
 	UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
 	
-	UINT32 Data = PaletteRam[i];
+	UINT32 Data = BURN_ENDIAN_SWAP_INT16(PaletteRam[i]);
 
 	r = pal5bit(Data >> 0);
 	g = pal5bit(Data >> 5);
@@ -5291,9 +5319,9 @@ static inline void BlswhstlCalcPaletteWithContrast(int i, int brt)
 	DrvPalette[i] = BurnHighCol(r, g, b, 0);
 }
 
-static void PaletteDim(int dimslayer)
+static void PaletteDim(INT32 dimslayer)
 {
-	int i, dim, en, cb, ce, brt;
+	INT32 i, dim, en, cb, ce, brt;
 
 	dim = dim_v | ((~dim_c & 0x10) >> 1);
 	en  = (K053251GetPriority(5) && K053251GetPriority(5) != 0x3e);
@@ -5320,11 +5348,11 @@ static void PaletteDim(int dimslayer)
 
 static void BlswhstlDraw()
 {
-	int Layer[3];
+	INT32 Layer[3];
 	
 	K052109UpdateScroll();
 	
-	int BGColourBase   = K053251GetPaletteIndex(0);
+	INT32 BGColourBase   = K053251GetPaletteIndex(0);
 	SpriteColourBase   = K053251GetPaletteIndex(1);
 	LayerColourBase[0] = K053251GetPaletteIndex(2);
 	LayerColourBase[1] = K053251GetPaletteIndex(4);
@@ -5337,7 +5365,7 @@ static void BlswhstlDraw()
 	Layer[1] = 1;
 	Layer[2] = 2;
 	
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 16 * BGColourBase;
 	}
 
@@ -5356,14 +5384,14 @@ static void BlswhstlDraw()
 	KonamiBlendCopy(Palette, DrvPalette);
 }
 
-static int Thndrx2Draw()
+static INT32 Thndrx2Draw()
 {
-	int Layer[3];
+	INT32 Layer[3];
 	
 	BlswhstlCalcPalette();
 	K052109UpdateScroll();
 	
-	int BGColourBase   = K053251GetPaletteIndex(0);
+	INT32 BGColourBase   = K053251GetPaletteIndex(0);
 	SpriteColourBase   = K053251GetPaletteIndex(1);
 	LayerColourBase[0] = K053251GetPaletteIndex(2);
 	LayerColourBase[1] = K053251GetPaletteIndex(4);
@@ -5376,7 +5404,7 @@ static int Thndrx2Draw()
 	Layer[1] = 1;
 	Layer[2] = 2;
 	
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 16 * BGColourBase;
 	}
 
@@ -5395,14 +5423,14 @@ static int Thndrx2Draw()
 	return 0;
 }
 
-static int PunkshotDraw()
+static INT32 PunkshotDraw()
 {
-	int Layer[3];
+	INT32 Layer[3];
 	
 	BlswhstlCalcPalette();
 	K052109UpdateScroll();
 	
-//	int BGColourBase   = K053251GetPaletteIndex(0);
+//	INT32 BGColourBase   = K053251GetPaletteIndex(0);
 	SpriteColourBase   = K053251GetPaletteIndex(1);
 	LayerColourBase[0] = K053251GetPaletteIndex(2);
 	LayerColourBase[1] = K053251GetPaletteIndex(4);
@@ -5430,14 +5458,14 @@ static int PunkshotDraw()
 	return 0;
 }
 
-static void RenderTitleSample(short *pSoundBuf, int nLength)
+static void RenderTitleSample(INT16 *pSoundBuf, INT32 nLength)
 {
 	double Addr = TitleSamplePos;
 	double Step = (double)20000 / nBurnSoundRate;
 	
-	for (int i = 0; i < nLength; i += 2) {
+	for (INT32 i = 0; i < nLength; i += 2) {
 		if (Addr > 0x3ffff) break;
-		INT16 Sample = DrvTitleSample[(int)Addr];
+		INT16 Sample = DrvTitleSample[(INT32)Addr];
 		
 		pSoundBuf[i + 0] += Sample;
 		pSoundBuf[i + 1] += Sample;
@@ -5448,10 +5476,10 @@ static void RenderTitleSample(short *pSoundBuf, int nLength)
 	TitleSamplePos = Addr;
 }
 
-static int TmntFrame()
+static INT32 TmntFrame()
 {
-	int nInterleave = nBurnSoundLen;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) TmntDoReset();
 
@@ -5464,8 +5492,8 @@ static int TmntFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5486,8 +5514,8 @@ static int TmntFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
 			UPD7759Update(0, pSoundBuf, nSegmentLength);
@@ -5498,8 +5526,8 @@ static int TmntFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5514,10 +5542,10 @@ static int TmntFrame()
 	return 0;
 }
 
-static int MiaFrame()
+static INT32 MiaFrame()
 {
-	int nInterleave = nBurnSoundLen;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -5530,8 +5558,8 @@ static int MiaFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5552,8 +5580,8 @@ static int MiaFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5562,8 +5590,8 @@ static int MiaFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5576,10 +5604,10 @@ static int MiaFrame()
 	return 0;
 }
 
-static int CuebrickFrame()
+static INT32 CuebrickFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) CuebrickDoReset();
 
@@ -5591,8 +5619,8 @@ static int CuebrickFrame()
 	SekNewFrame();
 	SekOpen(0);
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;		
@@ -5603,8 +5631,8 @@ static int CuebrickFrame()
 		if (CuebrickSndIrqFire) SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
 				
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -5612,8 +5640,8 @@ static int CuebrickFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5627,10 +5655,10 @@ static int CuebrickFrame()
 	return 0;
 }
 
-static int BlswhstlFrame()
+static INT32 BlswhstlFrame()
 {
-	int nInterleave = 32;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 32;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) BlswhstlDoReset();
 
@@ -5643,8 +5671,8 @@ static int BlswhstlFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5665,8 +5693,8 @@ static int BlswhstlFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5675,8 +5703,8 @@ static int BlswhstlFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5691,10 +5719,10 @@ static int BlswhstlFrame()
 	return 0;
 }
 
-static int SsridersFrame()
+static INT32 SsridersFrame()
 {
-	int nInterleave = 262;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 262;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) SsridersDoReset();
 
@@ -5707,8 +5735,8 @@ static int SsridersFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5731,8 +5759,8 @@ static int SsridersFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5741,8 +5769,8 @@ static int SsridersFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5755,10 +5783,10 @@ static int SsridersFrame()
 	return 0;
 }
 
-static int Thndrx2Frame()
+static INT32 Thndrx2Frame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) SsridersDoReset();
 
@@ -5774,8 +5802,8 @@ static int Thndrx2Frame()
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5791,8 +5819,8 @@ static int Thndrx2Frame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5803,8 +5831,8 @@ static int Thndrx2Frame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5820,10 +5848,10 @@ static int Thndrx2Frame()
 	return 0;
 }
 
-static int LgtnfghtFrame()
+static INT32 LgtnfghtFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) SsridersDoReset();
 
@@ -5839,8 +5867,8 @@ static int LgtnfghtFrame()
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5856,8 +5884,8 @@ static int LgtnfghtFrame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5868,8 +5896,8 @@ static int LgtnfghtFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5885,10 +5913,10 @@ static int LgtnfghtFrame()
 	return 0;
 }
 
-static int Tmnt2Frame()
+static INT32 Tmnt2Frame()
 {
-	int nInterleave = 262;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 262;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) SsridersDoReset();
 
@@ -5901,8 +5929,8 @@ static int Tmnt2Frame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5925,8 +5953,8 @@ static int Tmnt2Frame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5935,8 +5963,8 @@ static int Tmnt2Frame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -5949,10 +5977,10 @@ static int Tmnt2Frame()
 	return 0;
 }
 
-static int PunkshotFrame()
+static INT32 PunkshotFrame()
 {
-	int nInterleave = 256;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 256;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) PunkshotDoReset();
 
@@ -5968,8 +5996,8 @@ static int PunkshotFrame()
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -5985,8 +6013,8 @@ static int PunkshotFrame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K053260Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -5997,8 +6025,8 @@ static int PunkshotFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -6014,7 +6042,7 @@ static int PunkshotFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -6053,7 +6081,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int TmntScan(int nAction, int *pnMin)
+static INT32 TmntScan(INT32 nAction, INT32 *pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);
@@ -6064,7 +6092,7 @@ static int TmntScan(int nAction, int *pnMin)
 	return DrvScan(nAction, pnMin);
 }
 
-static int MiaScan(int nAction, int *pnMin)
+static INT32 MiaScan(INT32 nAction, INT32 *pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);
@@ -6074,7 +6102,7 @@ static int MiaScan(int nAction, int *pnMin)
 	return DrvScan(nAction, pnMin);
 }
 
-static int CuebrickScan(int nAction, int *pnMin)
+static INT32 CuebrickScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -6094,7 +6122,7 @@ static int CuebrickScan(int nAction, int *pnMin)
 	return DrvScan(nAction, pnMin);
 }
 
-static int BlswhstlScan(int nAction, int *pnMin)
+static INT32 BlswhstlScan(INT32 nAction, INT32 *pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);
@@ -6108,7 +6136,7 @@ static int BlswhstlScan(int nAction, int *pnMin)
 	return DrvScan(nAction, pnMin);
 }
 
-static int SsridersScan(int nAction, int *pnMin)
+static INT32 SsridersScan(INT32 nAction, INT32 *pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);
@@ -6123,7 +6151,7 @@ static int SsridersScan(int nAction, int *pnMin)
 	return DrvScan(nAction, pnMin);
 }
 
-static int Thndrx2aScan(int nAction, int *pnMin)
+static INT32 Thndrx2aScan(INT32 nAction, INT32 *pnMin)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		ZetScan(nAction);
@@ -6139,7 +6167,7 @@ struct BurnDriver BurnDrvTmnt = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmntRomInfo, TmntRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6149,7 +6177,7 @@ struct BurnDriver BurnDrvTmntu = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmntuRomInfo, TmntuRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6159,7 +6187,7 @@ struct BurnDriver BurnDrvTmntua = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmntuaRomInfo, TmntuaRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6169,7 +6197,7 @@ struct BurnDriver BurnDrvTmht = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmhtRomInfo, TmhtRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6179,7 +6207,7 @@ struct BurnDriver BurnDrvTmhta = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmhtaRomInfo, TmhtaRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6189,7 +6217,7 @@ struct BurnDriver BurnDrvTmntj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmntjRomInfo, TmntjRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6199,7 +6227,7 @@ struct BurnDriver BurnDrvTmht2p = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, Tmht2pRomInfo, Tmht2pRomName, NULL, NULL, Tmnt2pInputInfo, Tmnt2pDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6209,7 +6237,7 @@ struct BurnDriver BurnDrvTmht2pa = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, Tmht2paRomInfo, Tmht2paRomName, NULL, NULL, Tmnt2pInputInfo, Tmnt2pDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6219,7 +6247,7 @@ struct BurnDriver BurnDrvTmht2pj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, Tmnt2pjRomInfo, Tmnt2pjRomName, NULL, NULL, Tmnt2pInputInfo, Tmnt2pDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6229,7 +6257,7 @@ struct BurnDriver BurnDrvTmht2po = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, Tmnt2poRomInfo, Tmnt2poRomName, NULL, NULL, Tmnt2pInputInfo, Tmnt2pDIPInfo,
-	TmntInit, DrvExit, TmntFrame, NULL, TmntScan,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6239,7 +6267,7 @@ struct BurnDriver BurnDrvMia = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, MiaRomInfo, MiaRomName, NULL, NULL, MiaInputInfo, MiaDIPInfo,
-	MiaInit, DrvExit, MiaFrame, NULL, MiaScan,
+	MiaInit, MiaExit, MiaFrame, NULL, MiaScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6249,7 +6277,7 @@ struct BurnDriver BurnDrvMia2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, Mia2RomInfo, Mia2RomName, NULL, NULL, MiaInputInfo, MiaDIPInfo,
-	MiaInit, DrvExit, MiaFrame, NULL, MiaScan,
+	MiaInit, MiaExit, MiaFrame, NULL, MiaScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6259,7 +6287,7 @@ struct BurnDriver BurnDrvCuebrick = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_KONAMI_68K_Z80, GBF_PUZZLE, 0,
 	NULL, CuebrickRomInfo, CuebrickRomName, NULL, NULL, MiaInputInfo, MiaDIPInfo,
-	CuebrickInit, DrvExit, CuebrickFrame, NULL, CuebrickScan,
+	CuebrickInit, CommonExit, CuebrickFrame, NULL, CuebrickScan,
 	NULL, 0x400, 304, 224, 4, 3
 };
 
@@ -6269,7 +6297,7 @@ struct BurnDriver BurnDrvBlswhstl = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, BlswhstlRomInfo, BlswhstlRomName, NULL, NULL, BlswhstlInputInfo, NULL,
-	BlswhstlInit, DrvEEPROMExit, BlswhstlFrame, NULL, BlswhstlScan,
+	BlswhstlInit, BlswhstlExit, BlswhstlFrame, NULL, BlswhstlScan,
 	NULL, 0x810, 224, 280, 3, 4
 };
 
@@ -6279,7 +6307,7 @@ struct BurnDriver BurnDrvDetatwin = {
 	L"\u51FA\u305F\u306A!! Twin Bee \u30C4\u30A4\u30F3\u30D3\u30FC (Japan ver. J)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, DetatwinRomInfo, DetatwinRomName, NULL, NULL, BlswhstlInputInfo, NULL,
-	BlswhstlInit, DrvEEPROMExit, BlswhstlFrame, NULL, BlswhstlScan,
+	BlswhstlInit, BlswhstlExit, BlswhstlFrame, NULL, BlswhstlScan,
 	NULL, 0x810, 224, 280, 3, 4
 };
 
@@ -6289,7 +6317,7 @@ struct BurnDriver BurnDrvSsriders = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersRomInfo, SsridersRomName, NULL, NULL, Ssriders4pInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6299,7 +6327,7 @@ struct BurnDriver BurnDrvSsridersebd = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersebdRomInfo, SsridersebdRomName, NULL, NULL, SsridersInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6309,7 +6337,7 @@ struct BurnDriver BurnDrvSsridersebc = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersebcRomInfo, SsridersebcRomName, NULL, NULL, SsridersInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6319,7 +6347,7 @@ struct BurnDriver BurnDrvSsridersuda = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersudaRomInfo, SsridersudaRomName, NULL, NULL, Ssriders4psInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6329,7 +6357,7 @@ struct BurnDriver BurnDrvSsriderseaa = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsriderseaaRomInfo, SsriderseaaRomName, NULL, NULL, Ssriders4psInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6339,7 +6367,7 @@ struct BurnDriver BurnDrvSsridersuac = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersuacRomInfo, SsridersuacRomName, NULL, NULL, Ssriders4pInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6349,7 +6377,7 @@ struct BurnDriver BurnDrvSsridersubc = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersubcRomInfo, SsridersubcRomName, NULL, NULL, SsridersInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6359,7 +6387,7 @@ struct BurnDriver BurnDrvSsridersabd = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersabdRomInfo, SsridersabdRomName, NULL, NULL, SsridersInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6369,7 +6397,7 @@ struct BurnDriver BurnDrvSsridersadd = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersaddRomInfo, SsridersaddRomName, NULL, NULL, Ssriders4psInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6379,11 +6407,11 @@ struct BurnDriver BurnDrvSsridersjbd = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, SsridersjbdRomInfo, SsridersjbdRomName, NULL, NULL, SsridersInputInfo, NULL,
-	SsridersInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersInit, BlswhstlExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
-static int SsridersbInit()
+static INT32 SsridersbInit()
 {
 	return 1;
 }
@@ -6394,7 +6422,7 @@ struct BurnDriverD BurnDrvSsridersb = {
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_KONAMI_68K_Z80, GBF_PLATFORM, 0,
 	NULL, ssridersbRomInfo, ssridersbRomName, NULL, NULL, Ssriders4psInputInfo, NULL,
-	SsridersbInit, DrvEEPROMExit, SsridersFrame, NULL, SsridersScan,
+	SsridersbInit, CommonExit, SsridersFrame, NULL, SsridersScan,
 	NULL, 0x810, 288, 224, 4, 3
 };
 
@@ -6404,7 +6432,7 @@ struct BurnDriver BurnDrvThndrx2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_KONAMI_68K_Z80, GBF_HORSHOOT, 0,
 	NULL, thndrx2RomInfo, thndrx2RomName, NULL, NULL, Thndrx2InputInfo, NULL,
-	Thndrx2Init, DrvEEPROMExit, Thndrx2Frame, NULL, Thndrx2aScan,
+	Thndrx2Init, BlswhstlExit, Thndrx2Frame, NULL, Thndrx2aScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6414,7 +6442,7 @@ struct BurnDriver BurnDrvThndrx2a = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_HORSHOOT, 0,
 	NULL, thndrx2aRomInfo, thndrx2aRomName, NULL, NULL, Thndrx2InputInfo, NULL,
-	Thndrx2Init, DrvEEPROMExit, Thndrx2Frame, NULL, Thndrx2aScan,
+	Thndrx2Init, BlswhstlExit, Thndrx2Frame, NULL, Thndrx2aScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6424,7 +6452,7 @@ struct BurnDriver BurnDrvThndrx2j = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_HORSHOOT, 0,
 	NULL, thndrx2jRomInfo, thndrx2jRomName, NULL, NULL, Thndrx2InputInfo, NULL,
-	Thndrx2Init, DrvEEPROMExit, Thndrx2Frame, NULL, Thndrx2aScan,
+	Thndrx2Init, BlswhstlExit, Thndrx2Frame, NULL, Thndrx2aScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6434,7 +6462,7 @@ struct BurnDriver BurnDrvLgtnfght = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, lgtnfghtRomInfo, lgtnfghtRomName, NULL, NULL, LgtnfghtInputInfo, LgtnfghtDIPInfo,
-	LgtnfghtInit, DrvExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
+	LgtnfghtInit, BlswhstlExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 224, 288, 3, 4
 };
 
@@ -6444,7 +6472,7 @@ struct BurnDriver BurnDrvLgtnfghtu = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, lgtnfghtuRomInfo, lgtnfghtuRomName, NULL, NULL, LgtnfghtInputInfo, LgtnfghtDIPInfo,
-	LgtnfghtInit, DrvExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
+	LgtnfghtInit, BlswhstlExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 224, 288, 3, 4
 };
 
@@ -6454,7 +6482,7 @@ struct BurnDriver BurnDrvLgtnfghta = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, lgtnfghtaRomInfo, lgtnfghtaRomName, NULL, NULL, LgtnfghtInputInfo, LgtnfghtDIPInfo,
-	LgtnfghtInit, DrvExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
+	LgtnfghtInit, BlswhstlExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 224, 288, 3, 4
 };
 
@@ -6464,7 +6492,7 @@ struct BurnDriver BurnDrvTrigon = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_KONAMI_68K_Z80, GBF_VERSHOOT, 0,
 	NULL, trigonRomInfo, trigonRomName, NULL, NULL, LgtnfghtInputInfo, LgtnfghtDIPInfo,
-	LgtnfghtInit, DrvExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
+	LgtnfghtInit, BlswhstlExit, LgtnfghtFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 224, 288, 3, 4
 };
 
@@ -6474,7 +6502,7 @@ struct BurnDriver BurnDrvTmnt2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, tmnt2RomInfo, tmnt2RomName, NULL, NULL, Ssriders4pInputInfo, NULL,
-	Tmnt2Init, DrvEEPROMExit, Tmnt2Frame, NULL, SsridersScan,
+	Tmnt2Init, BlswhstlExit, Tmnt2Frame, NULL, SsridersScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6484,7 +6512,7 @@ struct BurnDriver BurnDrvTmnt22pu = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, tmnt22puRomInfo, tmnt22puRomName, NULL, NULL, SsridersInputInfo, NULL,
-	Tmnt2Init, DrvEEPROMExit, Tmnt2Frame, NULL, SsridersScan,
+	Tmnt2Init, BlswhstlExit, Tmnt2Frame, NULL, SsridersScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6494,7 +6522,7 @@ struct BurnDriver BurnDrvTmht22pe = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, tmht22peRomInfo, tmht22peRomName, NULL, NULL, SsridersInputInfo, NULL,
-	Tmnt2Init, DrvEEPROMExit, Tmnt2Frame, NULL, SsridersScan,
+	Tmnt2Init, BlswhstlExit, Tmnt2Frame, NULL, SsridersScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6504,7 +6532,7 @@ struct BurnDriver BurnDrvTmnt2a = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, tmnt2aRomInfo, tmnt2aRomName, NULL, NULL, Ssriders4psInputInfo, NULL,
-	Tmnt2Init, DrvEEPROMExit, Tmnt2Frame, NULL, SsridersScan,
+	Tmnt2Init, BlswhstlExit, Tmnt2Frame, NULL, SsridersScan,
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6514,7 +6542,7 @@ struct BurnDriver BurnDrvQgakumon = {
 	L"\u30AF\u30A4\u30BA \u5B66\u554F\u30CE\u30B9\u30B9\u30E1 Gakumon no Susume (Japan ver. JA1 Type H)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_KONAMI_68K_Z80, GBF_QUIZ, 0,
 	NULL, qgakumonRomInfo, qgakumonRomName, NULL, NULL, QgakumonInputInfo, NULL,
-	QgakumonInit, DrvEEPROMExit, Tmnt2Frame, NULL, SsridersScan, 
+	QgakumonInit, BlswhstlExit, Tmnt2Frame, NULL, SsridersScan, 
 	NULL, 0x800, 304, 224, 4, 3
 };
 
@@ -6524,7 +6552,7 @@ struct BurnDriver BurnDrvPunkshot = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_KONAMI_68K_Z80, GBF_SPORTSMISC, 0,
 	NULL, punkshotRomInfo, punkshotRomName, NULL, NULL, PunkshotInputInfo, PunkshotDIPInfo,
-	PunkshotInit, DrvExit, PunkshotFrame, NULL, Thndrx2aScan, 
+	PunkshotInit, PunkshotExit, PunkshotFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6534,7 +6562,7 @@ struct BurnDriver BurnDrvPunkshot2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SPORTSMISC, 0,
 	NULL, punkshot2RomInfo, punkshot2RomName, NULL, NULL, Punkshot2InputInfo, Punkshot2DIPInfo,
-	PunkshotInit, DrvExit, PunkshotFrame, NULL, Thndrx2aScan, 
+	PunkshotInit, PunkshotExit, PunkshotFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 288, 224, 4, 3
 };
 
@@ -6544,6 +6572,6 @@ struct BurnDriver BurnDrvPunkshotj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_KONAMI_68K_Z80, GBF_SPORTSMISC, 0,
 	NULL, punkshotjRomInfo, punkshotjRomName, NULL, NULL, Punkshot2InputInfo, PunkshotjDIPInfo,
-	PunkshotInit, DrvExit, PunkshotFrame, NULL, Thndrx2aScan, 
+	PunkshotInit, PunkshotExit, PunkshotFrame, NULL, Thndrx2aScan, 
 	NULL, 0x800, 288, 224, 4, 3
 };

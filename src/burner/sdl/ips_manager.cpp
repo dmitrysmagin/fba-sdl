@@ -21,7 +21,7 @@
     (((unsigned int)(bp)[0] << 8) & 0xFF00) | \
     ((unsigned int) (bp)[1] & 0x00FF)
     
-bool bDoPatch = FALSE;
+bool bDoIpsPatch = FALSE;
 
 static void PatchFile(const char* ips_path, UINT8* base)
 {
@@ -130,22 +130,22 @@ static void DoPatchGame(const char* patch_name, char* game_name, UINT8* base)
 	}
 }
 
-void ApplyPatches(UINT8* base, char* rom_name)
+void IpsApplyPatches(UINT8* base, char* rom_name)
 {
 #if 0
 	char ips_data[MAX_PATH];
 	
-	int nActivePatches = GetNumActivePatches();
+	int nActivePatches = GetIpsNumActivePatches();
 	
 	for (int i = 0; i < nActivePatches; i++) {
 		memset(ips_data, 0, MAX_PATH);
-		TCHARToANSI(szActivePatches[i], ips_data, sizeof(ips_data));
+		TCHARToANSI(szIpsActivePatches[i], ips_data, sizeof(ips_data));
 		DoPatchGame(ips_data, rom_name, base);
 	}
 #endif
 }
 
-void PatchExit()
+void IpsPatchExit()
 {
-	bDoPatch = FALSE;
+	bDoIpsPatch = FALSE;
 }

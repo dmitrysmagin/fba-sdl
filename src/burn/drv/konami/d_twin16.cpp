@@ -2,65 +2,67 @@
 // Based on MAME driver by Phil Stroffolino
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
-#include "UPD7759.h"
+#include "upd7759.h"
 #include "k007232.h"
 
-static unsigned char *AllMem;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
-static unsigned char *Drv68KROM0;
-static unsigned char *Drv68KROM1;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *DrvShareRAM;
-static unsigned char *Drv68KRAM0;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvVidRAM2;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvNvRAM;
-static unsigned char *DrvNvRAMBank;
-static unsigned char *Drv68KRAM1;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvTileRAM;
-static unsigned char *DrvSprGfxRAM;
-static unsigned char *DrvGfxExp;
+static UINT8 *AllMem;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
+static UINT8 *Drv68KROM0;
+static UINT8 *Drv68KROM1;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *DrvShareRAM;
+static UINT8 *Drv68KRAM0;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvVidRAM2;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvNvRAM;
+static UINT8 *DrvNvRAMBank;
+static UINT8 *Drv68KRAM1;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvTileRAM;
+static UINT8 *DrvSprGfxRAM;
+static UINT8 *DrvGfxExp;
 
-static unsigned char *DrvZ80RAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned short *scrollx;
-static unsigned short *scrolly;
+static UINT16 *scrollx;
+static UINT16 *scrolly;
 
-static unsigned char *soundlatch;
-static unsigned char *soundlatch2;
+static UINT8 *soundlatch;
+static UINT8 *soundlatch2;
 
-static int video_register;
-static int gfx_bank;
+static INT32 video_register;
+static INT32 gfx_bank;
 
-static int twin16_CPUA_register;
-static int twin16_CPUB_register;
+static INT32 twin16_CPUA_register;
+static INT32 twin16_CPUB_register;
 
-static int need_process_spriteram;
-static int twin16_custom_video;
-static int is_vulcan = 0;
+static INT32 need_process_spriteram;
+static INT32 twin16_custom_video;
+static INT32 is_vulcan = 0;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvJoy4[16];
-static unsigned char DrvInputs[4];
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvJoy4[16];
+static UINT8 DrvInputs[4];
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -517,34 +519,34 @@ STDDIPINFO(Cuebrckj)
 
 static void twin16_spriteram_process()
 {
-	int dx = scrollx[0];
-	int dy = scrolly[0];
+	INT32 dx = BURN_ENDIAN_SWAP_INT16(scrollx[0]);
+	INT32 dy = BURN_ENDIAN_SWAP_INT16(scrolly[0]);
 
-	unsigned short *spriteram16 = (unsigned short*)DrvSprRAM;
-	unsigned short *source = spriteram16;
-	unsigned short *finish = spriteram16 + 0x1800;
+	UINT16 *spriteram16 = (UINT16*)DrvSprRAM;
+	UINT16 *source = spriteram16;
+	UINT16 *finish = spriteram16 + 0x1800;
 
 	memset(&spriteram16[0x1800], 0, 0x800);
 
 	while (source < finish)
 	{
-		int priority = source[0];
+		INT32 priority = BURN_ENDIAN_SWAP_INT16(source[0]);
 		if (priority & 0x8000 )
 		{
-			unsigned short *dest = &spriteram16[0x1800 + ((priority & 0xff) << 2)];
+			UINT16 *dest = &spriteram16[0x1800 + ((priority & 0xff) << 2)];
 
-			int xpos = (source[4] << 16) | source[5];
-			int ypos = (source[6] << 16) | source[7];
+			INT32 xpos = (BURN_ENDIAN_SWAP_INT16(source[4]) << 16) | BURN_ENDIAN_SWAP_INT16(source[5]);
+			INT32 ypos = (BURN_ENDIAN_SWAP_INT16(source[6]) << 16) | BURN_ENDIAN_SWAP_INT16(source[7]);
 
-			int attributes = source[2]&0x03ff;
+			INT32 attributes = BURN_ENDIAN_SWAP_INT16(source[2])&0x03ff;
 			if (priority & 0x0200) attributes |= 0x4000;
 
 			attributes |= 0x8000;
 
 			dest[0] = source[3];
-			dest[1] = ((xpos >> 8) - dx) & 0xffff;
-			dest[2] = ((ypos >> 8) - dy) & 0xffff;
-			dest[3] = attributes;
+			dest[1] = BURN_ENDIAN_SWAP_INT16(((xpos >> 8) - dx) & 0xffff);
+			dest[2] = BURN_ENDIAN_SWAP_INT16(((ypos >> 8) - dy) & 0xffff);
+			dest[3] = BURN_ENDIAN_SWAP_INT16(attributes);
 		}
 
 		source += 0x50/2;
@@ -553,9 +555,9 @@ static void twin16_spriteram_process()
 	need_process_spriteram = 0;
 }
 
-static void fround_CPU_register_w(int data)
+static void fround_CPU_register_w(INT32 data)
 {
-	int old = twin16_CPUA_register;
+	INT32 old = twin16_CPUA_register;
 	twin16_CPUA_register = data;
 	if (twin16_CPUA_register != old)
 	{
@@ -566,7 +568,7 @@ static void fround_CPU_register_w(int data)
 	}
 }
 
-static void twin16_CPUA_register_w(int data)
+static void twin16_CPUA_register_w(INT32 data)
 {
 	if (twin16_CPUA_register != data)
 	{
@@ -590,9 +592,9 @@ static void twin16_CPUA_register_w(int data)
 	}
 }
 
-static void twin16_CPUB_register_w(int data)
+static void twin16_CPUB_register_w(INT32 data)
 {
-	int old = twin16_CPUB_register;
+	INT32 old = twin16_CPUB_register;
 	twin16_CPUB_register = data;
 	if (twin16_CPUB_register != old)
 	{
@@ -605,34 +607,34 @@ static void twin16_CPUB_register_w(int data)
 			SekOpen(1);
 		}
 
-		int offset = (twin16_CPUB_register & 4) << 17;
+		INT32 offset = (twin16_CPUB_register & 4) << 17;
 		SekMapMemory(DrvGfxROM1 + 0x100000 + offset, 0x700000, 0x77ffff, SM_ROM);
 	}
 }
 
-void __fastcall twin16_main_write_word(unsigned int address, unsigned short data)
+void __fastcall twin16_main_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
 		case 0xc0002:
 		case 0xc0006:
 		case 0xc000a:
-			scrollx[((address - 2) & 0x0c) >> 2] = data;
+			scrollx[((address - 2) & 0x0c) >> 2] = BURN_ENDIAN_SWAP_INT16(data);
 		return;
 
 		case 0xc0004:
 		case 0xc0008:
 		case 0xc000c:
-			scrolly[((address - 4) & 0x0c) >> 2] = data;
+			scrolly[((address - 4) & 0x0c) >> 2] = BURN_ENDIAN_SWAP_INT16(data);
 		return;
 
 		case 0xe0000:
-			gfx_bank = data;
+			gfx_bank = BURN_ENDIAN_SWAP_INT16(data);
 		return;
 	}
 }
 
-void __fastcall twin16_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall twin16_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -667,13 +669,13 @@ void __fastcall twin16_main_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall twin16_main_read_word(unsigned int address)
+UINT16 __fastcall twin16_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
 		case 0x0c000e:
 		case 0x0c000f: {
-			static int ret = 0;
+			static INT32 ret = 0;
 			ret = 1-ret;
 			return ret;
 		}
@@ -697,13 +699,13 @@ unsigned short __fastcall twin16_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall twin16_main_read_byte(unsigned int address)
+UINT8 __fastcall twin16_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
 		case 0x0c000e:
 		case 0x0c000f: {
-			static int ret = 0;
+			static INT32 ret = 0;
 			ret = 1-ret;
 			return ret;
 		}
@@ -734,7 +736,7 @@ unsigned char __fastcall twin16_main_read_byte(unsigned int address)
 	return 0;
 }
 
-static inline void twin16_tile_write(int offset)
+static inline void twin16_tile_write(INT32 offset)
 {
 	DrvGfxExp[(offset << 1) + 2] = DrvTileRAM[offset + 0] >> 4;
 	DrvGfxExp[(offset << 1) + 3] = DrvTileRAM[offset + 0] & 0x0f;
@@ -742,17 +744,17 @@ static inline void twin16_tile_write(int offset)
 	DrvGfxExp[(offset << 1) + 1] = DrvTileRAM[offset + 1] & 0x0f;
 }
 
-void __fastcall twin16_sub_write_word(unsigned int address, unsigned short data)
+void __fastcall twin16_sub_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfc0000) == 0x500000) {
-		int offset = address & 0x3ffff;
-		*((unsigned short*)(DrvTileRAM + offset)) = data;	
+		INT32 offset = address & 0x3ffff;
+		*((UINT16*)(DrvTileRAM + offset)) = BURN_ENDIAN_SWAP_INT16(data);	
 		twin16_tile_write(offset);
 		return;
 	}
 }
 
-void __fastcall twin16_sub_write_byte(unsigned int address, unsigned char data)
+void __fastcall twin16_sub_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -762,14 +764,14 @@ void __fastcall twin16_sub_write_byte(unsigned int address, unsigned char data)
 	}
 
 	if ((address & 0xfc0000) == 0x500000) {
-		int offset = address & 0x3ffff;
+		INT32 offset = address & 0x3ffff;
 		DrvTileRAM[offset^1] = data;	
 		twin16_tile_write(offset & ~1);
 		return;
 	}
 }
 
-void __fastcall twin16_sound_write(unsigned short address, unsigned char data)
+void __fastcall twin16_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -801,7 +803,7 @@ void __fastcall twin16_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall twin16_sound_read(unsigned short address)
+UINT8 __fastcall twin16_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -827,13 +829,13 @@ unsigned char __fastcall twin16_sound_read(unsigned short address)
 	return 0;
 }
 
-static void DrvK007232VolCallback(int v)
+static void DrvK007232VolCallback(INT32 v)
 {
 	K007232SetVolume(0, 0, (v >> 0x4) * 0x11, 0);
 	K007232SetVolume(0, 1, 0, (v & 0x0f) * 0x11);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -864,9 +866,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM0	= Next; Next += 0x040000;
 	Drv68KROM1	= Next; Next += 0x040000;
@@ -882,7 +884,7 @@ static int MemIndex()
 	DrvGfxExp	= Next; Next += 0x400000;
 	DrvNvRAM	= Next; Next += 0x008000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -902,8 +904,8 @@ static int MemIndex()
 
 	DrvNvRAMBank	= Next; Next += 0x000001;
 
-	scrollx		= (unsigned short*)Next; Next += 0x00004 * sizeof(short);
-	scrolly		= (unsigned short*)Next; Next += 0x00004 * sizeof(short);
+	scrollx		= (UINT16*)Next; Next += 0x00004 * sizeof(UINT16);
+	scrolly		= (UINT16*)Next; Next += 0x00004 * sizeof(UINT16);
 
 	soundlatch	= Next; Next += 0x000001;
 	soundlatch2	= Next; Next += 0x000001;
@@ -915,9 +917,9 @@ static int MemIndex()
 	return 0;
 }
 
-static void expand4bpp(unsigned char *src, unsigned char *dst, int len)
+static void expand4bpp(UINT8 *src, UINT8 *dst, INT32 len)
 {
-	for (int i = len-1; i > 0; i--) {
+	for (INT32 i = len-1; i > 0; i--) {
 		dst[i * 2 + 0] = src[i] >> 4;
 		dst[i * 2 + 1] = src[i] & 0x0f;
 	}
@@ -925,18 +927,18 @@ static void expand4bpp(unsigned char *src, unsigned char *dst, int len)
 
 static void gfxdecode()
 {
-	unsigned short *src = (unsigned short*)DrvGfxROM1;
-	unsigned short *dst = (unsigned short*)malloc(0x200000);
-	for (int i = 0; i < 0x80000; i++)
+	UINT16 *src = (UINT16*)DrvGfxROM1;
+	UINT16 *dst = (UINT16*)BurnMalloc(0x200000);
+	for (INT32 i = 0; i < 0x80000; i++)
 	{
 		dst[i * 2 + 0] = src[i + 0x80000];
 		dst[i * 2 + 1] = src[i + 0x00000];
 	}
-
 	memcpy (src, dst, 0x200000);
+	BurnFree(dst);
 }
 
-static int load68k(unsigned char *rom, int offs)
+static INT32 load68k(UINT8 *rom, INT32 offs)
 {
 	if (BurnLoadRom(rom + 0x000001,  offs+0, 2)) return 1;
 	if (BurnLoadRom(rom + 0x000000,  offs+1, 2)) return 1;
@@ -946,17 +948,17 @@ static int load68k(unsigned char *rom, int offs)
 	return 0;
 }
 
-static int DrvInit(int (pLoadCallback)())
+static INT32 DrvInit(INT32 (pLoadCallback)())
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 	{
-		if (pLoadCallback) {
+		if (pLoadCallback != NULL) {
 			if (pLoadCallback()) return 1;
 		}
 	
@@ -1004,7 +1006,7 @@ static int DrvInit(int (pLoadCallback)())
 	SekSetWriteByteHandler(0,		twin16_sub_write_byte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -1030,7 +1032,7 @@ static int DrvInit(int (pLoadCallback)())
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -1041,8 +1043,7 @@ static int DrvExit()
 	UPD7759Exit();
 	BurnYM2151Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	is_vulcan = 0;
 	twin16_custom_video = 0;
@@ -1052,11 +1053,11 @@ static int DrvExit()
 
 static inline void DrvRecalcPal()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i+=2)
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i+=2)
 	{
-		int d = ((p[i+0] & 0xff) << 8) | (p[i+1] & 0xff);
+		INT32 d = ((BURN_ENDIAN_SWAP_INT16(p[i+0]) & 0xff) << 8) | (BURN_ENDIAN_SWAP_INT16(p[i+1]) & 0xff);
 
 		r = (d >>  0) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -1072,15 +1073,15 @@ static inline void DrvRecalcPal()
 
 static void draw_fg_layer()
 {
-	int flipx = (video_register & 2) ? 0x1f8 : 0;
-	int flipy = (video_register & 1) ? 0x0f8 : 0;
+	INT32 flipx = (video_register & 2) ? 0x1f8 : 0;
+	INT32 flipy = (video_register & 1) ? 0x0f8 : 0;
 
-	unsigned short *vram = (unsigned short*)DrvVidRAM2;
+	UINT16 *vram = (UINT16*)DrvVidRAM2;
 
-	for (int offs = 0x80; offs < 0x780; offs++)
+	for (INT32 offs = 0x80; offs < 0x780; offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
 		sx ^= flipx;
 		sy ^= flipy;
@@ -1090,9 +1091,9 @@ static void draw_fg_layer()
 
 		if (sx >= nScreenWidth) continue;
 
-		int attr  = vram[offs];
-		int code  = attr & 0x1ff;
-		int color = (attr >> 9) & 0x0f;
+		INT32 attr  = BURN_ENDIAN_SWAP_INT16(vram[offs]);
+		INT32 code  = attr & 0x1ff;
+		INT32 color = (attr >> 9) & 0x0f;
 
 		if (code == 0) continue;
 
@@ -1112,23 +1113,23 @@ static void draw_fg_layer()
 	}
 }
 
-static void draw_layer(int opaque)
+static void draw_layer(INT32 opaque)
 {
-	int o = 0;
-	int banks[4];
+	INT32 o = 0;
+	INT32 banks[4];
 	if (((video_register & 8) >> 3) != opaque) o = 1;
 
-	unsigned short *vram = (unsigned short*)(DrvVidRAM + (o << 13));
+	UINT16 *vram = (UINT16*)(DrvVidRAM + (o << 13));
 	banks[3] =  gfx_bank >> 12;
 	banks[2] = (gfx_bank >>  8) & 0x0f;
 	banks[1] = (gfx_bank >>  4) & 0x0f;
 	banks[0] =  gfx_bank & 0xf;
 
-	int dx = scrollx[1+o];
-	int dy = scrolly[1+o];
+	INT32 dx = BURN_ENDIAN_SWAP_INT16(scrollx[1+o]);
+	INT32 dy = BURN_ENDIAN_SWAP_INT16(scrolly[1+o]);
 
-	int flipx = 0;
-	int flipy = 0;
+	INT32 flipx = 0;
+	INT32 flipy = 0;
 
 	if (video_register & 2) {
 		dx = 256-dx-64;
@@ -1141,12 +1142,12 @@ static void draw_layer(int opaque)
 	}
 	if (is_vulcan) flipy ^= 1;
 
-	int palette = o;
+	INT32 palette = o;
 
-	for (int offs = 0; offs < 64 * 64; offs++)
+	for (INT32 offs = 0; offs < 64 * 64; offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 		if (video_register & 2) sx ^= 0x1f8;
 		if (video_register & 1) sy ^= 0x1f8;
 
@@ -1157,8 +1158,8 @@ static void draw_layer(int opaque)
 
 		sy -= 16;
 
-		int code  = vram[offs];
-		int color = (0x20 + (code >> 13) + 8 * palette);
+		INT32 code  = BURN_ENDIAN_SWAP_INT16(vram[offs]);
+		INT32 color = (0x20 + (code >> 13) + 8 * palette);
 		    code = (code & 0x7ff) | (banks[(code >> 11) & 3] << 11);
 
 		if (sx >= 0 && sx < nScreenWidth-7 && sy >= 0 && sy < nScreenHeight-7) {
@@ -1231,26 +1232,26 @@ static void draw_layer(int opaque)
 	}
 }
 
-static void draw_sprite(unsigned short *pen_data, int pal_base, int xpos, int ypos, int width, int height, int flipx, int flipy)
+static void draw_sprite(UINT16 *pen_data, INT32 pal_base, INT32 xpos, INT32 ypos, INT32 width, INT32 height, INT32 flipx, INT32 flipy)
 {
 	if (xpos >= 320) xpos -= 0x10000;
 	if (ypos >= 256) ypos -= 0x10000;
 
-	for (int y = 0; y < height; y++)
+	for (INT32 y = 0; y < height; y++)
 	{
-		int sy = (flipy) ? (ypos + height - 1 - y) : (ypos + y);
+		INT32 sy = (flipy) ? (ypos + height - 1 - y) : (ypos + y);
 
 		if (sy >= 16 && sy < 240)
 		{
-			unsigned short *dest = pTransDraw + (sy - 16) * nScreenWidth;
+			UINT16 *dest = pTransDraw + (sy - 16) * nScreenWidth;
 
-			for (int x = 0; x < width; x++)
+			for (INT32 x = 0; x < width; x++)
 			{
-				int sx = (flipx) ? (xpos + width - 1 - x) : (xpos + x);
+				INT32 sx = (flipx) ? (xpos + width - 1 - x) : (xpos + x);
 
 				if (sx >= 0 && sx < 320)
 				{
-					int pen = pen_data[x/4];
+					INT32 pen = BURN_ENDIAN_SWAP_INT16(pen_data[x/4]);
 
 					pen = (pen >> ((~x & 3) << 2)) & 0x0f;
 
@@ -1263,34 +1264,34 @@ static void draw_sprite(unsigned short *pen_data, int pal_base, int xpos, int yp
 	}
 }
 
-static void draw_sprites(int priority)
+static void draw_sprites(INT32 priority)
 {
-	unsigned short *twin16_sprite_gfx_ram = (unsigned short*)DrvSprGfxRAM;
-	unsigned short *twin16_gfx_rom = (unsigned short*)DrvGfxROM1;
-	unsigned short *buffered_spriteram16 = (unsigned short*)DrvSprBuf;
+	UINT16 *twin16_sprite_gfx_ram = (UINT16*)DrvSprGfxRAM;
+	UINT16 *twin16_gfx_rom = (UINT16*)DrvGfxROM1;
+	UINT16 *buffered_spriteram16 = (UINT16*)DrvSprBuf;
 
-	unsigned short *source = 0x1800+buffered_spriteram16;
-	unsigned short *finish = 0x1800+buffered_spriteram16 + 0x800 - 4;
+	UINT16 *source = 0x1800+buffered_spriteram16;
+	UINT16 *finish = 0x1800+buffered_spriteram16 + 0x800 - 4;
 
 	for (; source < finish; source += 4)
 	{
-		int attributes = source[3];
-		int prio = (attributes&0x4000) >> 14;
+		INT32 attributes = BURN_ENDIAN_SWAP_INT16(source[3]);
+		INT32 prio = (attributes&0x4000) >> 14;
 		if (prio != priority) continue;
 
-		int code = source[0];
+		INT32 code = BURN_ENDIAN_SWAP_INT16(source[0]);
 
 		if (code != 0xffff && attributes & 0x8000)
 		{
-			int xpos 	= source[1];
-			int ypos 	= source[2];
+			INT32 xpos 	= BURN_ENDIAN_SWAP_INT16(source[1]);
+			INT32 ypos 	= BURN_ENDIAN_SWAP_INT16(source[2]);
 
-			int pal_base	= ((attributes&0xf)+0x10)*16;
-			int height	= 16<<((attributes>>6)&0x3);
-			int width	= 16<<((attributes>>4)&0x3);
-			int flipy 	= attributes&0x0200;
-			int flipx 	= attributes&0x0100;
-			unsigned short *pen_data = 0;
+			INT32 pal_base	= ((attributes&0xf)+0x10)*16;
+			INT32 height	= 16<<((attributes>>6)&0x3);
+			INT32 width	= 16<<((attributes>>4)&0x3);
+			INT32 flipy 	= attributes&0x0200;
+			INT32 flipx 	= attributes&0x0100;
+			UINT16 *pen_data = 0;
 
 			if( twin16_custom_video == 1 )
 			{
@@ -1358,7 +1359,7 @@ static void draw_sprites(int priority)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPal();
@@ -1375,15 +1376,15 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	{
-		memset (DrvInputs, 0xff, 5 * sizeof(short));
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 5);
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -1399,17 +1400,17 @@ static int DrvFrame()
 		if ((DrvInputs[3] & 0x03) == 0) DrvInputs[3] |= 0x03;
 	}
 
-	int nSegment;
-	int nSoundBufferPos = 0;
-	int nInterleave = 100;
+	INT32 nSegment;
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
 	if (twin16_custom_video == 0 && is_vulcan == 0) nInterleave = 1000; // devilw
 
-	int nTotalCycles[3] = { (twin16_custom_video == 1) ? 10000000 / 60 : 9216000 / 60, 9216000 / 60, 3579545 / 60 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nTotalCycles[3] = { (twin16_custom_video == 1) ? 10000000 / 60 : 9216000 / 60, 9216000 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		SekOpen(0);
 		nSegment = (nTotalCycles[0] - nCyclesDone[0]) / (nInterleave - i);
@@ -1429,8 +1430,8 @@ static int DrvFrame()
 		nCyclesDone[1] += ZetRun(nSegment);
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			UPD7759Update(0, pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
@@ -1439,9 +1440,9 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		if (nSegmentLength) {
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			UPD7759Update(0, pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
@@ -1464,7 +1465,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1504,7 +1505,7 @@ static int DrvScan(int nAction,int *pnMin)
 
 	if (nAction & ACB_WRITE) {
 		if (twin16_custom_video != 1) {
-			for (int i = 0; i < 0x40000; i+=2) {
+			for (INT32 i = 0; i < 0x40000; i+=2) {
 				twin16_tile_write(i);
 			}
 		}
@@ -1514,7 +1515,7 @@ static int DrvScan(int nAction,int *pnMin)
 		SekClose();
 
 		SekOpen(1);
-		int offset = (twin16_CPUB_register & 4) << 17;
+		INT32 offset = (twin16_CPUB_register & 4) << 17;
 		SekMapMemory(DrvGfxROM1 + 0x100000 + offset, 0x700000, 0x77ffff, SM_ROM);
 		SekClose();
 	}
@@ -1556,7 +1557,7 @@ static struct BurnRomInfo devilwRomDesc[] = {
 STD_ROM_PICK(devilw)
 STD_ROM_FN(devilw)
 
-static int devilwCallback()
+static INT32 devilwCallback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	if (load68k(Drv68KROM1,  4)) return 1;
@@ -1579,7 +1580,7 @@ static int devilwCallback()
 	return 0;
 }
 
-static int devilwInit()
+static INT32 devilwInit()
 {
 	twin16_custom_video = 0;
 
@@ -1715,7 +1716,7 @@ static struct BurnRomInfo vulcanRomDesc[] = {
 STD_ROM_PICK(vulcan)
 STD_ROM_FN(vulcan)
 
-static int vulcanCallback()
+static INT32 vulcanCallback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	if (load68k(Drv68KROM1,  4)) return 1;
@@ -1731,13 +1732,13 @@ static int vulcanCallback()
 
 	BurnByteswap(DrvGfxROM1, 0x200000);
 
-	if (BurnLoadRom(DrvSndROM0 + 0x000000, 16, 1)) return 1;
-	if (BurnLoadRom(DrvSndROM1 + 0x000000, 17, 1)) return 1;
+	if (BurnLoadRom(DrvSndROM0 + 0x000000, 14, 1)) return 1;
+	if (BurnLoadRom(DrvSndROM1 + 0x000000, 15, 1)) return 1;
 
 	return 0;
 }
 
-static int vulcanInit()
+static INT32 vulcanInit()
 {
 	is_vulcan = 1;
 	twin16_custom_video = 0;
@@ -1868,7 +1869,7 @@ static struct BurnRomInfo gradius2RomDesc[] = {
 STD_ROM_PICK(gradius2)
 STD_ROM_FN(gradius2)
 
-static int gradius2Callback()
+static INT32 gradius2Callback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	if (load68k(Drv68KROM1,  4)) return 1;
@@ -1882,13 +1883,13 @@ static int gradius2Callback()
 	if (BurnLoadRom(DrvGfxROM1 + 0x100000, 12, 1)) return 1;
 	if (BurnLoadRom(DrvGfxROM1 + 0x180000, 13, 1)) return 1;
 
-	if (BurnLoadRom(DrvSndROM0 + 0x000000, 16, 1)) return 1;
-	if (BurnLoadRom(DrvSndROM1 + 0x000000, 17, 1)) return 1;
+	if (BurnLoadRom(DrvSndROM0 + 0x000000, 14, 1)) return 1;
+	if (BurnLoadRom(DrvSndROM1 + 0x000000, 15, 1)) return 1;
 
 	return 0;
 }
 
-static int gradius2Init()
+static INT32 gradius2Init()
 {
 	is_vulcan = 1;
 	twin16_custom_video = 0;
@@ -2012,7 +2013,7 @@ static struct BurnRomInfo froundRomDesc[] = {
 STD_ROM_PICK(fround)
 STD_ROM_FN(fround)
 
-static int froundCallback()
+static INT32 froundCallback()
 {
 	if (BurnLoadRom(Drv68KROM0 + 0x000001,  0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM0 + 0x000000,  1, 2)) return 1;
@@ -2032,7 +2033,7 @@ static int froundCallback()
 	return 0;
 }
 
-static int froundInit()
+static INT32 froundInit()
 {
 	twin16_custom_video = 1;
 
@@ -2112,7 +2113,7 @@ static struct BurnRomInfo hpuncherRomDesc[] = {
 STD_ROM_PICK(hpuncher)
 STD_ROM_FN(hpuncher)
 
-static int hpuncherCallback()
+static INT32 hpuncherCallback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	
@@ -2134,7 +2135,7 @@ static int hpuncherCallback()
 	return 0;
 }
 
-static int hpuncherInit()
+static INT32 hpuncherInit()
 {
 	twin16_custom_video = 2;
 
@@ -2178,7 +2179,7 @@ static struct BurnRomInfo miajRomDesc[] = {
 STD_ROM_PICK(miaj)
 STD_ROM_FN(miaj)
 
-static int miajCallback()
+static INT32 miajCallback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	if (load68k(Drv68KROM1,  4)) return 1;
@@ -2195,7 +2196,7 @@ static int miajCallback()
 	return 0;
 }
 
-static int miajInit()
+static INT32 miajInit()
 {
 	twin16_custom_video = 2;
 
@@ -2237,7 +2238,7 @@ static struct BurnRomInfo cuebrckjRomDesc[] = {
 STD_ROM_PICK(cuebrckj)
 STD_ROM_FN(cuebrckj)
 
-static int cuebrckjCallback()
+static INT32 cuebrckjCallback()
 {
 	if (load68k(Drv68KROM0,  0)) return 1;
 	if (load68k(Drv68KROM1,  4)) return 1;
@@ -2252,7 +2253,7 @@ static int cuebrckjCallback()
 	return 0;
 }
 
-static int cuebrckjInit()
+static INT32 cuebrckjInit()
 {
 	twin16_custom_video = 2;
 

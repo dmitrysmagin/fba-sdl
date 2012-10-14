@@ -1,20 +1,20 @@
 #include "burnint.h"
 
-static unsigned char K051733Ram[0x20];
+static UINT8 K051733Ram[0x20];
 
 void K051733Reset()
 {
 	memset (K051733Ram, 0, 0x20);
 }
 
-void K051733Write(int offset, int data)
+void K051733Write(INT32 offset, INT32 data)
 {
 	K051733Ram[offset & 0x1f] = data;
 }
 
-static int int_sqrt(UINT32 op)
+static INT32 int_sqrt(UINT32 op)
 {
-	unsigned int i,step;
+	UINT32 i,step;
 
 	i = 0x8000;
 	step = 0x4000;
@@ -28,16 +28,16 @@ static int int_sqrt(UINT32 op)
 	return i;
 }
 
-unsigned char K051733Read(int offset)
+UINT8 K051733Read(INT32 offset)
 {
-	int op1    = (K051733Ram[0x00] << 8) | K051733Ram[0x01];
-	int op2    = (K051733Ram[0x02] << 8) | K051733Ram[0x03];
-	int op3    = (K051733Ram[0x04] << 8) | K051733Ram[0x05];
-	int rad    = (K051733Ram[0x06] << 8) | K051733Ram[0x07];
-	int yobj1c = (K051733Ram[0x08] << 8) | K051733Ram[0x09];
-	int xobj1c = (K051733Ram[0x0a] << 8) | K051733Ram[0x0b];
-	int yobj2c = (K051733Ram[0x0c] << 8) | K051733Ram[0x0d];
-	int xobj2c = (K051733Ram[0x0e] << 8) | K051733Ram[0x0f];
+	INT32 op1    = (K051733Ram[0x00] << 8) | K051733Ram[0x01];
+	INT32 op2    = (K051733Ram[0x02] << 8) | K051733Ram[0x03];
+	INT32 op3    = (K051733Ram[0x04] << 8) | K051733Ram[0x05];
+	INT32 rad    = (K051733Ram[0x06] << 8) | K051733Ram[0x07];
+	INT32 yobj1c = (K051733Ram[0x08] << 8) | K051733Ram[0x09];
+	INT32 xobj1c = (K051733Ram[0x0a] << 8) | K051733Ram[0x0b];
+	INT32 yobj2c = (K051733Ram[0x0c] << 8) | K051733Ram[0x0d];
+	INT32 xobj2c = (K051733Ram[0x0e] << 8) | K051733Ram[0x0f];
 
 	offset &= 0x1f;
 
@@ -97,7 +97,7 @@ unsigned char K051733Read(int offset)
 	return 0;
 }
 
-void K051733Scan(int nAction)
+void K051733Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

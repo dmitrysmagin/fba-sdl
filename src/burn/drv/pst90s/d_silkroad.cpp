@@ -2,32 +2,33 @@
 // Based on MAME driver by David Haywood, R.Belmont, and Stephh
 
 #include "tiles_generic.h"
+#include "sek.h"
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvGfxROM;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvTransTab;
-static unsigned short *DrvSysRegs;
-static unsigned int *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvGfxROM;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvTransTab;
+static UINT16 *DrvSysRegs;
+static UINT32 *DrvPalette;
 
-static unsigned char DrvRecalc = 0;
+static UINT8 DrvRecalc = 0;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[2];
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1",	BIT_DIGITAL,	DrvJoy2 + 0,	"p1 coin"	},
@@ -109,11 +110,11 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-static void palette_write(int offset, unsigned short pal)
+static void palette_write(INT32 offset, UINT16 pal)
 {
-	unsigned char r = (pal >> 10) & 0x1f;
-	unsigned char g = (pal >>  5) & 0x1f;
-	unsigned char b = (pal >>  0) & 0x1f;
+	UINT8 r = (pal >> 10) & 0x1f;
+	UINT8 g = (pal >>  5) & 0x1f;
+	UINT8 b = (pal >>  0) & 0x1f;
 
 	r = (r << 3) | (r >> 2);
 	g = (g << 3) | (g >> 2);
@@ -122,7 +123,7 @@ static void palette_write(int offset, unsigned short pal)
 	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
 }
 
-unsigned char __fastcall silkroad_read_byte(unsigned int address)
+UINT8 __fastcall silkroad_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -157,7 +158,7 @@ unsigned char __fastcall silkroad_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall silkroad_write_byte(unsigned int address, unsigned char data)
+void __fastcall silkroad_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -179,27 +180,27 @@ void __fastcall silkroad_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall silkroad_write_word(unsigned int address, unsigned short data)
+void __fastcall silkroad_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xffffc000) == 0x600000) {
-		*((unsigned short *)(DrvPalRAM + (address & 0x3ffe))) = data;
+		*((UINT16 *)(DrvPalRAM + (address & 0x3ffe))) = BURN_ENDIAN_SWAP_INT16(data);
 
 		palette_write((address >> 2) & 0x0fff, data);
 
 		return;
 	}
 
-	if (address >= 0xc0010c || address <= 0xc00123) {
+	if (address >= 0xc0010c && address <= 0xc00123) {
 		DrvSysRegs[(address - 0xc0010c) >> 1] = data;
 
 		return;
 	}
 }
 
-void __fastcall silkroad_write_long(unsigned int address, unsigned int data)
+void __fastcall silkroad_write_long(UINT32 address, UINT32 data)
 {
 	if ((address & 0xffffc000) == 0x600000) {
-		*((unsigned int *)(DrvPalRAM + (address & 0x3ffc))) = data;
+		*((UINT32 *)(DrvPalRAM + (address & 0x3ffc))) = BURN_ENDIAN_SWAP_INT32(data);
 
 		palette_write((address >> 2) & 0x0fff, data >> 16);
 
@@ -207,47 +208,47 @@ void __fastcall silkroad_write_long(unsigned int address, unsigned int data)
 	}
 }
 
-static int DrvGfxROMDecode()
+static INT32 DrvGfxROMDecode()
 {
-	static int Planes[6] = { 0x0000008, 0x0000000, 0x1000008, 0x1000000, 0x2000008, 0x2000000 };
-	static int XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	static INT32 Planes[6] = { 0x0000008, 0x0000000, 0x1000008, 0x1000000, 0x2000008, 0x2000000 };
+	static INT32 XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 				 0x010, 0x011, 0x012, 0x013, 0x014, 0x015, 0x016, 0x017 };
-	static int YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	static INT32 YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 				 0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x600000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x600000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < 4; i++ ){
+	for (INT32 i = 0; i < 4; i++ ){
 		if (BurnLoadRom(tmp + 0x000000, 2 + i * 3, 1)) return 1;
 		if (BurnLoadRom(tmp + 0x200000, 3 + i * 3, 1)) return 1;
 		if (BurnLoadRom(tmp + 0x400000, 4 + i * 3, 1)) return 1;
 
 		if (i == 0) { // fix rom04
-			for (int j = 0x1b3fff; j >= 0; j--) {
+			for (INT32 j = 0x1b3fff; j >= 0; j--) {
 				tmp[0x44c000 + j] = tmp[0x44c000 + (j - 1)];
 			}
 		}
 
-		for (int j = 0; j < 0x600000; j++) {
+		for (INT32 j = 0; j < 0x600000; j++) {
 			tmp[j] ^= 0xff;
 		}
 
 		GfxDecode(0x08000, 6, 16, 16, Planes, XOffs, YOffs, 0x200, tmp, DrvGfxROM + 0x0800000 * i);
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 
-	DrvTransTab = (unsigned char*)malloc(0x20000);
+	DrvTransTab = (UINT8*)BurnMalloc(0x20000);
 	if (DrvTransTab == NULL) {
 		return 1;
 	}	
 
 	{
 		memset (DrvTransTab, 0, 0x20000);
-		for (int i = 0, c = 0; i < 0x2000000; i++) {
+		for (INT32 i = 0, c = 0; i < 0x2000000; i++) {
 			if (DrvGfxROM[i]) {
 				DrvTransTab[i>>8] |= 1;
 				c++;
@@ -263,7 +264,7 @@ static int DrvGfxROMDecode()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -278,7 +279,7 @@ static int DrvDoReset()
 	MSM6295Reset(0);
 	MSM6295Reset(1);
 
-	for (int nChannel = 0; nChannel < 4; nChannel++) {
+	for (INT32 nChannel = 0; nChannel < 4; nChannel++) {
 		MSM6295SampleInfo[0][nChannel] = DrvSndROM0 + (nChannel << 8);
 		MSM6295SampleData[0][nChannel] = DrvSndROM0 + (nChannel << 16);
 
@@ -289,9 +290,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x0200000;
 
@@ -299,7 +300,7 @@ static int MemIndex()
 	DrvSndROM0	= Next; Next += 0x0080000;
 	DrvSndROM1	= Next; Next += 0x0040000;
 
-	DrvPalette	= (unsigned int  *)Next; Next += 0x0001001 * sizeof (int);
+	DrvPalette	= (UINT32  *)Next; Next += 0x0001001 * sizeof (UINT32);
 	
 	AllRam		= Next;
 
@@ -308,7 +309,7 @@ static int MemIndex()
 	DrvVidRAM	= Next; Next += 0x000c000;
 	Drv68KRAM	= Next; Next += 0x0020000;
 
-	DrvSysRegs	= (unsigned short*)Next; Next += 0x0000020 * sizeof (short);
+	DrvSysRegs	= (UINT16*)Next; Next += 0x0000020 * sizeof (UINT16);
 
 	RamEnd		= Next;
 
@@ -317,11 +318,11 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
-	DrvGfxROM = (unsigned char*)malloc(0x2000000);
+	DrvGfxROM = (UINT8*)BurnMalloc(0x2000000);
 	if (DrvGfxROM == NULL) {
 		return 1;
 	}
@@ -329,8 +330,8 @@ static int DrvInit()
 	if (DrvGfxROMDecode()) return 1;
 
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -338,8 +339,8 @@ static int DrvInit()
 		if (BurnLoadRom(Drv68KROM + 0, 0, 2)) return 1;
 		if (BurnLoadRom(Drv68KROM + 1, 1, 2)) return 1;
 
-		for (int i = 0; i < 0x200000; i+= 4) {
-			int t = Drv68KROM[i + 1];
+		for (INT32 i = 0; i < 0x200000; i+= 4) {
+			INT32 t = Drv68KROM[i + 1];
 			Drv68KROM[i + 1] = Drv68KROM[i + 2];
 			Drv68KROM[i + 2] = t;
 		}
@@ -372,7 +373,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 
@@ -382,21 +383,16 @@ static int DrvExit()
 
 	GenericTilesExit();
 
-	free (AllMem);
-	AllMem = NULL;
-
-	free (DrvGfxROM);
-	DrvGfxROM = NULL;
-
-	free (DrvTransTab);
-	DrvTransTab = NULL;
+	BurnFree (AllMem);
+	BurnFree (DrvGfxROM);
+	BurnFree (DrvTransTab);
 
 	DrvRecalc = 0;
 
 	return 0;
 }
 
-static void silkroad_draw_tile(int code, int sx, int sy, int color, int flipx)
+static void silkroad_draw_tile(INT32 code, INT32 sx, INT32 sy, INT32 color, INT32 flipx)
 {
 	if (!DrvTransTab[code]) return;
 
@@ -431,15 +427,15 @@ static void silkroad_draw_tile(int code, int sx, int sy, int color, int flipx)
 	}
 }
 
-static void draw_sprites(int pri)
+static void draw_sprites(INT32 pri)
 {
-	unsigned int *source = (unsigned int*)DrvSprRAM;
-	unsigned int *finish = source + 0x1000/4;
-	unsigned int *maxspr = source;
+	UINT32 *source = (UINT32*)DrvSprRAM;
+	UINT32 *finish = source + 0x1000/4;
+	UINT32 *maxspr = source;
 
 	while (maxspr < finish)
 	{
-		if ((maxspr[1] & 0xff000000) == 0xff000000) break;
+		if ((BURN_ENDIAN_SWAP_INT32(maxspr[1]) & 0xff000000) == 0xff000000) break;
 		maxspr += 2;
 	}
 
@@ -447,30 +443,30 @@ static void draw_sprites(int pri)
 
 	while (finish >= source)
 	{
-		int xpos   = (finish[0] & 0x01ff) - 50;
-		int ypos   = (finish[0] >> 16)    - 16;
-		int attr   =  finish[1] >> 16;
-		int tileno = (finish[1] & 0xffff) | ((attr & 0x8000) << 1);
+		INT32 xpos   = (BURN_ENDIAN_SWAP_INT32(finish[0]) & 0x01ff) - 50;
+		INT32 ypos   = (BURN_ENDIAN_SWAP_INT32(finish[0]) >> 16)    - 16;
+		INT32 attr   =  BURN_ENDIAN_SWAP_INT32(finish[1]) >> 16;
+		INT32 tileno = (BURN_ENDIAN_SWAP_INT32(finish[1]) & 0xffff) | ((attr & 0x8000) << 1);
 		finish -= 2;
 
-		int priority = attr & 0x1000;
+		INT32 priority = attr & 0x1000;
 		if (pri != priority || ypos == -16 || ypos > 223) continue;
 
-		int color = attr & 0x003f;
-		int flipx = attr & 0x0080;
-		int width = ((attr >> 8) & 0x0f) + 1;
+		INT32 color = attr & 0x003f;
+		INT32 flipx = attr & 0x0080;
+		INT32 width = ((attr >> 8) & 0x0f) + 1;
 
 		if (flipx) {
-			for (int wcount = width; wcount > 0; wcount--) {
-				int sx = xpos + (((wcount << 4) - 0x10) | 8);
+			for (INT32 wcount = width; wcount > 0; wcount--) {
+				INT32 sx = xpos + (((wcount << 4) - 0x10) | 8);
 
 				if (sx < -15 || sx > 379) continue;
 
 				silkroad_draw_tile(tileno+(width-wcount), sx, ypos, color, 1);
 			}
 		} else {
-			for (int wcount = 0; wcount < width; wcount++) {
-				int sx = xpos + ((wcount << 4) | 8);
+			for (INT32 wcount = 0; wcount < width; wcount++) {
+				INT32 sx = xpos + ((wcount << 4) | 8);
 
 				if (sx < -15 || sx > 379) continue;
 
@@ -480,14 +476,14 @@ static void draw_sprites(int pri)
 	}
 }
 
-static void draw_layer(int offset, int scrollx, int scrolly)
+static void draw_layer(INT32 offset, INT32 scrollx, INT32 scrolly)
 {
-	unsigned int *vidram = (unsigned int*)(DrvVidRAM + offset);
+	UINT32 *vidram = (UINT32*)(DrvVidRAM + offset);
 
-	for (int offs = 0; offs < 0x4000 / 4; offs++)
+	for (INT32 offs = 0; offs < 0x4000 / 4; offs++)
 	{
-		int sx = (offs << 4) & 0x3f0;
-		int sy = (offs >> 2) & 0x3f0;
+		INT32 sx = (offs << 4) & 0x3f0;
+		INT32 sy = (offs >> 2) & 0x3f0;
 		sx -= scrollx + 50;
 		sy -= scrolly + 16;
 		if (sy < -15) sy += 0x400;
@@ -495,19 +491,19 @@ static void draw_layer(int offset, int scrollx, int scrolly)
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int code  =  vidram[offs] & 0xffff;
-		int color = (vidram[offs] >> 16) & 0x1f;
-		int flipx = (vidram[offs] >> 16) & 0x80;
+		INT32 code  =  BURN_ENDIAN_SWAP_INT32(vidram[offs]) & 0xffff;
+		INT32 color = (BURN_ENDIAN_SWAP_INT32(vidram[offs]) >> 16) & 0x1f;
+		INT32 flipx = (BURN_ENDIAN_SWAP_INT32(vidram[offs]) >> 16) & 0x80;
 
 		silkroad_draw_tile(code + 0x18000, sx, sy, color, flipx);
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc != nBurnBpp) {
-		unsigned short *pal = (unsigned short*)DrvPalRAM;
-		for (int i = 0; i < 0x2000; i+=2) {
+		UINT16 *pal = (UINT16*)DrvPalRAM;
+		for (INT32 i = 0; i < 0x2000; i+=2) {
 			palette_write(i/2, pal[i]);
 		}
 
@@ -516,11 +512,11 @@ static int DrvDraw()
 	}
 
 	if (nBurnLayer & 1) {
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 			pTransDraw[i] = 0x7c0;
 		}
 	} else {
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 			pTransDraw[i] = 0x1000;
 		}
 	}
@@ -536,7 +532,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -544,7 +540,7 @@ static int DrvFrame()
 
 	{
 		DrvInputs[0] = DrvInputs[1] = 0xffff;
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= DrvJoy1[i] << i;
 			DrvInputs[1] ^= DrvJoy2[i] << i;
 		}
@@ -557,7 +553,7 @@ static int DrvFrame()
 		if (!(DrvInputs[0] & 0x3000)) DrvInputs[0] |= 0x3000;
 	}
 
-	int nTotalCycles = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	INT32 nTotalCycles = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 
 	SekOpen(0);
 	SekRun(nTotalCycles);
@@ -577,7 +573,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

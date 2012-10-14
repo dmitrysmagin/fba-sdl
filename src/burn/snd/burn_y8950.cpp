@@ -1,6 +1,8 @@
 #include "burnint.h"
 #include "burn_sound.h"
 #include "burn_y8950.h"
+#include "sek.h"
+#include "zet.h"
 #include "m6809_intf.h"
 #include "hd6309_intf.h"
 #include "m6800_intf.h"
@@ -12,15 +14,15 @@
 
 static double dTimeY8950;									// Time elapsed since the emulated machine was started
 
-static int nTimerCount[2], nTimerStart[2];
+static INT32 nTimerCount[2], nTimerStart[2];
 
 // Callbacks
-static int (*pTimerOverCallback)(int, int);
+static INT32 (*pTimerOverCallback)(INT32, INT32);
 static double (*pTimerTimeCallback)();
 
-static int nCPUClockspeed = 0;
-static int (*pCPUTotalCycles)() = NULL;
-static int (*pCPURun)(int) = NULL;
+static INT32 nCPUClockspeed = 0;
+static INT32 (*pCPUTotalCycles)() = NULL;
+static INT32 (*pCPURun)(INT32) = NULL;
 static void (*pCPURunEnd)() = NULL;
 
 // ---------------------------------------------------------------------------
@@ -39,18 +41,18 @@ extern "C" double BurnTimerGetTimeY8950()
 // ---------------------------------------------------------------------------
 // Update timers
 
-static int nTicksTotal, nTicksDone, nTicksExtra;
+static INT32 nTicksTotal, nTicksDone, nTicksExtra;
 
-int BurnTimerUpdateY8950(int nCycles)
+INT32 BurnTimerUpdateY8950(INT32 nCycles)
 {
-	int nIRQStatus = 0;
+	INT32 nIRQStatus = 0;
 
 	nTicksTotal = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
 
 //	bprintf(PRINT_NORMAL, _T(" -- Ticks: %08X, cycles %i\n"), nTicksTotal, nCycles);
 
 	while (nTicksDone < nTicksTotal) {
-		int nTimer, nCyclesSegment, nTicksSegment;
+		INT32 nTimer, nCyclesSegment, nTicksSegment;
 
 		// Determine which timer fires first
 		if (nTimerCount[0] <= nTimerCount[1]) {
@@ -100,9 +102,9 @@ int BurnTimerUpdateY8950(int nCycles)
 	return nIRQStatus;
 }
 
-void BurnTimerEndFrameY8950(int nCycles)
+void BurnTimerEndFrameY8950(INT32 nCycles)
 {
-	int nTicks = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
+	INT32 nTicks = MAKE_TIMER_TICKS(nCycles, nCPUClockspeed);
 
 	BurnTimerUpdateY8950(nCycles);
 
@@ -129,7 +131,7 @@ void BurnTimerUpdateEndY8950()
 	nTicksTotal = 0;
 }
 
-void BurnOPLTimerCallbackY8950(int c, double period)
+void BurnOPLTimerCallbackY8950(INT32 c, double period)
 {
 	pCPURunEnd();
 
@@ -139,13 +141,13 @@ void BurnOPLTimerCallbackY8950(int c, double period)
 		return;
 	}
 
-	nTimerCount[c]  = (int)(period * (double)TIMER_TICKS_PER_SECOND);
+	nTimerCount[c]  = (INT32)(period * (double)TIMER_TICKS_PER_SECOND);
 	nTimerCount[c] += MAKE_TIMER_TICKS(pCPUTotalCycles(), nCPUClockspeed);
 
 //	bprintf(PRINT_NORMAL, _T("  - timer %i started, %08X ticks (fires in %lf seconds)\n"), c, nTimerCount[c], period);
 }
 
-void BurnTimerScanY8950(int nAction, int* pnMin)
+void BurnTimerScanY8950(INT32 nAction, INT32* pnMin)
 {
 	if (pnMin && *pnMin < 0x029521) {
 		*pnMin = 0x029521;
@@ -180,7 +182,7 @@ void BurnTimerResetY8950()
 	nTicksDone = 0;
 }
 
-int BurnTimerInitY8950(int (*pOverCallback)(int, int), double (*pTimeCallback)())
+INT32 BurnTimerInitY8950(INT32 (*pOverCallback)(INT32, INT32), double (*pTimeCallback)())
 {
 	BurnTimerExitY8950();
 
@@ -192,7 +194,7 @@ int BurnTimerInitY8950(int (*pOverCallback)(int, int), double (*pTimeCallback)()
 	return 0;
 }
 
-int BurnTimerAttachSekY8950(int nClockspeed)
+INT32 BurnTimerAttachSekY8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = SekTotalCycles;
@@ -206,7 +208,7 @@ int BurnTimerAttachSekY8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachZetY8950(int nClockspeed)
+INT32 BurnTimerAttachZetY8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = ZetTotalCycles;
@@ -220,7 +222,7 @@ int BurnTimerAttachZetY8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6809Y8950(int nClockspeed)
+INT32 BurnTimerAttachM6809Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6809TotalCycles;
@@ -234,7 +236,7 @@ int BurnTimerAttachM6809Y8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachHD6309Y8950(int nClockspeed)
+INT32 BurnTimerAttachHD6309Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = HD6309TotalCycles;
@@ -248,7 +250,7 @@ int BurnTimerAttachHD6309Y8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6800Y8950(int nClockspeed)
+INT32 BurnTimerAttachM6800Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -262,7 +264,7 @@ int BurnTimerAttachM6800Y8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachHD63701Y8950(int nClockspeed)
+INT32 BurnTimerAttachHD63701Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -276,7 +278,7 @@ int BurnTimerAttachHD63701Y8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6803Y8950(int nClockspeed)
+INT32 BurnTimerAttachM6803Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
 	pCPUTotalCycles = M6800TotalCycles;
@@ -290,12 +292,12 @@ int BurnTimerAttachM6803Y8950(int nClockspeed)
 	return 0;
 }
 
-int BurnTimerAttachM6502Y8950(int nClockspeed)
+INT32 BurnTimerAttachM6502Y8950(INT32 nClockspeed)
 {
 	nCPUClockspeed = nClockspeed;
-	pCPUTotalCycles = m6502TotalCycles;
-	pCPURun = m6502Run;
-	pCPURunEnd = M6800RunEnd; // doesn't do anything...
+	pCPUTotalCycles = M6502TotalCycles;
+	pCPURun = M6502Run;
+	pCPURunEnd = M6502RunEnd; // doesn't do anything...
 
 	nTicksExtra = MAKE_TIMER_TICKS(1, nCPUClockspeed) - 1;
 
@@ -306,31 +308,31 @@ int BurnTimerAttachM6502Y8950(int nClockspeed)
 
 // Sound Related
 
-void (*BurnY8950Update)(short* pSoundBuf, int nSegmentEnd);
+void (*BurnY8950Update)(INT16* pSoundBuf, INT32 nSegmentEnd);
 
-static int (*BurnY8950StreamCallback)(int nSoundRate);
+static INT32 (*BurnY8950StreamCallback)(INT32 nSoundRate);
 
-static int nBurnY8950SoundRate;
+static INT32 nBurnY8950SoundRate;
 
-static short* pBuffer;
-static short* pY8950Buffer;
+static INT16* pBuffer;
+static INT16* pY8950Buffer;
 
-static int nY8950Position;
+static INT32 nY8950Position;
 
-static unsigned int nSampleSize;
-static unsigned int nFractionalPosition;
+static UINT32 nSampleSize;
+static INT32 nFractionalPosition;
 
-static int bY8950AddSignal;
+static INT32 bY8950AddSignal;
 
 // ----------------------------------------------------------------------------
 // Dummy functions
 
-static void Y8950UpdateDummy(short* , int /* nSegmentEnd */)
+static void Y8950UpdateDummy(INT16* , INT32 /* nSegmentEnd */)
 {
 	return;
 }
 
-static int Y8950StreamCallbackDummy(int /* nSoundRate */)
+static int Y8950StreamCallbackDummy(INT32 /* nSoundRate */)
 {
 	return 0;
 }
@@ -338,8 +340,12 @@ static int Y8950StreamCallbackDummy(int /* nSoundRate */)
 // ----------------------------------------------------------------------------
 // Execute Y8950 for part of a frame
 
-static void Y8950Render(int nSegmentLength)
+static void Y8950Render(INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("Y8950Render called without init\n"));
+#endif
+
 	if (nY8950Position >= nSegmentLength) {
 		return;
 	}
@@ -356,10 +362,14 @@ static void Y8950Render(int nSegmentLength)
 // ----------------------------------------------------------------------------
 // Update the sound buffer
 
-static void Y8950UpdateResample(short* pSoundBuf, int nSegmentEnd)
+static void Y8950UpdateResample(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
-	int nSamplesNeeded = nSegmentEnd * nBurnY8950SoundRate / nBurnSoundRate + 1;
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("Y8950UpdateResample called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
+	INT32 nSamplesNeeded = nSegmentEnd * nBurnY8950SoundRate / nBurnSoundRate + 1;
 
 //	bprintf(PRINT_NORMAL, _T("    Y8950 update        -> %6i\n", nSegmentLength));
 
@@ -376,8 +386,8 @@ static void Y8950UpdateResample(short* pSoundBuf, int nSegmentEnd)
 
 	pY8950Buffer = pBuffer + 0 * 4096 + 4;
 
-	for (int i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
-		short nSample =  INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
+	for (INT32 i = (nFractionalPosition & 0xFFFF0000) >> 15; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
+		INT16 nSample =  INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0FFF,
 												pY8950Buffer[(nFractionalPosition >> 16) - 3],
 												pY8950Buffer[(nFractionalPosition >> 16) - 2],
 												pY8950Buffer[(nFractionalPosition >> 16) - 1],
@@ -392,11 +402,11 @@ static void Y8950UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
+		INT32 nExtraSamples = nSamplesNeeded - (nFractionalPosition >> 16);
 
 //		bprintf(PRINT_NORMAL, _T("   %6i rendered, %i extra, %i <- %i\n"), nSamplesNeeded, nExtraSamples, nExtraSamples, (nFractionalPosition >> 16) + nExtraSamples - 1);
 
-		for (int i = -4; i < nExtraSamples; i++) {
+		for (INT32 i = -4; i < nExtraSamples; i++) {
 			pY8950Buffer[i] = pY8950Buffer[(nFractionalPosition >> 16) + i];
 		}
 
@@ -406,9 +416,13 @@ static void Y8950UpdateResample(short* pSoundBuf, int nSegmentEnd)
 	}
 }
 
-static void Y8950UpdateNormal(short* pSoundBuf, int nSegmentEnd)
+static void Y8950UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 {
-	int nSegmentLength = nSegmentEnd;
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("Y8950UpdateNormal called without init\n"));
+#endif
+
+	INT32 nSegmentLength = nSegmentEnd;
 
 //	bprintf(PRINT_NORMAL, _T("    Y8950 render %6i -> %6i\n"), nY8950Position, nSegmentEnd);
 
@@ -424,7 +438,7 @@ static void Y8950UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 
 	pY8950Buffer = pBuffer + 4 + 0 * 4096;
 
-	for (int i = nFractionalPosition; i < nSegmentLength; i++) {
+	for (INT32 i = nFractionalPosition; i < nSegmentLength; i++) {
 		if (bY8950AddSignal) {
 			pSoundBuf[(i << 1) + 0] += pY8950Buffer[i];
 			pSoundBuf[(i << 1) + 1] += pY8950Buffer[i];
@@ -437,9 +451,9 @@ static void Y8950UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 	nFractionalPosition = nSegmentLength;
 
 	if (nSegmentEnd >= nBurnSoundLen) {
-		int nExtraSamples = nSegmentEnd - nBurnSoundLen;
+		INT32 nExtraSamples = nSegmentEnd - nBurnSoundLen;
 
-		for (int i = 0; i < nExtraSamples; i++) {
+		for (INT32 i = 0; i < nExtraSamples; i++) {
 			pY8950Buffer[i] = pY8950Buffer[nBurnSoundLen + i];
 		}
 
@@ -453,8 +467,12 @@ static void Y8950UpdateNormal(short* pSoundBuf, int nSegmentEnd)
 // ----------------------------------------------------------------------------
 // Callbacks for Y8950 core
 
-void BurnY8950UpdateRequest(int, int)
+void BurnY8950UpdateRequest(INT32, INT32)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("BurnY8950UpdateRequest called without init\n"));
+#endif
+
 	Y8950Render(BurnY8950StreamCallback(nBurnY8950SoundRate));
 }
 
@@ -463,6 +481,10 @@ void BurnY8950UpdateRequest(int, int)
 
 void BurnY8950Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("BurnY8950Reset called without init\n"));
+#endif
+
 	BurnTimerResetY8950();
 
 	Y8950ResetChip(0);
@@ -470,16 +492,25 @@ void BurnY8950Reset()
 
 void BurnY8950Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("BurnY8950Exit called without init\n"));
+#endif
+
 	Y8950Shutdown();
 
 	BurnTimerExitY8950();
 
-	free(pBuffer);
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
 	
 	bY8950AddSignal = 0;
+	
+	DebugSnd_Y8950Initted = 0;
 }
 
-int BurnY8950Init(int nClockFrequency, unsigned char* Y8950ADPCMROM, int nY8950ADPCMSize, OPL_IRQHANDLER IRQCallback, int (*StreamCallback)(int), int bAddSignal)
+INT32 BurnY8950Init(INT32 nClockFrequency, UINT8* Y8950ADPCMROM, INT32 nY8950ADPCMSize, OPL_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), INT32 bAddSignal)
 {
 	BurnTimerInitY8950(&Y8950TimerOver, NULL);
 
@@ -504,7 +535,7 @@ int BurnY8950Init(int nClockFrequency, unsigned char* Y8950ADPCMROM, int nY8950A
 
 		BurnY8950Update = Y8950UpdateResample;
 
-		nSampleSize = (unsigned int)nBurnY8950SoundRate * (1 << 16) / nBurnSoundRate;
+		nSampleSize = (UINT32)nBurnY8950SoundRate * (1 << 16) / nBurnSoundRate;
 		nFractionalPosition = 0;
 	} else {
 		nBurnY8950SoundRate = nBurnSoundRate;
@@ -518,21 +549,28 @@ int BurnY8950Init(int nClockFrequency, unsigned char* Y8950ADPCMROM, int nY8950A
 	Y8950SetUpdateHandler(0, &BurnY8950UpdateRequest, 0);
 	Y8950SetDeltaTMemory(0, Y8950ADPCMROM, nY8950ADPCMSize);
 
-	pBuffer = (short*)malloc(4096 * sizeof(short));
-	memset(pBuffer, 0, 4096 * sizeof(short));
+	pBuffer = (INT16*)malloc(4096 * sizeof(INT16));
+	memset(pBuffer, 0, 4096 * sizeof(INT16));
 
 	nY8950Position = 0;
 
 	nFractionalPosition = 0;
 	
 	bY8950AddSignal = bAddSignal;
+	
+	DebugSnd_Y8950Initted = 1;
 
 	return 0;
 }
 
-void BurnY8950Scan(int nAction, int* pnMin)
+void BurnY8950Scan(INT32 nAction, INT32* pnMin)
 {
+	#if defined FBA_DEBUG
+	if (!DebugSnd_Y8950Initted) bprintf(PRINT_ERROR, _T("BurnY8950Scan called without init\n"));
+#endif
+	
 	BurnTimerScanY8950(nAction, pnMin);
+	FMOPLScan(FM_OPL_SAVESTATE_Y8950, 0, nAction, pnMin);
 	
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(nY8950Position);

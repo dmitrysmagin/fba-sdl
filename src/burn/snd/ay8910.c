@@ -14,36 +14,46 @@
 #include "state.h"
 #include "ay8910.h"
 
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	// MSVC doesn't like this - this module only supports debug tracking with GCC only
+	#include <tchar.h>
+	extern UINT8 DebugSnd_AY8910Initted;
+	extern INT32 (__cdecl *bprintf) (INT32 nStatus, TCHAR* szFormat, ...);
+	#define PRINT_ERROR		(3)
+#endif
+#endif
+
 #define MAX_OUTPUT 0x7fff
 
 #define STEP 0x8000
 
 static void (*AYStreamUpdate)(void);
 
-int ay8910_index_ym = 0;
-static int num = 0, ym_num = 0;
+INT32 ay8910_index_ym = 0;
+static INT32 num = 0, ym_num = 0;
 
 struct AY8910
 {
-	int Channel;
-	int SampleRate;
+	INT32 Channel;
+	INT32 SampleRate;
 	read8_handler PortAread;
 	read8_handler PortBread;
 	write8_handler PortAwrite;
 	write8_handler PortBwrite;
-	int register_latch;
-	unsigned char Regs[16];
-	int lastEnable;
-	unsigned int UpdateStep;
-	int PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
-	int CountA,CountB,CountC,CountN,CountE;
-	unsigned int VolA,VolB,VolC,VolE;
-	unsigned char EnvelopeA,EnvelopeB,EnvelopeC;
-	unsigned char OutputA,OutputB,OutputC,OutputN;
-	signed char CountEnv;
-	unsigned char Hold,Alternate,Attack,Holding;
-	int RNG;
-	unsigned int VolTable[32];
+	INT32 register_latch;
+	UINT8 Regs[16];
+	INT32 lastEnable;
+	UINT32 UpdateStep;
+	INT32 PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
+	INT32 CountA,CountB,CountC,CountN,CountE;
+	UINT32 VolA,VolB,VolC,VolE;
+	UINT8 EnvelopeA,EnvelopeB,EnvelopeC;
+	UINT8 OutputA,OutputB,OutputC,OutputN;
+	INT8 CountEnv;
+	UINT8 Hold,Alternate,Attack,Holding;
+	INT32 RNG;
+	UINT32 VolTable[32];
 };
 
 /* register id's */
@@ -70,10 +80,10 @@ static struct AY8910 AYPSG[MAX_8910];		/* array of PSG's */
 
 
 
-static void _AYWriteReg(int n, int r, int v)
+static void _AYWriteReg(INT32 n, INT32 r, INT32 v)
 {
 	struct AY8910 *PSG = &AYPSG[n];
-	int old;
+	INT32 old;
 
 
 	PSG->Regs[r] = v;
@@ -246,7 +256,7 @@ static void _AYWriteReg(int n, int r, int v)
 
 
 /* write a register on AY8910 chip number 'n' */
-static void AYWriteReg(int chip, int r, int v)
+static void AYWriteReg(INT32 chip, INT32 r, INT32 v)
 {
 	if (r > 15) return;
 	if (r < 14)
@@ -266,7 +276,7 @@ static void AYWriteReg(int chip, int r, int v)
 
 
 
-static unsigned char AYReadReg(int n, int r)
+static UINT8 AYReadReg(INT32 n, INT32 r)
 {
 	struct AY8910 *PSG = &AYPSG[n];
 
@@ -295,9 +305,16 @@ static unsigned char AYReadReg(int n, int r)
 	return PSG->Regs[r];
 }
 
-void AY8910Write(int chip, int a, int data)
+void AY8910Write(INT32 chip, INT32 a, INT32 data)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910Write called without init\n"));
+	if (chip > num) bprintf(PRINT_ERROR, _T("AY8910Write called with invalid chip number %x\n"), chip);
+#endif
+#endif
 
 	if (a & 1)
 	{	/* Data port */
@@ -309,18 +326,32 @@ void AY8910Write(int chip, int a, int data)
 	}
 }
 
-int AY8910Read(int chip)
+INT32 AY8910Read(INT32 chip)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910Read called without init\n"));
+	if (chip > num) bprintf(PRINT_ERROR, _T("AY8910Read called with invalid chip number %x\n"), chip);
+#endif
+#endif
 
 	return AYReadReg(chip,PSG->register_latch);
 }
 
-void AY8910Update(int chip, INT16 **buffer, int length)
+void AY8910Update(INT32 chip, INT16 **buffer, INT32 length)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
 	INT16 *buf1,*buf2,*buf3;
-	int outn;
+	INT32 outn;
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910Update called without init\n"));
+	if (chip > num) bprintf(PRINT_ERROR, _T("AY8910Update called with invalid chip number %x\n"), chip);
+#endif
+#endif
 
 	buf1 = buffer[0];
 	buf2 = buffer[1];
@@ -381,8 +412,8 @@ void AY8910Update(int chip, INT16 **buffer, int length)
 	/* buffering loop */
 	while (length)
 	{
-		int vola,volb,volc;
-		int left;
+		INT32 vola,volb,volc;
+		INT32 left;
 
 		/* vola, volb and volc keep track of how long each square wave stays */
 		/* in the 1 position during the sample period. */
@@ -391,7 +422,7 @@ void AY8910Update(int chip, INT16 **buffer, int length)
 		left = STEP;
 		do
 		{
-			int nextevent;
+			INT32 nextevent;
 
 			if (PSG->CountN < left) nextevent = PSG->CountN;
 			else nextevent = left;
@@ -580,9 +611,16 @@ void AY8910Update(int chip, INT16 **buffer, int length)
 }
 
 
-void AY8910_set_clock(int chip, int clock)
+void AY8910_set_clock(INT32 chip, INT32 clock)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910_set_clock called without init\n"));
+	if (chip > num) bprintf(PRINT_ERROR, _T("AY8910_set_clock called with invalid chip number %x\n"), chip);
+#endif
+#endif
 
 	/* the step clock for the tone and noise generators is the chip clock    */
 	/* divided by 8; for the envelope generator of the AY-3-8910, it is half */
@@ -596,10 +634,10 @@ void AY8910_set_clock(int chip, int clock)
 }
 
 
-static void build_mixer_table(int chip)
+static void build_mixer_table(INT32 chip)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
-	int i;
+	INT32 i;
 	double out;
 
 
@@ -619,10 +657,17 @@ static void build_mixer_table(int chip)
 
 
 
-void AY8910Reset(int chip)
+void AY8910Reset(INT32 chip)
 {
-	int i;
+	INT32 i;
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910Reset called without init\n"));
+	if (chip > num) bprintf(PRINT_ERROR, _T("AY8910Reset called with invalid chip number %x\n"), chip);
+#endif
+#endif
 
 	PSG->register_latch = 0;
 	PSG->RNG = 1;
@@ -637,14 +682,26 @@ void AY8910Reset(int chip)
 								/* has not been initialized. */
 }
 
-void AY8910Exit(int chip)
+void AY8910Exit(INT32 chip)
 {
 	(void)chip;
+
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted && !chip) bprintf(PRINT_ERROR, _T("AY8910Exit called without init\n"));
+#endif
+#endif
 
 	num = 0;
 	ym_num = 0;
 
 	ay8910_index_ym = 0;
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	DebugSnd_AY8910Initted = 0;
+#endif
+#endif
 }
 
 static void dummy_callback(void)
@@ -652,11 +709,17 @@ static void dummy_callback(void)
 	return;
 }
 
-int AY8910Init(int chip, int clock, int sample_rate,
+INT32 AY8910Init(INT32 chip, INT32 clock, INT32 sample_rate,
 		read8_handler portAread, read8_handler portBread,
 		write8_handler portAwrite, write8_handler portBwrite)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	DebugSnd_AY8910Initted = 1;
+#endif
+#endif
 
 	AYStreamUpdate = dummy_callback;
 
@@ -682,12 +745,12 @@ int AY8910Init(int chip, int clock, int sample_rate,
 	return 0;
 }
 
-int AY8910InitYM(int chip, int clock, int sample_rate,
+INT32 AY8910InitYM(INT32 chip, INT32 clock, INT32 sample_rate,
 		read8_handler portAread, read8_handler portBread,
 		write8_handler portAwrite, write8_handler portBwrite,
 		void (*update_callback)(void))
 {
-	int val = AY8910Init(ay8910_index_ym + chip, clock, sample_rate, portAread, portBread, portAwrite, portBwrite);
+	INT32 val = AY8910Init(ay8910_index_ym + chip, clock, sample_rate, portAread, portBread, portAwrite, portBwrite);
 
 	AYStreamUpdate = update_callback;
 
@@ -695,16 +758,22 @@ int AY8910InitYM(int chip, int clock, int sample_rate,
 		ym_num++;
 	}
 
-	ay8910_index_ym = num - ym_num;
-
+	ay8910_index_ym = num - ym_num;	
+	
 	return val;
 }
 
 // Useful for YM2203, etc games needing read/write ports
-int AY8910SetPorts(int chip, read8_handler portAread, read8_handler portBread,
+INT32 AY8910SetPorts(INT32 chip, read8_handler portAread, read8_handler portBread,
 		write8_handler portAwrite, write8_handler portBwrite)
 {
 	struct AY8910 *PSG = &AYPSG[chip];
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910SetPorts called without init\n"));
+#endif
+#endif
 
 	PSG->PortAread = portAread;
 	PSG->PortBread = portBread;
@@ -714,10 +783,16 @@ int AY8910SetPorts(int chip, read8_handler portAread, read8_handler portBread,
 	return 0;
 }
 
-int AY8910Scan(int nAction, int* pnMin)
+INT32 AY8910Scan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
-	int i;
+	INT32 i;
+	
+#if defined FBA_DEBUG
+#ifdef __GNUC__ 
+	if (!DebugSnd_AY8910Initted) bprintf(PRINT_ERROR, _T("AY8910Scan called without init\n"));
+#endif
+#endif
 
 	if ((nAction & ACB_DRIVER_DATA) == 0) {
 		return 1;

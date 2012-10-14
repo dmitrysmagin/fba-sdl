@@ -3,16 +3,19 @@
 
 #define S16_NUMCACHE 8
 
-static unsigned char *fd1094_key; // the memory region containing key
+static UINT8 *fd1094_key; // the memory region containing key
 static UINT16 *fd1094_cpuregion; // the CPU region with encrypted code
 static UINT32  fd1094_cpuregionsize; // the size of this region in bytes
 
 static UINT16* fd1094_userregion; // a user region where the current decrypted state is put and executed from
 static UINT16* fd1094_cacheregion[S16_NUMCACHE]; // a cache region where S16_NUMCACHE states are stored to improve performance
-static int fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
-static int fd1094_current_cacheposition; // current position in cache array
+static INT32 fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
+static INT32 fd1094_current_cacheposition; // current position in cache array
 
-static int nFD1094CPU = 0;
+static INT32 fd1094_state;
+static INT32 fd1094_selected_state;
+
+static INT32 nFD1094CPU = 0;
 
 bool System18Banking;
 /*
@@ -27,10 +30,19 @@ static void *fd1094_get_decrypted_base(void)
    if it is then it copies the cached data to the user region where code is
    executed from, if its not cached then it gets decrypted to the current
    cache position using the functions in fd1094.c */
-static void fd1094_setstate_and_decrypt(int state)
+static void fd1094_setstate_and_decrypt(INT32 state)
 {
-	int i;
+	INT32 i;
 	UINT32 addr;
+	
+	switch (state & 0x300) {
+		case 0x000:
+		case FD1094_STATE_RESET:
+			fd1094_selected_state = state & 0xff;
+		break;
+	}
+
+	fd1094_state = state;
 
 	// force a flush of the prefetch cache
 	m68k_set_reg(M68K_REG_PREF_ADDR, 0x1000);
@@ -45,10 +57,25 @@ static void fd1094_setstate_and_decrypt(int state)
 		{
 			/* copy cached state */
 			fd1094_userregion=fd1094_cacheregion[i];
-			SekOpen(nFD1094CPU);
-			SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-			if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
-			SekClose();
+			INT32 nActiveCPU = SekGetActive();
+			if (nActiveCPU == -1) {
+				SekOpen(nFD1094CPU);
+				SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+				if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+				SekClose();
+			} else {
+				if (nActiveCPU == nFD1094CPU) {
+					SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+					if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+				} else {
+					SekClose();
+					SekOpen(nFD1094CPU);
+					SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+					if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+					SekClose();
+					SekOpen(nActiveCPU);
+				}
+			}
 
 			return;
 		}
@@ -66,11 +93,26 @@ static void fd1094_setstate_and_decrypt(int state)
 
 	/* copy newly decrypted data to user region */
 	fd1094_userregion=fd1094_cacheregion[fd1094_current_cacheposition];
-	SekOpen(nFD1094CPU);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
-	SekClose();
-
+	INT32 nActiveCPU = SekGetActive();
+	if (nActiveCPU == -1) {
+		SekOpen(nFD1094CPU);
+		SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+		if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+		SekClose();
+	} else {
+		if (nActiveCPU == nFD1094CPU) {
+			SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+			if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+		} else {
+			SekClose();
+			SekOpen(nFD1094CPU);
+			SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+			if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+			SekClose();
+			SekOpen(nActiveCPU);
+		}
+	}
+	
 	fd1094_current_cacheposition++;
 
 	if (fd1094_current_cacheposition>=S16_NUMCACHE)
@@ -83,7 +125,7 @@ static void fd1094_setstate_and_decrypt(int state)
 }
 
 /* Callback for CMP.L instructions (state change) */
-int __fastcall fd1094_cmp_callback(unsigned int val, int reg)
+INT32 __fastcall fd1094_cmp_callback(UINT32 val, INT32 reg)
 {
 	if (reg == 0 && (val & 0x0000ffff) == 0x0000ffff) // ?
 	{
@@ -94,13 +136,13 @@ int __fastcall fd1094_cmp_callback(unsigned int val, int reg)
 }
 
 /* Callback when the FD1094 enters interrupt code */
-int __fastcall fd1094_int_callback (int irq)
+INT32 __fastcall fd1094_int_callback (INT32 irq)
 {
 	fd1094_setstate_and_decrypt(FD1094_STATE_IRQ);
 	return (0x60+irq*4)/4; // vector address
 }
 
-int __fastcall fd1094_rte_callback (void)
+INT32 __fastcall fd1094_rte_callback (void)
 {
 	fd1094_setstate_and_decrypt(FD1094_STATE_RTE);
 	
@@ -109,15 +151,15 @@ int __fastcall fd1094_rte_callback (void)
 
 void fd1094_kludge_reset_values(void)
 {
-	int i;
+	INT32 i;
 
 	for (i = 0;i < 4;i++) {
 		fd1094_userregion[i] = fd1094_decode(i,fd1094_cpuregion[i],fd1094_key,1);
 	}
 		
 	SekOpen(nFD1094CPU);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+	SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+	if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
 }
 
@@ -136,9 +178,9 @@ void fd1094_machine_init(void)
 }
 
 /* startup function, to be called from DRIVER_INIT (once on startup) */
-void fd1094_driver_init(int nCPU)
+void fd1094_driver_init(INT32 nCPU)
 {
-	int i;
+	INT32 i;
 	
 	nFD1094CPU = nCPU;
 
@@ -164,13 +206,14 @@ void fd1094_driver_init(int nCPU)
 		
 	for (i=0;i<S16_NUMCACHE;i++)
 	{
-		fd1094_cacheregion[i]=(UINT16*)malloc(fd1094_cpuregionsize);
+		fd1094_cacheregion[i]=(UINT16*)BurnMalloc(fd1094_cpuregionsize);
 	}
 
 	/* flush the cached state array */
 	for (i=0;i<S16_NUMCACHE;i++) fd1094_cached_states[i] = -1;
 	
 	fd1094_current_cacheposition = 0;
+	fd1094_state = -1;
 	
 	if (System16RomSize > 0x0fffff) System18Banking = true;
 }
@@ -180,9 +223,29 @@ void fd1094_exit()
 	System18Banking = false;
 	nFD1094CPU = 0;
 	
-	for (int i = 0; i < S16_NUMCACHE; i++) {
-		free(fd1094_cacheregion[i]);
+	for (INT32 i = 0; i < S16_NUMCACHE; i++) {
+		BurnFree(fd1094_cacheregion[i]);
 	}
 	
 	fd1094_current_cacheposition = 0;
+}
+
+void fd1094_scan(INT32 nAction)
+{
+	if (nAction & ACB_DRIVER_DATA) {
+		SCAN_VAR(fd1094_selected_state);
+		SCAN_VAR(fd1094_state);
+		
+		if (nAction & ACB_WRITE) {
+			if (fd1094_state != -1)	{
+				INT32 selected_state = fd1094_selected_state;
+				INT32 state = fd1094_state;
+
+				fd1094_machine_init();
+
+				fd1094_setstate_and_decrypt(selected_state);
+				fd1094_setstate_and_decrypt(state);
+			}
+		}
+	}
 }

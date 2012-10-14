@@ -2,47 +2,49 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "konami_intf.h"
 #include "konamiic.h"
 #include "burn_ym2151.h"
 #include "k007232.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM0;
-static unsigned char *Drv68KROM1;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM0;
-static unsigned char *Drv68KRAM1;
-static unsigned char *DrvShareRAM;
-static unsigned char *DrvShareRAM2;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM0;
+static UINT8 *Drv68KROM1;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM0;
+static UINT8 *Drv68KRAM1;
+static UINT8 *DrvShareRAM;
+static UINT8 *DrvShareRAM2;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
+static UINT8 *soundlatch;
 
-static int gradius3_priority;
-static int gradius3_cpub_enable;
-static int irqA_enable;
-static int irqB_mask;
+static INT32 gradius3_priority;
+static INT32 gradius3_cpub_enable;
+static INT32 irqA_enable;
+static INT32 irqB_mask;
 
-static int interrupt_triggered = 0;
+static INT32 interrupt_triggered = 0;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned short DrvInputs[3];
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT16 DrvInputs[3];
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo Gradius3InputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -156,7 +158,7 @@ static struct BurnDIPInfo Gradius3DIPList[]=
 
 STDDIPINFO(Gradius3)
 
-void __fastcall gradius3_main_write_word(unsigned int address, unsigned short data)
+void __fastcall gradius3_main_write_word(UINT32 address, UINT16 data)
 {
 	if (address >= 0x14c000 && address <= 0x153fff) {
 		address -= 0x14c000;
@@ -165,7 +167,7 @@ void __fastcall gradius3_main_write_word(unsigned int address, unsigned short da
 	}
 }
 
-void __fastcall gradius3_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall gradius3_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -174,7 +176,7 @@ void __fastcall gradius3_main_write_byte(unsigned int address, unsigned char dat
 		{
 			// if enabling CPU B, burn off some cycles to keep things sync'd.
 			if (gradius3_cpub_enable & 8 && ~data & 8) {
-				int cycles_to_burn = SekTotalCycles();
+				INT32 cycles_to_burn = SekTotalCycles();
 				SekClose();
 				SekOpen(1);
 				SekIdle(cycles_to_burn - SekTotalCycles());
@@ -216,7 +218,7 @@ void __fastcall gradius3_main_write_byte(unsigned int address, unsigned char dat
 	}
 }
 
-unsigned short __fastcall gradius3_main_read_word(unsigned int address)
+UINT16 __fastcall gradius3_main_read_word(UINT32 address)
 {
 	if (address >= 0x14c000 && address <= 0x153fff) {
 		address -= 0x14c000;
@@ -226,7 +228,7 @@ unsigned short __fastcall gradius3_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall gradius3_main_read_byte(unsigned int address)
+UINT8 __fastcall gradius3_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -263,7 +265,7 @@ unsigned char __fastcall gradius3_main_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall gradius3_sub_write_word(unsigned int address, unsigned short data)
+void __fastcall gradius3_sub_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffffe) == 0x140000) {
 		irqB_mask = (data >> 8) & 0x07;
@@ -289,7 +291,7 @@ void __fastcall gradius3_sub_write_word(unsigned int address, unsigned short dat
 	}
 }
 
-void __fastcall gradius3_sub_write_byte(unsigned int address, unsigned char data)
+void __fastcall gradius3_sub_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfffffe) == 0x140000) {
 		irqB_mask = data & 0x07;
@@ -315,7 +317,7 @@ void __fastcall gradius3_sub_write_byte(unsigned int address, unsigned char data
 	}
 }
 
-unsigned short __fastcall gradius3_sub_read_word(unsigned int address)
+UINT16 __fastcall gradius3_sub_read_word(UINT32 address)
 {
 	if (address >= 0x24c000 && address <= 0x253fff) {
 		address -= 0x24c000;
@@ -335,7 +337,7 @@ unsigned short __fastcall gradius3_sub_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall gradius3_sub_read_byte(unsigned int address)
+UINT8 __fastcall gradius3_sub_read_byte(UINT32 address)
 {
 	if (address >= 0x24c000 && address <= 0x253fff) {
 		address -= 0x24c000;
@@ -355,15 +357,15 @@ unsigned char __fastcall gradius3_sub_read_byte(unsigned int address)
 	return 0;
 }
 
-static void k007232_bank(int , int data)
+static void k007232_bank(INT32 , INT32 data)
 {
-	int bank_A = (data >> 0) & 0x03;
-	int bank_B = (data >> 2) & 0x03;
+	INT32 bank_A = (data >> 0) & 0x03;
+	INT32 bank_B = (data >> 2) & 0x03;
 
 	k007232_set_bank(0, bank_A, bank_B);
 }
 
-void __fastcall gradius3_sound_write(unsigned short address, unsigned char data)
+void __fastcall gradius3_sound_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xfff0) == 0xf020) {
 		K007232WriteReg(0, address & 0x0f, data);
@@ -386,7 +388,7 @@ void __fastcall gradius3_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall gradius3_sound_read(unsigned short address)
+UINT8 __fastcall gradius3_sound_read(UINT16 address)
 {
 	if ((address & 0xfff0) == 0xf020) {
 		return K007232ReadReg(0, address & 0x0f);
@@ -405,22 +407,22 @@ unsigned char __fastcall gradius3_sound_read(unsigned short address)
 	return 0;
 }
 
-static void DrvK007232VolCallback(int v)
+static void DrvK007232VolCallback(INT32 v)
 {
 	K007232SetVolume(0, 0, (v >> 0x4) * 0x11, 0);
 	K007232SetVolume(0, 1, 0, (v & 0x0f) * 0x11);
 }
 
-static void K052109Callback(int layer, int, int *code, int *color, int *, int *)
+static void K052109Callback(INT32 layer, INT32, INT32 *code, INT32 *color, INT32 *, INT32 *)
 {
-	int layer_colorbase[3] = { 0, 32, 48 };
+	INT32 layer_colorbase[3] = { 0, 32, 48 };
 
 	*code |= ((*color & 0x01) << 8) | ((*color & 0x1c) << 7);
 	*code &= 0xfff;
 	*color = layer_colorbase[layer] + ((*color & 0xe0) >> 5);
 }
 
-static void K051960Callback(int *code, int *color, int *priority, int *)
+static void K051960Callback(INT32 *code, INT32 *color, INT32 *priority, INT32 *)
 {
 	*priority = (*color & 0x60) >> 5;
 
@@ -429,7 +431,7 @@ static void K051960Callback(int *code, int *color, int *priority, int *)
 	*color = 0x10 + ((*color & 0x1e) >> 1);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -459,9 +461,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM0		= Next; Next += 0x100000;
 	Drv68KROM1		= Next; Next += 0x100000;
@@ -473,7 +475,7 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x080000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -493,12 +495,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x000, 0x01, 0x002, 0x003 };
-	int XOffs[16] = { 2*4, 3*4, 0*4, 1*4, 6*4, 7*4, 4*4, 5*4,
+	INT32 Plane[4] = { 0x000, 0x01, 0x002, 0x003 };
+	INT32 XOffs[16] = { 2*4, 3*4, 0*4, 1*4, 6*4, 7*4, 4*4, 5*4,
 			32*8+2*4, 32*8+3*4, 32*8+0*4, 32*8+1*4, 32*8+6*4, 32*8+7*4, 32*8+4*4, 32*8+5*4 };
-	int YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
+	INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
 			64*8+0*32, 64*8+1*32, 64*8+2*32, 64*8+3*32, 64*8+4*32, 64*8+5*32, 64*8+6*32, 64*8+7*32 };
 
 	konami_rom_deinterleave_2(DrvGfxROM1, 0x200000);
@@ -508,12 +510,12 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -576,7 +578,7 @@ static int DrvInit()
 	SekSetReadByteHandler(0,		gradius3_sub_read_byte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0xefff, 2, DrvZ80ROM);
@@ -608,7 +610,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -620,17 +622,16 @@ static int DrvExit()
 	K007232Exit();
 	BurnYM2151Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static inline void character_ram_decode()
 {
-	for (int i = 0; i < 0x20000; i++)
+	for (INT32 i = 0; i < 0x20000; i++)
 	{
-		int t = DrvShareRAM2[i ^ 1];
+		INT32 t = DrvShareRAM2[i ^ 1];
 
 		DrvGfxROMExp0[i * 2 + 0] = t >> 4;
 		DrvGfxROMExp0[i * 2 + 1] = t & 0x0f;
@@ -639,12 +640,12 @@ static inline void character_ram_decode()
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		r = (p[i] >> 10) & 0x1f;
-		g = (p[i] >>  5) & 0x1f;
-		b = (p[i] >>  0) & 0x1f;
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		r = (BURN_ENDIAN_SWAP_INT16(p[i]) >> 10) & 0x1f;
+		g = (BURN_ENDIAN_SWAP_INT16(p[i]) >>  5) & 0x1f;
+		b = (BURN_ENDIAN_SWAP_INT16(p[i]) >>  0) & 0x1f;
 
 		r = (r << 3) | (r >> 2);
 		g = (g << 3) | (g >> 2);
@@ -654,7 +655,7 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
@@ -703,15 +704,15 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	{
-		memset (DrvInputs, 0xff, 3 * sizeof(short));
-		for (int i = 0; i < 8; i++) {
+		memset (DrvInputs, 0xff, 3 * sizeof(INT16));
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -726,15 +727,15 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	int nCycleSegment;
-	int nSoundBufferPos = 0;
-	int nInterleave = 100;
-	int nCyclesTotal[3] = { 10000000 / 60, 10000000 / 60, 3579545 / 60 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nCycleSegment;
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nCyclesTotal[3] = { 10000000 / 60, 10000000 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		SekOpen(0);
 		nCycleSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
@@ -758,8 +759,8 @@ static int DrvFrame()
 		nCyclesDone[2] += ZetRun(nCycleSegment - nCyclesDone[2]);
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -769,9 +770,9 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		if (nSegmentLength) {
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K007232Update(0, pSoundBuf, nSegmentLength);
 		}
@@ -786,7 +787,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

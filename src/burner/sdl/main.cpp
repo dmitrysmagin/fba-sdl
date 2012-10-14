@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
 
 	if (argc == 2)
 	{
-		for (i = 0; i < nBurnDrvCount; i++) {
-			nBurnDrvSelect = i;
+		for (i = 0; i < nBurnDrvCount; i++) { 
+			nBurnDrvActive = i;
 			if (strcmp(BurnDrvGetTextA(0), argv[1]) == 0) {
 				break;
 			}

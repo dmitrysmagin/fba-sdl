@@ -1,5 +1,6 @@
 // Screen Window
 #include "burner.h"
+#include <shlobj.h>
 
 #define		HORIZONTAL_ORIENTED_RES		0
 #define		VERTICAL_ORIENTED_RES		1
@@ -90,7 +91,7 @@ void SetPauseMode(bool bPause)
 
 static char* CreateKailleraList()
 {
-	unsigned int nOldDrvSelect = nBurnDrvSelect;
+	unsigned int nOldDrvSelect = nBurnDrvActive;
 	int nSize = 256 * 1024;
 	char* pList = (char*)malloc(nSize);
 	char* pName = pList;
@@ -105,10 +106,10 @@ static char* CreateKailleraList()
 
 	if (avOk) {
 		// Add all the driver names to the list
-		for (nBurnDrvSelect = 0; nBurnDrvSelect < nBurnDrvCount; nBurnDrvSelect++) {
+		for (nBurnDrvActive = 0; nBurnDrvActive < nBurnDrvCount; nBurnDrvActive++) {
 
-			if(BurnDrvGetFlags() & BDF_GAME_WORKING && gameAv[nBurnDrvSelect]) {
-				char* szDecoratedName = DecorateGameName(nBurnDrvSelect);
+			if(BurnDrvGetFlags() & BDF_GAME_WORKING && gameAv[nBurnDrvActive]) {
+				char* szDecoratedName = DecorateGameName(nBurnDrvActive);
 
 				if (pName + strlen(szDecoratedName) >= pList + nSize) {
 					char* pNewList;
@@ -117,9 +118,9 @@ static char* CreateKailleraList()
 					if (pNewList == NULL) {
 						return NULL;
 					}
-					pName -= (unsigned int)pList;
+					pName -= (INT_PTR)pList;
 					pList = pNewList;
-					pName += (unsigned int)pList;
+					pName += (INT_PTR)pList;
 				}
 				pName += sprintf(pName, "%s", szDecoratedName);
 				pName++;
@@ -130,7 +131,7 @@ static char* CreateKailleraList()
 	*pName = '\0';
 	pName++;
 
-	nBurnDrvSelect = nOldDrvSelect;
+	nBurnDrvActive = nOldDrvSelect;
 
 	return pList;
 }
@@ -172,9 +173,9 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 	bool bFound = false;
 	HWND hActive;
 
-	for (nBurnDrvSelect = 0; nBurnDrvSelect < nBurnDrvCount; nBurnDrvSelect++) {
+	for (nBurnDrvActive = 0; nBurnDrvActive < nBurnDrvCount; nBurnDrvActive++) {
 
-		char* szDecoratedName = DecorateGameName(nBurnDrvSelect);
+		char* szDecoratedName = DecorateGameName(nBurnDrvActive);
 
 		if (!strcmp(szDecoratedName, game)) {
 			bFound = true;
@@ -193,7 +194,7 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 
 	bCheatsAllowed = false;								// Disable cheats during netplay
 	AudSoundStop();										// Stop while we load roms
-	DrvInit(nBurnDrvSelect, false);						// Init the game driver
+	DrvInit(nBurnDrvActive, false);						// Init the game driver
 	ScrnInit();
 	AudSoundPlay();										// Restart sound
 	VidInit();
@@ -271,27 +272,32 @@ static void DoNetGame()
 	Kaillera_Select_Server_Dialog(NULL);
 	//kailleraSelectServerDialog(NULL);
 
-	free(gameList);
+	if (gameList) {
+		free(gameList);
+		gameList = NULL;
+	}
 	
 	End_Network();
 
 	POST_INITIALISE_MESSAGE;
 }
 
-int CreateDatfileWindows(int bIncMegadrive)
+int CreateDatfileWindows(int bType)
 {
 	TCHAR szTitle[1024];
 	TCHAR szFilter[1024];
 	
-	TCHAR szMegadriveString[25];
-	_sntprintf(szMegadriveString, 25, _T(""));
-	if (bIncMegadrive == 1) _sntprintf(szMegadriveString, 25, _T(", including Megadrive"));
-	if (bIncMegadrive == 2) _sntprintf(szMegadriveString, 25, _T(", Megadrive only"));
+	TCHAR szConsoleString[64];
+	_sntprintf(szConsoleString, 64, _T(""));
+	if (bType == DAT_MEGADRIVE_ONLY) _sntprintf(szConsoleString, 64, _T(", Megadrive only"));
+	if (bType == DAT_PCENGINE_ONLY) _sntprintf(szConsoleString, 64, _T(", PC-Engine only"));
+	if (bType == DAT_TG16_ONLY) _sntprintf(szConsoleString, 64, _T(", TurboGrafx16 only"));
+	if (bType == DAT_SGX_ONLY) _sntprintf(szConsoleString, 64, _T(", SuprGrafx only"));
 	
 	TCHAR szProgramString[25];	
 	_sntprintf(szProgramString, 25, _T("ClrMame Pro XML"));
 	
-	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s%s).dat"), szAppBurnVer, szProgramString, szMegadriveString);
+	_sntprintf(szChoice, MAX_PATH, _T(APP_TITLE) _T(" v%.20s (%s%s).dat"), szAppBurnVer, szProgramString, szConsoleString);
 	_sntprintf(szTitle, 256, FBALoadStringEx(hAppInst, IDS_DAT_GENERATE, true), szProgramString);
 
 	_stprintf(szFilter, FBALoadStringEx(hAppInst, IDS_DISK_ALL_DAT, true), _T(APP_TITLE));
@@ -312,7 +318,7 @@ int CreateDatfileWindows(int bIncMegadrive)
 	if (GetSaveFileName(&ofn) == 0)
 		return -1;
 
-	return create_datfile(szChoice, bIncMegadrive);
+	return create_datfile(szChoice, bType);
 }
 
 // Returns true if a VidInit is needed when the window is resized
@@ -701,33 +707,38 @@ static void UpdatePreviousGameList()
 }
 
 // Compact driver loading module
-int BurnLoadDriver(TCHAR *szDriverName)
+int BurnerLoadDriver(TCHAR *szDriverName)
 {
-	for (unsigned int i = 0; i < nBurnDrvCount; i++)
-	{
-		nBurnDrvSelect = i;
-		if (!_tcscmp(BurnDrvGetText(DRV_NAME), szDriverName)) {
+	unsigned int j;
+	
+	int nOldDrvSelect = nBurnDrvActive;
+	DrvExit();
+	bLoading = 1;
+			
+	for (j = 0; j < nBurnDrvCount; j++) {
+		nBurnDrvActive = j;
+		if (!_tcscmp(szDriverName, BurnDrvGetText(DRV_NAME)) && (!(BurnDrvGetFlags() & BDF_BOARDROM))) {
+			nBurnDrvActive = nOldDrvSelect;
+			nDialogSelect = j;
+			SplashDestroy(1);
+			StopReplay();
+			
+			DrvExit();
+			DrvInit(j, true);	// Init the game driver
+			MenuEnableItems();
+			bAltPause = 0;
+			AudSoundPlay();			// Restart sound
+			bLoading = 0;
+			UpdatePreviousGameList();
+			if (bVidAutoSwitchFull) {
+				nVidFullscreen = 1;
+				POST_INITIALISE_MESSAGE;
+			}
 			break;
 		}
 	}
-
-	// If not in range, return error
-	if(nBurnDrvSelect >= nBurnDrvCount) return 1;
-
-	DrvExit();
-	DrvInit(nBurnDrvSelect, true);      // Init the game driver
-	MenuEnableItems();
-	bAltPause = 0;
-	AudSoundPlay();                  // Restart sound
-	bLoading = 0;
-	UpdatePreviousGameList();
-	if (bVidAutoSwitchFull) {
-		nVidFullscreen = 1;
-		POST_INITIALISE_MESSAGE;
-	}
-
-	POST_INITIALISE_MESSAGE;
-   return 0;
+	
+	return 0;
 }
 
 
@@ -764,7 +775,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			bLoading = 1;
 			AudSoundStop();						// Stop while the dialog is active or we're loading ROMs
 
-			nGame = SelDialog(hScrnWnd);		// Bring up select dialog to pick a driver
+			nGame = SelDialog(0, hScrnWnd);		// Bring up select dialog to pick a driver
 			
 			extern bool bDialogCancel;
 
@@ -801,35 +812,49 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_PREVIOUSGAMES8:
 		case MENU_PREVIOUSGAMES9:
 		case MENU_PREVIOUSGAMES10: {
-			unsigned int j;
-			
-			int nOldDrvSelect = nBurnDrvSelect;
-			DrvExit();
-			bLoading = 1;
-			
-			for (j = 0; j < nBurnDrvCount; j++) {
-				nBurnDrvSelect = j;
-				if (!_tcscmp(szPrevGames[id - MENU_PREVIOUSGAMES1], BurnDrvGetText(DRV_NAME))) {
-					nBurnDrvSelect = nOldDrvSelect;
-					nDialogSelect = j;
-					SplashDestroy(1);
-					StopReplay();
-					
-					DrvExit();
-					DrvInit(j, true);	// Init the game driver
-					MenuEnableItems();
-					bAltPause = 0;
-					AudSoundPlay();			// Restart sound
-					bLoading = 0;
-					UpdatePreviousGameList();
-					if (bVidAutoSwitchFull) {
-						nVidFullscreen = 1;
-						POST_INITIALISE_MESSAGE;
-					}
-					break;
-				}
+			BurnerLoadDriver(szPrevGames[id - MENU_PREVIOUSGAMES1]);			
+			break;
+		}
+		
+		case MENU_START_NEOGEO_MVS: {
+			BurnerLoadDriver(_T("neogeo"));
+			break;
+		}
+		
+		case MENU_START_NEOGEO_CD: {
+			BurnerLoadDriver(_T("neocdz"));
+			break;
+		}
+		
+		case MENU_LOAD_NEOCD: {
+			AudBlankSound();
+			if (UseDialogs()) {
+				NeoCDList_Init();
 			}
-			
+			break;
+		}
+		
+		case MENU_CDIMAGE: {
+			nCDEmuSelect = 0;
+			TCHAR szFilter[100];
+			_stprintf(szFilter, _T("%s"), FBALoadStringEx(hAppInst, IDS_CD_SELECT_FILTER, true));
+			memcpy(szFilter + _tcslen(szFilter), _T(" (*.iso,*.cue)\0*.iso;*.cue\0\0"), 28 * sizeof(TCHAR));
+			TCHAR szTitle[100];
+			_stprintf(szTitle, _T("%s"), FBALoadStringEx(hAppInst, IDS_CD_SELECT_IMAGE_TITLE, true));
+			if (UseDialogs() && !bDrvOkay) {
+				memset(&ofn, 0, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = hScrnWnd;
+				ofn.lpstrFile = CDEmuImage;
+				ofn.nMaxFile = MAX_PATH;
+				ofn.lpstrTitle = szTitle;
+				ofn.lpstrFilter = szFilter;
+				ofn.lpstrInitialDir = _T(".");
+				ofn.Flags = OFN_NOCHANGEDIR | OFN_HIDEREADONLY;
+				ofn.lpstrDefExt = _T("cue");
+
+				GetOpenFileName(&ofn);
+			}
 			break;
 		}
 
@@ -896,7 +921,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				ScrnTitle();
 				MenuEnableItems();
 				nDialogSelect = -1;
-				nBurnDrvSelect = ~0U;
+				nBurnDrvActive = ~0U;
 				
 				POST_INITIALISE_MESSAGE;
 			}
@@ -920,7 +945,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				SetPauseMode(0);
 			}
 			break;
-
+			
 		case MENU_INPUT:
 			AudBlankSound();
 			if (UseDialogs()) {
@@ -1097,12 +1122,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			VidSelect(3);
 			POST_INITIALISE_MESSAGE;
 			break;
-#if 0
 		case MENU_BLITTER_5:
 			VidSelect(4);
 			POST_INITIALISE_MESSAGE;
 			break;
-		case MENU_BLITTER_6:
+#if 0
+			case MENU_BLITTER_6:
 			VidSelect(5);
 			POST_INITIALISE_MESSAGE;
 			break;
@@ -1467,17 +1492,20 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			bVidAutoSwitchFull = !bVidAutoSwitchFull;
 			break;
 
-		case MENU_MEMAUTO:
+		case MENU_BASIC_MEMAUTO:
+		case MENU_SOFTFX_MEMAUTO:
 			nVidTransferMethod = -1;
 			POST_INITIALISE_MESSAGE;
 			break;
 
-		case MENU_VIDEOMEM:
+		case MENU_BASIC_VIDEOMEM:
+		case MENU_SOFTFX_VIDEOMEM:
 			nVidTransferMethod = 0;
 			POST_INITIALISE_MESSAGE;
 			break;
 
-		case MENU_SYSMEM:
+		case MENU_BASIC_SYSMEM:
+		case MENU_SOFTFX_SYSMEM:
 			nVidTransferMethod = 1;
 			POST_INITIALISE_MESSAGE;
 			break;
@@ -1721,7 +1749,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 			
 		case MENU_SUPPORTDIRS:
-			SupportDirCreate();
+			SupportDirCreate(hScrnWnd);
 			break;
 			
 		case MENU_LANGUAGE_SELECT:
@@ -1740,6 +1768,90 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			FBALocaliseInit(szLocalisationTemplate);
 			POST_INITIALISE_MESSAGE;
 			break;
+			
+		case MENU_LANGUAGE_GL_SELECT:
+			if (UseDialogs()) {
+				FBALocaliseGamelistLoadTemplate();
+			}
+			break;
+		case MENU_LANGUAGE_GL_EXPORT:
+			if (UseDialogs()) {
+				FBALocaliseGamelistCreateTemplate();
+			}
+			break;
+		case MENU_LANGUAGE_GL_RESET:
+			szGamelistLocalisationTemplate[0] = _T('\0');
+			nGamelistLocalisationActive = false;
+			break;
+		
+		case MENU_ENABLEICONS: {
+			bEnableIcons = !bEnableIcons;
+			if(!bEnableIcons && bIconsLoaded) {
+				// unload icons
+				UnloadDrvIcons();
+				bIconsLoaded = 0;
+			} 
+			if(bEnableIcons && !bIconsLoaded) {
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			break;
+		}
+
+		case MENU_ICONS_SIZE_16: {
+			nIconsSize = ICON_16x16;
+			if(bEnableIcons && bIconsLoaded) {
+				// unload icons
+				UnloadDrvIcons();
+				bIconsLoaded = 0;
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			if(bEnableIcons && !bIconsLoaded) {
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			break;
+		}
+
+		case MENU_ICONS_SIZE_24: {
+			nIconsSize = ICON_24x24;
+			if(bEnableIcons && bIconsLoaded) {
+				// unload icons
+				UnloadDrvIcons();
+				bIconsLoaded = 0;
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			if(bEnableIcons && !bIconsLoaded) {
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			break;
+		}
+
+		case MENU_ICONS_SIZE_32: {
+			nIconsSize = ICON_32x32;
+			if(bEnableIcons && bIconsLoaded) {
+				// unload icons
+				UnloadDrvIcons();
+				bIconsLoaded = 0;
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			if(bEnableIcons && !bIconsLoaded) {
+				// load icons
+				LoadDrvIcons();
+				bIconsLoaded = 1;
+			}
+			break;
+		}
 			
 		case MENU_PRIORITY_REALTIME:
 			nAppThreadPriority = THREAD_PRIORITY_TIME_CRITICAL;
@@ -1768,19 +1880,31 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			
 		case MENU_CLRMAME_PRO_XML:
 			if (UseDialogs()) {
-				CreateDatfileWindows(0);
+				CreateDatfileWindows(DAT_ARCADE_ONLY);
 			}
 			break;
 		
-		case MENU_CLRMAME_PRO_XML_INC_MD:
+		case MENU_CLRMAME_PRO_XML_MD_ONLY:
 			if (UseDialogs()) {
-				CreateDatfileWindows(1);
+				CreateDatfileWindows(DAT_MEGADRIVE_ONLY);
 			}
 			break;
 			
-		case MENU_CLRMAME_PRO_XML_MD_ONLY:
+		case MENU_CLRMAME_PRO_XML_PCE_ONLY:
 			if (UseDialogs()) {
-				CreateDatfileWindows(2);
+				CreateDatfileWindows(DAT_PCENGINE_ONLY);
+			}
+			break;
+		
+		case MENU_CLRMAME_PRO_XML_TG16_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_TG16_ONLY);
+			}
+			break;
+		
+		case MENU_CLRMAME_PRO_XML_SGX_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_SGX_ONLY);
 			}
 			break;
 
@@ -1833,7 +1957,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			
 		case MENU_CHEATSEARCH_START: {
 			CheatSearchStart();
-			VidSAddChatMsg(NULL, 0xFFFFFF, _T("New cheat search started"), 0xFFBFBF);
+			
+			TCHAR szText[100];
+			_stprintf(szText, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_NEW, true));
+			VidSAddChatMsg(NULL, 0xFFFFFF, szText, 0xFFBFBF);
+			
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_NOCHANGE, MF_ENABLED | MF_BYCOMMAND);
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_CHANGE, MF_ENABLED | MF_BYCOMMAND);
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_DECREASE, MF_ENABLED | MF_BYCOMMAND);
@@ -1847,12 +1975,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			TCHAR tmpmsg[256];
 			unsigned int nValues = CheatSearchValueNoChange();
 
-			_sntprintf(tmpmsg, 256, _T("%i Addresses Matched"), nValues);
+			_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_ADD_MATCH, true), nValues);
 			VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 			
 			if (nValues <= CHEATSEARCH_SHOWRESULTS) {
 				for (unsigned int i = 0; i < nValues; i++) {
-					_sntprintf(tmpmsg, 256, _T("Address %08X Value %02X"), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
+					_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_RESULTS, true), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
 					VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 				}
 			}
@@ -1863,12 +1991,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			TCHAR tmpmsg[256];
 			unsigned int nValues = CheatSearchValueChange();
 
-			_sntprintf(tmpmsg, 256, _T("%i Addresses Matched"), nValues);
+			_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_ADD_MATCH, true), nValues);
 			VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 			
 			if (nValues <= CHEATSEARCH_SHOWRESULTS) {
 				for (unsigned int i = 0; i < nValues; i++) {
-					_sntprintf(tmpmsg, 256, _T("Address %08X Value %02X"), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
+					_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_RESULTS, true), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
 					VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 				}
 			}
@@ -1879,12 +2007,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			TCHAR tmpmsg[256];
 			unsigned int nValues = CheatSearchValueDecreased();
 
-			_sntprintf(tmpmsg, 256, _T("%i Addresses Matched"), nValues);
+			_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_ADD_MATCH, true), nValues);
 			VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 			
 			if (nValues <= CHEATSEARCH_SHOWRESULTS) {
 				for (unsigned int i = 0; i < nValues; i++) {
-					_sntprintf(tmpmsg, 256, _T("Address %08X Value %02X"), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
+					_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_RESULTS, true), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
 					VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 				}
 			}
@@ -1896,12 +2024,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 			unsigned int nValues = CheatSearchValueIncreased();
 
-			_sntprintf(tmpmsg, 256, _T("%i Addresses Matched"), nValues);
+			_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_ADD_MATCH, true), nValues);
 			VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 			
 			if (nValues <= CHEATSEARCH_SHOWRESULTS) {
 				for (unsigned int i = 0; i < nValues; i++) {
-					_sntprintf(tmpmsg, 256, _T("Address %08X Value %02X"), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
+					_stprintf(tmpmsg, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_RESULTS, true), CheatSearchShowResultAddresses[i], CheatSearchShowResultValues[i]);
 					VidSAddChatMsg(NULL, 0xFFFFFF, tmpmsg, 0xFFBFBF);
 				}
 			}
@@ -1915,7 +2043,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		
 		case MENU_CHEATSEARCH_EXIT: {
 			CheatSearchExit();
-			VidSAddChatMsg(NULL, 0xFFFFFF, _T("Cheat search exited"), 0xFFBFBF);
+			
+			TCHAR szText[100];
+			_stprintf(szText, FBALoadStringEx(hAppInst, IDS_CHEAT_SEARCH_EXIT, true));
+			VidSAddChatMsg(NULL, 0xFFFFFF, szText, 0xFFBFBF);
+			
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_NOCHANGE, MF_GRAYED | MF_BYCOMMAND);
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_CHANGE, MF_GRAYED | MF_BYCOMMAND);
 			EnableMenuItem(hMenu, MENU_CHEATSEARCH_DECREASE, MF_GRAYED | MF_BYCOMMAND);
@@ -1994,12 +2126,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 
-		case MENU_WWW_FORUM:
-			if (!nVidFullscreen) {
-				ShellExecute(NULL, _T("open"), _T("http://www.ojko.com/phpbb/viewforum.php?f=27"), NULL, NULL, SW_SHOWNORMAL);
-			}
-			break;
-			
 		case MENU_WWW_NSFORUM:
 			if (!nVidFullscreen) {
 				ShellExecute(NULL, _T("open"), _T("http://neosource.1emu.net/forums/"), NULL, NULL, SW_SHOWNORMAL);
@@ -2015,11 +2141,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case 0: {
 			switch (id) {
 				// Options for the Default DirectDraw blitter
-				case MENU_NORMAL:
+				case MENU_BASIC_NORMAL:
 					bVidScanlines = 0;
 					POST_INITIALISE_MESSAGE;
 					break;
-				case MENU_SCAN:
+				case MENU_BASIC_SCAN:
 					bVidScanlines = 1;
 					bVidScanHalf = 0;
 					POST_INITIALISE_MESSAGE;
@@ -2030,8 +2156,13 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					POST_INITIALISE_MESSAGE;
 					break;
 
-				case MENU_ROTSCAN:
+				case MENU_BASIC_ROTSCAN:
 					bVidScanRotate = !bVidScanRotate;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_FORCE_FLIP:
+					bVidForceFlip = !bVidForceFlip;
 					POST_INITIALISE_MESSAGE;
 					break;
 			}
@@ -2058,11 +2189,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					bVidScanDelay = !bVidScanDelay;
 					break;
 
-				case MENU_NORMAL:
+				case MENU_ENHANCED_NORMAL:
 					nVidBlitterOpt[nVidSelect] &= ~0x00110000;
 					POST_INITIALISE_MESSAGE;
 					break;
-				case MENU_SCAN:
+				case MENU_ENHANCED_SCAN:
 					bVidScanlines = !bVidScanlines;
 					nVidBlitterOpt[nVidSelect] &= ~0x00010000;
 					POST_INITIALISE_MESSAGE;
@@ -2119,7 +2250,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					}
 					break;
 
-				case MENU_ROTSCAN:
+				case MENU_ENHANCED_ROTSCAN:
 					bVidScanRotate = !bVidScanRotate;
 					POST_INITIALISE_MESSAGE;
 					break;
@@ -2134,42 +2265,42 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					POST_INITIALISE_MESSAGE;
 					break;
 
-				case MENU_SOFT_STRETCH:
-				case MENU_SOFT_SCALE2X:
-				case MENU_SOFT_SCALE3X:
-				case MENU_SOFT_2XPM_LQ:
-				case MENU_SOFT_2XPM_HQ:
-				case MENU_SOFT_EAGLE:
-				case MENU_SOFT_SUPEREAGLE:
-				case MENU_SOFT_2XSAI:
-				case MENU_SOFT_SUPER2XSAI:
-				case MENU_SOFT_SUPEREAGLE_VBA:
-				case MENU_SOFT_2XSAI_VBA:
-				case MENU_SOFT_SUPER2XSAI_VBA:
-				case MENU_SOFT_SUPERSCALE:
-				case MENU_SOFT_SUPERSCALE75:
-				case MENU_SOFT_HQ2X:
-				case MENU_SOFT_HQ3X:
-				case MENU_SOFT_HQ4X:
-				case MENU_SOFT_HQ2XS_VBA:
-				case MENU_SOFT_HQ3XS_VBA:
-				case MENU_SOFT_HQ2XS_SNES9X:
-				case MENU_SOFT_HQ3XS_SNES9X:
-				case MENU_SOFT_HQ2XBOLD:
-				case MENU_SOFT_HQ3XBOLD:
-				case MENU_SOFT_EPXB:
-				case MENU_SOFT_EPXC: {
+				case MENU_ENHANCED_SOFT_STRETCH:
+				case MENU_ENHANCED_SOFT_SCALE2X:
+				case MENU_ENHANCED_SOFT_SCALE3X:
+				case MENU_ENHANCED_SOFT_2XPM_LQ:
+				case MENU_ENHANCED_SOFT_2XPM_HQ:
+				case MENU_ENHANCED_SOFT_EAGLE:
+				case MENU_ENHANCED_SOFT_SUPEREAGLE:
+				case MENU_ENHANCED_SOFT_2XSAI:
+				case MENU_ENHANCED_SOFT_SUPER2XSAI:
+				case MENU_ENHANCED_SOFT_SUPEREAGLE_VBA:
+				case MENU_ENHANCED_SOFT_2XSAI_VBA:
+				case MENU_ENHANCED_SOFT_SUPER2XSAI_VBA:
+				case MENU_ENHANCED_SOFT_SUPERSCALE:
+				case MENU_ENHANCED_SOFT_SUPERSCALE75:
+				case MENU_ENHANCED_SOFT_HQ2X:
+				case MENU_ENHANCED_SOFT_HQ3X:
+				case MENU_ENHANCED_SOFT_HQ4X:
+				case MENU_ENHANCED_SOFT_HQ2XS_VBA:
+				case MENU_ENHANCED_SOFT_HQ3XS_VBA:
+				case MENU_ENHANCED_SOFT_HQ2XS_SNES9X:
+				case MENU_ENHANCED_SOFT_HQ3XS_SNES9X:
+				case MENU_ENHANCED_SOFT_HQ2XBOLD:
+				case MENU_ENHANCED_SOFT_HQ3XBOLD:
+				case MENU_ENHANCED_SOFT_EPXB:
+				case MENU_ENHANCED_SOFT_EPXC: {
 					nVidBlitterOpt[nVidSelect] &= 0x0FFFFFFF;
-					nVidBlitterOpt[nVidSelect] |= 0x03000000 + ((long long)(id - MENU_SOFT_STRETCH) << 32);
+					nVidBlitterOpt[nVidSelect] |= 0x03000000 + ((long long)(id - MENU_ENHANCED_SOFT_STRETCH) << 32);
 					POST_INITIALISE_MESSAGE;
 					break;
 				}
-				case MENU_SOFT_AUTOSIZE:
+				case MENU_ENHANCED_SOFT_AUTOSIZE:
 					nVidBlitterOpt[nVidSelect] ^= 0x04000000;
 					POST_INITIALISE_MESSAGE;
 					break;
 
-				case MENU_SCANINTENSITY:
+				case MENU_ENHANCED_SCANINTENSITY:
 					if (UseDialogs()) {
 						InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 						AudBlankSound();
@@ -2241,37 +2372,37 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case 2: {
 			switch (id) {
 				// Options for the DirectDraw Software Effects blitter
-				case MENU_SOFT_STRETCH:
-				case MENU_SOFT_SCALE2X:
-				case MENU_SOFT_SCALE3X:
-				case MENU_SOFT_2XPM_LQ:
-				case MENU_SOFT_2XPM_HQ:
-				case MENU_SOFT_EAGLE:
-				case MENU_SOFT_SUPEREAGLE:
-				case MENU_SOFT_2XSAI:
-				case MENU_SOFT_SUPER2XSAI:
-				case MENU_SOFT_SUPEREAGLE_VBA:
-				case MENU_SOFT_2XSAI_VBA:
-				case MENU_SOFT_SUPER2XSAI_VBA:
-				case MENU_SOFT_SUPERSCALE:
-				case MENU_SOFT_SUPERSCALE75:
-				case MENU_SOFT_HQ2X:
-				case MENU_SOFT_HQ3X:
-				case MENU_SOFT_HQ4X:
-				case MENU_SOFT_HQ2XS_VBA:
-				case MENU_SOFT_HQ3XS_VBA:
-				case MENU_SOFT_HQ2XS_SNES9X:
-				case MENU_SOFT_HQ3XS_SNES9X:
-				case MENU_SOFT_HQ2XBOLD:
-				case MENU_SOFT_HQ3XBOLD:
-				case MENU_SOFT_EPXB:
-				case MENU_SOFT_EPXC:
+				case MENU_SOFTFX_SOFT_STRETCH:
+				case MENU_SOFTFX_SOFT_SCALE2X:
+				case MENU_SOFTFX_SOFT_SCALE3X:
+				case MENU_SOFTFX_SOFT_2XPM_LQ:
+				case MENU_SOFTFX_SOFT_2XPM_HQ:
+				case MENU_SOFTFX_SOFT_EAGLE:
+				case MENU_SOFTFX_SOFT_SUPEREAGLE:
+				case MENU_SOFTFX_SOFT_2XSAI:
+				case MENU_SOFTFX_SOFT_SUPER2XSAI:
+				case MENU_SOFTFX_SOFT_SUPEREAGLE_VBA:
+				case MENU_SOFTFX_SOFT_2XSAI_VBA:
+				case MENU_SOFTFX_SOFT_SUPER2XSAI_VBA:
+				case MENU_SOFTFX_SOFT_SUPERSCALE:
+				case MENU_SOFTFX_SOFT_SUPERSCALE75:
+				case MENU_SOFTFX_SOFT_HQ2X:
+				case MENU_SOFTFX_SOFT_HQ3X:
+				case MENU_SOFTFX_SOFT_HQ4X:
+				case MENU_SOFTFX_SOFT_HQ2XS_VBA:
+				case MENU_SOFTFX_SOFT_HQ3XS_VBA:
+				case MENU_SOFTFX_SOFT_HQ2XS_SNES9X:
+				case MENU_SOFTFX_SOFT_HQ3XS_SNES9X:
+				case MENU_SOFTFX_SOFT_HQ2XBOLD:
+				case MENU_SOFTFX_SOFT_HQ3XBOLD:
+				case MENU_SOFTFX_SOFT_EPXB:
+				case MENU_SOFTFX_SOFT_EPXC:
 					nVidBlitterOpt[nVidSelect] &= ~0xFF;
-					nVidBlitterOpt[nVidSelect] |= id - MENU_SOFT_STRETCH;
+					nVidBlitterOpt[nVidSelect] |= id - MENU_SOFTFX_SOFT_STRETCH;
 					POST_INITIALISE_MESSAGE;
 					break;
 
-				case MENU_SOFT_AUTOSIZE:
+				case MENU_SOFTFX_SOFT_AUTOSIZE:
 					nVidBlitterOpt[nVidSelect] ^= 0x0100;
 					POST_INITIALISE_MESSAGE;
 					break;
@@ -2349,11 +2480,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					break;
 */
 
-				case MENU_SCAN:
+				case MENU_EXP_SCAN:
 					bVidScanlines = !bVidScanlines;
 					POST_INITIALISE_MESSAGE;
 					break;
-				case MENU_SCANINTENSITY:
+				case MENU_EXP_SCANINTENSITY:
 					if (UseDialogs()) {
 						InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 						AudBlankSound();
@@ -2418,6 +2549,65 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					POST_INITIALISE_MESSAGE;
 					break;
 
+			}
+			break;
+		case 4:
+			switch (id) {
+				// Options for the DirectX Graphics 9 Alternate blitter
+				case MENU_DX9_ALT_POINT:
+					bVidDX9Bilinear = 0;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_DX9_ALT_LINEAR:
+					bVidDX9Bilinear = 1;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_DX9_ALT_SOFT_STRETCH:
+				case MENU_DX9_ALT_SOFT_SCALE2X:
+				case MENU_DX9_ALT_SOFT_SCALE3X:
+				case MENU_DX9_ALT_SOFT_2XPM_LQ:
+				case MENU_DX9_ALT_SOFT_2XPM_HQ:
+				case MENU_DX9_ALT_SOFT_EAGLE:
+				case MENU_DX9_ALT_SOFT_SUPEREAGLE:
+				case MENU_DX9_ALT_SOFT_2XSAI:
+				case MENU_DX9_ALT_SOFT_SUPER2XSAI:
+				case MENU_DX9_ALT_SOFT_SUPEREAGLE_VBA:
+				case MENU_DX9_ALT_SOFT_2XSAI_VBA:
+				case MENU_DX9_ALT_SOFT_SUPER2XSAI_VBA:
+				case MENU_DX9_ALT_SOFT_SUPERSCALE:
+				case MENU_DX9_ALT_SOFT_SUPERSCALE75:
+				case MENU_DX9_ALT_SOFT_HQ2X:
+				case MENU_DX9_ALT_SOFT_HQ3X:
+				case MENU_DX9_ALT_SOFT_HQ4X:
+				case MENU_DX9_ALT_SOFT_HQ2XS_VBA:
+				case MENU_DX9_ALT_SOFT_HQ3XS_VBA:
+				case MENU_DX9_ALT_SOFT_HQ2XS_SNES9X:
+				case MENU_DX9_ALT_SOFT_HQ3XS_SNES9X:
+				case MENU_DX9_ALT_SOFT_HQ2XBOLD:
+				case MENU_DX9_ALT_SOFT_HQ3XBOLD:
+				case MENU_DX9_ALT_SOFT_EPXB:
+				case MENU_DX9_ALT_SOFT_EPXC:
+					nVidBlitterOpt[nVidSelect] &= ~0xFF;
+					nVidBlitterOpt[nVidSelect] |= id - MENU_DX9_ALT_SOFT_STRETCH;
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_ALT_SOFT_AUTOSIZE:
+					nVidBlitterOpt[nVidSelect] ^= 0x0100;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_DX9_ALT_HARDWAREVERTEX:
+					bVidHardwareVertex = !bVidHardwareVertex;
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_ALT_MOTIONBLUR:
+					bVidMotionBlur = !bVidMotionBlur;
+					POST_INITIALISE_MESSAGE;
+					break;
 			}
 			break;
 	}
@@ -2746,6 +2936,8 @@ int ScrnSize()
   	return 0;
 }
 
+#include "neocdlist.h"
+
 int ScrnTitle()
 {
 	TCHAR szText[1024] = _T("");
@@ -2762,6 +2954,11 @@ int ScrnTitle()
 			}
 			pszPosition += _stprintf(pszPosition, _T(SEPERATOR_2) _T("%s"), pszName);
 		}
+
+		if(NeoCDInfo_Init()) {
+			return 0;
+		}
+
 	} else {
 		_stprintf(szText, _T(APP_TITLE) _T( " v%.20s") _T(SEPERATOR_1) _T("[%s]"), szAppBurnVer, FBALoadStringEx(hAppInst, IDS_SCRN_NOGAME, true));
 	}
@@ -2769,6 +2966,7 @@ int ScrnTitle()
 	SetWindowText(hScrnWnd, szText);
 	return 0;
 }
+
 
 // Init the screen window (create it)
 int ScrnInit()

@@ -108,20 +108,20 @@
 #if BPP == 16
  #define PLOTPIXEL(a, b) if (TESTCOLOUR(b) && TESTZBUF(a)) {			\
    	WRITEZBUF(a);														\
-   	((unsigned short*)pTileRow)[a] = (unsigned short)pTilePalette[b];	\
+   	((UINT16*)pTileRow)[a] = (UINT16)pTilePalette[b];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a, b) if (TESTCOLOUR(b) && TESTZBUF(a)) {			\
-	unsigned int nRGB = pTilePalette[b];								\
+	UINT32 nRGB = pTilePalette[b];								\
    	WRITEZBUF(a);														\
-	pTileRow[3 * a + 0] = (unsigned char)nRGB;							\
-	pTileRow[3 * a + 1] = (unsigned char)(nRGB >> 8);					\
-	pTileRow[3 * a + 2] = (unsigned char)(nRGB >> 16);					\
+	pTileRow[3 * a + 0] = (UINT8)nRGB;							\
+	pTileRow[3 * a + 1] = (UINT8)(nRGB >> 8);					\
+	pTileRow[3 * a + 2] = (UINT8)(nRGB >> 16);					\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a, b) if (TESTCOLOUR(b) && TESTZBUF(a)) {			\
    	WRITEZBUF(a);														\
-	((unsigned int*)pTileRow)[a] = (unsigned int)pTilePalette[b];		\
+	((UINT32*)pTileRow)[a] = (UINT32)pTilePalette[b];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -141,15 +141,15 @@ static void FUNCTIONNAME(BPP,TRANSMODE,DOFLIP,ROT,SCROLL,ZOOMMODE,ZBUF,CLIP)()
 // Create an empty function if unsupported features are requested
 #if ROT == 0
 
-	unsigned char* pTileRow;
+	UINT8* pTileRow;
  #if ZBUFFER != 0
-	unsigned short* pZTileRow;
+	UINT16* pZTileRow;
  #endif
 
  #if ROWSCROLL == 1
-	int nRowOffset;
+	INT32 nRowOffset;
  #endif
-	int y;
+	INT32 y;
 
  #if ZOOM == 1
   #if ZBUFFER == 0
@@ -200,7 +200,7 @@ static void FUNCTIONNAME(BPP,TRANSMODE,DOFLIP,ROT,SCROLL,ZOOMMODE,ZBUF,CLIP)()
  #endif
 
   #if ROWSCROLL == 1
-		nRowOffset = (nTileXPos - pTileRowInfo[(nTileYPos + y) & 0xFF]) & nTilemapWith;
+		nRowOffset = (nTileXPos - BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos + y) & 0xFF])) & nTilemapWith;
 		if (nRowOffset >= 320) {
 			nRowOffset -= nTilemapWith + 1;
 		}

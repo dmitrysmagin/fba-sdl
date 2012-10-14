@@ -26,16 +26,17 @@
 
 #define FREQBASEBITS	16
 
-static unsigned int nUpdateStep;
+static UINT32 nUpdateStep;
 
 /* this structure defines the parameters for a channel */
 typedef struct
 {
-	unsigned long counter;
-	int frequency;
-	int volume;
-	int key;
-	signed char waveform[32];		/* 19991207.CAB */
+	//unsigned long counter;
+	UINT64 counter;
+	INT32 frequency;
+	INT32 volume;
+	INT32 key;
+	INT8 waveform[32];		/* 19991207.CAB */
 } k051649_sound_channel;
 
 typedef struct _k051649_state k051649_state;
@@ -44,25 +45,25 @@ struct _k051649_state
 	k051649_sound_channel channel_list[5];
 
 	/* global sound parameters */
-	int mclock,rate,gain;
+	INT32 mclock,rate,gain;
 
 	/* mixer tables and internal buffers */
 	INT16 *mixer_table;
 	INT16 *mixer_lookup;
-	short *mixer_buffer;
+	INT16 *mixer_buffer;
 
-	int f[10];
+	INT32 f[10];
 };
 
 static k051649_state Chips[1]; // ok?
 static k051649_state *info;
 
 /* build a table to divide by the number of voices */
-static void make_mixer_table(int voices)
+static void make_mixer_table(INT32 voices)
 {
-	int count = voices * 256;
-	int i;
-	int gain = 8;
+	INT32 count = voices * 256;
+	INT32 i;
+	INT32 gain = 8;
 
 	/* allocate memory */
 	info->mixer_table = (INT16 *)malloc(512 * voices * sizeof(INT16));
@@ -73,7 +74,7 @@ static void make_mixer_table(int voices)
 	/* fill in the table - 16 bit case */
 	for (i = 0; i < count; i++)
 	{
-		int val = i * gain * 16 / voices;
+		INT32 val = i * gain * 16 / voices;
 		if (val > 32767) val = 32767;
 		info->mixer_lookup[ i] = val;
 		info->mixer_lookup[-i] = -val;
@@ -82,16 +83,20 @@ static void make_mixer_table(int voices)
 
 
 /* generate sound to the mix buffer */
-void K051649Update(short *pBuf, int samples)
+void K051649Update(INT16 *pBuf, INT32 samples)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649Update called without init\n"));
+#endif
+
 	info = &Chips[0];
 	k051649_sound_channel *voice=info->channel_list;
-	short *mix;
-	int i,v,f,j,k;
-	int gain = info->gain;
+	INT16 *mix;
+	INT32 i,v,f,j,k;
+	INT32 gain = info->gain;
 
 	/* zap the contents of the mixer buffer */
-	memset(info->mixer_buffer, 0, samples * sizeof(short));
+	memset(info->mixer_buffer, 0, samples * sizeof(INT16));
 
 	for (j=0; j<5; j++) {
 		v=voice[j].volume;
@@ -100,20 +105,20 @@ void K051649Update(short *pBuf, int samples)
 		/* SY 20040109: the SCC produces no sound for freq < 9 */
 		if (v && f > 8 && k)
 		{
-			const signed char *w = voice[j].waveform;			/* 19991207.CAB */
-			int c=voice[j].counter;
+			const INT8 *w = voice[j].waveform;			/* 19991207.CAB */
+			INT32 c=voice[j].counter;
 
 			mix = info->mixer_buffer;
 
 			/* add our contribution */
 			for (i = 0; i < samples; i++)
 			{
-				int offs;
+				INT32 offs;
 
 				/* Amuse source:  Cab suggests this method gives greater resolution */
 				/* Sean Young 20010417: the formula is really: f = clock/(16*(f+1))*/
 				//c+=(long)((((float)info->mclock / (float)((f+1) * 16))*(float)(1<<FREQBASEBITS)) / (float)(info->rate / 32));
-				c+=(long)((((((float)info->mclock / (float)((f+1) * 16))*(float)(1<<FREQBASEBITS)) / (float)(info->rate / 32)) * nUpdateStep) / 32768);
+				c+=(INT32)((((((float)info->mclock / (float)((f+1) * 16))*(float)(1<<FREQBASEBITS)) / (float)(info->rate / 32)) * nUpdateStep) / 32768);
 				offs = (c >> 16) & 0x1f;
 				//*mix++ += (((w[offs] * v)>>3) * nUpdateStep) >> 15;
 				*mix++ += ((w[offs] * v)>>3);
@@ -127,7 +132,7 @@ void K051649Update(short *pBuf, int samples)
 	/* mix it down */
 	mix = info->mixer_buffer;
 	for (i = 0; i < samples; i++) {
-		int output = info->mixer_lookup[*mix++];
+		INT32 output = info->mixer_lookup[*mix++];
 		
 		if (output < -0x7fff) output = -0x7fff;
 		if (output >  0x7fff) output =  0x7fff;
@@ -140,26 +145,32 @@ void K051649Update(short *pBuf, int samples)
 	}	
 }
 
-void K051649Init(int clock, float gain)
+void K051649Init(INT32 clock, float gain)
 {
+	DebugSnd_K051649Initted = 1;
+
 	info = &Chips[0];
 
 	/* get stream channels */
 	info->rate = clock/16;
 	info->mclock = clock;
-	info->gain = (int)(gain * 100);
+	info->gain = (INT32)(gain * 100);
 	
-	nUpdateStep = (int)(((float)info->rate / nBurnSoundRate) * 32768);
+	nUpdateStep = (INT32)(((float)info->rate / nBurnSoundRate) * 32768);
 
 	/* allocate a buffer to mix into - 1 second's worth should be more than enough */
-	info->mixer_buffer = (short *)malloc(2 * sizeof(short) * info->rate);
+	info->mixer_buffer = (INT16 *)malloc(2 * sizeof(INT16) * info->rate);
 	
 	/* build the mixer table */
 	make_mixer_table(5);
 }
 
-void K051659Exit()
+void K051649Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649Exit called without init\n"));
+#endif
+
 	info = &Chips[0];
 
 	if (info->mixer_buffer) {
@@ -173,13 +184,19 @@ void K051659Exit()
 	}
 	
 	nUpdateStep = 0;
+	
+	DebugSnd_K051649Initted = 0;
 }
 
 void K051649Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649Reset called without init\n"));
+#endif
+
 	info = &Chips[0];
 	k051649_sound_channel *voice = info->channel_list;
-	int i;
+	INT32 i;
 
 	/* reset all the voices */
 	for (i=0; i>5; i++) {
@@ -189,8 +206,12 @@ void K051649Reset()
 	}
 }
 
-int K051649Scan(int nAction, int *pnMin)
+INT32 K051649Scan(INT32 nAction, INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649Scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 
 	if ((nAction & ACB_DRIVER_DATA) == 0) {
@@ -208,7 +229,7 @@ int K051649Scan(int nAction, int *pnMin)
 	BurnAcb(&ba);
 
 	ba.Data		= info->f;
-	ba.nLen		= sizeof(int) * 10;
+	ba.nLen		= sizeof(INT32) * 10;
 	ba.nAddress = 0;
 	ba.szName	= "K051649 Frequency Regs";
 	BurnAcb(&ba);
@@ -218,8 +239,12 @@ int K051649Scan(int nAction, int *pnMin)
 
 /********************************************************************************/
 
-void K051649WaveformWrite(int offset, int data)
+void K051649WaveformWrite(INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649WaveformWrite called without init\n"));
+#endif
+
 	info = &Chips[0];
 	info->channel_list[offset>>5].waveform[offset&0x1f]=data;
 	/* SY 20001114: Channel 5 shares the waveform with channel 4 */
@@ -227,37 +252,57 @@ void K051649WaveformWrite(int offset, int data)
 		info->channel_list[4].waveform[offset&0x1f]=data;
 }
 
-unsigned char K051649WaveformRead(int offset)
+UINT8 K051649WaveformRead(INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649WaveformRead called without init\n"));
+#endif
+
 	info = &Chips[0];
 	return info->channel_list[offset>>5].waveform[offset&0x1f];
 }
 
 /* SY 20001114: Channel 5 doesn't share the waveform with channel 4 on this chip */
-void K052539WaveformWrite(int offset, int data)
+void K052539WaveformWrite(INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K052539WaveformWrite called without init\n"));
+#endif
+
 	info = &Chips[0];
 
 	info->channel_list[offset>>5].waveform[offset&0x1f]=data;
 }
 
-void K051649VolumeWrite(int offset, int data)
+void K051649VolumeWrite(INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649VolumeWrite called without init\n"));
+#endif
+
 	info = &Chips[0];
 
 	info->channel_list[offset&0x7].volume=data&0xf;
 }
 
-void K051649FrequencyWrite(int offset, int data)
+void K051649FrequencyWrite(INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649FrequencyWrite called without init\n"));
+#endif
+
 	info = &Chips[0];
 	info->f[offset]=data;
 
 	info->channel_list[offset>>1].frequency=(info->f[offset&0xe] + (info->f[offset|1]<<8))&0xfff;
 }
 
-void K051649KeyonoffWrite(int data)
+void K051649KeyonoffWrite(INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_K051649Initted) bprintf(PRINT_ERROR, _T("K051649KeyonoffWrite called without init\n"));
+#endif
+
 	info = &Chips[0];
 	info->channel_list[0].key=data&1;
 	info->channel_list[1].key=data&2;

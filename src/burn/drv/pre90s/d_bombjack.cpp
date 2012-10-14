@@ -1,47 +1,48 @@
 #include "tiles_generic.h"
+#include "zet.h"
 
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-unsigned char DrvJoy1[7] = {0, 0, 0, 0, 0, 0, 0};
-unsigned char DrvJoy2[7] = {0, 0, 0, 0, 0, 0, 0};
-unsigned char BjDip[2] = {0, 0};
-static unsigned char DrvReset = 0;
-static int bombjackIRQ = 0;
-static int latch;
+UINT8 DrvJoy1[7] = {0, 0, 0, 0, 0, 0, 0};
+UINT8 DrvJoy2[7] = {0, 0, 0, 0, 0, 0, 0};
+UINT8 BjDip[2] = {0, 0};
+static UINT8 DrvReset = 0;
+static INT32 bombjackIRQ = 0;
+static INT32 latch;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
-static unsigned char *Mem = NULL;
-static unsigned char *MemEnd = NULL;
-static unsigned char *RamStart = NULL;
-static unsigned char *RamEnd = NULL;
-static unsigned char *BjGfx = NULL;
-static unsigned char *BjMap = NULL;
-static unsigned char *BjRom = NULL;
-static unsigned char *BjRam = NULL;
-static unsigned char *BjColRam = NULL;
-static unsigned char *BjVidRam = NULL;
-static unsigned char *BjSprRam = NULL;
+static UINT8 *Mem = NULL;
+static UINT8 *MemEnd = NULL;
+static UINT8 *RamStart = NULL;
+static UINT8 *RamEnd = NULL;
+static UINT8 *BjGfx = NULL;
+static UINT8 *BjMap = NULL;
+static UINT8 *BjRom = NULL;
+static UINT8 *BjRam = NULL;
+static UINT8 *BjColRam = NULL;
+static UINT8 *BjVidRam = NULL;
+static UINT8 *BjSprRam = NULL;
 
 // sound cpu
-static unsigned char *SndRom = NULL;
-static unsigned char *SndRam = NULL;
+static UINT8 *SndRom = NULL;
+static UINT8 *SndRam = NULL;
 
 // graphics tiles
-static unsigned char *text = NULL;
-static unsigned char *sprites = NULL;
-static unsigned char *tiles = NULL;
+static UINT8 *text = NULL;
+static UINT8 *sprites = NULL;
+static UINT8 *tiles = NULL;
 
 // pallete
-static unsigned char *BjPalSrc = NULL;
-static unsigned int *BjPalReal = NULL;
+static UINT8 *BjPalSrc = NULL;
+static UINT32 *BjPalReal = NULL;
 
-static short* pFMBuffer;
-static short* pAY8910Buffer[9];
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[9];
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo DrvInputList[] = {
@@ -193,26 +194,26 @@ STD_ROM_PICK(Bombjac2)
 STD_ROM_FN(Bombjac2)
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	bombjackIRQ = 0;
 	latch = 0;
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
 	}
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		AY8910Reset(i);
 	}
 	return 0;
 }
 
 
-unsigned char __fastcall BjMemRead(unsigned short addr)
+UINT8 __fastcall BjMemRead(UINT16 addr)
 {
-	unsigned char inputs=0;
+	UINT8 inputs=0;
 	
 	if (addr >= 0x9820 && addr <= 0x987f) return BjSprRam[addr - 0x9820];
 
@@ -262,7 +263,7 @@ unsigned char __fastcall BjMemRead(unsigned short addr)
 	return 0;
 }
 
-void __fastcall BjMemWrite(unsigned short addr,unsigned char val)
+void __fastcall BjMemWrite(UINT16 addr,UINT8 val)
 {
 	if (addr >= 0x9820 && addr <= 0x987f) { BjSprRam[addr - 0x9820] = val; return; }
 	
@@ -278,7 +279,7 @@ void __fastcall BjMemWrite(unsigned short addr,unsigned char val)
 	BjRam[addr]=val;
 }
 
-unsigned char __fastcall SndMemRead(unsigned short a)
+UINT8 __fastcall SndMemRead(UINT16 a)
 {
 	if (a==0xFF00)
 	{
@@ -286,7 +287,7 @@ unsigned char __fastcall SndMemRead(unsigned short a)
 	}
 	if(a==0x6000)
 	{
-		int res;
+		INT32 res;
 		res = latch;
 		latch = 0;
 		return res;
@@ -296,7 +297,7 @@ unsigned char __fastcall SndMemRead(unsigned short a)
 
 
 
-void __fastcall SndPortWrite(unsigned short a, unsigned char d)
+void __fastcall SndPortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	switch (a) {
@@ -327,10 +328,10 @@ void __fastcall SndPortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-int BjZInit()
+INT32 BjZInit()
 {
 	// Init the z80
-	ZetInit(2);
+	ZetInit(0);
 	// Main CPU setup
 	ZetOpen(0);
 
@@ -368,6 +369,7 @@ int BjZInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea    (0x0000,0x1fff,0,SndRom); // Direct Read from ROM
 	ZetMapArea    (0x0000,0x1fff,2,SndRom); // Direct Fetch from ROM
@@ -407,9 +409,9 @@ int BjZInit()
 
 
 
-void DecodeTiles(unsigned char *TilePointer, int num,int off1,int off2, int off3)
+void DecodeTiles(UINT8 *TilePointer, INT32 num,INT32 off1,INT32 off2, INT32 off3)
 {
-	int c,y,x,dat1,dat2,dat3,col;
+	INT32 c,y,x,dat1,dat2,dat3,col;
 	for (c=0;c<num;c++)
 	{
 		for (y=0;y<8;y++)
@@ -433,9 +435,9 @@ void DecodeTiles(unsigned char *TilePointer, int num,int off1,int off2, int off3
 }
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	BjRom		  = Next; Next += 0x10000;
 	BjGfx		  = Next; Next += 0x0f000;
@@ -452,30 +454,30 @@ static int MemIndex()
 	text		  = Next; Next += 512 * 8 * 8;
 	sprites	  = Next; Next += 1024 * 8 * 8;
 	tiles		  = Next; Next += 1024 * 8 * 8;
-	pFMBuffer	= (short*)Next; Next += nBurnSoundLen * 9 * sizeof(short);
-	BjPalReal	= (unsigned int*)Next; Next += 0x0080 * sizeof(unsigned int);
+	pFMBuffer	= (INT16*)Next; Next += nBurnSoundLen * 9 * sizeof(INT16);
+	BjPalReal	= (UINT32*)Next; Next += 0x0080 * sizeof(UINT32);
 	MemEnd	  = Next;
 
 	return 0;
 }
 
 
-int BjInit()
+INT32 BjInit()
 {
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	for (int i =0; i<5 ; i++)
+	for (INT32 i =0; i<5 ; i++)
 	{
 		BurnLoadRom(BjRom+(0x2000*i),i,1); // load code roms
 	}
 
-	for (int i=0;i<3;i++)
+	for (INT32 i=0;i<3;i++)
 	{
 		BurnLoadRom(BjGfx+(0x1000*i),i+5,1);
 	}
@@ -505,23 +507,22 @@ int BjInit()
 	return 0;
 }
 
-int BjExit()
+INT32 BjExit()
 {
 	ZetExit();
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		AY8910Exit(i);
 	}
 
 	GenericTilesExit();
-	free(Mem);
-	Mem	= NULL;
+	BurnFree(Mem);
 	return 0;
 }
 
-static unsigned int CalcCol(unsigned short nColour)
+static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 0) & 0x0f;
 	g = (nColour >> 4) & 0x0f;
@@ -534,9 +535,9 @@ static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int CalcAll()
+INT32 CalcAll()
 {
-	for (int i = 0; i < 0x100; i++) {
+	for (INT32 i = 0; i < 0x100; i++) {
 		BjPalReal[i / 2] = CalcCol(BjPalSrc[i & ~1] | (BjPalSrc[i | 1] << 8));
 	}
 
@@ -545,12 +546,12 @@ int CalcAll()
 
 void BjRenderFgLayer()
 {
-	for (int tileCount = 0; tileCount < 1024 ;tileCount++) 
+	for (INT32 tileCount = 0; tileCount < 1024 ;tileCount++) 
 	{
-		int code = BjVidRam[tileCount] + 16 * (BjColRam[tileCount] & 0x10);
-		int color = BjColRam[tileCount] & 0x0f;
-		int sy = (tileCount % 32);
-		int sx = 31 - (tileCount / 32);
+		INT32 code = BjVidRam[tileCount] + 16 * (BjColRam[tileCount] & 0x10);
+		INT32 color = BjColRam[tileCount] & 0x0f;
+		INT32 sy = (tileCount % 32);
+		INT32 sx = 31 - (tileCount / 32);
 
 		sx<<=3;
 		sx-=16;
@@ -569,21 +570,21 @@ void BjRenderFgLayer()
 
 void BjRenderBgLayer()
 {
-	for (int tileCount = 0; tileCount < 256;tileCount++) {
-		int FlipX;
+	for (INT32 tileCount = 0; tileCount < 256;tileCount++) {
+		INT32 FlipX;
 
-		int BgSel=BjRam[0x9e00];
+		INT32 BgSel=BjRam[0x9e00];
 
-		int offs = (BgSel & 0x07) * 0x200 + tileCount;
-		int Code = (BgSel & 0x10) ? BjMap[offs] : 0;
+		INT32 offs = (BgSel & 0x07) * 0x200 + tileCount;
+		INT32 Code = (BgSel & 0x10) ? BjMap[offs] : 0;
 
-		int attr = BjMap[offs + 0x100];
-		int Colour = attr & 0x0f;
-		//int flags = (attr & 0x80) ? TILE_FLIPY : 0;
+		INT32 attr = BjMap[offs + 0x100];
+		INT32 Colour = attr & 0x0f;
+		//INT32 flags = (attr & 0x80) ? TILE_FLIPY : 0;
 
 
-		int sy = (tileCount % 16);
-		int sx = 15 - (tileCount / 16);
+		INT32 sy = (tileCount % 16);
+		INT32 sx = 15 - (tileCount / 16);
 		FlipX = attr & 0x80;
 
 		/*if (SolomonFlipScreen) {
@@ -640,7 +641,7 @@ void BjRenderBgLayer()
 
 static void BjDrawSprites()
 {
-	int offs;
+	INT32 offs;
 
 	for (offs = 0x60 - 4; offs >= 0; offs -= 4)
 	{
@@ -658,7 +659,7 @@ static void BjDrawSprites()
 		hhhhhhhh x position
 		iiiiiiii y position
 		*/
-		int sx,sy,flipx,flipy, code, colour, big;
+		INT32 sx,sy,flipx,flipy, code, colour, big;
 
 
 		sy = BjSprRam[offs+3];
@@ -790,21 +791,21 @@ static void BjDrawSprites()
 	}
 }
 
-int BjFrame()
+INT32 BjFrame()
 {
 	if (DrvReset) {	// Reset machine
 		DrvDoReset();
 	}
 
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	nCyclesTotal[0] = 4000000 / 60;
-	nCyclesTotal[1] = 3072000 / 60;
+	nCyclesTotal[1] = 3000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -832,13 +833,13 @@ int BjFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -851,13 +852,7 @@ int BjFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -868,14 +863,14 @@ int BjFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -888,13 +883,7 @@ int BjFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -924,7 +913,7 @@ int BjFrame()
 	return 0;
 }
 
-static int BjScan(int nAction,int *pnMin)
+static INT32 BjScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -957,7 +946,7 @@ struct BurnDriver BurnDrvBombjack = {
 	"Bomb Jack (set 1)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
-	NULL,BombjackRomInfo,BombjackRomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
+	NULL, BombjackRomInfo,BombjackRomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
 	NULL,0x80,224,256,3,4
 };
@@ -967,7 +956,7 @@ struct BurnDriver BurnDrvBombjac2 = {
 	"Bomb Jack (set 2)\0", NULL, "Tehkan", "Bomb Jack",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
-	NULL,Bombjac2RomInfo,Bombjac2RomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
+	NULL, Bombjac2RomInfo,Bombjac2RomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
 	NULL,0x80,224,256,3,4
 };

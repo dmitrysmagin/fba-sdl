@@ -1,37 +1,35 @@
 #include "psikyo.h"
 
-unsigned char* PsikyoPalSrc;
-unsigned char PsikyoRecalcPalette;	// Set to 1 to force recalculation of the entire palette
+UINT8* PsikyoPalSrc;
+UINT8 PsikyoRecalcPalette;	// Set to 1 to force recalculation of the entire palette
 
-unsigned int* PsikyoPalette;
-static unsigned short* PsikyoPalCopy;
+UINT32* PsikyoPalette;
+static UINT16* PsikyoPalCopy;
 
-int PsikyoPalInit()
+INT32 PsikyoPalInit()
 {
-	PsikyoPalette = (unsigned int*)malloc(0x1000 * sizeof(int));
-	memset(PsikyoPalette, 0, 0x1000 * sizeof(int));
+	PsikyoPalette = (UINT32*)BurnMalloc(0x1000 * sizeof(UINT32));
+	memset(PsikyoPalette, 0, 0x1000 * sizeof(UINT32));
 
-	PsikyoPalCopy = (unsigned short*)malloc(0x1000 * sizeof(short));
-	memset(PsikyoPalCopy, 0, 0x1000 * sizeof(short));
+	PsikyoPalCopy = (UINT16*)BurnMalloc(0x1000 * sizeof(UINT16));
+	memset(PsikyoPalCopy, 0, 0x1000 * sizeof(UINT16));
 	
 	pBurnDrvPalette = PsikyoPalette;
 
 	return 0;
 }
 
-int PsikyoPalExit()
+INT32 PsikyoPalExit()
 {
-	free(PsikyoPalette);
-	PsikyoPalette = NULL;
-	free(PsikyoPalCopy);
-	PsikyoPalCopy = NULL;
+	BurnFree(PsikyoPalette);
+	BurnFree(PsikyoPalCopy);
 
 	return 0;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x7C00) >> 7;  	// Red
 	r |= r >> 5;
@@ -43,13 +41,13 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int PsikyoPalUpdate()
+INT32 PsikyoPalUpdate()
 {
 	if (PsikyoRecalcPalette) {
-		unsigned short c;
+		UINT16 c;
 
-		for (int i = 0; i < 0x1000; i++) {
-			c = ((unsigned short*)PsikyoPalSrc)[i];
+		for (INT32 i = 0; i < 0x1000; i++) {
+			c = ((UINT16*)PsikyoPalSrc)[i];
 			PsikyoPalCopy[i] = c;
 			PsikyoPalette[i] = CalcCol(c);
 		}
@@ -61,26 +59,25 @@ int PsikyoPalUpdate()
 }
 
 // Update the PC copy of the palette on writes to the palette memory
-void PsikyoPalWriteByte(unsigned int nAddress, unsigned char byteValue)
+void PsikyoPalWriteByte(UINT32 nAddress, UINT8 byteValue)
 {
 	nAddress ^= 1;
 	PsikyoPalSrc[nAddress] = byteValue;							// write byte
 
-	if (*((unsigned char*)(PsikyoPalCopy + nAddress)) != byteValue) {
-		*((unsigned char*)(PsikyoPalCopy + nAddress)) = byteValue;
-		PsikyoPalette[nAddress >> 1] = CalcCol(*(unsigned short*)(PsikyoPalSrc + (nAddress & ~0x01)));
+	if (*((UINT8*)(PsikyoPalCopy + nAddress)) != byteValue) {
+		*((UINT8*)(PsikyoPalCopy + nAddress)) = byteValue;
+		PsikyoPalette[nAddress >> 1] = CalcCol(*(UINT16*)(PsikyoPalSrc + (nAddress & ~0x01)));
 	}
 }
 
-void PsikyoPalWriteWord(unsigned int nAddress, unsigned short wordValue)
+void PsikyoPalWriteWord(UINT32 nAddress, UINT16 wordValue)
 {
 	nAddress >>= 1;
 
-	((unsigned short*)PsikyoPalSrc)[nAddress] = wordValue;		// write word
+	((UINT16*)PsikyoPalSrc)[nAddress] = wordValue;		// write word
 
 	if (PsikyoPalCopy[nAddress] != wordValue) {
 		PsikyoPalCopy[nAddress] = wordValue;
 		PsikyoPalette[nAddress] = CalcCol(wordValue);
 	}
 }
-

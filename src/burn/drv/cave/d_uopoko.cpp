@@ -4,29 +4,30 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01;
+static UINT8 *DefaultEEPROM = NULL;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nIRQPending;
+static INT8 nIRQPending;
 
-static int nCurrentCPU;
-static int nCyclesDone[2];
-static int nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCurrentCPU;
+static INT32 nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo uopokoInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 8,	"p1 coin"},
@@ -64,7 +65,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall uopokoReadByte(unsigned int sekAddress)
+UINT8 __fastcall uopokoReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x300003: {
@@ -75,19 +76,19 @@ unsigned char __fastcall uopokoReadByte(unsigned int sekAddress)
 		case 0x600001:
 		case 0x600002:
 		case 0x600003: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x600004:
 		case 0x600005: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x600006:
 		case 0x600007: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -109,7 +110,7 @@ unsigned char __fastcall uopokoReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall uopokoReadWord(unsigned int sekAddress)
+UINT16 __fastcall uopokoReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x300002: {
@@ -118,17 +119,17 @@ unsigned short __fastcall uopokoReadWord(unsigned int sekAddress)
 
 		case 0x600000:
 		case 0x600002: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x600004: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x600006: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -146,7 +147,7 @@ unsigned short __fastcall uopokoReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall uopokoWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall uopokoWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x300001:
@@ -166,7 +167,7 @@ void __fastcall uopokoWriteByte(unsigned int sekAddress, unsigned char byteValue
 	}
 }
 
-void __fastcall uopokoWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall uopokoWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x300000:
@@ -210,17 +211,17 @@ void __fastcall uopokoWriteWord(unsigned int sekAddress, unsigned short wordValu
 	}
 }
 
-void __fastcall uopokoWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall uopokoWriteBytePalette(UINT32 sekAddress, UINT8 byteValue)
 {
 	CavePalWriteByte(sekAddress & 0xFFFF, byteValue);
 }
 
-void __fastcall uopokoWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall uopokoWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	CavePalWriteWord(sekAddress & 0xFFFF, wordValue);
 }
 
-static void TriggerSoundIRQ(int nStatus)
+static void TriggerSoundIRQ(INT32 nStatus)
 {
 	nSoundIRQ = nStatus ^ 1;
 	UpdateIRQStatus();
@@ -230,7 +231,7 @@ static void TriggerSoundIRQ(int nStatus)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	YMZ280BExit();
 
@@ -242,14 +243,12 @@ static int DrvExit()
 
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -265,12 +264,10 @@ static int DrvDoReset()
 
 	nIRQPending = 0;
 
-	YMZ280BReset();
-
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	CavePalUpdate8Bit(0, 128);				// Update the palette
 	CaveClearScreen(CavePalette[0x7F00]);
@@ -284,15 +281,15 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -301,7 +298,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -310,24 +307,24 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCyclesDone[0] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 
-	for (int i = 1; i <= nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+		INT32 nNext;
 
 		// Render sound segment
 		if ((i & 1) == 0) {
 			if (pBurnSoundOut) {
-				int nSegmentEnd = nBurnSoundLen * i / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentEnd = nBurnSoundLen * i / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				YMZ280BRender(pSoundBuf, nSegmentEnd - nSoundBufferPos);
 				nSoundBufferPos = nSegmentEnd;
 			}
@@ -370,8 +367,8 @@ static int DrvFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				YMZ280BRender(pSoundBuf, nSegmentLength);
 			}
@@ -383,15 +380,16 @@ static int DrvFrame()
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x100000;		// 68K program
 	CaveSpriteROM	= Next; Next += 0x800000;
 	CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 0
 	YMZ280BROM		= Next; Next += 0x200000;
+	DefaultEEPROM	= Next; Next += 0x000080;
 	RamStart		= Next;
 	Ram01			= Next; Next += 0x010000;		// CPU #0 work RAM
 	CaveTileRAM[0]	= Next; Next += 0x008000;
@@ -403,12 +401,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -416,11 +414,11 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap4(unsigned char* pData, int nLen)
+static void NibbleSwap4(UINT8* pData, INT32 nLen)
 {
-	for (int i = 0; i < nLen; i++, pData += 2) {
-		unsigned char n1 = pData[0];
-		unsigned char n2 = pData[1];
+	for (INT32 i = 0; i < nLen; i++, pData += 2) {
+		UINT8 n1 = pData[0];
+		UINT8 n2 = pData[1];
 
 		pData[1] = (n2 << 4) | (n1 & 0x0F);
 		pData[0] = (n2 & 0xF0) | (n1 >> 4);
@@ -429,7 +427,7 @@ static void NibbleSwap4(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01 + 0, 1, 2);
@@ -443,12 +441,14 @@ static int LoadRoms()
 
 	// Load YMZ280B data
 	BurnLoadRom(YMZ280BROM, 4, 1);
+	
+	BurnLoadRom(DefaultEEPROM, 5, 1);
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -483,31 +483,29 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static const UINT8 default_eeprom[16] =	{0x00,0x03,0x08,0x00,0xFF,0xFF,0xFF,0xFF,0x08,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF};
-
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46);
-	if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
-	
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
 	}
+
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(DefaultEEPROM,0, 0x80);	
 
 	{
 		SekInit(0, 0x68000);												// Allocate 68000
@@ -560,7 +558,7 @@ static struct BurnRomInfo uopokoRomDesc[] = {
 
 	{ "u4.bin",       0x200000, 0xA2D0D755, BRF_SND },			 //  4 YMZ280B (AD)PCM data
 	
-	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_OPT },
+	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_ESS | BRF_PRG },
 };
 
 
@@ -577,7 +575,7 @@ static struct BurnRomInfo uopokojRomDesc[] = {
 
 	{ "u4.bin",       0x200000, 0xA2D0D755, BRF_SND },			 //  4 YMZ280B (AD)PCM data
 	
-	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_OPT },
+	{ "eeprom-uopoko.bin", 0x0080, 0xf4a24b95, BRF_ESS | BRF_PRG },
 };
 
 

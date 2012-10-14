@@ -1,6 +1,9 @@
 // Run module
 #include "burner.h"
 
+// for NeoGeo CD (WAV playback)
+void wav_pause(bool bResume);
+
 int bRunPause = 0;
 int bAltPause = 0;
 
@@ -523,6 +526,9 @@ int RunMessageLoop()
 					}
 				}
 			} else {
+				
+				bRunPause ? wav_pause(false) : wav_pause(true);
+
 				// No messages are waiting
 				SplashDestroy(0);
 				RunIdle();

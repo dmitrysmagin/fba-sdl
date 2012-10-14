@@ -1,21 +1,21 @@
 #include "toaplan.h"
 
-unsigned char* ExtraTROM;
-unsigned char* ExtraTRAM;
-unsigned char* ExtraTScroll;
-unsigned char* ExtraTSelect;
+UINT8* ExtraTROM;
+UINT8* ExtraTRAM;
+UINT8* ExtraTScroll;
+UINT8* ExtraTSelect;
 
-int	nExtraTXOffset = 0x9999;
-int nTileXPos;
+INT32	nExtraTXOffset = 0x9999;
+INT32 nTileXPos;
 
-static unsigned char* pTile;
-static unsigned char* pTileData;
-static unsigned int* pTilePalette;
+static UINT8* pTile;
+static UINT8* pTileData;
+static UINT32* pTilePalette;
 
 typedef void (*RenderTileFunction)();
 static RenderTileFunction RenderTile[4];
 
-static int nLastBPP = 0;
+static INT32 nLastBPP = 0;
 
 #define ROT 0
 
@@ -149,7 +149,7 @@ static int nLastBPP = 0;
  #undef ROT
 #endif
 
-int ToaExtraTextLayer()
+INT32 ToaExtraTextLayer()
 {
 	if (nLastBPP != nBurnBpp ) {
 		nLastBPP = nBurnBpp;
@@ -224,35 +224,37 @@ int ToaExtraTextLayer()
 #endif
 	}
 
-	unsigned int* pTextPalette = &ToaPalette[0x0400];
-	unsigned char* pCurrentRow = pBurnBitmap;
+	UINT32* pTextPalette = &ToaPalette[0x0400];
+	UINT8* pCurrentRow = pBurnBitmap;
 
-	int nTileLeft = nBurnColumn << 3;
-	int nTileDown = nBurnRow << 3;
-	unsigned short* pTileRow;
+	INT32 nTileLeft = nBurnColumn << 3;
+	INT32 nTileDown = nBurnRow << 3;
+	UINT16* pTileRow;
 
-	int nOffset, nLine, nStartX;
-	int x, y, i;
+	INT32 nOffset, nLine, nStartX;
+	INT32 x, y, i;
 
 #if 1
 	y = 0;
 	do {
-		nLine = ((unsigned short*)ExtraTSelect)[y];
-		nOffset = ((unsigned short*)ExtraTScroll)[y];
+		nLine = BURN_ENDIAN_SWAP_INT16(((UINT16*)ExtraTSelect)[y]);
+		nOffset = BURN_ENDIAN_SWAP_INT16(((UINT16*)ExtraTScroll)[y]);
+		
+		if (Bgareggabl) nLine = y;
 
 		if (y < 233) {
-			for (i = 1; i < 8 && ((unsigned short*)ExtraTSelect)[y + i] == (nLine + i) && ((unsigned short*)ExtraTScroll)[y + i] == nOffset; i++) { }
+			for (i = 1; i < 8 && BURN_ENDIAN_SWAP_INT16(((UINT16*)ExtraTSelect)[y + i]) == (nLine + i) && BURN_ENDIAN_SWAP_INT16(((UINT16*)ExtraTScroll)[y + i]) == nOffset; i++) { }
 
 			// draw whole tiles in one go
 			if (i == 8) {
 
 				nOffset += nExtraTXOffset;
 				nStartX = (nOffset >> 3) & 0x3F;
-				pTileRow = ((unsigned short*)ExtraTRAM) + ((nLine & (0x1F << 3)) << 3);
+				pTileRow = ((UINT16*)ExtraTRAM) + ((nLine & (0x1F << 3)) << 3);
 				nOffset &= 7;
 
 				for (x = 0, pTile = pCurrentRow - nOffset * nBurnColumn; x < 41; x++, pTile += nTileLeft) {
-					unsigned int nTile = pTileRow[(x + nStartX) & 0x3F];
+					UINT32 nTile = BURN_ENDIAN_SWAP_INT16(pTileRow[(x + nStartX) & 0x3F]);
 					if (nTile && nTile != 0x20) {
 						pTileData = ExtraTROM + ((nTile & 0x3FF) << 5);
 						pTilePalette = &pTextPalette[((nTile >> 6) & 0x03F0)];
@@ -275,11 +277,11 @@ int ToaExtraTextLayer()
 
 		nOffset += nExtraTXOffset;
 		nStartX = (nOffset >> 3) & 0x3F;
-		pTileRow = ((unsigned short*)ExtraTRAM) + ((nLine & (0x1F << 3)) << 3);
+		pTileRow = ((UINT16*)ExtraTRAM) + ((nLine & (0x1F << 3)) << 3);
 		nOffset &= 7;
 
 		for (x = 0, pTile = pCurrentRow - nOffset * nBurnColumn; x < 41; x++, pTile += nTileLeft) {
-			unsigned int nTile = pTileRow[(x + nStartX) & 0x3F];
+			UINT32 nTile = BURN_ENDIAN_SWAP_INT16(pTileRow[(x + nStartX) & 0x3F]);
 			if (nTile && nTile != 0x20) {
 				pTileData = ExtraTROM + ((nTile & 0x3FF) << 5) + ((nLine & 7) << 2);
 				pTilePalette = &pTextPalette[((nTile >> 6) & 0x03F0)];
@@ -297,16 +299,16 @@ int ToaExtraTextLayer()
 
 	} while (y < 240);
 #else
-	pTileRow = (unsigned short*)(ExtraTRAM + ((nOffset >> 3) << 1));
+	pTileRow = (UINT16*)(ExtraTRAM + ((nOffset >> 3) << 1));
 	pCurrentRow = pBurnBitmap - (nOffset & 7) * nBurnColumn;
 
-	nOffset = ((unsigned short*)(ExtraTScroll + nExtraTXOffset))[y];
+	nOffset = ((UINT16*)(ExtraTScroll + nExtraTXOffset))[y];
 	nStartX = nOffset >> 3;
 	nOffset &= 7;
 
 	for (y = 0; y < 30; y++, pCurrentRow += nTileDown, pTileRow += 0x40) {
 		for (x = 0, pTile = pCurrentRow; x < 41; x++, pTile += nTileLeft) {
-			unsigned int nTile = pTileRow[(x + nStartX) & 0x3F];
+			UINT32 nTile = pTileRow[(x + nStartX) & 0x3F];
 			if (nTile && nTile != 0x20) {
 				pTileData = ExtraTROM + ((nTile & 0x3FF) << 5);
 				pTilePalette = &pTextPalette[((nTile >> 6) & 0x03F0)];
@@ -324,7 +326,7 @@ int ToaExtraTextLayer()
 	return 0;
 }
 
-int ToaExtraTextInit()
+INT32 ToaExtraTextInit()
 {
 	if (nExtraTXOffset == 0x9999) {
 		nExtraTXOffset = 0x2B;

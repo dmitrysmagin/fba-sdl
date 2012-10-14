@@ -262,7 +262,7 @@ int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...)
 	va_start(vaEnglish, pszFormat);
 
 	if (IS_INTRESOURCE(pszFormat)) {
-		pszStringEnglish = FBALoadStringEx(hAppInst, (UINT)pszFormat, false);
+		pszStringEnglish = FBALoadStringEx(hAppInst, (INT_PTR)pszFormat, false);
 	} else {
 		pszStringEnglish = pszFormat;
 	}
@@ -275,7 +275,7 @@ int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...)
 		va_start(vaLocal, pszFormat);
 
 		if (IS_INTRESOURCE(pszFormat)) {
-			pszStringLocal = FBALoadStringEx(hAppInst, (UINT)pszFormat, true);
+			pszStringLocal = FBALoadStringEx(hAppInst, (INT_PTR)pszFormat, true);
 		} else {
 			pszStringLocal = pszFormat;
 		}
@@ -319,12 +319,16 @@ int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...)
 
 int FBAPopupDestroyText()
 {
-	free(pszBufferEnglish);
-	pszBufferEnglish = NULL;
+	if (pszBufferEnglish) {
+		free(pszBufferEnglish);
+		pszBufferEnglish = NULL;
+	}
 	nBufferEnglishSize = 0;
 
-	free(pszBufferLocal);
-	pszBufferLocal = NULL;
+	if (pszBufferLocal) {
+		free(pszBufferLocal);
+		pszBufferLocal = NULL;
+	}
 	nBufferLocalSize = 0;
 
 	return 0;

@@ -2,23 +2,24 @@
 // Based on MAME driver by Phil Stroffolino
 
 #include "burnint.h"
+#include "zet.h"
 #include "bitswap.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *Rom0, *Rom1, *Ram, *Gfx0, *Gfx1;
-static int *Palette;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvReset;
+static UINT8 *Mem, *Rom0, *Rom1, *Ram, *Gfx0, *Gfx1;
+static INT32 *Palette;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvReset;
 
-static short *pFMBuffer, *pAY8910Buffer[9];
+static INT16 *pFMBuffer, *pAY8910Buffer[9];
 
-static int mrflea_io;
-static int mrflea_main;
-static int mrflea_status;
-static int mrflea_select[4];
-static unsigned char mrflea_gfx_bank;
+static INT32 mrflea_io;
+static INT32 mrflea_main;
+static INT32 mrflea_status;
+static INT32 mrflea_select[4];
+static UINT8 mrflea_gfx_bank;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Start 1"  ,     BIT_DIGITAL  , DrvJoy1 + 3,	"p1 start" },
@@ -73,7 +74,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-void __fastcall mrflea_write(unsigned short a, unsigned char d)
+void __fastcall mrflea_write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xe000 && a <= 0xe7ff) // video ram
 	{
@@ -107,7 +108,7 @@ void __fastcall mrflea_write(unsigned short a, unsigned char d)
 }
 
 
-void __fastcall mrflea_out_port(unsigned short a, unsigned char data)
+void __fastcall mrflea_out_port(UINT16 a, UINT8 data)
 {
 	switch (a & 0xff)
 	{
@@ -134,7 +135,7 @@ void __fastcall mrflea_out_port(unsigned short a, unsigned char data)
 	}
 }
 
-unsigned char __fastcall mrflea_in_port(unsigned short a)
+UINT8 __fastcall mrflea_in_port(UINT16 a)
 {
 	switch (a & 0xff)
 	{
@@ -152,7 +153,7 @@ unsigned char __fastcall mrflea_in_port(unsigned short a)
 	return 0;
 }
 
-void __fastcall mrflea_cpu1_out_port(unsigned short a, unsigned char data)
+void __fastcall mrflea_cpu1_out_port(UINT16 a, UINT8 data)
 {
 	switch (a & 0xff)
 	{
@@ -194,9 +195,9 @@ void __fastcall mrflea_cpu1_out_port(unsigned short a, unsigned char data)
 	}
 }
 
-unsigned char __fastcall mrflea_cpu1_in_port(unsigned short a)
+UINT8 __fastcall mrflea_cpu1_in_port(UINT16 a)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (a & 0xff)
 	{
@@ -214,13 +215,13 @@ unsigned char __fastcall mrflea_cpu1_in_port(unsigned short a)
 
 		case 0x40:
 			if (mrflea_select[0] == 0x0f) {
-				for (int i = 0; i < 8; i++) {
+				for (INT32 i = 0; i < 8; i++) {
 					ret |= DrvJoy1[i] << i;
 				}
 				return ~ret;
 			}
 			if (mrflea_select[0] == 0x0e) {
-				for (int i = 0; i < 8; i++) {
+				for (INT32 i = 0; i < 8; i++) {
 					ret |= DrvJoy2[i] << i;
 				}
 				return ~ret;
@@ -240,11 +241,11 @@ unsigned char __fastcall mrflea_cpu1_in_port(unsigned short a)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (Ram, 0, 0x10000);
 
-	memset (mrflea_select, 0, sizeof(int) * 4);
+	memset (mrflea_select, 0, sizeof(INT32) * 4);
 
 	mrflea_io = 0;
 	mrflea_main = 0;
@@ -253,29 +254,29 @@ static int DrvDoReset()
 
 	DrvReset = 0;
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
 	}
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		AY8910Reset(i);
 	}
 
 	return 0;
 }
 
-static int convert_gfx()
+static INT32 convert_gfx()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
 	memcpy (tmp, Gfx0, 0x10000);
 
-	for (int i = 0; i < 0x20000; i++) // sprites
+	for (INT32 i = 0; i < 0x20000; i++) // sprites
 	{
 		Gfx0[i^0x07]  = ((tmp[0x0000 + (i >> 3)] >> (i & 7)) & 1) << 3;
 		Gfx0[i^0x07] |= ((tmp[0x4000 + (i >> 3)] >> (i & 7)) & 1) << 2;
@@ -285,26 +286,26 @@ static int convert_gfx()
 
 	memcpy (tmp, Gfx1, 0x10000);
 
-	for (int i = 0; i < 0x20000; i+=2) // chars
+	for (INT32 i = 0; i < 0x20000; i+=2) // chars
 	{
 		Gfx1[i + 0] = (tmp[i>>1] >> 4) & 0x0f;
 		Gfx1[i + 1] = (tmp[i>>1] >> 0) & 0x0f;
 	}
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x70000 + 128);
+	Mem = (UINT8*)BurnMalloc(0x70000 + (128 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short*)malloc(nBurnSoundLen * 9 * sizeof(short));
+	pFMBuffer = (INT16*)BurnMalloc(nBurnSoundLen * 9 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -316,10 +317,10 @@ static int DrvInit()
 	Ram  = Mem + 0x020000;
 	Gfx0 = Mem + 0x030000;
 	Gfx1 = Mem + 0x050000;
-	Palette = (int*)(Mem + 0x70000);
+	Palette = (INT32*)(Mem + 0x70000);
 
 	{
-		for (int i = 0; i < 6; i++) {
+		for (INT32 i = 0; i < 6; i++) {
 			if (BurnLoadRom(Rom0 + i * 0x2000, i,      1)) return 1;
 		}
 
@@ -327,7 +328,7 @@ static int DrvInit()
 		if (BurnLoadRom(Rom1 + 0x2000, 7, 1)) return 1;
 		if (BurnLoadRom(Rom1 + 0x3000, 8, 1)) return 1;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(Gfx0 + i * 0x2000, i +  9, 1)) return 1;
 			if (BurnLoadRom(Gfx1 + i * 0x2000, i + 17, 1)) return 1;
 		}
@@ -335,7 +336,7 @@ static int DrvInit()
 		if (convert_gfx()) return 1;
 	}
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetInHandler(mrflea_in_port);
 	ZetSetOutHandler(mrflea_out_port);
@@ -348,6 +349,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetInHandler(mrflea_cpu1_in_port);
 	ZetSetOutHandler(mrflea_cpu1_out_port);
@@ -362,7 +364,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
-	for (int i = 0; i < 9; i++)
+	for (INT32 i = 0; i < 9; i++)
 		pAY8910Buffer[i] = pFMBuffer + nBurnSoundLen * i;
 
 	AY8910Init(0, 2000000, nBurnSoundRate, NULL, NULL, NULL, NULL);
@@ -374,17 +376,20 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
-	free (Mem);
-
-	free (pFMBuffer);
+	AY8910Exit(0);
+	AY8910Exit(1);
+	AY8910Exit(2);
+	
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	Rom0 = Rom1 = Ram = Gfx0 = Gfx1 = NULL;
 
 	pFMBuffer = NULL;
-	for (int i = 0; i < 9; i++)
+	for (INT32 i = 0; i < 9; i++)
 		pAY8910Buffer[i] = NULL;
 
 	Palette = NULL;
@@ -393,48 +398,48 @@ static int DrvExit()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	int base = ((mrflea_gfx_bank & 0x04) << 8) | ((mrflea_gfx_bank & 0x10) << 5);
+	INT32 base = ((mrflea_gfx_bank & 0x04) << 8) | ((mrflea_gfx_bank & 0x10) << 5);
 
-	for (int i = 0; i < 0x400; i++)
+	for (INT32 i = 0; i < 0x400; i++)
 	{
-		int sy = (i >> 2) & 0xf8;
-		int sx = (i << 3) & 0xf8;
+		INT32 sy = (i >> 2) & 0xf8;
+		INT32 sx = (i << 3) & 0xf8;
 
 		if (sy >= 0xf8) continue;
 
-		int code = base + Ram[0xe000 + i] + (Ram[0xe400 + i] << 8);
+		INT32 code = base + Ram[0xe000 + i] + (Ram[0xe400 + i] << 8);
 
-		unsigned char *src = Gfx1 + code * 64;
+		UINT8 *src = Gfx1 + code * 64;
 
-		for (int y = sy; y < sy + 8; y++)
+		for (INT32 y = sy; y < sy + 8; y++)
 		{
-			for (int x = sx; x < sx + 8; x++, src++)
+			for (INT32 x = sx; x < sx + 8; x++, src++)
 			{
-				int pxl = Palette[*src];
+				INT32 pxl = Palette[*src];
 
 				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 			}
 		}
 	}
 
-	for (int i = 0; i < 0x100; i+=4)
+	for (INT32 i = 0; i < 0x100; i+=4)
 	{
-		int sx = Ram[0xec00 + i + 1];
-		int sy = Ram[0xec00 + i + 0] - 13;
+		INT32 sx = Ram[0xec00 + i + 1];
+		INT32 sy = Ram[0xec00 + i + 0] - 13;
 
-		int code = (Ram[0xec00 + i + 2] | (Ram[0xec00 + i + 3] << 8)) << 8;
+		INT32 code = (Ram[0xec00 + i + 2] | (Ram[0xec00 + i + 3] << 8)) << 8;
 
-		unsigned char *src = Gfx0 + code;
+		UINT8 *src = Gfx0 + code;
 
-		for (int y = sy; y < sy + 16; y++)
+		for (INT32 y = sy; y < sy + 16; y++)
 		{
-			for (int x = sx; x < sx + 16; x++, src++)
+			for (INT32 x = sx; x < sx + 16; x++, src++)
 			{
 				if (!*src || x >= 0xff || y >= 0xf8 || y < 0) continue;
 
-				int pxl = Palette[0x10|*src];
+				INT32 pxl = Palette[0x10|*src];
 
 				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 			}
@@ -444,7 +449,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -452,18 +457,18 @@ static int DrvFrame()
 
 	ZetNewFrame();
 
-	int nInterleave = 200;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 200;
+	INT32 nSoundBufferPos = 0;
 
-	int nCyclesSegment;
-	int nCyclesDone[2], nCyclesTotal[2];
+	INT32 nCyclesSegment;
+	INT32 nCyclesDone[2], nCyclesTotal[2];
 
 	nCyclesTotal[0] = 4000000 / 60;
 	nCyclesTotal[1] = 6000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #0
 		nCurrentCPU = 0;
@@ -486,32 +491,26 @@ static int DrvFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+			for (INT32 n = 0; n < nSegmentLength; n++) {
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -522,33 +521,27 @@ static int DrvFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+			for (INT32 n = 0; n < nSegmentLength; n++) {
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -564,7 +557,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -580,8 +573,8 @@ static int DrvScan(int nAction,int *pnMin)
 		BurnAcb(&ba);
 
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = (unsigned char*)Palette;
-		ba.nLen	  = 0x80 * sizeof(int);
+		ba.Data	  = (UINT8*)Palette;
+		ba.nLen	  = 0x80 * sizeof(INT32);
 		ba.szName = "Palette";
 		BurnAcb(&ba);
 
@@ -642,7 +635,7 @@ STD_ROM_FN(mrflea)
 
 struct BurnDriver BurnDrvmrflea = {
 	"mrflea", NULL, NULL, NULL, "1982",
-	"The Amazing Adventures of Mr. F. Lea\0", NULL, "Pacific Novelty", "misc",
+	"The Amazing Adventures of Mr. F. Lea\0", NULL, "Pacific Novelty", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 1, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, mrfleaRomInfo, mrfleaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,

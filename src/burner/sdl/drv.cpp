@@ -94,7 +94,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	if (bAudOkay) {
 		nBurnSoundRate = nAudSampleRate[0];
 		nBurnSoundLen = nAudSegLen;
-	}	nBurnDrvSelect = nDrvNum;		// Set the driver number
+	}	nBurnDrvSelect[0] = nDrvNum;		// Set the driver number
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
 	nMaxPlayers = BurnDrvGetMaxPlayers();
@@ -128,7 +128,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 
 int DrvInitCallback()
 {
-	return DrvInit(nBurnDrvSelect, false);
+	return DrvInit(nBurnDrvSelect[0], false);
 }
 
 int DrvExit()
@@ -139,7 +139,7 @@ int DrvExit()
 
 		VidExit();
 
-		if (nBurnDrvSelect < nBurnDrvCount) {
+		if (nBurnDrvSelect[0] < nBurnDrvCount) {
 
 			//MemCardEject();				// Eject memory card if present
 
@@ -166,7 +166,7 @@ int DrvExit()
 		memset(nAudNextSound, 0, nAudSegLen << 2);
 	}
 
-	nBurnDrvSelect = ~0U;			// no driver selected
+	nBurnDrvSelect[0] = ~0U;			// no driver selected
 
 	return 0;
 }

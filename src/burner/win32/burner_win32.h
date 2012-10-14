@@ -1,3 +1,11 @@
+#ifdef __GNUC__
+// silence warnings with GCC 4.6.1
+#undef _WIN32_WINDOWS
+#undef _WIN32_IE
+#undef _WIN32_WINNT
+#undef WINVER
+#endif
+
 #define _WIN32_WINDOWS 0x0410
 //#define _WIN32_WINNT 0x0400
 #define _WIN32_IE 0x0500
@@ -17,6 +25,14 @@
 #include <commdlg.h>
 
 #include <mmsystem.h>
+#include <shellapi.h>
+#include <shlwapi.h>
+#include "dwmapi_core.h"
+
+INT32 DSCore_Init();
+INT32 DICore_Init();
+INT32 DDCore_Init();
+INT32 Dx9Core_Init();
 
 // Additions to the Cygwin/MinGW win32 headers
 #ifdef __GNUC__
@@ -25,7 +41,7 @@
 
 #include "resource.h"
 #include "resource_string.h"
-
+#include "net.h"
 // ---------------------------------------------------------------------------
 
 // Macro for releasing a COM object
@@ -131,6 +147,15 @@ HWND FBACreateDialog(HINSTANCE hInstance, LPCTSTR lpTemplate, HWND hWndParent, D
 int FBALoadString(HINSTANCE hInstance, UINT uID, LPTSTR lpBuffer, int nBufferMax);
 TCHAR* FBALoadStringEx(HINSTANCE hInstance, UINT uID, bool bTranslate);
 
+// localise_gamelist.cpp
+extern TCHAR szGamelistLocalisationTemplate[MAX_PATH];
+extern bool nGamelistLocalisationActive;
+
+void BurnerDoGameListLocalisation();
+void BurnerExitGameListLocalisation();
+int FBALocaliseGamelistLoadTemplate();
+int FBALocaliseGamelistCreateTemplate();
+
 // popup_win32.cpp
 enum FBAPopupType { MT_NONE = 0, MT_ERROR, MT_WARNING, MT_INFO };
 
@@ -170,6 +195,7 @@ int MediaExit();
 extern bool bIsWindowsXPorGreater; 
 BOOL DetectWindowsVersion();
 int AppDirectory();
+void UpdatePath(TCHAR* path);
 void RegisterExtensions(bool bCreateKeys);
 int GetClientScreenRect(HWND hWnd, RECT* pRect);
 int WndInMid(HWND hMid, HWND hBase);
@@ -220,7 +246,7 @@ int ScrnTitle();
 void SetPauseMode(bool bPause);
 int ActivateChat();
 void DeActivateChat();
-
+int BurnerLoadDriver(TCHAR *szDriverName);
 
 // menu.cpp
 #define UM_DISPLAYPOPUP (WM_USER + 0x0100)
@@ -260,22 +286,29 @@ extern int nLoadMenuShowX;
 extern int nLoadMenuBoardTypeFilter;
 extern int nLoadMenuGenreFilter;
 extern int nLoadMenuFamilyFilter;
-int SelDialog(HWND hParentWND);
+extern int nSelDlgWidth;
+extern int nSelDlgHeight;
+int SelDialog(int nMVSCartsOnly, HWND hParentWND);
 extern UINT_PTR nTimer;
 extern HBITMAP hPrevBmp;
 extern int nDialogSelect;
 void CreateToolTipForRect(HWND hwndParent, PTSTR pszText);
+int SelMVSDialog();
+void LoadDrvIcons();
+void UnloadDrvIcons();
+#define		ICON_16x16			0
+#define		ICON_24x24			1
+#define		ICON_32x32			2
+extern bool bEnableIcons;
+extern bool bIconsLoaded;
+extern int nIconsSize, nIconsSizeXY, nIconsYDiff;
 
-// image_win32.cpp
-typedef struct tagIMAGE {
-	unsigned int	width;
-	unsigned int	height;
-	unsigned int	rowbytes;
-	unsigned int	imgbytes;
-	unsigned char**	rowptr;
-	unsigned char*	bmpbits;
-	unsigned int	flags;
-} IMAGE;
+// neocdsel.cpp
+extern int NeoCDList_Init();
+extern bool bNeoCDListScanSub;
+extern bool bNeoCDListScanOnlyISO;
+extern TCHAR szNeoCDCoverDir[MAX_PATH];
+extern TCHAR szNeoCDGamesDir[MAX_PATH];
 
 HBITMAP ImageToBitmap(HWND hwnd, IMAGE* img);
 HBITMAP PNGLoadBitmap(HWND hWnd, FILE* fp, int nWidth, int nHeight, int nPreset);
@@ -358,10 +391,8 @@ int CreateROMInfo(HWND hParentWND);
 void FreeROMInfo();
 
 // support_paths.cpp
-extern TCHAR szAppPreviewsPath[MAX_PATH];
-extern TCHAR szAppTitlesPath[MAX_PATH];
-extern TCHAR szAppCheatsPath[MAX_PATH];
-int SupportDirCreate();
+int SupportDirCreate(HWND hParentWND);
+int SupportDirCreateTab(int nTab, HWND hParentWND);
 
 // res.cpp
 int ResCreate(int);
@@ -404,10 +435,17 @@ int DebugCreate();
 // paletteviewer.cpp
 int PaletteViewerDialogCreate(HWND hParentWND);
 
+// ips_manager.cpp
+extern int nIpsSelectedLanguage;
+int GetIpsNumPatches();
+void LoadIpsActivePatches();
+int GetIpsNumActivePatches();
+int IpsManagerCreate(HWND hParentWND);
+void IpsPatchExit();
+
 // Misc
 #define _TtoA(a)	TCHARToANSI(a, NULL, 0)
 #define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
-int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
 
 // numpluscommas.cpp
 TCHAR* FormatCommasNumber(__int64);

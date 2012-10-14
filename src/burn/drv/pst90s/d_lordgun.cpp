@@ -2,6 +2,8 @@
 // Based on MAME driver by Luca Elia, XingXing, and David Haywood
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ymf278b.h"
 #include "burn_ym3812.h"
 #include "msm6295.h"
@@ -9,61 +11,61 @@
 #include "eeprom.h"
 #include "burn_gun.h"
 
-static unsigned char *AllMem		= NULL;
-static unsigned char *MemEnd		= NULL;
-static unsigned char *AllRam		= NULL;
-static unsigned char *RamEnd		= NULL;
-static unsigned char *Drv68KROM		= NULL;
-static unsigned char *DrvZ80ROM		= NULL;
-static unsigned char *DrvGfxROM0	= NULL;
-static unsigned char *DrvGfxROM1	= NULL;
-static unsigned char *DrvGfxROM2	= NULL;
-static unsigned char *DrvGfxROM3	= NULL;
-static unsigned char *DrvSndROM0	= NULL;
-static unsigned char *DrvSndROM1	= NULL;
-static unsigned char *DrvSndROM2	= NULL;
-static unsigned char *Drv68KRAM		= NULL;
-static unsigned char *DrvPriRAM		= NULL;
-static unsigned char *DrvPalRAM		= NULL;
-static unsigned char *DrvVidRAM0	= NULL;
-static unsigned char *DrvVidRAM1	= NULL;
-static unsigned char *DrvVidRAM2	= NULL;
-static unsigned char *DrvVidRAM3	= NULL;
-static unsigned char *DrvScrRAM		= NULL;
-static unsigned char *DrvSprRAM		= NULL;
-static unsigned char *DrvProtRAM	= NULL;
-static unsigned char *DrvZ80RAM		= NULL;
+static UINT8 *AllMem		= NULL;
+static UINT8 *MemEnd		= NULL;
+static UINT8 *AllRam		= NULL;
+static UINT8 *RamEnd		= NULL;
+static UINT8 *Drv68KROM		= NULL;
+static UINT8 *DrvZ80ROM		= NULL;
+static UINT8 *DrvGfxROM0	= NULL;
+static UINT8 *DrvGfxROM1	= NULL;
+static UINT8 *DrvGfxROM2	= NULL;
+static UINT8 *DrvGfxROM3	= NULL;
+static UINT8 *DrvSndROM0	= NULL;
+static UINT8 *DrvSndROM1	= NULL;
+static UINT8 *DrvSndROM2	= NULL;
+static UINT8 *Drv68KRAM		= NULL;
+static UINT8 *DrvPriRAM		= NULL;
+static UINT8 *DrvPalRAM		= NULL;
+static UINT8 *DrvVidRAM0	= NULL;
+static UINT8 *DrvVidRAM1	= NULL;
+static UINT8 *DrvVidRAM2	= NULL;
+static UINT8 *DrvVidRAM3	= NULL;
+static UINT8 *DrvScrRAM		= NULL;
+static UINT8 *DrvSprRAM		= NULL;
+static UINT8 *DrvProtRAM	= NULL;
+static UINT8 *DrvZ80RAM		= NULL;
 
-static unsigned int  *DrvPalette	= NULL;
-static unsigned char  DrvRecalc;
+static UINT32 *DrvPalette	= NULL;
+static UINT8  DrvRecalc;
 
-static unsigned short *scrollx		= NULL;
-static unsigned short *scrolly		= NULL;
-static unsigned short *priority		= NULL;
-static unsigned char *soundlatch	= NULL;
-static char *okibank			= NULL;
+static UINT16 *scrollx		= NULL;
+static UINT16 *scrolly		= NULL;
+static UINT16 *priority		= NULL;
+static UINT8 *soundlatch	= NULL;
+static INT8 *okibank			= NULL;
 
-static unsigned char *DrvTransTable[5]	= { NULL, NULL, NULL, NULL, NULL };
-static unsigned short *draw_bitmap[5] 	= { NULL, NULL, NULL, NULL, NULL };
+static UINT8 *DrvTransTable[5]	= { NULL, NULL, NULL, NULL, NULL };
+static UINT16 *draw_bitmap[5] 	= { NULL, NULL, NULL, NULL, NULL };
 
-static unsigned char aliencha_dip_sel;
-static unsigned char lordgun_whitescreen;
+static UINT8 aliencha_dip_sel;
+static UINT8 lordgun_whitescreen;
 
-static int DrvAxis[4];
-static unsigned short DrvAnalogInput[4];
-static unsigned short DrvInputs[5];
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvJoy4[16];
-static unsigned char DrvJoy5[16];
-static unsigned char DrvDips[4];
-static unsigned char DrvReset;
+static INT32 DrvAxis[4];
+static UINT16 DrvAnalogInput[4];
+static UINT16 DrvInputs[5];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvJoy4[16];
+static UINT8 DrvJoy5[16];
+static UINT8 DrvDips[4];
+static UINT8 DrvReset;
 
-static int lordgun_gun_hw_x[2];
-static int lordgun_gun_hw_y[2];
+static INT32 lordgun_gun_hw_x[2];
+static INT32 lordgun_gun_hw_y[2];
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo LordgunInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy4 + 0,	"p1 coin"	},
@@ -277,25 +279,25 @@ static const short lordgun_gun_x_table[] =
 	0x1B3,0x1B4,0x1B5,0x1B6,0x1B7,0x1B8,0x1B9,0x1BA,0x1BB,0x1BC,0x1BD,0x1BE,0x1BF,0x1BF
 };
 
-static void lordgun_update_gun(int i)
+static void lordgun_update_gun(INT32 i)
 {
-	int x = DrvAnalogInput[i] - 0x3c;
+	INT32 x = DrvAnalogInput[i] - 0x3c;
 
 	lordgun_gun_hw_x[i] = DrvAnalogInput[i];
 	lordgun_gun_hw_y[i] = DrvAnalogInput[i+2];
 
-	if ((x < 0) || (x > (int)(sizeof(lordgun_gun_x_table)/sizeof(lordgun_gun_x_table[0]))) )
+	if ((x < 0) || (x > (INT32)(sizeof(lordgun_gun_x_table)/sizeof(lordgun_gun_x_table[0]))) )
 		x = 0;
 
-	int scrx = lordgun_gun_x_table[x];
-	int scry = DrvAnalogInput[i+2];
+	INT32 scrx = lordgun_gun_x_table[x];
+	INT32 scry = DrvAnalogInput[i+2];
 
 	if ((scrx < 0) || (scrx >= nScreenWidth) || (scry < 0) || (scry > nScreenHeight)) {
 		lordgun_gun_hw_x[i] = lordgun_gun_hw_y[i] = 0;
 	}
 }
 
-void __fastcall lordgun_write_word(unsigned int address, unsigned short data)
+void __fastcall lordgun_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -357,12 +359,12 @@ void __fastcall lordgun_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall lordgun_write_byte(unsigned int address, unsigned char data)
+void __fastcall lordgun_write_byte(UINT32 /*address*/, UINT8 /*data*/)
 {
-	address = data; // kill warnings...
+//	address = data; // kill warnings...
 }
 
-unsigned short __fastcall lordgun_read_word(unsigned int address)
+UINT16 __fastcall lordgun_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -394,7 +396,7 @@ unsigned short __fastcall lordgun_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall lordgun_read_byte(unsigned int address)
+UINT8 __fastcall lordgun_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -414,7 +416,7 @@ unsigned char __fastcall lordgun_read_byte(unsigned int address)
 	return 0;
 }
 
-static void set_oki_bank(int bank)
+static void set_oki_bank(INT32 bank)
 {
 	if (*okibank != (bank & 0x02)) {
 		*okibank = bank & 0x02;
@@ -423,7 +425,7 @@ static void set_oki_bank(int bank)
 	}
 }
 
-void __fastcall lordgun_sound_write_port(unsigned short port, unsigned char data)
+void __fastcall lordgun_sound_write_port(UINT16 port, UINT8 data)
 {
 	switch (port)
 	{
@@ -462,7 +464,7 @@ void __fastcall lordgun_sound_write_port(unsigned short port, unsigned char data
 	}
 }
 
-unsigned char __fastcall lordgun_sound_read_port(unsigned short port)
+UINT8 __fastcall lordgun_sound_read_port(UINT16 port)
 {
 	switch (port)
 	{
@@ -490,21 +492,21 @@ unsigned char __fastcall lordgun_sound_read_port(unsigned short port)
 
 // ppi8255 handlers
 
-static void aliencha_dip_select(unsigned char data)
+static void aliencha_dip_select(UINT8 data)
 {
 	aliencha_dip_sel = data;
 }
 
-static unsigned char lordgun_dip_read()
+static UINT8 lordgun_dip_read()
 {
 	return (DrvDips[0] & 0x4f) | (EEPROMRead() ? 0x80 : 0) | (DrvInputs[4] & 0x30);
 }
 
-static void lordgun_eeprom_write(unsigned char data)
+static void lordgun_eeprom_write(UINT8 data)
 {
-	static int old;
+	static INT32 old;
 
-	for (int i = 0; i < 2; i++)
+	for (INT32 i = 0; i < 2; i++)
 		if ((data & (0x04 << i)) && !(old & (0x04 << i)))
 			lordgun_update_gun(i);
 
@@ -517,7 +519,7 @@ static void lordgun_eeprom_write(unsigned char data)
 	old = data;
 }
 
-static void aliencha_eeprom_write(unsigned char data)
+static void aliencha_eeprom_write(UINT8 data)
 {
 	lordgun_whitescreen = !(data & 0x02);
 
@@ -526,14 +528,14 @@ static void aliencha_eeprom_write(unsigned char data)
 	EEPROMWrite((data & 0x40), (data & 0x20), (data & 0x80));
 }
 
-static unsigned char lordgun_start1_read() { return DrvInputs[0]; }
-static unsigned char lordgun_start2_read() { return DrvInputs[1]; }
-static unsigned char lordgun_service_read(){ return DrvInputs[2]; } 
-static unsigned char lordgun_coin_read()   { return DrvInputs[3]; }
+static UINT8 lordgun_start1_read() { return DrvInputs[0]; }
+static UINT8 lordgun_start2_read() { return DrvInputs[1]; }
+static UINT8 lordgun_service_read(){ return DrvInputs[2]; } 
+static UINT8 lordgun_coin_read()   { return DrvInputs[3]; }
 
-static unsigned char aliencha_service_read(){ return (DrvInputs[2] & 0xfe) | (EEPROMRead() ? 0x01 : 0); } // aliencha eeprom read...
+static UINT8 aliencha_service_read(){ return (DrvInputs[2] & 0xfe) | (EEPROMRead() ? 0x01 : 0); } // aliencha eeprom read...
 
-static unsigned char aliencha_dip_read()
+static UINT8 aliencha_dip_read()
 {
 	switch (aliencha_dip_sel & 0x70) {
 		case 0x30: return DrvDips[0];
@@ -545,17 +547,17 @@ static unsigned char aliencha_dip_read()
 
 // sound irq / timing handlers
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	ZetSetIRQLine(0, nStatus ? ZET_IRQSTATUS_ACK : ZET_IRQSTATUS_NONE);
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 5000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 5000000;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -582,12 +584,12 @@ static int DrvDoReset()
 
 	// rom hacks
 	if (!strncmp(BurnDrvGetTextA(DRV_NAME), "aliencha", 8)) {
-		*((unsigned short*)(Drv68KROM + 0x00a34)) = 0x7000 | ((DrvDips[3] >> 0) & 1); // text language
-		*((unsigned short*)(Drv68KROM + 0x00a38)) = 0x7000 | ((DrvDips[3] >> 1) & 1); // character name language
-		*((unsigned short*)(Drv68KROM + 0x00a3c)) = 0x7000 | ((DrvDips[3] >> 2) & 1); // title
+		*((UINT16*)(Drv68KROM + 0x00a34)) = BURN_ENDIAN_SWAP_INT16(0x7000) | ((DrvDips[3] >> 0) & 1); // text language
+		*((UINT16*)(Drv68KROM + 0x00a38)) = BURN_ENDIAN_SWAP_INT16(0x7000) | ((DrvDips[3] >> 1) & 1); // character name language
+		*((UINT16*)(Drv68KROM + 0x00a3c)) = BURN_ENDIAN_SWAP_INT16(0x7000) | ((DrvDips[3] >> 2) & 1); // title
 	} else {
 
-		unsigned char lordgun_eepromdata[48] = {
+		UINT8 lordgun_eepromdata[48] = {
 			0xFF, 0x83, 0x5F, 0xFF, 0xFF, 0xBF, 0x14, 0xB7, 0xA3, 0xA4, 0x80, 0x29, 0x37, 0xA6, 0x32, 0x39, 
 			0x37, 0x90, 0x10, 0x33, 0xBA, 0xA3, 0x00, 0x37, 0x01, 0x00, 0xFF, 0xFF, 0x03, 0x42, 0xFF, 0xFF, 
 			0xFF, 0x83, 0xFF, 0xFF, 0xFF, 0x87, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
@@ -601,9 +603,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x200000;
 	DrvZ80ROM	= Next; Next += 0x010000;
@@ -624,13 +626,13 @@ static int MemIndex()
 	DrvSndROM1	= Next; Next += 0x040000;
 	DrvSndROM2	= Next; Next += 0x200000;
 
-	DrvPalette	= (unsigned int*)Next; Next += (0x0800 + 1) * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += (0x0800 + 1) * sizeof(UINT32);
 
-	draw_bitmap[0]	= (unsigned short*)Next; Next += 448 * 240 * 2;
-	draw_bitmap[1]	= (unsigned short*)Next; Next += 448 * 240 * 2;
-	draw_bitmap[2]	= (unsigned short*)Next; Next += 448 * 240 * 2;
-	draw_bitmap[3]	= (unsigned short*)Next; Next += 448 * 240 * 2;
-	draw_bitmap[4]	= (unsigned short*)Next; Next += 448 * 240 * 2;
+	draw_bitmap[0]	= (UINT16*)Next; Next += 448 * 240 * 2;
+	draw_bitmap[1]	= (UINT16*)Next; Next += 448 * 240 * 2;
+	draw_bitmap[2]	= (UINT16*)Next; Next += 448 * 240 * 2;
+	draw_bitmap[3]	= (UINT16*)Next; Next += 448 * 240 * 2;
+	draw_bitmap[4]	= (UINT16*)Next; Next += 448 * 240 * 2;
 
 	AllRam		= Next;
 
@@ -647,13 +649,13 @@ static int MemIndex()
 
 	DrvZ80RAM	= Next; Next += 0x001000;
 
-	scrollx		= (unsigned short*)Next; Next += 0x000004 * sizeof(short);
-	scrolly		= (unsigned short*)Next; Next += 0x000004 * sizeof(short);
-	priority	= (unsigned short*)Next; Next += 0x000001 * sizeof(short);
+	scrollx		= (UINT16*)Next; Next += 0x000004 * sizeof(UINT16);
+	scrolly		= (UINT16*)Next; Next += 0x000004 * sizeof(UINT16);
+	priority	= (UINT16*)Next; Next += 0x000001 * sizeof(UINT16);
 
 	soundlatch	= Next; Next += 0x000002;
 
-	okibank		= (char*)Next; Next += 0x000001;
+	okibank		= (INT8*)Next; Next += 0x000001;
 
 	RamEnd		= Next;
 
@@ -662,13 +664,13 @@ static int MemIndex()
 	return 0;
 }
 
-static void DrvSetTransTab(unsigned char *gfx, int tab, int len, int size)
+static void DrvSetTransTab(UINT8 *gfx, INT32 tab, INT32 len, INT32 size)
 {
-	for (int i = 0; i < len; i+= (size * size))
+	for (INT32 i = 0; i < len; i+= (size * size))
 	{
 		DrvTransTable[tab][i/(size*size)] = 1; // transparent
 
-		for (int j = 0; j < (size * size); j++) {
+		for (INT32 j = 0; j < (size * size); j++) {
 			if (gfx[i + j] != 0x3f) {
 				DrvTransTable[tab][i/(size*size)] = 0;
 				break;
@@ -677,26 +679,26 @@ static void DrvSetTransTab(unsigned char *gfx, int tab, int len, int size)
 	}
 }
 
-static void DrvGfxDecode(unsigned char *gfxsrc, unsigned char *gfxdest, int len, int size)
+static void DrvGfxDecode(UINT8 *gfxsrc, UINT8 *gfxdest, INT32 len, INT32 size)
 {
-	int Planes[6] = {
+	INT32 Planes[6] = {
 		(((len * 8) / 3) * 2) + 8, (((len * 8) / 3) * 2) + 0, 
 		(((len * 8) / 3) * 1) + 8, (((len * 8) / 3) * 1) + 0,
 		(((len * 8) / 3) * 0) + 8, (((len * 8) / 3) * 0) + 0
 	};
 
-	int XOffs1[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	INT32 XOffs1[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 			   0x100, 0x101, 0x102, 0x103, 0x104, 0x105, 0x106, 0x107 };
-	int XOffs2[32] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007, 
+	INT32 XOffs2[32] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007, 
 			   0x200, 0x201, 0x202, 0x203, 0x204, 0x205, 0x206, 0x207,
 			   0x400, 0x401, 0x402, 0x403, 0x404, 0x405, 0x406, 0x407,
 			   0x600, 0x601, 0x602, 0x603, 0x604, 0x605, 0x606, 0x607 };
-	int YOffs[32]  = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
+	INT32 YOffs[32]  = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 			   0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0,
 			   0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170,
 			   0x180, 0x190, 0x1a0, 0x1b0, 0x1c0, 0x1d0, 0x1e0, 0x1f0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -705,15 +707,15 @@ static void DrvGfxDecode(unsigned char *gfxsrc, unsigned char *gfxdest, int len,
 
 	GfxDecode(((len * 8) / 6) / (size*size), 6, size, size, Planes, (size == 32) ? XOffs2 : XOffs1, YOffs, (size*size*2), tmp, gfxdest);
 
-	free (tmp);
+	BurnFree (tmp);
 }
 
-static int DrvInit(int (*pInitCallback)(), int lordgun)
+static INT32 DrvInit(INT32 (*pInitCallback)(), INT32 lordgun)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -751,7 +753,7 @@ static int DrvInit(int (*pInitCallback)(), int lordgun)
 	SekSetReadByteHandler(0,	lordgun_read_byte);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0xefff, 0, DrvZ80ROM);	
 	ZetMapArea(0x0000, 0xefff, 2, DrvZ80ROM);	
@@ -801,7 +803,7 @@ static int DrvInit(int (*pInitCallback)(), int lordgun)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -818,13 +820,12 @@ static int DrvExit()
 
 	EEPROMExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static int lordgunLoadRoms()
+static INT32 lordgunLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM  + 0x000001,  0, 2)) return 1;
 	if (BurnLoadRom(Drv68KROM  + 0x000000,  1, 2)) return 1;
@@ -848,20 +849,20 @@ static int lordgunLoadRoms()
 
 	if (BurnLoadRom(DrvSndROM0 + 0x040000, 15, 1)) return 1;
 
-	unsigned short *rom = (unsigned short*)Drv68KROM;
+	UINT16 *rom = (UINT16*)Drv68KROM;
 
-	for (int i = 0; i < 0x100000/2; i++) {
+	for (INT32 i = 0; i < 0x100000/2; i++) {
 		if ((i & 0x0120) == 0x0100 || (i & 0x0a00) == 0x0800)
-			rom[i] ^= 0x0010;
+			rom[i] ^= BURN_ENDIAN_SWAP_INT16(0x0010);
 	}
 
-	rom[0x14832/2]	=	0x6000;		// 014832: 6700 0006  beq     $1483a (protection)
-	rom[0x1587e/2]	=	0x6010;		// 01587E: 6710       beq     $15890 (rom check)
+	rom[0x14832/2]	=	BURN_ENDIAN_SWAP_INT16(0x6000);		// 014832: 6700 0006  beq     $1483a (protection)
+	rom[0x1587e/2]	=	BURN_ENDIAN_SWAP_INT16(0x6010);		// 01587E: 6710       beq     $15890 (rom check)
 
 	return 0;
 }
 
-static int alienchaLoadRoms()
+static INT32 alienchaLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM  + 0x000000,  0, 1)) return 1;
 	BurnByteswap(Drv68KROM, 0x200000);
@@ -886,28 +887,28 @@ static int alienchaLoadRoms()
 
 	if (BurnLoadRom(DrvSndROM2 + 0x000000, 13, 1)) return 1;
 
-	unsigned short *rom = (unsigned short*)Drv68KROM;
+	UINT16 *rom = (UINT16*)Drv68KROM;
 
-	rom[0x0A558/2]	=	0x6012;		// 0A558  beq.s   $A56C
-	rom[0x0A8DC/2]	=	0x6012;		// 0A8DC  beq.s   $A8F0
-	rom[0x0AC92/2]	=	0x6012;		// 0AC92  beq.s   $ACA6
-	rom[0x124CC/2]	=	0x6012;		// 124CC  beq.s   $124E0
-	rom[0x12850/2]	=	0x6012;		// 12850  beq.s   $12864
-	rom[0x12C06/2]	=	0x6012;		// 12C06  beq.s   $12C1A
-	rom[0x1862A/2]	=	0x6012;		// 1862A  beq.s   $1863E
-	rom[0x189AE/2]	=	0x6012;		// 189AE  beq.s   $189C2
-	rom[0x18D64/2]	=	0x6012;		// 18D64  beq.s   $18D78
-	rom[0x230FC/2]	=	0x6012;		// 230FC  beq.s   $23110
-	rom[0x23480/2]	=	0x6012;		// 23480  beq.s   $23494
-	rom[0x23836/2]	=	0x6012;		// 23836  beq.s   $2384A
-	rom[0x2BD0E/2]	=	0x6012;		// 2BD0E  beq.s   $2BD22
-	rom[0x2C092/2]	=	0x6012;		// 2C092  beq.s   $2C0A6
-	rom[0x2C448/2]	=	0x6012;		// 2C448  beq.s   $2C45C
+	rom[0x0A558/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0A558  beq.s   $A56C
+	rom[0x0A8DC/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0A8DC  beq.s   $A8F0
+	rom[0x0AC92/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0AC92  beq.s   $ACA6
+	rom[0x124CC/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 124CC  beq.s   $124E0
+	rom[0x12850/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 12850  beq.s   $12864
+	rom[0x12C06/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 12C06  beq.s   $12C1A
+	rom[0x1862A/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 1862A  beq.s   $1863E
+	rom[0x189AE/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 189AE  beq.s   $189C2
+	rom[0x18D64/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 18D64  beq.s   $18D78
+	rom[0x230FC/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 230FC  beq.s   $23110
+	rom[0x23480/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 23480  beq.s   $23494
+	rom[0x23836/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 23836  beq.s   $2384A
+	rom[0x2BD0E/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2BD0E  beq.s   $2BD22
+	rom[0x2C092/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2C092  beq.s   $2C0A6
+	rom[0x2C448/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2C448  beq.s   $2C45C
 
 	return 0;
 }
 
-static int alienchacLoadRoms()
+static INT32 alienchacLoadRoms()
 {
 	if (BurnLoadRom(Drv68KROM  + 0x000000,  0, 1)) return 1;
 	BurnByteswap(Drv68KROM, 0x200000);
@@ -934,54 +935,54 @@ static int alienchacLoadRoms()
 
 	if (BurnLoadRom(DrvSndROM2 + 0x000000, 15, 1)) return 1;
 
-	unsigned short *rom = (unsigned short*)Drv68KROM;
+	UINT16 *rom = (UINT16*)Drv68KROM;
 
-	rom[0x0A550/2]	=	0x6012;		// 0A558  beq.s   $A564
-	rom[0x0A8D4/2]	=	0x6012;		// 0A8D4  beq.s   $A8E8
-	rom[0x0AC8A/2]	=	0x6012;		// 0AC8A  beq.s   $AC9E
-	rom[0x124B8/2]	=	0x6012;		// 124B8  beq.s   $124CC
-	rom[0x1283C/2]	=	0x6012;		// 1283C  beq.s   $12850
-	rom[0x12BF2/2]	=	0x6012;		// 12BF2  beq.s   $12C06
-	rom[0x18616/2]	=	0x6012;		// 18616  beq.s   $1862A
-	rom[0x1899A/2]	=	0x6012;		// 1899A  beq.s   $189AE
-	rom[0x18D50/2]	=	0x6012;		// 18D50  beq.s   $18D64
-	rom[0x230E8/2]	=	0x6012;		// 230E8  beq.s   $230FC
-	rom[0x2346C/2]	=	0x6012;		// 2346C  beq.s   $23480
-	rom[0x23822/2]	=	0x6012;		// 23822  beq.s   $23822
-	rom[0x2BCFA/2]	=	0x6012;		// 2BCFA  beq.s   $2BD0E
-	rom[0x2C07E/2]	=	0x6012;		// 2C07E  beq.s   $2C092
-	rom[0x2C434/2]	=	0x6012;		// 2C434  beq.s   $2C448
+	rom[0x0A550/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0A558  beq.s   $A564
+	rom[0x0A8D4/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0A8D4  beq.s   $A8E8
+	rom[0x0AC8A/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 0AC8A  beq.s   $AC9E
+	rom[0x124B8/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 124B8  beq.s   $124CC
+	rom[0x1283C/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 1283C  beq.s   $12850
+	rom[0x12BF2/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 12BF2  beq.s   $12C06
+	rom[0x18616/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 18616  beq.s   $1862A
+	rom[0x1899A/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 1899A  beq.s   $189AE
+	rom[0x18D50/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 18D50  beq.s   $18D64
+	rom[0x230E8/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 230E8  beq.s   $230FC
+	rom[0x2346C/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2346C  beq.s   $23480
+	rom[0x23822/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 23822  beq.s   $23822
+	rom[0x2BCFA/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2BCFA  beq.s   $2BD0E
+	rom[0x2C07E/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2C07E  beq.s   $2C092
+	rom[0x2C434/2]	=	BURN_ENDIAN_SWAP_INT16(0x6012);		// 2C434  beq.s   $2C448
 
 	return 0;
 }
 
 static void draw_layer_linescroll()
 {
-	unsigned short *vram = (unsigned short*)DrvVidRAM1;
-	unsigned short *sram = (unsigned short*)DrvScrRAM;
-	unsigned short *dest = draw_bitmap[1];
+	UINT16 *vram = (UINT16*)DrvVidRAM1;
+	UINT16 *sram = (UINT16*)DrvScrRAM;
+	UINT16 *dest = draw_bitmap[1];
 
-	for (int y = 0; y < nScreenHeight; y++, dest += nScreenWidth)
+	for (INT32 y = 0; y < nScreenHeight; y++, dest += nScreenWidth)
 	{
-		int yscroll = (scrolly[1] + y) & 0x1ff;
+		INT32 yscroll = (scrolly[1] + y) & 0x1ff;
 
-		for (int x = 0; x < nScreenWidth + 16; x+=16) {
+		for (INT32 x = 0; x < nScreenWidth + 16; x+=16) {
 
-			int xscroll = (scrollx[1] + sram[y * 2 + 1] + x) & 0x7ff;
+			INT32 xscroll = (scrollx[1] + sram[y * 2 + 1] + x) & 0x7ff;
 
-			int ofst = (((yscroll >> 4) << 7) | (xscroll >> 4)) << 1;
+			INT32 ofst = (((yscroll >> 4) << 7) | (xscroll >> 4)) << 1;
 
-			int attr = vram[ofst];
-			int code = vram[ofst + 1] & 0x7fff;
-			int pri  = (attr & 0x0e00) >> 9;
+			INT32 attr = BURN_ENDIAN_SWAP_INT16(vram[ofst]);
+			INT32 code = BURN_ENDIAN_SWAP_INT16(vram[ofst + 1]) & 0x7fff;
+			INT32 pri  = (attr & 0x0e00) >> 9;
 
-			int flipx = attr & 0x8000;
-			int flipy = attr & 0x4000;
+			INT32 flipx = attr & 0x8000;
+			INT32 flipy = attr & 0x4000;
 
-			int color = ((attr & 0x0070) << 2)+0x600+pri*0x800;
+			INT32 color = ((attr & 0x0070) << 2)+0x600+pri*0x800;
 
 			{
-				unsigned char *gfx = DrvGfxROM1 + (code << 8);
+				UINT8 *gfx = DrvGfxROM1 + (code << 8);
 
 				if (flipy) gfx += ((yscroll & 0x0f)^0xf) << 4;
 				else	   gfx += ((yscroll & 0x0f)    ) << 4;
@@ -990,10 +991,10 @@ static void draw_layer_linescroll()
 
 				if (flipx) flipx = 0x0f;
 
-				for (int xx = 0, sx = x - (xscroll & 0x0f); xx < 16; xx++, sx++) {
+				for (INT32 xx = 0, sx = x - (xscroll & 0x0f); xx < 16; xx++, sx++) {
 					if (sx < 0 || sx >= nScreenWidth) continue;
 
-					int pxl = gfx[xx^flipx];
+					INT32 pxl = gfx[xx^flipx];
 
 					if (pxl == 0x3f) continue;
 
@@ -1004,34 +1005,34 @@ static void draw_layer_linescroll()
 	}
 }
 
-static void draw_layer(unsigned char *ram, unsigned char *gfx, int size, int wide, int high, int color_offset, int color_and, int layer)
+static void draw_layer(UINT8 *ram, UINT8 *gfx, INT32 size, INT32 wide, INT32 high, INT32 color_offset, INT32 color_and, INT32 layer)
 {
-	int twidth  = wide * size;
-	int theight = high * size;
+	INT32 twidth  = wide * size;
+	INT32 theight = high * size;
 
-	int code_and = (size == 32) ? 0x1fff : ((size == 16) ? 0x7fff : 0xffff);
+	INT32 code_and = (size == 32) ? 0x1fff : ((size == 16) ? 0x7fff : 0xffff);
 
-	unsigned short *vram = (unsigned short*)ram;
+	UINT16 *vram = (UINT16*)ram;
 
-	for (int sy = 0, offs = 0; sy < high * size; sy+=size)
+	for (INT32 sy = 0, offs = 0; sy < high * size; sy+=size)
 	{
-		for (int sx = 0; sx < wide * size; sx+=size, offs++)
+		for (INT32 sx = 0; sx < wide * size; sx+=size, offs++)
 		{
-			int code = vram[offs * 2 + 1] & code_and;
+			INT32 code = BURN_ENDIAN_SWAP_INT16(vram[offs * 2 + 1]) & code_and;
 			if (DrvTransTable[layer][code]) continue; // transparent
 
-			int attr = vram[offs * 2 + 0];
+			INT32 attr = BURN_ENDIAN_SWAP_INT16(vram[offs * 2 + 0]);
 
-			int prio =  (attr >> 9) & 0x07;
-			int color= ((attr >> 4) & color_and) + color_offset / 0x40 + prio * 0x800 / 0x40;
+			INT32 prio =  (attr >> 9) & 0x07;
+			INT32 color= ((attr >> 4) & color_and) + color_offset / 0x40 + prio * 0x800 / 0x40;
 
-			int flipx= attr & 0x8000;
-			int flipy= attr & 0x4000;
+			INT32 flipx= attr & 0x8000;
+			INT32 flipy= attr & 0x4000;
 
-			int xx = sx - (scrollx[layer] % twidth);
+			INT32 xx = sx - (scrollx[layer] % twidth);
 			if (xx < (0 - (size - 1))) xx += twidth;
 
-			int yy = sy - (scrolly[layer] % theight);
+			INT32 yy = sy - (scrolly[layer] % theight);
 			if (yy < (0 - (size - 1))) yy += theight;
 
 			if (xx >= nScreenWidth || yy >= nScreenHeight) continue;
@@ -1055,24 +1056,24 @@ static void draw_layer(unsigned char *ram, unsigned char *gfx, int size, int wid
 
 static void draw_sprites()
 {
-	unsigned short *sprite = (unsigned short*)DrvSprRAM;
+	UINT16 *sprite = (UINT16*)DrvSprRAM;
 
-	for (int offs = 0; offs < 0x800 / 2; offs += 4)
+	for (INT32 offs = 0; offs < 0x800 / 2; offs += 4)
 	{
-		int x0, x1, dx, y0, y1, dy;
+		INT32 x0, x1, dx, y0, y1, dy;
 
-		int attr = sprite[offs + 1];
+		INT32 attr = BURN_ENDIAN_SWAP_INT16(sprite[offs + 1]);
 		if (attr & 0x0100) break;
 
-		int sy    = sprite[offs + 0];
-		int code  = sprite[offs + 2];
-		int sx    = sprite[offs + 3];
-		int flipx = (attr & 0x8000);
-		int flipy = (attr & 0x4000);
-		int pri   = (attr & 0x0e00) >> 9;
-		int color = (attr & 0x00f0) >> 4;
-		int nx    = (attr & 0x000f) + 1;
-		int ny    = ((sy & 0xf000) >> 12) + 1;
+		INT32 sy    = BURN_ENDIAN_SWAP_INT16(sprite[offs + 0]);
+		INT32 code  = BURN_ENDIAN_SWAP_INT16(sprite[offs + 2]);
+		INT32 sx    = BURN_ENDIAN_SWAP_INT16(sprite[offs + 3]);
+		INT32 flipx = (attr & 0x8000);
+		INT32 flipy = (attr & 0x4000);
+		INT32 pri   = (attr & 0x0e00) >> 9;
+		INT32 color = (attr & 0x00f0) >> 4;
+		INT32 nx    = (attr & 0x000f) + 1;
+		INT32 ny    = ((sy & 0xf000) >> 12) + 1;
 
 		if (flipx) { x0 = nx - 1;	x1 = -1;	dx = -1; }
 		else	   { x0 = 0;		x1 = nx;	dx = +1; }
@@ -1083,9 +1084,9 @@ static void draw_sprites()
 		sx	-= 0x18;
 		sy	 = (sy & 0x7ff) - (sy & 0x800);
 
-		for (int y = y0; y != y1; y += dy, code += 1 - 0x10 * nx)
+		for (INT32 y = y0; y != y1; y += dy, code += 1 - 0x10 * nx)
 		{
-			for (int x = x0; x != x1; x += dx, code += 0x10)
+			for (INT32 x = x0; x != x1; x += dx, code += 0x10)
 			{
 				if (DrvTransTable[3][code]) continue;
 
@@ -1109,21 +1110,21 @@ static void draw_sprites()
 
 static void copy_layers()
 {
-	const unsigned char pri2layer[8] = { 0, 0, 0, 4, 3, 0, 1, 2 };
-	const unsigned char layerpri[5] = { 0, 1, 2, 4, 3 };
+	const UINT8 pri2layer[8] = { 0, 0, 0, 4, 3, 0, 1, 2 };
+	const UINT8 layerpri[5] = { 0, 1, 2, 4, 3 };
 
-	unsigned short *dest	  = pTransDraw;
-	unsigned short *source[5] = { draw_bitmap[0], draw_bitmap[1], draw_bitmap[2], draw_bitmap[3], draw_bitmap[4] };
-	unsigned short *pri_ram = (unsigned short*)DrvPriRAM;
+	UINT16 *dest	  = pTransDraw;
+	UINT16 *source[5] = { draw_bitmap[0], draw_bitmap[1], draw_bitmap[2], draw_bitmap[3], draw_bitmap[4] };
+	UINT16 *pri_ram = (UINT16*)DrvPriRAM;
 
-	for (int y = 0; y < nScreenHeight; y++)
+	for (INT32 y = 0; y < nScreenHeight; y++)
 	{
-		for (int x = 0; x < nScreenWidth; x++)
+		for (INT32 x = 0; x < nScreenWidth; x++)
 		{
-			unsigned short pens[5];
-			int pri_addr = 0;
+			UINT16 pens[5];
+			INT32 pri_addr = 0;
 
-			for (int l = 0; l < 5; l++) {
+			for (INT32 l = 0; l < 5; l++) {
 				pens[l] = *source[l]++;
 				if (pens[l] == 0x3f) pri_addr |= 1 << layerpri[l];
 			}
@@ -1133,19 +1134,19 @@ static void copy_layers()
 			pri_addr |= (pens[0] >> 11) << 11;
 			pri_addr |= (pens[3] >> 11) << 14;
 
-			*dest++ = pens[pri2layer[pri_ram[pri_addr & 0x7fff] & 7]] & 0x7ff;
+			*dest++ = pens[pri2layer[BURN_ENDIAN_SWAP_INT16(pri_ram[pri_addr & 0x7fff]) & 7]] & 0x7ff;
 		}
 	}
 }
 
 static void DrvPaletteRecalc()
 {
-	unsigned short *p = (unsigned short*)DrvPalRAM;
+	UINT16 *p = (UINT16*)DrvPalRAM;
 
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		int r = (p[i] >> 0) & 0x0f;
-		int g = (p[i] >> 4) & 0x0f;
-		int b = (p[i] >> 8) & 0x0f;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		INT32 r = (BURN_ENDIAN_SWAP_INT16(p[i]) >> 0) & 0x0f;
+		INT32 g = (BURN_ENDIAN_SWAP_INT16(p[i]) >> 4) & 0x0f;
+		INT32 b = (BURN_ENDIAN_SWAP_INT16(p[i]) >> 8) & 0x0f;
 
 		r |= r << 4;
 		g |= g << 4;
@@ -1157,12 +1158,12 @@ static void DrvPaletteRecalc()
 	DrvPalette[0x0800] = BurnHighCol(0xff, 0xff, 0xff, 0); // white
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	DrvPaletteRecalc();
 
 	if (lordgun_whitescreen) {
-		for (int o = 0; o < nScreenWidth * nScreenHeight; o++) {
+		for (INT32 o = 0; o < nScreenWidth * nScreenHeight; o++) {
 			pTransDraw[o] = 0x800; // white!!
 		}
 
@@ -1170,15 +1171,15 @@ static int DrvDraw()
 		return 0;
 	}
 
-	for (int o = 0; o < nScreenWidth * nScreenHeight; o++) {
+	for (INT32 o = 0; o < nScreenWidth * nScreenHeight; o++) {
 		draw_bitmap[0][o] = draw_bitmap[1][o] = draw_bitmap[2][o] = draw_bitmap[3][o] = draw_bitmap[4][o] = 0x003f;
 	}
 
-	int line_enable = 0;
+	INT32 line_enable = 0;
 	{
-		unsigned short *rs = (unsigned short*)DrvScrRAM;
-		for (int i = 0; i < nScreenHeight * 2; i+=2) {
-			if ((rs[i + 1] & 0x7ff) != (rs[1] & 0x7ff)) {
+		UINT16 *rs = (UINT16*)DrvScrRAM;
+		for (INT32 i = 0; i < nScreenHeight * 2; i+=2) {
+			if ((BURN_ENDIAN_SWAP_INT16(rs[i + 1]) & 0x7ff) != (BURN_ENDIAN_SWAP_INT16(rs[1]) & 0x7ff)) {
 				line_enable = 1;
 				break;
 			}
@@ -1202,11 +1203,11 @@ static int DrvDraw()
 	return 0;
 }
 
-static int lordgunDraw()
+static INT32 lordgunDraw()
 {
 	DrvDraw();
 
-	for (int i = 0; i < BurnDrvGetMaxPlayers(); i++) {
+	for (INT32 i = 0; i < BurnDrvGetMaxPlayers(); i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 
@@ -1215,9 +1216,9 @@ static int lordgunDraw()
 
 static inline void compile_inputs()
 {
-	memset (DrvInputs, 0xff, 5 * sizeof(short));
+	memset (DrvInputs, 0xff, 5 * sizeof(INT16));
 
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -1225,20 +1226,20 @@ static inline void compile_inputs()
 		DrvInputs[4] ^= (DrvJoy5[i] & 1) << i;
 	}
 
-	BurnGunMakeInputs(0, (short)DrvAxis[0], (short)DrvAxis[1]);
-	BurnGunMakeInputs(1, (short)DrvAxis[2], (short)DrvAxis[3]);
+	BurnGunMakeInputs(0, (INT16)DrvAxis[0], (INT16)DrvAxis[1]);
+	BurnGunMakeInputs(1, (INT16)DrvAxis[2], (INT16)DrvAxis[3]);
 		
 	float x0 = ((float)((BurnGunX[0] >> 8) + 8)) / 448 * 412;
 	float y0 = ((float)((BurnGunY[0] >> 8) + 8)) / 224 * 224;
 	float x1 = ((float)((BurnGunX[1] >> 8) + 8)) / 448 * 412;
 	float y1 = ((float)((BurnGunY[1] >> 8) + 8)) / 224 * 224;
-	DrvAnalogInput[0] = (unsigned short)x0 + 0x3c;
-	DrvAnalogInput[2] = (unsigned char)y0 + 0;
-	DrvAnalogInput[1] = (unsigned short)x1 + 0x3c;
-	DrvAnalogInput[3] = (unsigned char)y1 + 0;
+	DrvAnalogInput[0] = (UINT16)x0 + 0x3c;
+	DrvAnalogInput[2] = (UINT8)y0 + 0;
+	DrvAnalogInput[1] = (UINT16)x1 + 0x3c;
+	DrvAnalogInput[3] = (UINT8)y1 + 0;
 }
 
-static int lordgunFrame()
+static INT32 lordgunFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1249,13 +1250,25 @@ static int lordgunFrame()
 	SekNewFrame();
 	ZetNewFrame();
 
-	int nTotalCycles[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nTotalCycles[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
+	INT32 nInterleave = 50;
+	
 	SekOpen(0);
 	ZetOpen(0);
+	
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nTotalCycles[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		
+		BurnTimerUpdateYM3812(i * (nTotalCycles[1] / nInterleave));
+	}
 
 	BurnTimerEndFrameYM3812(nTotalCycles[1]);
 
@@ -1274,7 +1287,7 @@ static int lordgunFrame()
 	return 0;
 }
 
-static int alienchaFrame()
+static INT32 alienchaFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1284,20 +1297,27 @@ static int alienchaFrame()
 
 	SekNewFrame();
 	ZetNewFrame();
+	
+	INT32 nInterleave = 1000;
 
-	int nCyclesTotal[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nCyclesTotal[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < 100; i++) {
-		SekRun(nCyclesTotal[0] / 100);
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-		BurnTimerUpdate(nCyclesTotal[1] / 100);
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		
+		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 	}
-
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-
+	
 	BurnTimerEndFrame(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
@@ -1316,7 +1336,7 @@ static int alienchaFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1350,7 +1370,7 @@ static int DrvScan(int nAction, int *pnMin)
 	}
 
 	if (nAction & ACB_WRITE) {
-		int bank = *okibank;
+		INT32 bank = *okibank;
 		*okibank = -1;
 		set_oki_bank(bank);
 	}
@@ -1388,29 +1408,20 @@ static struct BurnRomInfo lordgunRomDesc[] = {
 STD_ROM_PICK(lordgun)
 STD_ROM_FN(lordgun)
 
-static int lordgunInit()
+static INT32 lordgunInit()
 {
 	return DrvInit(lordgunLoadRoms, 1);
 }
 
 struct BurnDriver BurnDrvLordgun = {
 	"lordgun", NULL, NULL, NULL, "1994",
-	"Lord of Gun (USA)\0", "Imperfect graphics", "IGS", "Miscellaneous",
+	"Lord of Gun (USA)\0", "Imperfect graphics and sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
 	NULL, lordgunRomInfo, lordgunRomName, NULL, NULL, LordgunInputInfo, LordgunDIPInfo,
 	lordgunInit, DrvExit, lordgunFrame, lordgunDraw, DrvScan, &DrvRecalc, 0x800,
 	448, 224, 4, 3
 };
-
-/*	"1945kiii", NULL, NULL, NULL, "2000",
-	"1945k III\0", NULL, "Oriental", "misc",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_VERSHOOT, 0,
-	NULL, _1945kiiiRomInfo, _1945kiiiRomName, NULL, NULL, _1945kiiiInputInfo, _1945kiiiDIPInfo,
-	DrvInit, DrvExit, DrvFrame, NULL, DrvScan, &bRecalcPalette, 0x1000,
-	224, 320, 3, 4*/
-
 
 // Alien Challenge (World)
 
@@ -1441,14 +1452,14 @@ static struct BurnRomInfo alienchaRomDesc[] = {
 STD_ROM_PICK(aliencha)
 STD_ROM_FN(aliencha)
 
-static int alienchaInit()
+static INT32 alienchaInit()
 {
 	return DrvInit(alienchaLoadRoms, 0);
 }
 
 struct BurnDriver BurnDrvAliencha = {
 	"aliencha", NULL, NULL, NULL, "1994",
-	"Alien Challenge (World)\0", NULL, "IGS", "Miscellaneous",
+	"Alien Challenge (World)\0", "Imperfect sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
 	NULL, alienchaRomInfo, alienchaRomName, NULL, NULL, AlienchaInputInfo, AlienchaDIPInfo,
@@ -1488,14 +1499,14 @@ static struct BurnRomInfo alienchacRomDesc[] = {
 STD_ROM_PICK(alienchac)
 STD_ROM_FN(alienchac)
 
-static int alienchacInit()
+static INT32 alienchacInit()
 {
 	return DrvInit(alienchacLoadRoms, 0);
 }
 
 struct BurnDriver BurnDrvAlienchac = {
 	"alienchac", "aliencha", NULL, NULL, "1994",
-	"Alien Challenge (China)\0", NULL, "IGS", "Miscellaneous",
+	"Alien Challenge (China)\0", "Imperfect sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
 	NULL, alienchacRomInfo, alienchacRomName, NULL, NULL, AlienchaInputInfo, AlienchacDIPInfo,

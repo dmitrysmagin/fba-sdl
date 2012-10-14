@@ -2,36 +2,37 @@
 // Based on MAME driver by Jarek Burczynski
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "bitswap.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvVidRAM;
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvVidRAM;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 
-static short *pAY8910Buffer[3];
+static INT16 *pAY8910Buffer[3];
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char  DrvJoy1[8];
-static unsigned char  DrvDips[2];
-static unsigned short DrvAxis[1];
-static unsigned char  DrvInputs[2];
-static unsigned char  DrvReset;
-static unsigned int   nAnalogAxis;
+static UINT8  DrvJoy1[8];
+static UINT8  DrvDips[2];
+static UINT16 DrvAxis[1];
+static UINT8  DrvInputs[2];
+static UINT8  DrvReset;
+static UINT32   nAnalogAxis;
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo WallcInputList[] = {
 	{"Coin 1",	BIT_DIGITAL,	DrvJoy1 + 4,	"p1 coin"	},
@@ -41,7 +42,7 @@ static struct BurnInputInfo WallcInputList[] = {
 	{"P1 Button 1",	BIT_DIGITAL,	DrvJoy1 + 3,	"p1 fire 1"	},
 	{"P1 Button 2",	BIT_DIGITAL,	DrvJoy1 + 0,	"p1 fire 2"	},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"),
 
 	{"Service",     BIT_DIGITAL,	DrvJoy1 + 6,	"service"	},
 	{"Reset",	BIT_DIGITAL,	&DrvReset,	"reset"		},
@@ -53,8 +54,8 @@ STDINPUTINFO(Wallc)
 
 static struct BurnDIPInfo WallcDIPList[]=
 {
-	{0x09, 0xff, 0xff, 0xff, NULL                     	},
-	{0x0a, 0xff, 0xff, 0xff, NULL                     	},
+	{0x09, 0xff, 0xff, 0x61, NULL                     	},
+	{0x0a, 0xff, 0xff, 0x00, NULL                     	},
 
 	{0   , 0xfe, 0   , 4   , "Lives"                  	},
 	{0x09, 0x01, 0x03, 0x03, "5"       		  	},
@@ -103,7 +104,7 @@ static struct BurnDIPInfo WallcDIPList[]=
 
 STDDIPINFO(Wallc)
 
-void __fastcall wallc_write(unsigned short address, unsigned char data)
+void __fastcall wallc_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -117,7 +118,7 @@ void __fastcall wallc_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall wallc_read(unsigned short address)
+UINT8 __fastcall wallc_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -137,7 +138,7 @@ unsigned char __fastcall wallc_read(unsigned short address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 	nAnalogAxis = 0;
@@ -153,13 +154,13 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[3] = { 0x04000, 0x0c000, 0x14000 };
-	int XOffs[8] = { 7, 6,  5,  4,  3,  2,  1,  0 };
-	int YOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
+	INT32 Plane[3] = { 0x04000, 0x0c000, 0x14000 };
+	INT32 XOffs[8] = { 7, 6,  5,  4,  3,  2,  1,  0 };
+	INT32 YOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x3000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x3000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -168,16 +169,16 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x0100, 3, 8, 8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static void DrvPaletteInit()
 {
-	for (int i = 8; i < 16; i++)
+	for (INT32 i = 8; i < 16; i++)
 	{
-		int bit0,bit1,bit7,r,g,b;
+		INT32 bit0,bit1,bit7,r,g,b;
 
 		bit0 = (DrvColPROM[i] >> 5) & 0x01;
 		bit1 = (DrvColPROM[i] >> 6) & 0x01;
@@ -196,9 +197,9 @@ static void DrvPaletteInit()
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM		= Next; Next += 0x008000;
 
@@ -206,17 +207,17 @@ static int MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000020; 
 
-	Palette			= (unsigned int*)Next; Next += 0x0008 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x0008 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x0008 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x0008 * sizeof(UINT32);
 
 	AllRam			= Next;
 
 	DrvZ80RAM		= Next; Next += 0x000400;
 	DrvVidRAM		= Next; Next += 0x000400;
 
-	pAY8910Buffer[0]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
 
 	RamEnd			= Next;
 	MemEnd			= Next;
@@ -224,12 +225,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit(int incr)
+static INT32 DrvInit(INT32 incr)
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -247,7 +248,7 @@ static int DrvInit(int incr)
 		DrvGfxDecode();
 	}
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -280,32 +281,31 @@ static int DrvInit(int incr)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	ZetExit();
 	AY8910Exit(0);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 8; i++) {
-			int d = Palette[i];
+		for (INT32 i = 0; i < 8; i++) {
+			INT32 d = Palette[i];
 			DrvPalette[i] = BurnHighCol(d >> 16, (d >> 8) & 0xff, d & 0xff, 0);
 		}
 	}
 
-	for (int offs = 0; offs < 0x400; offs ++)
+	for (INT32 offs = 0; offs < 0x400; offs ++)
 	{
-		int sy   = (~offs & 0x1f) << 3;
-		int sx   = ( offs >> 5) << 3;
-		int code = DrvVidRAM[offs];
+		INT32 sy   = (~offs & 0x1f) << 3;
+		INT32 sx   = ( offs >> 5) << 3;
+		INT32 code = DrvVidRAM[offs];
 
 		Render8x8Tile(pTransDraw, code, sx, sy, 0, 0, 0, DrvGfxROM);
 	}
@@ -315,7 +315,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -323,7 +323,7 @@ static int DrvFrame()
 
 	{
 		DrvInputs[0] = 0xff;
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		}
 
@@ -341,22 +341,16 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pAY8910Buffer[0][n];
 			nSample += pAY8910Buffer[1][n];
 			nSample += pAY8910Buffer[2][n];
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -370,7 +364,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -415,14 +409,14 @@ STD_ROM_FN(wallc)
 
 static void wallcDecode()
 {
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		DrvZ80ROM[i] = BITSWAP08(DrvZ80ROM[i] ^ 0xaa, 4,2,6,0,7,1,3,5);
 	}
 }
 
-static int wallcInit()
+static INT32 wallcInit()
 {
-	int nRet = DrvInit(0);
+	INT32 nRet = DrvInit(0);
 
 	if (nRet == 0) {
 		wallcDecode();
@@ -460,7 +454,7 @@ STD_ROM_FN(wallca)
 
 static void wallcaDecode()
 {
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		if (i & 0x100) {
 			DrvZ80ROM[i] = BITSWAP08(DrvZ80ROM[i] ^ 0x4a, 4,7,1,3,2,0,5,6);
 		} else {
@@ -469,9 +463,9 @@ static void wallcaDecode()
 	}
 }
 
-static int wallcaInit()
+static INT32 wallcaInit()
 {
-	int nRet = DrvInit(0x800);
+	INT32 nRet = DrvInit(0x800);
 
 	if (nRet == 0) {
 		wallcaDecode();

@@ -1,12 +1,10 @@
 #include "sys16.h"
-
-#define BIT(x,n) (((x)>>(n))&1)
-#define BITSWAP8(a, b, c, d, e, f, g, h, i) BITSWAP08(a, b, c, d, e, f, g, h, i)
+#include "bitswap.h"
 
 struct parameters
 {
-	int xor1;
-	int s7,s6,s5,s4,s3,s2,s1,s0;
+	INT32 xor1;
+	INT32 s7,s6,s5,s4,s3,s2,s1,s0;
 };
 
 static UINT8 basetable_fd1089[0x100] =
@@ -51,7 +49,7 @@ static const struct parameters addr_params[16] =
 	{ 0x5b, 0,7,5,3,1,4,2,6 },
 };
 
-static unsigned char rearrange_key(UINT8 table, int opcode)
+static UINT8 rearrange_key(UINT8 table, INT32 opcode)
 {
 	if (opcode == 0) {
 		table ^= (1<<4);
@@ -64,10 +62,10 @@ static unsigned char rearrange_key(UINT8 table, int opcode)
 		if (BIT(table,6))
 			table ^= (1<<7);
 
-		table = BITSWAP8(table,1,0,6,4,3,5,2,7);
+		table = BITSWAP08(table,1,0,6,4,3,5,2,7);
 
 		if (BIT(table,6))
-			table = BITSWAP8(table,7,6,2,4,5,3,1,0);
+			table = BITSWAP08(table,7,6,2,4,5,3,1,0);
 	} else {
 		table ^= (1<<2);
 		table ^= (1<<3);
@@ -79,10 +77,10 @@ static unsigned char rearrange_key(UINT8 table, int opcode)
 		if (BIT(~table,7))
 			table ^= (1<<6);
 
-		table = BITSWAP8(table,5,6,7,4,2,3,1,0);
+		table = BITSWAP08(table,5,6,7,4,2,3,1,0);
 
 		if (BIT(table,6))
-			table = BITSWAP8(table,7,6,5,3,2,4,1,0);
+			table = BITSWAP08(table,7,6,5,3,2,4,1,0);
 	}
 
 	if (BIT(table,6)) {
@@ -96,9 +94,9 @@ static unsigned char rearrange_key(UINT8 table, int opcode)
 	return table;
 }
 
-static int decode_fd1089a(int val,int key,int opcode)
+static INT32 decode_fd1089a(INT32 val,INT32 key,INT32 opcode)
 {
-	int table;
+	INT32 table;
 
 	static const struct parameters data_params[16] =
 	{
@@ -121,7 +119,7 @@ static int decode_fd1089a(int val,int key,int opcode)
 	};
 	const struct parameters *p;
 	const struct parameters *q;
-	int family;
+	INT32 family;
 
 	/* special case - don't decrypt */
 	if (key == 0x40)
@@ -130,7 +128,7 @@ static int decode_fd1089a(int val,int key,int opcode)
 	table = rearrange_key(key, opcode);
 
 	p = &addr_params[table >> 4];
-	val = BITSWAP8(val, p->s7,p->s6,p->s5,p->s4,p->s3,p->s2,p->s1,p->s0) ^ p->xor1;
+	val = BITSWAP08(val, p->s7,p->s6,p->s5,p->s4,p->s3,p->s2,p->s1,p->s0) ^ p->xor1;
 
 	if (BIT(table,3)) val ^= 0x01;
 	if (BIT(table,0)) val ^= 0xb1;
@@ -157,28 +155,28 @@ static int decode_fd1089a(int val,int key,int opcode)
 	{
 		if (BIT(val,0)) val ^= 0xc0;
 		if (BIT(~val,6) ^ BIT(val,4))
-			val = BITSWAP8(val, 7,6,5,4,1,0,2,3);
+			val = BITSWAP08(val, 7,6,5,4,1,0,2,3);
 	}
 	else
 	{
 		if (BIT(~val,6) ^ BIT(val,4))
-			val = BITSWAP8(val, 7,6,5,4,0,1,3,2);
+			val = BITSWAP08(val, 7,6,5,4,0,1,3,2);
 	}
 	if (BIT(~val,6))
-		val = BITSWAP8(val, 7,6,5,4,2,3,0,1);
+		val = BITSWAP08(val, 7,6,5,4,2,3,0,1);
 
 	q = &data_params[family];
 
 	val ^= q->xor1;
-	val = BITSWAP8(val, q->s7,q->s6,q->s5,q->s4,q->s3,q->s2,q->s1,q->s0);
+	val = BITSWAP08(val, q->s7,q->s6,q->s5,q->s4,q->s3,q->s2,q->s1,q->s0);
 
 	return val;
 }
 
-static int decode_fd1089b(int val,int key,int opcode)
+static INT32 decode_fd1089b(INT32 val,INT32 key,INT32 opcode)
 {
-	int table;
-	int xor1;
+	INT32 table;
+	INT32 xor1;
 
 	const struct parameters *p;
 
@@ -189,7 +187,7 @@ static int decode_fd1089b(int val,int key,int opcode)
 	table = rearrange_key(key, opcode);
 
 	p = &addr_params[table >> 4];
-	val = BITSWAP8(val, p->s7,p->s6,p->s5,p->s4,p->s3,p->s2,p->s1,p->s0) ^ p->xor1;
+	val = BITSWAP08(val, p->s7,p->s6,p->s5,p->s4,p->s3,p->s2,p->s1,p->s0) ^ p->xor1;
 
 	if (BIT(table,3)) val ^= 0x01;
 	if (BIT(table,0)) val ^= 0xb1;
@@ -216,25 +214,25 @@ static int decode_fd1089b(int val,int key,int opcode)
 
 	if (BIT(table,2))
 	{
-		val = BITSWAP8(val, 7,6,5,4,1,0,3,2);
+		val = BITSWAP08(val, 7,6,5,4,1,0,3,2);
 
 		if (BIT(table,0) ^ BIT(table,1))
-			val = BITSWAP8(val, 7,6,5,4,0,1,3,2);
+			val = BITSWAP08(val, 7,6,5,4,0,1,3,2);
 	}
 	else
 	{
-		val = BITSWAP8(val, 7,6,5,4,3,2,0,1);
+		val = BITSWAP08(val, 7,6,5,4,3,2,0,1);
 
 		if (BIT(table,0) ^ BIT(table,1))
-			val = BITSWAP8(val, 7,6,5,4,1,0,2,3);
+			val = BITSWAP08(val, 7,6,5,4,1,0,2,3);
 	}
 
 	return val;
 }
 
-static UINT16 fd1089_decrypt(/*offs_t*/int addr,UINT16 val,const UINT8 *key,int opcode)
+static UINT16 fd1089_decrypt(/*offs_t*/INT32 addr,UINT16 val,const UINT8 *key,INT32 opcode)
 {
-	int tbl_num,src;
+	INT32 tbl_num,src;
 
 	/* pick the translation table from bits ff022a of the address */
 	tbl_num =	((addr & 0x000002) >> 1) |
@@ -260,19 +258,19 @@ static UINT16 fd1089_decrypt(/*offs_t*/int addr,UINT16 val,const UINT8 *key,int 
 static void sys16_decrypt(const UINT8 *key)
 {
 	UINT16 *rom = (UINT16 *)System16Rom;
-	int size = 0x100000;
-	int A;
+	INT32 size = 0x100000;
+	INT32 A;
 	UINT16 *decrypted = (UINT16 *)System16Code;
 
 	for (A = 0;A < size;A+=2)
 	{
-		UINT16 src = rom[A / 2];
+		UINT16 src = BURN_ENDIAN_SWAP_INT16(rom[A / 2]);
 
 		/* decode the opcodes */
-		decrypted[A/2] = fd1089_decrypt(A,src,key,1);
+		decrypted[A/2] = BURN_ENDIAN_SWAP_INT16(fd1089_decrypt(A,src,key,1));
 		
 		/* decode the data */
-		rom[A/2] = fd1089_decrypt(A,src,key,0);
+		rom[A/2] = BURN_ENDIAN_SWAP_INT16(fd1089_decrypt(A,src,key,0));
 	}
 }
 
@@ -280,6 +278,3 @@ void FD1089Decrypt()
 {
 	sys16_decrypt(System16Key);
 }
-
-#undef BIT
-#undef BITSWAP8

@@ -8,29 +8,29 @@
 
 #define MAX_MEM_PTR	0x400 // more than 1024 malloc calls should be insane...
 
-static unsigned char *memptr[MAX_MEM_PTR]; // pointer to allocated memory
+static UINT8 *memptr[MAX_MEM_PTR]; // pointer to allocated memory
 
 // this should be called early on... BurnDrvInit?
 
 void BurnInitMemoryManager()
 {
-	memset (memptr, 0, MAX_MEM_PTR * sizeof(char **));	
+	memset (memptr, 0, MAX_MEM_PTR * sizeof(UINT8 **));	
 }
 
 // should we pass the pointer as a variable here so that we can save a pointer to it
 // and then ensure it is NULL'd in BurnFree or BurnExitMemoryManager?
 
 // call instead of 'malloc'
-unsigned char *BurnMalloc(int size)
+UINT8 *BurnMalloc(INT32 size)
 {
-	for (int i = 0; i < MAX_MEM_PTR; i++)
+	for (INT32 i = 0; i < MAX_MEM_PTR; i++)
 	{
 		if (memptr[i] == NULL) {
-			memptr[i] = (unsigned char*)malloc(size);
+			memptr[i] = (UINT8*)malloc(size);
 
 			if (memptr[i] == NULL) {
 				bprintf (0, _T("BurnMalloc failed to allocate %d bytes of memory!\n"), size);
-				return 0;
+				return NULL;
 			}
 
 			memset (memptr[i], 0, size); // set contents to 0
@@ -41,15 +41,15 @@ unsigned char *BurnMalloc(int size)
 
 	bprintf (0, _T("BurnMalloc called too many times!\n"));
 
-	return 0; // Freak out!
+	return NULL; // Freak out!
 }
 
 // call instead of "free"
-void BurnFree(void *ptr)
+void _BurnFree(void *ptr)
 {
-	unsigned char *mptr = (unsigned char*)ptr;
+	UINT8 *mptr = (UINT8*)ptr;
 
-	for (int i = 0; i < MAX_MEM_PTR; i++)
+	for (INT32 i = 0; i < MAX_MEM_PTR; i++)
 	{
 		if (memptr[i] == mptr) {
 			free (memptr[i]);
@@ -58,17 +58,18 @@ void BurnFree(void *ptr)
 			break;
 		}
 	}
-
-	ptr = NULL;
 }
 
 // call in BurnDrvExit?
 
 void BurnExitMemoryManager()
 {
-	for (int i = 0; i < MAX_MEM_PTR; i++)
+	for (INT32 i = 0; i < MAX_MEM_PTR; i++)
 	{
 		if (memptr[i] != NULL) {
+#if defined FBA_DEBUG
+			bprintf(PRINT_ERROR, _T("BurnExitMemoryManager had to free mem pointer %i\n"), i);
+#endif
 			free (memptr[i]);
 			memptr[i] = NULL;
 		}

@@ -7,62 +7,29 @@
 
 // #define ADJUST_Z80_SPEED
 
-static const UINT8 bbakraid_unlimited_nvram[512] = {
-	0xc2,0x49,0x00,0x07,0xa1,0x20,0x2a,0x2a,0x2a,0x90,0x90,0x90,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x06,0x1a,0x80,0x2a,0x2a,0x2a,0x94,
-	0x94,0x94,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x04,
-	0x93,0xe0,0x2a,0x2a,0x2a,0x98,0x98,0x98,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x02,0x00,0x03,0x0d,0x40,0x2a,0x2a,0x2a,0x9c,0x9c,0x9c,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x01,0x86,0xa0,0x2a,0x2a,
-	0x2a,0xa0,0xa0,0xa0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,
-	0x00,0x07,0xa1,0x20,0x2b,0x2b,0x2b,0x90,0x90,0x90,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x06,0x1a,0x80,0x2b,0x2b,0x2b,0x94,0x94,0x94,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0x93,0xe0,
-	0x2b,0x2b,0x2b,0x98,0x98,0x98,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x02,0x00,0x03,0x0d,0x40,0x2b,0x2b,0x2b,0x9c,0x9c,0x9c,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x01,0x86,0xa0,0x2b,0x2b,0x2b,0xa0,
-	0xa0,0xa0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x07,
-	0xa1,0x20,0x23,0x23,0x23,0x90,0x90,0x90,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x02,0x00,0x06,0x1a,0x80,0x23,0x23,0x23,0x94,0x94,0x94,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0x93,0xe0,0x23,0x23,
-	0x23,0x98,0x98,0x98,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,
-	0x00,0x03,0x0d,0x40,0x23,0x23,0x23,0x9c,0x9c,0x9c,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x01,0x86,0xa0,0x23,0x23,0x23,0xa0,0xa0,0xa0,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x07,0xa1,0x20,
-	0x3f,0x3f,0x3f,0x90,0x90,0x90,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x02,0x00,0x06,0x1a,0x80,0x3f,0x3f,0x3f,0x94,0x94,0x94,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0x93,0xe0,0x3f,0x3f,0x3f,0x98,
-	0x98,0x98,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x03,
-	0x0d,0x40,0x3f,0x3f,0x3f,0x9c,0x9c,0x9c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x02,0x00,0x01,0x86,0xa0,0x3f,0x3f,0x3f,0xa0,0xa0,0xa0,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0xc2,0x49,0xc2,0x49,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x33,0xcf,0x00,0x04,0x00,0x00,0x21,0xd5,
-	0x00,0x05,0x06,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xc2,0x49
-};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 *DefaultEEPROM = NULL;
 
-static unsigned char DrvRegion = 0;
+static UINT8 DrvRegion = 0;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static unsigned char nIRQPending;
+static UINT8 nIRQPending;
 
-static int nSoundData[4];
-static unsigned char nSoundlatchAck;
+static INT32 nSoundData[4];
+static UINT8 nSoundlatchAck;
 
-static int Z80BusRQ = 0;
+static INT32 Z80BusRQ = 0;
 
-static int nCycles68KSync;
+static INT32 nCycles68KSync;
 
-static int nTextROMStatus;
+static INT32 nTextROMStatus;
 
 static bool bUseAsm68KCoreOldValue = false;
 
@@ -84,7 +51,7 @@ static struct BurnRomInfo bkraiduRomDesc[] = {
 	{ "rom7.830",     0x400000, 0xD6224267, BRF_SND },			 // 10
 	{ "rom8.831",     0x400000, 0xA101DFB0, BRF_SND },			 // 11
 	
-	{ "eeprom-bbakraid-new.bin", 0x00200, 0x35c9275a, BRF_OPT },
+	{ "eeprom-bbakraid-new.bin", 0x00200, 0x35c9275a, BRF_PRG },
 };
 
 
@@ -108,7 +75,7 @@ static struct BurnRomInfo bkraidjRomDesc[] = {
 	{ "rom7.830",     0x400000, 0xD6224267, BRF_SND },			 // 10
 	{ "rom8.831",     0x400000, 0xA101DFB0, BRF_SND },			 // 11
 	
-	{ "eeprom-bbakraid.bin", 0x00200, 0x7f97d347, BRF_OPT },
+	{ "eeprom-bbakraid.bin", 0x00200, 0x7f97d347, BRF_PRG },
 };
 
 
@@ -132,7 +99,7 @@ static struct BurnRomInfo bkraidujRomDesc[] = {
 	{ "rom7.830",     0x400000, 0xD6224267, BRF_SND },			 // 10
 	{ "rom8.831",     0x400000, 0xA101DFB0, BRF_SND },			 // 11
 	
-	{ "eeprom-bbakraid-new.bin", 0x00200, 0x35c9275a, BRF_OPT },
+	{ "eeprom-bbakraid-new.bin", 0x00200, 0x35c9275a, BRF_PRG },
 };
 
 
@@ -355,20 +322,21 @@ static struct BurnDIPInfo bkraiduRegionDIPList[] = {
 
 STDDIPINFOEXT(bkraidu, bbakraid, bkraiduRegion)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *Ram02, *RamPal;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x200000;			//
 	RomZ80		= Next; Next += 0x020000;			// Z80 ROM
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	YMZ280BROM	= Next;	Next += 0xC00000;
+	DefaultEEPROM = Next; Next += 0x000200;
 	RamStart	= Next;
 	ExtraTROM	= Next; Next += 0x008000;			// Extra Text layer tile data
 	ExtraTRAM	= Next; Next += 0x002000;			// Extra tile layer
@@ -377,9 +345,9 @@ static int MemIndex()
 	RamPal		= Next; Next += 0x001000;			// palette
 	RamZ80		= Next; Next += 0x004000;			// Z80 RAM
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
  	ExtraTSelect= Ram01;							// Extra text layer scroll
@@ -388,7 +356,7 @@ static int MemIndex()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -422,7 +390,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	if (ToaLoadCode(Rom01, 0, 4)) {
@@ -439,16 +407,18 @@ static int LoadRoms()
 	BurnLoadRom(YMZ280BROM + 0x000000, 9, 1);
 	BurnLoadRom(YMZ280BROM + 0x400000, 10, 1);
 	BurnLoadRom(YMZ280BROM + 0x800000, 11, 1);
-
+	
+	BurnLoadRom(DefaultEEPROM, 12, 1);
+	
 	return 0;
 }
 
-static inline void bbakraidSynchroniseZ80(int nExtraCycles)
+static inline void bbakraidSynchroniseZ80(INT32 nExtraCycles)
 {
 #ifdef ADJUST_Z80_SPEED
-	int nCycles = SekTotalCycles() / 4 + nExtraCycles;
+	INT32 nCycles = SekTotalCycles() / 4 + nExtraCycles;
 #else
-	int nCycles = ((long long)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
+	INT32 nCycles = ((INT64)SekTotalCycles() * nCyclesTotal[1] / nCyclesTotal[0]) + nExtraCycles;
 #endif
 
 	if (nCycles <= ZetTotalCycles()) {
@@ -460,7 +430,7 @@ static inline void bbakraidSynchroniseZ80(int nExtraCycles)
 	BurnTimerUpdate(nCycles);
 }
 
-static int bbakraidTimerOver(int, int)
+static INT32 bbakraidTimerOver(INT32, INT32)
 {
 //	bprintf(PRINT_NORMAL, _T("  - IRQ -> 1.\n"));
 	ZetSetIRQLine(0xFF, ZET_IRQSTATUS_AUTO);
@@ -468,7 +438,7 @@ static int bbakraidTimerOver(int, int)
 	return 0;
 }
 
-unsigned char __fastcall bbakraidZIn(unsigned short nAddress)
+UINT8 __fastcall bbakraidZIn(UINT16 nAddress)
 {
 	nAddress &= 0xFF;
 	switch (nAddress) {
@@ -487,7 +457,7 @@ unsigned char __fastcall bbakraidZIn(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall bbakraidZOut(unsigned short nAddress, unsigned char nValue)
+void __fastcall bbakraidZOut(UINT16 nAddress, UINT8 nValue)
 {
 	nAddress &= 0xFF;
 	switch (nAddress) {
@@ -524,10 +494,11 @@ void __fastcall bbakraidZOut(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int DrvZ80Init()
+static INT32 DrvZ80Init()
 {
 	// Init the Z80
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 
 	ZetSetInHandler(bbakraidZIn);
 	ZetSetOutHandler(bbakraidZOut);
@@ -565,7 +536,7 @@ static void Map68KTextROM(bool bMapTextROM)
 	}
 }
 
-unsigned char __fastcall bbakraidReadByte(unsigned int sekAddress)
+UINT8 __fastcall bbakraidReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -599,7 +570,7 @@ unsigned char __fastcall bbakraidReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall bbakraidReadWord(unsigned int sekAddress)
+UINT16 __fastcall bbakraidReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -632,7 +603,7 @@ unsigned short __fastcall bbakraidReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall bbakraidWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall bbakraidWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -649,7 +620,7 @@ void __fastcall bbakraidWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall bbakraidWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall bbakraidWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x500014:
@@ -708,7 +679,7 @@ void __fastcall bbakraidWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-unsigned short __fastcall bbakraidReadWordGP9001(unsigned int sekAddress)
+UINT16 __fastcall bbakraidReadWordGP9001(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400008:
@@ -721,7 +692,7 @@ unsigned short __fastcall bbakraidReadWordGP9001(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall bbakraidWriteWordGP9001(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall bbakraidWriteWordGP9001(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -744,27 +715,27 @@ void __fastcall bbakraidWriteWordGP9001(unsigned int sekAddress, unsigned short 
 	}
 }
 
-unsigned char __fastcall bbakraidReadByteZ80ROM(unsigned int sekAddress)
+UINT8 __fastcall bbakraidReadByteZ80ROM(UINT32 sekAddress)
 {
 	return RomZ80[(sekAddress & 0x7FFFF) >> 1];
 }
 
-unsigned short __fastcall bbakraidReadWordZ80ROM(unsigned int sekAddress)
+UINT16 __fastcall bbakraidReadWordZ80ROM(UINT32 sekAddress)
 {
 	return RomZ80[(sekAddress & 0x7FFFF) >> 1];
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	// Insert region code into 68K ROM, code by BisonSAS
-	unsigned char nRegion = DrvRegion & 0x1F;
-  if (nRegion<=25) {
-  	Rom01[0x00000^1]=(unsigned char)(nRegion<<13) | (DrvRegion & 0x1F);
-  }
+	UINT8 nRegion = DrvRegion & 0x1F;
+	if (nRegion<=25) {
+		Rom01[0x00000^1]=(UINT8)(nRegion<<13) | (DrvRegion & 0x1F);
+	}
 
 	SekOpen(0);
 	nIRQPending = 0;
-  SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
+	SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
 	SekReset();
 	SekClose();
 
@@ -780,11 +751,13 @@ static int DrvDoReset()
 	nSoundlatchAck = 0;
 
 	YMZ280BReset();
-
+	
 	nCyclesDone[0] = nCyclesDone[1] = 0;
-
+	
 	BurnTimerReset();
+	ZetOpen(0);
 	BurnTimerSetRetrig(0, 1.0 / 445.0);
+	ZetClose();
 
 	return 0;
 }
@@ -802,9 +775,9 @@ static const eeprom_interface eeprom_interface_93C66 =
 	0
 };
 
-static int bbakraidInit()
+static INT32 bbakraidInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -815,12 +788,17 @@ static int bbakraidInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
+	
+	// Load the roms into memory
+	if (LoadRoms()) {
+		return 1;
+	}
 
 	EEPROMInit(&eeprom_interface_93C66);
 
@@ -833,15 +811,12 @@ static int bbakraidInit()
 			bBurnUseASMCPUEmulation = false;
 		}
 
-	if (strcmp("bkraidu", BurnDrvGetTextA(DRV_NAME)) == 0 || strcmp("bkraiduj", BurnDrvGetTextA(DRV_NAME)) == 0) {
-		if (!EEPROMAvailable()) EEPROMFill(bbakraid_unlimited_nvram, 0, sizeof(bbakraid_unlimited_nvram));
-	}
+//	if (strcmp("bbakraid", BurnDrvGetTextA(DRV_NAME)) == 0 || strcmp("bbakraidj", BurnDrvGetTextA(DRV_NAME)) == 0) {
+//		if (!EEPROMAvailable()) EEPROMFill(bbakraid_unlimited_nvram, 0, sizeof(bbakraid_unlimited_nvram));
+//	}
 
-	// Load the roms into memory
-	if (LoadRoms()) {
-		return 1;
-	}
-
+	if (!EEPROMAvailable()) EEPROMFill(DefaultEEPROM, 0, 0x200);
+	
 	{
 		SekInit(0, 0x68000);									// Allocate 68000
 	    SekOpen(0);
@@ -895,16 +870,12 @@ static int bbakraidInit()
 	nTextROMStatus = -1;
 	bDrawScreen = true;
 
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
-
 	DrvDoReset(); 				// Reset machine
 
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 	BurnTimerExit();
@@ -924,14 +895,12 @@ static int DrvExit()
 			bBurnUseASMCPUEmulation = true;
 		}
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -946,25 +915,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-#if 0 && defined USE_SPEEDHACKS
-	int nCurrentPC = SekGetPC(-1);
-
-	if (!nIRQPending &&
-		((nCurrentPC >= 0x000A42 && nCurrentPC <= 0x000A48) ||
-		 (nCurrentPC >= 0x001FF0 && nCurrentPC <= 0x001FF6)))
-	{
-		return 1;
-	}
-#endif
-
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 8;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -974,7 +932,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -985,27 +943,29 @@ static int DrvFrame()
 	SekNewFrame();
 	ZetNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 #ifdef ADJUST_Z80_SPEED
 	nCyclesTotal[1] = nCyclesTotal[0] / 4;
 #else
 	nCyclesTotal[1] = TOA_Z80_SPEED / 60;
 #endif
+
+	SekOpen(0);
+	
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
-	SekOpen(0);
 	ZetOpen(0);
 
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
 
-	for (int i = 1; i <= nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 
@@ -1044,8 +1004,8 @@ static int DrvFrame()
 		if ((i & 1) == 0) {
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentEnd = nBurnSoundLen * i / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentEnd = nBurnSoundLen * i / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				YMZ280BRender(pSoundBuf, nSegmentEnd - nSoundBufferPos);
 				nSoundBufferPos = nSegmentEnd;
 			}
@@ -1059,18 +1019,19 @@ static int DrvFrame()
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];
 
 	SekClose();
-	ZetClose();
-
+	
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				YMZ280BRender(pSoundBuf, nSegmentLength);
 			}
 		}
 	}
+	
+	ZetClose();
 
 	return 0;
 }

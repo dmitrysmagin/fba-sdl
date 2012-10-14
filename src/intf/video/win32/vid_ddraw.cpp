@@ -1,10 +1,19 @@
 // DirectDraw blitter
 
 #include "burner.h"
-#include "vid_directx_support.h"
+
+#if !defined BUILD_X64_EXE
+ #include "vid_directx_support.h" 
+#endif
 
 #include <InitGuid.h>
 #define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
+
+#if defined BUILD_X64_EXE
+ #include "vid_directx_support.h" 
+#endif
+
+#include "ddraw_core.h"
 
 static IDirectDraw7* DtoDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* DtoPrim = NULL;		// Primary surface
@@ -235,8 +244,10 @@ static int vidExit()
 
 	VidSExit();
 
-	free(DtoBltFx);
-	DtoBltFx = NULL;
+	if (DtoBltFx) {
+		free(DtoBltFx);
+		DtoBltFx = NULL;
+	}
 
 	RELEASE(DtoDD)
 
@@ -278,11 +289,11 @@ static int vidInit()
 	dprintf(_T("  * Enumerating available drivers:\n"));
 	nWantDriver = 0;
 	nCurrentDriver = 0;
-	DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
+	_DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
 #endif
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&DtoDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&DtoDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(DtoDD);
 
@@ -319,7 +330,7 @@ static int vidInit()
 			ddcaps.dwSize = sizeof(ddcaps);
 
 			DtoDD->GetCaps(&ddcaps, NULL);
-			if ((ddcaps.dwFXCaps & DDFXCAPS_BLTMIRRORLEFTRIGHT) && (ddcaps.dwFXCaps & DDFXCAPS_BLTMIRRORUPDOWN)) {
+			if (((ddcaps.dwFXCaps & DDFXCAPS_BLTMIRRORLEFTRIGHT) && (ddcaps.dwFXCaps & DDFXCAPS_BLTMIRRORUPDOWN)) || bVidForceFlip) {
 
 				DtoBltFx = (DDBLTFX*)malloc(sizeof(DDBLTFX));
 				if (DtoBltFx == NULL) {
@@ -593,7 +604,10 @@ static int vidRenderRotate(DDSURFACEDESC2* ddsd)
 						break;
 					}
 				}
-				free (pBuffer);
+				if (pBuffer) {
+					free (pBuffer);
+					pBuffer = NULL;
+				}
 			}
 		} else {
 			int nPixelSize = nVidImageBPP;

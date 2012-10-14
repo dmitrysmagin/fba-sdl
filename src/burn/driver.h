@@ -20,14 +20,19 @@
 
 #define FBA
 
-typedef signed char INT8;
-typedef unsigned char UINT8;
-typedef signed short INT16;
-typedef unsigned short UINT16;
-typedef signed int INT32;
-typedef unsigned int UINT32;
-typedef signed long long INT64;
-typedef unsigned long long UINT64;
+typedef unsigned char						UINT8;
+typedef signed char 						INT8;
+typedef unsigned short						UINT16;
+typedef signed short						INT16;
+typedef unsigned int						UINT32;
+typedef signed int							INT32;
+#ifdef _MSC_VER
+typedef signed __int64						INT64;
+typedef unsigned __int64					UINT64;
+#else
+__extension__ typedef unsigned long long	UINT64;
+__extension__ typedef long long				INT64;
+#endif
 #define OSD_CPU_H
 
 /* OPN */
@@ -59,8 +64,8 @@ enum {
 #endif
   double BurnTimerGetTime(void);
 
-  typedef unsigned char (*read8_handler)(unsigned int offset);
-  typedef void (*write8_handler)(unsigned int offset,unsigned int data);
+  typedef UINT8 (*read8_handler)(UINT32 offset);
+  typedef void (*write8_handler)(UINT32 offset, UINT32 data);
 
  #ifdef MAME_USE_LOGERROR
   void __cdecl logerror(char* szFormat, ...);

@@ -3,73 +3,56 @@
 #include "pgm.h"
 #include "bitswap.h"
 
-/*
-	Some xor tables used to decrypt the program roms contain asci text
-	IGS #### RD ? YR MO DAY	- GAME
-	IGS 0004 RD 1 02 10 15	- ketsui
-	IGS 0005 RD 1 02 12 03	- theglad
-	IGS 0007 RD 1 03 09 09	- espgaluda
-	IGS 0008 RD 1 03 12 15	- happy6in1
-	IGS 0009 rd 1 04 02 19	- kovshp
-	IGS 0013 RD 1 04 07 27	- oldsplus
-	IGS 0024 RD 1 05 09 08	- killbldp
-
-	IGS 0055 RD 4 02 06 21  - Sheng Dan Wu Xian (non-PGM, but uses asic27A)
-
-	The later games (ones that use ASIC27/ASIC27A) have ram-based xor tables. The
-	internal ASIC program uploads the xor to the 0x50000000 - 0x500003ff region.
-*/
-
 void pgm_decrypt_dw2()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i<nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i<nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x020890) == 0x000000)				      x ^= 0x0002;
 		if ((i & 0x020000) == 0x020000 && (i & 0x001500) != 0x001400) x ^= 0x0002;
 		if ((i & 0x020400) == 0x000000 && (i & 0x002010) != 0x002010) x ^= 0x0400;
 		if ((i & 0x020000) == 0x020000 && (i & 0x000148) != 0x000140) x ^= 0x0400;
 	
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
 void pgm_decrypt_dw3()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x005460) == 0x001400) x ^= 0x0100;
 		if ((i & 0x005450) == 0x001040) x ^= 0x0100;
 		if ((i & 0x005e00) == 0x001c00) x ^= 0x0040;
 		if ((i & 0x005580) == 0x001100) x ^= 0x0040;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
 void pgm_decrypt_killbld()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x006d00) == 0x000400) x ^= 0x0008;
 		if ((i & 0x006c80) == 0x000880) x ^= 0x0008;
 		if ((i & 0x007500) == 0x002400) x ^= 0x1000;
 		if ((i & 0x007600) == 0x003200) x ^= 0x1000;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
 
-static const unsigned char kov_tab[256] = {
+static const UINT8 kov_tab[256] = {
 	0x17, 0x1c, 0xe3, 0x02, 0x62, 0x59, 0x97, 0x4a, 0x67, 0x4d, 0x1f, 0x11, 0x76, 0x64, 0xc1, 0xe1,
 	0xd2, 0x41, 0x9f, 0xfd, 0xfa, 0x04, 0xfe, 0xab, 0x89, 0xeb, 0xc0, 0xf5, 0xac, 0x2b, 0x64, 0x22,
 	0x90, 0x7d, 0x88, 0xc5, 0x8c, 0xe0, 0xd9, 0x70, 0x3c, 0xf4, 0x7d, 0x31, 0x1c, 0xca, 0xe2, 0xf1,
@@ -90,10 +73,10 @@ static const unsigned char kov_tab[256] = {
 
 void pgm_decrypt_kov()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -106,11 +89,11 @@ void pgm_decrypt_kov()
 
 		x ^= kov_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char kovsh_tab[256] = {
+static const UINT8 kovsh_tab[256] = {
 	0xe7, 0x06, 0xa3, 0x70, 0xf2, 0x58, 0xe6, 0x59, 0xe4, 0xcf, 0xc2, 0x79, 0x1d, 0xe3, 0x71, 0x0e,
 	0xb6, 0x90, 0x9a, 0x2a, 0x8c, 0x41, 0xf7, 0x82, 0x9b, 0xef, 0x99, 0x0c, 0xfa, 0x2f, 0xf1, 0xfe,
 	0x8f, 0x70, 0xf4, 0xc1, 0xb5, 0x3d, 0x7c, 0x60, 0x4c, 0x09, 0xf4, 0x2e, 0x7c, 0x87, 0x63, 0x5f,
@@ -131,10 +114,10 @@ static const unsigned char kovsh_tab[256] = {
 
 void pgm_decrypt_kovsh()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008 && (i & 0x180000) != 0x000000) x ^= 0x0002;
@@ -147,11 +130,11 @@ void pgm_decrypt_kovsh()
 
 		x ^= kovsh_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char kovshp_tab[256] = { // IGS0009rd1040219
+static const UINT8 kovshp_tab[256] = { // IGS0009rd1040219
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x30, 0x39, 0x72, 0x64, 0x31, 0x30, 0x34, 0x30, 0x32, 0x31, 0x39,
 	0xf9, 0x8c, 0xbd, 0x87, 0x16, 0x07, 0x39, 0xeb, 0x29, 0x9e, 0x17, 0xef, 0x4f, 0x64, 0x7c, 0xe0,
 	0x5f, 0x73, 0x5b, 0xa1, 0x5e, 0x95, 0x0d, 0xf1, 0x40, 0x36, 0x2f, 0x00, 0xe2, 0x8a, 0xbc, 0x32,
@@ -172,10 +155,10 @@ static const unsigned char kovshp_tab[256] = { // IGS0009rd1040219
 
 void pgm_decrypt_kovshp()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008 && (i & 0x180000) != 0x000000) x ^= 0x0002;
@@ -188,11 +171,11 @@ void pgm_decrypt_kovshp()
 
 		x ^= kovshp_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char photoy2k_tab[256] = {
+static const UINT8 photoy2k_tab[256] = {
 	0xd9, 0x92, 0xb2, 0xbc, 0xa5, 0x88, 0xe3, 0x48, 0x7d, 0xeb, 0xc5, 0x4d, 0x31, 0xe4, 0x82, 0xbc,
 	0x82, 0xcf, 0xe7, 0xf3, 0x15, 0xde, 0x8f, 0x91, 0xef, 0xc6, 0xb8, 0x81, 0x97, 0xe3, 0xdf, 0x4d,
 	0x88, 0xbf, 0xe4, 0x05, 0x25, 0x73, 0x1e, 0xd0, 0xcf, 0x1e, 0xeb, 0x4d, 0x18, 0x4e, 0x6f, 0x9f,
@@ -213,10 +196,10 @@ static const unsigned char photoy2k_tab[256] = {
 
 void pgm_decrypt_photoy2k()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x40080) != 0x00080) x ^= 0x0001;
 		if ((i & 0x84008) == 0x84008) x ^= 0x0002;
@@ -229,11 +212,11 @@ void pgm_decrypt_photoy2k()
 
 		x ^= photoy2k_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char puzlstar_tab[256] = {
+static const UINT8 puzlstar_tab[256] = {
 	0x62, 0x59, 0x17, 0xe3, 0xe1, 0x11, 0x02, 0x97, 0x67, 0x4d, 0x4a, 0x1c, 0x1f, 0x76, 0x64, 0xc1,
 	0xfa, 0x04, 0xd2, 0x9f, 0x22, 0xf5, 0xfd, 0xfe, 0x89, 0xeb, 0xab, 0x41, 0xc0, 0xac, 0x2b, 0x64,
 	0xfe, 0x1e, 0x9b, 0x68, 0x07, 0xfd, 0x75, 0x25, 0x24, 0xa0, 0x41, 0x5d, 0x79, 0xb5, 0x67, 0x93,
@@ -254,10 +237,10 @@ static const unsigned char puzlstar_tab[256] = {
 
 void pgm_decrypt_puzlstar()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x40480) != 0x00080) x ^= 0x0001;
 		if ((i & 0x00030) == 0x00010) x ^= 0x0004;
@@ -269,11 +252,11 @@ void pgm_decrypt_puzlstar()
 
 		x ^= puzlstar_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char puzzli2_tab[256] = {
+static const UINT8 puzzli2_tab[256] = {
 	0xb7, 0x66, 0xa3, 0xc0, 0x51, 0x55, 0x6d, 0x63, 0x86, 0x60, 0x64, 0x6c, 0x67, 0x18, 0x0b, 0x05,
 	0x62, 0xff, 0xe0, 0x1e, 0x30, 0x21, 0x2e, 0x40, 0x41, 0xb9, 0x60, 0x38, 0xd1, 0x24, 0x7e, 0x36,
 	0x7a, 0x0b, 0x1c, 0x69, 0x4f, 0x09, 0xe1, 0x9e, 0xcf, 0xcd, 0x7c, 0x00, 0x73, 0x08, 0x77, 0x37,
@@ -294,10 +277,10 @@ static const unsigned char puzzli2_tab[256] = {
 
 void pgm_decrypt_puzzli2()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 	    	if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 	    	if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -310,11 +293,11 @@ void pgm_decrypt_puzzli2()
 
 	    	x ^= puzzli2_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char oldsplus_tab[256] = { // IGS0013RD1040727
+static const UINT8 oldsplus_tab[256] = { // IGS0013RD1040727
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x31, 0x33, 0x52, 0x44, 0x31, 0x30, 0x34, 0x30, 0x37, 0x32, 0x37,
 	0xf5, 0x79, 0x6d, 0xab, 0x04, 0x22, 0x51, 0x96, 0xf2, 0x72, 0xe8, 0x3a, 0x96, 0xd2, 0x9a, 0xcc,
 	0x3f, 0x47, 0x3c, 0x09, 0xf2, 0xd9, 0x72, 0x41, 0xe6, 0x44, 0x43, 0xa7, 0x3e, 0xe2, 0xfd, 0xd8,
@@ -335,10 +318,10 @@ static const unsigned char oldsplus_tab[256] = { // IGS0013RD1040727
 
 void pgm_decrypt_oldsplus()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -351,11 +334,11 @@ void pgm_decrypt_oldsplus()
 
 		x ^= oldsplus_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char py2k2_tab[256] = {
+static const UINT8 py2k2_tab[256] = {
 	0x74, 0xe8, 0xa8, 0x64, 0x26, 0x44, 0xa6, 0x9a, 0xa5, 0x69, 0xa2, 0xd3, 0x6d, 0xba, 0xff, 0xf3,
 	0xeb, 0x6e, 0xe3, 0x70, 0x72, 0x58, 0x27, 0xd9, 0xe4, 0x9f, 0x50, 0xa2, 0xdd, 0xce, 0x6e, 0xf6,
 	0x44, 0x72, 0x0c, 0x7e, 0x4d, 0x41, 0x77, 0x2d, 0x00, 0xad, 0x1a, 0x5f, 0x6b, 0xc0, 0x1d, 0x4e,
@@ -376,10 +359,10 @@ static const unsigned char py2k2_tab[256] = {
 
 void pgm_decrypt_py2k2() // and ddp3
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x084008) == 0x084008) x ^= 0x0002;
@@ -392,11 +375,11 @@ void pgm_decrypt_py2k2() // and ddp3
 
 		x ^= py2k2_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char ketsui_tab[256] = { // IGS0004RD1021015
+static const UINT8 ketsui_tab[256] = { // IGS0004RD1021015
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x30, 0x34, 0x52, 0x44, 0x31, 0x30, 0x32, 0x31, 0x30, 0x31, 0x35,
 	0x7c, 0x49, 0x27, 0xa5, 0xff, 0xf6, 0x98, 0x2d, 0x0f, 0x3d, 0x12, 0x23, 0xe2, 0x30, 0x50, 0xcf,
 	0xf1, 0x82, 0xf0, 0xce, 0x48, 0x44, 0x5b, 0xf3, 0x0d, 0xdf, 0xf8, 0x5d, 0x50, 0x53, 0x91, 0xd9,
@@ -417,10 +400,10 @@ static const unsigned char ketsui_tab[256] = { // IGS0004RD1021015
 
 void pgm_decrypt_ketsui()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -433,11 +416,11 @@ void pgm_decrypt_ketsui()
 
 		x ^= ketsui_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char espgal_tab[256] = { // IGS0007RD1030909
+static const UINT8 espgal_tab[256] = { // IGS0007RD1030909
         0x49, 0x47, 0x53, 0x30, 0x30, 0x30, 0x37, 0x52, 0x44, 0x31, 0x30, 0x33, 0x30, 0x39, 0x30, 0x39,
         0xa7, 0xf1, 0x0a, 0xca, 0x69, 0xb2, 0xce, 0x86, 0xec, 0x3d, 0xa2, 0x5a, 0x03, 0xe9, 0xbf, 0xba,
         0xf7, 0xd5, 0xec, 0x68, 0x03, 0x90, 0x15, 0xcc, 0x0d, 0x08, 0x2d, 0x76, 0xa5, 0xb5, 0x41, 0xf1,
@@ -458,10 +441,10 @@ static const unsigned char espgal_tab[256] = { // IGS0007RD1030909
 
 void pgm_decrypt_espgaluda()
 {
-	unsigned short *src = (unsigned short *)PGM68KROM;
+	UINT16 *src = (UINT16 *)PGM68KROM;
 
-	for (int i = 0; i < nPGM68KROMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGM68KROMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x084008) == 0x084008) x ^= 0x0002;
@@ -474,16 +457,16 @@ void pgm_decrypt_espgaluda()
 
 		x ^= espgal_tab[i & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
 void pgm_decrypt_svg()
 {
-	unsigned short *src = (unsigned short *)PGMUSER0;
+	UINT16 *src = (UINT16 *)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -494,11 +477,53 @@ void pgm_decrypt_svg()
 		if ((i & 0x011800) != 0x010000) x ^= 0x0040;
 		if ((i & 0x000820) == 0x000820) x ^= 0x0080;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static unsigned char dfront_tab[256] = {
+static const UINT8 svgpcb_tab[0x100] = { // not checked
+       0x49, 0x47, 0x53, 0x30, 0x30, 0x31, 0x37, 0x52, 0x44, 0x31, 0x30, 0x35, 0x30, 0x35, 0x30, 0x34,
+       0x75, 0x0B, 0xF1, 0x6B, 0x6D, 0xD7, 0xA8, 0xE7, 0x0C, 0xC5, 0x28, 0x81, 0x1F, 0xCF, 0x30, 0x15,
+       0xA8, 0x0D, 0xDA, 0x76, 0xF8, 0x7D, 0xD6, 0xE1, 0x0A, 0x11, 0xE3, 0xA4, 0x23, 0xFF, 0x8E, 0x0B,
+       0xA8, 0x44, 0x2F, 0x8B, 0x3F, 0x7A, 0x21, 0x32, 0x2A, 0xDC, 0x41, 0x4E, 0xE0, 0x97, 0xA9, 0x5D,
+       0xED, 0x53, 0xAE, 0x35, 0x0B, 0x02, 0x18, 0x74, 0x82, 0xE8, 0xA1, 0x2A, 0xBD, 0xEB, 0xB0, 0xC6,
+       0x2E, 0x1D, 0x56, 0x3E, 0x63, 0x87, 0x8A, 0x83, 0x69, 0x38, 0xA1, 0x24, 0x61, 0x8F, 0x11, 0x41,
+       0x61, 0xC5, 0x67, 0xB3, 0x8E, 0xBE, 0x85, 0x79, 0x77, 0x10, 0x21, 0x66, 0xB4, 0x54, 0x7B, 0x09,
+       0xBF, 0xAD, 0x5E, 0xDD, 0x12, 0x97, 0x5A, 0xB2, 0x82, 0xF3, 0x40, 0x5B, 0xDB, 0x4F, 0xDE, 0x99,
+       0xBD, 0x7A, 0xFC, 0x48, 0xB6, 0x48, 0x97, 0xC8, 0xA1, 0xA2, 0x5C, 0xAE, 0x3E, 0xD2, 0x68, 0xAC,
+       0x13, 0x0D, 0x3F, 0xBE, 0x82, 0x42, 0x0A, 0x97, 0x2C, 0x22, 0x16, 0x4B, 0x85, 0x70, 0x89, 0x3D,
+       0xB8, 0x8B, 0x66, 0x4C, 0xBD, 0x39, 0xC4, 0x39, 0xB9, 0xB6, 0x4B, 0x5C, 0x96, 0xFC, 0xEF, 0x87,
+       0xE3, 0x55, 0xF1, 0x3B, 0xED, 0x1F, 0x13, 0x0A, 0x1F, 0xDF, 0x1A, 0x4C, 0x97, 0x8A, 0x8A, 0x06,
+       0x0A, 0x0F, 0x9D, 0x17, 0xDA, 0x28, 0x85, 0xA4, 0x75, 0x63, 0xE4, 0xC6, 0xF1, 0x6B, 0x88, 0x73,
+       0xE6, 0x9C, 0x6B, 0xAA, 0x8B, 0xC7, 0xEA, 0xE3, 0x13, 0x42, 0x46, 0xB6, 0x4A, 0x34, 0x59, 0xCA,
+       0x6C, 0x1F, 0x99, 0x01, 0x46, 0xAE, 0x52, 0xE1, 0x90, 0xC1, 0x1F, 0x46, 0x89, 0xB7, 0xAB, 0x46,
+       0xD4, 0xFB, 0xA6, 0x65, 0x92, 0xD1, 0x0A, 0xFA, 0xC1, 0x63, 0x90, 0xE1, 0xD5, 0x07, 0x6D, 0x62
+};
+
+void pgm_decrypt_svgpcb()
+{
+	UINT16 *src = (UINT16 *)PGMUSER0;
+
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
+
+		// preliminary!
+		if ((i & 0x040080) != 0x000080) x ^= 0x0001; // ok?
+		if ((i & 0x084008) == 0x084008) x ^= 0x0002;
+		if ((i & 0x080030) == 0x080010) x ^= 0x0004;
+		if ((i & 0x000242) != 0x000042) x ^= 0x0008; // ok?
+		if ((i & 0x048100) == 0x048000) x ^= 0x0010; //
+		if ((i & 0x022004) != 0x000004) x ^= 0x0020; // ok?
+		if ((i & 0x011800) != 0x010000) x ^= 0x0040;
+		if ((i & 0x000820) == 0x000820) x ^= 0x0080;
+
+		x ^= svgpcb_tab[(i >> 1) & 0xff] << 8;
+
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
+	}
+}
+
+static UINT8 dfront_tab[256] = {
 	0x51, 0xc4, 0xe3, 0x10, 0x1c, 0xad, 0x8a, 0x39, 0x8c, 0xe0, 0xa5, 0x04, 0x0f, 0xe4, 0x35, 0xc3,
 	0x2d, 0x6b, 0x32, 0xe2, 0x60, 0x54, 0x63, 0x06, 0xa3, 0xf1, 0x0b, 0x5f, 0x6c, 0x5c, 0xb3, 0xec,
 	0x77, 0x61, 0x69, 0xe7, 0x3c, 0xb7, 0x42, 0x72, 0x1a, 0x70, 0xb0, 0x96, 0xa4, 0x28, 0xc0, 0xfb,
@@ -519,10 +544,10 @@ static unsigned char dfront_tab[256] = {
 
 void pgm_decrypt_dfront()
 {
-	unsigned short *src = (unsigned short *)PGMUSER0;
+	UINT16 *src = (UINT16 *)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-	    	unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+	    	UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x104008) == 0x104008) x ^= 0x0002;
@@ -535,11 +560,11 @@ void pgm_decrypt_dfront()
 
 		x ^= dfront_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static unsigned char ddp2_tab[256] = {
+static UINT8 ddp2_tab[256] = {
 	0x2a, 0x4a, 0x39, 0x98, 0xac, 0x39, 0xb2, 0x55, 0x72, 0xf3, 0x7b, 0x3c, 0xee, 0x94, 0x6e, 0xd5,
 	0xcd, 0xbc, 0x9a, 0xd0, 0x45, 0x7d, 0x49, 0x68, 0xb1, 0x61, 0x54, 0xef, 0xa2, 0x84, 0x29, 0x20,
 	0x32, 0x52, 0x82, 0x04, 0x38, 0x69, 0x9f, 0x24, 0x46, 0xf4, 0x3f, 0xc2, 0xf1, 0x25, 0xac, 0x2d,
@@ -560,10 +585,10 @@ static unsigned char ddp2_tab[256] = {
 
 void pgm_decrypt_ddp2()
 {
-	unsigned short *src = (unsigned short *)PGMUSER0;
+	UINT16 *src = (UINT16 *)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-    		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+    		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x0480) != 0x0080) x ^= 0x0001;
 		if ((i & 0x0042) != 0x0042) x ^= 0x0008;
@@ -574,11 +599,11 @@ void pgm_decrypt_ddp2()
 
 		x ^= ddp2_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static unsigned char mm_tab[256] = {
+static UINT8 mm_tab[256] = {
 	0xd0, 0x45, 0xbc, 0x84, 0x93, 0x60, 0x7d, 0x49, 0x68, 0xb1, 0x54, 0xa2, 0x05, 0x29, 0x41, 0x20,
 	0x04, 0x08, 0x52, 0x25, 0x89, 0xf4, 0x69, 0x9f, 0x24, 0x46, 0x3d, 0xf1, 0xf9, 0xab, 0xa6, 0x2d,
 	0x18, 0x19, 0x6d, 0x33, 0x79, 0x23, 0x3b, 0x1d, 0xe0, 0xb8, 0x61, 0x1a, 0xe1, 0x4c, 0x5d, 0x3f,
@@ -599,10 +624,10 @@ static unsigned char mm_tab[256] = {
 
 void pgm_decrypt_martmast() // and dw2001
 {
-	unsigned short *src = (unsigned short *)PGMUSER0;
+	UINT16 *src = (UINT16 *)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-    		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+    		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -615,11 +640,11 @@ void pgm_decrypt_martmast() // and dw2001
 
 		x ^= mm_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char kov2_tab[256] = {
+static const UINT8 kov2_tab[256] = {
 	0x11, 0x4a, 0x38, 0x98, 0xac, 0x39, 0xb2, 0x55, 0x72, 0xf3, 0x7b, 0x3c, 0xee, 0x94, 0x6e, 0xd5,
 	0x41, 0xbc, 0x93, 0xd0, 0x45, 0x7d, 0x49, 0x68, 0xb1, 0x60, 0x54, 0xef, 0xa2, 0x84, 0x29, 0x20,
 	0xa6, 0x52, 0x89, 0x04, 0x08, 0x69, 0x9f, 0x24, 0x46, 0xf4, 0x3d, 0xc3, 0xf1, 0x25, 0xab, 0x2d,
@@ -640,10 +665,10 @@ static const unsigned char kov2_tab[256] = {
 
 void pgm_decrypt_kov2()
 {
-	unsigned short *src = (unsigned short *)PGMUSER0;
+	UINT16 *src = (UINT16 *)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-	    	unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+	    	UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 	    	if ((i & 0x40080) != 0x00080) x ^= 0x0001;
 	    	if ((i & 0x80030) == 0x80010) x ^= 0x0004;
@@ -655,11 +680,11 @@ void pgm_decrypt_kov2()
 
 	    	x ^= kov2_tab[(i >> 1) & 0xff] << 8;
 
-	    	src[i] = x;
+	    	src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char kov2p_tab[256] = {
+static const UINT8 kov2p_tab[256] = {
 	0x44, 0x47, 0xb8, 0x28, 0x03, 0xa2, 0x21, 0xbc, 0x17, 0x32, 0x4e, 0xe2, 0xdf, 0x69, 0x35, 0xc7,
 	0xa2, 0x06, 0xec, 0x36, 0xd2, 0x44, 0x12, 0x6a, 0x8d, 0x51, 0x6b, 0x20, 0x69, 0x01, 0xca, 0xf0,
 	0x71, 0xc4, 0x34, 0xdc, 0x6b, 0xd6, 0x42, 0x2a, 0x5d, 0xb5, 0xc7, 0x6f, 0x4f, 0xd8, 0xb3, 0xed,
@@ -680,10 +705,10 @@ static const unsigned char kov2p_tab[256] = {
 
 void pgm_decrypt_kov2p()
 {
-	unsigned short *src = (unsigned short*)PGMUSER0;
+	UINT16 *src = (UINT16*)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
     		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x004008) == 0x004008) x ^= 0x0002;
@@ -696,11 +721,11 @@ void pgm_decrypt_kov2p()
 
 		x ^= kov2p_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char theglad_tab[256] = { // IGS0005RD1021203
+static const UINT8 theglad_tab[256] = { // IGS0005RD1021203
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x30, 0x35, 0x52, 0x44, 0x31, 0x30, 0x32, 0x31, 0x32, 0x30, 0x33, 
 	0xc4, 0xa3, 0x46, 0x78, 0x30, 0xb3, 0x8b, 0xd5, 0x2f, 0xc4, 0x44, 0xbf, 0xdb, 0x76, 0xdb, 0xea, 
 	0xb4, 0xeb, 0x95, 0x4d, 0x15, 0x21, 0x99, 0xa1, 0xd7, 0x8c, 0x40, 0x1d, 0x43, 0xf3, 0x9f, 0x71, 
@@ -721,10 +746,10 @@ static const unsigned char theglad_tab[256] = { // IGS0005RD1021203
 
 void pgm_decrypt_theglad()
 {
-	unsigned short *src = (unsigned short*)PGMUSER0;
+	UINT16 *src = (UINT16*)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040080) != 0x000080) x ^= 0x0001;
 		if ((i & 0x104008) == 0x104008) x ^= 0x0002;
@@ -737,11 +762,11 @@ void pgm_decrypt_theglad()
 
 		x ^= theglad_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char killbldp_tab[] = { // IGS0024RD1050908
+static const UINT8 killbldp_tab[] = { // IGS0024RD1050908
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x32, 0x34, 0x52, 0x44, 0x31, 0x30, 0x35, 0x30, 0x39, 0x30, 0x38,
 	0x12, 0xa0, 0xd1, 0x9e, 0xb1, 0x8a, 0xfb, 0x1f, 0x50, 0x51, 0x4b, 0x81, 0x28, 0xda, 0x5f, 0x41,
 	0x78, 0x6c, 0x7a, 0xf0, 0xcd, 0x6b, 0x69, 0x14, 0x94, 0x55, 0xb6, 0x42, 0xdf, 0xfe, 0x10, 0x79,
@@ -762,10 +787,10 @@ static const unsigned char killbldp_tab[] = { // IGS0024RD1050908
 
 void pgm_decrypt_killbldp()
 {
-	unsigned short *src = (unsigned short*)PGMUSER0;
+	UINT16 *src = (UINT16*)PGMUSER0;
 
-	for (int i = 0; i< nPGMExternalARMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i< nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x104008) == 0x104008) x ^= 0x0002;
@@ -778,11 +803,11 @@ void pgm_decrypt_killbldp()
 
 		x ^= killbldp_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
-static const unsigned char happy6in1_tab[256] = { // IGS0008RD1031215
+static const UINT8 happy6in1_tab[256] = { // IGS0008RD1031215
 	0x49, 0x47, 0x53, 0x30, 0x30, 0x30, 0x38, 0x52, 0x44, 0x31, 0x30, 0x33, 0x31, 0x32, 0x31, 0x35,
 	0x14, 0xd6, 0x37, 0x5c, 0x5e, 0xc3, 0xd3, 0x62, 0x96, 0x3d, 0xfb, 0x47, 0xf0, 0xcb, 0xbf, 0xb0,
 	0x60, 0xa1, 0xc2, 0x3d, 0x90, 0xd0, 0x58, 0x56, 0x22, 0xac, 0xdd, 0x39, 0x27, 0x7e, 0x58, 0x44,
@@ -803,10 +828,10 @@ static const unsigned char happy6in1_tab[256] = { // IGS0008RD1031215
 
 void pgm_decrypt_happy6in1()
 {
-	unsigned short *src = (unsigned short*)PGMUSER0;
+	UINT16 *src = (UINT16*)PGMUSER0;
 
-	for (int i = 0; i < nPGMExternalARMLen/2; i++) {
-		unsigned short x = src[i];
+	for (INT32 i = 0; i < nPGMExternalARMLen/2; i++) {
+		UINT16 x = BURN_ENDIAN_SWAP_INT16(src[i]);
 
 		if ((i & 0x040480) != 0x000080) x ^= 0x0001;
 		if ((i & 0x104008) == 0x104008) x ^= 0x0002;
@@ -819,17 +844,17 @@ void pgm_decrypt_happy6in1()
 
 		x ^= happy6in1_tab[(i >> 1) & 0xff] << 8;
 
-		src[i] = x;
+		src[i] = BURN_ENDIAN_SWAP_INT16(x);
 	}
 }
 
 // ------------------------------------------------------------------------------------------------------------
 // Bootleg decryption routines
 
-void pgm_decode_kovqhsgs_gfx_block(unsigned char *src)
+void pgm_decode_kovqhsgs_gfx_block(UINT8 *src)
 {
-	int i, j;
-	unsigned char *dec = (unsigned char*)malloc(0x800000);
+	INT32 i, j;
+	UINT8 *dec = (UINT8*)BurnMalloc(0x800000);
 
 	for (i = 0; i < 0x800000; i++)
 	{
@@ -840,30 +865,30 @@ void pgm_decode_kovqhsgs_gfx_block(unsigned char *src)
 
 	memcpy (src, dec, 0x800000);
 
-	free (dec);
+	BurnFree (dec);
 }
 
-void pgm_decode_kovqhsgs_tile_data(unsigned char *source)
+void pgm_decode_kovqhsgs_tile_data(UINT8 *source)
 {
-	int i, j;
-	unsigned short *src = (unsigned short*)source;
-	unsigned short *dst = (unsigned short*)malloc(0x800000);
+	INT32 i, j;
+	UINT16 *src = (UINT16*)source;
+	UINT16 *dst = (UINT16*)BurnMalloc(0x800000);
 
 	for (i = 0; i < 0x800000 / 2; i++)
 	{
 		j = BITSWAP24(i, 23, 22, 9, 8, 21, 18, 0, 1, 2, 3, 16, 15, 14, 13, 12, 11, 10, 19, 20, 17, 7, 6, 5, 4);
 
-		dst[j] = BITSWAP16(src[i], 1, 14, 8, 7, 0, 15, 6, 9, 13, 2, 5, 10, 12, 3, 4, 11);
+		dst[j] = BURN_ENDIAN_SWAP_INT16(BITSWAP16(BURN_ENDIAN_SWAP_INT16(src[i]), 1, 14, 8, 7, 0, 15, 6, 9, 13, 2, 5, 10, 12, 3, 4, 11));
 	}
 
 	memcpy (src, dst, 0x800000);
 
-	free (dst);
+	BurnFree (dst);
 }
 
 static void pgm_decode_kovqhsgs_samples()
 {
-	int i;
+	INT32 i;
 	for (i = 0; i < 0x400000; i+=2) {
 		ICSSNDROM[i + 0x400001] = ICSSNDROM[i + 0xc00001];
 	}
@@ -871,20 +896,20 @@ static void pgm_decode_kovqhsgs_samples()
 
 static void pgm_decode_kovqhsgs_program()
 {
-	int i, j;
-	unsigned short *src = (unsigned short*)PGM68KROM;
-	unsigned short *dst = (unsigned short*)malloc(0x400000);
+	INT32 i, j;
+	UINT16 *src = (UINT16*)PGM68KROM;
+	UINT16 *dst = (UINT16*)BurnMalloc(0x400000);
 
 	for (i = 0; i < 0x400000 / 2; i++)
 	{
 		j = BITSWAP24(i, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 6, 7, 5, 4, 3, 2, 1, 0);
 
-		dst[j] = BITSWAP16(src[i], 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 4, 5, 3, 2, 1, 0);
+		dst[j] = BURN_ENDIAN_SWAP_INT16(BITSWAP16(BURN_ENDIAN_SWAP_INT16(src[i]), 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 4, 5, 3, 2, 1, 0));
 	}
 
 	memcpy (src, dst, 0x400000);
 
-	free (dst);
+	BurnFree (dst);
 }
 
 void pgm_decrypt_kovqhsgs()
@@ -901,20 +926,20 @@ void pgm_decrypt_kovqhsgs()
 
 static void pgm_decode_kovlsqh2_program()
 {
-	int i, j;
-	unsigned short *src = (unsigned short*)PGM68KROM;
-	unsigned short *dst = (unsigned short*)malloc(0x400000);
+	INT32 i, j;
+	UINT16 *src = (UINT16*)PGM68KROM;
+	UINT16 *dst = (UINT16*)BurnMalloc(0x400000);
 
 	for (i = 0; i < 0x400000 / 2; i++)
 	{
 		j = BITSWAP24(i, 23, 22, 21, 20, 19, 16, 15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 18, 17, 7);
 
-		dst[j] = src[i];
+		dst[j] = BURN_ENDIAN_SWAP_INT16(src[i]);
 	}
 
 	memcpy (src, dst, 0x400000);
 
-	free (dst);
+	BurnFree (dst);
 }
 
 void pgm_decrypt_kovlsqh2()
@@ -931,9 +956,9 @@ void pgm_decrypt_kovlsqh2()
 
 static void pgm_decode_kovassg_program()
 {
-	int i, j;
-	unsigned short *src = (unsigned short *)PGM68KROM;
-	unsigned short *dst = (unsigned short *)malloc(0x400000);
+	INT32 i, j;
+	UINT16 *src = (UINT16 *)PGM68KROM;
+	UINT16 *dst = (UINT16 *)BurnMalloc(0x400000);
 
 	for (i = 0; i < 0x400000/2; i++)
 	{
@@ -944,7 +969,7 @@ static void pgm_decode_kovassg_program()
 
 	memcpy (src, dst, 0x400000);
 
-	free (src);
+	BurnFree (dst);
 }
 
 void pgm_decrypt_kovassg()

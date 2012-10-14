@@ -1,64 +1,65 @@
 #include "tiles_generic.h"
+#include "zet.h"
 #include "sn76496.h"
 #include "bitswap.h"
 #include "mc8123.h"
 
-static unsigned char System1InputPort0[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char System1InputPort1[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char System1InputPort2[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char System1Dip[2]           = {0, 0};
-static unsigned char System1Input[3]         = {0x00, 0x00, 0x00 };
-static unsigned char System1Reset            = 0;
+static UINT8 System1InputPort0[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 System1InputPort1[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 System1InputPort2[8]    = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 System1Dip[2]           = {0, 0};
+static UINT8 System1Input[3]         = {0x00, 0x00, 0x00 };
+static UINT8 System1Reset            = 0;
 
-static unsigned char *Mem                    = NULL;
-static unsigned char *MemEnd                 = NULL;
-static unsigned char *RamStart               = NULL;
-static unsigned char *RamEnd                 = NULL;
-static unsigned char *System1Rom1            = NULL;
-static unsigned char *System1Rom2            = NULL;
-static unsigned char *System1PromRed         = NULL;
-static unsigned char *System1PromGreen       = NULL;
-static unsigned char *System1PromBlue        = NULL;
-static unsigned char *System1Ram1            = NULL;
-static unsigned char *System1Ram2            = NULL;
-static unsigned char *System1SpriteRam       = NULL;
-static unsigned char *System1PaletteRam      = NULL;
-static unsigned char *System1BgRam           = NULL;
-static unsigned char *System1VideoRam        = NULL;
-static unsigned char *System1BgCollisionRam  = NULL;
-static unsigned char *System1SprCollisionRam = NULL;
-static unsigned char *System1deRam           = NULL;
-static unsigned char *System1efRam           = NULL;
-static unsigned char *System1f4Ram           = NULL;
-static unsigned char *System1fcRam           = NULL;
-static unsigned int  *System1Palette         = NULL;
-static unsigned char *System1Tiles           = NULL;
-static unsigned char *System1Sprites         = NULL;
-static unsigned char *System1TempRom         = NULL;
-static unsigned char *SpriteOnScreenMap      = NULL;
-static unsigned char *System1Fetch1          = NULL;
-static unsigned char *System1MC8123Key       = NULL;
-static UINT32        *System1TilesPenUsage   = NULL;
+static UINT8 *Mem                    = NULL;
+static UINT8 *MemEnd                 = NULL;
+static UINT8 *RamStart               = NULL;
+static UINT8 *RamEnd                 = NULL;
+static UINT8 *System1Rom1            = NULL;
+static UINT8 *System1Rom2            = NULL;
+static UINT8 *System1PromRed         = NULL;
+static UINT8 *System1PromGreen       = NULL;
+static UINT8 *System1PromBlue        = NULL;
+static UINT8 *System1Ram1            = NULL;
+static UINT8 *System1Ram2            = NULL;
+static UINT8 *System1SpriteRam       = NULL;
+static UINT8 *System1PaletteRam      = NULL;
+static UINT8 *System1BgRam           = NULL;
+static UINT8 *System1VideoRam        = NULL;
+static UINT8 *System1BgCollisionRam  = NULL;
+static UINT8 *System1SprCollisionRam = NULL;
+static UINT8 *System1deRam           = NULL;
+static UINT8 *System1efRam           = NULL;
+static UINT8 *System1f4Ram           = NULL;
+static UINT8 *System1fcRam           = NULL;
+static UINT32 *System1Palette        = NULL;
+static UINT8 *System1Tiles           = NULL;
+static UINT8 *System1Sprites         = NULL;
+static UINT8 *System1TempRom         = NULL;
+static UINT8 *SpriteOnScreenMap      = NULL;
+static UINT8 *System1Fetch1          = NULL;
+static UINT8 *System1MC8123Key       = NULL;
+static UINT32 *System1TilesPenUsage  = NULL;
 
-static unsigned char  System1ScrollX[2];
-static unsigned char  System1ScrollY;
-static int            System1BgScrollX;
-static int            System1BgScrollY;
-static int            System1VideoMode;
-static int            System1FlipScreen;
-static int            System1SoundLatch;
-static int            System1RomBank;
-static int            NoboranbInp16Step;
-static int            NoboranbInp17Step;
-static int            NoboranbInp23Step;
-static unsigned char  BlockgalDial1;
-static unsigned char  BlockgalDial2;
+static UINT8  System1ScrollX[2];
+static UINT8  System1ScrollY;
+static INT32  System1BgScrollX;
+static INT32  System1BgScrollY;
+static INT32  System1VideoMode;
+static INT32  System1FlipScreen;
+static INT32  System1SoundLatch;
+static INT32  System1RomBank;
+static INT32  NoboranbInp16Step;
+static INT32  NoboranbInp17Step;
+static INT32  NoboranbInp23Step;
+static UINT8  BlockgalDial1;
+static UINT8  BlockgalDial2;
 
-static int System1SpriteRomSize;
-static int System1NumTiles;
-static int System1SpriteXOffset;
-static int System1ColourProms = 0;
-static int System1BankedRom = 0;
+static INT32 System1SpriteRomSize;
+static INT32 System1NumTiles;
+static INT32 System1SpriteXOffset;
+static INT32 System1ColourProms = 0;
+static INT32 System1BankedRom = 0;
 
 typedef void (*Decode)();
 static Decode DecodeFunction;
@@ -72,8 +73,8 @@ static void System1Render();
 typedef void (*MakeInputs)();
 static MakeInputs MakeInputsFunction;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 /*==============================================================================================
 Input Definitions
@@ -271,7 +272,7 @@ static struct BurnInputInfo WmatchInputList[] = {
 
 STDINPUTINFO(Wmatch)
 
-inline void System1ClearOpposites(unsigned char* nJoystickInputs)
+inline void System1ClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x30) == 0x30) {
 		*nJoystickInputs &= ~0x30;
@@ -553,6 +554,43 @@ static struct BurnDIPInfo GardiaDIPList[]=
 };
 
 STDDIPINFO(Gardia)
+
+static struct BurnDIPInfo HvymetalDIPList[]=
+{
+	// Default Values
+	{0x13, 0xff, 0xff, 0xff, NULL                     },
+	{0x14, 0xff, 0xff, 0xfd, NULL                     },
+
+	// Dip 1
+	SYSTEM1_COINAGE(0x13)
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x14, 0x01, 0x02, 0x02, "Off"                    },
+	{0x14, 0x01, 0x02, 0x00, "On"                     },
+	
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x14, 0x01, 0x0c, 0x0c, "3"                      },
+	{0x14, 0x01, 0x0c, 0x08, "4"                      },
+	{0x14, 0x01, 0x0c, 0x04, "5"                      },
+	{0x14, 0x01, 0x0c, 0x00, "Infinite"               },
+	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x14, 0x01, 0x30, 0x30, "50k, 100k"              },
+	{0x14, 0x01, 0x30, 0x20, "60k, 120k"              },
+	{0x14, 0x01, 0x30, 0x10, "70k, 150k"              },
+	{0x14, 0x01, 0x30, 0x00, "100k"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Difficulty"             },
+	{0x14, 0x01, 0x40, 0x40, "Easy"                   },
+	{0x14, 0x01, 0x40, 0x00, "Hard"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Allow Continue"         },
+	{0x14, 0x01, 0x80, 0x80, "Off"                    },
+	{0x14, 0x01, 0x80, 0x00, "On"                     },
+};
+
+STDDIPINFO(Hvymetal)
 
 static struct BurnDIPInfo ImsorryDIPList[]=
 {
@@ -1454,9 +1492,9 @@ static struct BurnRomInfo BrainRomDesc[] = {
 	{ "brain.110",         0x008000, 0xa1b847ec, BRF_GRA },		  //  8 Sprites
 	{ "brain.4",           0x008000, 0xfd2ea53b, BRF_GRA },		  //  9 Sprites
 
-	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_OPT },		  //  10 Red PROM
-	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_OPT },		  //  11 Green PROM
-	{ "bprom.1",           0x000100, 0x371c44a6, BRF_OPT },		  //  12 Blue PROM
+	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_GRA },		  //  10 Red PROM
+	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_GRA },		  //  11 Green PROM
+	{ "bprom.1",           0x000100, 0x371c44a6, BRF_GRA },		  //  12 Blue PROM
 	{ "pr5317.76",         0x000100, 0x648350b8, BRF_OPT },		  //  13 Timing PROM
 };
 
@@ -1620,9 +1658,9 @@ static struct BurnRomInfo GardiaRomDesc[] = {
 	{ "epr10236.04",       0x008000, 0xb35ab227, BRF_GRA },		  //  9 Sprites
 	{ "epr10235.5",        0x008000, 0x006a3151, BRF_GRA },		  //  10 Sprites
 
-	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_OPT },		  //  11 Red PROM
-	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_OPT },		  //  12 Green PROM
-	{ "bprom.1",           0x000100, 0x371c44a6, BRF_OPT },		  //  13 Blue PROM
+	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_GRA },		  //  11 Red PROM
+	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_GRA },		  //  12 Green PROM
+	{ "bprom.1",           0x000100, 0x371c44a6, BRF_GRA },		  //  13 Blue PROM
 	{ "pr5317.4",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
@@ -1645,14 +1683,43 @@ static struct BurnRomInfo GardiabRomDesc[] = {
 	{ "epr10236.04",       0x008000, 0xb35ab227, BRF_GRA },		  //  9 Sprites
 	{ "epr10235.5",        0x008000, 0x006a3151, BRF_GRA },		  //  10 Sprites
 
-	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_OPT },		  //  11 Red PROM
-	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_OPT },		  //  12 Green PROM
-	{ "bprom.1",           0x000100, 0x371c44a6, BRF_OPT },		  //  13 Blue PROM
+	{ "bprom.3",           0x000100, 0x8eee0f72, BRF_GRA },		  //  11 Red PROM
+	{ "bprom.2",           0x000100, 0x3e7babd7, BRF_GRA },		  //  12 Green PROM
+	{ "bprom.1",           0x000100, 0x371c44a6, BRF_GRA },		  //  13 Blue PROM
 	{ "pr5317.4",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
 STD_ROM_PICK(Gardiab)
 STD_ROM_FN(Gardiab)
+
+static struct BurnRomInfo HvymetalRomDesc[] = {
+	{ "epra6790.1",        0x008000, 0x59195bb9, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epra6789.2",        0x008000, 0x83e1d18a, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epra6788.3",        0x008000, 0x6ecefd57, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr6787.120",       0x008000, 0xb64ac7f0, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr6795.62",        0x004000, 0x58a3d038, BRF_GRA },		  //  4 Tiles
+	{ "epr6796.61",        0x004000, 0xd8b08a55, BRF_GRA },		  //  5 Tiles
+	{ "epr6793.64",        0x004000, 0x487407c2, BRF_GRA },		  //  6 Tiles
+	{ "epr6794.63",        0x004000, 0x89eb3793, BRF_GRA },		  //  7 Tiles
+	{ "epr6791.66",        0x004000, 0xa7dcd042, BRF_GRA },		  //  8 Tiles
+	{ "epr6792.65",        0x004000, 0xd0be5e33, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr6778.117",       0x008000, 0x0af61aee, BRF_GRA },		  //  10 Sprites
+	{ "epr6777.110",       0x008000, 0x91d7a197, BRF_GRA },		  //  11 Sprites
+	{ "epr6780.4",         0x008000, 0x55b31df5, BRF_GRA },		  //  12 Sprites
+	{ "epr6779.5",         0x008000, 0xe03a2b28, BRF_GRA },		  //  13 Sprites
+	
+	{ "pr7036.3",          0x000100, 0x146f16fb, BRF_GRA },		  //  14 Red PROM
+	{ "pr7035.2",          0x000100, 0x50b201ed, BRF_GRA },		  //  15 Green PROM
+	{ "pr7034.1",          0x000100, 0xdfb5f139, BRF_GRA },		  //  16 Blue PROM
+
+	{ "pr5317p.4",         0x000100, 0x648350b8, BRF_OPT },		  //  17 Timing PROM
+};
+
+STD_ROM_PICK(Hvymetal)
+STD_ROM_FN(Hvymetal)
 
 static struct BurnRomInfo ImsorryRomDesc[] = {
 	{ "epr-6676.116",      0x004000, 0xeb087d7f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1840,9 +1907,9 @@ static struct BurnRomInfo NobRomDesc[] = {
 	{ "dm05.5h",           0x008000, 0x7fbba01d, BRF_GRA },		  //  9 Sprites
 	{ "dm07.5l",           0x008000, 0x85e7a29f, BRF_GRA },		  //  10 Sprites
 
-	{ "nobo_pr.16d",       0x000100, 0x95010ac2, BRF_OPT },		  //  11 Red PROM
-	{ "nobo_pr.15d",       0x000100, 0xc55aac0c, BRF_OPT },		  //  12 Green PROM
-	{ "dm-12.ic3",         0x000100, 0xde394cee, BRF_OPT },		  //  13 Blue PROM
+	{ "nobo_pr.16d",       0x000100, 0x95010ac2, BRF_GRA },		  //  11 Red PROM
+	{ "nobo_pr.15d",       0x000100, 0xc55aac0c, BRF_GRA },		  //  12 Green PROM
+	{ "dm-12.ic3",         0x000100, 0xde394cee, BRF_GRA },		  //  13 Blue PROM
 	{ "dc-11.6a",          0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 	
 	{ "dm.bin",            0x001000, 0x6fde9dcb, BRF_PRG | BRF_OPT },		  //  15 MCU
@@ -1867,9 +1934,9 @@ static struct BurnRomInfo NobbRomDesc[] = {
 	{ "nobo-p.bin",        0x008000, 0x7fbba01d, BRF_GRA },		  //  9 Sprites
 	{ "nobo-n.bin",        0x008000, 0x85e7a29f, BRF_GRA },		  //  10 Sprites
 
-	{ "nobo_pr.16d",       0x000100, 0x95010ac2, BRF_OPT },		  //  11 Red PROM
-	{ "nobo_pr.15d",       0x000100, 0xc55aac0c, BRF_OPT },		  //  12 Green PROM
-	{ "nobo_pr.14d",       0x000100, 0xde394cee, BRF_OPT },		  //  13 Blue PROM
+	{ "nobo_pr.16d",       0x000100, 0x95010ac2, BRF_GRA },		  //  11 Red PROM
+	{ "nobo_pr.15d",       0x000100, 0xc55aac0c, BRF_GRA },		  //  12 Green PROM
+	{ "nobo_pr.14d",       0x000100, 0xde394cee, BRF_GRA },		  //  13 Blue PROM
 	{ "nobo_pr.13a",       0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
 };
 
@@ -2224,8 +2291,8 @@ static struct BurnRomInfo NprincesbRomDesc[] = {
 	{ "epr-6549.05",       0x004000, 0xd2057668, BRF_GRA },		  //  13 Sprites
 
 	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
-	{ "nprinces.129",      0x000100, 0xae765f62, BRF_OPT },		  //  15 Decryption Table
-	{ "nprinces.123",      0x000020, 0xed5146e9, BRF_OPT },		  //  15 Decryption Table
+	{ "nprinces.129",      0x000100, 0xae765f62, BRF_PRG },		  //  15 Decryption Table
+	{ "nprinces.123",      0x000020, 0xed5146e9, BRF_PRG },		  //  15 Decryption Table
 };
 
 STD_ROM_PICK(Nprincesb)
@@ -2696,24 +2763,24 @@ Decode Functions
 
 static void sega_decode(const UINT8 convtable[32][4])
 {
-	int A;
+	INT32 A;
 
-	int length = 0x10000;
-	int cryptlen = 0x8000;
+	INT32 length = 0x10000;
+	INT32 cryptlen = 0x8000;
 	UINT8 *rom = System1Rom1;
 	UINT8 *decrypted = System1Fetch1;
 	
 	for (A = 0x0000;A < cryptlen;A++)
 	{
-		int xorval = 0;
+		INT32 xorval = 0;
 
 		UINT8 src = rom[A];
 
 		/* pick the translation table from bits 0, 4, 8 and 12 of the address */
-		int row = (A & 1) + (((A >> 4) & 1) << 1) + (((A >> 8) & 1) << 2) + (((A >> 12) & 1) << 3);
+		INT32 row = (A & 1) + (((A >> 4) & 1) << 1) + (((A >> 8) & 1) << 2) + (((A >> 12) & 1) << 3);
 
 		/* pick the offset in the table from bits 3 and 5 of the source data */
-		int col = ((src >> 3) & 1) + (((src >> 5) & 1) << 1);
+		INT32 col = ((src >> 3) & 1) + (((src >> 5) & 1) << 1);
 		/* the bottom half of the translation table is the mirror image of the top */
 		if (src & 0x80)
 		{
@@ -2737,7 +2804,7 @@ static void sega_decode(const UINT8 convtable[32][4])
 	/* decrypted boundary. ssanchan does it */
 	if (length > 0x8000)
 	{
-		int bytes = 0x4000;
+		INT32 bytes = 0x4000;
 		memcpy(&decrypted[0x8000], &rom[0x8000], bytes);
 	}
 }
@@ -2908,7 +2975,7 @@ void myherok_decode(void)
 {
 	UINT8 *rom = System1Rom1;
 
-	for (int A = 0; A < 0xc000; A++)
+	for (INT32 A = 0; A < 0xc000; A++)
 		rom[A] = (rom[A] & 0xfc) | ((rom[A] & 1) << 1) | ((rom[A] & 2) >> 1);
 
 	static const UINT8 convtable[32][4] =
@@ -3152,10 +3219,10 @@ void wmatch_decode(void)
 	sega_decode(convtable);
 }
 
-static void sega_decode_2(const UINT8 opcode_xor[64],const int opcode_swap_select[64],
-		const UINT8 data_xor[64],const int data_swap_select[64])
+static void sega_decode_2(UINT8 *pDest, UINT8 *pDestDec, const UINT8 opcode_xor[64],const INT32 opcode_swap_select[64],
+		const UINT8 data_xor[64],const INT32 data_swap_select[64])
 {
-	int A;
+	INT32 A;
 	static const UINT8 swaptable[24][4] =
 	{
 		{ 6,4,2,0 }, { 4,6,2,0 }, { 2,4,6,0 }, { 0,4,2,6 },
@@ -3167,12 +3234,12 @@ static void sega_decode_2(const UINT8 opcode_xor[64],const int opcode_swap_selec
 	};
 
 
-	UINT8 *rom = System1Rom1;
-	UINT8 *decrypted = System1Fetch1;
+	UINT8 *rom = pDest;
+	UINT8 *decrypted = pDestDec;
 
 	for (A = 0x0000;A < 0x8000;A++)
 	{
-		int row;
+		INT32 row;
 		UINT8 src;
 		const UINT8 *tbl;
 
@@ -3192,7 +3259,7 @@ static void sega_decode_2(const UINT8 opcode_xor[64],const int opcode_swap_selec
 		rom[A] = BITSWAP08(src,7,tbl[0],5,tbl[1],3,tbl[2],1,tbl[3]) ^ data_xor[row];
 	}
 	
-	memcpy(System1Fetch1 + 0x8000, System1Rom1 + 0x8000, 0x4000);
+	memcpy(pDestDec + 0x8000, pDest + 0x8000, 0x4000);
 }
 
 static void astrofl_decode(void)
@@ -3217,7 +3284,7 @@ static void astrofl_decode(void)
 		0x54,0x15,0x44,0x51,0x10,0x41,0x55,0x14,
 	};
 
-	static const int opcode_swap_select[64] =
+	static const INT32 opcode_swap_select[64] =
 	{
 		0,0,1,1,1,2,2,3,3,4,4,4,5,5,6,6,
 		6,7,7,8,8,9,9,9,10,10,11,11,11,12,12,13,
@@ -3226,7 +3293,7 @@ static void astrofl_decode(void)
 		14,15,15,16,16,17,17,17,18,18,19,19,19,20,20,21,
 	};
 
-	static const int data_swap_select[64] =
+	static const INT32 data_swap_select[64] =
 	{
 		0,0,1,1,2,2,2,3,3,4,4,5,5,5,6,6,
 		7,7,7,8,8,9,9,10,10,10,11,11,12,12,12,13,
@@ -3235,7 +3302,7 @@ static void astrofl_decode(void)
 		15,15,15,16,16,17,17,18,18,18,19,19,20,20,20,21,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
 void fdwarrio_decode(void)
@@ -3264,7 +3331,7 @@ void fdwarrio_decode(void)
 		0x10,0x04,0x14,0x01,0x11,0x05,0x15,0x00,
 	};
 
-	static const int opcode_swap_select[64] =
+	static const INT32 opcode_swap_select[64] =
 	{
 		4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,
 		6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,
@@ -3272,7 +3339,7 @@ void fdwarrio_decode(void)
 		10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,
 	};
 
-	static const int data_swap_select[64] =
+	static const INT32 data_swap_select[64] =
 	{
 		  4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,
 		6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,
@@ -3281,7 +3348,7 @@ void fdwarrio_decode(void)
 		12,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
 static void wboy2_decode(void)
@@ -3306,7 +3373,7 @@ static void wboy2_decode(void)
 		0x55,0x05,0x41,0x14,
 	};
 
-	static const int opcode_swap_select[64] =
+	static const INT32 opcode_swap_select[64] =
 	{
 		2,
 		5,1,5,1,5,
@@ -3325,7 +3392,7 @@ static void wboy2_decode(void)
 		8,12,8,
 	};
 
-	static const int data_swap_select[64] =
+	static const INT32 data_swap_select[64] =
 	{
 		3,7,3,7,3,7,
 		2,6,2,6,2,
@@ -3344,10 +3411,10 @@ static void wboy2_decode(void)
 		14,10,14,10,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
-static void sega_decode_317(int order, int opcode_shift, int data_shift)
+void sega_decode_317(UINT8 *pDest, UINT8 *pDestDec, INT32 order, INT32 opcode_shift, INT32 data_shift)
 {
 	static const UINT8 xor1_317[1+64] =
 	{
@@ -3368,7 +3435,7 @@ static void sega_decode_317(int order, int opcode_shift, int data_shift)
 		0x14,0x40,0x50,0x45,0x10,0x05,0x50,0x01,0x40,0x01,0x50,0x50,0x50,0x44,0x40,0x10,
 	};
 
-	static const int swap1_317[1+64] =
+	static const INT32 swap1_317[1+64] =
 	{
 		 7,
 		 1,11,23,17,23, 0,15,19,
@@ -3381,7 +3448,7 @@ static void sega_decode_317(int order, int opcode_shift, int data_shift)
 		 6, 1, 1,18, 5,15,15,20,
 	};
 
-	static const int swap2_317[2+64] =
+	static const INT32 swap2_317[2+64] =
 	{
 		 7,
 		12,
@@ -3396,19 +3463,19 @@ static void sega_decode_317(int order, int opcode_shift, int data_shift)
 	};
 
 	if (order)
-		sega_decode_2( xor2_317+opcode_shift, swap2_317+opcode_shift, xor1_317+data_shift, swap1_317+data_shift );
+		sega_decode_2( pDest, pDestDec, xor2_317+opcode_shift, swap2_317+opcode_shift, xor1_317+data_shift, swap1_317+data_shift );
 	else
-		sega_decode_2( xor1_317+opcode_shift, swap1_317+opcode_shift, xor2_317+data_shift, swap2_317+data_shift );
+		sega_decode_2( pDest, pDestDec, xor1_317+opcode_shift, swap1_317+opcode_shift, xor2_317+data_shift, swap2_317+data_shift );
 }
 
 static void gardia_decode()
 {
-	sega_decode_317( 1, 1, 1 );
+	sega_decode_317( System1Rom1, System1Fetch1, 1, 1, 1 );
 }
 
 static void gardiab_decode()
 {
-	sega_decode_317( 0, 1, 2 );
+	sega_decode_317( System1Rom1, System1Fetch1, 0, 1, 2 );
 }
 
 static void blockgal_decode()
@@ -3418,7 +3485,7 @@ static void blockgal_decode()
 
 static void myherok_tile_decode()
 {
-	int A;
+	INT32 A;
 	UINT8 *rom = System1TempRom;
 
 	/* the first ROM has data lines D0 and D6 swapped. */
@@ -3436,7 +3503,7 @@ static void myherok_tile_decode()
 	/* also, all three ROMs have address lines A4 and A5 swapped. */
 	for (A = 0;A < 0xc000;A++)
 	{
-		int A1;
+		INT32 A1;
 		UINT8 temp;
 
 		A1 = (A & 0xffcf) | ((A & 0x0010) << 1) | ((A & 0x0020) >> 1);
@@ -3453,9 +3520,9 @@ static void myherok_tile_decode()
 Allocate Memory
 ===============================================================================================*/
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	System1Rom1            = Next; Next += 0x020000;
 	System1Fetch1          = Next; Next += 0x010000;
@@ -3485,7 +3552,7 @@ static int MemIndex()
 	System1Sprites         = Next; Next += System1SpriteRomSize;
 	System1Tiles           = Next; Next += (System1NumTiles * 8 * 8);
 	System1TilesPenUsage   = (UINT32*)Next; Next += System1NumTiles * sizeof(UINT32);
-	System1Palette         = (unsigned int*)Next; Next += 0x000600 * sizeof(unsigned int);
+	System1Palette         = (UINT32*)Next; Next += 0x000600 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
@@ -3495,7 +3562,7 @@ static int MemIndex()
 Reset Functions
 ===============================================================================================*/
 
-static int System1DoReset()
+static INT32 System1DoReset()
 {
 	ZetOpen(0);
 	ZetReset();
@@ -3527,16 +3594,12 @@ Memory Handlers
 
 static void System1BankRom()
 {
-	int BankAddress = (System1RomBank * 0x4000) + 0x10000;
+	INT32 BankAddress = (System1RomBank * 0x4000) + 0x10000;
 	ZetMapArea(0x8000, 0xbfff, 0, System1Rom1 + BankAddress);
-	if (DecodeFunction) {
-		ZetMapArea(0x8000, 0xbfff, 2, System1Fetch1 + BankAddress, System1Rom1 + BankAddress);
-	} else {
-		ZetMapArea(0x8000, 0xbfff, 2, System1Rom1 + BankAddress);
-	}
+	ZetMapArea(0x8000, 0xbfff, 2, System1Rom1 + BankAddress);
 }
 
-unsigned char __fastcall System1Z801PortRead(unsigned short a)
+UINT8 __fastcall System1Z801PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -3582,7 +3645,7 @@ unsigned char __fastcall System1Z801PortRead(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall BlockgalZ801PortRead(unsigned short a)
+UINT8 __fastcall BlockgalZ801PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -3628,7 +3691,7 @@ unsigned char __fastcall BlockgalZ801PortRead(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall NoboranbZ801PortRead(unsigned short a)
+UINT8 __fastcall NoboranbZ801PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -3678,7 +3741,7 @@ unsigned char __fastcall NoboranbZ801PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall System1Z801PortWrite(unsigned short a, unsigned char d)
+void __fastcall System1Z801PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -3706,7 +3769,7 @@ void __fastcall System1Z801PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall BrainZ801PortWrite(unsigned short a, unsigned char d)
+void __fastcall BrainZ801PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -3737,7 +3800,7 @@ void __fastcall BrainZ801PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall NoboranbZ801PortWrite(unsigned short a, unsigned char d)
+void __fastcall NoboranbZ801PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -3782,7 +3845,7 @@ void __fastcall NoboranbZ801PortWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("IO Write %x, %x\n"), a, d);
 }
 
-void __fastcall System1Z801ProgWrite(unsigned short a, unsigned char d)
+void __fastcall System1Z801ProgWrite(UINT16 a, UINT8 d)
 {
 	if (a >= 0xf000 && a <= 0xf3ff) { System1BgCollisionRam[a - 0xf000] = 0x7e; return; }
 	if (a >= 0xf800 && a <= 0xfbff) { System1SprCollisionRam[a - 0xf800] = 0x7e; return; }
@@ -3812,7 +3875,7 @@ void __fastcall System1Z801ProgWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-void __fastcall NoboranbZ801ProgWrite(unsigned short a, unsigned char d)
+void __fastcall NoboranbZ801ProgWrite(UINT16 a, UINT8 d)
 {
 	if (a >= 0xc000 && a <= 0xc3ff) { System1BgCollisionRam[a - 0xc000] = 0x7e; return; }
 	if (a >= 0xc800 && a <= 0xcbff) { System1SprCollisionRam[a - 0xc800] = 0x7e; return; }
@@ -3842,7 +3905,7 @@ void __fastcall NoboranbZ801ProgWrite(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("Prog Write %x, %x\n"), a, d);
 }
 
-unsigned char __fastcall System1Z802ProgRead(unsigned short a)
+UINT8 __fastcall System1Z802ProgRead(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -3858,7 +3921,7 @@ unsigned char __fastcall System1Z802ProgRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall System1Z802ProgWrite(unsigned short a, unsigned char d)
+void __fastcall System1Z802ProgWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa000:
@@ -3887,9 +3950,9 @@ Driver Inits
 
 static void CalcPenUsage()
 {
-	int i, x, y;
+	INT32 i, x, y;
 	UINT32 Usage;
-	unsigned char *dp = NULL;
+	UINT8 *dp = NULL;
 	
 	for (i = 0; i < System1NumTiles; i++) {
 		dp = System1Tiles + (i * 64);
@@ -3906,14 +3969,14 @@ static void CalcPenUsage()
 	}
 }
 
-static int TilePlaneOffsets[3]  = { 0, 0x20000, 0x40000 };
-static int NoboranbTilePlaneOffsets[3]  = { 0, 0x40000, 0x80000 };
-static int TileXOffsets[8]      = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TileYOffsets[8]      = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TilePlaneOffsets[3]  = { 0, 0x20000, 0x40000 };
+static INT32 NoboranbTilePlaneOffsets[3]  = { 0, 0x40000, 0x80000 };
+static INT32 TileXOffsets[8]      = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TileYOffsets[8]      = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int nZ80Rom2Size, int nTileRomNum, int nTileRomSize, int nSpriteRomNum, int nSpriteRomSize, bool bReset)
+static INT32 System1Init(INT32 nZ80Rom1Num, INT32 nZ80Rom1Size, INT32 nZ80Rom2Num, INT32 nZ80Rom2Size, INT32 nTileRomNum, INT32 nTileRomSize, INT32 nSpriteRomNum, INT32 nSpriteRomSize, bool bReset)
 {
-	int nRet = 0, nLen, i, RomOffset;
+	INT32 nRet = 0, nLen, i, RomOffset;
 	
 	System1NumTiles = (nTileRomNum * nTileRomSize) / 24;
 	System1SpriteRomSize = nSpriteRomNum * nSpriteRomSize;
@@ -3921,12 +3984,12 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	System1TempRom = (unsigned char*)malloc(0x18000);
+	System1TempRom = (UINT8*)BurnMalloc(0x18000);
 		
 	// Load Z80 #1 Program roms
 	RomOffset = 0;
@@ -3964,7 +4027,7 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 		GfxDecode(System1NumTiles, 3, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x40, System1TempRom, System1Tiles);
 	}
 	CalcPenUsage();
-	free(System1TempRom);
+	BurnFree(System1TempRom);
 	
 	// Load Sprite roms
 	RomOffset += nTileRomNum;
@@ -3981,7 +4044,7 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	}
 	
 	// Setup the Z80 emulation
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetWriteHandler(System1Z801ProgWrite);
 	ZetSetInHandler(System1Z801PortRead);
@@ -4030,7 +4093,8 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	ZetMapArea(0xfc00, 0xffff, 2, System1fcRam);	
 	ZetMemEnd();
 	ZetClose();
-	
+
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetReadHandler(System1Z802ProgRead);
 	ZetSetWriteHandler(System1Z802ProgWrite);
@@ -4051,6 +4115,8 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 
 	SN76489AInit(0, 2000000, 0);
 	SN76489AInit(1, 4000000, 1);
+	SN76496SetVolShift(0, 2);
+	SN76496SetVolShift(1, 2);
 	
 	GenericTilesInit();
 	
@@ -4063,24 +4129,24 @@ static int System1Init(int nZ80Rom1Num, int nZ80Rom1Size, int nZ80Rom2Num, int n
 	return 0;
 }
 
-static int FourdwarrioInit()
+static INT32 FourdwarrioInit()
 {
 	DecodeFunction = fdwarrio_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int BlockgalInit()
+static INT32 BlockgalInit()
 {
-	int nRet;
+	INT32 nRet;
 	
-	System1MC8123Key = (unsigned char*)malloc(0x2000);
+	System1MC8123Key = (UINT8*)BurnMalloc(0x2000);
 	BurnLoadRom(System1MC8123Key, 14, 1);
 
 	DecodeFunction = blockgal_decode;
 	
 	nRet = System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
-	free(System1MC8123Key);
+	BurnFree(System1MC8123Key);
 	
 	ZetOpen(0);
 	ZetSetInHandler(BlockgalZ801PortRead);
@@ -4090,9 +4156,9 @@ static int BlockgalInit()
 	return nRet;
 }
 
-static int BrainInit()
+static INT32 BrainInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	System1ColourProms = 1;
 	System1BankedRom = 1;
@@ -4108,42 +4174,42 @@ static int BrainInit()
 	return nRet;
 }
 
-static int BullfgtInit()
+static INT32 BullfgtInit()
 {
 	DecodeFunction = bullfgtj_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int ThetogyuInit()
+static INT32 ThetogyuInit()
 {
 	DecodeFunction = bullfgtj_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int FlickyInit()
+static INT32 FlickyInit()
 {
 	DecodeFunction = flicky_decode;
 	
 	return System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int Flicks1Init()
+static INT32 Flicks1Init()
 {
 	DecodeFunction = flicky_decode;
 	
 	return System1Init(4, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int Flicks2Init()
+static INT32 Flicks2Init()
 {
 	return System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int GardiaInit()
+static INT32 GardiaInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	System1ColourProms = 1;
 	System1BankedRom = 1;
@@ -4161,9 +4227,9 @@ static int GardiaInit()
 	return nRet;
 }
 
-static int GardiabInit()
+static INT32 GardiabInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	System1ColourProms = 1;
 	System1BankedRom = 1;
@@ -4181,37 +4247,53 @@ static int GardiabInit()
 	return nRet;
 }
 
-static int ImsorryInit()
+static INT32 HvymetalInit()
 {
-	int nRet;
+	INT32 nRet;
 	
-	DecodeFunction = imsorry_decode;
+	System1ColourProms = 1;
+	System1BankedRom = 1;
 	
-	nRet = System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
+	DecodeFunction = hvymetal_decode;
+	
+	nRet = System1Init(3, 0x8000, 1, 0x8000, 6, 0x4000, 4, 0x8000, 0);
+	
+	ZetOpen(0);
+	ZetSetOutHandler(BrainZ801PortWrite);
+	ZetClose();
+		
+	System1DoReset();
 	
 	return nRet;
 }
 
-static int MrvikingInit()
+static INT32 ImsorryInit()
+{
+	DecodeFunction = imsorry_decode;
+	
+	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
+}
+
+static INT32 MrvikingInit()
 {
 	DecodeFunction = mrviking_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int MyheroInit()
+static INT32 MyheroInit()
 {
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int SscandalInit()
+static INT32 SscandalInit()
 {
 	DecodeFunction = myheroj_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int MyherokInit()
+static INT32 MyherokInit()
 {
 	DecodeFunction = myherok_decode;
 	TileDecodeFunction = myherok_tile_decode;
@@ -4219,9 +4301,9 @@ static int MyherokInit()
 	return System1Init(3, 0x4000, 1, 0x2000, 3, 0x4000, 4, 0x4000, 1);
 }
 
-static int NobbInit()
+static INT32 NobbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	System1ColourProms = 1;
 	System1BankedRom = 1;
@@ -4277,9 +4359,9 @@ static int NobbInit()
 	return nRet;
 }
 
-static int Pitfall2Init()
+static INT32 Pitfall2Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	DecodeFunction = pitfall2_decode;
 	
@@ -4289,9 +4371,9 @@ static int Pitfall2Init()
 	return nRet;
 }
 
-static int PitfalluInit()
+static INT32 PitfalluInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	nRet = System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 	nCyclesTotal[0] = 3600000 / 60;
@@ -4299,147 +4381,147 @@ static int PitfalluInit()
 	return nRet;
 }
 
-static int RaflesiaInit()
+static INT32 RaflesiaInit()
 {
 	DecodeFunction = fdwarrio_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int RegulusInit()
+static INT32 RegulusInit()
 {
 	DecodeFunction = regulus_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int RegulusuInit()
+static INT32 RegulusuInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int SeganinjInit()
+static INT32 SeganinjInit()
 {
 	DecodeFunction = seganinj_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int SeganinuInit()
+static INT32 SeganinuInit()
 {
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int NprincesInit()
+static INT32 NprincesInit()
 {
 	DecodeFunction = flicky_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int NprincsoInit()
+static INT32 NprincsoInit()
 {
 	DecodeFunction = nprinces_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int NprincsuInit()
+static INT32 NprincsuInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int NprincsbInit()
+static INT32 NprincsbInit()
 {
 	DecodeFunction = flicky_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int SpatterInit()
+static INT32 SpatterInit()
 {
 	DecodeFunction = spatter_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int StarjackInit()
+static INT32 StarjackInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int SwatInit()
+static INT32 SwatInit()
 {
 	DecodeFunction = swat_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int TeddybbInit()
+static INT32 TeddybbInit()
 {
 	DecodeFunction = teddybb_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int UpndownInit()
+static INT32 UpndownInit()
 {
 	DecodeFunction = nprinces_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int UpndownuInit()
+static INT32 UpndownuInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int WboyInit()
+static INT32 WboyInit()
 {
 	DecodeFunction = astrofl_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int WboyoInit()
+static INT32 WboyoInit()
 {
 	DecodeFunction = hvymetal_decode;
 	
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int Wboy2Init()
+static INT32 Wboy2Init()
 {
 	DecodeFunction = wboy2_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int Wboy2uInit()
+static INT32 Wboy2uInit()
 {
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int Wboy4Init()
+static INT32 Wboy4Init()
 {
 	DecodeFunction = fdwarrio_decode;
 	
 	return System1Init(2, 0x8000, 1, 0x8000, 3, 0x4000, 2, 0x8000, 1);
 }
 
-static int WboyuInit()
+static INT32 WboyuInit()
 {
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
 }
 
-static int WmatchInit()
+static INT32 WmatchInit()
 {
 	DecodeFunction = wmatch_decode;
 	
 	return System1Init(6, 0x2000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
-static int System1Exit()
+static INT32 System1Exit()
 {
 	ZetExit();
 	
@@ -4447,8 +4529,7 @@ static int System1Exit()
 
 	GenericTilesExit();
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	System1SoundLatch = 0;
 	System1ScrollX[0] = System1ScrollX[1] = System1ScrollY = 0;
@@ -4481,9 +4562,9 @@ static int System1Exit()
 Graphics Rendering
 ===============================================================================================*/
 
-static void DrawPixel(int x, int y, int SpriteNum, int Colour)
+static void DrawPixel(INT32 x, INT32 y, INT32 SpriteNum, INT32 Colour)
 {
-	int xr, yr, SpriteOnScreen, dx, dy;
+	INT32 xr, yr, SpriteOnScreen, dx, dy;
 	
 	dx = x;
 	dy = y;
@@ -4499,7 +4580,7 @@ static void DrawPixel(int x, int y, int SpriteNum, int Colour)
 	SpriteOnScreenMap[(y * 256) + x] = SpriteNum;
 	
 	if (dx >= 0 && dx < nScreenWidth && dy >= 0 && dy < nScreenHeight) {
-		unsigned short *pPixel = pTransDraw + (dy * nScreenWidth);
+		UINT16 *pPixel = pTransDraw + (dy * nScreenWidth);
 		pPixel[dx] = Colour;
 	}
 	
@@ -4511,12 +4592,12 @@ static void DrawPixel(int x, int y, int SpriteNum, int Colour)
 	}
 }
 
-static void DrawSprite(int Num)
+static void DrawSprite(INT32 Num)
 {
-	int Src, Bank, Height, sy, Row;
+	INT32 Src, Bank, Height, sy, Row;
 	INT16 Skip;
-	unsigned char *SpriteBase;
-	unsigned int *SpritePalette;
+	UINT8 *SpriteBase;
+	UINT32 *SpritePalette;
 	
 	SpriteBase = System1SpriteRam + (0x10 * Num);
 	Src = (SpriteBase[7] << 8) | SpriteBase[6];
@@ -4530,7 +4611,7 @@ static void DrawSprite(int Num)
 	sy = SpriteBase[0] + 1;
 	
 	for (Row = 0; Row < Height; Row++) {
-		int x, y, Src2;
+		INT32 x, y, Src2;
 		
 		Src = Src2 = Src + Skip;
 		x = ((SpriteBase[3] & 0x01) << 8) + SpriteBase[2] + System1SpriteXOffset;
@@ -4539,7 +4620,7 @@ static void DrawSprite(int Num)
 		x /= 2;
 		
 		while(1) {
-			int Colour1, Colour2, Data;
+			INT32 Colour1, Colour2, Data;
 			
 			Data = System1Sprites[Bank + (Src2 & 0x7fff)];
 			
@@ -4566,8 +4647,8 @@ static void DrawSprite(int Num)
 
 static void System1DrawSprites()
 {
-	int i, SpriteBottomY, SpriteTopY;
-	unsigned char *SpriteBase;
+	INT32 i, SpriteBottomY, SpriteTopY;
+	UINT8 *SpriteBase;
 	
 	memset(SpriteOnScreenMap, 255, 256 * 256);
 	
@@ -4581,16 +4662,16 @@ static void System1DrawSprites()
 	}
 }
 
-static void System1DrawBgLayer(int PriorityDraw)
+static void System1DrawBgLayer(INT32 PriorityDraw)
 {
-	int Offs, sx, sy;
+	INT32 Offs, sx, sy;
 	
 	System1BgScrollX = ((System1ScrollX[0] >> 1) + ((System1ScrollX[1] & 1) << 7) + 14) & 0xff;
 	System1BgScrollY = (-System1ScrollY & 0xff);
 	
 	if (PriorityDraw == -1) {
 		for (Offs = 0; Offs < 0x800; Offs += 2) {
-			int Code, Colour;
+			INT32 Code, Colour;
 		
 			Code = (System1BgRam[Offs + 1] << 8) | System1BgRam[Offs + 0];
 			Code = ((Code >> 4) & 0x800) | (Code & 0x7ff);
@@ -4616,13 +4697,13 @@ static void System1DrawBgLayer(int PriorityDraw)
 		
 		for (Offs = 0; Offs < 0x800; Offs += 2) {
 			if ((System1BgRam[Offs + 1] & 0x08) == PriorityDraw) {
-				int Code, Colour;
+				INT32 Code, Colour;
 			
 				Code = (System1BgRam[Offs + 1] << 8) | System1BgRam[Offs + 0];
 				Code = ((Code >> 4) & 0x800) | (Code & 0x7ff);
 				Colour = ((Code >> 5) & 0x3f);
 								
-				int ColourOffs = 0x40;
+				INT32 ColourOffs = 0x40;
 				if (Colour >= 0x10 && Colour <= 0x1f) ColourOffs += 0x10;
 				if (Colour >= 0x20 && Colour <= 0x2f) ColourOffs += 0x20;
 				if (Colour >= 0x30 && Colour <= 0x3f) ColourOffs += 0x30;
@@ -4646,14 +4727,14 @@ static void System1DrawBgLayer(int PriorityDraw)
 	}
 }
 
-static void System1DrawFgLayer(int PriorityDraw)
+static void System1DrawFgLayer(INT32 PriorityDraw)
 {
-	int Offs, sx, sy;
+	INT32 Offs, sx, sy;
 	
 	PriorityDraw <<= 3;
 	
 	for (Offs = 0; Offs < 0x700; Offs += 2) {
-		int Code, Colour;
+		INT32 Code, Colour;
 		
 		if ((System1VideoRam[Offs + 1] & 0x08) == PriorityDraw) {
 			Code = (System1VideoRam[Offs + 1] << 8) | System1VideoRam[Offs + 0];
@@ -4678,21 +4759,21 @@ static void System1DrawFgLayer(int PriorityDraw)
 	}
 }
 
-static inline unsigned char pal2bit(unsigned char bits)
+static inline UINT8 pal2bit(UINT8 bits)
 {
 	bits &= 3;
 	return (bits << 6) | (bits << 4) | (bits << 2) | bits;
 }
 
-static inline unsigned char pal3bit(unsigned char bits)
+static inline UINT8 pal3bit(UINT8 bits)
 {
 	bits &= 7;
 	return (bits << 5) | (bits << 2) | (bits >> 1);
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal3bit(nColour >> 0);
 	g = pal3bit(nColour >> 3);
@@ -4701,12 +4782,12 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-static int System1CalcPalette()
+static INT32 System1CalcPalette()
 {
 	if (System1ColourProms) {
-		int i;
+		INT32 i;
 		for (i = 0; i < 0x600; i++) {
-			int bit0, bit1, bit2, bit3, r, g, b, val;
+			INT32 bit0, bit1, bit2, bit3, r, g, b, val;
 		
 			val = System1PromRed[System1PaletteRam[i]];
 			bit0 = (val >> 0) & 0x01;
@@ -4732,7 +4813,7 @@ static int System1CalcPalette()
 			System1Palette[i] = BurnHighCol(r, g, b, 0);
 		}
 	} else {
-		for (int i = 0; i < 0x600; i++) {
+		for (INT32 i = 0; i < 0x600; i++) {
 			System1Palette[i] = CalcCol(System1PaletteRam[i]);
 		}
 	}
@@ -4767,10 +4848,10 @@ static void WbmlRender()
 Frame functions
 ===============================================================================================*/
 
-int System1Frame()
+INT32 System1Frame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 		
 	if (System1Reset) System1DoReset();
 
@@ -4778,8 +4859,8 @@ int System1Frame()
 	
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 		
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -4800,8 +4881,8 @@ int System1Frame()
 		if (i == 2 || i == 4 || i == 6 || i == 8) ZetRaiseIrq(0);
 		ZetClose();
 		
-		int nSegmentLength = nBurnSoundLen / nInterleave;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		SN76496Update(0, pSoundBuf, nSegmentLength);
 		SN76496Update(1, pSoundBuf, nSegmentLength);
 		nSoundBufferPos += nSegmentLength;
@@ -4809,8 +4890,8 @@ int System1Frame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			SN76496Update(0, pSoundBuf, nSegmentLength);
@@ -4827,7 +4908,7 @@ int System1Frame()
 Scan Driver
 ===============================================================================================*/
 
-static int System1Scan(int nAction,int *pnMin)
+static INT32 System1Scan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -4844,15 +4925,15 @@ static int System1Scan(int nAction,int *pnMin)
 	}
 
 	if (nAction & ACB_DRIVER_DATA) {
-		ZetScan(nAction);			// Scan Z80
+		ZetScan(nAction);
 		SN76496Scan(nAction, pnMin);
 
-		// Scan critical driver variables
+		ScanVar(System1ScrollX, 2, "ScrollX");
+		
 		SCAN_VAR(nCyclesDone);
 		SCAN_VAR(nCyclesSegment);
 		SCAN_VAR(System1Dip);
 		SCAN_VAR(System1Input);
-		SCAN_VAR(System1ScrollX);
 		SCAN_VAR(System1ScrollY);
 		SCAN_VAR(System1BgScrollX);
 		SCAN_VAR(System1BgScrollY);
@@ -4863,13 +4944,15 @@ static int System1Scan(int nAction,int *pnMin)
 		SCAN_VAR(NoboranbInp16Step);
 		SCAN_VAR(NoboranbInp17Step);
 		SCAN_VAR(NoboranbInp23Step);
-	}
-	
-	if (nAction & ACB_WRITE) {
-		if (System1BankedRom) {
-			ZetOpen(0);
-			System1BankRom();
-			ZetClose();
+		SCAN_VAR(BlockgalDial1);
+		SCAN_VAR(BlockgalDial2);
+		
+		if (nAction & ACB_WRITE) {
+			if (System1BankedRom) {
+				ZetOpen(0);
+				System1BankRom();
+				ZetClose();
+			}
 		}
 	}
 	
@@ -4988,6 +5071,16 @@ struct BurnDriverD BurnDrvGardiab = {
 	NULL, GardiabRomInfo, GardiabRomName, NULL, NULL, MyheroInputInfo, GardiaDIPInfo,
 	GardiabInit, System1Exit, System1Frame, NULL, System1Scan,
 	NULL, 0x600, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvHvymetal = {
+	"hvymetal", NULL, NULL, NULL, "1985",
+	"Heavy Metal (315-5135)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
+	NULL, HvymetalRomInfo, HvymetalRomName, NULL, NULL, MyheroInputInfo, HvymetalDIPInfo,
+	HvymetalInit, System1Exit, System1Frame, NULL, System1Scan,
+	NULL, 0x600, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvImsorry = {

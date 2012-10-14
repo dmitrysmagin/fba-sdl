@@ -3,11 +3,11 @@
 
 static char szPlay[4][4]={"p1 ", "p2 ", "p3 ", "p4 "};
 
-#define KEY(x) { pgi->nInput = GIT_SWITCH; pgi->Input.Switch.nCode = (unsigned short)(x); }
-#define MACRO(x) { pgi->Macro.nMode = 1; pgi->Macro.Switch.nCode = (unsigned short)(x); }
+#define KEY(x) { pgi->nInput = GIT_SWITCH; pgi->Input.Switch.nCode = (UINT16)(x); }
+#define MACRO(x) { pgi->Macro.nMode = 1; pgi->Macro.Switch.nCode = (UINT16)(x); }
 
 // Configure the misc game controls
-int GamcMisc(struct GameInp* pgi, char* szi, int nPlayer)
+INT32 GamcMisc(struct GameInp* pgi, char* szi, INT32 nPlayer)
 {
 	switch (nPlayer) {
 		case 0:
@@ -237,7 +237,7 @@ int GamcMisc(struct GameInp* pgi, char* szi, int nPlayer)
 		}
 		if (strncmp(szi, "mouse button", 12) == 0) {
 			char* szb = szi + 13;
-			int nButton = strtol(szb, NULL, 0);
+			INT32 nButton = strtol(szb, NULL, 0);
 			if (nButton >= 1) {
 				nButton--;
 			}
@@ -249,11 +249,11 @@ int GamcMisc(struct GameInp* pgi, char* szi, int nPlayer)
 	return 0;
 }
 
-static void SetSliderKey(struct GameInp* pgi, int k0, int k1, int nSlide)
+static void SetSliderKey(struct GameInp* pgi, INT32 k0, INT32 k1, INT32 nSlide)
 {
 	pgi->nInput = GIT_KEYSLIDER;
-	pgi->Input.Slider.SliderAxis.nSlider[0] = (unsigned char)k0;
-	pgi->Input.Slider.SliderAxis.nSlider[1] = (unsigned char)k1;
+	pgi->Input.Slider.SliderAxis.nSlider[0] = (UINT8)k0;
+	pgi->Input.Slider.SliderAxis.nSlider[1] = (UINT8)k1;
 
 	if (nSlide == 2) {
 		// Sliding
@@ -266,10 +266,10 @@ static void SetSliderKey(struct GameInp* pgi, int k0, int k1, int nSlide)
 	}
 }
 
-int GamcAnalogKey(struct GameInp* pgi, char* szi, int nPlayer, int nSlide)
+INT32 GamcAnalogKey(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nSlide)
 {
 	char *szSearch = NULL;
-	int k0 = 0, k1 = 0;
+	INT32 k0 = 0, k1 = 0;
 	szSearch = szPlay[nPlayer & 3];
 	if (_strnicmp(szSearch, szi, 3) != 0) {			// Not our player
 		return 1;
@@ -305,9 +305,9 @@ int GamcAnalogKey(struct GameInp* pgi, char* szi, int nPlayer, int nSlide)
 	return 0;
 }
 
-int GamcAnalogJoy(struct GameInp* pgi, char* szi, int nPlayer, int nJoy, int nSlide)
+INT32 GamcAnalogJoy(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nJoy, INT32 nSlide)
 {
-	int nAxis = 0;
+	INT32 nAxis = 0;
 
 	char* szSearch = szPlay[nPlayer & 3];
 	if (_strnicmp(szSearch, szi, 3) != 0)	{	// Not our player
@@ -348,7 +348,7 @@ int GamcAnalogJoy(struct GameInp* pgi, char* szi, int nPlayer, int nJoy, int nSl
 			pgi->Input.Slider.nSliderSpeed = 0x0700;
 			pgi->Input.Slider.nSliderCenter = 0;
 			pgi->Input.Slider.JoyAxis.nAxis = nAxis;
-			pgi->Input.Slider.JoyAxis.nJoy = (unsigned char)nJoy;
+			pgi->Input.Slider.JoyAxis.nJoy = (UINT8)nJoy;
 			break;
 		case 1:								// Sliding (centering)
 			pgi->nInput = GIT_JOYSLIDER;
@@ -356,22 +356,22 @@ int GamcAnalogJoy(struct GameInp* pgi, char* szi, int nPlayer, int nJoy, int nSl
 			pgi->Input.Slider.nSliderSpeed = 0x0E00;
 			pgi->Input.Slider.nSliderCenter = 10;
 			pgi->Input.Slider.JoyAxis.nAxis = nAxis;
-			pgi->Input.Slider.JoyAxis.nJoy = (unsigned char)nJoy;
+			pgi->Input.Slider.JoyAxis.nJoy = (UINT8)nJoy;
 			break;
 		case 3:								// Absolute, axis-neg
 			pgi->nInput = GIT_JOYAXIS_NEG;
 			pgi->Input.JoyAxis.nAxis = nAxis;
-			pgi->Input.JoyAxis.nJoy = (unsigned char)nJoy;
+			pgi->Input.JoyAxis.nJoy = (UINT8)nJoy;
 			break;
 		case 4:								// Absolute, axis-pos
 			pgi->nInput = GIT_JOYAXIS_POS;
 			pgi->Input.JoyAxis.nAxis = nAxis;
-			pgi->Input.JoyAxis.nJoy = (unsigned char)nJoy;
+			pgi->Input.JoyAxis.nJoy = (UINT8)nJoy;
 			break;
 		default:							// Absolute, entire axis
 			pgi->nInput = GIT_JOYAXIS_FULL;
 			pgi->Input.JoyAxis.nAxis = nAxis;
-			pgi->Input.JoyAxis.nJoy = (unsigned char)nJoy;
+			pgi->Input.JoyAxis.nJoy = (UINT8)nJoy;
 	}
 
 	return 0;
@@ -379,10 +379,10 @@ int GamcAnalogJoy(struct GameInp* pgi, char* szi, int nPlayer, int nJoy, int nSl
 
 // Set a Game Input to use Device 'nDevice' if it belongs to 'nPlayer'
 // -2 = nothing  -1 == keyboard, 0 == joystick 1, 1 == joystick 2 etc...
-int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
+INT32 GamcPlayer(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nDevice)
 {
 	char* szSearch = szPlay[nPlayer & 3];
-	int nJoyBase = 0;
+	INT32 nJoyBase = 0;
 	
 	if (_strnicmp(szSearch, szi, 3) != 0) {	// Not our player
 		return 1;
@@ -390,7 +390,7 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 	szi += 3;
 	
 	if (nDevice <= -2) {
-		int bOurs = 0;
+		INT32 bOurs = 0;
 		if (strcmp(szi, "up") == 0 || strcmp(szi, "y-axis-neg") == 0) {
 			bOurs = 1;
 		}
@@ -534,7 +534,7 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 	}
 	if (strncmp(szi, "fire ", 5) == 0) {
 		char *szb = szi + 5;
-		int nButton = strtol(szb, NULL, 0);
+		INT32 nButton = strtol(szb, NULL, 0);
 		if (nButton >= 1) {
 			nButton--;
 		}
@@ -544,11 +544,11 @@ int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice)
 	return 0;
 }
 
-int GamcPlayerHotRod(struct GameInp* pgi, char* szi, int nPlayer, int nFlags, int nSlide)
+INT32 GamcPlayerHotRod(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nFlags, INT32 nSlide)
 {
 	char *szSearch = NULL;
 	szSearch = szPlay[nPlayer & 3];
-	int k0 = 0, k1 = 0;
+	INT32 k0 = 0, k1 = 0;
 
 	if (_strnicmp(szSearch, szi, 3) != 0) {				// Not our player
 		return 1;

@@ -8,12 +8,14 @@ void img_free(IMAGE* img)
 	free(img->rowptr);
 	img->rowptr = NULL;
 	if (img->flags & IMG_FREE) {
-		free(img->bmpbits);
-		img->bmpbits = NULL;
+		if (img->bmpbits) {
+			free(img->bmpbits);
+			img->bmpbits = NULL;
+		}
 	}
 }
 
-int img_alloc(IMAGE* img)
+INT32 img_alloc(IMAGE* img)
 {
 	img->flags		  = 0;
 
@@ -31,7 +33,7 @@ int img_alloc(IMAGE* img)
 		return 1;
 	}
 
-	for (unsigned int y = 0; y < img->height; y++) {
+	for (UINT32 y = 0; y < img->height; y++) {
 		img->rowptr[img->height - y - 1] = img->bmpbits + y * img->rowbytes;
 	}
 
@@ -47,7 +49,7 @@ static inline double interpolate(const double f, const double* c)
 				  (		-c[0] + 3.0 * c[1] - 3.0 * c[2] + c[3]) * (f * f * f));
 }
 
-static inline double interpolatePixelH(const double f, const int x, const unsigned char* row, const int width)
+static inline double interpolatePixelH(const double f, const INT32 x, const UINT8* row, const INT32 width)
 {
 	double c[4];
 
@@ -59,12 +61,12 @@ static inline double interpolatePixelH(const double f, const int x, const unsign
 	return interpolate(f, c);
 }
 
-static void interpolateRowH(const IMAGE* img, const int y, double* row, const int width)
+static void interpolateRowH(const IMAGE* img, const INT32 y, double* row, const INT32 width)
 {
-	for (int x = 0, x2; x < width; x++) {
+	for (INT32 x = 0, x2; x < width; x++) {
 
 		double f = (double)x * img->width / width;
-		x2 = (int)f;	f -= x2;
+		x2 = (INT32)f;	f -= x2;
 
 		row[x * 3 + 0] = interpolatePixelH(f, x2, img->rowptr[y] + 0, img->width);
 		row[x * 3 + 1] = interpolatePixelH(f, x2, img->rowptr[y] + 1, img->width);
@@ -72,11 +74,11 @@ static void interpolateRowH(const IMAGE* img, const int y, double* row, const in
 	}
 }
 
-static inline void interpolateRowV(const double f, const int y, double** row, const IMAGE* img)
+static inline void interpolateRowV(const double f, const INT32 y, double** row, const IMAGE* img)
 {
 	double c[5];
 
-	for (unsigned int x = 0; x < img->width * 3; x++) {
+	for (UINT32 x = 0; x < img->width * 3; x++) {
 
 		c[0] = row[0][x];
 		c[1] = row[1][x];
@@ -87,14 +89,14 @@ static inline void interpolateRowV(const double f, const int y, double** row, co
 
 		if (c[4] < 0.0) c[4] = 0.0; else if (c[4] > 255.0) c[4] = 255.0;
 
-		img->rowptr[y][x] = (unsigned char)c[4];
+		img->rowptr[y][x] = (UINT8)c[4];
 	}
 }
 
 // Resize the image to the required size using area averaging
-static int img_process(IMAGE* img, unsigned int width, unsigned int height, int preset, bool swapRB)
+static INT32 img_process(IMAGE* img, UINT32 width, UINT32 height, INT32 preset, bool swapRB)
 {
-	static struct { double gamma; double sharpness; int min; int max; } presetdata[] = {
+	static struct { double gamma; double sharpness; INT32 min; INT32 max; } presetdata[] = {
 		{ 1.000, 0.000, 0x000000, 0xFFFFFF },			//  0 no effects
 		{ 1.000, 1.000, 0x000000, 0xFFFFFF },			//  1 normal sharpening
 		{ 1.000, 1.250, 0x000000, 0xFFFFFF },			//  2 preview 1
@@ -114,7 +116,7 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 	{
 		double LUT[256];
 
-		int rdest = 0, gdest = 1, bdest = 2;
+		INT32 rdest = 0, gdest = 1, bdest = 2;
 		if (swapRB) {
 			rdest = 2, gdest = 1, bdest = 0;
 		}
@@ -124,17 +126,17 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 		double min = (presetdata[preset].min & 255);
 		double rng = ((presetdata[preset].max & 255) - (presetdata[preset].min & 255));
 
-		for (int i = 0; i < 256; i++) {
+		for (INT32 i = 0; i < 256; i++) {
 
 			LUT[i] = min + rng * pow((i / 255.0), presetdata[preset].gamma);
 		}
 
 		// Apply gamma
-		for (unsigned int y = 0; y < img->height; y++) {
-			for (unsigned int x = 0; x < img->width; x++) {
-				unsigned char r = (unsigned char)LUT[img->rowptr[y][x * 3 + 0]];
-				unsigned char g = (unsigned char)LUT[img->rowptr[y][x * 3 + 1]];
-				unsigned char b = (unsigned char)LUT[img->rowptr[y][x * 3 + 2]];
+		for (UINT32 y = 0; y < img->height; y++) {
+			for (UINT32 x = 0; x < img->width; x++) {
+				UINT8 r = (UINT8)LUT[img->rowptr[y][x * 3 + 0]];
+				UINT8 g = (UINT8)LUT[img->rowptr[y][x * 3 + 1]];
+				UINT8 b = (UINT8)LUT[img->rowptr[y][x * 3 + 2]];
 
 				img->rowptr[y][x * 3 + rdest] = r;
 				img->rowptr[y][x * 3 + gdest] = g;
@@ -161,7 +163,7 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 
 		// Enlarge the image using bi-cubic filtering
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			row[i] = (double*)malloc(width * 3 * sizeof(double));
 		}
 
@@ -170,10 +172,10 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 		interpolateRowH(img, 1, row[2], width);
 		interpolateRowH(img, 2, row[3], width);
 
-		for (unsigned int y = 0, ylast = 0, y2 = 0; y < height; ylast = y2, y++) {
+		for (UINT32 y = 0, ylast = 0, y2 = 0; y < height; ylast = y2, y++) {
 			double f = (double)y * img->height / height;
 
-			y2 = (unsigned int)f; f -= y2;
+			y2 = (UINT32)f; f -= y2;
 
 			if (y2 > ylast) {
 				double* r = row[0];
@@ -188,8 +190,11 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 			interpolateRowV(f, y, row, &sized_img);
 		}
 
-		for (int i = 0; i < 4; i++) {
-			free(row[i]);
+		for (INT32 i = 0; i < 4; i++) {
+			if (row[i]) {
+				free(row[i]);
+				row[i] = NULL;
+			}
 		}
 
 		img_free(img);
@@ -201,11 +206,11 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 
 	// Shrink the image using area averaging and  apply gamma
 
-	for (unsigned int y = 0; y < sized_img.height; y++) {
-		for (unsigned int x = 0; x < sized_img.width; x++) {
+	for (UINT32 y = 0; y < sized_img.height; y++) {
+		for (UINT32 x = 0; x < sized_img.width; x++) {
 
 			double r0, b0, g0, r1, g1, b1, xf, yf;
-			unsigned int x1, y1;
+			UINT32 x1, y1;
 
 			r0 = g0 = b0 = 0.0;
 
@@ -288,9 +293,9 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 				b0 += b1 * yf;
 			}
 
-			sized_img.rowptr[y][x * 3 + 0] = (unsigned char)(r0 * ratio);// + 0.5;
-			sized_img.rowptr[y][x * 3 + 1] = (unsigned char)(g0 * ratio);// + 0.5;
-			sized_img.rowptr[y][x * 3 + 2] = (unsigned char)(b0 * ratio);// + 0.5;
+			sized_img.rowptr[y][x * 3 + 0] = (UINT8)(r0 * ratio);// + 0.5;
+			sized_img.rowptr[y][x * 3 + 1] = (UINT8)(g0 * ratio);// + 0.5;
+			sized_img.rowptr[y][x * 3 + 2] = (UINT8)(b0 * ratio);// + 0.5;
 		}
 	}
 
@@ -322,8 +327,8 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 	if (b > 1.5) { b = 1.5; }
 	b = pow(b, 2.0);
 
-	for (int x = -4; x < 5; x++) {
-		for (int y = -4; y < 5; y++) {
+	for (INT32 x = -4; x < 5; x++) {
+		for (INT32 y = -4; y < 5; y++) {
 
 			double c = sqrt(double(x * x + y * y));
 			
@@ -331,17 +336,17 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 		}
 	}
 
-	for (int y = 0; y < sized_img.height; y++) {
-		for (int x = 0; x < sized_img.width; x++) {
+	for (INT32 y = 0; y < sized_img.height; y++) {
+		for (INT32 x = 0; x < sized_img.width; x++) {
 
 			double r, g, b, m;
 
 			r = g = b = m = 0.0;
 
 			// Convolve the image
-			for (int y1 = -4; y1 < 5; y1++) {
+			for (INT32 y1 = -4; y1 < 5; y1++) {
 				if (y + y1 > 0 && y + y1 < sized_img.height) {
-					for (int x1 = -4; x1 < 5; x1++) {
+					for (INT32 x1 = -4; x1 < 5; x1++) {
 						if (x + x1 > 0 && x + x1 < sized_img.width) {
 							r += matrix[y1 + 4][x1 + 4] * sized_img.rowptr[y + y1][(x + x1) * 3 + 0];
 							g += matrix[y1 + 4][x1 + 4] * sized_img.rowptr[y + y1][(x + x1) * 3 + 1];
@@ -399,7 +404,7 @@ static int img_process(IMAGE* img, unsigned int width, unsigned int height, int 
 bool PNGIsImage(FILE* fp)
 {
 	if (fp) {
-		unsigned char pngsig[PNG_SIG_CHECK_BYTES];
+		UINT8 pngsig[PNG_SIG_CHECK_BYTES];
 
 		fseek(fp, 0, SEEK_SET);
 		fread(pngsig, 1, PNG_SIG_CHECK_BYTES, fp);
@@ -413,15 +418,15 @@ bool PNGIsImage(FILE* fp)
 	return false;
 }
 
-int PNGLoad(IMAGE* img, FILE* fp, int nPreset)
+INT32 PNGLoad(IMAGE* img, FILE* fp, INT32 nPreset)
 {
 	IMAGE temp_img;
 	png_uint_32 width, height;
-	int bit_depth, color_type;
+	INT32 bit_depth, color_type;
 	
 	if (fp) {
 		// check signature
-		unsigned char pngsig[PNG_SIG_CHECK_BYTES];
+		UINT8 pngsig[PNG_SIG_CHECK_BYTES];
 		fread(pngsig, 1, PNG_SIG_CHECK_BYTES, fp);
 		if (png_sig_cmp(pngsig, 0, PNG_SIG_CHECK_BYTES)) {
 			return 1;
@@ -487,7 +492,7 @@ int PNGLoad(IMAGE* img, FILE* fp, int nPreset)
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
 	} else {
 
-#ifdef WIN32
+#ifdef BUILD_WIN32
 		// Find resource
 		HRSRC hrsrc = FindResource(NULL, MAKEINTRESOURCE(BMP_SPLASH), RT_BITMAP);
 		HGLOBAL hglobal = LoadResource(NULL, (HRSRC)hrsrc);

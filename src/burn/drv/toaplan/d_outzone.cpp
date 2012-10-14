@@ -5,13 +5,13 @@
 #define REFRESHRATE ((28000000.0 / 4.0) / (450.0 * 282.0))
 #define VBLANK_LINES (32)
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
 static bool bEnableInterrupts;
@@ -459,18 +459,18 @@ static struct BurnDIPInfo outzonedDIPList[] = {
 
 STDDIPINFO(outzoned)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal, *RamPal2;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal, *RamPal2;
 
-static int nColCount = 0x0400;
+static INT32 nColCount = 0x0400;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x040000;		//
 	RomZ80		= Next; Next += 0x008000;		// Z80 ROM
 	BCU2ROM		= Next; Next += nBCU2ROMSize;	// BCU-2 tile data
@@ -484,15 +484,15 @@ static int MemIndex()
 	FCU2RAM		= Next; Next += 0x000800;
 	FCU2RAMSize	= Next; Next += 0x000080;
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
-	ToaPalette2	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
+	ToaPalette2	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 
@@ -518,7 +518,7 @@ static int DrvScan(int nAction, int* pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	ToaLoadCode(Rom01, 0, 2);
@@ -535,7 +535,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall outzoneZ80In(unsigned short nAddress)
+UINT8 __fastcall outzoneZ80In(UINT16 nAddress)
 {
 //	bprintf(PRINT_NORMAL, _T("z80 read %4X\n"), nAddress);
 
@@ -562,7 +562,7 @@ unsigned char __fastcall outzoneZ80In(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall outzoneZ80Out(unsigned short nAddress, unsigned char nValue)
+void __fastcall outzoneZ80Out(UINT16 nAddress, UINT8 nValue)
 {
 //	bprintf(PRINT_NORMAL, _T("Z80 attempted to write address %04X with value %02X.\n"), nAddress, nValue);
 
@@ -581,10 +581,10 @@ void __fastcall outzoneZ80Out(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int DrvZ80Init()
+static INT32 DrvZ80Init()
 {
 	// Init the Z80
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 
 	ZetSetInHandler(outzoneZ80In);
@@ -607,7 +607,7 @@ static int DrvZ80Init()
 
 // ----------------------------------------------------------------------------
 
-unsigned char __fastcall outzoneReadByte(unsigned int sekAddress)
+UINT8 __fastcall outzoneReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x100001:
@@ -622,7 +622,7 @@ unsigned char __fastcall outzoneReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall outzoneReadWord(unsigned int sekAddress)
+UINT16 __fastcall outzoneReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -670,7 +670,7 @@ unsigned short __fastcall outzoneReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall outzoneWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall outzoneWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -688,7 +688,7 @@ void __fastcall outzoneWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall outzoneWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall outzoneWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -753,7 +753,7 @@ void __fastcall outzoneWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -769,9 +769,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -785,8 +785,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);											// blank all memory
@@ -840,7 +840,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM3812Exit();
 	ToaPalExit();
@@ -849,14 +849,12 @@ static int DrvExit()
 	ToaZExit();				// Z80 exit
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0x120);
 
@@ -871,14 +869,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -888,7 +886,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[4] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[4] |= (DrvButton[i] & 1) << i;
@@ -905,16 +903,16 @@ static int DrvFrame()
 	SekIdle(nCyclesDone[0]);
 	ZetIdle(nCyclesDone[1]);
 
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
-	nCyclesTotal[1] = int(28000000.0 / 8 / REFRESHRATE);
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
+	nCyclesTotal[1] = INT32(28000000.0 / 8 / REFRESHRATE);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 
@@ -945,11 +943,13 @@ static int DrvFrame()
 		} else {
 			SekIdle(nCyclesSegment);
 		}
+		
+		BurnTimerUpdateYM3812(i * (nCyclesTotal[1] / nInterleave));
 	}
 
 	nToa1Cycles68KSync = SekTotalCycles();
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 	nCyclesDone[1] = ZetTotalCycles() - nCyclesTotal[1];

@@ -1,4 +1,6 @@
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
 #include "burn_ym3812.h"
@@ -7,30 +9,30 @@
 // #undef DRIVER_ROTATION
 // #define DRIVER_ROTATION
 
-const int TOA_68K_SPEED = 16000000;
-const int TOA_Z80_SPEED = 4000000;
-const int TOA_VBLANK_LINES = 22;
+const INT32 TOA_68K_SPEED = 16000000;
+const INT32 TOA_Z80_SPEED = 4000000;
+const INT32 TOA_VBLANK_LINES = 22;
 
-extern int Hellfire;
-extern int Rallybik;
+extern INT32 Hellfire;
+extern INT32 Rallybik;
 
 // toaplan.cpp
-extern int nToaCyclesScanline;
-extern int nToaCyclesDisplayStart;
-extern int nToaCyclesVBlankStart;
+extern INT32 nToaCyclesScanline;
+extern INT32 nToaCyclesDisplayStart;
+extern INT32 nToaCyclesVBlankStart;
 
-int ToaLoadCode(unsigned char *Rom, int nStart, int nCount);
-int ToaLoadGP9001Tiles(unsigned char* pDest, int nStart, int nNumFiles, int nROMSize, bool bSwap = false);
+INT32 ToaLoadCode(UINT8 *Rom, INT32 nStart, INT32 nCount);
+INT32 ToaLoadGP9001Tiles(UINT8* pDest, INT32 nStart, INT32 nNumFiles, INT32 nROMSize, bool bSwap = false);
 
-void ToaClearScreen(int PalOffset);
+void ToaClearScreen(INT32 PalOffset);
 
 void ToaZExit();
 
-extern unsigned char* RomZ80;
-extern unsigned char* RamZ80;
+extern UINT8* RomZ80;
+extern UINT8* RamZ80;
 
-extern int nCyclesDone[2], nCyclesTotal[2];
-extern int nCyclesSegment;
+extern INT32 nCyclesDone[2], nCyclesTotal[2];
+extern INT32 nCyclesSegment;
 
 #ifdef DRIVER_ROTATION
  extern bool bToaRotateScreen;
@@ -40,9 +42,9 @@ extern int nCyclesSegment;
  #define TOA_ROTATE_GRAPHICS_CCW BDF_ORIENTATION_VERTICAL
 #endif
 
-extern unsigned char* pBurnBitmap;
-extern int nBurnColumn;
-extern int nBurnRow;
+extern UINT8* pBurnBitmap;
+extern INT32 nBurnColumn;
+extern INT32 nBurnRow;
 
 inline void ToaGetBitmap()
 {
@@ -57,7 +59,7 @@ inline void ToaGetBitmap()
 	}
 }
 
-inline void ToaClearOpposites(unsigned char* nJoystickInputs)
+inline void ToaClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -68,84 +70,84 @@ inline void ToaClearOpposites(unsigned char* nJoystickInputs)
 }
 
 // toa_pal.cpp
-extern unsigned char *ToaPalSrc;
-extern unsigned int* ToaPalette;
-extern unsigned char ToaRecalcPalette;
-extern int nToaPalLen;
+extern UINT8 *ToaPalSrc;
+extern UINT32* ToaPalette;
+extern UINT8 ToaRecalcPalette;
+extern INT32 nToaPalLen;
 
-int ToaPalInit();
-int ToaPalExit();
-int ToaPalUpdate();
+INT32 ToaPalInit();
+INT32 ToaPalExit();
+INT32 ToaPalUpdate();
 
 // toa_gp9001.cpp
-extern unsigned char* GP9001ROM[2];
-extern unsigned int nGP9001ROMSize[2];
+extern UINT8* GP9001ROM[2];
+extern UINT32 nGP9001ROMSize[2];
 
-extern unsigned int GP9001TileBank[8];
+extern UINT32 GP9001TileBank[8];
 
-extern unsigned char* GP9001RAM[2];
-extern unsigned short* GP9001Reg[2];
+extern UINT8* GP9001RAM[2];
+extern UINT16* GP9001Reg[2];
 
-extern int nSpriteXOffset, nSpriteYOffset, nSpritePriority;
+extern INT32 nSpriteXOffset, nSpriteYOffset, nSpritePriority;
 
-extern int nLayer0XOffset, nLayer0YOffset, nLayer0Priority;
-extern int nLayer1XOffset, nLayer1YOffset, nLayer1Priority;
-extern int nLayer2XOffset, nLayer2YOffset, nLayer2Priority;
-extern int nLayer3XOffset, nLayer3YOffset;
+extern INT32 nLayer0XOffset, nLayer0YOffset, nLayer0Priority;
+extern INT32 nLayer1XOffset, nLayer1YOffset, nLayer1Priority;
+extern INT32 nLayer2XOffset, nLayer2YOffset, nLayer2Priority;
+extern INT32 nLayer3XOffset, nLayer3YOffset;
 
-int ToaBufferGP9001Sprites();
-int ToaRenderGP9001();
-int ToaInitGP9001(int n = 1);
-int ToaExitGP9001();
-int ToaScanGP9001(int nAction, int* pnMin);
+INT32 ToaBufferGP9001Sprites();
+INT32 ToaRenderGP9001();
+INT32 ToaInitGP9001(INT32 n = 1);
+INT32 ToaExitGP9001();
+INT32 ToaScanGP9001(INT32 nAction, INT32* pnMin);
 
-inline static void ToaGP9001SetRAMPointer(unsigned int wordValue, const int nController = 0)
+inline static void ToaGP9001SetRAMPointer(UINT32 wordValue, const INT32 nController = 0)
 {
-	extern unsigned char* GP9001Pointer[2];
+	extern UINT8* GP9001Pointer[2];
 
 	wordValue &= 0x1FFF;
 	GP9001Pointer[nController] = GP9001RAM[nController] + (wordValue << 1);
 }
 
-inline static void ToaGP9001WriteRAM(const unsigned short wordValue, const int nController)
+inline static void ToaGP9001WriteRAM(const UINT16 wordValue, const INT32 nController)
 {
-	extern unsigned char* GP9001Pointer[2];
+	extern UINT8* GP9001Pointer[2];
 
-	*((unsigned short*)(GP9001Pointer[nController])) = wordValue;
+	*((UINT16*)(GP9001Pointer[nController])) = BURN_ENDIAN_SWAP_INT16(wordValue);
 	GP9001Pointer[nController] += 2;
 }
 
-inline static unsigned short ToaGP9001ReadRAM_Hi(const int nController)
+inline static UINT16 ToaGP9001ReadRAM_Hi(const INT32 nController)
 {
-	extern unsigned char* GP9001Pointer[2];
+	extern UINT8* GP9001Pointer[2];
 
-	return *((unsigned short*)(GP9001Pointer[nController]));
+	return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(GP9001Pointer[nController])));
 }
 
-inline static unsigned short ToaGP9001ReadRAM_Lo(const int nController)
+inline static UINT16 ToaGP9001ReadRAM_Lo(const INT32 nController)
 {
-	extern unsigned char* GP9001Pointer[2];
+	extern UINT8* GP9001Pointer[2];
 
-	return *((unsigned short*)(GP9001Pointer[nController] + 2));
+	return BURN_ENDIAN_SWAP_INT16(*((UINT16*)(GP9001Pointer[nController] + 2)));
 }
 
-inline static void ToaGP9001SelectRegister(const unsigned short wordValue, const int nController = 0)
+inline static void ToaGP9001SelectRegister(const UINT16 wordValue, const INT32 nController = 0)
 {
-	extern int GP9001Regnum[2];
+	extern INT32 GP9001Regnum[2];
 
 	GP9001Regnum[nController] = wordValue & 0xFF;
 }
 
-inline static void ToaGP9001WriteRegister(const unsigned short wordValue, const int nController = 0)
+inline static void ToaGP9001WriteRegister(const UINT16 wordValue, const INT32 nController = 0)
 {
-	extern int GP9001Regnum[2];
+	extern INT32 GP9001Regnum[2];
 
 	GP9001Reg[nController][GP9001Regnum[nController]] = wordValue;
 }
 
-inline static unsigned short ToaVBlankRegister()
+inline static UINT16 ToaVBlankRegister()
 {
-	int nCycles = SekTotalCycles();
+	INT32 nCycles = SekTotalCycles();
 
 	if (nCycles >= nToaCyclesVBlankStart) {
 		return 1;
@@ -157,15 +159,15 @@ inline static unsigned short ToaVBlankRegister()
 	return 0;
 }
 
-inline static unsigned short ToaScanlineRegister()
+inline static UINT16 ToaScanlineRegister()
 {
-	static int nPreviousScanline;
-	unsigned short nFlags = 0xFE00;
-	int nCurrentScanline = SekCurrentScanline();
+	static INT32 nPreviousScanline;
+	UINT16 nFlags = 0xFE00;
+	INT32 nCurrentScanline = SekCurrentScanline();
 
 #if 0
 	// None of the games actually use this
-	int nCurrentBeamPosition = SekTotalCycles() % nToaCyclesScanline;
+	INT32 nCurrentBeamPosition = SekTotalCycles() % nToaCyclesScanline;
 	if (nCurrentBeamPosition < 64) {
 		nFlags &= ~0x4000;
 	}
@@ -183,110 +185,113 @@ inline static unsigned short ToaScanlineRegister()
 }
 
 // toa_extratext.cpp
-extern unsigned char* ExtraTROM;
-extern unsigned char* ExtraTRAM;
-extern unsigned char* ExtraTScroll;
-extern unsigned char* ExtraTSelect;
-extern int nExtraTXOffset;
+extern UINT8* ExtraTROM;
+extern UINT8* ExtraTRAM;
+extern UINT8* ExtraTScroll;
+extern UINT8* ExtraTSelect;
+extern INT32 nExtraTXOffset;
 
-int ToaExtraTextLayer();
-int ToaExtraTextInit();
+INT32 ToaExtraTextLayer();
+INT32 ToaExtraTextInit();
 void ToaExtraTextExit();
 
 // toa_bcu2.cpp
-extern int ToaOpaquePriority;
-extern unsigned char* ToaPalSrc2;
-extern unsigned int* ToaPalette2;
+extern INT32 ToaOpaquePriority;
+extern UINT8* ToaPalSrc2;
+extern UINT32* ToaPalette2;
 
-extern unsigned char* BCU2ROM;
-extern unsigned char* FCU2ROM;
+extern UINT8* BCU2ROM;
+extern UINT8* FCU2ROM;
 
-extern unsigned char* BCU2RAM;
-extern unsigned char* FCU2RAM;
-extern unsigned char* FCU2RAMSize;
+extern UINT8* BCU2RAM;
+extern UINT8* FCU2RAM;
+extern UINT8* FCU2RAMSize;
 
-extern unsigned int BCU2Pointer;
-extern unsigned int FCU2Pointer;
+extern UINT32 BCU2Pointer;
+extern UINT32 FCU2Pointer;
 
-extern unsigned int nBCU2ROMSize;
-extern unsigned int nFCU2ROMSize;
+extern UINT32 nBCU2ROMSize;
+extern UINT32 nFCU2ROMSize;
 
-extern unsigned short BCU2Reg[8];
+extern UINT16 BCU2Reg[8];
 
-extern int nBCU2TileXOffset;
-extern int nBCU2TileYOffset;
+extern INT32 nBCU2TileXOffset;
+extern INT32 nBCU2TileYOffset;
 
-int ToaPal2Update();
-int ToaInitBCU2();
-int ToaExitBCU2();
+INT32 ToaPal2Update();
+INT32 ToaInitBCU2();
+INT32 ToaExitBCU2();
 void ToaBufferFCU2Sprites();
-int ToaRenderBCU2();
+INT32 ToaRenderBCU2();
 
 // toaplan1.cpp
-extern int nToa1Cycles68KSync;
+extern INT32 nToa1Cycles68KSync;
 
-int ToaLoadTiles(unsigned char* pDest, int nStart, int nROMSize);
-void toaplan1FMIRQHandler(int, int nStatus);
-int toaplan1SynchroniseStream(int nSoundRate);
-unsigned char __fastcall toaplan1ReadByteZ80RAM(unsigned int sekAddress);
-unsigned short __fastcall toaplan1ReadWordZ80RAM(unsigned int sekAddress);
-void __fastcall toaplan1WriteByteZ80RAM(unsigned int sekAddress, unsigned char byteValue);
-void __fastcall toaplan1WriteWordZ80RAM(unsigned int sekAddress, unsigned short wordValue);
+INT32 ToaLoadTiles(UINT8* pDest, INT32 nStart, INT32 nROMSize);
+void toaplan1FMIRQHandler(INT32, INT32 nStatus);
+INT32 toaplan1SynchroniseStream(INT32 nSoundRate);
+UINT8 __fastcall toaplan1ReadByteZ80RAM(UINT32 sekAddress);
+UINT16 __fastcall toaplan1ReadWordZ80RAM(UINT32 sekAddress);
+void __fastcall toaplan1WriteByteZ80RAM(UINT32 sekAddress, UINT8 byteValue);
+void __fastcall toaplan1WriteWordZ80RAM(UINT32 sekAddress, UINT16 wordValue);
 
-inline void ToaBCU2SetRAMPointer(unsigned int wordValue)
+inline void ToaBCU2SetRAMPointer(UINT32 wordValue)
 {
 	BCU2Pointer = (wordValue & 0x3FFF) << 1;
 }
 
-inline unsigned short ToaBCU2GetRAMPointer()
+inline UINT16 ToaBCU2GetRAMPointer()
 {
 	return (BCU2Pointer >> 1) & 0x3FFF;
 }
 
-inline void ToaBCU2WriteRAM(const unsigned short wordValue)
+inline void ToaBCU2WriteRAM(const UINT16 wordValue)
 {
-	((unsigned short*)BCU2RAM)[BCU2Pointer & 0x7FFF] = wordValue;
+	((UINT16*)BCU2RAM)[BCU2Pointer & 0x7FFF] = wordValue;
 	BCU2Pointer++;
 }
 
-inline unsigned short ToaBCU2ReadRAM_Hi()
+inline UINT16 ToaBCU2ReadRAM_Hi()
 {
-	return ((unsigned short*)BCU2RAM)[BCU2Pointer & 0x7FFF];
+	return ((UINT16*)BCU2RAM)[BCU2Pointer & 0x7FFF];
 }
 
-inline unsigned short ToaBCU2ReadRAM_Lo()
+inline UINT16 ToaBCU2ReadRAM_Lo()
 {
-	return ((unsigned short*)BCU2RAM)[(BCU2Pointer & 0x7FFF) + 1];
+	return ((UINT16*)BCU2RAM)[(BCU2Pointer & 0x7FFF) + 1];
 }
 
-inline void ToaFCU2SetRAMPointer(unsigned int wordValue)
+inline void ToaFCU2SetRAMPointer(UINT32 wordValue)
 {
 	FCU2Pointer = wordValue & 0x03FF;
 }
 
-inline unsigned short ToaFCU2GetRAMPointer()
+inline UINT16 ToaFCU2GetRAMPointer()
 {
 	return FCU2Pointer & 0x03FF;
 }
 
-inline void ToaFCU2WriteRAM(const unsigned short wordValue)
+inline void ToaFCU2WriteRAM(const UINT16 wordValue)
 {
-	((unsigned short*)FCU2RAM)[FCU2Pointer & 0x03FF] = wordValue;
+	((UINT16*)FCU2RAM)[FCU2Pointer & 0x03FF] = wordValue;
 	FCU2Pointer++;
 }
 
-inline void ToaFCU2WriteRAMSize(const unsigned short wordValue)
+inline void ToaFCU2WriteRAMSize(const UINT16 wordValue)
 {
-	((unsigned short*)FCU2RAMSize)[FCU2Pointer & 0x003F] = wordValue;
+	((UINT16*)FCU2RAMSize)[FCU2Pointer & 0x003F] = wordValue;
 	FCU2Pointer++;
 }
 
-inline unsigned short ToaFCU2ReadRAM()
+inline UINT16 ToaFCU2ReadRAM()
 {
-	return ((unsigned short*)FCU2RAM)[FCU2Pointer & 0x03FF];
+	return ((UINT16*)FCU2RAM)[FCU2Pointer & 0x03FF];
 }
 
-inline unsigned short ToaFCU2ReadRAMSize()
+inline UINT16 ToaFCU2ReadRAMSize()
 {
-	return ((unsigned short*)FCU2RAMSize)[FCU2Pointer & 0x003F];
+	return ((UINT16*)FCU2RAMSize)[FCU2Pointer & 0x003F];
 }
+
+// d_battleg.cpp
+extern INT32 Bgareggabl;

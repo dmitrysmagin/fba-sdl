@@ -4,9 +4,9 @@
 #include "burn_ym2203.h"
 #include "msm6295.h"
 
-unsigned char *NMK004OKIROM0;
-unsigned char *NMK004OKIROM1;
-unsigned char *NMK004PROGROM;
+UINT8 *NMK004OKIROM0;
+UINT8 *NMK004OKIROM1;
+UINT8 *NMK004PROGROM;
 
 #define	okim6295_w(x,y,z)		MSM6295Command(x, z)
 #define okim6295_r(x,y)			MSM6295ReadStatus(x)
@@ -54,7 +54,7 @@ struct psg_control
 /* C225      */	UINT8  volume_timer;
 /* C227-C228 */	UINT16 current;		// current position in control table
 /* C229-C22A */	UINT16 return_address[16];	// return address when control table calls a subtable
-				int return_address_depth;
+				INT32 return_address_depth;
 /* C22B-C22C */	UINT16 loop_start;	// first instruction of loop
 /* C22D      */	UINT8  loop_times;	// number of times to loop
 /* C22E      */	UINT8  volume_shape;
@@ -77,7 +77,7 @@ UINT8 note;
 /* C040-C041 */	UINT16 loop_start;	// first instruction of loop
 /* C042      */	UINT8  loop_times;	// number of times to loop
 /* C043-C044 */	UINT16 return_address[16];	// return address when control table calls a subtable
-				int    return_address_depth;
+				INT32    return_address_depth;
 /* C045      */	UINT8  octave;
 /* C046-C047 */	UINT16 timer1;
 /* C048-C049 */	UINT16 timer2;
@@ -99,7 +99,7 @@ struct effects_control
 /* C1C0-C1C1 */	UINT16 loop_start;	// first instruction of loop
 /* C1C2      */	UINT8  loop_times;	// number of times to loop
 /* C1C3-C1C4 */	UINT16 return_address[16];	// return address when control table calls a subtable
-				int    return_address_depth;
+				INT32    return_address_depth;
 /* C1C6-C1C7 */	UINT16 timer;
 /* C1CA-C1CB */	UINT16 timer_duration;
 };
@@ -109,11 +109,11 @@ static struct
 	const UINT8 *rom;	// NMK004 data ROM
 	UINT8 from_main;	// command from main CPU
 	UINT8 to_main;		// answer to main CPU
-	int protection_check;
+	INT32 protection_check;
 
-	int ymdevice;
-	int oki1device;
-	int oki2device;
+	INT32 ymdevice;
+	INT32 oki1device;
+	INT32 oki2device;
 
 	/* C001      */	UINT8 last_command;		// last command received
 	/* C016      */	UINT8 oki_playing;		// bitmap of active Oki channels
@@ -134,12 +134,12 @@ static struct
 #define COMMAND_TABLE		0xeff0
 #define PSG_NOTE_TABLE		0xeff2
 
-static UINT8 read8(int address)
+static UINT8 read8(INT32 address)
 {
 	return NMK004_state.rom[address];
 }
 
-static UINT16 read16(int address)
+static UINT16 read16(INT32 address)
 {
 	return NMK004_state.rom[address] + 256 * NMK004_state.rom[address+1];
 }
@@ -150,13 +150,13 @@ static UINT16 read16(int address)
 
 *****************************/
 
-static void oki_play_sample(int sample_no)
+static void oki_play_sample(INT32 sample_no)
 {
 	UINT16 table_start = (sample_no & 0x80) ? read16(SAMPLE_TABLE_1) : read16(SAMPLE_TABLE_0);
 	UINT8 byte1 = read8(table_start + 2 * (sample_no & 0x7f) + 0);
 	UINT8 byte2 = read8(table_start + 2 * (sample_no & 0x7f) + 1);
-	int chip = (byte1 & 0x80) >> 7;
-	const int okidevice = (chip) ? NMK004_state.oki2device : NMK004_state.oki1device;
+	INT32 chip = (byte1 & 0x80) >> 7;
+	const INT32 okidevice = (chip) ? NMK004_state.oki2device : NMK004_state.oki1device;
 
 	if ((byte1 & 0x7f) == 0)
 	{
@@ -165,9 +165,9 @@ static void oki_play_sample(int sample_no)
 	}
 	else
 	{
-		int sample = byte1 & 0x7f;
-		int ch = byte2 & 0x03;
-		int force = (byte2 & 0x80) >> 7;
+		INT32 sample = byte1 & 0x7f;
+		INT32 ch = byte2 & 0x03;
+		INT32 force = (byte2 & 0x80) >> 7;
 
 		if (!force && (NMK004_state.oki_playing & (1 << (ch + 4*chip))))
 			return;
@@ -180,8 +180,8 @@ static void oki_play_sample(int sample_no)
 		if (sample != 0)
 		{
 			UINT8 *rom = (chip == 0) ? NMK004OKIROM0 : NMK004OKIROM1;
-			int bank = (byte2 & 0x0c) >> 2;
-			int vol = (byte2 & 0x70) >> 4;
+			INT32 bank = (byte2 & 0x0c) >> 2;
+			INT32 vol = (byte2 & 0x70) >> 4;
 
 			if (bank != 3)
 				memcpy(rom + 0x20000,rom + 0x40000 + bank * 0x20000,0x20000);
@@ -203,7 +203,7 @@ static void oki_update_state(void)
 
 *****************************/
 
-static void effects_update(int channel)
+static void effects_update(INT32 channel)
 {
 	struct effects_control *effects = &NMK004_state.effects_control[channel];
 
@@ -305,7 +305,7 @@ static void effects_update(int channel)
 
 *****************************/
 
-static void fm_update(int channel)
+static void fm_update(INT32 channel)
 {
 	struct fm_control *fm = &NMK004_state.fm_control[channel];
 
@@ -339,7 +339,7 @@ static void fm_update(int channel)
 
 				if (token == 0x0ef || (token & 0xf0) == 0xf0)
 				{
-					int i;
+					INT32 i;
 
 					switch (token)
 					{
@@ -451,7 +451,7 @@ static void fm_update(int channel)
 
 			if ((read8(fm->current) & 0x80) == 0)
 			{
-				int note = read8(fm->current++);
+				INT32 note = read8(fm->current++);
 
 				fm->note = note;
 				if ((note & 0x0f) == NOTE_PAUSE)
@@ -504,7 +504,7 @@ static void fm_update(int channel)
 
 	if (!(fm->flags & FM_FLAG_MODULATE_NOTE) || (fm->flags & FM_FLAG_MUST_SEND_KEYON) || fm->must_update_voice_params)
 	{
-		int i;
+		INT32 i;
 
 		fm->must_update_voice_params = 0;
 
@@ -517,7 +517,7 @@ static void fm_update(int channel)
 	{
 		if (fm->modulation_timer == 0)
 		{
-			int i;
+			INT32 i;
 			UINT16 a;
 
 			for (i = 0; i < 4; i++)
@@ -547,12 +547,12 @@ static void fm_update(int channel)
 
 static void fm_voices_update(void)
 {
-	static const int ym2203_registers[0x18] =
+	static const INT32 ym2203_registers[0x18] =
 	{
 		0x30,0x38,0x34,0x3C,0x40,0x48,0x44,0x4C,0x50,0x58,0x54,0x5C,0x60,0x68,0x64,0x6C,
 		0x70,0x78,0x74,0x7C,0x80,0x88,0x84,0x8C
 	};
-	int channel,i;
+	INT32 channel,i;
 
 	for (channel = 0; channel < 3;channel++)
 	{
@@ -634,7 +634,7 @@ static void fm_voices_update(void)
 
 *****************************/
 
-static void psg_update(int channel)
+static void psg_update(INT32 channel)
 {
 	struct psg_control *psg = &NMK004_state.psg_control[channel];
 
@@ -652,7 +652,7 @@ static void psg_update(int channel)
 
 		if (psg->flags & PSG_FLAG_NOTE_IS_NOISE)
 		{
-			int enable;
+			INT32 enable;
 
 			psg->flags &= ~PSG_FLAG_NOTE_IS_NOISE;
 			psg->flags &= ~PSG_FLAG_NOISE_NOT_ENABLED;
@@ -683,7 +683,7 @@ static void psg_update(int channel)
 
 				if ((token & 0xf0) == 0xf0)
 				{
-					int enable;
+					INT32 enable;
 
 					switch (token)
 					{
@@ -797,7 +797,7 @@ static void psg_update(int channel)
 				{
 					if (!(psg->flags & PSG_FLAG_NOISE_NOT_ENABLED))
 					{
-						int enable;
+						INT32 enable;
 
 						psg->flags |= PSG_FLAG_NOISE_NOT_ENABLED;
 
@@ -820,7 +820,7 @@ static void psg_update(int channel)
 		{
 			UINT16 table_start = read16(PSG_VOLUME_TABLE);
 			UINT16 vol_table_start = read16(table_start + 2 * psg->volume_shape);
-			int volume;
+			INT32 volume;
 
 			if (psg->flags & PSG_FLAG_INITIALIZE_VOLUME)
 			{
@@ -860,7 +860,7 @@ static void get_command()
 
 	UINT8 cmd = NMK004_state.from_main;
 
-	if (NMK004_state.protection_check < (int)sizeof(to_main))
+	if (NMK004_state.protection_check < (INT32)sizeof(to_main))
 	{
 		// startup handshake
 		if (cmd == from_main[NMK004_state.protection_check])
@@ -888,7 +888,7 @@ static void get_command()
 		}
 		else
 		{
-			int channel;
+			INT32 channel;
 
 			while ((channel = read8(cmd_table++)) != 0xff)
 			{
@@ -931,7 +931,7 @@ static void get_command()
 
 static void update_music(void)
 {
-	int channel;
+	INT32 channel;
 
 	for (channel = 0; channel < FM_CHANNELS; channel++)
 		fm_update(channel);
@@ -944,11 +944,11 @@ static void update_music(void)
 		effects_update(channel);
 }
 
-void NMK004_irq(int irq)
+void NMK004_irq(INT32 irq)
 {
 	if (irq)
 	{
-		int status = ym2203_status_port_r(device,0);
+		INT32 status = ym2203_status_port_r(device,0);
 
 		if (status & 1)	// timer A expired
 		{
@@ -971,7 +971,7 @@ void NMK004_init()
 		0x28,0x00,0x28,0x01,0x28,0x02,0x40,0x00,0x41,0x00,0x42,0x00,0x44,0x00,0x45,0x00,
 		0x46,0x00,0x48,0x00,0x49,0x00,0x4A,0x00,0x4C,0x00,0x4D,0x00,0x4E,0x00,0xFF,
 	};
-	int i;
+	INT32 i;
 
 	memset(&NMK004_state, 0, sizeof(NMK004_state));
 
@@ -996,12 +996,12 @@ void NMK004_init()
 	NMK004_state.protection_check = 0;
 }
 
-void NMK004Write(int, int data)
+void NMK004Write(INT32, INT32 data)
 {
 	NMK004_state.from_main = data & 0xff;
 }
 
-unsigned char NMK004Read()
+UINT8 NMK004Read()
 {
 	return NMK004_state.to_main;
 }

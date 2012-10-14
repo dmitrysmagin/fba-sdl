@@ -1,7 +1,7 @@
 // Burner Config for Game file module
 #include "burner.h"
 
-const int nConfigMinVersion = 0x020921;
+const INT32 nConfigMinVersion = 0x020921;
 
 bool bSaveInputs = true;
 
@@ -9,15 +9,15 @@ static TCHAR* GameConfigName()
 {
 	// Return the path of the config file for this game
 	static TCHAR szName[32];
-	_stprintf(szName, _T("config\\games\\%s.ini"), BurnDrvGetText(DRV_NAME));
+	_stprintf(szName, _T("config/games/%s.ini"), BurnDrvGetText(DRV_NAME));
 	return szName;
 }
 
 // Read in the config file for the game-specific inputs
-int ConfigGameLoad(bool bOverWrite)
+INT32 ConfigGameLoad(bool bOverWrite)
 {
 	TCHAR szLine[256];
-	int nFileVersion = 0;
+	INT32 nFileVersion = 0;
 
 	FILE* h = _tfopen(GameConfigName(), _T("rt"));
 	if (h == NULL) {
@@ -32,7 +32,7 @@ int ConfigGameLoad(bool bOverWrite)
 	// Go through each line of the config file and process inputs
 	while (_fgetts(szLine, sizeof(szLine), h)) {
 		TCHAR *szValue;
-		int nLen = _tcslen(szLine);
+		INT32 nLen = _tcslen(szLine);
 
 		// Get rid of the linefeed at the end
 		if (szLine[nLen - 1] == 10) {
@@ -82,7 +82,7 @@ int ConfigGameLoad(bool bOverWrite)
 }
 
 // Write out the config file for the game-specific inputs
-int ConfigGameSave(bool bSave)
+INT32 ConfigGameSave(bool bSave)
 {
 	FILE* h;
 

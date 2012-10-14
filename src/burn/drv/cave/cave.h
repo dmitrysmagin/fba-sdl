@@ -1,9 +1,11 @@
 #include "burnint.h"
+#include "sek.h"
+#include "zet.h"
 #include "eeprom.h"
 
 #define CAVE_REFRESHRATE (15625.0 / 271.5)
 
-inline static void CaveClearOpposites(unsigned short* nJoystickInputs)
+inline static void CaveClearOpposites(UINT16* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x0003) == 0x0003) {
 		*nJoystickInputs &= ~0x0003;
@@ -14,52 +16,50 @@ inline static void CaveClearOpposites(unsigned short* nJoystickInputs)
 }
 
 // cave.cpp
-extern int nCaveXSize, nCaveYSize;
-extern int nCaveXOffset, nCaveYOffset;
-extern int nCaveExtraXOffset, nCaveExtraYOffset;
-extern int nCaveRowModeOffset;
+extern INT32 nCaveXSize, nCaveYSize;
+extern INT32 nCaveXOffset, nCaveYOffset;
+extern INT32 nCaveExtraXOffset, nCaveExtraYOffset;
+extern INT32 nCaveRowModeOffset;
 
-int CaveScanGraphics();
-void CaveClearScreen(unsigned int nColour);
+INT32 CaveScanGraphics();
+void CaveClearScreen(UINT32 nColour);
 
 // cave_palette.cpp
-extern unsigned int* CavePalette;
+extern UINT32* CavePalette;
 
-extern unsigned char* CavePalSrc;
-extern unsigned char CaveRecalcPalette;
+extern UINT8* CavePalSrc;
+extern UINT8 CaveRecalcPalette;
 
-int CavePalInit(int nPalSize);
-int CavePalExit();
-int CavePalUpdate4Bit(int nOffset, int nNumPalettes);
-int CavePalUpdate8Bit(int nOffset, int nNumPalettes);
+INT32 CavePalInit(INT32 nPalSize);
+INT32 CavePalExit();
+INT32 CavePalUpdate4Bit(INT32 nOffset, INT32 nNumPalettes);
+INT32 CavePalUpdate8Bit(INT32 nOffset, INT32 nNumPalettes);
 
-void CavePalWriteByte(unsigned int nAddress, unsigned char byteValue);
-void CavePalWriteWord(unsigned int nAddress, unsigned short wordValue);
+void CavePalWriteByte(UINT32 nAddress, UINT8 byteValue);
+void CavePalWriteWord(UINT32 nAddress, UINT16 wordValue);
 
 // cave_tiles.cpp
-extern unsigned char* CaveTileROM[4];
-extern unsigned char* CaveTileRAM[4];
+extern UINT8* CaveTileROM[4];
+extern UINT8* CaveTileRAM[4];
 
-extern unsigned int CaveTileReg[4][3];
-extern int nCaveTileBank;
+extern UINT32 CaveTileReg[4][3];
+extern INT32 nCaveTileBank;
 
-int CaveTileRender(int nMode);
+INT32 CaveTileRender(INT32 nMode);
 void CaveTileExit();
-int CaveTileInit();
-int CaveTileInitLayer(int nLayer, int nROMSize, int nBitdepth, int nOffset);
+INT32 CaveTileInit();
+INT32 CaveTileInitLayer(INT32 nLayer, INT32 nROMSize, INT32 nBitdepth, INT32 nOffset);
 
 // cave_sprite.cpp
-extern int CaveSpriteVisibleXOffset;
+extern INT32 CaveSpriteVisibleXOffset;
 
-extern unsigned char* CaveSpriteROM;
-extern unsigned char* CaveSpriteRAM;
+extern UINT8* CaveSpriteROM;
+extern UINT8* CaveSpriteRAM;
 
-extern int nCaveSpriteBank;
-extern int nCaveSpriteBankDelay;
+extern INT32 nCaveSpriteBank;
+extern INT32 nCaveSpriteBankDelay;
 
-extern int (*CaveSpriteBuffer)();
-extern int CaveSpriteRender(int nLowPriority, int nHighPriority);
+extern INT32 (*CaveSpriteBuffer)();
+extern INT32 CaveSpriteRender(INT32 nLowPriority, INT32 nHighPriority);
 void CaveSpriteExit();
-int CaveSpriteInit(int nType, int nROMSize);
-
-
+INT32 CaveSpriteInit(INT32 nType, INT32 nROMSize);

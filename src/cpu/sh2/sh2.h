@@ -1,4 +1,6 @@
 
+#include <stdint.h>
+
 #ifndef FASTCALL
  #undef __fastcall
  #define __fastcall
@@ -22,11 +24,12 @@ void Sh2Open(const int i);
 void Sh2Close();
 int Sh2GetActive();
 
-void Sh2Reset(unsigned int pc, unsigned r15);
+void Sh2Reset();
+void Sh2Reset(unsigned int pc, unsigned r15); // hack
 int Sh2Run(int cycles);
 
 int Sh2MapMemory(unsigned char* pMemory, unsigned int nStart, unsigned int nEnd, int nType);
-int Sh2MapHandler(unsigned int nHandler, unsigned int nStart, unsigned int nEnd, int nType);
+int Sh2MapHandler(uintptr_t nHandler, unsigned int nStart, unsigned int nEnd, int nType);
 
 int Sh2SetReadByteHandler(int i, pSh2ReadByteHandler pHandler);
 int Sh2SetWriteByteHandler(int i, pSh2WriteByteHandler pHandler);
@@ -53,3 +56,8 @@ void Sh2BurnCycles(int cycles);
 
 int Sh2Scan(int);
 
+#define SH2_READ  (1)
+#define SH2_WRITE (2)
+#define SH2_FETCH (4)
+#define SH2_ROM (SH2_READ | SH2_FETCH)
+#define SH2_RAM (SH2_READ | SH2_WRITE | SH2_FETCH)

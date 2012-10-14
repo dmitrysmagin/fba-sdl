@@ -1,7 +1,8 @@
 #include "burner.h"
 #include "aud_dsp.h"
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
+#include <InitGuid.h>
 #include <xaudio2.h>
 #include <xaudio2fx.h>
 
@@ -30,22 +31,22 @@ struct StreamingVoiceContext : public IXAudio2VoiceCallback
 		hBufferEndEvent = NULL;
 		hBufferEndEvent = CreateEvent( NULL, FALSE, FALSE, NULL);
 	}
-	~StreamingVoiceContext() {
+	virtual ~StreamingVoiceContext() {
 		CloseHandle(hBufferEndEvent);
 		hBufferEndEvent = NULL;
 	}
 
-	STDMETHOD_(void, OnBufferEnd) (void *pBufferContext) {
+	STDMETHOD_(void, OnBufferEnd) (void * /*pBufferContext*/) {
 		SetEvent(hBufferEndEvent);
 	}
 
 	// dummies:
-	STDMETHOD_(void, OnVoiceProcessingPassStart) (UINT32 BytesRequired) {}
+	STDMETHOD_(void, OnVoiceProcessingPassStart) (UINT32 /*BytesRequired*/) {}
 	STDMETHOD_(void, OnVoiceProcessingPassEnd) () {}
 	STDMETHOD_(void, OnStreamEnd) () {}
-	STDMETHOD_(void, OnBufferStart) (void *pBufferContext) {}
-	STDMETHOD_(void, OnLoopEnd) (void *pBufferContext) {}
-	STDMETHOD_(void, OnVoiceError) (void *pBufferContext, HRESULT Error) {};
+	STDMETHOD_(void, OnBufferStart) (void * /*pBufferContext*/) {}
+	STDMETHOD_(void, OnLoopEnd) (void * /*pBufferContext*/) {}
+	STDMETHOD_(void, OnVoiceError) (void * /*pBufferContext*/, HRESULT /*Error*/) {};
 };
 StreamingVoiceContext voiceContext;
 
@@ -93,9 +94,9 @@ static int XAudio2Check()
 	while (true) {
 		pSourceVoice->GetState(&vState);
 
-		assert(vState.BuffersQueued < nAudSegCount);
+		assert(vState.BuffersQueued < (unsigned int)nAudSegCount);
 
-		if (vState.BuffersQueued < nAudSegCount - 1) {
+		if (vState.BuffersQueued < (unsigned int)nAudSegCount - 1) {
 			if (vState.BuffersQueued == 0) {
 				// buffers ran dry
 			}
@@ -108,7 +109,7 @@ static int XAudio2Check()
 				WaitForSingleObject(voiceContext.hBufferEndEvent, INFINITE);
 			} else {
 				// drop current audio frame
-				//Sleep(2);
+				Sleep(2);
 				return 0;
 			}
 		}
@@ -214,11 +215,15 @@ static int XAudio2Exit()
 	RELEASE(pXAudio2);
 	CoUninitialize();
 
-	free(nAudNextSound);
-	nAudNextSound = NULL;
+	if (nAudNextSound) {
+		free(nAudNextSound);
+		nAudNextSound = NULL;
+	}
 
-	free(pAudioBuffers);
-	pAudioBuffers = NULL;
+	if (pAudioBuffers) {
+		free(pAudioBuffers);
+		pAudioBuffers = NULL;
+	}
 
 	XAudio2GetNextSound = NULL;
 
@@ -369,6 +374,6 @@ static int XAudio2GetSettings(InterfaceInfo* pInfo)
 }
 
 struct AudOut AudOutXAudio2 = { XAudio2BlankSound, XAudio2Check, XAudio2Init, XAudio2SetCallback, XAudio2Play, XAudio2Stop, XAudio2Exit, XAudio2SetVolume, XAudio2GetSettings, _T("XAudio2 audio output") };
-#else
-struct AudOut AudOutXAudio2 = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, _T("XAudio2 audio output") };
-#endif
+//#else
+//struct AudOut AudOutXAudio2 = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, _T("XAudio2 audio output") };
+//#endif

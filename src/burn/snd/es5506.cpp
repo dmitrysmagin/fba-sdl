@@ -175,12 +175,12 @@ struct _es5506_voice
 struct _es5506_state
 {
 //	sound_stream *stream;				/* which stream are we using */
-	int			sample_rate;			/* current sample rate */
+	INT32		sample_rate;			/* current sample rate */
 	UINT16 *	region_base[4];			/* pointer to the base of the region */
 	UINT32		write_latch;			/* currently accumulated data for write */
 	UINT32		read_latch;				/* currently accumulated data for read */
 	UINT32		master_clock;			/* master clock frequency */
-	void		(*irq_callback)(int);	/* IRQ callback */
+	void		(*irq_callback)(INT32);	/* IRQ callback */
 	UINT16		(*port_read)(void);		/* input port read */
 
 	UINT8		current_page;			/* current register page */
@@ -254,7 +254,7 @@ static void update_internal_irq_state()
 
 static void compute_tables()
 {
-	int i;
+	INT32 i;
 
 	/* allocate ulaw lookup table */
 	//chip->ulaw_lookup = auto_alloc_array(chip->device->machine, INT16, 1 << ULAW_MAXBITS);
@@ -382,7 +382,7 @@ do																								\
 #define update_envelopes(voice, samples)											\
 do																					\
 {																					\
-	int count = (samples > 1 && samples > (int)voice->ecount) ? voice->ecount : samples;	\
+	INT32 count = (samples > 1 && samples > (INT32)voice->ecount) ? voice->ecount : samples;	\
 																					\
 	/* decrement the envelope counter */											\
 	voice->ecount -= count;															\
@@ -518,7 +518,7 @@ do																					\
 
 ***********************************************************************************************/
 
-static void generate_dummy(es5506_voice *voice, UINT16 */*base*/, INT32 */*lbuffer*/, INT32 */*rbuffer*/, int samples)
+static void generate_dummy(es5506_voice *voice, UINT16 *, INT32 *, INT32 *, INT32 samples)
 {
 	UINT32 freqcount = voice->freqcount;
 	UINT32 accum = voice->accum & voice->accum_mask;
@@ -579,7 +579,7 @@ alldone:
 
 ***********************************************************************************************/
 
-static void generate_ulaw(es5506_voice *voice, UINT16 *base, INT32 *lbuffer, INT32 *rbuffer, int samples)
+static void generate_ulaw(es5506_voice *voice, UINT16 *base, INT32 *lbuffer, INT32 *rbuffer, INT32 samples)
 {
 	UINT32 freqcount = voice->freqcount;
 	UINT32 accum = voice->accum & voice->accum_mask;
@@ -687,7 +687,7 @@ alldone:
 
 ***********************************************************************************************/
 
-static void generate_pcm(es5506_voice *voice, UINT16 *base, INT32 *lbuffer, INT32 *rbuffer, int samples)
+static void generate_pcm(es5506_voice *voice, UINT16 *base, INT32 *lbuffer, INT32 *rbuffer, INT32 samples)
 {
 	UINT32 freqcount = voice->freqcount;
 	UINT32 accum = voice->accum & voice->accum_mask;
@@ -789,9 +789,9 @@ alldone:
 
 ***********************************************************************************************/
 
-static void generate_samples(INT32 *left, INT32 *right, int samples)
+static void generate_samples(INT32 *left, INT32 *right, INT32 samples)
 {
-	int v;
+	INT32 v;
 
 	/* skip if nothing to do */
 	if (!samples)
@@ -851,8 +851,12 @@ static void generate_samples(INT32 *left, INT32 *right, int samples)
 ***********************************************************************************************/
 
 //static STREAM_UPDATE( es5506_update )
-void ES5506Update(short *pBuffer, int samples)
+void ES5506Update(INT16 *pBuffer, INT32 samples)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5506Update called without init\n"));
+#endif
+
 //	es5506_state *chip = (es5506_state *)param;
 	INT32 *lsrc = chip->scratch, *rsrc = chip->scratch;
 //	short *ldest = &pBuffer[0];
@@ -870,8 +874,8 @@ void ES5506Update(short *pBuffer, int samples)
 	/* loop until all samples are output */
 	while (samples)
 	{
-		int length = (samples > MAX_SAMPLE_CHUNK) ? MAX_SAMPLE_CHUNK : samples;
-		int samp;
+		INT32 length = (samples > MAX_SAMPLE_CHUNK) ? MAX_SAMPLE_CHUNK : samples;
+		INT32 samp;
 		
 		/* determine left/right source data */
 		lsrc = chip->scratch;
@@ -907,11 +911,13 @@ void ES5506Update(short *pBuffer, int samples)
 
 ***********************************************************************************************/
 
-static void es5506_start_common(int clock, unsigned char*region0, unsigned char*region1, unsigned char*region2, unsigned char*region3, irq_callback callback, int sndtype)
+static void es5506_start_common(INT32 clock, UINT8* region0, UINT8* region1, UINT8* region2, UINT8* region3, irq_callback callback, INT32 sndtype)
 {
+	DebugSnd_ES5506Initted = 1;
+
 //	const es5506_interface *intf = (const es5506_interface *)config;
 //	es5506_state *chip = get_safe_token(device);
-	int j;
+	INT32 j;
 	UINT32 accum_mask;
 
 	/* debugging */
@@ -1003,7 +1009,7 @@ static void es5506_start_common(int clock, unsigned char*region0, unsigned char*
 	es5506_start_common(device, device->baseconfig().static_config(), ES5506);
 }*/
 
-void ES5506Init(int clock, unsigned char*region0, unsigned char*region1, unsigned char*region2, unsigned char*region3, irq_callback callback)
+void ES5506Init(INT32 clock, UINT8* region0, UINT8* region1, UINT8* region2, UINT8* region3, irq_callback callback)
 {
 	es5506_start_common(clock, region0, region1, region2, region3, callback, ES5506);
 }
@@ -1018,6 +1024,10 @@ void ES5506Init(int clock, unsigned char*region0, unsigned char*region1, unsigne
 
 void ES5506Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5506Exit called without init\n"));
+#endif
+
 	/* debugging */
 	if (LOG_COMMANDS && eslog)
 	{
@@ -1027,7 +1037,7 @@ void ES5506Exit()
 
 #if MAKE_WAVS
 {
-	int i;
+	INT32 i;
 
 	for (i = 0; i < MAX_ES5506; i++)
 	{
@@ -1036,11 +1046,16 @@ void ES5506Exit()
 	}
 }
 #endif
+
+	DebugSnd_ES5506Initted = 0;
 }
 
 
 void ES5506Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5506Reset called without init\n"));
+#endif
 }
 
 
@@ -1051,7 +1066,7 @@ void ES5506Reset()
 
 ***********************************************************************************************/
 
-ES5506_INLINE void es5506_reg_write_low(es5506_voice *voice, unsigned int offset, UINT32 data)
+ES5506_INLINE void es5506_reg_write_low(es5506_voice *voice, UINT32 offset, UINT32 data)
 {
 	switch (offset)
 	{
@@ -1148,7 +1163,7 @@ ES5506_INLINE void es5506_reg_write_low(es5506_voice *voice, unsigned int offset
 }
 
 
-ES5506_INLINE void es5506_reg_write_high(es5506_voice *voice, unsigned int offset, UINT32 data)
+ES5506_INLINE void es5506_reg_write_high(es5506_voice *voice, UINT32 offset, UINT32 data)
 {
 	switch (offset)
 	{
@@ -1234,7 +1249,7 @@ ES5506_INLINE void es5506_reg_write_high(es5506_voice *voice, unsigned int offse
 	}
 }
 
-ES5506_INLINE void es5506_reg_write_test(unsigned int offset, UINT32 data)
+ES5506_INLINE void es5506_reg_write_test(UINT32 offset, UINT32 data)
 {
 	switch (offset)
 	{
@@ -1314,11 +1329,15 @@ ES5506_INLINE void es5506_reg_write_test(unsigned int offset, UINT32 data)
 }
 
 //WRITE8_DEVICE_HANDLER( es5506_w )
-void ES5506Write(unsigned int offset, UINT8 data)
+void ES5506Write(UINT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5506Write called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 	es5506_voice *voice = &chip->voice[chip->current_page & 0x1f];
-	int shift = 8 * (offset & 3);
+	INT32 shift = 8 * (offset & 3);
 
 	/* accumulate the data */
 	chip->write_latch = (chip->write_latch & ~(0xff000000 >> shift)) | (data << (24 - shift));
@@ -1350,7 +1369,7 @@ void ES5506Write(unsigned int offset, UINT8 data)
 
 ***********************************************************************************************/
 
-ES5506_INLINE UINT32 es5506_reg_read_low(es5506_voice *voice, unsigned int offset)
+ES5506_INLINE UINT32 es5506_reg_read_low(es5506_voice *voice, UINT32 offset)
 {
 	UINT32 result = 0;
 
@@ -1426,7 +1445,7 @@ ES5506_INLINE UINT32 es5506_reg_read_low(es5506_voice *voice, unsigned int offse
 }
 
 
-ES5506_INLINE UINT32 es5506_reg_read_high(es5506_voice *voice, unsigned int offset)
+ES5506_INLINE UINT32 es5506_reg_read_high(es5506_voice *voice, UINT32 offset)
 {
 	UINT32 result = 0;
 
@@ -1501,7 +1520,7 @@ ES5506_INLINE UINT32 es5506_reg_read_high(es5506_voice *voice, unsigned int offs
 	return result;
 }
 
-ES5506_INLINE UINT32 es5506_reg_read_test(unsigned int offset)
+ES5506_INLINE UINT32 es5506_reg_read_test(UINT32 offset)
 {
 	UINT32 result = 0;
 
@@ -1524,11 +1543,15 @@ ES5506_INLINE UINT32 es5506_reg_read_test(unsigned int offset)
 }
 
 //READ8_DEVICE_HANDLER( es5506_r )
-UINT8 ES5506Read(unsigned int offset)
+UINT8 ES5506Read(UINT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5506Read called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 	es5506_voice *voice = &chip->voice[chip->current_page & 0x1f];
-	int shift = 8 * (offset & 3);
+	INT32 shift = 8 * (offset & 3);
 
 	/* only read on offset 0 */
 	if (shift != 0)
@@ -1557,8 +1580,12 @@ UINT8 ES5506Read(unsigned int offset)
 
 
 
-void es5506_voice_bank_w(int voice, int bank)
+void es5506_voice_bank_w(INT32 voice, INT32 bank)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("es5506_voice_bank_w called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 	chip->voice[voice].exbank=bank;
 }
@@ -1571,7 +1598,7 @@ void es5506_voice_bank_w(int voice, int bank)
 ***********************************************************************************************/
 
 //static DEVICE_START( es5505 )
-void ES5505Init(int clock, unsigned char*region0, unsigned char*region1, irq_callback callback)
+void ES5505Init(INT32 clock, UINT8* region0, UINT8* region1, irq_callback callback)
 {
 	es5506_start_common(clock, region0, region1, NULL, NULL, callback, ES5505);
 }
@@ -1603,7 +1630,7 @@ static DEVICE_RESET( es5505 )
 
 ***********************************************************************************************/
 
-ES5506_INLINE void es5505_reg_write_low(es5506_voice *voice, unsigned int offset, UINT16 data)
+ES5506_INLINE void es5505_reg_write_low(es5506_voice *voice, UINT32 offset, UINT16 data)
 {
 //	running_machine *machine = chip->device->machine;
 
@@ -1784,7 +1811,7 @@ ES5506_INLINE void es5505_reg_write_low(es5506_voice *voice, unsigned int offset
 }
 
 
-ES5506_INLINE void es5505_reg_write_high(es5506_voice *voice, unsigned int offset, UINT16 data)
+ES5506_INLINE void es5505_reg_write_high(es5506_voice *voice, UINT32 offset, UINT16 data)
 {
 //	running_machine *machine = chip->device->machine;
 
@@ -1910,7 +1937,7 @@ ES5506_INLINE void es5505_reg_write_high(es5506_voice *voice, unsigned int offse
 }
 
 
-ES5506_INLINE void es5505_reg_write_test(unsigned int offset, UINT16 data)
+ES5506_INLINE void es5505_reg_write_test(UINT32 offset, UINT16 data)
 {
 	switch (offset)
 	{
@@ -1957,8 +1984,12 @@ ES5506_INLINE void es5505_reg_write_test(unsigned int offset, UINT16 data)
 
 
 //WRITE16_DEVICE_HANDLER( es5505_w )
-void ES5505Write(unsigned int offset, UINT16 data)
+void ES5505Write(UINT32 offset, UINT16 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5505Write called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 	es5506_voice *voice = &chip->voice[chip->current_page & 0x1f];
 
@@ -1984,7 +2015,7 @@ void ES5505Write(unsigned int offset, UINT16 data)
 
 ***********************************************************************************************/
 
-ES5506_INLINE UINT16 es5505_reg_read_low(es5506_voice *voice, unsigned int offset)
+ES5506_INLINE UINT16 es5505_reg_read_low(es5506_voice *voice, UINT32 offset)
 {
 	UINT16 result = 0;
 
@@ -2062,7 +2093,7 @@ ES5506_INLINE UINT16 es5505_reg_read_low(es5506_voice *voice, unsigned int offse
 }
 
 
-ES5506_INLINE UINT16 es5505_reg_read_high(es5506_voice *voice, unsigned int offset)
+ES5506_INLINE UINT16 es5505_reg_read_high(es5506_voice *voice, UINT32 offset)
 {
 	UINT16 result = 0;
 
@@ -2135,7 +2166,7 @@ ES5506_INLINE UINT16 es5505_reg_read_high(es5506_voice *voice, unsigned int offs
 }
 
 
-ES5506_INLINE UINT16 es5505_reg_read_test(unsigned int offset)
+ES5506_INLINE UINT16 es5505_reg_read_test(UINT32 offset)
 {
 	UINT16 result = 0;
 
@@ -2169,8 +2200,12 @@ ES5506_INLINE UINT16 es5505_reg_read_test(unsigned int offset)
 
 
 //READ16_DEVICE_HANDLER( es5505_r )
-UINT16 ES5505Read(unsigned int offset)
+UINT16 ES5505Read(UINT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("ES5505Read called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 	es5506_voice *voice = &chip->voice[chip->current_page & 0x1f];
 	UINT16 result = 0;
@@ -2198,8 +2233,12 @@ UINT16 ES5505Read(unsigned int offset)
 
 
 
-void es5505_voice_bank_w(int voice, int bank)
+void es5505_voice_bank_w(INT32 voice, INT32 bank)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ES5506Initted) bprintf(PRINT_ERROR, _T("es5505_voice_bank_w called without init\n"));
+#endif
+
 //	es5506_state *chip = get_safe_token(device);
 #if RAINE_CHECK
 	chip->voice[voice].control = CONTROL_STOPMASK;

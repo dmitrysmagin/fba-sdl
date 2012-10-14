@@ -6,9 +6,9 @@
 
 static void ReplaceAmpersand(char *szBuffer, char *szGameName)
 {
-	unsigned int nStringPos = 0;
+	UINT32 nStringPos = 0;
 	
-	for (unsigned int i = 0; i < strlen(szGameName); i++) {
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
 		if (szGameName[i] == '&') {
 			szBuffer[nStringPos + 0] = '&';
 			szBuffer[nStringPos + 1] = 'a';
@@ -23,45 +23,109 @@ static void ReplaceAmpersand(char *szBuffer, char *szGameName)
 	}
 }
 
-int write_datfile(int bIncMegadrive, FILE* fDat)
+static void ReplaceLessThan(char *szBuffer, char *szGameName)
 {
-	int nRet=0;
-	unsigned int nOldSelect=0;
-	unsigned int nGameSelect=0;
-	unsigned int nParentSelect,nBoardROMSelect;
+	UINT32 nStringPos = 0;
+	
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
+		if (szGameName[i] == '<') {
+			szBuffer[nStringPos + 0] = '&';
+			szBuffer[nStringPos + 1] = 'l';
+			szBuffer[nStringPos + 2] = 't';
+			szBuffer[nStringPos + 3] = ';';
+			nStringPos += 4;
+		} else {
+			szBuffer[nStringPos] = szGameName[i];
+			nStringPos++;
+		}
+	}
+}
 
-	nOldSelect=nBurnDrvSelect;										// preserve the currently selected driver
+static void ReplaceGreaterThan(char *szBuffer, char *szGameName)
+{
+	UINT32 nStringPos = 0;
+	
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
+		if (szGameName[i] == '>') {
+			szBuffer[nStringPos + 0] = '&';
+			szBuffer[nStringPos + 1] = 'g';
+			szBuffer[nStringPos + 2] = 't';
+			szBuffer[nStringPos + 3] = ';';
+			nStringPos += 4;
+		} else {
+			szBuffer[nStringPos] = szGameName[i];
+			nStringPos++;
+		}
+	}
+}
+
+INT32 write_datfile(INT32 bType, FILE* fDat)
+{
+	INT32 nRet=0;
+	UINT32 nOldSelect=0;
+	UINT32 nGameSelect=0;
+	UINT32 nParentSelect,nBoardROMSelect;
+	
+	fprintf(fDat, "<?xml version=\"1.0\"?>\n");
+	fprintf(fDat, "<!DOCTYPE datafile PUBLIC \"-//FB Alpha//DTD ROM Management Datafile//EN\" \"http://www.logiqx.com/Dats/datafile.dtd\">\n\n");
+	fprintf(fDat, "<datafile>\n");
+	fprintf(fDat, "\t<header>\n");
+	fprintf(fDat, "\t\t<name>" APP_TITLE "</name>\n");
+	if (bType == DAT_ARCADE_ONLY) _ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T(" Arcade Games</description>\n"), szAppBurnVer);
+	if (bType == DAT_MEGADRIVE_ONLY) _ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T(" Megadrive Games</description>\n"), szAppBurnVer);
+	if (bType == DAT_PCENGINE_ONLY) _ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T(" PC-Engine Games</description>\n"), szAppBurnVer);
+	if (bType == DAT_TG16_ONLY) _ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T(" TurboGrafx 16 Games</description>\n"), szAppBurnVer);
+	if (bType == DAT_SGX_ONLY) _ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T(" SuprGrafx Games</description>\n"), szAppBurnVer);
+	fprintf(fDat, "\t\t<category>Standard DatFile</category>\n");
+	_ftprintf(fDat, _T("\t\t<version>%s</version>\n"), szAppBurnVer);
+	fprintf(fDat, "\t\t<author>" APP_TITLE "</author>\n");
+	fprintf(fDat, "\t\t<homepage>http://www.barryharris.me.uk/</homepage>\n");
+	fprintf(fDat, "\t\t<url>http://www.barryharris.me.uk/</url>\n");
+	fprintf(fDat, "\t\t<clrmamepro forcenodump=\"ignore\"/>\n");		
+	fprintf(fDat, "\t</header>\n");
+
+	nOldSelect=nBurnDrvActive;										// preserve the currently selected driver
 
 	// Go over each of the games
 	for (nGameSelect=0;nGameSelect<nBurnDrvCount;nGameSelect++)
 	{
-		char sgName[16];
-		char spName[16];
-		char sbName[16];
-		char ssName[16];
-		unsigned int i=0;
-		int nPass=0;
+		char sgName[32];
+		char spName[32];
+		char sbName[32];
+		char ssName[32];
+		UINT32 i=0;
+		INT32 nPass=0;
 
-		nBurnDrvSelect=nGameSelect;									// Switch to driver nGameSelect
+		nBurnDrvActive=nGameSelect;									// Switch to driver nGameSelect
 
-		if (BurnDrvGetFlags() & BDF_BOARDROM) {
+		if ((BurnDrvGetFlags() & BDF_BOARDROM) || !strcmp(BurnDrvGetTextA(DRV_NAME), "neogeo")) {
 			continue;
 		}
 		
-		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 0)) {
+		if ((((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_MEGADRIVE)
+			|| ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_PCENGINE)
+			|| ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_TG16)
+			|| ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_SGX)
+			) && (bType == DAT_ARCADE_ONLY)) {
 			continue;
 		}
 		
-		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 2)) {
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bType == DAT_MEGADRIVE_ONLY)) {
 			continue;
 		}
 		
-#if defined (ROM_VERIFY)
-		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_CAPCOM_CPS3) {
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_PCENGINE) && (bType == DAT_PCENGINE_ONLY)) {
 			continue;
 		}
-#endif
-
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_TG16) && (bType == DAT_TG16_ONLY)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_SGX) && (bType == DAT_SGX_ONLY)) {
+			continue;
+		}
+		
 		strcpy(sgName, BurnDrvGetTextA(DRV_NAME));
 		strcpy(spName, "");											// make sure this string is empty before we start
 		strcpy(sbName, "");											// make sure this string is empty before we start
@@ -76,7 +140,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 				strcpy(spName, BurnDrvGetTextA(DRV_PARENT));
 				for (i=0;i<nBurnDrvCount;i++)
 				{
-					nBurnDrvSelect=i;
+					nBurnDrvActive=i;
 					if (!strcmp(spName, BurnDrvGetTextA(DRV_NAME)))
 					{
 						nParentSelect=i;
@@ -85,7 +149,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 				}
 			}
 
-			nBurnDrvSelect=nGameSelect;								// restore driver select
+			nBurnDrvActive=nGameSelect;								// restore driver select
 		}
 		else
 			nParentSelect=nGameSelect;
@@ -97,7 +161,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 			strcpy(sbName, BurnDrvGetTextA(DRV_BOARDROM));
 			for (i=0;i<nBurnDrvCount;i++)
 			{
-				nBurnDrvSelect=i;
+				nBurnDrvActive=i;
 				if (!strcmp(sbName, BurnDrvGetTextA(DRV_NAME)))
 				{
 					nBoardROMSelect=i;
@@ -105,13 +169,65 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 				}
 			}
 
-			nBurnDrvSelect=nGameSelect;								// restore driver select
+			nBurnDrvActive=nGameSelect;								// restore driver select
 		}
 		else
 			nBoardROMSelect=nGameSelect;
 			
 		if (BurnDrvGetTextA(DRV_SAMPLENAME)) {
 			strcpy(ssName, BurnDrvGetTextA(DRV_SAMPLENAME));
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_MEGADRIVE)
+			|| ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_TG16)
+			) {
+			// remove the md_ or tg_
+			char Temp[35];
+			INT32 Length;
+			if (sgName[0]) {
+				Length = strlen(sgName);
+				memset(Temp, 0, 35);
+				strcpy(Temp, sgName);
+				memset(sgName, 0, 32);
+				for (INT32 pos = 0; pos < Length; pos++) {
+					sgName[pos] = Temp[pos + 3];
+				}
+			}
+			if (spName[0]) {
+				Length = strlen(spName);
+				memset(Temp, 0, 35);
+				strcpy(Temp, spName);
+				memset(spName, 0, 32);
+				for (INT32 pos = 0; pos < Length; pos++) {
+					spName[pos] = Temp[pos + 3];
+				}
+			}
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_PCENGINE)
+			|| ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_PCENGINE_SGX)
+			) {
+			// remove the pce__ or sgx__
+			char Temp[36];
+			INT32 Length;
+			if (sgName[0]) {
+				Length = strlen(sgName);
+				memset(Temp, 0, 36);
+				strcpy(Temp, sgName);
+				memset(sgName, 0, 32);
+				for (INT32 pos = 0; pos < Length; pos++) {
+					sgName[pos] = Temp[pos + 4];
+				}
+			}
+			if (spName[0]) {
+				Length = strlen(spName);
+				memset(Temp, 0, 36);
+				strcpy(Temp, spName);
+				memset(spName, 0, 32);
+				for (INT32 pos = 0; pos < Length; pos++) {
+					spName[pos] = Temp[pos + 4];
+				}
+			}
 		}
 
 		// Report problems
@@ -154,19 +270,36 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 		memset(szManufacturer, 0, 255);
 		memset(szManufacturerBuffer, 0, 255);
 		
-		strcpy(szGameName, DecorateGameName(nBurnDrvSelect));
+		strcpy(szGameName, DecorateGameName(nBurnDrvActive));
 		ReplaceAmpersand(szGameNameBuffer, szGameName);
+		memset(szGameName, 0, 255);
+		strcpy(szGameName, szGameNameBuffer);
+		memset(szGameNameBuffer, 0, 255);
+		ReplaceLessThan(szGameNameBuffer, szGameName);
+		memset(szGameName, 0, 255);
+		strcpy(szGameName, szGameNameBuffer);
+		memset(szGameNameBuffer, 0, 255);
+		ReplaceGreaterThan(szGameNameBuffer, szGameName);		
+		
 		strcpy(szManufacturer, BurnDrvGetTextA(DRV_MANUFACTURER));
 		ReplaceAmpersand(szManufacturerBuffer, szManufacturer);
+		memset(szManufacturer, 0, 255);
+		strcpy(szManufacturer, szManufacturerBuffer);
+		memset(szManufacturerBuffer, 0, 255);
+		ReplaceLessThan(szManufacturerBuffer, szManufacturer);
+		memset(szManufacturer, 0, 255);
+		strcpy(szManufacturer, szManufacturerBuffer);
+		memset(szManufacturerBuffer, 0, 255);
+		ReplaceGreaterThan(szManufacturerBuffer, szManufacturer);
 			
 		fprintf(fDat, "\t\t<description>%s</description>\n", szGameNameBuffer);
 		fprintf(fDat, "\t\t<year>%s</year>\n", BurnDrvGetTextA(DRV_DATE));
 		fprintf(fDat, "\t\t<manufacturer>%s</manufacturer>\n", szManufacturerBuffer);
-
+		
 		// Write the individual ROM info
 		for (nPass=0; nPass<2; nPass++)
 		{
-			nBurnDrvSelect=nGameSelect;
+			nBurnDrvActive=nGameSelect;
 
 			// Skip pass 0 if possible (pass 0 only needed for old-style clrMAME format)
 			if (nPass==0 /*&& (nBoardROMSelect==nGameSelect || nBoardROMSelect==-1U)*/)
@@ -175,16 +308,16 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 			// Go over each of the files needed for this game (upto 0x0100)
 			for (i=0, nRet=0; nRet==0 && i<0x100; i++)
 			{
-				int nRetTmp=0;
+				INT32 nRetTmp=0;
 				struct BurnRomInfo ri;
-				int nLen; unsigned int nCrc;
+				INT32 nLen; UINT32 nCrc;
 				char *szPossibleName=NULL;
-				int j, nMerged=0;
+				INT32 j, nMerged=0;
 
 				memset(&ri,0,sizeof(ri));
 
 				// Get info on this file
-				nBurnDrvSelect=nGameSelect;
+				nBurnDrvActive=nGameSelect;
 				nRet=BurnDrvGetRomInfo(&ri,i);
 				nRet+=BurnDrvGetRomName(&szPossibleName,i,0);
 
@@ -198,7 +331,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 
 					// Check for files from boardROMs
 					if (nBoardROMSelect!=nGameSelect && nBoardROMSelect!=-1U) {
-						nBurnDrvSelect=nBoardROMSelect;
+						nBurnDrvActive=nBoardROMSelect;
 						nRetTmp=0;
 
 						// Go over each of the files needed for this game (upto 0x0100)
@@ -222,7 +355,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 					}
 
 					if (!nMerged && nParentSelect!=nGameSelect && nParentSelect!=-1U) {
-						nBurnDrvSelect=nParentSelect;
+						nBurnDrvActive=nParentSelect;
 						nRetTmp=0;
 
 						// Go over each of the files needed for this game (upto 0x0100)
@@ -245,14 +378,23 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 						}
 					}
 
-					nBurnDrvSelect=nGameSelect;						// Switch back to game
+					nBurnDrvActive=nGameSelect;						// Switch back to game
 				}
 
 				char szPossibleNameBuffer[255];
+				char szPossibleNameBuffer2[255];
 			
 				memset(szPossibleNameBuffer, 0, 255);
+				memset(szPossibleNameBuffer2, 0, 255);
 			
 				ReplaceAmpersand(szPossibleNameBuffer, szPossibleName);
+				strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+				memset(szPossibleNameBuffer, 0, 255);
+				ReplaceLessThan(szPossibleNameBuffer, szPossibleNameBuffer2);
+				memset(szPossibleNameBuffer2, 0, 255);
+				strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+				memset(szPossibleNameBuffer, 0, 255);
+				ReplaceGreaterThan(szPossibleNameBuffer, szPossibleNameBuffer2);
 					
 				// File info
 				if (nPass==1 && !nMerged) {
@@ -283,7 +425,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 					memset(&si,0,sizeof(si));
 
 					// Get info on this file
-					nBurnDrvSelect=nGameSelect;
+					nBurnDrvActive=nGameSelect;
 					nRet=BurnDrvGetSampleInfo(&si,i);
 					nRet+=BurnDrvGetSampleName(&szPossibleName,i,0);
 
@@ -291,9 +433,19 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 
 					if (nPass == 1) {
 						char szPossibleNameBuffer[255];
+						char szPossibleNameBuffer2[255];
 			
 						memset(szPossibleNameBuffer, 0, 255);
+						memset(szPossibleNameBuffer2, 0, 255);
+			
 						ReplaceAmpersand(szPossibleNameBuffer, szPossibleName);
+						strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+						memset(szPossibleNameBuffer, 0, 255);
+						ReplaceLessThan(szPossibleNameBuffer, szPossibleNameBuffer2);
+						memset(szPossibleNameBuffer2, 0, 255);
+						strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+						memset(szPossibleNameBuffer, 0, 255);
+						ReplaceGreaterThan(szPossibleNameBuffer, szPossibleNameBuffer2);
 					
 						fprintf(fDat, "\t\t<sample name=\"%s\" />\n", szPossibleNameBuffer);
 					}
@@ -305,20 +457,32 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 	}
 
 	// Do another pass over each of the games to find boardROMs
-	for (nBurnDrvSelect=0; nBurnDrvSelect<nBurnDrvCount; nBurnDrvSelect++)
+	for (nBurnDrvActive=0; nBurnDrvActive<nBurnDrvCount; nBurnDrvActive++)
 	{
-		int i, nPass;
+		INT32 i, nPass;
 
 		if (!(BurnDrvGetFlags() & BDF_BOARDROM)) {
 			continue;
 		}
 		
-		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bIncMegadrive == 2)) {
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_SEGA_MEGADRIVE) && (bType == DAT_MEGADRIVE_ONLY)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_PCENGINE) && (bType == DAT_PCENGINE_ONLY)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_TG16) && (bType == DAT_TG16_ONLY)) {
+			continue;
+		}
+		
+		if (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) != HARDWARE_PCENGINE_SGX) && (bType == DAT_SGX_ONLY)) {
 			continue;
 		}
 
 		fprintf(fDat, "\t<game isbios=\"yes\" name=\"%s\">\n", BurnDrvGetTextA(DRV_NAME));
-		fprintf(fDat, "\t\t<description>%s</description>\n", DecorateGameName(nBurnDrvSelect));
+		fprintf(fDat, "\t\t<description>%s</description>\n", DecorateGameName(nBurnDrvActive));
 		fprintf(fDat, "\t\t<year>%s</year>\n", BurnDrvGetTextA(DRV_DATE));
 		fprintf(fDat, "\t\t<manufacturer>%s</manufacturer>\n", BurnDrvGetTextA(DRV_MANUFACTURER));		
 
@@ -342,10 +506,19 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 
 				if (nRet==0) {
 					char szPossibleNameBuffer[255];
+					char szPossibleNameBuffer2[255];
 			
 					memset(szPossibleNameBuffer, 0, 255);
+					memset(szPossibleNameBuffer2, 0, 255);
 			
 					ReplaceAmpersand(szPossibleNameBuffer, szPossibleName);
+					strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+					memset(szPossibleNameBuffer, 0, 255);
+					ReplaceLessThan(szPossibleNameBuffer, szPossibleNameBuffer2);
+					memset(szPossibleNameBuffer2, 0, 255);
+					strcpy(szPossibleNameBuffer2, szPossibleNameBuffer);
+					memset(szPossibleNameBuffer, 0, 255);
+					ReplaceGreaterThan(szPossibleNameBuffer, szPossibleNameBuffer2);
 				
 					fprintf(fDat, "\t\t<rom name=\"%s\" size=\"%d\" crc=\"%08x\"/>\n", szPossibleNameBuffer, ri.nLen, ri.nCrc);
 				}
@@ -356,36 +529,22 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 	}
 
 	// Restore current driver
-	nBurnDrvSelect=nOldSelect;
+	nBurnDrvActive=nOldSelect;
 	
 	fprintf(fDat, "</datafile>");
 
 	return 0;
 }
 
-int create_datfile(TCHAR* szFilename, int bIncMegadrive)
+INT32 create_datfile(TCHAR* szFilename, INT32 bType)
 {
 	FILE *fDat=0;
-	int nRet=0;
+	INT32 nRet=0;
 	
 	if ((fDat = _tfopen(szFilename, _T("wt")))==0)
 		return -1;
 
-	fprintf(fDat, "<?xml version=\"1.0\"?>\n");
-	fprintf(fDat, "<!DOCTYPE datafile PUBLIC \"-//FB Alpha//DTD ROM Management Datafile//EN\" \"http://www.logiqx.com/Dats/datafile.dtd\">\n\n");
-	fprintf(fDat, "<datafile>\n");
-	fprintf(fDat, "\t<header>\n");
-	fprintf(fDat, "\t\t<name>" APP_TITLE "</name>\n");
-	_ftprintf(fDat, _T("\t\t<description>") _T(APP_TITLE) _T(" v%s") _T("</description>\n"), szAppBurnVer);
-	fprintf(fDat, "\t\t<category>Standard DatFile</category>\n");
-	_ftprintf(fDat, _T("\t\t<version>%s</version>\n"), szAppBurnVer);
-	fprintf(fDat, "\t\t<author>" APP_TITLE "</author>\n");
-	fprintf(fDat, "\t\t<homepage>http://www.barryharris.me.uk/</homepage>\n");
-	fprintf(fDat, "\t\t<url>http://www.barryharris.me.uk/</url>\n");
-	fprintf(fDat, "\t\t<clrmamepro forcenodump=\"ignore\"/>\n");		
-	fprintf(fDat, "\t</header>\n");
-
-	nRet =  write_datfile(bIncMegadrive, fDat);
+	nRet =  write_datfile(bType, fDat);
 
 	fclose(fDat);
 

@@ -1,4 +1,3 @@
-
 #include "cps3.h"
 
 #define CPS3_VOICES		16
@@ -9,30 +8,30 @@
 #define CPS3_SND_LINEAR_SHIFT	12
 
 typedef struct {
-	unsigned short regs[16];
-	unsigned int pos;
-	unsigned short frac;
+	UINT16 regs[16];
+	UINT32 pos;
+	UINT16 frac;
 } cps3_voice;
 
 typedef struct {
 	cps3_voice voice[CPS3_VOICES];
-	unsigned short key;
+	UINT16 key;
 
-	unsigned char * rombase;
-	unsigned int delta;
+	UINT8 * rombase;
+	UINT32 delta;
 
 } cps3snd_chip;
 
 static cps3snd_chip * chip;
 
-unsigned char __fastcall cps3SndReadByte(unsigned int addr)
+UINT8 __fastcall cps3SndReadByte(UINT32 addr)
 {
 	addr &= 0x000003ff;
 	bprintf(PRINT_NORMAL, _T("SND Attempt to read byte value of location %8x\n"), addr);
 	return 0;
 }
 
-unsigned short __fastcall cps3SndReadWord(unsigned int addr)
+UINT16 __fastcall cps3SndReadWord(UINT32 addr)
 {
 	addr &= 0x000003ff;
 	
@@ -47,7 +46,7 @@ unsigned short __fastcall cps3SndReadWord(unsigned int addr)
 	return 0;
 }
 
-unsigned int __fastcall cps3SndReadLong(unsigned int addr)
+UINT32 __fastcall cps3SndReadLong(UINT32 addr)
 {
 	addr &= 0x000003ff;
 	
@@ -55,13 +54,13 @@ unsigned int __fastcall cps3SndReadLong(unsigned int addr)
 	return 0;
 }
 
-void __fastcall cps3SndWriteByte(unsigned int addr, unsigned char data)
+void __fastcall cps3SndWriteByte(UINT32 addr, UINT8 data)
 {
 	addr &= 0x000003ff;
 	bprintf(PRINT_NORMAL, _T("SND Attempt to write byte value %2x to location %8x\n"), data, addr);
 }
 
-void __fastcall cps3SndWriteWord(unsigned int addr, unsigned short data)
+void __fastcall cps3SndWriteWord(UINT32 addr, UINT16 data)
 {
 	addr &= 0x000003ff;
 	
@@ -70,8 +69,8 @@ void __fastcall cps3SndWriteWord(unsigned int addr, unsigned short data)
 		//bprintf(PRINT_NORMAL, _T("SND Attempt to write word value %4x to Chip[%02d][%02d] %s\n"), data, addr >> 5, (addr>>2) & 7, (addr & 0x02) ? "lo" : "hi" );
 	} else
 	if (addr == 0x200) {
-		unsigned short key = data;
-		for (int i = 0; i < CPS3_VOICES; i++) {
+		UINT16 key = data;
+		for (INT32 i = 0; i < CPS3_VOICES; i++) {
 			// Key off -> Key on
 			if ((key & (1 << i)) && !(chip->key & (1 << i)))	{
 				chip->voice[i].frac = 0;
@@ -84,15 +83,15 @@ void __fastcall cps3SndWriteWord(unsigned int addr, unsigned short data)
 	
 }
 
-void __fastcall cps3SndWriteLong(unsigned int addr, unsigned int data)
+void __fastcall cps3SndWriteLong(UINT32 addr, UINT32 data)
 {
 	//addr &= 0x000003ff;
 	bprintf(PRINT_NORMAL, _T("SND Attempt to write long value %8x to location %8x\n"), data, addr);
 }
 
-int cps3SndInit(unsigned char * sndrom)
+INT32 cps3SndInit(UINT8 * sndrom)
 {
-	chip = (cps3snd_chip *) malloc( sizeof(cps3snd_chip) );
+	chip = (cps3snd_chip *)BurnMalloc( sizeof(cps3snd_chip) );
 	if ( chip ) {
 		memset( chip, 0, sizeof(cps3snd_chip) );
 		chip->rombase = sndrom;
@@ -119,7 +118,7 @@ void cps3SndReset()
 
 void cps3SndExit()
 {
-	free( chip );
+	BurnFree( chip );
 }
 
 void cps3SndUpdate()
@@ -130,31 +129,31 @@ void cps3SndUpdate()
 		return;	
 	}
 	
-	memset(pBurnSoundOut, 0, nBurnSoundLen * 2 * 2 );
-	signed char * base = (signed char *)chip->rombase;
+	memset(pBurnSoundOut, 0, nBurnSoundLen * 2 * sizeof(INT16));
+	INT8 * base = (INT8 *)chip->rombase;
 	cps3_voice *vptr = &chip->voice[0];
 
-	for(int i=0; i<CPS3_VOICES; i++, vptr++) {
+	for(INT32 i=0; i<CPS3_VOICES; i++, vptr++) {
 		if (chip->key & (1 << i)) {
 			
-			unsigned int start = ((vptr->regs[ 3] << 16) | vptr->regs[ 2]) - 0x400000;
-			unsigned int end   = ((vptr->regs[11] << 16) | vptr->regs[10]) - 0x400000;
-			unsigned int loop  = ((vptr->regs[ 9] << 16) | vptr->regs[ 7]) - 0x400000;
-			unsigned int step  = ( vptr->regs[ 6] * chip->delta ) >> CPS3_SND_LINEAR_SHIFT;
+			UINT32 start = ((vptr->regs[ 3] << 16) | vptr->regs[ 2]) - 0x400000;
+			UINT32 end   = ((vptr->regs[11] << 16) | vptr->regs[10]) - 0x400000;
+			UINT32 loop  = ((vptr->regs[ 9] << 16) | vptr->regs[ 7]) - 0x400000;
+			UINT32 step  = ( vptr->regs[ 6] * chip->delta ) >> CPS3_SND_LINEAR_SHIFT;
 
-			//int vol_l = ((signed short)vptr->regs[15] * 12) >> 4;
-			//int vol_r = ((signed short)vptr->regs[14] * 12) >> 4;
-			int vol_l = (signed short)vptr->regs[15];
-			int vol_r = (signed short)vptr->regs[14];
+			//INT32 vol_l = ((signed short)vptr->regs[15] * 12) >> 4;
+			//INT32 vol_r = ((signed short)vptr->regs[14] * 12) >> 4;
+			INT32 vol_l = (INT16)vptr->regs[15];
+			INT32 vol_r = (INT16)vptr->regs[14];
 
-			unsigned int pos = vptr->pos;
-			unsigned int frac = vptr->frac;
+			UINT32 pos = vptr->pos;
+			UINT32 frac = vptr->frac;
 			
 			/* Go through the buffer and add voice contributions */
-			signed short * buffer = (signed short *)pBurnSoundOut;
+			INT16 * buffer = (INT16 *)pBurnSoundOut;
 
-			for (int j=0; j<nBurnSoundLen; j++) {
-				signed int sample;
+			for (INT32 j=0; j<nBurnSoundLen; j++) {
+				INT32 sample;
 
 				pos += (frac >> 12);
 				frac &= 0xfff;
@@ -173,7 +172,7 @@ void cps3SndUpdate()
 				frac += step;
 
 #if 1
-				int sample_l;
+				INT32 sample_l;
 
 				sample_l = ((sample * vol_r) >> 8) + buffer[0];
 				if (sample_l > 32767)		buffer[0] = 32767;
@@ -200,7 +199,7 @@ void cps3SndUpdate()
 	
 }
 
-int cps3SndScan(int nAction)
+INT32 cps3SndScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		

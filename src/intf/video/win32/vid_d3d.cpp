@@ -18,6 +18,8 @@
 
 #include "rgb_pattern.h"
 
+#include "ddraw_core.h"
+
 const float PI = 3.14159265358979323846f;
 
 typedef struct _D3DTLVERTEX2 {
@@ -507,8 +509,10 @@ static int vidExit()
 {
 	VidSExitOSD();
 
-	free(v3DScreen);
-	v3DScreen = NULL;
+	if (v3DScreen) {
+		free(v3DScreen);
+		v3DScreen = NULL;
+	}
 
 	VidSoftFXExit();
 
@@ -770,7 +774,7 @@ static int InitEffectsSurfaces()
 		}
 
 		// Get the filename and size of a pattern
-		_tcscpy(pFilename, _T("pattern\\"));
+		_tcscpy(pFilename, _T("pattern/"));
 		_tcscat(pFilename, pRGBEffectPatternName);
 		_stscanf(pRGBEffectPatternName, _T("%i x %i"), &nPatternXSize, &nPatternYSize);
 		nPatternSize = nPatternXSize * nPatternYSize * 4;
@@ -901,7 +905,10 @@ static int InitEffectsSurfaces()
 				pRGBEffectTexture->Unlock(NULL);
 			}
 
-			free(RGBPattern);
+			if (RGBPattern) {
+				free(RGBPattern);
+				RGBPattern = NULL;
+			}
 		} else {
 			FBAPopupAddText(PUF_TEXT_NO_TRANSLATE, _T("Couldn't find RGB pattern."));
 			FBAPopupDisplay(PUF_TYPE_WARNING);
@@ -1213,11 +1220,11 @@ static int vidInit()
 	nCurrentDriver = 0;
 	memset(&MyGuid, 0, sizeof(GUID));
 	dprintf(_T(" ** Enumerating available DirectDraw drivers:\n"));
-	DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
+	_DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
 #endif
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&pDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&pDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(pDD);
 

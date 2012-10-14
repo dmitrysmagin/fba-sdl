@@ -128,11 +128,11 @@ the decryption keys.
 
 /******************************************************************************/
 
-static const int fn1_groupA[8] = { 10, 4, 6, 7, 2, 13, 15, 14 };
-static const int fn1_groupB[8] = {  0, 1, 3, 5, 8,  9, 11, 12 };
+static const INT32 fn1_groupA[8] = { 10, 4, 6, 7, 2, 13, 15, 14 };
+static const INT32 fn1_groupB[8] = {  0, 1, 3, 5, 8,  9, 11, 12 };
 
-static const int fn2_groupA[8] = { 6, 0, 2, 13, 1,  4, 14,  7 };
-static const int fn2_groupB[8] = { 3, 5, 9, 10, 8, 15, 12, 11 };
+static const INT32 fn2_groupA[8] = { 6, 0, 2, 13, 1,  4, 14,  7 };
+static const INT32 fn2_groupB[8] = { 3, 5, 9, 10, 8, 15, 12, 11 };
 
 /******************************************************************************/
 
@@ -143,8 +143,8 @@ static const int fn2_groupB[8] = { 3, 5, 9, 10, 8, 15, 12, 11 };
 struct sbox
 {
 	const UINT8 table[64];
-	const int inputs[6];		// positions of the inputs bits, -1 means no input except from key
-	const int outputs[2];		// positions of the output bits
+	const INT32 inputs[6];		// positions of the inputs bits, -1 means no input except from key
+	const INT32 outputs[2];		// positions of the output bits
 };
 
 // the above struct better defines how the hardware works, however
@@ -470,7 +470,7 @@ static UINT8 fn(UINT8 in, const struct optimised_sbox *sboxes, UINT32 key)
 // dstkey will contain the 96-bit key for the 1st FN (4x24 bits)
 static void expand_1st_key(UINT32 *dstkey, const UINT32 *srckey)
 {
-	static const int bits[96] =
+	static const INT32 bits[96] =
 	{
 		33, 58, 49, 36,  0, 31,
 		22, 30,  3, 16,  5, 53,
@@ -489,7 +489,7 @@ static void expand_1st_key(UINT32 *dstkey, const UINT32 *srckey)
 		26, 42, 45, 40, 23, 14,
 		 2, 31, 52, 28, 44, 17,
 	};
-	int i;
+	INT32 i;
 
 	dstkey[0] = 0;
 	dstkey[1] = 0;
@@ -505,7 +505,7 @@ static void expand_1st_key(UINT32 *dstkey, const UINT32 *srckey)
 // dstkey will contain the 96-bit key for the 2nd FN (4x24 bits)
 static void expand_2nd_key(UINT32 *dstkey, const UINT32 *srckey)
 {
-	static const int bits[96] =
+	static const INT32 bits[96] =
 	{
 		34,  9, 32, 24, 44, 54,
 		38, 61, 47, 13, 28,  7,
@@ -524,7 +524,7 @@ static void expand_2nd_key(UINT32 *dstkey, const UINT32 *srckey)
 		51, 45, 44,  2, 21, 33,
 		55, 52, 23, 28,  8, 26,
 	};
-	int i;
+	INT32 i;
 
 	dstkey[0] = 0;
 	dstkey[1] = 0;
@@ -543,14 +543,14 @@ static void expand_2nd_key(UINT32 *dstkey, const UINT32 *srckey)
 static void expand_subkey(UINT32* subkey, UINT16 seed)
 {
 	// Note that each row of the table is a permutation of the seed bits.
-	static const int bits[64] =
+	static const INT32 bits[64] =
 	{
 		 5, 10, 14,  9,  4,  0, 15,  6,  1,  8,  3,  2, 12,  7, 13, 11,
 		 5, 12,  7,  2, 13, 11,  9, 14,  4,  1,  6, 10,  8,  0, 15,  3,
 		 4, 10,  2,  0,  6,  9, 12,  1, 11,  7, 15,  8, 13,  5, 14,  3,
 		14, 11, 12,  7,  4,  5,  2, 10,  1, 15,  0,  9,  8,  6, 13,  3,
 	};
-	int i;
+	INT32 i;
 
 	subkey[0] = 0;
 	subkey[1] = 0;
@@ -561,7 +561,7 @@ static void expand_subkey(UINT32* subkey, UINT16 seed)
 
 
 
-static UINT16 feistel(UINT16 val, const int *bitsA, const int *bitsB,
+static UINT16 feistel(UINT16 val, const INT32 *bitsA, const INT32 *bitsB,
 		const struct optimised_sbox* boxes1, const struct optimised_sbox* boxes2, const struct optimised_sbox* boxes3, const struct optimised_sbox* boxes4,
 		UINT32 key1, UINT32 key2, UINT32 key3, UINT32 key4)
 {
@@ -594,10 +594,10 @@ static UINT16 feistel(UINT16 val, const int *bitsA, const int *bitsB,
 
 
 
-static int extract_inputs(UINT32 val, const int *inputs)
+static INT32 extract_inputs(UINT32 val, const INT32 *inputs)
 {
-	int i;
-	int res = 0;
+	INT32 i;
+	INT32 res = 0;
 
 	for (i = 0; i < 6; ++i)
 	{
@@ -612,11 +612,11 @@ static int extract_inputs(UINT32 val, const int *inputs)
 
 static void optimise_sboxes(struct optimised_sbox* out, const struct sbox* in)
 {
-	int box;
+	INT32 box;
 
 	for (box = 0; box < 4; ++box)
 	{
-		int i;
+		INT32 i;
 
 		// precalculate the input lookup
 		for (i = 0; i < 256; ++i)
@@ -627,7 +627,7 @@ static void optimise_sboxes(struct optimised_sbox* out, const struct sbox* in)
 		// precalculate the output masks
 		for (i = 0; i < 64; ++i)
 		{
-			int o = in[box].table[i];
+			INT32 o = in[box].table[i];
 
 			out[box].output[i] = 0;
 			if (o & 1)
@@ -638,21 +638,21 @@ static void optimise_sboxes(struct optimised_sbox* out, const struct sbox* in)
 	}
 }
 
-static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
+static void cps2_decrypt(const UINT32 *master_key, UINT32 upper_limit)
 {
 #if 0
 	UINT16 *rom = (UINT16 *)memory_region(REGION_CPU1);
-	int length = memory_region_length(REGION_CPU1);
+	INT32 length = memory_region_length(REGION_CPU1);
 	UINT16 *dec = auto_malloc(length);
-	int i;
+	INT32 i;
 #endif
 
 #if 1
 	UINT16 *rom = (UINT16 *)CpsRom;
-	unsigned int length = upper_limit;
-	CpsCode = (UINT8*)malloc(length);
+	UINT32 length = upper_limit;
+	CpsCode = (UINT8*)BurnMalloc(length);
 	UINT16 *dec = (UINT16*)CpsCode;
-	unsigned int i;
+	UINT32 i;
 #endif
 
 	UINT32 key1[4];
@@ -684,11 +684,11 @@ static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
 	for (i = 0; i < 0x10000; ++i)
 	{
 #if 0
-		int a;
+		INT32 a;
 #endif
 
 #if 1
-		unsigned int a;
+		UINT32 a;
 #endif
 
 		UINT16 seed;
@@ -741,9 +741,9 @@ static void cps2_decrypt(const UINT32 *master_key, unsigned int upper_limit)
 		// decrypt the opcodes
 		for (a = i; a < length/2 && a < upper_limit/2; a += 0x10000)
 		{
-			dec[a] = feistel(rom[a], fn2_groupA, fn2_groupB,
+			dec[a] = BURN_ENDIAN_SWAP_INT16(feistel(BURN_ENDIAN_SWAP_INT16(rom[a]), fn2_groupA, fn2_groupB,
 				&sboxes2[0*4], &sboxes2[1*4], &sboxes2[2*4], &sboxes2[3*4],
-				key2[0], key2[1], key2[2], key2[3]);
+				key2[0], key2[1], key2[2], key2[3]));
 		}
 		// copy the unencrypted part (not really needed)
 		while (a < length/2)
@@ -814,6 +814,7 @@ static const struct game_keys keys_table[] =
 	{ "ssf2tu",     { 0x94fa8902,0x4c77143f }, 0x400000 },	// 0838 0007 2000  btst    #7,$2000
 	{ "ssf2tur1",   { 0x94fa8902,0x4c77143f }, 0x400000 },	// 0838 0007 2000  btst    #7,$2000
 	{ "ssf2xj",     { 0x942a5702,0x05ac140e }, 0x400000 },	// 0838 0007 2000  btst    #7,$2000
+	{ "ssf2xjr",    { 0x943c2b02,0x7acd1422 }, 0x400000 },  // 0838 0007 2000 btst #7,$2000 // curious, not the usual Japan key on the rent version
 	{ "xmcota",     { 0x3bc6eda4,0x97f80251 }, 0x100000 },	// 0C80 1972 0301  cmpi.l  #$19720301,D0
 	{ "xmcotau",    { 0x32a57ecd,0x98016f4b }, 0x100000 },	// 0C80 1972 0301  cmpi.l  #$19720301,D0
 	{ "xmcotah",    { 0xf5e8dc34,0xa096b217 }, 0x100000 },	// 0C80 1972 0301  cmpi.l  #$19720301,D0
@@ -865,6 +866,7 @@ static const struct game_keys keys_table[] =
 	{ "nwarrb",     { 0x17c67109,0xb7362a20 }, 0x180000 },	// 0838 0000 6160  btst    #0,$6160
 	{ "nwarra",     { 0x4e940d0c,0x39b861a4 }, 0x180000 },	// 0838 0000 6160  btst    #0,$6160
 	{ "vhuntj",     { 0x1135b2c3,0xa4e9d7f2 }, 0x180000 },	// 0838 0000 6160  btst    #0,$6160
+	{ "vhuntjr1s",  { 0x1135b2c3,0xa4e9d7f2 }, 0x180000 },  // 0838 0000 6160 btst #0,$6160
 	{ "vhuntjr1",   { 0x1135b2c3,0xa4e9d7f2 }, 0x180000 },	// 0838 0000 6160  btst    #0,$6160
 	{ "vhuntjr2",   { 0x1135b2c3,0xa4e9d7f2 }, 0x180000 },	// 0838 0000 6160  btst    #0,$6160
 	{ "sfa",        { 0x0f895d6e,0xc4273a1b }, 0x080000 },	// 0C80 0564 2194  cmpi.l  #$05642194,D0
@@ -1003,6 +1005,7 @@ static const struct game_keys keys_table[] =
 	{ "mpangj",     { 0x95f741c6,0xe547a21b }, 0x100000 },	// 0C84 347D 89A3  cmpi.l  #$347D89A3,D4
 	{ "pzloop2",    { 0xa054f812,0xc40d36b4 }, 0x400000 },	// 0C82 9A73 15F1  cmpi.l  #$9A7315F1,D2
 	{ "pzloop2j",   { 0xa054f812,0xc40d36b4 }, 0x400000 },	// 0C82 9A73 15F1  cmpi.l  #$9A7315F1,D2
+	{ "pzloop2jr1", { 0xa054f812,0xc40d36b4 }, 0x400000 },	// 0C82 9A73 15F1  cmpi.l  #$9A7315F1,D2
 	{ "choko",      { 0xd3fb12c6,0x7f8e17b5 }, 0x400000 },	// 0C86 4D17 5B3C  cmpi.l  #$4D175B3C,D6
 	{ "dimahoo",    { 0x0ddb8e40,0x2817fd2b }, 0x080000 },	// BE4C B244 B6C5  cmp.w   A4,D7   cmp.w   D4,D1   cmpa.w  D5,A3
 	{ "dimahoou",   { 0x6575af59,0xb0fea691 }, 0x080000 },	// BE4C B244 B6C5  cmp.w   A4,D7   cmp.w   D4,D1   cmpa.w  D5,A3
@@ -1052,8 +1055,8 @@ void cps2_decrypt_game_data()
 		if (CpsCode) {
 			UINT16 *rom = (UINT16*)CpsRom;
 			UINT16 *xor1 = (UINT16*)CpsCode;
-			int length = nCpsCodeLen;
-			int i;
+			INT32 length = nCpsCodeLen;
+			INT32 i;
 
 			if (xor1)
 			{

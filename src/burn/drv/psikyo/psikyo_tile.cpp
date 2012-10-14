@@ -2,54 +2,54 @@
 
 #include "psikyo.h"
 
-unsigned char* PsikyoTileROM;
-unsigned char* PsikyoTileRAM[3] = { NULL, };
+UINT8* PsikyoTileROM;
+UINT8* PsikyoTileRAM[3] = { NULL, };
 
 bool bPsikyoClearBackground;
 
-static unsigned int PsikyoLayerAttrib[3] = { 0, };
-static int PsikyoLayerXOffset[2] = { 0, };
-static int PsikyoLayerYOffset[2] = { 0, };
+static UINT32 PsikyoLayerAttrib[3] = { 0, };
+static INT32 PsikyoLayerXOffset[2] = { 0, };
+static INT32 PsikyoLayerYOffset[2] = { 0, };
 
-static char* PsikyoTileAttrib = { NULL, };
-static int PsikyoTileMask;
+static INT8* PsikyoTileAttrib = { NULL, };
+static INT32 PsikyoTileMask;
 
-static unsigned int PsikyoTileBank[2];
+static UINT32 PsikyoTileBank[2];
 
-static unsigned char* pTile;
-static unsigned char* pTileData;
-static unsigned int* pTilePalette;
-static short* pTileRowInfo;
+static UINT8* pTile;
+static UINT8* pTileData;
+static UINT32* pTilePalette;
+static INT16* pTileRowInfo;
 
 typedef void (*RenderTileFunction)();
 
-static int nTilemapWith, nTileXPos, nTileYPos;
+static INT32 nTilemapWith, nTileXPos, nTileYPos;
 
 // Include the tile rendering functions
 #include "psikyo_tile_func.h"
 
-static void PsikyoRenderLayer(int nLayer)
+static void PsikyoRenderLayer(INT32 nLayer)
 {
-	static int nLayerXSize[] = { 0x0040, 0x0080, 0x0100, 0x0020 };
-//	static int nLayerYSize[] = { 0x0040, 0x0020, 0x0010, 0x0080 };
+	static INT32 nLayerXSize[] = { 0x0040, 0x0080, 0x0100, 0x0020 };
+//	static INT32 nLayerYSize[] = { 0x0040, 0x0020, 0x0010, 0x0080 };
 
-	int x, y;
-	int ax, bx, ay, by, cx, cy, mx;
-	int minx, maxx;
-	int nTileColumn, nTileRow;
-	unsigned int nTileNumber, nTilePalette, nTileBank;
-	int nRenderFunction, nTransColour;
+	INT32 x, y;
+	INT32 ax, bx, ay, by, cx, cy, mx;
+	INT32 minx, maxx;
+	INT32 nTileColumn, nTileRow;
+	UINT32 nTileNumber, nTilePalette, nTileBank;
+	INT32 nRenderFunction, nTransColour;
 	bool bClip;
 
-    unsigned short* pTileRAM = (unsigned short*)(PsikyoTileRAM[nLayer]);
+    UINT16* pTileRAM = (UINT16*)(PsikyoTileRAM[nLayer]);
 
-	unsigned int* LayerPalette = PsikyoPalette + (nLayer ? 0x0C00 : 0x0800);
+	UINT32* LayerPalette = PsikyoPalette + (nLayer ? 0x0C00 : 0x0800);
 
 	nTileBank = PsikyoTileBank[nLayer];
 
 	mx = nLayerXSize[(PsikyoLayerAttrib[nLayer] & 0xC0) >> 6];
 
-	pTileRowInfo = (short*)(PsikyoTileRAM[2] + (nLayer << 9));
+	pTileRowInfo = (INT16*)(PsikyoTileRAM[2] + (nLayer << 9));
 	nTilemapWith = (mx << 4) - 1;
 
 	nRenderFunction = 8;
@@ -88,7 +88,7 @@ static void PsikyoRenderLayer(int nLayer)
 
 				// per-tile rowscroll; each tilerow has it's own offset to the tilemap x offset
 
-				minx = pTileRowInfo[(nTileYPos >> 4) & 0x0F];
+				minx = (INT16)BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos >> 4) & 0x0F]);
 			} else {
 
 				// Rowscroll enabled
@@ -96,12 +96,12 @@ static void PsikyoRenderLayer(int nLayer)
 				minx = 32767; maxx = -32768;
 
 				// Compute the min/max row offsets
-				for (int i = 0; i < 16; i++) {
-					if (pTileRowInfo[(nTileYPos + i) & 0xFF] > maxx) {
-						maxx = pTileRowInfo[(nTileYPos + i) & 0xFF];
+				for (INT32 i = 0; i < 16; i++) {
+					if ((INT16)BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos + i) & 0xFF]) > maxx) {
+						maxx = (INT16)BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos + i) & 0xFF]);
 					}
-					if (pTileRowInfo[(nTileYPos + i) & 0xFF] < minx) {
-						minx = pTileRowInfo[(nTileYPos + i) & 0xFF];
+					if ((INT16)BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos + i) & 0xFF]) < minx) {
+						minx = (INT16)BURN_ENDIAN_SWAP_INT16(pTileRowInfo[(nTileYPos + i) & 0xFF]);
 					}
 				}
 
@@ -121,7 +121,7 @@ static void PsikyoRenderLayer(int nLayer)
 					for (x = minx, nTileXPos = (minx << 4) + bx; x < maxx; x++, nTileXPos += 16) {
 
 						nTileColumn = (cx + x) & (mx - 1);
-						nTileNumber = pTileRAM[nTileRow + nTileColumn];
+						nTileNumber = BURN_ENDIAN_SWAP_INT16(pTileRAM[nTileRow + nTileColumn]);
 						nTilePalette = nTileNumber >> 13;
 						nTileNumber = (nTileNumber & 0x1FFF) + nTileBank;
 
@@ -157,7 +157,7 @@ static void PsikyoRenderLayer(int nLayer)
 			}
 
 			nTileColumn = (cx + x) & (mx - 1);
-			nTileNumber = pTileRAM[nTileRow + nTileColumn];
+			nTileNumber = BURN_ENDIAN_SWAP_INT16(pTileRAM[nTileRow + nTileColumn]);
 			nTilePalette = nTileNumber >> 13;
 			nTileNumber = (nTileNumber & 0x1FFF) + nTileBank;
 
@@ -180,22 +180,22 @@ static void PsikyoRenderLayer(int nLayer)
 	return;
 }
 
-void PsikyoSetTileBank(int nLayer, int nBank)
+void PsikyoSetTileBank(INT32 nLayer, INT32 nBank)
 {
 	PsikyoTileBank[nLayer] = nBank << 13;
 }
 
-int PsikyoTileRender()
+INT32 PsikyoTileRender()
 {
-	int nPriority, nLowPriority = 0;
+	INT32 nPriority, nLowPriority = 0;
 
-	PsikyoLayerAttrib[0]  = *((short*)(PsikyoTileRAM[2] + 0x0412));
-	PsikyoLayerXOffset[0] = *((short*)(PsikyoTileRAM[2] + 0x0406));
-	PsikyoLayerYOffset[0] = *((short*)(PsikyoTileRAM[2] + 0x0402));
+	PsikyoLayerAttrib[0]  = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x0412)));
+	PsikyoLayerXOffset[0] = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x0406)));
+	PsikyoLayerYOffset[0] = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x0402)));
 
-	PsikyoLayerAttrib[1]  = *((short*)(PsikyoTileRAM[2] + 0x0416));
-	PsikyoLayerXOffset[1] = *((short*)(PsikyoTileRAM[2] + 0x040E));
-	PsikyoLayerYOffset[1] = *((short*)(PsikyoTileRAM[2] + 0x040A));
+	PsikyoLayerAttrib[1]  = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x0416)));
+	PsikyoLayerXOffset[1] = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x040E)));
+	PsikyoLayerYOffset[1] = BURN_ENDIAN_SWAP_INT16(*((INT16*)(PsikyoTileRAM[2] + 0x040A)));
 
 	if (PsikyoHardwareVersion == PSIKYO_HW_GUNBIRD) {
 		PsikyoTileBank[0] = (PsikyoLayerAttrib[0] & 0x0400) << 3;
@@ -208,7 +208,7 @@ int PsikyoTileRender()
 
 	for (nPriority = 1; nPriority < 4; nPriority++) {
 
-		int nLayer = nPriority - 1;
+		INT32 nLayer = nPriority - 1;
 
 		if ((PsikyoLayerAttrib[nLayer] & 1) == 0 || nPriority == 3) {
 			PsikyoSpriteRender(nLowPriority, nPriority);
@@ -225,30 +225,31 @@ int PsikyoTileRender()
 
 void PsikyoTileExit()
 {
-	free(PsikyoTileAttrib);
-	PsikyoTileAttrib = NULL;
+	BurnFree(PsikyoTileAttrib);
 
 	return;
 }
 
-int PsikyoTileInit(unsigned int nROMSize)
+INT32 PsikyoTileInit(UINT32 nROMSize)
 {
-	const int nTileSize = 256;
-	int nNumTiles = nROMSize / nTileSize;
+	const INT32 nTileSize = 256;
+	INT32 nNumTiles = nROMSize / nTileSize;
 
 	for (PsikyoTileMask = 1; PsikyoTileMask < nNumTiles; PsikyoTileMask <<= 1) { }
 	PsikyoTileMask--;
 
-	free(PsikyoTileAttrib);
-	PsikyoTileAttrib = (char*)malloc(PsikyoTileMask + 1);
+	if (PsikyoTileAttrib) {
+		BurnFree(PsikyoTileAttrib);
+	}
+	PsikyoTileAttrib = (INT8*)BurnMalloc(PsikyoTileMask + 1);
 	if (PsikyoTileAttrib == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < nNumTiles; i++) {
+	for (INT32 i = 0; i < nNumTiles; i++) {
 		bool bTransparent0 = true;
 		bool bTransparent15 = true;
-		for (int j = i * nTileSize; j < (i + 1) * nTileSize; j++) {
+		for (INT32 j = i * nTileSize; j < (i + 1) * nTileSize; j++) {
 			if (PsikyoTileROM[j] != 0x00) {
 				bTransparent0 = false;
 				if (!bTransparent15) {
@@ -262,7 +263,7 @@ int PsikyoTileInit(unsigned int nROMSize)
 				}
 			}
 		}
-		PsikyoTileAttrib[i] = (char)0xFF;
+		PsikyoTileAttrib[i] = (INT8)0xFF;
 		if (bTransparent0) {
 			PsikyoTileAttrib[i] = 0;
 		}
@@ -271,8 +272,8 @@ int PsikyoTileInit(unsigned int nROMSize)
 		}
 	}
 
-	for (int i = nNumTiles; i <= PsikyoTileMask; i++) {
-		PsikyoTileAttrib[i] = (char)0xFF;
+	for (INT32 i = nNumTiles; i <= PsikyoTileMask; i++) {
+		PsikyoTileAttrib[i] = (INT8)0xFF;
 	}
 
 	PsikyoTileBank[0] = 0x0000;

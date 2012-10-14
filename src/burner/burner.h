@@ -16,23 +16,31 @@
 #define MAKE_STRING_2(s) #s
 #define MAKE_STRING(s) MAKE_STRING_2(s)
 
-#define BZIP_MAX (8)								// Maximum zip files to search through
-#define DIRS_MAX (8)								// Maximum number of directories to search
+#define BZIP_MAX (20)								// Maximum zip files to search through
+#define DIRS_MAX (20)								// Maximum number of directories to search
 
 #include "title.h"
 #include "burn.h"
+#include "png.h"
 
 // ---------------------------------------------------------------------------
 // OS dependent functionality
+typedef struct tagIMAGE {
+	unsigned int	width;
+	unsigned int	height;
+	unsigned int	rowbytes;
+	unsigned int	imgbytes;
+	unsigned char**	rowptr;
+	unsigned char*	bmpbits;
+	unsigned int	flags;
+} IMAGE;
 
 #if defined (BUILD_WIN32)
  #include "burner_win32.h"
- #include <shellapi.h>
-#include <shlwapi.h>
-#include "net.h"
-#include "dwmapi_core.h"
 #elif defined (BUILD_SDL)
  #include "burner_sdl.h"
+#elif defined (_XBOX)
+ #include "burner_xbox.h"
 #endif
 
 #include "png.h"
@@ -42,6 +50,8 @@
 
 #include "interface.h"
 
+
+
 #define IMG_FREE		(1 << 0)
 
 // Macros for parsing text
@@ -49,102 +59,110 @@
 #define FIND_WS(s) while (*s && !_istspace(*s)) { s++; }	// Find whitespace
 #define FIND_QT(s) while (*s && *s != _T('\"')) { s++; }	// Find quote
 
-#ifndef BUILD_SDL
 // image.cpp
 void img_free(IMAGE* img);
-int img_alloc(IMAGE* img);
+INT32 img_alloc(IMAGE* img);
 
 bool PNGIsImage(FILE* fp);
-int PNGLoad(IMAGE* img, FILE* fp, int nPreset);
-#endif
+INT32 PNGLoad(IMAGE* img, FILE* fp, INT32 nPreset);
 
 // gami.cpp
 extern struct GameInp* GameInp;
-extern unsigned int nGameInpCount;
-extern unsigned int nMacroCount;
-extern unsigned int nMaxMacro;
+extern UINT32 nGameInpCount;
+extern UINT32 nMacroCount;
+extern UINT32 nMaxMacro;
 
-extern int nAnalogSpeed;
+extern INT32 nAnalogSpeed;
 
-extern int nFireButtons;
+extern INT32 nFireButtons;
 
 extern bool bStreetFighterLayout;
 extern bool bLeftAltkeyMapped;
 
-int GameInpInit();
-int GameInpExit();
-TCHAR* InputCodeDesc(int c);
+INT32 GameInpInit();
+INT32 GameInpExit();
+TCHAR* InputCodeDesc(INT32 c);
 TCHAR* InpToDesc(struct GameInp* pgi);
 TCHAR* InpMacroToDesc(struct GameInp* pgi);
 void GameInpCheckLeftAlt();
 void GameInpCheckMouse();
-int GameInpBlank(int bDipSwitch);
-int GameInputAutoIni(int nPlayer, TCHAR* lpszFile, bool bOverWrite);
-int ConfigGameLoadHardwareDefaults();
-int GameInpDefault();
-int GameInpWrite(FILE* h);
-int GameInpRead(TCHAR* szVal, bool bOverWrite);
-int GameInpMacroRead(TCHAR* szVal, bool bOverWrite);
-int GameInpCustomRead(TCHAR* szVal, bool bOverWrite);
+INT32 GameInpBlank(INT32 bDipSwitch);
+INT32 GameInputAutoIni(INT32 nPlayer, TCHAR* lpszFile, bool bOverWrite);
+INT32 ConfigGameLoadHardwareDefaults();
+INT32 GameInpDefault();
+INT32 GameInpWrite(FILE* h);
+INT32 GameInpRead(TCHAR* szVal, bool bOverWrite);
+INT32 GameInpMacroRead(TCHAR* szVal, bool bOverWrite);
+INT32 GameInpCustomRead(TCHAR* szVal, bool bOverWrite);
 
 // Player Default Controls
-extern int nPlayerDefaultControls[4];
+extern INT32 nPlayerDefaultControls[4];
 extern TCHAR szPlayerDefaultIni[4][MAX_PATH];
 
 // cong.cpp
-extern const int nConfigMinVersion;					// Minimum version of application for which input files are valid
+extern const INT32 nConfigMinVersion;					// Minimum version of application for which input files are valid
 extern bool bSaveInputs;
-int ConfigGameLoad(bool bOverWrite);				// char* lpszName = NULL
-int ConfigGameSave(bool bSave);
+INT32 ConfigGameLoad(bool bOverWrite);				// char* lpszName = NULL
+INT32 ConfigGameSave(bool bSave);
 
 // conc.cpp
-int ConfigCheatLoad();
+INT32 ConfigCheatLoad();
 
 // gamc.cpp
-int GamcMisc(struct GameInp* pgi, char* szi, int nPlayer);
-int GamcAnalogKey(struct GameInp* pgi, char* szi, int nPlayer, int nSlide);
-int GamcAnalogJoy(struct GameInp* pgi, char* szi, int nPlayer, int nJoy, int nSlide);
-int GamcPlayer(struct GameInp* pgi, char* szi, int nPlayer, int nDevice);
-int GamcPlayerHotRod(struct GameInp* pgi, char* szi, int nPlayer, int nFlags, int nSlide);
+INT32 GamcMisc(struct GameInp* pgi, char* szi, INT32 nPlayer);
+INT32 GamcAnalogKey(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nSlide);
+INT32 GamcAnalogJoy(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nJoy, INT32 nSlide);
+INT32 GamcPlayer(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nDevice);
+INT32 GamcPlayerHotRod(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nFlags, INT32 nSlide);
 
 // misc.cpp
 #define QUOTE_MAX (128)															// Maximum length of "quoted strings"
-int QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc);					// Read a quoted string from szSrc and point to the end
+INT32 QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc);					// Read a quoted string from szSrc and poINT32 to the end
 TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel);
 
-extern int bDoGamma;
-extern int bHardwareGammaOnly;
+TCHAR* ExtractFilename(TCHAR* fullname);
+TCHAR* DriverToName(UINT32 nDrv);
+UINT32 NameToDriver(TCHAR* szName);
+
+extern INT32 bDoGamma;
+extern INT32 bHardwareGammaOnly;
 extern double nGamma;
 
-int SetBurnHighCol(int nDepth);
-char* DecorateGameName(unsigned int nBurnDrv);
+INT32 SetBurnHighCol(INT32 nDepth);
+char* DecorateGameName(UINT32 nBurnDrv);
 TCHAR* DecorateGenreInfo();
 void ComputeGammaLUT();
 
 // dat.cpp
-int write_datfile(int bIncMegadrive, FILE* fDat);
-int create_datfile(TCHAR* szFilename, int bIncMegadrive);
+#define DAT_ARCADE_ONLY		0
+#define DAT_MEGADRIVE_ONLY	1
+#define DAT_PCENGINE_ONLY	2
+#define DAT_TG16_ONLY		3
+#define DAT_SGX_ONLY		4
+INT32 write_datfile(INT32 bType, FILE* fDat);
+INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
 // sshot.cpp
-int MakeScreenShot();
+INT32 MakeScreenShot();
 
 // state.cpp
-int BurnStateLoadEmbed(FILE* fp, int nOffset, int bAll, int (*pLoadGame)());
-int BurnStateLoad(TCHAR* szName, int bAll, int (*pLoadGame)());
-int BurnStateSaveEmbed(FILE* fp, int nOffset, int bAll);
-int BurnStateSave(TCHAR* szName, int bAll);
+INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)());
+INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)());
+INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll);
+INT32 BurnStateSave(TCHAR* szName, INT32 bAll);
 
 // statec.cpp
-int BurnStateCompress(unsigned char** pDef, int* pnDefLen, int bAll);
-int BurnStateDecompress(unsigned char* Def, int nDefLen, int bAll);
+INT32 BurnStateCompress(UINT8** pDef, INT32* pnDefLen, INT32 bAll);
+INT32 BurnStateDecompress(UINT8* Def, INT32 nDefLen, INT32 bAll);
 
 // zipfn.cpp
-struct ZipEntry { char* szName;	unsigned int nLen; unsigned int nCrc; };
+struct ZipEntry { char* szName;	UINT32 nLen; UINT32 nCrc; };
 
-int ZipOpen(const char* szZip);
-int ZipClose();
-int ZipGetList(struct ZipEntry** pList, int* pnListCount);
-int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry);
+INT32 ZipOpen(char* szZip);
+INT32 ZipClose();
+INT32 ZipGetList(struct ZipEntry** pList, INT32* pnListCount);
+INT32 ZipLoadFile(UINT8* Dest, INT32 nLen, INT32* pnWrote, INT32 nEntry);
+INT32 __cdecl ZipLoadOneFile(char* arcName, const char* fileName, void** Dest, INT32* pnWrote);
 
 // bzip.cpp
 
@@ -152,8 +170,15 @@ int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry);
 #define BZIP_STATUS_BADDATA	(1)
 #define BZIP_STATUS_ERROR	(2)
 
-int BzipOpen(bool);
-int BzipClose();
-int BzipInit();
-int BzipExit();
-int BzipStatus();
+INT32 BzipOpen(bool);
+INT32 BzipClose();
+INT32 BzipInit();
+INT32 BzipExit();
+INT32 BzipStatus();
+
+// support_paths.cpp
+extern TCHAR szAppPreviewsPath[MAX_PATH];
+extern TCHAR szAppTitlesPath[MAX_PATH];
+extern TCHAR szAppCheatsPath[MAX_PATH];
+extern TCHAR szAppIpsPath[MAX_PATH];
+extern TCHAR szAppIconsPath[MAX_PATH];

@@ -2,49 +2,50 @@
 // Based on MAME driver by Bryan McPhail
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "konami_intf.h"
 #include "burn_ym3812.h"
-#include "K051649.h"
+#include "k051649.h"
 #include "k007232.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvKonROM;
-static unsigned char *nDrvKonBank;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvPalROM;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvKonRAM0;
-static unsigned char *DrvKonRAM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPf1RAM;
-static unsigned char *DrvPf2RAM;
-static unsigned char *DrvSprRAM1;
-static unsigned char *DrvSprRAM2;
-static unsigned char *DrvSprBuf1;
-static unsigned char *DrvSprBuf2;
-static unsigned char *DrvPf1Ctrl;
-static unsigned char *DrvPf2Ctrl;
-static unsigned char *DrvZ80RAM;
-static unsigned char *Palette;
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvKonROM;
+static UINT8 *nDrvKonBank;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvPalROM;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvKonRAM0;
+static UINT8 *DrvKonRAM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPf1RAM;
+static UINT8 *DrvPf2RAM;
+static UINT8 *DrvSprRAM1;
+static UINT8 *DrvSprRAM2;
+static UINT8 *DrvSprBuf1;
+static UINT8 *DrvSprBuf2;
+static UINT8 *DrvPf1Ctrl;
+static UINT8 *DrvPf2Ctrl;
+static UINT8 *DrvZ80RAM;
+static UINT8 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
 
-static unsigned char *soundlatch;
-static unsigned char *gfxbank;
+static UINT8 *soundlatch;
+static UINT8 *gfxbank;
 
-static int watchdog;
+static INT32 watchdog;
 
 static struct BurnInputInfo HcastleInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -154,15 +155,15 @@ static struct BurnDIPInfo HcastleDIPList[]=
 
 STDDIPINFO(Hcastle)
 
-static void bankswitch(int data)
+static void bankswitch(INT32 data)
 {
 	*nDrvKonBank = data & 0x0f;
-	int bankaddress = *nDrvKonBank * 0x2000;
+	INT32 bankaddress = *nDrvKonBank * 0x2000;
 
 	konamiMapMemory(DrvKonROM + 0x10000 + bankaddress, 0x6000, 0x7fff, KON_ROM);
 }
 
-static void playfield_write(int address, int data, unsigned char *ctrl, unsigned char *spr, unsigned char *buf)
+static void playfield_write(INT32 address, INT32 data, UINT8 *ctrl, UINT8 *spr, UINT8 *buf)
 {
 	address &= 7;
 
@@ -173,7 +174,7 @@ static void playfield_write(int address, int data, unsigned char *ctrl, unsigned
 	ctrl[address & 7] = data;
 }
 
-void hcastle_write(unsigned short address, unsigned char data)
+void hcastle_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xfff8) == 0x0000) {
 		playfield_write(address, data, DrvPf1Ctrl, DrvSprRAM1, DrvSprBuf1);
@@ -209,7 +210,7 @@ void hcastle_write(unsigned short address, unsigned char data)
 		{
 			float t = konamiTotalCycles() * 1.19318167;
 			t -= ZetTotalCycles();
-			if (t > 1) ZetRun((int)t);
+			if (t > 1) ZetRun((INT32)t);
 
 			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
 		}
@@ -229,7 +230,7 @@ void hcastle_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char hcastle_read(unsigned short address)
+UINT8 hcastle_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -254,15 +255,15 @@ unsigned char hcastle_read(unsigned short address)
 	return 0;
 }
 
-static void sound_bankswitch(int data)
+static void sound_bankswitch(INT32 data)
 {
-	int bank_A=(data&0x3);
-	int bank_B=((data>>2)&0x3);
+	INT32 bank_A=(data&0x3);
+	INT32 bank_B=((data>>2)&0x3);
 	bank_A=bank_B;
 	k007232_set_bank(0, bank_A, bank_B );
 }
 
-void __fastcall hcastle_sound_write(unsigned short address, unsigned char data)
+void __fastcall hcastle_sound_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xff80) == 0x9800) {
 		K051649WaveformWrite(address & 0x7f, data);
@@ -307,7 +308,7 @@ void __fastcall hcastle_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall hcastle_sound_read(unsigned short address)
+UINT8 __fastcall hcastle_sound_read(UINT16 address)
 {
 	if (address >= 0xb000 && address <= 0xb00d) {
 		return K007232ReadReg(0, address & 0x0f);
@@ -327,18 +328,18 @@ unsigned char __fastcall hcastle_sound_read(unsigned short address)
 	return 0;
 }
 
-static void DrvK007232VolCallback(int v)
+static void DrvK007232VolCallback(INT32 v)
 {
 	K007232SetVolume(0, 0, (v >> 0x4) * 0x11, 0);
 	K007232SetVolume(0, 1, 0, (v & 0x0f) * 0x11);
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3579545;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3579545;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -360,9 +361,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvKonROM		= Next; Next += 0x030000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -375,7 +376,7 @@ static int MemIndex()
 	DrvSndROM		= Next; Next += 0x080000;
 
 	Palette			= Next; Next += 0x001000;
-	DrvPalette		= (unsigned int*)Next; Next += 0x1000 * sizeof(unsigned int);
+	DrvPalette		= (UINT32*)Next; Next += 0x1000 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -404,13 +405,13 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x000, 0x001, 0x002, 0x003 };
-	int XOffs[8] = { 0x008, 0x00c, 0x000, 0x004, 0x018, 0x01c, 0x010, 0x014 };
-	int YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
+	INT32 Plane[4] = { 0x000, 0x001, 0x002, 0x003 };
+	INT32 XOffs[8] = { 0x008, 0x00c, 0x000, 0x004, 0x018, 0x01c, 0x010, 0x014 };
+	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -423,22 +424,22 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x8000, 4, 8, 8, Plane, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static void DrvPaletteInit()
 {
-	for (int chip = 0; chip < 2; chip++)
+	for (INT32 chip = 0; chip < 2; chip++)
 	{
-		for (int pal = 0; pal < 8; pal++)
+		for (INT32 pal = 0; pal < 8; pal++)
 		{
-			int clut = (chip << 1) | (pal & 1);
+			INT32 clut = (chip << 1) | (pal & 1);
 
-			for (int i = 0; i < 0x100; i++)
+			for (INT32 i = 0; i < 0x100; i++)
 			{
-				unsigned char ctabentry;
+				UINT8 ctabentry;
 
 				if (((pal & 0x01) == 0) && (DrvPalROM[(clut << 8) | i] == 0))
 					ctabentry = 0;
@@ -451,12 +452,12 @@ static void DrvPaletteInit()
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -498,7 +499,7 @@ static int DrvInit()
 	konamiSetReadHandler(hcastle_read);
 	konamiClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -524,7 +525,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -532,33 +533,33 @@ static int DrvExit()
 	ZetExit();
 
 	K007232Exit();
+	K051649Exit();
 	BurnYM3812Exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static void draw_layer(unsigned char *ram, unsigned char *ctrl, unsigned char *gfx, int colbase, int base, int t)
+static void draw_layer(UINT8 *ram, UINT8 *ctrl, UINT8 *gfx, INT32 colbase, INT32 base, INT32 t)
 {
-	int bit0 = ((ctrl[0x05] >> 0) & 0x03) + 2;
-	int bit1 = ((ctrl[0x05] >> 2) & 0x03) + 1;
-	int bit2 = ((ctrl[0x05] >> 4) & 0x03) + 0;
-	int bit3 = ((ctrl[0x05] >> 6) & 0x03) - 1;
-	int col  = ((ctrl[0x06] << 1) & 0x60) | colbase;
+	INT32 bit0 = ((ctrl[0x05] >> 0) & 0x03) + 2;
+	INT32 bit1 = ((ctrl[0x05] >> 2) & 0x03) + 1;
+	INT32 bit2 = ((ctrl[0x05] >> 4) & 0x03) + 0;
+	INT32 bit3 = ((ctrl[0x05] >> 6) & 0x03) - 1;
+	INT32 col  = ((ctrl[0x06] << 1) & 0x60) | colbase;
 
 	if (ctrl[0x03] & 0x01) base += 0x2000;
 
-	int scrollx = ((ctrl[0x01] << 8) | ctrl[0x00]) & 0x1ff;
-	int scrolly = ctrl[0x02] & 0xff;
+	INT32 scrollx = ((ctrl[0x01] << 8) | ctrl[0x00]) & 0x1ff;
+	INT32 scrolly = ctrl[0x02] & 0xff;
 
-	int tilemap_flip = ctrl[0x07] & 0x08; 
+	INT32 tilemap_flip = ctrl[0x07] & 0x08; 
 
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
 		sx -= scrollx;
 		if (sx < -7) sx += 0x200;
@@ -567,12 +568,12 @@ static void draw_layer(unsigned char *ram, unsigned char *ctrl, unsigned char *g
 
 	//	if (sx >= nScreenWidth || sy < 9 || sy > 240) continue;
 
-		int ofst = (offs & 0x1f) + ((offs >> 1) & 0x3e0) + ((offs & 0x20) << 6);
+		INT32 ofst = (offs & 0x1f) + ((offs >> 1) & 0x3e0) + ((offs & 0x20) << 6);
 
-		int attr  = ram[ofst];
-		int code  = ram[ofst + 0x400];
-		int color = (attr & 0x07) | col;
-		int bank  = ((attr & 0x80) >> 7) | ((attr >> bit0) & 0x02) | ((attr >> bit1) & 0x04) | ((attr >> bit2) & 0x08) | ((attr >> bit3) & 0x10);
+		INT32 attr  = ram[ofst];
+		INT32 code  = ram[ofst + 0x400];
+		INT32 color = (attr & 0x07) | col;
+		INT32 bank  = ((attr & 0x80) >> 7) | ((attr >> bit0) & 0x02) | ((attr >> bit1) & 0x04) | ((attr >> bit2) & 0x08) | ((attr >> bit3) & 0x10);
 
 		code += (bank << 8) + base;
 
@@ -595,27 +596,27 @@ static void draw_layer(unsigned char *ram, unsigned char *ctrl, unsigned char *g
 	}
 }
 
-static void draw_sprites(int bank, unsigned char *source, unsigned char *ctrl, unsigned char *gfx, int col)
+static void draw_sprites(INT32 bank, UINT8 *source, UINT8 *ctrl, UINT8 *gfx, INT32 col)
 {
-	int bank_base = (bank == 0) ? 0x4000 * (*gfxbank & 1) : 0;
+	INT32 bank_base = (bank == 0) ? 0x4000 * (*gfxbank & 1) : 0;
 
-	int base_color = ((ctrl[6] & 0x30) << 1) + col;
-	int flipscreen =   ctrl[7] & 0x08;
+	INT32 base_color = ((ctrl[6] & 0x30) << 1) + col;
+	INT32 flipscreen =   ctrl[7] & 0x08;
 
-	static const int x_offset[4] = { 0x00, 0x01, 0x04, 0x05 };
-	static const int y_offset[4] = { 0x00, 0x02, 0x08, 0x0a };
+	static const INT32 x_offset[4] = { 0x00, 0x01, 0x04, 0x05 };
+	static const INT32 y_offset[4] = { 0x00, 0x02, 0x08, 0x0a };
 
-	for (int i = 0; i < 0x40; i++)
+	for (INT32 i = 0; i < 0x40; i++)
 	{
-		int number = source[0];
-		int sbank  = source[1] & 0x0f;
-		int sy     = source[2];
-		int sx     = source[3];
-		int attr   = source[4];
-		int xflip  = source[4] & 0x10;
-		int yflip  = source[4] & 0x20;
-		int color  = base_color + ((source[1] & 0xf0) >> 4);
-		int width, height;
+		INT32 number = source[0];
+		INT32 sbank  = source[1] & 0x0f;
+		INT32 sy     = source[2];
+		INT32 sx     = source[3];
+		INT32 attr   = source[4];
+		INT32 xflip  = source[4] & 0x10;
+		INT32 yflip  = source[4] & 0x20;
+		INT32 color  = base_color + ((source[1] & 0xf0) >> 4);
+		INT32 width, height;
 
 		if (attr & 0x01) sx -= 256;
 		if (sy >= 240) sy -= 256;
@@ -634,17 +635,17 @@ static void draw_sprites(int bank, unsigned char *source, unsigned char *ctrl, u
 			default:   width = 1; height = 1;
 		}
 
-		for (int y = 0; y < height; y++)
+		for (INT32 y = 0; y < height; y++)
 		{
-			int yy = sy + y * 8;
-			int ey = yflip ? (height-1-y) : y;
+			INT32 yy = sy + y * 8;
+			INT32 ey = yflip ? (height-1-y) : y;
 
-			for (int x = 0; x < width; x++)
+			for (INT32 x = 0; x < width; x++)
 			{
-				int ex = xflip ? (width-1-x) : x;
-				int xx = sx + x * 8;
+				INT32 ex = xflip ? (width-1-x) : x;
+				INT32 xx = sx + x * 8;
 
-				int code = number + x_offset[ex] + y_offset[ey];
+				INT32 code = number + x_offset[ex] + y_offset[ey];
 
 				if (flipscreen) {
 					if (yflip ^ 0x20) {
@@ -682,14 +683,14 @@ static void draw_sprites(int bank, unsigned char *source, unsigned char *ctrl, u
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		unsigned char r,g,b;
-		unsigned int tmp[0x80];
+		UINT8 r,g,b;
+		UINT32 tmp[0x80];
 
-		for (int i = 0; i < 0x100; i+=2) {
-			unsigned short d = DrvPalRAM[i + 1] | (DrvPalRAM[i] << 8);
+		for (INT32 i = 0; i < 0x100; i+=2) {
+			UINT16 d = DrvPalRAM[i + 1] | (DrvPalRAM[i] << 8);
 			r = (d >>  0) & 0x1f;
 			g = (d >>  5) & 0x1f;
 			b = (d >> 10) & 0x1f;
@@ -701,7 +702,7 @@ static int DrvDraw()
 			tmp[i/2] = BurnHighCol(r, g, b, 0);
 		}
 
-		for (int i = 0; i < 0x1000; i++) {
+		for (INT32 i = 0; i < 0x1000; i++) {
 			DrvPalette[i] = tmp[Palette[i]];
 		}
 	}
@@ -728,7 +729,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -740,7 +741,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -756,7 +757,7 @@ static int DrvFrame()
 	konamiNewFrame();
 	ZetNewFrame();
 
-	int nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
+	INT32 nCyclesTotal[2] = { 3000000 / 60, 3579545 / 60 };
 
 	ZetOpen(0);
 	konamiOpen(0);
@@ -764,7 +765,7 @@ static int DrvFrame()
 	konamiRun(nCyclesTotal[0]);
 	konamiSetIrqLine(KONAMI_IRQ_LINE, KONAMI_HOLD_LINE);
 
-	BurnTimerEndFrameYM3812(nCyclesTotal[1] - ZetTotalCycles());
+	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
 		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
@@ -782,7 +783,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

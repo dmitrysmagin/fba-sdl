@@ -313,7 +313,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 	}
 	if (Msg == WM_CTLCOLORSTATIC) {
 		if ((HWND)lParam == GetDlgItem(hDlg, IDC_INPS_CONTROL)) {
-			return (BOOL)hWhiteBGBrush;
+			return (INT_PTR)hWhiteBGBrush;
 		}
 	}
 	return 0;

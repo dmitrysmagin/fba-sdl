@@ -12,53 +12,54 @@
  ******************************************************/
 
 #include "burnint.h"
+#include "zet.h"
 #include "msm6295.h"
 #include "burn_sound.h"
 #include "ics2115.h"
 
-unsigned char *ICSSNDROM;
-unsigned int nICSSNDROMLen;
+UINT8 *ICSSNDROM;
+UINT32 nICSSNDROMLen;
 
 enum { V_ON = 1, V_DONE = 2 };
 
 struct ics2115 {
-	unsigned char * rom;
-	signed short ulaw[256];
+	UINT8 * rom;
+	INT16 ulaw[256];
 	struct {
-		unsigned short fc, addrh, addrl, strth, endh, volacc;
-		unsigned char strtl, endl, saddr, pan, conf, ctl;
-		unsigned char vstart, vend, vctl;
-		unsigned char state;
+		UINT16 fc, addrh, addrl, strth, endh, volacc;
+		UINT8 strtl, endl, saddr, pan, conf, ctl;
+		UINT8 vstart, vend, vctl;
+		UINT8 state;
 	} voice[32];
 	struct {
-		unsigned char scale, preset;
+		UINT8 scale, preset;
 		//mame_timer *timer;
 		bool active;
-		unsigned int period;
+		UINT32 period;
 	} timer[2];
-	unsigned char reg, osc;
-	unsigned char irq_en, irq_pend;
-	int irq_on;
+	UINT8 reg, osc;
+	UINT8 irq_en, irq_pend;
+	INT32 irq_on;
 	//sound_stream * stream;
 };
 
 static struct ics2115 * chip = NULL;
-static signed short * sndbuffer = NULL;
-static unsigned short nSoundlatch[3] = {0, 0, 0};
-static unsigned char bSoundlatchRead[3] = {0, 0, 0};
+static INT16 * sndbuffer = NULL;
+static UINT16 nSoundlatch[3] = {0, 0, 0};
+static UINT8 bSoundlatchRead[3] = {0, 0, 0};
 
 #define	ICS2115_RATE				33075
 #define ICS2115_FRAME_BUFFER_SIZE	(ICS2115_RATE / 60 + 1)
 
-static unsigned int nSoundDelta;
+static UINT32 nSoundDelta;
 
 /* ICS2115V chip emu */
 
 static void recalc_irq()
 {
-    int irq = 0;
+    INT32 irq = 0;
 	if(chip->irq_en & chip->irq_pend) irq = 1;
-	for(int i=0; !irq && i<32; i++)
+	for(INT32 i=0; !irq && i<32; i++)
 		if(chip->voice[i].state & V_DONE) irq = 1;
 	if(irq != chip->irq_on) {
 		chip->irq_on = irq;
@@ -85,33 +86,37 @@ static void timer_cb_1()
 	recalc_irq();
 }
 
-static void recalc_timer(int timer)
+static void recalc_timer(INT32 timer)
 {
 	float period = 0;
 
 	if(chip->timer[timer].scale) {
-		int sc = chip->timer[timer].scale;
+		INT32 sc = chip->timer[timer].scale;
 		float counter = (float)((((sc & 31)+1) * (chip->timer[timer].preset+1)) << (4+(sc >> 5)));
 		period = 1000000000 * counter / 33868800;
 	} else {
 		period = 0;
 	}
 
-	if (chip->timer[timer].period != (unsigned int)period) {
-		chip->timer[timer].period = (unsigned int)period;
+	if (chip->timer[timer].period != (UINT32)period) {
+		chip->timer[timer].period = (UINT32)period;
 		if(period) chip->timer[timer].active = true;
 		else  chip->timer[timer].active = false;
 	}
 }
 
-unsigned short ics2115read_reg(unsigned char reg)
+UINT16 ics2115read_reg(UINT8 reg)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115read_reg called without init\n"));
+#endif
+
 	switch (reg) {
 	case 0x0d: // [osc] Volume Enveloppe Control
 		return 0x100;
 	case 0x0f: {// [osc] Interrupt source/oscillator
-		unsigned char res = 0xff;
-		for(int osc=0; osc<32; osc++)
+		UINT8 res = 0xff;
+		for(INT32 osc=0; osc<32; osc++)
 			if(chip->voice[osc].state & V_DONE) {
 				chip->voice[osc].state &= ~V_DONE;
 				recalc_irq();
@@ -140,8 +145,12 @@ unsigned short ics2115read_reg(unsigned char reg)
 	}
 }
 
-void ics2115write_reg(unsigned char reg, unsigned char data, int msb)
+void ics2115write_reg(UINT8 reg, UINT8 data, INT32 msb)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115write_reg called without init\n"));
+#endif
+
 //	bprintf(PRINT_NORMAL, _T("ics2115write_reg(%02x, %02x, %d);  %4.1f%%\n"), reg, data, msb, 6.0 * ZetTotalCycles() / 8468.0 ); 
 	
 	switch (reg) {
@@ -235,15 +244,19 @@ void ics2115write_reg(unsigned char reg, unsigned char data, int msb)
 	}
 }
 
-unsigned char ics2115read(unsigned char offset)
+UINT8 ics2115read(UINT8 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115read called without init\n"));
+#endif
+
 	switch ( offset ) {
 	case 0x00: {
-		unsigned char res = 0;
+		UINT8 res = 0;
 		if(chip->irq_on) {
 			res |= 0x80;
 			if(chip->irq_en & chip->irq_pend & 3) res |= 1; // Timer irq
-			for(int i=0; i<32; i++)
+			for(INT32 i=0; i<32; i++)
 				if(chip->voice[i].state & V_DONE) {
 					res |= 2;
 					break;
@@ -260,8 +273,12 @@ unsigned char ics2115read(unsigned char offset)
 	}
 }
 
-void ics2115write(unsigned char offset, unsigned char data)
+void ics2115write(UINT8 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115write called without init\n"));
+#endif
+
 	switch (offset) {
 	case 0x01:
 		chip->reg = data;
@@ -277,12 +294,14 @@ void ics2115write(unsigned char offset, unsigned char data)
 	}
 }
 
-int ics2115_init()
+INT32 ics2115_init()
 {
-	chip = (struct ics2115 *) malloc( sizeof(struct ics2115) );	// ICS2115V
+	DebugSnd_ICS2115Initted = 1;
+	
+	chip = (struct ics2115 *)BurnMalloc(sizeof(struct ics2115));	// ICS2115V
 	if (chip == NULL) return 1;
 	
-	sndbuffer = (signed short *) malloc ( ICS2115_FRAME_BUFFER_SIZE * sizeof(signed short));
+	sndbuffer = (INT16*)BurnMalloc(ICS2115_FRAME_BUFFER_SIZE * sizeof(INT16*));
 	if (sndbuffer == NULL) return 1;
 
 	return 0;
@@ -290,23 +309,25 @@ int ics2115_init()
 
 void ics2115_exit()
 {
-	free( chip );
-	chip = NULL;
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_exit called without init\n"));
+#endif
+
+	BurnFree(chip);
 
 	nICSSNDROMLen = 0;
 
-	free(ICSSNDROM);
-	ICSSNDROM = NULL;
-
-	free( sndbuffer );
-	sndbuffer = NULL;
+	BurnFree(ICSSNDROM);
+	BurnFree(sndbuffer);
+	
+	DebugSnd_ICS2115Initted = 0;
 }
 
 static void recalculate_ulaw()
 {
-	for(int i=0; i<256; i++) {
-		unsigned char c = ((~i) & 0xFF);
-		int v = ((c & 15) << 1) + 33;
+	for(INT32 i=0; i<256; i++) {
+		UINT8 c = ((~i) & 0xFF);
+		INT32 v = ((c & 15) << 1) + 33;
 		v <<= ((c & 0x70) >> 4);
 		if(c & 0x80) v = 33-v;
 		else		 v = v-33;
@@ -316,6 +337,10 @@ static void recalculate_ulaw()
 
 void ics2115_reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_reset called without init\n"));
+#endif
+
 	memset(chip, 0, sizeof(struct ics2115));
 
 	chip->rom = ICSSNDROM;
@@ -338,15 +363,23 @@ void ics2115_reset()
 	memset(bSoundlatchRead, 0, sizeof(bSoundlatchRead));
 }
 
-unsigned short ics2115_soundlatch_r(int i)
+UINT16 ics2115_soundlatch_r(INT32 i)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_soundlatch_r called without init\n"));
+#endif
+
 //	bprintf(PRINT_NORMAL, _T("soundlatch_r(%d)  %4.1f%% of frame\n"), i, 6.0 * SekTotalCycles() / 20000.0 ); 
 	bSoundlatchRead[i] = 1;
 	return nSoundlatch[i];
 }
 
-void ics2115_soundlatch_w(int i, unsigned short d)
+void ics2115_soundlatch_w(INT32 i, UINT16 d)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_soundlatch_w called without init\n"));
+#endif
+
 //	if  ( !bSoundlatchRead[i] && nSoundlatch[i] != d )
 //		bprintf(PRINT_ERROR, _T("soundlatch_w(%d, %04x)  %4.1f%% of frame\n"), i, d, 6.0 * SekTotalCycles() / 20000.0);
 //	else
@@ -357,40 +390,48 @@ void ics2115_soundlatch_w(int i, unsigned short d)
 
 void ics2115_frame()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_frame called without init\n"));
+#endif
+
 	if (chip->timer[0].active ) timer_cb_0();
 	if (chip->timer[1].active ) timer_cb_1();	
 }
 
-void ics2115_update(int /*length*/)
+void ics2115_update(INT32 /*length*/)
 {
-	int rec_irq = 0;
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_update called without init\n"));
+#endif
+
+	INT32 rec_irq = 0;
 	
 	//short* pSoundBuf = pBurnSoundOut;
 	
-	memset(sndbuffer, 0, ICS2115_FRAME_BUFFER_SIZE * sizeof(signed short));
+	memset(sndbuffer, 0, ICS2115_FRAME_BUFFER_SIZE * sizeof(INT16));
 
-	for(int osc=0; osc<32; osc++)
+	for(INT32 osc=0; osc<32; osc++)
 		if(chip->voice[osc].state & V_ON) {
-			unsigned int badr = (chip->voice[osc].saddr << 20) & 0x0f00000;
+			UINT32 badr = (chip->voice[osc].saddr << 20) & 0x0f00000;
 			if (badr >= nICSSNDROMLen) { // right?
 				chip->voice[osc].state &= ~V_ON;
 				chip->voice[osc].state |= V_DONE;
 				rec_irq = 1;
 				break; 
 			}
-			unsigned int adr = (chip->voice[osc].addrh << 16) | chip->voice[osc].addrl;
-			unsigned int end = (chip->voice[osc].endh << 16) | (chip->voice[osc].endl << 8);
-			unsigned int loop = (chip->voice[osc].strth << 16) | (chip->voice[osc].strtl << 8);
-			unsigned char conf = chip->voice[osc].conf;
-			signed int vol = chip->voice[osc].volacc;
+			UINT32 adr = (chip->voice[osc].addrh << 16) | chip->voice[osc].addrl;
+			UINT32 end = (chip->voice[osc].endh << 16) | (chip->voice[osc].endl << 8);
+			UINT32 loop = (chip->voice[osc].strth << 16) | (chip->voice[osc].strtl << 8);
+			UINT32 conf = chip->voice[osc].conf;
+			INT32 vol = chip->voice[osc].volacc;
 			vol = (((vol & 0xff0)|0x1000)<<(vol>>12))>>12;
-			unsigned int delta = chip->voice[osc].fc << 2;
+			UINT32 delta = chip->voice[osc].fc << 2;
 
-			for(int i=0; i<ICS2115_FRAME_BUFFER_SIZE; i++) {
-				signed int v = chip->rom[(badr|(adr >> 12))];
+			for(INT32 i=0; i<ICS2115_FRAME_BUFFER_SIZE; i++) {
+				INT32 v = chip->rom[(badr|(adr >> 12))];
 				
 				if(conf & 1)v = chip->ulaw[v];
-				else		v = ((signed char)v) << 6;
+				else		v = ((INT8)v) << 6;
 
 				v = (v*vol)>>(16+5);
 				
@@ -414,20 +455,24 @@ void ics2115_update(int /*length*/)
 	if(rec_irq) recalc_irq();
 	
 	if (pBurnSoundOut) {
-		int pos = 0;
-		signed short * pOut = (signed short *)pBurnSoundOut;
-		for(int i=0; i<nBurnSoundLen; i++, pOut+=2, pos+=nSoundDelta)
+		INT32 pos = 0;
+		INT16 * pOut = (INT16*)pBurnSoundOut;
+		for(INT32 i=0; i<nBurnSoundLen; i++, pOut+=2, pos+=nSoundDelta)
 			pOut[0] = pOut[1] = sndbuffer[ pos >> 16 ] << 4;
 	}
 	
 }
 
-void ics2115_scan(int nAction,int * /*pnMin*/)
+void ics2115_scan(INT32 nAction,INT32 * /*pnMin*/)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_ICS2115Initted) bprintf(PRINT_ERROR, _T("ics2115_scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 	
 	if ( nAction & ACB_DRIVER_DATA ) {
-		unsigned char *rom = chip->rom;
+		UINT8 *rom = chip->rom;
 
 		ba.Data		= chip;
 		ba.nLen		= sizeof(struct ics2115);

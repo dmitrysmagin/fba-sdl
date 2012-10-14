@@ -1,9 +1,8 @@
 // FB Alpha Ginga NinkyouDen driver module
 // Based on MAME driver by Luca Elia and Takahiro Nogi
 
-// To do: missing Y8950 sound
-
 #include "tiles_generic.h"
+#include "sek.h"
 #include "m6809_intf.h"
 #include "burn_y8950.h"
 #include "driver.h"
@@ -11,48 +10,48 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvM6809ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvGfxROM4;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvM6809RAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvTxtRAM;
-static unsigned char *DrvSprRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvM6809ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvGfxROM4;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvM6809RAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvTxtRAM;
+static UINT8 *DrvSprRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static short *pAY8910Buffer[3];
+static INT16 *pAY8910Buffer[3];
 
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
-static unsigned short *layer_control;
-static unsigned short *scroll;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
+static UINT16 *layer_control;
+static UINT16 *scroll;
 
-static unsigned char MC6840_idx0;
-static unsigned char MC6840_idx1;
-static unsigned char MC6840_reg0;
-static unsigned char MC6840_reg1;
-static unsigned char MC6840_tempo;
-static unsigned char MC6840_tempo2;
-static unsigned char MC6840_ctr;
-static unsigned char MC6840_flag;
+static UINT8 MC6840_idx0;
+static UINT8 MC6840_idx1;
+static UINT8 MC6840_reg0;
+static UINT8 MC6840_reg1;
+static UINT8 MC6840_tempo;
+static UINT8 MC6840_tempo2;
+static UINT8 MC6840_ctr;
+static UINT8 MC6840_flag;
 
-static unsigned char DrvJoy1[16];
-static unsigned short DrvInputs[1];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[16];
+static UINT16 DrvInputs[1];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo GinganinInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 12,	"p1 coin"	},
@@ -138,7 +137,7 @@ static struct BurnDIPInfo GinganinDIPList[]=
 
 STDDIPINFO(Ginganin)
 
-void __fastcall ginganin_write_word(unsigned int address, unsigned short data)
+void __fastcall ginganin_write_word(UINT32 address, UINT16 data)
 {
 	if (address < 0x20000) return;
 
@@ -166,7 +165,7 @@ void __fastcall ginganin_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-unsigned short __fastcall ginganin_read_word(unsigned int address)
+UINT16 __fastcall ginganin_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -180,17 +179,17 @@ unsigned short __fastcall ginganin_read_word(unsigned int address)
 	return 0;
 }
 
-void __fastcall ginganin_write_byte(unsigned int /*address*/, unsigned char /*data*/)
+void __fastcall ginganin_write_byte(UINT32 /*address*/, UINT8 /*data*/)
 {
 	return;
 }
 
-unsigned char __fastcall ginganin_read_byte(unsigned int /*address*/)
+UINT8 __fastcall ginganin_read_byte(UINT32 /*address*/)
 {
 	return 0;
 }
 
-void ginganin_sound_write(unsigned short address, unsigned char data)
+void ginganin_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -229,7 +228,7 @@ void ginganin_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char ginganin_sound_read(unsigned short address)
+UINT8 ginganin_sound_read(UINT16 address)
 {
 	if (address == 0x1800) {
 		return *soundlatch;
@@ -240,20 +239,20 @@ unsigned char ginganin_sound_read(unsigned short address)
 	return 0;
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)M6809TotalCycles() * nSoundRate / 1000000;
+	return (INT64)M6809TotalCycles() * nSoundRate / 1000000;
 }
 
-static void DrvGfxDecode(unsigned char *src, int len, int size)
+static void DrvGfxDecode(UINT8 *src, INT32 len, INT32 size)
 {
-	int Planes[4] = { 0x000, 0x001, 0x002, 0x003 };
-	int XOffs[16] = { 0x000, 0x004, 0x008, 0x00c, 0x010, 0x014, 0x018, 0x01c,
+	INT32 Planes[4] = { 0x000, 0x001, 0x002, 0x003 };
+	INT32 XOffs[16] = { 0x000, 0x004, 0x008, 0x00c, 0x010, 0x014, 0x018, 0x01c,
 			  0x200, 0x204, 0x208, 0x20c, 0x210, 0x214, 0x218, 0x21c };
-	int YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	INT32 YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			  0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -262,10 +261,13 @@ static void DrvGfxDecode(unsigned char *src, int len, int size)
 
 	GfxDecode((len * 2) / (size * size), 4, size, size, Planes, XOffs, YOffs, (size * size * 4), tmp, src);
 
-	free (tmp);
+	if (tmp) {
+		free (tmp);
+		tmp = NULL;
+	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -292,9 +294,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x020000;
 	DrvM6809ROM		= Next; Next += 0x010000;
@@ -307,11 +309,11 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x020000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x400 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x400 * sizeof(UINT32);
 
-	pAY8910Buffer[0]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
 
 	AllRam			= Next;
 
@@ -322,11 +324,11 @@ static int MemIndex()
 	DrvTxtRAM		= Next; Next += 0x000800;
 	DrvSprRAM		= Next; Next += 0x000800;
 
-	layer_control		= (unsigned short*)Next; Next += 0x000001 * sizeof(short);
+	layer_control		= (UINT16*)Next; Next += 0x000001 * sizeof(UINT16);
 	soundlatch		= Next; Next += 0x000001;
 	flipscreen		= Next; Next += 0x000001;
 
-	scroll			= (unsigned short*)Next; Next += 0x000004 * sizeof(short);
+	scroll			= (UINT16*)Next; Next += 0x000004 * sizeof(UINT16);
 
 	RamEnd			= Next;
 
@@ -335,12 +337,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -410,7 +412,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -420,40 +422,39 @@ static int DrvExit()
 	BurnY8950Exit();
 	AY8910Exit(0);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
 static void DrvRecalcPalette()
 {
-	unsigned short *pal = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x800 / 2; i++)
+	UINT16 *pal = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x800 / 2; i++)
 	{
-		int r = (pal[i] >> 12) & 0x0f;
-		int g = (pal[i] >>  8) & 0x0f;
-		int b = (pal[i] >>  4) & 0x0f;
+		INT32 r = (pal[i] >> 12) & 0x0f;
+		INT32 g = (pal[i] >>  8) & 0x0f;
+		INT32 b = (pal[i] >>  4) & 0x0f;
 
 		DrvPalette[i] = BurnHighCol((r << 4) | r, (g << 4) | g, (b << 4) | b, 0);
 	}
 }
 
-static void draw_layer(unsigned char *ram, unsigned char *gfx, int color_offset, int wide, int scroll_offset, int transparent)
+static void draw_layer(UINT8 *ram, UINT8 *gfx, INT32 color_offset, INT32 wide, INT32 scroll_offset, INT32 transparent)
 {
-	int scrollx = scroll[scroll_offset + 1] & ((wide * 16) - 1);
-	int scrolly = scroll[scroll_offset + 0] & 0x01ff;
+	INT32 scrollx = scroll[scroll_offset + 1] & ((wide * 16) - 1);
+	INT32 scrolly = scroll[scroll_offset + 0] & 0x01ff;
 
-	unsigned short *vram = (unsigned short*)ram;
+	UINT16 *vram = (UINT16*)ram;
 
-	for (int offs = 0; offs < 16 * 16 + 16; offs++)
+	for (INT32 offs = 0; offs < 16 * 16 + 16; offs++)
 	{
-		int ofst  = ((((offs >> 4) + (scrollx >> 4)) & (wide-1)) << 5) + (((offs & 0xf) + (scrolly >> 4)) & 0x01f);
+		INT32 ofst  = ((((offs >> 4) + (scrollx >> 4)) & (wide-1)) << 5) + (((offs & 0xf) + (scrolly >> 4)) & 0x01f);
 
-		int sy    = ((offs & 0xf) << 4) - (scrolly & 0x0f);
-		int sx    = ((offs >> 4) << 4) - (scrollx & 0x0f);
+		INT32 sy    = ((offs & 0xf) << 4) - (scrolly & 0x0f);
+		INT32 sx    = ((offs >> 4) << 4) - (scrollx & 0x0f);
 
-		int attr  = vram[ofst];
+		INT32 attr  = vram[ofst];
 
 		if (*flipscreen) {
 			if (transparent) {
@@ -473,16 +474,16 @@ static void draw_layer(unsigned char *ram, unsigned char *gfx, int color_offset,
 
 static void draw_txt_layer()
 {
-	unsigned short *vram = (unsigned short*)DrvTxtRAM;
+	UINT16 *vram = (UINT16*)DrvTxtRAM;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx    = (offs & 0x1f) << 3;
-		int sy    = (offs >> 5) << 3;
+		INT32 sx    = (offs & 0x1f) << 3;
+		INT32 sy    = (offs >> 5) << 3;
 
 		if (sy < 16 || sy > 240) continue;
 
-		int attr = vram[offs];
+		INT32 attr = vram[offs];
 
 		if (*flipscreen) {
 			Render8x8Tile_Mask_FlipXY(pTransDraw, attr & 0x1ff, sx ^ 0xf8, (sy ^ 0xf8) - 16, attr >> 12, 4, 0x0f, 0x000, DrvGfxROM2);
@@ -494,16 +495,16 @@ static void draw_txt_layer()
 
 static void draw_sprites()
 {
-	unsigned short *vram = (unsigned short*)DrvSprRAM;
+	UINT16 *vram = (UINT16*)DrvSprRAM;
 
-	for (int offs = 0; offs < 0x800 / 2; offs += 4)
+	for (INT32 offs = 0; offs < 0x800 / 2; offs += 4)
 	{
-		int sy    = vram[offs + 0];
-		int sx    = vram[offs + 1];
-		int code  = vram[offs + 2];
-		int color = vram[offs + 3] >> 12;
-		int flipx = code & 0x4000;
-		int flipy = code & 0x8000;
+		INT32 sy    = vram[offs + 0];
+		INT32 sx    = vram[offs + 1];
+		INT32 code  = vram[offs + 2];
+		INT32 color = vram[offs + 3] >> 12;
+		INT32 flipx = code & 0x4000;
+		INT32 flipy = code & 0x8000;
 
 		sx = (sx & 0xff) - (sx & 0x100);
 		sy = (sy & 0xff) - (sy & 0x100);
@@ -535,7 +536,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
@@ -581,7 +582,7 @@ static void sound_interrupt()
 	}
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -590,23 +591,23 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = 0xffff;
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		}
 	}
 
-	int nInterleave = 60;
-	int nCyclesTotal[2] = { 6000000 / 60, 1000000 / 60 };
-	int nCyclesDone[2]  = { 0, 0 };
+	INT32 nInterleave = 60;
+	INT32 nCyclesTotal[2] = { 6000000 / 60, 1000000 / 60 };
+	INT32 nCyclesDone[2]  = { 0, 0 };
 	
 	M6809NewFrame();
 
 	SekOpen(0);
 	M6809Open(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nSegment;
+		INT32 nSegment;
 
 		nSegment = nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += SekRun(nSegment);
@@ -622,22 +623,16 @@ static int DrvFrame()
 	BurnTimerEndFrameY8950(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pAY8910Buffer[0][n];
 			nSample += pAY8910Buffer[1][n];
 			nSample += pAY8910Buffer[2][n];
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -655,12 +650,12 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
 	if (pnMin) {
-		*pnMin = 0x029707;
+		*pnMin = 0x029722;
 	}
 
 	if (nAction & ACB_VOLATILE) {		
@@ -672,9 +667,10 @@ static int DrvScan(int nAction,int *pnMin)
 		BurnAcb(&ba);
 
 		SekScan(nAction);
-		ZetScan(nAction);
+		M6809Scan(nAction);
 
 		AY8910Scan(nAction, pnMin);
+		BurnY8950Scan(nAction, pnMin);
 
 		SCAN_VAR(MC6840_idx0);
 		SCAN_VAR(MC6840_idx1);
@@ -722,8 +718,8 @@ STD_ROM_FN(ginganin)
 
 struct BurnDriver BurnDrvGinganin = {
 	"ginganin", NULL, NULL, NULL, "1987",
-	"Ginga NinkyouDen (set 1)\0", "Incomplete sound", "Jaleco", "Miscellaneous",
-	L"\u9280\u6CB3\u4EFB\u4FA0\u4F1D (set 1)\0Ginga NinkyouDen (set 1)\0", NULL, NULL, NULL,
+	"Ginga NinkyouDen (set 1)\0", NULL, "Jaleco", "Miscellaneous",
+	L"\u9280\u6CB3\u4EFB\u4FA0\u4F1D\0Ginga NinkyouDen (set 1)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, ginganinRomInfo, ginganinRomName, NULL, NULL, GinganinInputInfo, GinganinDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
@@ -763,8 +759,8 @@ STD_ROM_FN(ginganina)
 
 struct BurnDriver BurnDrvGinganina = {
 	"ginganina", "ginganin", NULL, NULL, "1987",
-	"Ginga NinkyouDen (set 2)\0", "Incomplete sound", "Jaleco", "Miscellaneous",
-	L"\u9280\u6CB3\u4EFB\u4FA0\u4F1D (set 2)\0Ginga NinkyouDen (set 2)\0", NULL, NULL, NULL,
+	"Ginga NinkyouDen (set 2)\0", NULL, "Jaleco", "Miscellaneous",
+	L"\u9280\u6CB3\u4EFB\u4FA0\u4F1D\0Ginga NinkyouDen (set 2)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, ginganinaRomInfo, ginganinaRomName, NULL, NULL, GinganinInputInfo, GinganinDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,

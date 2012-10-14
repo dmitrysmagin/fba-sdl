@@ -1,18 +1,21 @@
 #include "toaplan.h"
+#include "vez.h"
 // Dogyuun
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
+
+static INT32 v25_reset = 0;
 
 // Rom information
 static struct BurnRomInfo dogyuunRomDesc[] = {
-	{ "tp022_01.r16", 0x080000, 0x79EB2429, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "tp022_01.r16", 0x080000, 0x79EB2429, BRF_ESS | BRF_PRG },             //  0 CPU #0 code
 
 	{ "tp022_3.w92",  0x100000, 0x191B595F, BRF_GRA },			 //  1 GP9001 #1 Tile data
 	{ "tp022_4.w93",  0x100000, 0xD58D29CA, BRF_GRA },			 //  2
@@ -20,9 +23,7 @@ static struct BurnRomInfo dogyuunRomDesc[] = {
 	{ "tp022_5.w16",  0x200000, 0xD4C1DB45, BRF_GRA },			 //  3 GP9001 #2 Tile data
 	{ "tp022_6.w17",  0x200000, 0xD48DC74F, BRF_GRA },			 //  4
 
-//	{"tp022.mcu",	0x010000, 0x00000000, 0x10}, //  5 Sound CPU
-
-	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  6 ADPCM data
+	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  5 ADPCM data
 };
 
 
@@ -30,7 +31,7 @@ STD_ROM_PICK(dogyuun)
 STD_ROM_FN(dogyuun)
 
 static struct BurnRomInfo dogyuunkRomDesc[] = {
-	{ "01.u64",       0x080000, 0xfe5bd7f4, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "01.u64",       0x080000, 0xfe5bd7f4, BRF_ESS | BRF_PRG },             //  0 CPU #0 code
 
 	{ "tp022_3.w92",  0x100000, 0x191B595F, BRF_GRA },			 //  1 GP9001 #1 Tile data
 	{ "tp022_4.w93",  0x100000, 0xD58D29CA, BRF_GRA },			 //  2
@@ -38,9 +39,7 @@ static struct BurnRomInfo dogyuunkRomDesc[] = {
 	{ "tp022_5.w16",  0x200000, 0xD4C1DB45, BRF_GRA },			 //  3 GP9001 #2 Tile data
 	{ "tp022_6.w17",  0x200000, 0xD48DC74F, BRF_GRA },			 //  4
 
-//	{"tp022.mcu",	0x010000, 0x00000000, 0x10}, //  5 Sound CPU
-
-	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  6 ADPCM data
+	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  5 ADPCM data
 };
 
 
@@ -48,7 +47,7 @@ STD_ROM_PICK(dogyuunk)
 STD_ROM_FN(dogyuunk)
 
 static struct BurnRomInfo dogyuuntRomDesc[] = {
-	{ "sample10.9.u64.bin",     0x080000, 0x585f5016, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "sample10.9.u64.bin",     0x080000, 0x585f5016, BRF_ESS | BRF_PRG },   //  0 CPU #0 code
 
 	{ "tp022_3.w92",  0x100000, 0x191B595F, BRF_GRA },			 //  1 GP9001 #1 Tile data
 	{ "tp022_4.w93",  0x100000, 0xD58D29CA, BRF_GRA },			 //  2
@@ -56,9 +55,7 @@ static struct BurnRomInfo dogyuuntRomDesc[] = {
 	{ "tp022_5.w16",  0x200000, 0xD4C1DB45, BRF_GRA },			 //  3 GP9001 #2 Tile data
 	{ "tp022_6.w17",  0x200000, 0xD48DC74F, BRF_GRA },			 //  4
 
-//	{"tp022.mcu",	0x010000, 0x00000000, 0x10}, //  5 Sound CPU
-
-	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  6 ADPCM data
+	{ "tp022_2.w30",  0x040000, 0x043271B3, BRF_SND },			 //  5 ADPCM data
 };
 
 
@@ -67,29 +64,29 @@ STD_ROM_FN(dogyuunt)
 
 static struct BurnInputInfo dogyuunInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
-	{"P1 Start",	BIT_DIGITAL,	DrvButton + 5,	"p1 start"},
+	{"P1 Start",		BIT_DIGITAL,	DrvButton + 5,	"p1 start"},
 
 	{"P1 Up",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 up"},
 	{"P1 Down",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 down"},
 	{"P1 Left",		BIT_DIGITAL,	DrvJoy1 + 2,	"p1 left"},
-	{"P1 Right",	BIT_DIGITAL,	DrvJoy1 + 3,	"p1 right"},
-	{"P1 Button 1",	BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"},
-	{"P1 Button 2",	BIT_DIGITAL,	DrvJoy1 + 5,	"p1 fire 2"},
-	{"P1 Button 3",	BIT_DIGITAL,	DrvJoy1 + 6,	"p1 fire 3"},
+	{"P1 Right",		BIT_DIGITAL,	DrvJoy1 + 3,	"p1 right"},
+	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"},
+	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 fire 2"},
+	{"P1 Button 3",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 fire 3"},
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvButton + 4,	"p2 coin"},
-	{"P2 Start",	BIT_DIGITAL,	DrvButton + 6,	"p2 start"},
+	{"P2 Start",		BIT_DIGITAL,	DrvButton + 6,	"p2 start"},
 
 	{"P2 Up",		BIT_DIGITAL,	DrvJoy2 + 0,	"p2 up"},
 	{"P2 Down",		BIT_DIGITAL,	DrvJoy2 + 1,	"p2 down"},
 	{"P2 Left",		BIT_DIGITAL,	DrvJoy2 + 2,	"p2 left"},
-	{"P2 Right",	BIT_DIGITAL,	DrvJoy2 + 3,	"p2 right"},
-	{"P2 Button 1",	BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"},
-	{"P2 Button 2",	BIT_DIGITAL,	DrvJoy2 + 5,	"p2 fire 2"},
-	{"P2 Button 3",	BIT_DIGITAL,	DrvJoy2 + 6,	"p2 fire 3"},
+	{"P2 Right",		BIT_DIGITAL,	DrvJoy2 + 3,	"p2 right"},
+	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"},
+	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy2 + 5,	"p2 fire 2"},
+	{"P2 Button 3",		BIT_DIGITAL,	DrvJoy2 + 6,	"p2 fire 3"},
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,		"reset"},
-	{"Diagnostics",	BIT_DIGITAL,	DrvButton + 0,	"diag"},
+	{"Diagnostics",		BIT_DIGITAL,	DrvButton + 0,	"diag"},
 	{"Dip A",		BIT_DIPSWITCH,	DrvInput + 3,	"dip"},
 	{"Dip B",		BIT_DIPSWITCH,	DrvInput + 4,	"dip"},
 	{"Dip C",		BIT_DIPSWITCH,	DrvInput + 5,	"dip"},
@@ -246,39 +243,40 @@ static struct BurnDIPInfo dogyuuntRegionDIPList[] = {
 
 STDDIPINFOEXT(dogyuunt, dogyuuntRegion, dogyuun)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *Ram03, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *ShareRAM;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		//
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	GP9001ROM[1]= Next; Next += nGP9001ROMSize[1];	// GP9001 tile data
+	MSM6295ROM = Next; Next += 0x040000;
 	RamStart	= Next;
 	Ram01		= Next; Next += 0x004000;		// CPU #0 work RAM
-	Ram02		= Next; Next += 0x00F000;		//
-	Ram03		= Next; Next += 0x000400;		//
+	ShareRAM	= Next; Next += 0x010000;
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
 	GP9001RAM[1]= Next; Next += 0x004000;
-	GP9001Reg[1]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
+	GP9001Reg[1]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -287,12 +285,15 @@ static int DrvScan(int nAction,int *pnMin)
 	}
 	if (nAction & ACB_VOLATILE) {		// Scan volatile ram
 		memset(&ba, 0, sizeof(ba));
-    	ba.Data		= RamStart;
-		ba.nLen		= RamEnd-RamStart;
+    		ba.Data		= RamStart;
+		ba.nLen		= RamEnd - RamStart;
 		ba.szName	= "All Ram";
 		BurnAcb(&ba);
 
 		SekScan(nAction);				// scan 68000 states
+		VezScan(nAction);
+		BurnYM2151Scan(nAction);
+		MSM6295Scan(0, nAction);
 
 		ToaScanGP9001(nAction, pnMin);
 	}
@@ -300,7 +301,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -309,18 +310,17 @@ static int LoadRoms()
 	ToaLoadGP9001Tiles(GP9001ROM[0], 1, 2, nGP9001ROMSize[0], true);
 	ToaLoadGP9001Tiles(GP9001ROM[1], 3, 2, nGP9001ROMSize[1], true);
 
+	BurnLoadRom(MSM6295ROM, 5, 1);
+
 	return 0;
 }
 
-static unsigned int ZX80Status()
+UINT8 __fastcall dogyuunReadByte(UINT32 sekAddress)
 {
-	static int nValue = 0xFF;
-	nValue ^= 0x55;
-	return nValue;
-}
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		return ShareRAM[(sekAddress / 2) & 0x7fff];
+	}
 
-unsigned char __fastcall dogyuunReadByte(unsigned int sekAddress)
-{
 	switch (sekAddress) {
 		case 0x200011:								// Player 1 inputs
 			return DrvInput[0];
@@ -328,16 +328,6 @@ unsigned char __fastcall dogyuunReadByte(unsigned int sekAddress)
 			return DrvInput[1];
 		case 0x200019:								// Other inputs
 			return DrvInput[2];
-
-		case 0x21F001:
-		 	return ZX80Status();
-
-		case 0x21F005:								// Dipswitch A
-			return DrvInput[3];
-		case 0x21F007:			   					// Dipswitch B
-			return DrvInput[4];
-		case 0x21F009:								// Dipswitch C - Territory
-			return DrvInput[5];
 
 		case 0x30000D:
 			return ToaVBlankRegister();
@@ -350,8 +340,12 @@ unsigned char __fastcall dogyuunReadByte(unsigned int sekAddress)
 
 }
 
-unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
+UINT16 __fastcall dogyuunReadWord(UINT32 sekAddress)
 {
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		return ShareRAM[(sekAddress / 2) & 0x7fff];
+	}
+
 	switch (sekAddress) {
 
 		case 0x200010:								// Player 1 inputs
@@ -360,16 +354,6 @@ unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
 			return DrvInput[1];
 		case 0x200018:								// Other inputs
 			return DrvInput[2];
-
-		case 0x21F004:								// Dipswitch A
-			return DrvInput[3];
-		case 0x21F006:								// Dipswitch B
-			return DrvInput[4];
-		case 0x21F008:								// Dipswitch C - Territory
-			return DrvInput[5];
-
- 		case 0x21F000:
-		 	return ZX80Status();
 
 		case 0x300004:
 			return ToaGP9001ReadRAM_Hi(0);
@@ -385,8 +369,8 @@ unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
 			return ToaGP9001ReadRAM_Lo(1);
 
 		case 0x700000: {
-			static int i;
-			unsigned short nStatus;
+			static INT32 i;
+			UINT16 nStatus;
 
 			i++;
 			nStatus = 0xFFFF - (i & 0xFF);
@@ -402,33 +386,36 @@ unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
 	}
 
 	return 0;
-
 }
 
-void __fastcall dogyuunWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall dogyuunWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		ShareRAM[(sekAddress / 2) & 0x7fff] = byteValue;
+		return;
+	}
+
 	switch (sekAddress) {
-		case 0x21F001:
-		case 0x21F003:
-		case 0x20001D:
+		case 0x20001c:
+		case 0x20001d:
+			if (!v25_reset && (~byteValue & 0x20)) VezReset();
+			v25_reset = (~byteValue & 0x20);
 			break;
 
 		default: {
 //			printf("Attempt to write byte value %x to location %x\n", byteValue, sekAddress);
-
-			if ((sekAddress & 0x00FFE000) == 0x0021E000) {
-				Ram02[(sekAddress & 0x1FFF) >> 1] = byteValue;
-			}
 		}
 	}
 }
 
-void __fastcall dogyuunWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall dogyuunWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
-	switch (sekAddress) {
- 		case 0x20001C:
-			break;
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		ShareRAM[(sekAddress / 2) & 0x7fff] = wordValue;
+		return;
+	}
 
+	switch (sekAddress) {
 		case 0x300000:								// Set GP9001 VRAM address-pointer
 			ToaGP9001SetRAMPointer(wordValue);
 			break;
@@ -468,27 +455,100 @@ void __fastcall dogyuunWriteWord(unsigned int sekAddress, unsigned short wordVal
 			break;
 
 		default: {
-//			printf("Attempt to write word value %x to location %x\n", wordValue, sekAddress);
-
-			if ((sekAddress & 0x00FFE000) == 0x0021E000) {
-				Ram02[(sekAddress & 0x1FFF) >> 1] = wordValue & 0xFF;
-			}
+			printf("Attempt to write word value %x to location %x\n", wordValue, sekAddress);
 		}
 	}
 }
 
-static int DrvDoReset()
+void __fastcall dogyuun_v25_write(UINT32 address, UINT8 data)
+{
+	switch (address)
+	{
+		case 0x00000:
+			BurnYM2151SelectRegister(data);
+		return;
+
+		case 0x00001:
+			BurnYM2151WriteRegister(data);
+		return;
+
+		case 0x00004:
+			MSM6295Command(0, data);
+		return;
+	}
+}
+
+UINT8 __fastcall dogyuun_v25_read(UINT32 address)
+{
+	switch (address)
+	{
+		case 0x00001:
+			return BurnYM2151ReadStatus();
+
+		case 0x00004:
+			return MSM6295ReadStatus(0);
+	}
+
+	return 0;
+}
+
+UINT8 __fastcall dogyuun_v25_read_port(UINT32 port)
+{
+	switch (port)
+	{
+		case V25_PORT_PT:
+			return DrvInput[4]^0xff;
+
+		case V25_PORT_P0:
+			return DrvInput[3]^0xff;
+
+		case V25_PORT_P1:
+			return DrvInput[5]^0xff;
+	}
+
+	return 0;
+}
+
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
 	SekClose();
 
+	VezOpen(0);
+	VezReset();
+	VezClose();
+
+	BurnYM2151Reset();
+	MSM6295Reset(0);
+
+	v25_reset = 1;
+
 	return 0;
 }
 
-static int DrvInit()
+static UINT8 nitro_decryption_table[256] = {
+	0x1b,0x56,0x75,0x88,0x8c,0x06,0x58,0x72, 0x83,0x86,0x36,0x1a,0x5f,0xd3,0x8c,0xe9, /* 00 */
+	0x22,0x0f,0x03,0x2a,0xeb,0x2a,0xf9,0x0f, 0xa4,0xbd,0x75,0xf3,0x4f,0x53,0x8e,0xfe, /* 10 */
+	0x87,0xe8,0xb1,0x8d,0x36,0xb5,0x43,0x73, 0x2a,0x5b,0xf9,0x02,0x24,0x8a,0x03,0x80, /* 20 */
+	0x86,0x8b,0xd1,0x3e,0x8d,0x3e,0x58,0xfb, 0xc3,0x79,0xbd,0xb7,0x8a,0xe8,0x0f,0x81, /* 30 */
+	0xb7,0xd0,0x8b,0xeb,0xff,0xb8,0x90,0x8b, 0x5e,0xa2,0x90,0x90,0xab,0xb4,0x80,0x59, /* 40 */
+	0x87,0x72,0xb5,0xbd,0xb0,0x88,0x50,0x0f, 0xfe,0xd2,0xc3,0x90,0x8a,0x90,0xf9,0x75, /* 50 */
+	0x1a,0xb3,0x74,0x0a,0x68,0x24,0xbb,0x90, 0x75,0x47,0xfe,0x2c,0xbe,0xc3,0x88,0xd2, /* 60 */
+	0x3e,0xc1,0x8c,0x33,0x0f,0x90,0x8b,0x90, 0xb9,0x1e,0xff,0xa2,0x3e,0x22,0xbe,0x57, /* 70 */
+	0x81,0x3a,0xf6,0x88,0xeb,0xb1,0x89,0x8a, 0x32,0x80,0x0f,0xb1,0x48,0xc3,0x68,0x72, /* 80 */
+	0x53,0x02,0xc0,0x02,0xe8,0xb4,0x74,0xbc, 0x90,0x58,0x0a,0xf3,0x75,0xc6,0x90,0xe8, /* 90 */
+	0x26,0x50,0xfc,0x8c,0x90,0xb1,0xc3,0xd1, 0xeb,0x83,0xa4,0xbf,0x26,0x4b,0x46,0xfe, /* a0 */
+	0xe2,0x89,0xb3,0x88,0x03,0x56,0x0f,0x38, 0xbb,0x0c,0x90,0x0f,0x07,0x8a,0x8a,0x33, /* b0 */
+	0xfe,0xf9,0xb1,0xa0,0x45,0x36,0x22,0x5e, 0x8a,0xbe,0xc6,0xea,0x3c,0xb2,0x1e,0xe8, /* c0 */
+	0x90,0xeb,0x55,0xf6,0x8a,0xb0,0x5d,0xc0, 0xbb,0x8d,0xf6,0xd0,0xd1,0x88,0x4d,0x90, /* d0 */
+	0x51,0x51,0x74,0xbd,0x32,0xd1,0x90,0xd2, 0x53,0xc7,0xab,0x36,0x50,0xe9,0x33,0xb3, /* e0 */
+	0x2e,0x05,0x88,0x59,0x74,0x74,0x22,0x8e, 0x8a,0x8a,0x36,0x08,0x0f,0x45,0x90,0x2e, /* f0 */
+};
+
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -500,8 +560,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -514,22 +574,32 @@ static int DrvInit()
 
 	{
 		SekInit(0, 0x68000);									// Allocate 68000
-	    SekOpen(0);
-
-		// Map 68000 memory:
+		SekOpen(0);
 		SekMapMemory(Rom01,		0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram01,		0x100000, 0x103FFF, SM_RAM);
-		SekMapMemory(Ram02,		0x21E000, 0x21EFFF, SM_ROM);	// RAM; write goes through handler
-		SekMapMemory(Ram03,		0x21FC00, 0x21FFFF, SM_RAM);
-		SekMapMemory(RamPal,	0x400000, 0x400FFF, SM_RAM);	// Palette RAM
-
+		SekMapMemory(RamPal,		0x400000, 0x400FFF, SM_RAM);	// Palette RAM
 		SekSetReadWordHandler(0, dogyuunReadWord);
 		SekSetReadByteHandler(0, dogyuunReadByte);
 		SekSetWriteWordHandler(0, dogyuunWriteWord);
 		SekSetWriteByteHandler(0, dogyuunWriteByte);
-
 		SekClose();
+
+		VezInit(0, V25_TYPE, 12500000 /*before divider*/);
+		VezOpen(0);
+		for (INT32 i = 0x80000; i < 0x100000; i += 0x8000) {
+			VezMapArea(i, i + 0x7fff, 0, ShareRAM);
+			VezMapArea(i, i + 0x7fff, 1, ShareRAM);
+			VezMapArea(i, i + 0x7fff, 2, ShareRAM);
+		}
+		VezSetReadHandler(dogyuun_v25_read);
+		VezSetWriteHandler(dogyuun_v25_write);
+		VezSetReadPort(dogyuun_v25_read_port);
+		VezSetDecode(nitro_decryption_table);
+		VezClose();
 	}
+
+	BurnYM2151Init(3375000, 50.0);
+	MSM6295Init(0, 1041667 / 132, 50.0, 1);
 
 	nSpriteXOffset = 0x0024;
 	nSpriteYOffset = 0x0001;
@@ -550,23 +620,27 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 
+	BurnYM2151Exit();
+	MSM6295Exit(0);
+
 	ToaExitGP9001();
 	SekExit();				// Deallocate 68000s
+	VezExit();
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
+
+	MSM6295ROM = NULL;
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	ToaClearScreen(0);
+	ToaClearScreen(0x120);
 
 	if (bDrawScreen) {
 		ToaGetBitmap();
@@ -578,14 +652,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 10;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -595,7 +669,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -604,19 +678,26 @@ static int DrvFrame()
 	ToaClearOpposites(&DrvInput[1]);
 
 	SekNewFrame();
+	VezNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	INT32 nSoundBufferPos = 0;
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)6250000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
+	nCyclesDone[1] = 0;
 
+	SekOpen(0);
+	
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	VezOpen(0);
+
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -643,7 +724,32 @@ static int DrvFrame()
 			nCyclesDone[nCurrentCPU] += SekIdle(nCyclesSegment);
 		}
 
+		// sound! (increase interleave?)
+		if (v25_reset) {
+			nCyclesDone[1] += nCyclesTotal[1] / nInterleave;
+		} else {
+			nCyclesDone[1] += VezRun(nCyclesTotal[1] / nInterleave);
+		}
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
+
+	if (pBurnSoundOut) {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		if (nSegmentLength) {
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+		}
+	}
+
+	VezClose();
 	SekClose();
 
 	if (pBurnDraw) {
@@ -655,7 +761,7 @@ static int DrvFrame()
 
 struct BurnDriver BurnDrvDogyuun = {
 	"dogyuun", NULL, NULL, NULL, "1992",
-	"Dogyuun\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	"Dogyuun\0", NULL, "Toaplan", "Dual Toaplan GP9001 based",
 	L"Dogyuun\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, dogyuunRomInfo, dogyuunRomName, NULL, NULL, dogyuunInputInfo, dogyuunDIPInfo,
@@ -665,7 +771,7 @@ struct BurnDriver BurnDrvDogyuun = {
 
 struct BurnDriver BurnDrvDogyuunk = {
 	"dogyuuna", "dogyuun", NULL, NULL, "1992",
-	"Dogyuun (Licensed to Unite Trading For Korea)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	"Dogyuun (Licensed to Unite Trading For Korea)\0", NULL, "Toaplan", "Dual Toaplan GP9001 based",
 	L"Dogyuun (Licensed to Unite Trading For Korea)\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, dogyuunkRomInfo, dogyuunkRomName, NULL, NULL, dogyuunInputInfo, dogyuunkDIPInfo,
@@ -675,7 +781,7 @@ struct BurnDriver BurnDrvDogyuunk = {
 
 struct BurnDriver BurnDrvDogyuunt = {
 	"dogyuunt", "dogyuun", NULL, NULL, "1992",
-	"Dogyuun (test location version)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	"Dogyuun (test location version)\0", NULL, "Toaplan", "Dual Toaplan GP9001 based",
 	L"Dogyuun (test location version)\0Dogyuun \u30C9\u30AD\u30E5\u30FC\u30F3\uFF01\uFF01\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, dogyuuntRomInfo, dogyuuntRomName, NULL, NULL, dogyuunInputInfo, dogyuuntDIPInfo,

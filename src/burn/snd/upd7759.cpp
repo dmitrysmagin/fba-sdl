@@ -6,7 +6,7 @@
 #define FRAC_ONE			(1 << FRAC_BITS)
 #define FRAC_MASK			(FRAC_ONE - 1)
 
-static int SlaveMode;
+static INT32 SlaveMode;
 
 /* chip states */
 enum
@@ -37,7 +37,7 @@ struct upd7759_chip
 	UINT8		reset;						/* current state of the RESET line */
 	UINT8		start;						/* current state of the START line */
 	UINT8		drq;						/* current state of the DRQ line */
-	void (*drqcallback)(int param);			/* drq callback */
+	void (*drqcallback)(INT32 param);			/* drq callback */
 
 	/* internal state machine */
 	INT8		state;						/* current overall chip state */
@@ -68,7 +68,9 @@ struct upd7759_chip
 static struct upd7759_chip *Chips[2]; // more?
 static struct upd7759_chip *Chip = NULL;
 
-static const int upd7759_step[16][16] =
+static INT32 nNumChips = 0;
+
+static const INT32 upd7759_step[16][16] =
 {
 	{ 0,  0,  1,  2,  3,   5,   7,  10,  0,   0,  -1,  -2,  -3,   -5,   -7,  -10 },
 	{ 0,  1,  2,  3,  4,   6,   8,  13,  0,  -1,  -2,  -3,  -4,   -6,   -8,  -13 },
@@ -88,9 +90,9 @@ static const int upd7759_step[16][16] =
 	{ 6, 20, 36, 54, 76, 104, 144, 214, -6, -20, -36, -54, -76, -104, -144, -214 },
 };
 
-static const int upd7759_state[16] = { -1, -1, 0, 0, 1, 2, 2, 3, -1, -1, 0, 0, 1, 2, 2, 3 };
+static const INT32 upd7759_state[16] = { -1, -1, 0, 0, 1, 2, 2, 3, -1, -1, 0, 0, 1, 2, 2, 3 };
 
-inline static void UpdateAdpcm(int Data)
+inline static void UpdateAdpcm(INT32 Data)
 {
 	Chip->sample += upd7759_step[Chip->adpcm_state][Data];
 	Chip->adpcm_state += upd7759_state[Data];
@@ -307,8 +309,13 @@ static void UPD7759SlaveModeUpdate()
 	}
 }
 
-void UPD7759Update(int chip, short *pSoundBuf, int nLength)
+void UPD7759Update(INT32 chip, INT16 *pSoundBuf, INT32 nLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759Update called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759Update called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 
 	INT32 ClocksLeft = Chip->clocks_left;
@@ -332,7 +339,7 @@ void UPD7759Update(int chip, short *pSoundBuf, int nLength)
 			/* handle clocks, but only in standalone mode */
 			while (Chip->rom && Pos >= FRAC_ONE)
 			{
-				int ClocksThisTime = Pos >> FRAC_BITS;
+				INT32 ClocksThisTime = Pos >> FRAC_BITS;
 				if (ClocksThisTime > ClocksLeft)
 					ClocksThisTime = ClocksLeft;
 
@@ -363,7 +370,11 @@ void UPD7759Update(int chip, short *pSoundBuf, int nLength)
 
 void UPD7759Reset()
 {
-	for (int i = 0; i < 2; i++) {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759Reset called without init\n"));
+#endif
+
+	for (INT32 i = 0; i < 2; i++) {
 		Chip = Chips[i];
 		if (Chip == NULL) {
 			continue;
@@ -391,8 +402,10 @@ void UPD7759Reset()
 	}
 }
 
-void UPD7759Init(int chip, int clock, unsigned char* pSoundData)
+void UPD7759Init(INT32 chip, INT32 clock, UINT8* pSoundData)
 {
+	DebugSnd_UPD7759Initted = 1;
+	
 	Chips[chip] = (struct upd7759_chip*)malloc(sizeof(*Chip));
 	Chip = Chips[chip];
 
@@ -401,7 +414,7 @@ void UPD7759Init(int chip, int clock, unsigned char* pSoundData)
 	SlaveMode = 0;
 
 	float Rate = (float)clock / 4 / nBurnSoundRate;
-	Chip->step = (int)(4 * FRAC_ONE * Rate);
+	Chip->step = (INT32)(4 * FRAC_ONE * Rate);
 	Chip->state = STATE_IDLE;
 	
 	if (pSoundData) {
@@ -413,23 +426,40 @@ void UPD7759Init(int chip, int clock, unsigned char* pSoundData)
 	Chip->reset = 1;
 	Chip->start = 1;
 	
+	nNumChips = chip;
+	
 	UPD7759Reset();
 }
 
-void UPD7759SetDrqCallback(int chip, drqcallback Callback)
+void UPD7759SetDrqCallback(INT32 chip, drqcallback Callback)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759SetDrqCallback called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759SetDrqCallback called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 	Chip->drqcallback = Callback;
 }
 
-int UPD7759BusyRead(int chip)
+INT32 UPD7759BusyRead(INT32 chip)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759BusyRead called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759BusyRead called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 	return (Chip->state == STATE_IDLE);
 }
 
-void UPD7759ResetWrite(int chip, UINT8 Data)
+void UPD7759ResetWrite(INT32 chip, UINT8 Data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759ResetWrite called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759ResetWrite called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 	UINT8 Oldreset = Chip->reset;
 	Chip->reset = (Data != 0);
@@ -439,8 +469,13 @@ void UPD7759ResetWrite(int chip, UINT8 Data)
 	}
 }
 
-void UPD7759StartWrite(int chip, UINT8 Data)
+void UPD7759StartWrite(INT32 chip, UINT8 Data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759StartWrite called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759StartWrite called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 	UINT8 Oldstart = Chip->start;
 	Chip->start = (Data != 0);
@@ -452,14 +487,24 @@ void UPD7759StartWrite(int chip, UINT8 Data)
 	}
 }
 
-void UPD7759PortWrite(int chip, UINT8 Data)
+void UPD7759PortWrite(INT32 chip, UINT8 Data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759PortWrite called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759PortWrite called with invalid chip %x\n"), chip);
+#endif
+
 	Chip = Chips[chip];
 	Chip->fifo_in = Data;
 }
 
-int UPD7759Scan(int chip, int nAction,int *pnMin)
+INT32 UPD7759Scan(INT32 chip, INT32 nAction,INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759Scan called without init\n"));
+	if (chip > nNumChips) bprintf(PRINT_ERROR, _T("UPD7759Scan called with invalid chip %x\n"), chip);
+#endif
+
 	struct BurnArea ba;
 	char szName[16];
 	
@@ -485,6 +530,10 @@ int UPD7759Scan(int chip, int nAction,int *pnMin)
 
 void UPD7759Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_UPD7759Initted) bprintf(PRINT_ERROR, _T("UPD7759Exit called without init\n"));
+#endif
+
 	if (Chips[0]) {
 		free(Chips[0]);
 		Chips[0] = NULL;
@@ -493,5 +542,8 @@ void UPD7759Exit()
 		free(Chips[1]);
 		Chips[1] = NULL;
 	}
-	SlaveMode = 0;	
+	SlaveMode = 0;
+	
+	DebugSnd_UPD7759Initted = 0;
+	nNumChips = 0;
 }

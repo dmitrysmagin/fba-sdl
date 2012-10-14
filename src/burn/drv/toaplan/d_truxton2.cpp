@@ -1,23 +1,23 @@
 #include "toaplan.h"
 // Truxton 2
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
 
-static const int nColCount = 0x0800;
+static const INT32 nColCount = 0x0800;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static unsigned char nIRQPending;
+static UINT8 nIRQPending;
 
 static struct BurnInputInfo truxton2InputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -153,7 +153,7 @@ static struct BurnDIPInfo truxton2DIPList[] = {
 
 STDDIPINFO(truxton2)
 
-unsigned char __fastcall truxton2ReadByte(unsigned int sekAddress)
+UINT8 __fastcall truxton2ReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -186,7 +186,7 @@ unsigned char __fastcall truxton2ReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall truxton2ReadWord(unsigned int sekAddress)
+UINT16 __fastcall truxton2ReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -230,7 +230,7 @@ unsigned short __fastcall truxton2ReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall truxton2WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall truxton2WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x700011:
@@ -254,7 +254,7 @@ void __fastcall truxton2WriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall truxton2WriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall truxton2WriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x200000:								// Set GP9001 VRAM address-pointer
@@ -295,7 +295,7 @@ void __fastcall truxton2WriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM2151Exit();
@@ -306,14 +306,12 @@ static int DrvExit()
 	ToaExitGP9001();
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	nIRQPending = 0;
@@ -327,7 +325,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -342,22 +340,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-#if 1 && defined USE_SPEEDHACKS
-	int nCurrentPC = SekGetPC(-1);
-
-	if (!nIRQPending && nCurrentPC >= 0x00027E && nCurrentPC <= 0x000284) {
-		return 1;
-	}
-#endif
-
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 8;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -367,7 +357,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -377,21 +367,21 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
+	
+	SekOpen(0);
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
-	SekOpen(0);
-
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -428,8 +418,8 @@ static int DrvFrame()
 		if ((i & 1) == 0) {
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
@@ -437,19 +427,19 @@ static int DrvFrame()
 		}
 	}
 
-	SekClose();
-
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 			}
 		}
 	}
+	
+	SekClose();
 
 	if (pBurnDraw != NULL) {
 		DrvDraw();												// Draw screen if needed
@@ -458,11 +448,11 @@ static int DrvFrame()
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		//
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	MSM6295ROM	= Next; Next += 0x080000;
@@ -474,15 +464,15 @@ static int MemIndex()
 	ExtraTSelect= Next; Next += 0x001000;		//
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -497,7 +487,7 @@ static int LoadRoms()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	if (pnMin) {						// Return minimum compatible version
 		*pnMin = 0x029497;
@@ -526,9 +516,9 @@ static int DrvScan(int nAction, int* pnMin)
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -539,8 +529,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -588,10 +578,6 @@ static int DrvInit()
 	MSM6295Init(0, 27000000 / 10 / 132, 50.0, 1);
 
 	bDrawScreen = true;
-
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
 
 	DrvDoReset(); // Reset machine
 

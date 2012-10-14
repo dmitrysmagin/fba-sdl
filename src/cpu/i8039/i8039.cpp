@@ -94,7 +94,6 @@ typedef struct
 	I8039_PAIR	PREVPC;			/* previous program counter */
 	I8039_PAIR	PC;				/* program counter */
 	UINT8	A, SP, PSW;
-	UINT8	RAM[128];
 	UINT8	bus, f1;		/* Bus data, and flag1 */
 	UINT8	P1, P2;			/* Internal Port 1 and 2 latched outputs */
 	UINT8	EA;				/* latched EA input */
@@ -108,10 +107,14 @@ typedef struct
 	int		(*irq_callback)(int irqline);
 	int		inst_cycles;
 	UINT8	Old_T1;
+	double total_cycles;
 } I8039_Regs;
 
 static I8039_Regs R;
 static int	   i8039_ICount;
+static int	   i8039_ICount_cycles;
+
+static UINT8 *RAM;
 
 #define I8039_INLINE static inline
 #define change_pc(newpc)	R.PC.w.l = (newpc)
@@ -169,7 +172,7 @@ typedef struct {
 #define M_By	((R.PSW & B_FLAG))
 #define M_Bn	(!M_By)
 
-#define intRAM	R.RAM
+#define intRAM	RAM
 #define regPTR	R.regPtr
 
 #define R0	intRAM[regPTR  ]
@@ -681,13 +684,17 @@ static int Timer_IRQ(void)
 
 void I8039Init(int (*irqcallback)(int))
 {
+	DebugCPU_I8039Initted = 1;
+	
+	RAM = (UINT8*)malloc(128 * sizeof(UINT8));
+	
 	R.irq_callback = irqcallback;
 
 	R.cpu_feature = 0;
 	R.ram_mask = 0x7F;
 	R.int_rom_size = 0x800;
 	/* not changed on reset*/
-	memset(R.RAM, 0x00, 128);
+	memset(RAM, 0x00, 128);
 	R.timer = 0;
 	
 	I8039IORead = I8039DummyReadIo;
@@ -705,67 +712,126 @@ void N7751Init(int (*irqcallback)(int))
 
 void I8039SetIOReadHandler(i8039ReadIoHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetIOReadHandler called without init\n"));
+#endif
+
 	I8039IORead = handler;
 }
 
 void I8039SetIOWriteHandler(i8039WriteIoHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetIOWriteHandler called without init\n"));
+#endif
+
 	I8039IOWrite = handler;
 }
 
 void I8039SetProgramReadHandler(i8039ReadProgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetProgramReadHandler called without init\n"));
+#endif
+
 	I8039ProgramRead = handler;
 }
 
 void I8039SetProgramWriteHandler(i8039WriteProgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetProgramWriteHandler called without init\n"));
+#endif
+
 	I8039ProgramWrite = handler;
 }
 
 void I8039SetCPUOpReadHandler(i8039ReadOpHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetCPUOpReadHandler called without init\n"));
+#endif
+
 	I8039CPUReadOp = handler;
 }
 
 void I8039SetCPUOpReadArgHandler(i8039ReadOpArgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetCPUOpArgReadHandler called without init\n"));
+#endif
+
 	I8039CPUReadOpArg = handler;
 }
 
 void N7751SetIOReadHandler(i8039ReadIoHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetIOReadHandler called without init\n"));
+#endif
+
 	I8039IORead = handler;
 }
 
 void N7751SetIOWriteHandler(i8039WriteIoHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetIOWriteHandler called without init\n"));
+#endif
+
 	I8039IOWrite = handler;
 }
 
 void N7751SetProgramReadHandler(i8039ReadProgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetProgramReadHandler called without init\n"));
+#endif
+
 	I8039ProgramRead = handler;
 }
 
 void N7751SetProgramWriteHandler(i8039WriteProgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetProgramWriteHandler called without init\n"));
+#endif
+
 	I8039ProgramWrite = handler;
 }
 
 void N7751SetCPUOpReadHandler(i8039ReadOpHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetCPUOpReadHandler called without init\n"));
+#endif
+
 	I8039CPUReadOp = handler;
 }
 
 void N7751SetCPUOpReadArgHandler(i8039ReadOpArgHandler handler)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("N7751SetCPUOpReadArgHandler called without init\n"));
+#endif
+
 	I8039CPUReadOpArg = handler;
 }
 
 void I8039Exit()
 {
-	i8039_ICount = 0;	
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039Exit called without init\n"));
+#endif
+
+	if (RAM) {
+		free(RAM);
+		RAM = NULL;
+	}
+	
+	i8039_ICount = 0;
+	
+	DebugCPU_I8039Initted = 0;
 }
 
 void N7751Exit()
@@ -775,9 +841,14 @@ void N7751Exit()
 
 int I8039Run(int cycles)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039Run called without init\n"));
+#endif
+
 	unsigned opcode, T1, timerInt;
 	int count;
 
+	i8039_ICount_cycles = cycles;
 	i8039_ICount = (cycles - R.irq_extra_cycles);
 	R.irq_extra_cycles = 0;
 
@@ -831,9 +902,20 @@ int I8039Run(int cycles)
 	} while (i8039_ICount>0);
 
 	i8039_ICount -= R.irq_extra_cycles;
+	R.total_cycles += cycles - i8039_ICount;
 	R.irq_extra_cycles = 0;
 
 	return cycles - i8039_ICount;
+}
+
+INT32 I8039TotalCycles()
+{
+	return (INT32)R.total_cycles + (i8039_ICount_cycles - i8039_ICount);
+}
+
+void I8039NewFrame()
+{
+	R.total_cycles = 0;
 }
 
 int N7751Run(int cycles)
@@ -843,6 +925,10 @@ int N7751Run(int cycles)
 
 void I8039Reset (void)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039Reset called without init\n"));
+#endif
+
 	R.PC.w.l = 0;
 	R.SP  = 0;
 	R.A   = 0;
@@ -874,6 +960,10 @@ void N7751Reset()
 
 void I8039SetIrqState(int state)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039SetIrqState called without init\n"));
+#endif
+
 	if (state != 0) {
 		R.irq_state = I8039_EXTERNAL_INT;
 		R.irq_extra_cycles += Ext_IRQ();		/* Handle External IRQ */
@@ -890,25 +980,29 @@ void N7751SetIrqState(int state)
 
 int I8039Scan(int nAction, int *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugCPU_I8039Initted) bprintf(PRINT_ERROR, _T("I8039Scan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 	char szName[16];
 	
-	if ((nAction & ACB_DRIVER_DATA) == 0) {
-		return 1;
-	}
-	
 	if (pnMin != NULL) {
-		*pnMin = 0x029678;
+		*pnMin = 0x029719;
 	}
 	
-	sprintf(szName, "I8039");
-	ba.Data		= &R;
-	ba.nLen		= sizeof(R);
-	ba.nAddress = 0;
-	ba.szName	= szName;
-	BurnAcb(&ba);
-	
-	SCAN_VAR(i8039_ICount);
+	if (nAction & ACB_DRIVER_DATA) {
+		ScanVar(&R, sizeof(I8039_Regs), "I8039Regs");
+		
+		sprintf(szName, "I8039RAM");
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = RAM;
+		ba.nLen	  = 128;
+		ba.szName = szName;	
+		BurnAcb(&ba);
+		
+		SCAN_VAR(i8039_ICount);
+	}
 	
 	return 0;
 }

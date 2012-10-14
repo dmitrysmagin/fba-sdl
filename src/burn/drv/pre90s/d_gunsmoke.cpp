@@ -2,22 +2,23 @@
 // Based on MAME driver by Paul Leaman
 
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym2203.h"
 
-static unsigned char *Mem, *MemEnd, *Rom0, *Rom1, *Ram;
-static unsigned char *Gfx0, *Gfx1, *Gfx2, *Gfx3, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
-static unsigned int *Palette, *DrvPal;
-static unsigned char DrvCalcPal;
-static unsigned char *SprTrnsp;
+static UINT8 *Mem, *MemEnd, *Rom0, *Rom1, *Ram;
+static UINT8 *Gfx0, *Gfx1, *Gfx2, *Gfx3, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
+static UINT32 *Palette, *DrvPal;
+static UINT8 DrvCalcPal;
+static UINT8 *SprTrnsp;
 
-static unsigned char soundlatch;
-static unsigned char flipscreen;
-static int nGunsmokeBank;
+static UINT8 soundlatch;
+static UINT8 flipscreen;
+static INT32 nGunsmokeBank;
 
-static unsigned char sprite3bank;
-static unsigned char chon, bgon, objon;
-static unsigned char gunsmoke_scrollx[2], gunsmoke_scrolly;
+static UINT8 sprite3bank;
+static UINT8 chon, bgon, objon;
+static UINT8 gunsmoke_scrollx[2], gunsmoke_scrolly;
 
 
 static struct BurnInputInfo DrvInputList[] = {
@@ -139,7 +140,7 @@ STDDIPINFOEXT(Drv, Drv, gunsmoke)
 STDDIPINFOEXT(gunsmoka, gunsmoka, gunsmoke)
 
 
-static inline void gunsmoke_bankswitch(int nBank)
+static inline void gunsmoke_bankswitch(INT32 nBank)
 {
 	if (nGunsmokeBank != nBank) {
 		nGunsmokeBank = nBank;
@@ -149,7 +150,7 @@ static inline void gunsmoke_bankswitch(int nBank)
 	}
 }
 
-void __fastcall gunsmoke_cpu0_write(unsigned short address, unsigned char data)
+void __fastcall gunsmoke_cpu0_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -186,15 +187,15 @@ void __fastcall gunsmoke_cpu0_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall gunsmoke_cpu0_read(unsigned short address)
+UINT8 __fastcall gunsmoke_cpu0_read(UINT16 address)
 {
-	unsigned char ret = 0xff;
+	UINT8 ret = 0xff;
 
 	switch (address)
 	{
 		case 0xc000:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret ^= DrvJoy1[i] << i;
 
 			return ret | 0x08;
@@ -202,7 +203,7 @@ unsigned char __fastcall gunsmoke_cpu0_read(unsigned short address)
 
 		case 0xc001:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret ^= DrvJoy2[i] << i;
 
 			return ret;
@@ -210,7 +211,7 @@ unsigned char __fastcall gunsmoke_cpu0_read(unsigned short address)
 
 		case 0xc002:
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret ^= DrvJoy3[i] << i;
 
 			return ret;
@@ -233,7 +234,7 @@ unsigned char __fastcall gunsmoke_cpu0_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall gunsmoke_cpu1_write(unsigned short address, unsigned char data)
+void __fastcall gunsmoke_cpu1_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -255,7 +256,7 @@ void __fastcall gunsmoke_cpu1_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall gunsmoke_cpu1_read(unsigned short address)
+UINT8 __fastcall gunsmoke_cpu1_read(UINT16 address)
 {
 	if (address == 0xc800) return soundlatch;
 
@@ -263,7 +264,7 @@ unsigned char __fastcall gunsmoke_cpu1_read(unsigned short address)
 }
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -292,14 +293,14 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int gunsmoke_palette_init()
+static INT32 gunsmoke_palette_init()
 {
-	int i, ctabentry;
-	unsigned int tmp[0x100];
+	INT32 i, ctabentry;
+	UINT32 tmp[0x100];
 
 	for (i = 0; i < 0x100; i++)
 	{
-		unsigned char r, g, b;
+		UINT8 r, g, b;
 
 		r  = Prom[i + 0x000] & 0x0f;
 		r |= r << 4;
@@ -326,27 +327,27 @@ static int gunsmoke_palette_init()
 	return 0;
 }
 
-static int gunsmoke_gfx_decode()
+static INT32 gunsmoke_gfx_decode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (!tmp) return 1;
 
-	static int Planes[4]     = { 0x100004, 0x100000, 4, 0 };
+	static INT32 Planes[4]     = { 0x100004, 0x100000, 4, 0 };
 
-	static int CharXOffs[8]  = { 11, 10, 9, 8, 3, 2, 1, 0 };
-	static int CharYOffs[8]  = { 112, 96, 80, 64, 48, 32, 16, 0 };
+	static INT32 CharXOffs[8]  = { 11, 10, 9, 8, 3, 2, 1, 0 };
+	static INT32 CharYOffs[8]  = { 112, 96, 80, 64, 48, 32, 16, 0 };
 
-	static int TileXOffs[32] = {    0,    1,    2,    3,    8,    9,   10,   11,
+	static INT32 TileXOffs[32] = {    0,    1,    2,    3,    8,    9,   10,   11,
 				      512,  513,  514,  515,  520,  521,  522,  523,
 				     1024, 1025, 1026, 1027, 1032, 1033, 1034, 1035,
 				     1536, 1537, 1538, 1539, 1544, 1545, 1546, 1547 };
 
-	static int TileYOffs[32] = {   0,  16,  32,  48,  64,  80,  96, 112,
+	static INT32 TileYOffs[32] = {   0,  16,  32,  48,  64,  80,  96, 112,
 				     128, 144, 160, 176, 192, 208, 224, 240,
 				     256, 272, 288, 304, 320, 336, 352, 368,
 				     384, 400, 416, 432, 448, 464, 480, 496 };
 
-	static int SpriXOffs[16] = {   0,   1,   2,   3,   8,   9,  10,  11,
+	static INT32 SpriXOffs[16] = {   0,   1,   2,   3,   8,   9,  10,  11,
 				     256, 257, 258, 259, 264, 265, 266, 267 };
 
 	memcpy (tmp, Gfx0, 0x04000);
@@ -358,21 +359,21 @@ static int gunsmoke_gfx_decode()
 	memcpy (tmp, Gfx2, 0x40000);
 	GfxDecode(0x800, 4, 16, 16, Planes + 0, SpriXOffs, TileYOffs, 0x200, tmp, Gfx2);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	{
 		memset (SprTrnsp, 1, 0x800);
 
-		for (int i = 0; i < 0x80000; i++)
+		for (INT32 i = 0; i < 0x80000; i++)
 			if (Gfx2[i]) SprTrnsp[i >> 8] = 0;
 	}
 
 	return 0;
 }
 
-static int gunsmokeSynchroniseStream(int nSoundRate)
+static INT32 gunsmokeSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3000000;
 }
 
 static double gunsmokeGetTime()
@@ -381,9 +382,9 @@ static double gunsmokeGetTime()
 }
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom0           = Next; Next += 0x20000;
 	Rom1           = Next; Next += 0x08000;
@@ -396,22 +397,22 @@ static int MemIndex()
 
 	SprTrnsp       = Next; Next += 0x00800;
 
-	Palette	       = (unsigned int*)Next; Next += 0x00300 * sizeof(unsigned int);
-	DrvPal	       = (unsigned int*)Next; Next += 0x00300 * sizeof(unsigned int);
+	Palette	       = (UINT32*)Next; Next += 0x00300 * sizeof(UINT32);
+	DrvPal	       = (UINT32*)Next; Next += 0x00300 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -426,7 +427,7 @@ static int DrvInit()
 
 		if (BurnLoadRom(Gfx3 + 0x00000, 21, 1)) return 1;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(Gfx1 + i * 0x8000,  5 + i, 1)) return 1;
 			if (BurnLoadRom(Gfx2 + i * 0x8000, 13 + i, 1)) return 1;
 			if (BurnLoadRom(Prom + i * 0x0100, 22 + i, 1)) return 1;
@@ -436,7 +437,7 @@ static int DrvInit()
 		gunsmoke_palette_init();
 	}
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, Rom0 + 0x00000);
 	ZetMapArea(0x0000, 0x7fff, 2, Rom0 + 0x00000);
@@ -454,6 +455,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetMapArea(0x0000, 0x7fff, 0, Rom1 + 0x00000);
 	ZetMapArea(0x0000, 0x7fff, 2, Rom1 + 0x00000);
@@ -468,6 +470,7 @@ static int DrvInit()
 	GenericTilesInit();
 
 	BurnYM2203Init(2, 1500000, NULL, gunsmokeSynchroniseStream, gunsmokeGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(3000000);
 
 	DrvDoReset();
@@ -475,14 +478,14 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
 	ZetExit();
 	BurnYM2203Exit();
 
-	free (Mem);
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = Ram = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Gfx3 = Prom = NULL;
@@ -500,20 +503,20 @@ static int DrvExit()
 
 static void draw_bg_layer()
 {
-	unsigned short scroll = gunsmoke_scrollx[0] + (gunsmoke_scrollx[1] << 8);
+	UINT16 scroll = gunsmoke_scrollx[0] + (gunsmoke_scrollx[1] << 8);
 
- 	unsigned char *tilerom = Gfx3 + ((scroll >> 1) & ~0x0f);
+ 	UINT8 *tilerom = Gfx3 + ((scroll >> 1) & ~0x0f);
 
-	for (int offs = 0; offs < 0x50; offs++)
+	for (INT32 offs = 0; offs < 0x50; offs++)
 	{
-		int attr = tilerom[1];
-		int code = tilerom[0] + ((attr & 1) << 8);
-		int color = (attr & 0x3c) >> 2;
-		int flipy = attr & 0x80;
-		int flipx = attr & 0x40;
+		INT32 attr = tilerom[1];
+		INT32 code = tilerom[0] + ((attr & 1) << 8);
+		INT32 color = (attr & 0x3c) >> 2;
+		INT32 flipy = attr & 0x80;
+		INT32 flipx = attr & 0x40;
 
-		int sy = (offs & 7) << 5;
-		int sx = (offs >> 3) << 5;
+		INT32 sy = (offs & 7) << 5;
+		INT32 sx = (offs >> 3) << 5;
 
 		sy -= gunsmoke_scrolly;
 		sx -= (scroll & 0x1f);
@@ -548,18 +551,18 @@ static void draw_bg_layer()
 
 static void draw_fg_layer()
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sx = (offs << 3) & 0xf8;
-		int sy = (offs >> 2) & 0xf8;
+		INT32 sx = (offs << 3) & 0xf8;
+		INT32 sy = (offs >> 2) & 0xf8;
 
-		int attr = Ram[0x0400 + offs];
-		int code = Ram[0x0000 + offs] + ((attr & 0xe0) << 2);
-		int color = attr & 0x1f;
+		INT32 attr = Ram[0x0400 + offs];
+		INT32 code = Ram[0x0000 + offs] + ((attr & 0xe0) << 2);
+		INT32 color = attr & 0x1f;
 
 		if (code == 0x0024) continue;
 
-		unsigned char *src = Gfx0 + (code << 6);
+		UINT8 *src = Gfx0 + (code << 6);
 		color <<= 2;
 
 		if (flipscreen) {
@@ -568,9 +571,9 @@ static void draw_fg_layer()
 
 			sy -= 8;
 
-			for (int y = sy + 7; y >= sy; y--)
+			for (INT32 y = sy + 7; y >= sy; y--)
 			{
-				for (int x = sx + 7; x >= sx; x--, src++)
+				for (INT32 x = sx + 7; x >= sx; x--, src++)
 				{
 					if (y < 0 || x < 0 || y > 223 || x > 255) continue;
 					if (!Palette[color|*src]) continue;
@@ -581,9 +584,9 @@ static void draw_fg_layer()
 		} else {
 			sy -= 16;
 
-			for (int y = sy; y < sy + 8; y++)
+			for (INT32 y = sy; y < sy + 8; y++)
 			{
-				for (int x = sx; x < sx + 8; x++, src++)
+				for (INT32 x = sx; x < sx + 8; x++, src++)
 				{
 					if (y < 0 || x < 0 || y > 223 || x > 255) continue;
 					if (!Palette[color|*src]) continue;
@@ -597,16 +600,16 @@ static void draw_fg_layer()
 
 static void draw_sprites()
 {
-	for (int offs = 0x1000 - 32; offs >= 0; offs -= 32)
+	for (INT32 offs = 0x1000 - 32; offs >= 0; offs -= 32)
 	{
-		int attr = Ram[0x2001 + offs];
-		int bank = (attr & 0xc0) >> 6;
-		int code = Ram[0x2000 + offs];
-		int color = attr & 0x0f;
-		int flipx = 0;
-		int flipy = attr & 0x10;
-		int sx = Ram[0x2003 + offs] - ((attr & 0x20) << 3);
-		int sy = Ram[0x2002 + offs];
+		INT32 attr = Ram[0x2001 + offs];
+		INT32 bank = (attr & 0xc0) >> 6;
+		INT32 code = Ram[0x2000 + offs];
+		INT32 color = attr & 0x0f;
+		INT32 flipx = 0;
+		INT32 flipy = attr & 0x10;
+		INT32 sx = Ram[0x2003 + offs] - ((attr & 0x20) << 3);
+		INT32 sy = Ram[0x2002 + offs];
 
 		if (sy == 0 || sy > 0xef) continue;
 
@@ -641,12 +644,12 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	// Recalculate palette
 	if (DrvCalcPal) {
-		for (int i = 0; i < 0x300; i++) {
-			unsigned int col = Palette[i];
+		for (INT32 i = 0; i < 0x300; i++) {
+			UINT32 col = Palette[i];
 			DrvPal[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 	}
@@ -663,7 +666,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -671,19 +674,19 @@ static int DrvFrame()
 
 	ZetNewFrame();
 
-	int nInterleave = 25;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 25;
+	INT32 nSoundBufferPos = 0;
 
-	int nCyclesSegment;
-	int nCyclesDone[2], nCyclesTotal[2];
+	INT32 nCyclesSegment;
+	INT32 nCyclesDone[2], nCyclesTotal[2];
 
 	nCyclesTotal[0] = 4000000 / 60;
 	nCyclesTotal[1] = 3000000 / 60;
 	
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #0
 		nCurrentCPU = 0;
@@ -709,8 +712,8 @@ static int DrvFrame()
 		
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(1);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -718,21 +721,21 @@ static int DrvFrame()
 		}
 
 	}
+	
+	ZetOpen(1);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	ZetClose();
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(1);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			ZetClose();
 		}
 	}
-	
-	ZetOpen(1);
-	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
-	ZetClose();
 	
 	if (pBurnDraw) {
 		DrvDraw();
@@ -741,7 +744,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -828,7 +831,7 @@ struct BurnDriver BurnDrvGunsmoke = {
 	"gunsmoke", NULL, NULL, NULL, "1985",
 	"Gun. Smoke (World)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokeRomInfo, gunsmokeRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
@@ -886,7 +889,7 @@ struct BurnDriver BurnDrvGunsmokj = {
 	"gunsmokej", "gunsmoke", NULL, NULL, "1985",
 	"Gun. Smoke (Japan)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokjRomInfo, gunsmokjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
@@ -944,7 +947,7 @@ struct BurnDriver BurnDrvGunsmoku = {
 	"gunsmokeu", "gunsmoke", NULL, NULL, "1985",
 	"Gun. Smoke (US set 1)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokuRomInfo, gunsmokuRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal, 0x300,
 	224, 256, 3, 4
@@ -1002,7 +1005,7 @@ struct BurnDriver BurnDrvGunsmoka = {
 	"gunsmokeua", "gunsmoke", NULL, NULL, "1986",
 	"Gun. Smoke (US set 2)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokaRomInfo, gunsmokaRomName, NULL, NULL, DrvInputInfo, gunsmokaDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvCalcPal, 0x300,
 	224, 256, 3, 4

@@ -1,14 +1,17 @@
 #include "toaplan.h"
+#include "vez.h"
 // Batsugun & Batsugun Special Version
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
+
+static INT32 v25_reset = 0;
 
 // Rom information
 static struct BurnRomInfo batsugunRomDesc[] = {
@@ -22,9 +25,7 @@ static struct BurnRomInfo batsugunRomDesc[] = {
 	{ "tp030_5.bin",  0x100000, 0xBCF5BA05, BRF_GRA },			 //  5
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
-//	{"tp030.mcu",	 0x010000, 0x00000000,    2}, //  7 Sound CPU
-
-	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
+	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
 };
 
 STD_ROM_PICK(batsugun)
@@ -41,9 +42,7 @@ static struct BurnRomInfo batsugnaRomDesc[] = {
 	{ "tp030_5.bin",  0x100000, 0xBCF5BA05, BRF_GRA },			 //  5
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
-//	{"tp030.mcu",	 0x010000, 0x00000000,    2}, //  7 Sound CPU
-
-	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
+	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
 };
 
 STD_ROM_PICK(batsugna)
@@ -60,9 +59,7 @@ static struct BurnRomInfo batugnspRomDesc[] = {
 	{ "tp030_5.bin",  0x100000, 0xBCF5BA05, BRF_GRA },			 //  5
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
-//	{"tp030.mcu",	 0x010000, 0x00000000, 0x10}, //  7 Sound CPU
-
-	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  8 ADPCM data
+	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
 };
 
 STD_ROM_PICK(batugnsp)
@@ -205,39 +202,40 @@ static struct BurnDIPInfo batsugunDIPList[] = {
 
 STDDIPINFO(batsugun)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *Ram03, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *ShareRAM;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		//
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	GP9001ROM[1]= Next; Next += nGP9001ROMSize[1];	// GP9001 tile data
+	MSM6295ROM = Next; Next += 0x040000;
 	RamStart	= Next;
 	Ram01		= Next; Next += 0x010000;		// CPU #0 work RAM
-	Ram02		= Next; Next += 0x00F000;		//
-	Ram03		= Next; Next += 0x000400;		//
+	ShareRAM	= Next; Next += 0x010000;
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x004000;
 	GP9001RAM[1]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
-	GP9001Reg[1]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
+	GP9001Reg[1]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -246,12 +244,15 @@ static int DrvScan(int nAction, int *pnMin)
 	}
 	if (nAction & ACB_VOLATILE) {		// Scan volatile ram
 		memset(&ba, 0, sizeof(ba));
-    	ba.Data		= RamStart;
+   		ba.Data		= RamStart;
 		ba.nLen		= RamEnd - RamStart;
 		ba.szName	= "All Ram";
 		BurnAcb(&ba);
 
 		SekScan(nAction);				// scan 68000 states
+		VezScan(nAction);
+		BurnYM2151Scan(nAction);
+		MSM6295Scan(0, nAction);
 
 		ToaScanGP9001(nAction, pnMin);
 	}
@@ -259,7 +260,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -268,11 +269,17 @@ static int LoadRoms()
 	ToaLoadGP9001Tiles(GP9001ROM[0], 1, 4, nGP9001ROMSize[0]);
 	ToaLoadGP9001Tiles(GP9001ROM[1], 5, 2, nGP9001ROMSize[1]);
 
+	BurnLoadRom(MSM6295ROM, 7, 1);
+
 	return 0;
 }
 
-unsigned char __fastcall batsugunReadByte(unsigned int sekAddress)
+UINT8 __fastcall batsugunReadByte(UINT32 sekAddress)
 {
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		return ShareRAM[(sekAddress / 2) & 0x7fff];
+	}
+
 	switch (sekAddress) {
 		case 0x200011:								// Player 1 inputs
 			return DrvInput[0];
@@ -280,19 +287,6 @@ unsigned char __fastcall batsugunReadByte(unsigned int sekAddress)
 			return DrvInput[1];
 		case 0x200019:								// Other inputs
 			return DrvInput[2];
-
-		case 0x21F001: {
-			static int nValue = 0xFF;
-			nValue ^= 0x55;
-			return nValue;
-		}
-
-		case 0x21F005:								// Dipswitch A
-			return DrvInput[3];
-		case 0x21F007:			   					// Dipswitch B
-			return DrvInput[4];
-		case 0x21F009:								// Dipswitch C - Territory
-			return DrvInput[5];
 
 		case 0x30000D:
 			return ToaVBlankRegister();
@@ -303,8 +297,12 @@ unsigned char __fastcall batsugunReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall batsugunReadWord(unsigned int sekAddress)
+UINT16 __fastcall batsugunReadWord(UINT32 sekAddress)
 {
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		return ShareRAM[(sekAddress / 2) & 0x7fff];
+	}
+
 	switch (sekAddress) {
 
 		case 0x200010:								// Player 1 inputs
@@ -313,12 +311,6 @@ unsigned short __fastcall batsugunReadWord(unsigned int sekAddress)
 			return DrvInput[1];
 		case 0x200018:								// Other inputs
 			return DrvInput[2];
-		case 0x21F004:								// Dipswitch A
-			return DrvInput[3];
-		case 0x21F006:								// Dipswitch B
-			return DrvInput[4];
-		case 0x21F008:								// Dipswitch C - Territory
-			return DrvInput[5];
 
 		case 0x300004:
 			return ToaGP9001ReadRAM_Hi(0);
@@ -341,25 +333,34 @@ unsigned short __fastcall batsugunReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall batsugunWriteByte(unsigned int /*sekAddress*/, unsigned char /*byteValue*/)
+void __fastcall batsugunWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
-//	switch (sekAddress) {
-//		case 0x21F001:
-//		case 0x21F003:
-//		case 0x20001D:
-//			break;
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		ShareRAM[(sekAddress / 2) & 0x7fff] = byteValue;
+		return;
+	}
 
-//		default:
-//			printf("Attempt to write %06X (byte) -> %04X.\n", sekAddress, byteValue);
-//	}
-}
-
-void __fastcall batsugunWriteWord(unsigned int sekAddress, unsigned short wordValue)
-{
 	switch (sekAddress) {
- 		case 0x20001C:
+		case 0x20001c:
+		case 0x20001d:
+			if (!v25_reset && (~byteValue & 0x20)) VezReset();
+			v25_reset = (~byteValue & 0x20);
 			break;
 
+		default: {
+//			printf("Attempt to write byte value %x to location %x\n", byteValue, sekAddress);
+		}
+	}
+}
+
+void __fastcall batsugunWriteWord(UINT32 sekAddress, UINT16 wordValue)
+{
+	if ((sekAddress & 0xff0000) == 0x210000) {
+		ShareRAM[(sekAddress / 2) & 0x7fff] = wordValue;
+		return;
+	}
+
+	switch (sekAddress) {
 		case 0x300000:								// Set GP9001 VRAM address-pointer
 			ToaGP9001SetRAMPointer(wordValue);
 			break;
@@ -399,18 +400,77 @@ void __fastcall batsugunWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int DrvDoReset()
+void __fastcall batsugun_v25_write(UINT32 address, UINT8 data)
+{
+	switch (address)
+	{
+		case 0x00000:
+			BurnYM2151SelectRegister(data);
+		return;
+
+		case 0x00001:
+			BurnYM2151WriteRegister(data);
+		return;
+
+		case 0x00004:
+			MSM6295Command(0, data);
+		return;
+	}
+}
+
+UINT8 __fastcall batsugun_v25_read(UINT32 address)
+{
+	switch (address)
+	{
+		case 0x00001:
+			return BurnYM2151ReadStatus();
+
+		case 0x00004:
+			return MSM6295ReadStatus(0);
+	}
+
+	return 0;
+}
+
+UINT8 __fastcall batsugun_v25_read_port(UINT32 port)
+{
+	switch (port)
+	{
+		case V25_PORT_PT:
+			return DrvInput[3]^0xff;
+
+		case V25_PORT_P0:
+			return DrvInput[4]^0xff;
+
+		case V25_PORT_P1:
+			return DrvInput[5]^0xff;
+	}
+
+	return 0;
+}
+
+
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
 	SekClose();
 
+	VezOpen(0);
+	VezReset();
+	VezClose();
+
+	BurnYM2151Reset();
+	MSM6295Reset(0);
+
+	v25_reset = 1;
+
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -422,8 +482,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -436,22 +496,31 @@ static int DrvInit()
 
 	{
 		SekInit(0, 0x68000);									// Allocate 68000
-	    SekOpen(0);
-
-		// Map 68000 memory:
+		SekOpen(0);
 		SekMapMemory(Rom01,		0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram01,		0x100000, 0x10FFFF, SM_RAM);
-		SekMapMemory(Ram02,		0x210000, 0x21EFFF, SM_RAM);	//
-		SekMapMemory(Ram03,		0x21FC00, 0x21FFFF, SM_RAM);	//
 		SekMapMemory(RamPal,	0x400000, 0x400FFF, SM_RAM);	// Palette RAM
-
 		SekSetReadWordHandler(0, batsugunReadWord);
 		SekSetReadByteHandler(0, batsugunReadByte);
 		SekSetWriteWordHandler(0, batsugunWriteWord);
 		SekSetWriteByteHandler(0, batsugunWriteByte);
-
 		SekClose();
+
+		VezInit(0, V25_TYPE, 16000000 /*before divider*/);
+		VezOpen(0);
+		for (INT32 i = 0x80000; i < 0x100000; i += 0x8000) {
+			VezMapArea(i, i + 0x7fff, 0, ShareRAM);
+			VezMapArea(i, i + 0x7fff, 1, ShareRAM);
+			VezMapArea(i, i + 0x7fff, 2, ShareRAM);
+		}
+		VezSetReadHandler(batsugun_v25_read);
+		VezSetWriteHandler(batsugun_v25_write);
+		VezSetReadPort(batsugun_v25_read_port);
+		VezClose();
 	}
+
+	BurnYM2151Init(3375000, 50.0);
+	MSM6295Init(0, 4000000 / 132, 50.0, 1);
 
 	nSpriteYOffset = 0x0001;
 
@@ -467,30 +536,30 @@ static int DrvInit()
 
 	bDrawScreen = true;
 
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
-
 	DrvDoReset(); // Reset machine
 
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 
+	BurnYM2151Exit();
+	MSM6295Exit(0);
+
 	ToaExitGP9001();
 	SekExit();				// Deallocate 68000s
+	VezExit();
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
+
+	MSM6295ROM = NULL;
 
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -504,18 +573,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-	if (SekGetPC(-1) >= 0x94BC && SekGetPC(-1) <= 0x94D0) {
-		return 1;
-	} else {
-		return 0;
-	}
+	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 10;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -525,7 +590,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -534,20 +599,26 @@ static int DrvFrame()
 	ToaClearOpposites(&DrvInput[1]);
 
 	SekNewFrame();
+	VezNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	INT32 nSoundBufferPos = 0;
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
+	nCyclesDone[1] = 0;
 
+	SekOpen(0);
+	
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	SekOpen(0);
+	VezOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -578,8 +649,33 @@ static int DrvFrame()
 			nCyclesDone[nCurrentCPU] += SekIdle(nCyclesSegment);
 		}
 
+		// sound! (increase interleave?)
+		if (v25_reset) {
+			nCyclesDone[1] += nCyclesTotal[1] / nInterleave;
+		} else {
+			nCyclesDone[1] += VezRun(nCyclesTotal[1] / nInterleave);
+		}
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 
+	if (pBurnSoundOut) {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		if (nSegmentLength) {
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+
+		}
+	}
+
+	VezClose();
 	SekClose();
 
 	if (pBurnDraw) {
@@ -591,7 +687,7 @@ static int DrvFrame()
 
 struct BurnDriver BurnDrvBatsugun = {
 	"batsugun", NULL, NULL, NULL, "1993",
-	"Batsugun (set 1)\0", "No sound (sound MCU not dumped)", "Toaplan", "Dual Toaplan GP9001 based",
+	"Batsugun (set 1)\0", NULL, "Toaplan", "Dual Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, batsugunRomInfo, batsugunRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,
@@ -601,7 +697,7 @@ struct BurnDriver BurnDrvBatsugun = {
 
 struct BurnDriver BurnDrvBatsugunSP = {
 	"batsugunsp", "batsugun", NULL, NULL, "1993",
-	"Batsugun (Special Ver.)\0", "No sound (sound MCU not dumped)", "Dual Toaplan", "Toaplan GP9001 based",
+	"Batsugun (Special Ver.)\0", NULL, "Dual Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, batugnspRomInfo, batugnspRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,
@@ -611,7 +707,7 @@ struct BurnDriver BurnDrvBatsugunSP = {
 
 struct BurnDriver BurnDrvBatsugna = {
 	"batsuguna", "batsugun", NULL, NULL, "1993",
-	"Batsugun (set 2)\0", "No sound (sound MCU not dumped)", "Dual Toaplan", "Toaplan GP9001 based",
+	"Batsugun (set 2)\0", NULL, "Dual Toaplan", "Toaplan GP9001 based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_68K_Zx80, GBF_VERSHOOT, 0,
 	NULL, batsugnaRomInfo, batsugnaRomName, NULL, NULL, batsugunInputInfo, batsugunDIPInfo,

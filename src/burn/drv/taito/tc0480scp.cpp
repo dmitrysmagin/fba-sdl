@@ -3,24 +3,24 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *TC0480SCPRam = NULL;
-static unsigned char *TC0480SCPChars;
+UINT8 *TC0480SCPRam = NULL;
+static UINT8 *TC0480SCPChars;
 UINT16 TC0480SCPCtrl[0x18];
-static int BgScrollX[4];
-static int BgScrollY[4];
-static int CharScrollX;
-static int CharScrollY;
-static int TC0480SCPTilesNum;
-static int TC0480SCPPriReg;
-static int TC0480SCPXOffset;
-static int TC0480SCPYOffset;
-static int TC0480SCPTextXOffset;
-static int TC0480SCPTextYOffset;
-static unsigned short *pTC0480SCPTempDraw = NULL;
-static int TC0480SCPColBase;
-static int TC0480SCPDblWidth;
+static INT32 BgScrollX[4];
+static INT32 BgScrollY[4];
+static INT32 CharScrollX;
+static INT32 CharScrollY;
+static INT32 TC0480SCPTilesNum;
+static INT32 TC0480SCPPriReg;
+static INT32 TC0480SCPXOffset;
+static INT32 TC0480SCPYOffset;
+static INT32 TC0480SCPTextXOffset;
+static INT32 TC0480SCPTextYOffset;
+static UINT16 *pTC0480SCPTempDraw = NULL;
+static INT32 TC0480SCPColBase;
+static INT32 TC0480SCPDblWidth;
 
-static int TC0480SCPYVisOffset;
+static INT32 TC0480SCPYVisOffset;
 
 static const UINT16 TC0480SCPBgPriLookup[8] =
 {
@@ -40,17 +40,17 @@ static const UINT16 TC0480SCPBgPriLookup[8] =
 #define PLOTPIXEL_MASK_FLIPX(x, a, mc, po) if (pTileData[a] != mc) {pPixel[x] = nPalette | pTileData[a] | po;}
 #define CLIPPIXEL(x, sx, mx, a) if ((sx + x) >= 0 && (sx + x) < mx) { a; };
 
-static void RenderTile(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
 		PLOTPIXEL( 0, nPaletteOffset);
 		PLOTPIXEL( 1, nPaletteOffset);
 		PLOTPIXEL( 2, nPaletteOffset);
@@ -70,17 +70,17 @@ static void RenderTile(unsigned short* pDestDraw, int nTileNumber, int StartX, i
 	}
 }
 
-static void RenderTile_FlipX(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_FlipX(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_FLIPX(15,  0, nPaletteOffset);
 		PLOTPIXEL_FLIPX(14,  1, nPaletteOffset);
 		PLOTPIXEL_FLIPX(13,  2, nPaletteOffset);
@@ -100,17 +100,17 @@ static void RenderTile_FlipX(unsigned short* pDestDraw, int nTileNumber, int Sta
 	}
 }
 
-static void RenderTile_FlipY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_FlipY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
 		PLOTPIXEL( 0, nPaletteOffset);
 		PLOTPIXEL( 1, nPaletteOffset);
 		PLOTPIXEL( 2, nPaletteOffset);
@@ -130,17 +130,17 @@ static void RenderTile_FlipY(unsigned short* pDestDraw, int nTileNumber, int Sta
 	}
 }
 
-static void RenderTile_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_FLIPX(15,  0, nPaletteOffset);
 		PLOTPIXEL_FLIPX(14,  1, nPaletteOffset);
 		PLOTPIXEL_FLIPX(13,  2, nPaletteOffset);
@@ -160,17 +160,17 @@ static void RenderTile_FlipXY(unsigned short* pDestDraw, int nTileNumber, int St
 	}
 }
 
-static void RenderTile_Mask(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_Mask(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 	
-	unsigned short* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK( 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 2, nMaskColour, nPaletteOffset);
@@ -190,17 +190,17 @@ static void RenderTile_Mask(unsigned short* pDestDraw, int nTileNumber, int Star
 	}
 }
 
-static void RenderTile_Mask_FlipX(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_Mask_FlipX(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TileMapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK_FLIPX(15,  0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(14,  1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(13,  2, nMaskColour, nPaletteOffset);
@@ -220,17 +220,17 @@ static void RenderTile_Mask_FlipX(unsigned short* pDestDraw, int nTileNumber, in
 	}
 }
 
-static void RenderTile_Mask_FlipY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_Mask_FlipY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK( 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 2, nMaskColour, nPaletteOffset);
@@ -250,17 +250,17 @@ static void RenderTile_Mask_FlipY(unsigned short* pDestDraw, int nTileNumber, in
 	}
 }
 
-static void RenderTile_Mask_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile)
+static void RenderTile_Mask_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	int TileMapWidth = 512;
+	INT32 TileMapWidth = 512;
 	if (TC0480SCPDblWidth) TileMapWidth = 1024;
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TileMapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TileMapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK_FLIPX(15,  0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(14,  1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(13,  2, nMaskColour, nPaletteOffset);
@@ -285,9 +285,9 @@ static void RenderTile_Mask_FlipXY(unsigned short* pDestDraw, int nTileNumber, i
 #undef PLOTPIXEL_MASK
 #undef CLIPPIXEL
 
-void TC0480SCPCtrlWordWrite(int Offset, UINT16 Data)
+void TC0480SCPCtrlWordWrite(INT32 Offset, UINT16 Data)
 {
-	int Flip = TC0480SCPPriReg & 0x40;
+	INT32 Flip = TC0480SCPPriReg & 0x40;
 
 	TC0480SCPCtrl[Offset] = Data;
 
@@ -373,10 +373,10 @@ void TC0480SCPCtrlWordWrite(int Offset, UINT16 Data)
 	}
 }
 
-static inline void DrawScanLine(int y, const UINT16 *src, int Transparent, int /*Pri*/)
+static inline void DrawScanLine(INT32 y, const UINT16 *src, INT32 Transparent, INT32 /*Pri*/)
 {
-	unsigned short* pPixel;
-	int Length;
+	UINT16* pPixel;
+	INT32 Length;
 	
 	pPixel = pTransDraw + (y * nScreenWidth);
 	
@@ -397,13 +397,13 @@ static inline void DrawScanLine(int y, const UINT16 *src, int Transparent, int /
 	}
 }
 
-static void TC0480SCPRenderLayer01(int Layer, int Opaque, unsigned char *pSrc)
+static void TC0480SCPRenderLayer01(INT32 Layer, INT32 Opaque, UINT8 *pSrc)
 {
-	int mx, my, Attr, Code, Colour, x, y, sx, TileIndex = 0, Offset, Flip, xFlip, yFlip, xZoom, yZoom, i, yIndex, ySrcIndex, RowIndex, xIndex, xStep, Columns, WidthMask;
+	INT32 mx, my, Attr, Code, Colour, x, y, sx, TileIndex = 0, Offset, Flip, xFlip, yFlip, xZoom, yZoom, i, yIndex, ySrcIndex, RowIndex, xIndex, xStep, Columns, WidthMask;
 	
 	UINT16 *Dst16, *Src16;
 	UINT16 ScanLine[512];
-	unsigned short *pSrcTileMap = pTC0480SCPTempDraw;
+	UINT16 *pSrcTileMap = pTC0480SCPTempDraw;
 	
 	UINT16 *VideoRam = (UINT16*)TC0480SCPRam + 0x0000;
 	UINT16 *ScrollRam = (UINT16*)TC0480SCPRam + 0x2000;
@@ -438,8 +438,8 @@ static void TC0480SCPRenderLayer01(int Layer, int Opaque, unsigned char *pSrc)
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < Columns; mx++) {
 			Offset = 2 * TileIndex;
-			Attr = VideoRam[Offset];
-			Code = VideoRam[Offset + 1] & (TC0480SCPTilesNum - 1);
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset]);
+			Code = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset + 1]) & (TC0480SCPTilesNum - 1);
 			Colour = Attr & 0xff;
 			Flip = (Attr & 0xc000) >> 14;
 			xFlip = (Flip >> 0) & 0x01;
@@ -497,7 +497,7 @@ static void TC0480SCPRenderLayer01(int Layer, int Opaque, unsigned char *pSrc)
 
 		RowIndex = ySrcIndex;
 
-		xIndex = sx - ((ScrollRam[RowIndex] << 16)) - ((ScrollRam[RowIndex + 0x800] << 8) & 0xffff);
+		xIndex = sx - ((BURN_ENDIAN_SWAP_INT16(ScrollRam[RowIndex]) << 16)) - ((BURN_ENDIAN_SWAP_INT16(ScrollRam[RowIndex + 0x800]) << 8) & 0xffff);
 
 		Src16 = pSrcTileMap + (ySrcIndex * Columns * 16);
 		Dst16 = ScanLine;
@@ -511,7 +511,7 @@ static void TC0480SCPRenderLayer01(int Layer, int Opaque, unsigned char *pSrc)
 			}
 		} else {
 			for (i = 0; i < 512; i++) {
-				int Pix = Src16[(xIndex >> 16) & WidthMask];
+				INT32 Pix = Src16[(xIndex >> 16) & WidthMask];
 				
 				if ((Pix & 0x0f) != 0) {
 					*Dst16++ = Pix;
@@ -533,13 +533,13 @@ static void TC0480SCPRenderLayer01(int Layer, int Opaque, unsigned char *pSrc)
 	} while (y < nScreenHeight);
 }
 
-static void TC0480SCPRenderLayer23(int Layer, int Opaque, unsigned char *pSrc)
+static void TC0480SCPRenderLayer23(INT32 Layer, INT32 Opaque, UINT8 *pSrc)
 {
-	int mx, my, Attr, Code, Colour, x, y, sx, TileIndex = 0, Offset, Flip, xFlip, yFlip, xZoom, yZoom, i, yIndex, ySrcIndex, RowIndex, RowZoom, xIndex, xStep, Columns, WidthMask;
+	INT32 mx, my, Attr, Code, Colour, x, y, sx, TileIndex = 0, Offset, Flip, xFlip, yFlip, xZoom, yZoom, i, yIndex, ySrcIndex, RowIndex, RowZoom, xIndex, xStep, Columns, WidthMask;
 	
 	UINT16 *Dst16, *Src16;
 	UINT16 ScanLine[512];
-	unsigned short *pSrcTileMap = pTC0480SCPTempDraw;
+	UINT16 *pSrcTileMap = pTC0480SCPTempDraw;
 	
 	xZoom = 0x10000 - (TC0480SCPCtrl[0x08 + Layer] & 0xff00);
 	yZoom = 0x10000 - (((TC0480SCPCtrl[0x08 + Layer] & 0xff) - 0x7f) * 512);
@@ -582,8 +582,8 @@ static void TC0480SCPRenderLayer23(int Layer, int Opaque, unsigned char *pSrc)
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < Columns; mx++) {
 			Offset = 2 * TileIndex;
-			Attr = VideoRam[Offset];
-			Code = VideoRam[Offset + 1] & (TC0480SCPTilesNum - 1);
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset]);
+			Code = BURN_ENDIAN_SWAP_INT16(VideoRam[Offset + 1]) & (TC0480SCPTilesNum - 1);
 			Colour = Attr & 0xff;
 			Flip = (Attr & 0xc000) >> 14;
 			xFlip = (Flip >> 0) & 0x01;
@@ -637,17 +637,17 @@ static void TC0480SCPRenderLayer23(int Layer, int Opaque, unsigned char *pSrc)
 	y = 0;
 	
 	do {
-		ySrcIndex = ((yIndex >> 16) + ColumnRam[(y + TC0480SCPYOffset + TC0480SCPYVisOffset) & 0x1ff]) & 0x1ff;
+		ySrcIndex = ((yIndex >> 16) + BURN_ENDIAN_SWAP_INT16(ColumnRam[(y + TC0480SCPYOffset + TC0480SCPYVisOffset) & 0x1ff])) & 0x1ff;
 
 		RowIndex = ySrcIndex;
 
 		if (TC0480SCPPriReg & (Layer - 1)) {
-			RowZoom = RowZoomRam[RowIndex];
+			RowZoom = BURN_ENDIAN_SWAP_INT16(RowZoomRam[RowIndex]);
 		} else {
 			RowZoom = 0;
 		}
 
-		xIndex = sx - ((ScrollRam[RowIndex] << 16)) - ((ScrollRam[RowIndex + 0x800] << 8) & 0xffff);
+		xIndex = sx - ((BURN_ENDIAN_SWAP_INT16(ScrollRam[RowIndex]) << 16)) - ((BURN_ENDIAN_SWAP_INT16(ScrollRam[RowIndex + 0x800]) << 8) & 0xffff);
 		xIndex -= (-TC0480SCPXOffset - 0x1f + Layer * 4) * ((RowZoom & 0xff) << 8);
 		
 		xStep = xZoom;
@@ -669,7 +669,7 @@ static void TC0480SCPRenderLayer23(int Layer, int Opaque, unsigned char *pSrc)
 			}
 		} else	{
 			for (i = 0; i < 512; i++) {
-				int Pix = Src16[(xIndex >> 16) & WidthMask];
+				INT32 Pix = Src16[(xIndex >> 16) & WidthMask];
 					
 				if ((Pix & 0x0f) != 0) {
 					*Dst16++ = Pix;
@@ -691,7 +691,7 @@ static void TC0480SCPRenderLayer23(int Layer, int Opaque, unsigned char *pSrc)
 	} while (y < nScreenHeight);
 }
 
-void TC0480SCPTilemapRender(int Layer, int Opaque, unsigned char *pSrc)
+void TC0480SCPTilemapRender(INT32 Layer, INT32 Opaque, UINT8 *pSrc)
 {
 	switch (Layer) {
 		case 0: {
@@ -716,13 +716,13 @@ void TC0480SCPTilemapRender(int Layer, int Opaque, unsigned char *pSrc)
 	}
 }
 
-static int TC0480SCPPlaneOffsets[4] = { 0, 1, 2, 3 };
-static int TC0480SCPXOffsets[8]     = { 4, 0, 12, 8, 20, 16, 28, 24 };
-static int TC0480SCPYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 TC0480SCPPlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 TC0480SCPXOffsets[8]     = { 4, 0, 12, 8, 20, 16, 28, 24 };
+static INT32 TC0480SCPYOffsets[8]     = { 0, 32, 64, 96, 128, 160, 192, 224 };
 
 void TC0480SCPRenderCharLayer()
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)TC0480SCPRam + 0x6000;
 	UINT16 *CharRam = (UINT16*)TC0480SCPRam + 0x7000;
@@ -731,7 +731,7 @@ void TC0480SCPRenderCharLayer()
 	
 	for (my = 0; my < 64; my++) {
 		for (mx = 0; mx < 64; mx++) {
-			Attr = VideoRam[TileIndex];
+			Attr = BURN_ENDIAN_SWAP_INT16(VideoRam[TileIndex]);
 			Code = Attr & 0xff;
 			Colour = (Attr & 0x3f00) >> 8;
 			Flip = (Attr & 0xc000) >> 14;
@@ -795,16 +795,16 @@ void TC0480SCPReset()
 	TC0480SCPDblWidth = 0;
 }
 
-int TC0480SCPGetBgPriority()
+INT32 TC0480SCPGetBgPriority()
 {
 	return TC0480SCPBgPriLookup[(TC0480SCPPriReg &0x1c) >> 2];
 }
 
-void TC0480SCPInit(int nNumTiles, int Pixels, int xOffset, int yOffset, int xTextOffset, int yTextOffset, int VisYOffset)
+void TC0480SCPInit(INT32 nNumTiles, INT32 Pixels, INT32 xOffset, INT32 yOffset, INT32 xTextOffset, INT32 yTextOffset, INT32 VisYOffset)
 {
-	TC0480SCPRam = (unsigned char*)malloc(0x10000);
+	TC0480SCPRam = (UINT8*)BurnMalloc(0x10000);
 	memset(TC0480SCPRam, 0, 0x10000);
-	TC0480SCPChars = (unsigned char*)malloc(256 * 8 * 8);
+	TC0480SCPChars = (UINT8*)BurnMalloc(256 * 8 * 8);
 	memset(TC0480SCPChars, 0, 256 * 8 * 8);
 	
 	TC0480SCPTilesNum = nNumTiles;
@@ -814,7 +814,7 @@ void TC0480SCPInit(int nNumTiles, int Pixels, int xOffset, int yOffset, int xTex
 	TC0480SCPTextXOffset = xTextOffset - TC0480SCPXOffset + 3;
 	TC0480SCPTextYOffset = yTextOffset + TC0480SCPYOffset;
 	
-	pTC0480SCPTempDraw = (UINT16*)malloc(1024 * 512 * sizeof(UINT16));
+	pTC0480SCPTempDraw = (UINT16*)BurnMalloc(1024 * 512 * sizeof(UINT16));
 	memset(pTC0480SCPTempDraw, 0, 1024 * 512 * sizeof(UINT16));
 	
 	TC0480SCPColBase = 0;
@@ -823,21 +823,16 @@ void TC0480SCPInit(int nNumTiles, int Pixels, int xOffset, int yOffset, int xTex
 	TaitoIC_TC0480SCPInUse = 1;
 }
 
-void TC0480SCPSetColourBase(int Base)
+void TC0480SCPSetColourBase(INT32 Base)
 {
 	TC0480SCPColBase = Base;
 }
 
 void TC0480SCPExit()
 {
-	free(TC0480SCPRam);
-	TC0480SCPRam = NULL;
-	
-	free(TC0480SCPChars);
-	TC0480SCPChars = NULL;
-	
-	free(pTC0480SCPTempDraw);
-	pTC0480SCPTempDraw = NULL;
+	BurnFree(TC0480SCPRam);
+	BurnFree(TC0480SCPChars);
+	BurnFree(pTC0480SCPTempDraw);
 	
 	memset(TC0480SCPCtrl, 0, 0x18);
 	BgScrollX[0] = BgScrollX[1] = BgScrollX[2] = BgScrollX[3] = 0;
@@ -856,7 +851,7 @@ void TC0480SCPExit()
 	TC0480SCPYVisOffset = 0;
 }
 
-void TC0480SCPScan(int nAction)
+void TC0480SCPScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

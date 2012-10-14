@@ -3,16 +3,16 @@
 #include "burnint.h"
 #include "taito_ic.h"
 
-unsigned char TC0640FIOInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0640FIOInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0640FIOInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0640FIOInputPort3[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0640FIOInputPort4[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TC0640FIOInput[5]      = { 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInputPort0[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInputPort1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInputPort2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInputPort3[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInputPort4[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TC0640FIOInput[5]      = { 0, 0, 0, 0, 0 };
 
 static UINT8 TC0640FIORegs[8];
 
-UINT8 TC0640FIORead(unsigned int Offset)
+UINT8 TC0640FIORead(UINT32 Offset)
 {
 	switch (Offset) {
 		case 0x00: {
@@ -43,7 +43,7 @@ UINT8 TC0640FIORead(unsigned int Offset)
 	return 0xff;
 }
 
-void TC0640FIOWrite(unsigned int Offset, UINT8 Data)
+void TC0640FIOWrite(UINT32 Offset, UINT8 Data)
 {
 	TC0640FIORegs[Offset] = Data;
 	
@@ -60,12 +60,12 @@ void TC0640FIOWrite(unsigned int Offset, UINT8 Data)
 	}
 }
 
-UINT16 TC0640FIOHalfWordRead(unsigned int Offset)
+UINT16 TC0640FIOHalfWordRead(UINT32 Offset)
 {
 	return TC0640FIORead(Offset);
 }
 
-void TC0640FIOHalfWordWrite(unsigned int Offset, UINT16 Data)
+void TC0640FIOHalfWordWrite(UINT32 Offset, UINT16 Data)
 {
 	if ((Data & 0xff00) == 0) {
 		TC0640FIOWrite(Offset, Data & 0xff);
@@ -74,12 +74,12 @@ void TC0640FIOHalfWordWrite(unsigned int Offset, UINT16 Data)
 	}
 }
 
-UINT16 TC0640FIOHalfWordByteswapRead(unsigned int Offset)
+UINT16 TC0640FIOHalfWordByteswapRead(UINT32 Offset)
 {
 	return TC0640FIOHalfWordRead(Offset) << 8;
 }
 
-void TC0640FIOHalfWordByteswapWrite(unsigned int Offset, UINT16 Data)
+void TC0640FIOHalfWordByteswapWrite(UINT32 Offset, UINT16 Data)
 {
 	if ((Data & 0xff00) == 0) {
 		TC0640FIOWrite(Offset, (Data >> 8) & 0xff);
@@ -103,7 +103,7 @@ void TC0640FIOExit()
 	memset(TC0640FIORegs, 0, 8);
 }
 
-void TC0640FIOScan(int nAction)
+void TC0640FIOScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(TC0640FIOInputPort0);

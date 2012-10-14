@@ -3,25 +3,25 @@
 
 #define MAX_LED		8
 
-static int led_status[MAX_LED];
+static INT32 led_status[MAX_LED];
 
-static int led_count;
-static int led_alpha_level;
-static int led_alpha_level2;
-static int led_color;
-static int led_size;
-static int led_position0;
-static int led_position;
-static int led_xpos;
-static int led_ypos;
-static int led_xadv;
-static int led_yadv;
+static INT32 led_count;
+static INT32 led_alpha_level;
+static INT32 led_alpha_level2;
+static INT32 led_color;
+static INT32 led_size;
+static INT32 led_position0;
+static INT32 led_position;
+static INT32 led_xpos;
+static INT32 led_ypos;
+static INT32 led_xadv;
+static INT32 led_yadv;
 
-static int nScreenWidth, nScreenHeight;
-static int screen_flipped;
-static int flipscreen = -1;
+static INT32 nScreenWidth, nScreenHeight;
+static INT32 screen_flipped;
+static INT32 flipscreen = -1;
 
-static inline unsigned int alpha_blend32(unsigned int d)
+static inline UINT32 alpha_blend32(UINT32 d)
 {
 	return (((((led_color & 0xff00ff) * led_alpha_level) + ((d & 0xff00ff) * led_alpha_level2)) & 0xff00ff00) |
 		((((led_color & 0x00ff00) * led_alpha_level) + ((d & 0x00ff00) * led_alpha_level2)) & 0x00ff0000)) >> 8;
@@ -102,8 +102,12 @@ static void set_led_draw_position()
 	}
 }
 
-void BurnLEDSetFlipscreen(int flip)
+void BurnLEDSetFlipscreen(INT32 flip)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDSetFlipscreen called without init\n"));
+#endif
+
 	flip = flip ? 1 : 0;
 
 	if (flipscreen != flip) {
@@ -114,13 +118,19 @@ void BurnLEDSetFlipscreen(int flip)
 
 void BurnLEDReset()
 {
-	memset (led_status, 0, MAX_LED * sizeof(int));
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDReset called without init\n"));
+#endif
+
+	memset (led_status, 0, MAX_LED * sizeof(INT32));
 
 	BurnLEDSetFlipscreen(0);
 }
 
-void BurnLEDInit(int num, int position, int size, int color, int transparency)
+void BurnLEDInit(INT32 num, INT32 position, INT32 size, INT32 color, INT32 transparency)
 {
+	Debug_BurnLedInitted = 1;
+	
 	if (num >= MAX_LED) num = MAX_LED - 1;
 
 	led_count = num;
@@ -136,8 +146,13 @@ void BurnLEDInit(int num, int position, int size, int color, int transparency)
 	BurnLEDReset();
 }
 
-void BurnLEDSetStatus(int led, unsigned int status)
+void BurnLEDSetStatus(INT32 led, UINT32 status)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDSetStatus called without init\n"));
+	if (led >= led_count) bprintf(PRINT_ERROR, _T("BurnLEDSetStatus called with invalid led %x\n"), led);
+#endif
+
 	if (led >= led_count) return;
 
 	if (screen_flipped ^ flipscreen) {
@@ -149,6 +164,10 @@ void BurnLEDSetStatus(int led, unsigned int status)
 
 void BurnLEDExit()
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDExit called without init\n"));
+#endif
+
 	BurnLEDReset();
 
 	led_count = 0;
@@ -168,33 +187,39 @@ void BurnLEDExit()
 	nScreenHeight = 0;
 
 	flipscreen = -1;
+	
+	Debug_BurnLedInitted = 0;
 }
 
 void BurnLEDRender()
 {
-	int xpos = led_xpos;
-	int ypos = led_ypos;
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDRender called without init\n"));
+#endif
+
+	INT32 xpos = led_xpos;
+	INT32 ypos = led_ypos;
 	int color = BurnHighCol((led_color >> 16) & 0xff, (led_color >> 8) & 0xff, (led_color >> 0) & 0xff, 0);
 
-	for (int i = 0; i < led_count; i++)
+	for (INT32 i = 0; i < led_count; i++)
 	{
 		if (xpos < 0 || xpos > (nScreenWidth - led_size)) break;
 
 		if (led_status[i]) 
 		{
-			for (int y = 0; y < led_size; y++)
+			for (INT32 y = 0; y < led_size; y++)
 			{
-				unsigned char *ptr = pBurnDraw + (((ypos + y) * nScreenWidth) + xpos) * nBurnBpp;
+				UINT8 *ptr = pBurnDraw + (((ypos + y) * nScreenWidth) + xpos) * nBurnBpp;
 
-				for (int x = 0; x < led_size; x++)
+				for (INT32 x = 0; x < led_size; x++)
 				{
 					if (nBurnBpp >= 4)
 					{
-						*((unsigned int*)ptr) = alpha_blend32(*((unsigned int*)ptr));
+						*((UINT32*)ptr) = alpha_blend32(*((UINT32*)ptr));
 					}
 					else if (nBurnBpp == 3)
 					{
-						unsigned int t = alpha_blend32((ptr[2] << 16) | (ptr[1] << 8) | ptr[0]);
+						UINT32 t = alpha_blend32((ptr[2] << 16) | (ptr[1] << 8) | ptr[0]);
 	
 						ptr[2] = t >> 16;
 						ptr[1] = t >> 8;
@@ -202,7 +227,7 @@ void BurnLEDRender()
 					}
 					else if (nBurnBpp == 2) // alpha blend not supported for 16-bit
 					{
-						*((unsigned short*)ptr) =  color;
+						*((UINT16*)ptr) =  color;
 					}
 
 					ptr += nBurnBpp;
@@ -215,8 +240,12 @@ void BurnLEDRender()
 	}
 }
 
-int BurnLEDScan(int nAction, int *pnMin)
+INT32 BurnLEDScan(INT32 nAction, INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!Debug_BurnLedInitted) bprintf(PRINT_ERROR, _T("BurnLEDScan called without init\n"));
+#endif
+
 	struct BurnArea ba;
 
 	if (pnMin != NULL) {
@@ -225,7 +254,7 @@ int BurnLEDScan(int nAction, int *pnMin)
 
 	if (nAction & ACB_DRIVER_DATA) {
 		ba.Data		= &led_status;
-		ba.nLen		= led_count * sizeof(int);
+		ba.nLen		= led_count * sizeof(INT32);
 		ba.nAddress	= 0;
 		ba.szName	= "Led status";
 		BurnAcb(&ba);

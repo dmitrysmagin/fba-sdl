@@ -23,9 +23,9 @@ static void BzipListFree()
 			}
 		}
 		free(List);
+		List = NULL;
 	}
 
-	List = NULL;
 	nListCount = 0;
 }
 
@@ -264,21 +264,35 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 	// show what we're doing
 	BurnDrvGetRomName(&pszRomName, i, 0);
 	if (pszRomName == NULL) {
-		pszRomName = "unknown";
+		TCHAR szTempName[100];
+		_stprintf(szTempName, _T("%s"), FBALoadStringEx(hAppInst, IDS_ERR_UNKNOWN, true));
+		sprintf(pszRomName, "%s", TCHARToANSI(szTempName, NULL, 0));
 	}
-	_stprintf(szText, _T("Loading"));
+	
+	TCHAR szTempLoading[100];
+	_stprintf(szTempLoading, _T("%s"), FBALoadStringEx(hAppInst, IDS_PROGRESS_LOADING_ONLY, true));
+	_stprintf(szText, _T("%s"), szTempLoading);
+	
 	if (ri.nType & (BRF_PRG | BRF_GRA | BRF_SND | BRF_BIOS)) {
 		if (ri.nType & BRF_BIOS) {
-			_stprintf (szText + _tcslen(szText), _T(" %s"), _T("BIOS "));
+			TCHAR szTempBios[100];
+			_stprintf(szTempBios, _T("%s"), FBALoadStringEx(hAppInst, IDS_ERR_LOAD_DET_BIOS, true));
+			_stprintf(szText + _tcslen(szText), _T(" %s"), szTempBios);
 		}
 		if (ri.nType & BRF_PRG) {
-			_stprintf (szText + _tcslen(szText), _T(" %s"), _T("program "));
+			TCHAR szTempPrg[100];
+			_stprintf(szTempPrg, _T("%s"), FBALoadStringEx(hAppInst, IDS_ERR_LOAD_DET_PRG, true));
+			_stprintf(szText + _tcslen(szText), _T(" %s"), szTempPrg);
 		}
 		if (ri.nType & BRF_GRA) {
-			_stprintf (szText + _tcslen(szText), _T(" %s"), _T("graphics "));
+			TCHAR szTempGra[100];
+			_stprintf(szTempGra, _T("%s"), FBALoadStringEx(hAppInst, IDS_ERR_LOAD_DET_GRA, true));
+			_stprintf (szText + _tcslen(szText), _T(" %s"), szTempGra);
 		}
 		if (ri.nType & BRF_SND) {
-			_stprintf (szText + _tcslen(szText), _T(" %s"), _T("sound "));
+			TCHAR szTempSnd[100];
+			_stprintf(szTempSnd, _T("%s"), FBALoadStringEx(hAppInst, IDS_ERR_LOAD_DET_SND, true));
+			_stprintf (szText + _tcslen(szText), _T(" %s"), szTempSnd);
 		}
 		_stprintf(szText + _tcslen(szText), _T("(%hs)..."), pszRomName);
 	} else {
@@ -366,8 +380,10 @@ int BzipOpen(bool bootApp)
 	memset(RomFind, 0, nMemLen);
 
 	for (int y = 0; y < BZIP_MAX; y++) {
-		free(szBzipName[y]);
-		szBzipName[y] = NULL;
+		if (szBzipName[y]) {
+			free(szBzipName[y]);
+			szBzipName[y] = NULL;
+		}
 	}
 
 	// Locate each zip file
@@ -397,11 +413,12 @@ int BzipOpen(bool bootApp)
 				}
 
 				z++;
+				if (z >= BZIP_MAX) break;
 
-				// Look further in the last path specified, so you can put files with ROMs
+				// Look further in the last ten paths specified, so you can put files with ROMs
 				// used only by FB Alpha there without causing problems with dat files
-				if (d < DIRS_MAX - 2) {
-					d = DIRS_MAX - 2;
+				if (d < DIRS_MAX - 11) {
+					d = DIRS_MAX - 11;
 				} else {
 					if (d >= DIRS_MAX - 1) {
 						break;
@@ -576,13 +593,17 @@ int BzipClose()
 	BurnExtLoadRom = NULL;												// Can't call our function to load each rom anymore
 	nBzipError = 0;														// reset romset errors
 
-	free(RomFind);
-	RomFind = NULL;
+	if (RomFind) {
+		free(RomFind);
+		RomFind = NULL;
+	}
 	nRomCount = 0;
 
 	for (int z = 0; z < BZIP_MAX; z++) {
-		free(szBzipName[z]);
-		szBzipName[z] = NULL;
+		if (szBzipName[z]) {
+			free(szBzipName[z]);
+			szBzipName[z] = NULL;
+		}
 	}
 
 	return 0;

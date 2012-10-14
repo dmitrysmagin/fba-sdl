@@ -4,54 +4,55 @@
 
 #define NUM_CHANNELS	(8)
 
-static unsigned int nUpdateStep;
+static UINT32 nUpdateStep;
 
 struct pcm_channel
 {
-	unsigned char	enable;
-	unsigned char	env;
-	unsigned char	pan;
-	unsigned char	start;
-	unsigned int	addr;
-	unsigned short	step;
-	unsigned short	loopst;
+	UINT8	enable;
+	UINT8	env;
+	UINT8	pan;
+	UINT8	start;
+	UINT32	addr;
+	UINT16	step;
+	UINT16	loopst;
 };
 
 struct rf5c68pcm
 {
 	struct pcm_channel	chan[NUM_CHANNELS];
-	unsigned char		cbank;
-	unsigned char		wbank;
-	unsigned char		enable;
-	unsigned char		data[0x10000];
+	UINT8		cbank;
+	UINT8		wbank;
+	UINT8		enable;
+	UINT8		data[0x10000];
 };
 
 static struct rf5c68pcm *chip = NULL;
 
-static int *left = NULL;
-static int *right = NULL;
+static INT32 *left = NULL;
+static INT32 *right = NULL;
 
-void RF5C68PCMUpdate(short* pSoundBuf, int length)
+void RF5C68PCMUpdate(INT16* pSoundBuf, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMUpdate called without init\n"));
+#endif
+
 	if (!chip->enable) return;
 	
-	int i, j;
+	INT32 i, j;
 	
-	left = (int*)malloc(nBurnSoundLen * sizeof(int));
-	right = (int*)malloc(nBurnSoundLen * sizeof(int));
-	
-	memset(left, 0, length * sizeof(int));
-	memset(right, 0, length * sizeof(int));
+	memset(left, 0, length * sizeof(INT32));
+	memset(right, 0, length * sizeof(INT32));
 	
 	for (i = 0; i < NUM_CHANNELS; i++) {
 		pcm_channel *chan = &chip->chan[i];
 		
 		if (chan->enable) {
-			int lv = (chan->pan & 0xf) * chan->env;
-			int rv = ((chan->pan >> 4) & 0xf) * chan->env;
+			INT32 lv = (chan->pan & 0xf) * chan->env;
+			INT32 rv = ((chan->pan >> 4) & 0xf) * chan->env;
 		
 			for (j = 0; j < length; j++) {
-				int sample;
+				INT32 sample;
 				
 				sample = chip->data[(chan->addr >> 11) & 0xffff];
 				if (sample == 0xff) {
@@ -85,32 +86,87 @@ void RF5C68PCMUpdate(short* pSoundBuf, int length)
 		pSoundBuf[i + 0] = left[i];
 		pSoundBuf[i + 1] = right[i];
 	}
-	
-	free(left);
-	left = NULL;
-	free(right);
-	right = NULL;
 }
 
 void RF5C68PCMReset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMReset called without init\n"));
+#endif
+
 	memset(chip, 0, sizeof(*chip));
 	memset(chip->data, 0xff, sizeof(chip->data));
 }
 
-void RF5C68PCMInit(int clock)
+void RF5C68PCMInit(INT32 clock)
 {
 	chip = (struct rf5c68pcm*)malloc(sizeof(struct rf5c68pcm));
 	
-	int Rate = clock / 384;
+	INT32 Rate = clock / 384;
 	
-	nUpdateStep = (int)(((float)Rate / nBurnSoundRate) * 32768);
+	nUpdateStep = (INT32)(((float)Rate / nBurnSoundRate) * 32768);
+	
+	left = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
+	right = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
+	
+	DebugSnd_RF5C68Initted = 1;
 }
 
-void RF5C68PCMRegWrite(unsigned char offset, unsigned char data)
+void RF5C68PCMExit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMExit called without init\n"));
+#endif
+
+	if (left) {
+		free(left);
+		left = NULL;
+	}
+	if (right) {
+		free(right);
+		right = NULL;
+	}
+
+	DebugSnd_RF5C68Initted = 0;
+}
+
+void RF5C68PCMScan(INT32 nAction)
+{
+	struct BurnArea ba;
+	
+	if (nAction & ACB_DRIVER_DATA) {
+		memset(&ba, 0, sizeof(ba));
+		ba.Data = chip->data;
+		ba.nLen = 0x10000;
+		ba.szName = "RF5C68PCMData";
+		BurnAcb(&ba);
+
+		SCAN_VAR(chip->cbank);
+		SCAN_VAR(chip->wbank);
+		SCAN_VAR(chip->enable);
+		
+		for (INT32 i = 0; i < NUM_CHANNELS; i++) {
+			pcm_channel *Chan = &chip->chan[i];
+			
+			SCAN_VAR(Chan->enable);
+			SCAN_VAR(Chan->env);
+			SCAN_VAR(Chan->pan);
+			SCAN_VAR(Chan->start);
+			SCAN_VAR(Chan->addr);
+			SCAN_VAR(Chan->step);
+			SCAN_VAR(Chan->loopst);
+		}		
+	}
+}
+
+void RF5C68PCMRegWrite(UINT8 offset, UINT8 data)
+{
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMReqWrite called without init\n"));
+#endif
+
 	struct pcm_channel *chan = &chip->chan[chip->cbank];
-	int i;
+	INT32 i;
 	
 	/* force the stream to update first */
 //	stream_update(chip->stream);
@@ -172,13 +228,21 @@ void RF5C68PCMRegWrite(unsigned char offset, unsigned char data)
 	}
 }
 
-unsigned char RF5C68PCMRead(unsigned short offset)
+UINT8 RF5C68PCMRead(UINT16 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMRead called without init\n"));
+#endif
+
 	return chip->data[chip->wbank * 0x1000 + offset];
 }
 
-void RF5C68PCMWrite(unsigned short offset, unsigned char data)
+void RF5C68PCMWrite(UINT16 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_RF5C68Initted) bprintf(PRINT_ERROR, _T("RF5C68PCMWrite called without init\n"));
+#endif
+
 	chip->data[(chip->wbank * 0x1000) + offset] = data;
 }
 

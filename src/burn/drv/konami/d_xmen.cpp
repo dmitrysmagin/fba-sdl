@@ -2,47 +2,49 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "konamiic.h"
 #include "burn_ym2151.h"
 #include "k054539.h"
 #include "eeprom.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROMExp0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROMExp1;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROMExp0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROMExp1;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int *Palette;
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
-static unsigned char *soundlatch2;
-static unsigned char *nDrvZ80Bank;
+static UINT8 *soundlatch;
+static UINT8 *soundlatch2;
+static UINT8 *nDrvZ80Bank;
 
-static int interrupt_enable;
-static int init_eeprom_count;
+static INT32 interrupt_enable;
+static INT32 init_eeprom_count;
 
-static int sprite_colorbase;
-static int bg_colorbase;
-static int layerpri[3];
-static int layer_colorbase[3];
+static INT32 sprite_colorbase;
+static INT32 bg_colorbase;
+static INT32 layerpri[3];
+static INT32 layer_colorbase[3];
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[3];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[3];
 
 static struct BurnInputInfo XmenInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy2 + 7,	"p1 coin"	},
@@ -120,7 +122,7 @@ static struct BurnInputInfo Xmen2pInputList[] = {
 
 STDINPUTINFO(Xmen2p)
 
-void __fastcall xmen_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall xmen_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -172,7 +174,7 @@ void __fastcall xmen_main_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall xmen_main_write_word(unsigned int address, unsigned short data)
+void __fastcall xmen_main_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfff000) == 0x100000) {
 		K053247Write(address & 0xffe, data | 0x10000);
@@ -186,7 +188,7 @@ void __fastcall xmen_main_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-unsigned char __fastcall xmen_main_read_byte(unsigned int address)
+UINT8 __fastcall xmen_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -229,12 +231,12 @@ unsigned char __fastcall xmen_main_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall xmen_main_read_word(unsigned int /*address*/)
+UINT16 __fastcall xmen_main_read_word(UINT32 /*address*/)
 {
 	return 0;
 }
 
-static void bankswitch(int bank)
+static void bankswitch(INT32 bank)
 {
 	nDrvZ80Bank[0] = bank & 7;
 
@@ -242,7 +244,7 @@ static void bankswitch(int bank)
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM + nDrvZ80Bank[0] * 0x4000);
 }
 
-void __fastcall xmen_sound_write(unsigned short address, unsigned char data)
+void __fastcall xmen_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -270,7 +272,7 @@ void __fastcall xmen_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall xmen_sound_read(unsigned short address)
+UINT8 __fastcall xmen_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -292,7 +294,7 @@ unsigned char __fastcall xmen_sound_read(unsigned short address)
 	return 0;
 }
 
-static void K052109Callback(int layer, int , int *, int *color, int *, int *)
+static void K052109Callback(INT32 layer, INT32 , INT32 *, INT32 *color, INT32 *, INT32 *)
 {
 	if (layer == 0)
 		*color = layer_colorbase[layer] + ((*color & 0xf0) >> 4);
@@ -300,9 +302,9 @@ static void K052109Callback(int layer, int , int *, int *color, int *, int *)
 		*color = layer_colorbase[layer] + ((*color & 0x7c) >> 2);
 }
 
-static void K053247Callback(int *code, int *color, int *priority_mask)
+static void K053247Callback(INT32 *code, INT32 *color, INT32 *priority_mask)
 {
-	int pri = (*color & 0x00e0) >> 4;
+	INT32 pri = (*color & 0x00e0) >> 4;
 	if (pri <= layerpri[2])					*priority_mask = 0;
 	else if (pri > layerpri[2] && pri <= layerpri[1])	*priority_mask = 1;
 	else if (pri > layerpri[1] && pri <= layerpri[0])	*priority_mask = 2;
@@ -312,7 +314,7 @@ static void K053247Callback(int *code, int *color, int *priority_mask)
 	*code &= 0x7fff;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -344,9 +346,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x100000;
 	DrvZ80ROM		= Next; Next += 0x020000;
@@ -358,8 +360,8 @@ static int MemIndex()
 
 	DrvSndROM		= Next; Next += 0x200000;
 
-	Palette			= (unsigned int*)Next; Next += 0x800 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -380,11 +382,11 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
-	int XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
-	int YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
+	INT32 Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
+	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
+	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
 
 	konami_rom_deinterleave_2(DrvGfxROM0, 0x200000);
 	konami_rom_deinterleave_4(DrvGfxROM1, 0x400000);
@@ -409,12 +411,12 @@ static const eeprom_interface xmen_eeprom_intf =
 	0
 };
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -451,7 +453,7 @@ static int DrvInit()
 	SekSetReadWordHandler(0,		xmen_main_read_word);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -485,7 +487,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -499,18 +501,17 @@ static int DrvExit()
 
 	EEPROMExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
 
-static void sortlayers(int *layer,int *pri)
+static void sortlayers(INT32 *layer,INT32 *pri)
 {
 #define SWAP(a,b) \
 	if (pri[a] < pri[b]) \
 	{ \
-		int t; \
+		INT32 t; \
 		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
 		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
 	}
@@ -522,10 +523,10 @@ static void sortlayers(int *layer,int *pri)
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x1000 / 2; i++) {
-		int d = p[i];
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x1000 / 2; i++) {
+		INT32 d = BURN_ENDIAN_SWAP_INT16(p[i]);
 
 		r = (d >>  0) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -540,7 +541,7 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
@@ -548,7 +549,7 @@ static int DrvDraw()
 
 	K052109UpdateScroll();
 
-	int layer[3];
+	INT32 layer[3];
 
 	bg_colorbase       = K053251GetPaletteIndex(4);
 	sprite_colorbase   = K053251GetPaletteIndex(1);
@@ -565,7 +566,7 @@ static int DrvDraw()
 
 	sortlayers(layer,layerpri);
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 16 * bg_colorbase+1;
 	}
 
@@ -588,15 +589,15 @@ if (nBurnLayer & 8) {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	{
-		memset (DrvInputs, 0xff, 3 * sizeof(short));
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 3 * sizeof(INT16));
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -613,16 +614,16 @@ static int DrvFrame()
 		if ((DrvInputs[0] & 0x300) == 0) DrvInputs[0] |= 0x300;
 	}
 
-	int nInterleave = nBurnSoundLen;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[2] = { 16000000 / 60, 8000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 16000000 / 60, 8000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext, nCyclesSegment;
 
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
@@ -639,8 +640,8 @@ static int DrvFrame()
 		nCyclesDone[1] += nCyclesSegment;
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K054539Update(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -650,8 +651,8 @@ static int DrvFrame()
 	if (interrupt_enable) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			K054539Update(0, pSoundBuf, nSegmentLength);
@@ -668,7 +669,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -742,6 +743,43 @@ struct BurnDriver BurnDrvXmen = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 4, HARDWARE_PREFIX_KONAMI, GBF_SCRFIGHT, 0,
 	NULL, xmenRomInfo, xmenRomName, NULL, NULL, XmenInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
+	288, 224, 4, 3
+};
+
+
+// X-Men (4 Players ver ADA)
+
+static struct BurnRomInfo xmenaRomDesc[] = {
+	{ "065-ada.10d",	0x020000, 0xb8276624, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "065-ada.10f",	0x020000, 0xc68582ad, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "065-a02.9d",		0x040000, 0xb31dc44c, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "065-a03.9f",		0x040000, 0x13842fe6, 1 | BRF_PRG | BRF_ESS }, //  3
+
+	{ "065-a01.6f",		0x020000, 0x147d3a4d, 2 | BRF_PRG | BRF_ESS }, //  4 Z80 Code
+
+	{ "065-a08.15l",	0x100000, 0x6b649aca, 3 | BRF_GRA },           //  5 Background Tiles
+	{ "065-a07.16l",	0x100000, 0xc5dc8fc4, 3 | BRF_GRA },           //  6
+
+	{ "065-a09.2h",		0x100000, 0xea05d52f, 4 | BRF_GRA },           //  7 Sprites
+	{ "065-a10.2l",		0x100000, 0x96b91802, 4 | BRF_GRA },           //  8
+	{ "065-a12.1h",		0x100000, 0x321ed07a, 4 | BRF_GRA },           //  9
+	{ "065-a11.1l",		0x100000, 0x46da948e, 4 | BRF_GRA },           // 10
+
+	{ "065-a06.1f",		0x200000, 0x5adbcee0, 5 | BRF_SND },           // 11 K054539 Samples
+
+	{ "xmen_ada.nv",  0x000080, 0xa77a3891, BRF_OPT },
+};
+
+STD_ROM_PICK(xmena)
+STD_ROM_FN(xmena)
+
+struct BurnDriver BurnDrvXmena = {
+	"xmena", "xmen", NULL, NULL, "1992",
+	"X-Men (4 Players ver ADA)\0", NULL, "Konami", "GX065",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_PREFIX_KONAMI, GBF_SCRFIGHT, 0,
+	NULL, xmenaRomInfo, xmenaRomName, NULL, NULL, XmenInputInfo, NULL,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	288, 224, 4, 3
 };

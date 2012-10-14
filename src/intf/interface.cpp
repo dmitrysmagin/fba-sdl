@@ -2,28 +2,40 @@
 
 #define INT_INFO_STRINGS (8)
 
-int IntInfoFree(InterfaceInfo* pInfo)
+INT32 IntInfoFree(InterfaceInfo* pInfo)
 {
 	if (pInfo->ppszInterfaceSettings) {
-		for (int i = 0; i < INT_INFO_STRINGS; i++) {
-			free(pInfo->ppszInterfaceSettings[i]);
+		for (INT32 i = 0; i < INT_INFO_STRINGS; i++) {
+			if (pInfo->ppszInterfaceSettings[i]) {
+				free(pInfo->ppszInterfaceSettings[i]);
+				pInfo->ppszInterfaceSettings[i] = NULL;
+			}
 		}
 	}
-	free(pInfo->ppszInterfaceSettings);
+	if (pInfo->ppszInterfaceSettings) {
+		free(pInfo->ppszInterfaceSettings);
+		pInfo->ppszInterfaceSettings = NULL;
+	}
 
 	if (pInfo->ppszModuleSettings) {
-		for (int i = 0; i < INT_INFO_STRINGS; i++) {
-			free(pInfo->ppszModuleSettings[i]);
+		for (INT32 i = 0; i < INT_INFO_STRINGS; i++) {
+			if (pInfo->ppszModuleSettings[i]) {
+				free(pInfo->ppszModuleSettings[i]);
+				pInfo->ppszModuleSettings[i] = NULL;
+			}
 		}
 	}
-	free(pInfo->ppszModuleSettings);
+	if (pInfo->ppszModuleSettings) {
+		free(pInfo->ppszModuleSettings);
+		pInfo->ppszModuleSettings = NULL;
+	}
 
 	memset(pInfo, 0, sizeof(InterfaceInfo));
 
 	return 0;
 }
 
-int IntInfoInit(InterfaceInfo* pInfo)
+INT32 IntInfoInit(InterfaceInfo* pInfo)
 {
 	IntInfoFree(pInfo);
 
@@ -42,9 +54,9 @@ int IntInfoInit(InterfaceInfo* pInfo)
 	return 0;
 }
 
-int IntInfoAddStringInterface(InterfaceInfo* pInfo, TCHAR* szString)
+INT32 IntInfoAddStringInterface(InterfaceInfo* pInfo, TCHAR* szString)
 {
-	int i;
+	INT32 i;
 
 	for (i = 0; pInfo->ppszInterfaceSettings[i] && i < INT_INFO_STRINGS; i++) { }
 
@@ -62,9 +74,9 @@ int IntInfoAddStringInterface(InterfaceInfo* pInfo, TCHAR* szString)
 	return 0;
 }
 
-int IntInfoAddStringModule(InterfaceInfo* pInfo, TCHAR* szString)
+INT32 IntInfoAddStringModule(InterfaceInfo* pInfo, TCHAR* szString)
 {
-	int i;
+	INT32 i;
 
 	for (i = 0; pInfo->ppszModuleSettings[i] && i < INT_INFO_STRINGS; i++) { }
 

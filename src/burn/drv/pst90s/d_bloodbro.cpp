@@ -1,40 +1,43 @@
 // FB Alpha Blood Bros. driver module
+// FB Alpha Blood Bros. driver module
 // Based on MAME driver by Carlos A. Lozano Baides and Richard Bush
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "seibusnd.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *Drv68KRAM1;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvTxRAM;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvScrollRAM;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *Drv68KRAM1;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvTxRAM;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvScrollRAM;
+static UINT32 *DrvPalette;
 
-static unsigned char  DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[2];
-static unsigned char DrvJoy2[15];
-static unsigned char DrvJoy3[13];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[3];
+static UINT8 DrvJoy1[2];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[3];
 
-static int nGameSelect = 0;
+static INT32 nGameSelect = 0;
 
 static struct BurnInputInfo BloodbroInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -417,7 +420,7 @@ static struct BurnDIPInfo SkysmashDIPList[]=
 
 STDDIPINFO(Skysmash)
 
-void __fastcall bloodbro_write_byte(unsigned int address, unsigned char data)
+void __fastcall bloodbro_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xffffff0) == 0xa0000) {
 		seibu_main_word_write(address, data);
@@ -425,7 +428,7 @@ void __fastcall bloodbro_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall bloodbro_write_word(unsigned int address, unsigned short data)
+void __fastcall bloodbro_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xffffff0) == 0xa0000) {
 		seibu_main_word_write(address, data);
@@ -433,12 +436,12 @@ void __fastcall bloodbro_write_word(unsigned int address, unsigned short data)
 	}
 
 	if ((address & 0xfffff80) == 0xc0000) {
-		*((unsigned short*)(DrvScrollRAM + (address & 0x7e))) = data;
+		*((UINT16*)(DrvScrollRAM + (address & 0x7e))) = BURN_ENDIAN_SWAP_INT16(data);
 		return;	
 	}
 }
 
-unsigned char __fastcall bloodbro_read_byte(unsigned int address)
+UINT8 __fastcall bloodbro_read_byte(UINT32 address)
 {
 	if ((address & 0xffffff0) == 0xa0000) {
 		return seibu_main_word_read(address);	
@@ -447,7 +450,7 @@ unsigned char __fastcall bloodbro_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall bloodbro_read_word(unsigned int address)
+UINT16 __fastcall bloodbro_read_word(UINT32 address)
 {
 	if ((address & 0xffffff0) == 0xa0000) {
 		return seibu_main_word_read(address);
@@ -468,7 +471,7 @@ unsigned short __fastcall bloodbro_read_word(unsigned int address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -483,19 +486,19 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane0[4]  = { 0x00000, 0x00004, 0x80000, 0x80004 };
-	int XOffs0[8]  = { 0x003, 0x002, 0x001, 0x000, 0x00b, 0x00a, 0x009, 0x008 };
-	int YOffs0[8]  = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070 };
+	INT32 Plane0[4]  = { 0x00000, 0x00004, 0x80000, 0x80004 };
+	INT32 XOffs0[8]  = { 0x003, 0x002, 0x001, 0x000, 0x00b, 0x00a, 0x009, 0x008 };
+	INT32 YOffs0[8]  = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070 };
 
-	int Plane1[4]  = { 0x008, 0x00c, 0x000, 0x004 };
-	int XOffs1[16] = { 0x003, 0x002, 0x001, 0x000, 0x013, 0x012, 0x011, 0x010,
+	INT32 Plane1[4]  = { 0x008, 0x00c, 0x000, 0x004 };
+	INT32 XOffs1[16] = { 0x003, 0x002, 0x001, 0x000, 0x013, 0x012, 0x011, 0x010,
 			   0x203, 0x202, 0x201, 0x200, 0x213, 0x212, 0x211, 0x210 };
-	int YOffs1[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
+	INT32 YOffs1[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			   0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -512,14 +515,14 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x2000, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x400, tmp, DrvGfxROM2);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x080000;
 	SeibuZ80ROM	= Next;
@@ -532,7 +535,7 @@ static int MemIndex()
 	MSM6295ROM	= Next;
 	DrvSndROM	= Next; Next += 0x040000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -557,19 +560,61 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "weststry"))
 	{
-		return 1;
+		{
+			if (BurnLoadRom(Drv68KROM + 0x000000, 0, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x000001, 1, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x040000, 2, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x040001, 3, 2)) return 1;
+	
+			if (BurnLoadRom(DrvZ80ROM + 0x000000, 4, 1)) return 1;
+			memcpy (DrvZ80ROM + 0x10000, DrvZ80ROM + 0x8000, 0x8000);
+			memcpy (DrvZ80ROM + 0x18000, DrvZ80ROM + 0x8000, 0x8000);
+	
+			UINT8 *pTemp = (UINT8*)BurnMalloc(0x10000);
+			if (BurnLoadRom(pTemp      + 0x00000, 5, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x00000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 6, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x08000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 7, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x10000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 8, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x18000, pTemp + 0x8000, 0x8000);
+			BurnFree(pTemp);
+	
+			if (BurnLoadRom(DrvGfxROM1 + 0x20000, 9, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x60000,10, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xa0000,11, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xe0000,12, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x00000,13, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x40000,14, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x80000,15, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xc0000,16, 1)) return 1;
+	
+			if (BurnLoadRom(DrvGfxROM2 + 0x00000,17, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x20000,18, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x40000,19, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x60000,20, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x80000,21, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xa0000,22, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xc0000,23, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xe0000,24, 1)) return 1;
+	
+			if (BurnLoadRom(DrvSndROM + 0x000000,25, 1)) return 1;
+
+			DrvGfxDecode();
+		}
 
 		SekInit(0, 0x68000);
 		SekOpen(0);
@@ -640,29 +685,28 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	SekExit();
 
 	seibu_sound_exit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	nGameSelect = 0;
 
 	return 0;
 }
 
-static void draw_layer(unsigned char *src, int palette_offset, int transp, int scrollx, int scrolly)
+static void draw_layer(UINT8 *src, INT32 palette_offset, INT32 transp, INT32 scrollx, INT32 scrolly)
 {
-	unsigned short *vram = (unsigned short*)src;
+	UINT16 *vram = (UINT16*)src;
 
-	for (int offs = 0; offs < 32 * 16; offs++)
+	for (INT32 offs = 0; offs < 32 * 16; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= scrollx;
 		if (sx < -15) sx += 0x200;
@@ -671,8 +715,8 @@ static void draw_layer(unsigned char *src, int palette_offset, int transp, int s
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int code = (vram[offs] & 0xfff) | (transp << 12);
-		int color = vram[offs] >> 12;
+		INT32 code = (BURN_ENDIAN_SWAP_INT16(vram[offs]) & 0xfff) | (transp << 12);
+		INT32 color = BURN_ENDIAN_SWAP_INT16(vram[offs]) >> 12;
 
 		if (transp) {
 			Render16x16Tile_Mask_Clip(pTransDraw, code, sx, sy, color, 4, 15, palette_offset, DrvGfxROM1);
@@ -684,47 +728,47 @@ static void draw_layer(unsigned char *src, int palette_offset, int transp, int s
 
 static void draw_text_layer()
 {
-	unsigned short *vram = (unsigned short*)DrvTxRAM;
+	UINT16 *vram = (UINT16*)DrvTxRAM;
 
-	for (int offs = 0x40; offs < 0x3c0; offs++)
+	for (INT32 offs = 0x40; offs < 0x3c0; offs++)
 	{
-		int code = vram[offs] & 0xfff;
+		INT32 code = BURN_ENDIAN_SWAP_INT16(vram[offs]) & 0xfff;
 		if (!code) continue;
 
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
-		int color = vram[offs] >> 12;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
+		INT32 color = BURN_ENDIAN_SWAP_INT16(vram[offs]) >> 12;
 
 		Render8x8Tile_Mask(pTransDraw, code, sx, sy-16, color, 4, 15, 0x700, DrvGfxROM0);
 	}
 }
 
-static void draw_sprites(int priority)
+static void draw_sprites(INT32 priority)
 {
-	unsigned short *ram = (unsigned short*)DrvSprRAM;
+	UINT16 *ram = (UINT16*)DrvSprRAM;
 
-	for (int offs = 0x800-4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x800-4; offs >= 0; offs -= 4)
 	{
-		int attr = ram[offs];
-		int prio = (attr & 0x0800) >> 11;
+		INT32 attr = BURN_ENDIAN_SWAP_INT16(ram[offs]);
+		INT32 prio = (attr & 0x0800) >> 11;
 		if (attr & 0x8000 || prio != priority) continue;
 
-		int width   = (attr >> 7) & 7;
-		int height  = (attr >> 4) & 7;
-		int code    = ram[offs+1] & 0x1fff;
-		int sx      = ram[offs+2] & 0x01ff;
-		int sy      = ram[offs+3] & 0x01ff;
+		INT32 width   = (attr >> 7) & 7;
+		INT32 height  = (attr >> 4) & 7;
+		INT32 code    = BURN_ENDIAN_SWAP_INT16(ram[offs+1]) & 0x1fff;
+		INT32 sx      = BURN_ENDIAN_SWAP_INT16(ram[offs+2]) & 0x01ff;
+		INT32 sy      = BURN_ENDIAN_SWAP_INT16(ram[offs+3]) & 0x01ff;
 		if (sx > 255) sx -= 512;
 		if (sy > 255) sy -= 512;
 		sy -= 16;
 
-		int flipx = attr & 0x2000;
-		int flipy = attr & 0x4000;
-		int color = attr & 0x000f;
+		INT32 flipx = attr & 0x2000;
+		INT32 flipy = attr & 0x4000;
+		INT32 color = attr & 0x000f;
 
-		for (int x = 0; x <= width; x++)
+		for (INT32 x = 0; x <= width; x++)
 		{
-			for (int y = 0; y <= height; y++)
+			for (INT32 y = 0; y <= height; y++)
 			{
 				if (flipy) {
 					if (flipx) {
@@ -749,12 +793,12 @@ static void draw_sprites(int priority)
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
 
-	for (int i = 0; i < 0x1000/2; i++)
+	for (INT32 i = 0; i < 0x1000/2; i++)
 	{
-		int data = p[i];
+		INT32 data = BURN_ENDIAN_SWAP_INT16(p[i]);
 
 		r = (data >> 0) & 0x0f;
 		g = (data >> 4) & 0x0f;
@@ -768,20 +812,20 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
 	}
 
-	unsigned short *scroll = (unsigned short*)DrvScrollRAM;
+	UINT16 *scroll = (UINT16*)DrvScrollRAM;
 	scroll += 0x10 >> (nGameSelect & 1); // skysmash
 
-	draw_layer(DrvBgRAM, 0x400, 0, scroll[0] & 0x1ff, scroll[1] & 0x0ff);
+	draw_layer(DrvBgRAM, 0x400, 0, BURN_ENDIAN_SWAP_INT16(scroll[0]) & 0x1ff, BURN_ENDIAN_SWAP_INT16(scroll[1]) & 0x0ff);
 
 	draw_sprites(1);
 
-	draw_layer(DrvFgRAM, 0x500, 1, scroll[2] & 0x1ff, scroll[3] & 0x0ff);
+	draw_layer(DrvFgRAM, 0x500, 1, BURN_ENDIAN_SWAP_INT16(scroll[2]) & 0x1ff, BURN_ENDIAN_SWAP_INT16(scroll[3]) & 0x0ff);
 
 	draw_sprites(0);
 
@@ -792,7 +836,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -801,15 +845,15 @@ static int DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 3 * 2);
-		for (int i = 0; i < 16; i++)
+		memset (DrvInputs, 0xff, 3 * sizeof(UINT16));
+		for (INT32 i = 0; i < 16; i++)
 		{
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
 		}
 
 		if (nGameSelect == 2) {
-			unsigned short *ram = (unsigned short*)(Drv68KRAM + 0xb000);
+			UINT16 *ram = (UINT16*)(Drv68KRAM + 0xb000);
 			ram[0] = (DrvDips[1] << 8) | (DrvDips[0]);
 			ram[1] = DrvInputs[1];
 			ram[2] = DrvInputs[2];
@@ -818,15 +862,15 @@ static int DrvFrame()
 		seibu_coin_input = (DrvJoy1[1] << 1) | DrvJoy1[0];
 	}
 
-	int nSegment;
-	int nInterleave = 1000;
-	int nTotalCycles[2] = { 10000000 / 60, 3579545 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nSegment;
+	INT32 nInterleave = 1000;
+	INT32 nTotalCycles[2] = { 10000000 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nSegment = nTotalCycles[0] / nInterleave;
 		nCyclesDone[0] += SekRun(nSegment);
@@ -854,7 +898,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -883,8 +927,8 @@ static int DrvScan(int nAction, int *pnMin)
 // Blood Bros. (set 1)
 
 static struct BurnRomInfo bloodbroRomDesc[] = {
-	{ "bb_02.bin",	0x020000, 0xc0fdc3e4, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
-	{ "bb_01.bin",	0x020000, 0x2d7e0fdf, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "2j.u021",	0x020000, 0xc0fdc3e4, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "1j.i022",	0x020000, 0x2d7e0fdf, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "bb_04.bin",	0x020000, 0xfd951c2c, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "bb_03.bin",	0x020000, 0x18d3c460, 1 | BRF_PRG | BRF_ESS }, //  3
 

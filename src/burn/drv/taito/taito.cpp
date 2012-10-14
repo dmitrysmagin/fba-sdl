@@ -1,6 +1,8 @@
 #include "tiles_generic.h"
 #include "taito.h"
 #include "taito_ic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 #include "burn_ym2610.h"
 #include "burn_ym2203.h"
@@ -9,74 +11,74 @@
 #include "eeprom.h"
 #include "burn_gun.h"
 
-unsigned char TaitoInputPort0[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoInputPort1[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoInputPort2[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoInputPort3[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoInputPort4[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoInputPort5[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoDip[2]              = { 0, 0 };
-unsigned char TaitoInput[6]            = { 0, 0, 0, 0, 0, 0 };
-unsigned char TaitoReset               = 0;
+UINT8 TaitoInputPort0[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoInputPort1[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoInputPort2[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoInputPort3[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoInputPort4[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoInputPort5[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoDip[2]              = { 0, 0 };
+UINT8 TaitoInput[6]            = { 0, 0, 0, 0, 0, 0 };
+UINT8 TaitoReset               = 0;
 
-unsigned char TaitoCoinLockout[4]      = { 0, 0, 0, 0 };
+UINT8 TaitoCoinLockout[4]      = { 0, 0, 0, 0 };
 
-int           TaitoAnalogPort0         = 0;
-int           TaitoAnalogPort1         = 0;
-int           TaitoAnalogPort2         = 0;
-int           TaitoAnalogPort3         = 0;
+INT32 TaitoAnalogPort0         = 0;
+INT32 TaitoAnalogPort1         = 0;
+INT32 TaitoAnalogPort2         = 0;
+INT32 TaitoAnalogPort3         = 0;
 
-unsigned char *TaitoMem                = NULL;
-unsigned char *TaitoMemEnd             = NULL;
-unsigned char *TaitoRamStart           = NULL;
-unsigned char *TaitoRamEnd             = NULL;
-unsigned char *Taito68KRam1            = NULL;
-unsigned char *Taito68KRam2            = NULL;
-unsigned char *Taito68KRam3            = NULL;
-unsigned char *TaitoSharedRam          = NULL;
-unsigned char *TaitoZ80Ram1            = NULL;
-unsigned char *TaitoZ80Ram2            = NULL;
-unsigned char *TaitoPaletteRam         = NULL;
-unsigned char *TaitoSpriteRam          = NULL;
-unsigned char *TaitoSpriteRam2         = NULL;
-unsigned char *TaitoSpriteRamBuffered  = NULL;
-unsigned char *TaitoSpriteRamDelayed   = NULL;
-unsigned char *TaitoSpriteExtension    = NULL;
-unsigned char *TaitoVideoRam           = NULL;
-unsigned int  *TaitoPalette            = NULL;
-unsigned char *TaitoPriorityMap        = NULL;
+UINT8 *TaitoMem                = NULL;
+UINT8 *TaitoMemEnd             = NULL;
+UINT8 *TaitoRamStart           = NULL;
+UINT8 *TaitoRamEnd             = NULL;
+UINT8 *Taito68KRam1            = NULL;
+UINT8 *Taito68KRam2            = NULL;
+UINT8 *Taito68KRam3            = NULL;
+UINT8 *TaitoSharedRam          = NULL;
+UINT8 *TaitoZ80Ram1            = NULL;
+UINT8 *TaitoZ80Ram2            = NULL;
+UINT8 *TaitoPaletteRam         = NULL;
+UINT8 *TaitoSpriteRam          = NULL;
+UINT8 *TaitoSpriteRam2         = NULL;
+UINT8 *TaitoSpriteRamBuffered  = NULL;
+UINT8 *TaitoSpriteRamDelayed   = NULL;
+UINT8 *TaitoSpriteExtension    = NULL;
+UINT8 *TaitoVideoRam           = NULL;
+UINT32 *TaitoPalette           = NULL;
+UINT8 *TaitoPriorityMap        = NULL;
 
-unsigned char TaitoZ80Bank = 0;
-unsigned char TaitoSoundLatch = 0;
-unsigned short TaitoCpuACtrl = 0;
-int TaitoRoadPalBank = 0;
+UINT8 TaitoZ80Bank = 0;
+UINT8 TaitoSoundLatch = 0;
+UINT16 TaitoCpuACtrl = 0;
+INT32 TaitoRoadPalBank = 0;
 
-int TaitoXOffset = 0;
-int TaitoYOffset = 0;
-int TaitoIrqLine = 0;
-int TaitoFrameInterleave = 0;
-int TaitoFlipScreenX = 0;
+INT32 TaitoXOffset = 0;
+INT32 TaitoYOffset = 0;
+INT32 TaitoIrqLine = 0;
+INT32 TaitoFrameInterleave = 0;
+INT32 TaitoFlipScreenX = 0;
 
-int TaitoNum68Ks = 0;
-int TaitoNumZ80s = 0;
-int TaitoNumYM2610 = 0;
-int TaitoNumYM2151 = 0;
-int TaitoNumYM2203 = 0;
-int TaitoNumMSM5205 = 0;
-int TaitoNumMSM6295 = 0;
-int TaitoNumES5505 = 0;
-int TaitoNumEEPROM = 0;
+INT32 TaitoNum68Ks = 0;
+INT32 TaitoNumZ80s = 0;
+INT32 TaitoNumYM2610 = 0;
+INT32 TaitoNumYM2151 = 0;
+INT32 TaitoNumYM2203 = 0;
+INT32 TaitoNumMSM5205 = 0;
+INT32 TaitoNumMSM6295 = 0;
+INT32 TaitoNumES5505 = 0;
+INT32 TaitoNumEEPROM = 0;
 
-int nTaitoCyclesDone[4], nTaitoCyclesTotal[4];
-int nTaitoCyclesSegment;
+INT32 nTaitoCyclesDone[4], nTaitoCyclesTotal[4];
+INT32 nTaitoCyclesSegment;
 
 TaitoRender TaitoDrawFunction;
 TaitoMakeInputs TaitoMakeInputsFunction;
 TaitoResetFunc TaitoResetFunction;
 
-int TaitoDoReset()
+INT32 TaitoDoReset()
 {
-	int i;
+	INT32 i;
 	
 	for (i = 0; i < TaitoNum68Ks; i++) {
 		SekOpen(i);
@@ -114,116 +116,116 @@ int TaitoDoReset()
 	return 0;
 }
 
-unsigned char *Taito68KRom1    = NULL;
-unsigned char *Taito68KRom2    = NULL;
-unsigned char *Taito68KRom3    = NULL;
-unsigned char *TaitoZ80Rom1    = NULL;
-unsigned char *TaitoZ80Rom2    = NULL;
-unsigned char *TaitoChars      = NULL;
-unsigned char *TaitoCharsB     = NULL;
-unsigned char *TaitoCharsPivot = NULL;
-unsigned char *TaitoSpritesA   = NULL;
-unsigned char *TaitoSpritesB   = NULL;
-unsigned char *TaitoSpriteMapRom = NULL;
-unsigned char *TaitoYM2610ARom = NULL;
-unsigned char *TaitoYM2610BRom = NULL;
-unsigned char *TaitoMSM5205Rom = NULL;
-unsigned char *TaitoMSM6295Rom = NULL;
-unsigned char *TaitoES5505Rom  = NULL;
-unsigned char *TaitoDefaultEEProm = NULL;
+UINT8 *Taito68KRom1    = NULL;
+UINT8 *Taito68KRom2    = NULL;
+UINT8 *Taito68KRom3    = NULL;
+UINT8 *TaitoZ80Rom1    = NULL;
+UINT8 *TaitoZ80Rom2    = NULL;
+UINT8 *TaitoChars      = NULL;
+UINT8 *TaitoCharsB     = NULL;
+UINT8 *TaitoCharsPivot = NULL;
+UINT8 *TaitoSpritesA   = NULL;
+UINT8 *TaitoSpritesB   = NULL;
+UINT8 *TaitoSpriteMapRom = NULL;
+UINT8 *TaitoYM2610ARom = NULL;
+UINT8 *TaitoYM2610BRom = NULL;
+UINT8 *TaitoMSM5205Rom = NULL;
+UINT8 *TaitoMSM6295Rom = NULL;
+UINT8 *TaitoES5505Rom  = NULL;
+UINT8 *TaitoDefaultEEProm = NULL;
 
-unsigned int Taito68KRom1Num = 0;
-unsigned int Taito68KRom2Num = 0;
-unsigned int Taito68KRom3Num = 0;
-unsigned int TaitoZ80Rom1Num = 0;
-unsigned int TaitoZ80Rom2Num = 0;
-unsigned int TaitoCharRomNum = 0;
-unsigned int TaitoCharBRomNum = 0;
-unsigned int TaitoCharPivotRomNum = 0;
-unsigned int TaitoSpriteARomNum = 0;
-unsigned int TaitoSpriteBRomNum = 0;
-unsigned int TaitoRoadRomNum       = 0;
-unsigned int TaitoSpriteMapRomNum  = 0;
-unsigned int TaitoYM2610ARomNum = 0;
-unsigned int TaitoYM2610BRomNum = 0;
-unsigned int TaitoMSM5205RomNum = 0;
-unsigned int TaitoMSM6295RomNum = 0;
-unsigned int TaitoES5505RomNum = 0;
-unsigned int TaitoDefaultEEPromNum = 0;
+UINT32 Taito68KRom1Num = 0;
+UINT32 Taito68KRom2Num = 0;
+UINT32 Taito68KRom3Num = 0;
+UINT32 TaitoZ80Rom1Num = 0;
+UINT32 TaitoZ80Rom2Num = 0;
+UINT32 TaitoCharRomNum = 0;
+UINT32 TaitoCharBRomNum = 0;
+UINT32 TaitoCharPivotRomNum = 0;
+UINT32 TaitoSpriteARomNum = 0;
+UINT32 TaitoSpriteBRomNum = 0;
+UINT32 TaitoRoadRomNum       = 0;
+UINT32 TaitoSpriteMapRomNum  = 0;
+UINT32 TaitoYM2610ARomNum = 0;
+UINT32 TaitoYM2610BRomNum = 0;
+UINT32 TaitoMSM5205RomNum = 0;
+UINT32 TaitoMSM6295RomNum = 0;
+UINT32 TaitoES5505RomNum = 0;
+UINT32 TaitoDefaultEEPromNum = 0;
 
-unsigned int Taito68KRom1Size = 0;
-unsigned int Taito68KRom2Size = 0;
-unsigned int Taito68KRom3Size = 0;
-unsigned int TaitoZ80Rom1Size = 0;
-unsigned int TaitoZ80Rom2Size = 0;
-unsigned int TaitoCharRomSize = 0;
-unsigned int TaitoCharBRomSize = 0;
-unsigned int TaitoCharPivotRomSize = 0;
-unsigned int TaitoSpriteARomSize = 0;
-unsigned int TaitoSpriteBRomSize = 0;
-unsigned int TaitoRoadRomSize = 0;
-unsigned int TaitoSpriteMapRomSize = 0;
-unsigned int TaitoYM2610ARomSize = 0;
-unsigned int TaitoYM2610BRomSize = 0;
-unsigned int TaitoMSM5205RomSize = 0;
-unsigned int TaitoMSM6295RomSize = 0;
-unsigned int TaitoES5505RomSize = 0;
-unsigned int TaitoDefaultEEPromSize = 0;
+UINT32 Taito68KRom1Size = 0;
+UINT32 Taito68KRom2Size = 0;
+UINT32 Taito68KRom3Size = 0;
+UINT32 TaitoZ80Rom1Size = 0;
+UINT32 TaitoZ80Rom2Size = 0;
+UINT32 TaitoCharRomSize = 0;
+UINT32 TaitoCharBRomSize = 0;
+UINT32 TaitoCharPivotRomSize = 0;
+UINT32 TaitoSpriteARomSize = 0;
+UINT32 TaitoSpriteBRomSize = 0;
+UINT32 TaitoRoadRomSize = 0;
+UINT32 TaitoSpriteMapRomSize = 0;
+UINT32 TaitoYM2610ARomSize = 0;
+UINT32 TaitoYM2610BRomSize = 0;
+UINT32 TaitoMSM5205RomSize = 0;
+UINT32 TaitoMSM6295RomSize = 0;
+UINT32 TaitoES5505RomSize = 0;
+UINT32 TaitoDefaultEEPromSize = 0;
 
-unsigned int TaitoCharModulo = 0;
-unsigned int TaitoCharNumPlanes = 0;
-unsigned int TaitoCharWidth = 0;
-unsigned int TaitoCharHeight = 0;
-unsigned int TaitoNumChar = 0;
-int *TaitoCharPlaneOffsets = NULL;
-int *TaitoCharXOffsets = NULL;
-int *TaitoCharYOffsets = NULL;
+UINT32 TaitoCharModulo = 0;
+UINT32 TaitoCharNumPlanes = 0;
+UINT32 TaitoCharWidth = 0;
+UINT32 TaitoCharHeight = 0;
+UINT32 TaitoNumChar = 0;
+INT32 *TaitoCharPlaneOffsets = NULL;
+INT32 *TaitoCharXOffsets = NULL;
+INT32 *TaitoCharYOffsets = NULL;
 
-unsigned int TaitoCharBModulo = 0;
-unsigned int TaitoCharBNumPlanes = 0;
-unsigned int TaitoCharBWidth = 0;
-unsigned int TaitoCharBHeight = 0;
-unsigned int TaitoNumCharB = 0;
-int *TaitoCharBPlaneOffsets = NULL;
-int *TaitoCharBXOffsets = NULL;
-int *TaitoCharBYOffsets = NULL;
+UINT32 TaitoCharBModulo = 0;
+UINT32 TaitoCharBNumPlanes = 0;
+UINT32 TaitoCharBWidth = 0;
+UINT32 TaitoCharBHeight = 0;
+UINT32 TaitoNumCharB = 0;
+INT32 *TaitoCharBPlaneOffsets = NULL;
+INT32 *TaitoCharBXOffsets = NULL;
+INT32 *TaitoCharBYOffsets = NULL;
 
-unsigned int TaitoCharPivotModulo = 0;
-unsigned int TaitoCharPivotNumPlanes = 0;
-unsigned int TaitoCharPivotWidth = 0;
-unsigned int TaitoCharPivotHeight = 0;
-unsigned int TaitoNumCharPivot = 0;
-int *TaitoCharPivotPlaneOffsets = NULL;
-int *TaitoCharPivotXOffsets = NULL;
-int *TaitoCharPivotYOffsets = NULL;
+UINT32 TaitoCharPivotModulo = 0;
+UINT32 TaitoCharPivotNumPlanes = 0;
+UINT32 TaitoCharPivotWidth = 0;
+UINT32 TaitoCharPivotHeight = 0;
+UINT32 TaitoNumCharPivot = 0;
+INT32 *TaitoCharPivotPlaneOffsets = NULL;
+INT32 *TaitoCharPivotXOffsets = NULL;
+INT32 *TaitoCharPivotYOffsets = NULL;
 
-unsigned int TaitoSpriteAModulo = 0;
-unsigned int TaitoSpriteANumPlanes = 0;
-unsigned int TaitoSpriteAWidth = 0;
-unsigned int TaitoSpriteAHeight = 0;
-unsigned int TaitoNumSpriteA = 0;
-int *TaitoSpriteAPlaneOffsets = NULL;
-int *TaitoSpriteAXOffsets = NULL;
-int *TaitoSpriteAYOffsets = NULL;
-int TaitoSpriteAInvertRom = 0;
+UINT32 TaitoSpriteAModulo = 0;
+UINT32 TaitoSpriteANumPlanes = 0;
+UINT32 TaitoSpriteAWidth = 0;
+UINT32 TaitoSpriteAHeight = 0;
+UINT32 TaitoNumSpriteA = 0;
+INT32 *TaitoSpriteAPlaneOffsets = NULL;
+INT32 *TaitoSpriteAXOffsets = NULL;
+INT32 *TaitoSpriteAYOffsets = NULL;
+INT32 TaitoSpriteAInvertRom = 0;
 
-unsigned int TaitoSpriteBModulo = 0;
-unsigned int TaitoSpriteBNumPlanes = 0;
-unsigned int TaitoSpriteBWidth = 0;
-unsigned int TaitoSpriteBHeight = 0;
-unsigned int TaitoNumSpriteB = 0;
-int *TaitoSpriteBPlaneOffsets = NULL;
-int *TaitoSpriteBXOffsets = NULL;
-int *TaitoSpriteBYOffsets = NULL;
+UINT32 TaitoSpriteBModulo = 0;
+UINT32 TaitoSpriteBNumPlanes = 0;
+UINT32 TaitoSpriteBWidth = 0;
+UINT32 TaitoSpriteBHeight = 0;
+UINT32 TaitoNumSpriteB = 0;
+INT32 *TaitoSpriteBPlaneOffsets = NULL;
+INT32 *TaitoSpriteBXOffsets = NULL;
+INT32 *TaitoSpriteBYOffsets = NULL;
 
-int TaitoLoadRoms(int bLoad)
+INT32 TaitoLoadRoms(INT32 bLoad)
 {
 	struct BurnRomInfo ri;
 	ri.nType = 0;
 	ri.nLen = 0;
-	int nOffset = -1;
-	unsigned int i = 0;
-	int nRet = 0;
+	INT32 nOffset = -1;
+	UINT32 i = 0;
+	INT32 nRet = 0;
 	
 	if (!bLoad) {
 		do {
@@ -327,7 +329,7 @@ int TaitoLoadRoms(int bLoad)
 	}
 	
 	if (bLoad) {
-		int Offset = 0;
+		INT32 Offset = 0;
 		
 		i = 0;
 		while (i < Taito68KRom1Num) {
@@ -463,7 +465,7 @@ int TaitoLoadRoms(int bLoad)
 		}
 		
 		if (TaitoCharRomSize) {
-			unsigned char *TempRom = (unsigned char*)malloc(TaitoCharRomSize);
+			UINT8 *TempRom = (UINT8*)BurnMalloc(TaitoCharRomSize);
 			memset(TempRom, 0, TaitoCharRomSize);
 			
 			Offset = 0;
@@ -500,11 +502,11 @@ int TaitoLoadRoms(int bLoad)
 				memcpy (TaitoChars, TempRom, Offset);
 			}
 
-			free(TempRom);
+			BurnFree(TempRom);
 		}
 		
 		if (TaitoCharBRomSize) {
-			unsigned char *TempRom = (unsigned char*)malloc(TaitoCharBRomSize);
+			UINT8 *TempRom = (UINT8*)BurnMalloc(TaitoCharBRomSize);
 			memset(TempRom, 0, TaitoCharBRomSize);
 			
 			Offset = 0;
@@ -537,11 +539,11 @@ int TaitoLoadRoms(int bLoad)
 			
 			GfxDecode(TaitoNumCharB, TaitoCharBNumPlanes, TaitoCharBWidth, TaitoCharBHeight, TaitoCharBPlaneOffsets, TaitoCharBXOffsets, TaitoCharBYOffsets, TaitoCharBModulo, TempRom, TaitoCharsB);
 			
-			free(TempRom);
+			BurnFree(TempRom);
 		}
 		
 		if (TaitoSpriteARomSize) {
-			unsigned char *TempRom = (unsigned char*)malloc(TaitoSpriteARomSize);
+			UINT8 *TempRom = (UINT8*)BurnMalloc(TaitoSpriteARomSize);
 			memset(TempRom, 0, TaitoSpriteARomSize);
 			
 			Offset = 0;
@@ -612,7 +614,7 @@ int TaitoLoadRoms(int bLoad)
 			}
 			
 			if (TaitoSpriteAInvertRom) {
-				for (unsigned int j = 0; j < TaitoSpriteARomSize; j++) {
+				for (UINT32 j = 0; j < TaitoSpriteARomSize; j++) {
 					TempRom[j] ^= 0xff;
 				}
 			}
@@ -623,11 +625,11 @@ int TaitoLoadRoms(int bLoad)
 				memcpy (TaitoSpritesA, TempRom, Offset);
 			}
 
-			free(TempRom);
+			BurnFree(TempRom);
 		}
 		
 		if (TaitoSpriteBRomSize) {
-			unsigned char *TempRom = (unsigned char*)malloc(TaitoSpriteBRomSize);
+			UINT8 *TempRom = (UINT8*)BurnMalloc(TaitoSpriteBRomSize);
 			memset(TempRom, 0, TaitoSpriteBRomSize);
 			
 			Offset = 0;
@@ -678,7 +680,7 @@ int TaitoLoadRoms(int bLoad)
 			
 			GfxDecode(TaitoNumSpriteB, TaitoSpriteBNumPlanes, TaitoSpriteBWidth, TaitoSpriteBHeight, TaitoSpriteBPlaneOffsets, TaitoSpriteBXOffsets, TaitoSpriteBYOffsets, TaitoSpriteBModulo, TempRom, TaitoSpritesB);
 			
-			free(TempRom);
+			BurnFree(TempRom);
 		}
 		
 		if (TaitoRoadRomSize) {
@@ -752,7 +754,7 @@ int TaitoLoadRoms(int bLoad)
 		}
 		
 		if (TaitoCharPivotRomSize) {
-			unsigned char *TempRom = (unsigned char*)malloc(TaitoCharPivotRomSize);
+			UINT8 *TempRom = (UINT8*)BurnMalloc(TaitoCharPivotRomSize);
 			memset(TempRom, 0, TaitoCharPivotRomSize);
 			
 			Offset = 0;
@@ -773,7 +775,7 @@ int TaitoLoadRoms(int bLoad)
 			
 			GfxDecode(TaitoNumCharPivot, TaitoCharPivotNumPlanes, TaitoCharPivotWidth, TaitoCharPivotHeight, TaitoCharPivotPlaneOffsets, TaitoCharPivotXOffsets, TaitoCharPivotYOffsets, TaitoCharPivotModulo, TempRom, TaitoCharsPivot);
 			
-			free(TempRom);
+			BurnFree(TempRom);
 		}
 		
 		if (TaitoMSM6295RomSize) {
@@ -843,9 +845,9 @@ int TaitoLoadRoms(int bLoad)
 	return 0;
 }
 
-int TaitoExit()
+INT32 TaitoExit()
 {
-	int i;
+	INT32 i;
 
 	if (TaitoNum68Ks) SekExit();
 	if (TaitoNumZ80s) ZetExit();
@@ -861,10 +863,9 @@ int TaitoExit()
 	TaitoICExit();
 	
 	GenericTilesExit();
-	BurnGunExit();
+	if (nBurnGunNumPlayers) BurnGunExit();
 	
-	free(TaitoMem);
-	TaitoMem = NULL;
+	BurnFree(TaitoMem);
 
 	Taito68KRom1Num = 0;
 	Taito68KRom2Num = 0;

@@ -6,35 +6,35 @@
 #include "tiles_generic.h" // nScreenWidth & nScreenHeight
 #include "psikyosh_render.h" // contains loads of macros
 
-unsigned char *pPsikyoshTiles;
-unsigned int  *pPsikyoshSpriteBuffer;
-unsigned int  *pPsikyoshBgRAM;
-unsigned int  *pPsikyoshVidRegs;
-unsigned int  *pPsikyoshPalRAM;
-unsigned int  *pPsikyoshZoomRAM;
+UINT8 *pPsikyoshTiles;
+UINT32  *pPsikyoshSpriteBuffer;
+UINT32  *pPsikyoshBgRAM;
+UINT32  *pPsikyoshVidRegs;
+UINT32  *pPsikyoshPalRAM;
+UINT32  *pPsikyoshZoomRAM;
 
-static unsigned char *DrvTransTab;
-static unsigned char alphatable[0x100];
+static UINT8 *DrvTransTab;
+static UINT8 alphatable[0x100];
 
-static unsigned short *DrvPriBmp;
-static unsigned char *DrvZoomBmp;
-static int nDrvZoomPrev = -1;
-static unsigned int  *DrvTmpDraw;
-static unsigned int  *DrvTmpDraw_ptr;
+static UINT16 *DrvPriBmp;
+static UINT8 *DrvZoomBmp;
+static INT32 nDrvZoomPrev = -1;
+static UINT32  *DrvTmpDraw;
+static UINT32  *DrvTmpDraw_ptr;
 
-static int nGraphicsMin0;  // minimum tile number 4bpp
-static int nGraphicsMin1;  // for 8bpp
-static int nGraphicsSize;  // normal
-static int nGraphicsSize0; // for 4bpp
-static int nGraphicsSize1; // for 8bpp
+static INT32 nGraphicsMin0;  // minimum tile number 4bpp
+static INT32 nGraphicsMin1;  // for 8bpp
+static INT32 nGraphicsSize;  // normal
+static INT32 nGraphicsSize0; // for 4bpp
+static INT32 nGraphicsSize1; // for 8bpp
 
 //--------------------------------------------------------------------------------
 
-static inline unsigned int alpha_blend(unsigned int d, unsigned int s, unsigned int p)
+static inline UINT32 alpha_blend(UINT32 d, UINT32 s, UINT32 p)
 {
 	if (p == 0) return d;
 
-	int a = 256 - p;
+	INT32 a = 256 - p;
 
 	return (((((s & 0xff00ff) * p) + ((d & 0xff00ff) * a)) & 0xff00ff00) |
 		((((s & 0x00ff00) * p) + ((d & 0x00ff00) * a)) & 0x00ff0000)) >> 8;
@@ -42,10 +42,10 @@ static inline unsigned int alpha_blend(unsigned int d, unsigned int s, unsigned 
 
 //--------------------------------------------------------------------------------
 
-static void draw_blendy_tile(int gfx, int code, int color, int sx, int sy, int fx, int fy, int alpha, int z)
+static void draw_blendy_tile(INT32 gfx, INT32 code, INT32 color, INT32 sx, INT32 sy, INT32 fx, INT32 fy, INT32 alpha, INT32 z)
 {
 	color <<= 4;
-	unsigned int *pal = pBurnDrvPalette + color;
+	UINT32 *pal = pBurnDrvPalette + color;
 
 	if (gfx == 0) {
 		code &= 0x7ffff;
@@ -54,9 +54,9 @@ static void draw_blendy_tile(int gfx, int code, int color, int sx, int sy, int f
 
 		if (DrvTransTab[code >> 3] & (1 << (code & 7))) return;
 
-		unsigned char *src = pPsikyoshTiles + (code << 7);
+		UINT8 *src = pPsikyoshTiles + (code << 7);
 	
-		int inc = 8;
+		INT32 inc = 8;
 		if (fy) {
 			inc = -8;
 			src += 0x78;
@@ -146,9 +146,9 @@ static void draw_blendy_tile(int gfx, int code, int color, int sx, int sy, int f
 
 		if (DrvTransTab[(code >> 3) + 0x10000] & (1 << (code & 7))) return;
 
-		unsigned char *src = pPsikyoshTiles + (code << 8);
+		UINT8 *src = pPsikyoshTiles + (code << 8);
 
-		int inc = 16;
+		INT32 inc = 16;
 		if (fy) {
 			inc = -16;
 			src += 0xf0;
@@ -235,24 +235,24 @@ static void draw_blendy_tile(int gfx, int code, int color, int sx, int sy, int f
 	}
 }
 
-static void draw_prezoom(int gfx, int code, int high, int wide)
+static void draw_prezoom(INT32 gfx, INT32 code, INT32 high, INT32 wide)
 {
 	// these probably aren't the safest routines, but they should be pretty fast.
 
 	if (gfx) {
-		int tileno = (code & 0x3ffff) - nGraphicsMin1;
+		INT32 tileno = (code & 0x3ffff) - nGraphicsMin1;
 		if (tileno < 0 || tileno > nGraphicsSize1) tileno = 0;
 		if (nDrvZoomPrev == tileno) return;
 		nDrvZoomPrev = tileno;
-		unsigned int *gfxptr = (unsigned int*)(pPsikyoshTiles + (tileno << 8));
+		UINT32 *gfxptr = (UINT32*)(pPsikyoshTiles + (tileno << 8));
 
-		for (int ytile = 0; ytile < high; ytile++)
+		for (INT32 ytile = 0; ytile < high; ytile++)
 		{
-			for (int xtile = 0; xtile < wide; xtile++)
+			for (INT32 xtile = 0; xtile < wide; xtile++)
 			{
-				unsigned int *dest = (unsigned int*)(DrvZoomBmp + (ytile << 12) + (xtile << 4));
+				UINT32 *dest = (UINT32*)(DrvZoomBmp + (ytile << 12) + (xtile << 4));
 
-				for (int ypixel = 0; ypixel < 16; ypixel++, gfxptr += 4) {
+				for (INT32 ypixel = 0; ypixel < 16; ypixel++, gfxptr += 4) {
 
 					dest[0] = gfxptr[0];
 					dest[1] = gfxptr[1];
@@ -264,22 +264,22 @@ static void draw_prezoom(int gfx, int code, int high, int wide)
 			}
 		}
 	} else {
-		int tileno = (code & 0x7ffff) - nGraphicsMin0;
+		INT32 tileno = (code & 0x7ffff) - nGraphicsMin0;
 		if (tileno < 0 || tileno > nGraphicsSize0) tileno = 0;
 		if (nDrvZoomPrev == tileno) return;
 		nDrvZoomPrev = tileno;
-		unsigned char *gfxptr = pPsikyoshTiles + (tileno << 7);
-		for (int ytile = 0; ytile < high; ytile++)
+		UINT8 *gfxptr = pPsikyoshTiles + (tileno << 7);
+		for (INT32 ytile = 0; ytile < high; ytile++)
 		{
-			for (int xtile = 0; xtile < wide; xtile++)
+			for (INT32 xtile = 0; xtile < wide; xtile++)
 			{
-				unsigned char *dest = DrvZoomBmp + (ytile << 12) + (xtile << 4);
+				UINT8 *dest = DrvZoomBmp + (ytile << 12) + (xtile << 4);
 
-				for (int ypixel = 0; ypixel < 16; ypixel++, gfxptr += 8)
+				for (INT32 ypixel = 0; ypixel < 16; ypixel++, gfxptr += 8)
 				{
-					for (int xpixel = 0; xpixel < 16; xpixel+=2)
+					for (INT32 xpixel = 0; xpixel < 16; xpixel+=2)
 					{
-						int c = gfxptr[xpixel>>1];
+						INT32 c = gfxptr[xpixel>>1];
 						dest[xpixel    ] = c >> 4;
 						dest[xpixel + 1] = c & 0x0f;
 					}
@@ -291,15 +291,15 @@ static void draw_prezoom(int gfx, int code, int high, int wide)
 	}
 }
 
-static void psikyosh_drawgfxzoom(int gfx, unsigned int code, int color, int flipx, int flipy, int offsx, 
-				 int offsy, int alpha, int zoomx, int zoomy, int wide, int high, int z)
+static void psikyosh_drawgfxzoom(INT32 gfx, UINT32 code, INT32 color, INT32 flipx, INT32 flipy, INT32 offsx, 
+				 INT32 offsy, INT32 alpha, INT32 zoomx, INT32 zoomy, INT32 wide, INT32 high, INT32 z)
 {
 	if (~nBurnLayer & 8) return;
 	if (!zoomx || !zoomy) return;
 
 	if (zoomx == 0x400 && zoomy == 0x400)
 	{
-		int xstart, ystart, xend, yend, xinc, yinc, code_offset = 0;
+		INT32 xstart, ystart, xend, yend, xinc, yinc, code_offset = 0;
 
 		if (flipx)	{ xstart = wide-1; xend = -1;   xinc = -1; }
 		else		{ xstart = 0;      xend = wide; xinc = +1; }
@@ -307,12 +307,12 @@ static void psikyosh_drawgfxzoom(int gfx, unsigned int code, int color, int flip
 		if (flipy)	{ ystart = high-1; yend = -1;   yinc = -1; }
 		else		{ ystart = 0;      yend = high; yinc = +1; }
 
-		for (int ytile = ystart; ytile != yend; ytile += yinc )
+		for (INT32 ytile = ystart; ytile != yend; ytile += yinc )
 		{
-			for (int xtile = xstart; xtile != xend; xtile += xinc )
+			for (INT32 xtile = xstart; xtile != xend; xtile += xinc )
 			{
-				int sx = offsx + (xtile << 4);
-				int sy = offsy + (ytile << 4);
+				INT32 sx = offsx + (xtile << 4);
+				INT32 sy = offsy + (ytile << 4);
 
 				draw_blendy_tile(gfx, code + code_offset++, color, sx, sy, flipx, flipy, alpha, z);
 			}
@@ -323,22 +323,22 @@ static void psikyosh_drawgfxzoom(int gfx, unsigned int code, int color, int flip
 		draw_prezoom(gfx, code, high, wide);
 
 		{
-			unsigned int *pal = pBurnDrvPalette + (color << 4);
+			UINT32 *pal = pBurnDrvPalette + (color << 4);
 
-			int sprite_screen_height = ((high << 24) / zoomy + 0x200) >> 10;
-			int sprite_screen_width  = ((wide << 24) / zoomx + 0x200) >> 10;
+			INT32 sprite_screen_height = ((high << 24) / zoomy + 0x200) >> 10;
+			INT32 sprite_screen_width  = ((wide << 24) / zoomx + 0x200) >> 10;
 
 			if (sprite_screen_width && sprite_screen_height)
 			{
-				int sx = offsx;
-				int sy = offsy;
-				int ex = sx + sprite_screen_width;
-				int ey = sy + sprite_screen_height;
+				INT32 sx = offsx;
+				INT32 sy = offsy;
+				INT32 ex = sx + sprite_screen_width;
+				INT32 ey = sy + sprite_screen_height;
 
-				int x_index_base;
-				int y_index;
+				INT32 x_index_base;
+				INT32 y_index;
 
-				int dx, dy;
+				INT32 dx, dy;
 
 				if (flipx) { x_index_base = (sprite_screen_width-1)*zoomx; dx = -zoomx; }
 				else	   { x_index_base = 0; dx = zoomx; }
@@ -348,21 +348,21 @@ static void psikyosh_drawgfxzoom(int gfx, unsigned int code, int color, int flip
 
 				{
 					if (sx < 0) {
-						int pixels = 0-sx;
+						INT32 pixels = 0-sx;
 						sx += pixels;
 						x_index_base += pixels*dx;
 					}
 					if (sy < 0 ) {
-						int pixels = 0-sy;
+						INT32 pixels = 0-sy;
 						sy += pixels;
 						y_index += pixels*dy;
 					}
 					if (ex > nScreenWidth) {
-						int pixels = ex-(nScreenWidth-1)-1;
+						INT32 pixels = ex-(nScreenWidth-1)-1;
 						ex -= pixels;
 					}
 					if (ey > nScreenHeight)	{
-						int pixels = ey-(nScreenHeight-1)-1;
+						INT32 pixels = ey-(nScreenHeight-1)-1;
 						ey -= pixels;
 					}
 				}
@@ -394,22 +394,26 @@ static void psikyosh_drawgfxzoom(int gfx, unsigned int code, int color, int flip
 	}
 }
 
-static void draw_sprites(unsigned char req_pri)
+static void draw_sprites(UINT8 req_pri)
 {
-	unsigned int   *src = pPsikyoshSpriteBuffer;
-	unsigned short *list = (unsigned short *)src + 0x3800/2;
-	unsigned short listlen = 0x800/2;
-	unsigned short listcntr = 0;
-	unsigned short *zoom_table = (unsigned short *)pPsikyoshZoomRAM;
-	unsigned char  *alpha_table = (unsigned char *)pPsikyoshVidRegs;
+	UINT32   *src = pPsikyoshSpriteBuffer;
+	UINT16 *list = (UINT16 *)src + 0x3800/2;
+	UINT16 listlen = 0x800/2;
+	UINT16 listcntr = 0;
+	UINT16 *zoom_table = (UINT16 *)pPsikyoshZoomRAM;
+	UINT8  *alpha_table = (UINT8 *)pPsikyoshVidRegs;
 
 	while (listcntr < listlen)
 	{
-		unsigned int xpos, ypos, high, wide, flpx, flpy, zoomx, zoomy, tnum, colr, dpth, pri;
-		int alpha;
+		UINT32 xpos, ypos, high, wide, flpx, flpy, zoomx, zoomy, tnum, colr, dpth, pri;
+		INT32 alpha;
 
-		unsigned int listdat = list[listcntr ^ 1];
-		unsigned int sprnum = (listdat & 0x03ff) << 2;
+#ifdef LSB_FIRST
+		UINT32 listdat = list[listcntr ^ 1];
+#else
+		UINT32 listdat = list[listcntr];
+#endif
+		UINT32 sprnum = (listdat & 0x03ff) << 2;
 
 		pri = (src[sprnum+1] & 0x00003000) >> 12;
 		pri = (pPsikyoshVidRegs[2] << (pri << 2)) >> 28;
@@ -432,7 +436,11 @@ static void draw_sprites(unsigned char req_pri)
 			if (ypos & 0x200) ypos -= 0x400;
 			if (xpos & 0x200) xpos -= 0x400;
 
+#ifdef LSB_FIRST
 			alpha = alpha_table[alpha ^ 3];
+#else
+			alpha = alpha_table[alpha];
+#endif
 
 			if (alpha & 0x80) {
 				alpha = -1;
@@ -440,10 +448,19 @@ static void draw_sprites(unsigned char req_pri)
 				alpha = alphatable[alpha | 0xc0];
 			}
 
+#ifdef LSB_FIRST
 			if (zoom_table[zoomy ^ 1] && zoom_table[zoomx ^ 1])
+#else
+			if (zoom_table[zoomy] && zoom_table[zoomx])
+#endif
 			{
+#ifdef LSB_FIRST
 				psikyosh_drawgfxzoom(dpth, tnum, colr, flpx, flpy, xpos, ypos, alpha, 
-					(unsigned int)zoom_table[zoomx ^ 1],(unsigned int)zoom_table[zoomy ^ 1], wide, high, listcntr);
+					(UINT32)zoom_table[zoomx ^ 1],(UINT32)zoom_table[zoomy ^ 1], wide, high, listcntr);
+#else
+				psikyosh_drawgfxzoom(dpth, tnum, colr, flpx, flpy, xpos, ypos, alpha, 
+					(UINT32)zoom_table[zoomx],(UINT32)zoom_table[zoomy], wide, high, listcntr);
+#endif
 			}
 		}
 
@@ -452,7 +469,7 @@ static void draw_sprites(unsigned char req_pri)
 	}
 }
 
-static void draw_layer(int layer, int bank, int alpha, int scrollx, int scrolly)
+static void draw_layer(INT32 layer, INT32 bank, INT32 alpha, INT32 scrollx, INT32 scrolly)
 {
 	if ((bank < 0x0c) || (bank > 0x1f)) return;
 
@@ -462,14 +479,14 @@ static void draw_layer(int layer, int bank, int alpha, int scrollx, int scrolly)
 		alpha = alphatable[alpha | 0xc0];
 	}
 
-	int attr = pPsikyoshVidRegs[7] << (layer << 2);
-	int gfx  = attr & 0x00004000;
-	int size =(attr & 0x00001000) ? 32 : 16;
-	int wide = size * 16;
+	INT32 attr = pPsikyoshVidRegs[7] << (layer << 2);
+	INT32 gfx  = attr & 0x00004000;
+	INT32 size =(attr & 0x00001000) ? 32 : 16;
+	INT32 wide = size * 16;
 
-	for (int offs = 0; offs < size * 32; offs++) {
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+	for (INT32 offs = 0; offs < size * 32; offs++) {
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx = (sx + scrollx) & 0x1ff;
 		sy = (sy + scrolly) & (wide-1);
@@ -477,19 +494,19 @@ static void draw_layer(int layer, int bank, int alpha, int scrollx, int scrolly)
 		if (sy >= nScreenHeight) sy -= wide;
 		if (sx < -15 || sy < -15) continue;
 
-		unsigned int code  = pPsikyoshBgRAM[(bank*0x800)/4 + offs - 0x4000/4];
+		UINT32 code  = pPsikyoshBgRAM[(bank*0x800)/4 + offs - 0x4000/4];
 
 		draw_blendy_tile(gfx, code & 0x7ffff, (code >> 24), sx, sy, 0, 0, alpha, 0);
 	}
 }
 
-static void draw_bglayer(int layer)
+static void draw_bglayer(INT32 layer)
 {
 	if (!(nBurnLayer & 1)) return;
 
-	int scrollx, scrolly, bank, alpha;
-	int scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
-	int offset = (scrollbank == 0x0b) ? 0x200 : 0;
+	INT32 scrollx, scrolly, bank, alpha;
+	INT32 scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
+	INT32 offset = (scrollbank == 0x0b) ? 0x200 : 0;
 
 	bank    = (pPsikyoshBgRAM[0x17f0/4 + offset + layer] & 0x000000ff);
 	alpha   = (pPsikyoshBgRAM[0x17f0/4 + offset + layer] & 0x0000bf00) >> 8;
@@ -501,12 +518,12 @@ static void draw_bglayer(int layer)
 	draw_layer(layer, bank, alpha, scrollx, scrolly);
 }
 
-static void draw_bglayertext(int layer)
+static void draw_bglayertext(INT32 layer)
 {
 	if (~nBurnLayer & 2) return;
 
-	int scrollx, scrolly, bank, alpha;
-	int scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
+	INT32 scrollx, scrolly, bank, alpha;
+	INT32 scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
 
 	bank    = (pPsikyoshBgRAM[(scrollbank*0x800)/4 + 0x0400/4 - 0x4000/4] & 0x000000ff);
 	alpha   = (pPsikyoshBgRAM[(scrollbank*0x800)/4 + 0x0400/4 - 0x4000/4] & 0x0000bf00) >> 8;
@@ -523,12 +540,12 @@ static void draw_bglayertext(int layer)
 	draw_layer(layer, bank, alpha, scrollx, scrolly);
 }
 
-static void draw_bglayerscroll(int layer)
+static void draw_bglayerscroll(INT32 layer)
 {
 	if (!(nBurnLayer & 4)) return;
 
-	int scrollx, bank, alpha;
-	int scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
+	INT32 scrollx, bank, alpha;
+	INT32 scrollbank = ((pPsikyoshVidRegs[6] << (layer << 3)) >> 24) & 0x7f;
 
 	bank    = (pPsikyoshBgRAM[(scrollbank*0x800)/4 + 0x0400/4 - 0x4000/4] & 0x000000ff);
 	alpha   = (pPsikyoshBgRAM[(scrollbank*0x800)/4 + 0x0400/4 - 0x4000/4] & 0x0000bf00) >> 8;
@@ -538,14 +555,14 @@ static void draw_bglayerscroll(int layer)
 	draw_layer(layer, bank, alpha, scrollx, 0);
 }
 
-static void draw_background(unsigned char req_pri)
+static void draw_background(UINT8 req_pri)
 {
-	for (int i = 0; i < 3; i++)
+	for (INT32 i = 0; i < 3; i++)
 	{
 		if (!((pPsikyoshVidRegs[7] << (i << 2)) & 0x8000))
 			continue;
 
-		int bgtype = ((pPsikyoshVidRegs[6] << (i << 3)) >> 24) & 0x7f;
+		INT32 bgtype = ((pPsikyoshVidRegs[6] << (i << 3)) >> 24) & 0x7f;
 
 		switch (bgtype)
 		{
@@ -579,12 +596,12 @@ static void draw_background(unsigned char req_pri)
 
 static void prelineblend()
 {
-	unsigned int *linefill = pPsikyoshBgRAM;
-	unsigned int *destline = DrvTmpDraw;
+	UINT32 *linefill = pPsikyoshBgRAM;
+	UINT32 *destline = DrvTmpDraw;
 
-	for (int y = 0; y < nScreenHeight; y++, destline+=nScreenWidth) {
+	for (INT32 y = 0; y < nScreenHeight; y++, destline+=nScreenWidth) {
 		if (linefill[y] & 0xff) {
-			for (int x = 0; x < nScreenWidth; x++) {
+			for (INT32 x = 0; x < nScreenWidth; x++) {
 				destline[x] = linefill[y] >> 8;
 			}
 		}
@@ -593,53 +610,53 @@ static void prelineblend()
 
 static void postlineblend()
 {
-	unsigned int *lineblend = pPsikyoshBgRAM + 0x0400/4;
-	unsigned int *destline = DrvTmpDraw;
+	UINT32 *lineblend = pPsikyoshBgRAM + 0x0400/4;
+	UINT32 *destline = DrvTmpDraw;
 
-	for (int y = 0; y < nScreenHeight; y++, destline+=nScreenWidth) {
+	for (INT32 y = 0; y < nScreenHeight; y++, destline+=nScreenWidth) {
 		if (lineblend[y] & 0x80) {
-			for (int x = 0; x < nScreenWidth; x++) {
+			for (INT32 x = 0; x < nScreenWidth; x++) {
 				destline[x] = lineblend[y] >> 8;
 			}
 		}
 		else if (lineblend[y] & 0x7f) {
-			for (int x = 0; x < nScreenWidth; x++) {
+			for (INT32 x = 0; x < nScreenWidth; x++) {
 				destline[x] = alpha_blend(destline[x], lineblend[y] >> 8, (lineblend[y] & 0x7f) << 1);
 			}
 		}
 	}
 }
 
-int PsikyoshDraw()
+INT32 PsikyoshDraw()
 {
 	{
-		for (int i = 0; i < 0x5000 / 4; i++) {
+		for (INT32 i = 0; i < 0x5000 / 4; i++) {
 			pBurnDrvPalette[i] = pPsikyoshPalRAM[i] >> 8;
 		}
 	}
 
 	if (nBurnBpp == 4) {
-		DrvTmpDraw = (unsigned int*)pBurnDraw;
+		DrvTmpDraw = (UINT32*)pBurnDraw;
 	} else {
 		DrvTmpDraw = DrvTmpDraw_ptr;
 	}
 
-	memset (DrvTmpDraw, 0, nScreenWidth * nScreenHeight * sizeof(int));
-	memset (DrvPriBmp, 0, nScreenWidth * nScreenHeight * sizeof(short));
+	memset (DrvTmpDraw, 0, nScreenWidth * nScreenHeight * sizeof(UINT32));
+	memset (DrvPriBmp, 0, nScreenWidth * nScreenHeight * sizeof(INT16));
 
-	unsigned int *psikyosh_vidregs = pPsikyoshVidRegs;
+	UINT32 *psikyosh_vidregs = pPsikyoshVidRegs;
 
 	prelineblend();
 
-	for (unsigned int i = 0; i < 8; i++) {
+	for (UINT32 i = 0; i < 8; i++) {
 		draw_sprites(i);
 		draw_background(i);
 		if ((psikyosh_vidregs[2] & 0x0f) == i) postlineblend();
 	}
 
 	if (nBurnBpp < 4) {
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
-			int d = DrvTmpDraw[i];
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
+			INT32 d = DrvTmpDraw[i];
 			PutPix(pBurnDraw + i * nBurnBpp, BurnHighCol(d>>16, d>>8, d, 0));
 		}
 	}
@@ -649,23 +666,23 @@ int PsikyoshDraw()
 
 static void fill_alphatable()
 {
-	for (int i = 0; i < 0xc0; i++)
+	for (INT32 i = 0; i < 0xc0; i++)
 		alphatable[i] = 0xff;
 
-	for (int i = 0; i < 0x40; i++) {
+	for (INT32 i = 0; i < 0x40; i++) {
 		alphatable[i | 0xc0] = ((0x3f - i) * 0xff) / 0x3f;
 	}
 }
 
 static void calculate_transtab()
 {
-	DrvTransTab = (unsigned char*)malloc(0x18000);
+	DrvTransTab = (UINT8*)BurnMalloc(0x18000);
 
 	memset (DrvTransTab, 0xff, 0x18000);
 
 	// first calculate all 4bpp tiles
-	for (int i = 0; i < nGraphicsSize; i+= 0x80) {
-		for (int j = 0; j < 0x80; j++) {
+	for (INT32 i = 0; i < nGraphicsSize; i+= 0x80) {
+		for (INT32 j = 0; j < 0x80; j++) {
 			if (pPsikyoshTiles[i + j]) {
 				DrvTransTab[(i>>10) + 0x00000] &= ~(1 << ((i >> 7) & 7));
 				break;
@@ -674,8 +691,8 @@ static void calculate_transtab()
 	}
 
 	// next, calculate all 8bpp tiles
-	for (int i = 0; i < nGraphicsSize; i+= 0x100) {
-		for (int j = 0; j < 0x100; j++) {
+	for (INT32 i = 0; i < nGraphicsSize; i+= 0x100) {
+		for (INT32 j = 0; j < 0x100; j++) {
 			if (pPsikyoshTiles[i + j]) {
 				DrvTransTab[(i>>11) + 0x10000] &= ~(1 << ((i >> 8) & 7));
 				break;
@@ -684,11 +701,11 @@ static void calculate_transtab()
 	}
 }
 
-void PsikyoshVideoInit(int gfx_max, int gfx_min)
+void PsikyoshVideoInit(INT32 gfx_max, INT32 gfx_min)
 {
-	DrvZoomBmp	= (unsigned char *)malloc(16 * 16 * 16 * 16);
-	DrvPriBmp	= (unsigned short*)malloc(320 * 240 * sizeof(short));
-	DrvTmpDraw_ptr	= (unsigned int  *)malloc(320 * 240 * sizeof(int));
+	DrvZoomBmp	= (UINT8 *)BurnMalloc(16 * 16 * 16 * 16);
+	DrvPriBmp	= (UINT16*)BurnMalloc(320 * 240 * sizeof(INT16));
+	DrvTmpDraw_ptr	= (UINT32  *)BurnMalloc(320 * 240 * sizeof(UINT32));
 
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
 		BurnDrvGetVisibleSize(&nScreenHeight, &nScreenWidth);
@@ -708,27 +725,12 @@ void PsikyoshVideoInit(int gfx_max, int gfx_min)
 
 void PsikyoshVideoExit()
 {
-	if (DrvZoomBmp) {
-		free (DrvZoomBmp);
-	}
-	DrvZoomBmp = NULL;
-
-	if (DrvPriBmp) {
-		free (DrvPriBmp);
-	}
-	DrvPriBmp = NULL;
-
-	if (DrvTmpDraw_ptr) {
-		free (DrvTmpDraw_ptr);
-	}
-	DrvTmpDraw_ptr = NULL;
+	BurnFree (DrvZoomBmp);
+	BurnFree (DrvPriBmp);
+	BurnFree (DrvTmpDraw_ptr);
 	DrvTmpDraw = NULL;
-
-	if (DrvTransTab) {
-		free (DrvTransTab);
-	}
-	DrvTransTab = NULL;
-
+	BurnFree (DrvTransTab);
+	
 	nDrvZoomPrev		= -1;
 	pPsikyoshTiles		= NULL;
 	pPsikyoshSpriteBuffer	= NULL;

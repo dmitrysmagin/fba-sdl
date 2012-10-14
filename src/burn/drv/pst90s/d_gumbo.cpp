@@ -2,28 +2,29 @@
 // Based on MAME driver by David Haywood
 
 #include "tiles_generic.h"
+#include "sek.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvBgRAM;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvBgRAM;
+static UINT32 *DrvPalette;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvDips[1];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvDips[1];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[2];
 
 static struct BurnInputInfo GumboInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -207,7 +208,7 @@ static struct BurnDIPInfo DblpointDIPList[]=
 
 STDDIPINFO(Dblpoint)
 
-void __fastcall gumbo_write_word(unsigned int address, unsigned short data)
+void __fastcall gumbo_write_word(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -218,7 +219,7 @@ void __fastcall gumbo_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-unsigned short __fastcall gumbo_read_word(unsigned int address)
+UINT16 __fastcall gumbo_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -238,16 +239,16 @@ unsigned short __fastcall gumbo_read_word(unsigned int address)
 	return 0;
 }
 
-void __fastcall gumbo_write_byte(unsigned int, unsigned char)
+void __fastcall gumbo_write_byte(UINT32, UINT8)
 {
 }
 
-unsigned char __fastcall gumbo_read_byte(unsigned int)
+UINT8 __fastcall gumbo_read_byte(UINT32)
 {
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -262,15 +263,15 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[8]  = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs0[8] = { 0, 0x800000, 8, 0x800008, 16, 0x800010, 24, 0x800018 };
-	int XOffs1[4] = { 0, 0x200000, 8, 0x200008 };
-	int YOffs0[8] = { 0, 32, 64, 96, 128, 160, 192, 224 };
-	int YOffs1[4] = { 0, 16, 32, 48 };
+	INT32 Plane[8]  = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs0[8] = { 0, 0x800000, 8, 0x800008, 16, 0x800010, 24, 0x800018 };
+	INT32 XOffs1[4] = { 0, 0x200000, 8, 0x200008 };
+	INT32 YOffs0[8] = { 0, 32, 64, 96, 128, 160, 192, 224 };
+	INT32 YOffs1[4] = { 0, 16, 32, 48 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -283,14 +284,14 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x8000, 8, 4, 4, Plane, XOffs1, YOffs1, 0x040, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x080000;
 
@@ -300,7 +301,7 @@ static int MemIndex()
 	MSM6295ROM	= Next;
 	DrvSndROM	= Next; Next += 0x040000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0200 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0200 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -316,16 +317,16 @@ static int MemIndex()
 	return 0;
 }
 
-static int GumboInit()
+static INT32 GumboInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
-	int dblpoin = strncmp(BurnDrvGetTextA(DRV_NAME), "dblpoin", 7) ? 0 : 0x10000;
+	INT32 dblpoin = strncmp(BurnDrvGetTextA(DRV_NAME), "dblpoin", 7) ? 0 : 0x10000;
 
 	{
 		if (BurnLoadRom(Drv68KROM + 0x000000,	 0, 2)) return 1;
@@ -364,12 +365,12 @@ static int GumboInit()
 	return 0;
 }
 
-static int MspuzzleInit()
+static INT32 MspuzzleInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -417,15 +418,14 @@ static int MspuzzleInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
 	MSM6295Exit(0);
 	SekExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 
@@ -434,15 +434,15 @@ static int DrvExit()
 
 static void draw_background()
 {
-	unsigned short *vram = (unsigned short*)DrvBgRAM;
+	UINT16 *vram = (UINT16*)DrvBgRAM;
 
-	for (int offs = 0x80; offs < 0x780; offs++)
+	for (INT32 offs = 0x80; offs < 0x780; offs++)
 	{
-		int sx = ((offs & 0x3f) << 3) - 64;
-		int sy = ((offs >> 6) << 3) - 16;
+		INT32 sx = ((offs & 0x3f) << 3) - 64;
+		INT32 sy = ((offs >> 6) << 3) - 16;
 		if (sx < 0 || sx >= nScreenWidth) continue;
 
-		int code = vram[offs] & 0x7fff;
+		INT32 code = vram[offs] & 0x7fff;
 
 		Render8x8Tile(pTransDraw, code, sx, sy, 0, 8, 0, DrvGfxROM0);
 	}
@@ -450,20 +450,20 @@ static void draw_background()
 
 static void draw_foreground()
 {
-	unsigned short *vram = (unsigned short*)DrvFgRAM;
+	UINT16 *vram = (UINT16*)DrvFgRAM;
 
-	for (int offs = 0x200; offs < 0x1e00; offs++)
+	for (INT32 offs = 0x200; offs < 0x1e00; offs++)
 	{
-		int sx = ((offs & 0x7f) << 2) - 64;
-		int sy = ((offs >> 7) << 2) - 16;
-		int code = vram[offs] & 0x7fff;
+		INT32 sx = ((offs & 0x7f) << 2) - 64;
+		INT32 sy = ((offs >> 7) << 2) - 16;
+		INT32 code = vram[offs] & 0x7fff;
 
 		if (sx < 0 || sx >= nScreenWidth) continue;
 
-		unsigned short *pDest = pTransDraw + (sy * nScreenWidth) + sx;
-		unsigned char  *pSrc  = DrvGfxROM1 + (code << 4);
+		UINT16 *pDest = pTransDraw + (sy * nScreenWidth) + sx;
+		UINT8  *pSrc  = DrvGfxROM1 + (code << 4);
 
-		for (int y = 0; y < 4; y++)
+		for (INT32 y = 0; y < 4; y++)
 		{
 			if (pSrc[0] != 0xff) pDest[0] = pSrc[0] | 0x100;
 			if (pSrc[1] != 0xff) pDest[1] = pSrc[1] | 0x100;
@@ -478,10 +478,10 @@ static void draw_foreground()
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *pal = (unsigned short*)DrvPalRAM;
-	for (int i = 0; i < 0x200; i++) {
-		int d = pal[i];
+	UINT8 r,g,b;
+	UINT16 *pal = (UINT16*)DrvPalRAM;
+	for (INT32 i = 0; i < 0x200; i++) {
+		INT32 d = pal[i];
 
 		r = (d >> 7) & 0xf8;
 		g = (d >> 2) & 0xf8;
@@ -495,7 +495,7 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcPalette();
@@ -509,7 +509,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -518,7 +518,7 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = ~0;
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		}
 		DrvInputs[1] = (DrvDips[0] << 8) | 0x00ff;
@@ -540,7 +540,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -704,7 +704,7 @@ static struct BurnRomInfo mspuzzlenRomDesc[] = {
 STD_ROM_PICK(mspuzzlen)
 STD_ROM_FN(mspuzzlen)
 
-struct BurnDriver BurnDrvMspuzzlen = {
+struct BurnDriverD BurnDrvMspuzzlen = {
 	"mspuzzlen", "mspuzzle", NULL, NULL, "1994",
 	"Miss Puzzle (Nudes)\0", NULL, "Min Corp.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,

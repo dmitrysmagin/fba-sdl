@@ -6,20 +6,20 @@
 
 struct Star
 {
-	int x, y, Colour;
+	INT32 x, y, Colour;
 };
 
 static struct Star Stars[252];
 
-int GalStarsEnable     = 0;
-int GalStarsScrollPos  = 0;
-int GalStarsBlinkState = 0;
-int GalBlinkTimerStartFrame = 0;
+INT32 GalStarsEnable     = 0;
+INT32 GalStarsScrollPos  = 0;
+INT32 GalStarsBlinkState = 0;
+INT32 GalBlinkTimerStartFrame = 0;
 static double GalBlinkEveryFrames = (0.693 * (100000 + 2.0 + 10000) * 0.00001) * (16000.0 / 132 / 2);
 
 void GalInitStars()
 {
-	int nStars, Generator, x, y;
+	INT32 nStars, Generator, x, y;
 
 	GalStarsEnable     = 0;
 	GalStarsScrollPos  = -1;
@@ -30,14 +30,14 @@ void GalInitStars()
 
 	for (y = 255; y >= 0; y--) {
 		for (x = 511; x >= 0; x--) {
-			int Bit0;
+			INT32 Bit0;
 
 			Bit0 = ((~Generator >> 16) & 0x01) ^ ((Generator >> 4) & 0x01);
 
 			Generator = (Generator << 1) | Bit0;
 
 			if (((~Generator >> 16) & 0x01) && (Generator & 0xff) == 0xff) {
-				int Colour;
+				INT32 Colour;
 
 				Colour = (~(Generator >> 8)) & 0x3f;
 
@@ -53,11 +53,11 @@ void GalInitStars()
 	}
 }
 
-static int GalCheckStarsBlinkState()
+static INT32 GalCheckStarsBlinkState()
 {
-	int CurrentFrame = GetCurrentFrame();
+	INT32 CurrentFrame = GetCurrentFrame();
 
-	if ((CurrentFrame - GalBlinkTimerStartFrame) >= (int)GalBlinkEveryFrames) {
+	if ((CurrentFrame - GalBlinkTimerStartFrame) >= (INT32)GalBlinkEveryFrames) {
 		GalBlinkTimerStartFrame = CurrentFrame;
 		return 1;
 	}
@@ -65,7 +65,7 @@ static int GalCheckStarsBlinkState()
 	return 0;
 }
 
-static inline void GalPlotStar(int x, int y, int Colour)
+static inline void GalPlotStar(INT32 x, INT32 y, INT32 Colour)
 {
 	if (y >= 0 && y < nScreenHeight && x >= 0 && x < nScreenWidth) {
 		pTransDraw[(y * nScreenWidth) + x] = Colour + GAL_PALETTE_STARS_OFFSET;
@@ -76,8 +76,8 @@ void GalaxianRenderStarLayer()
 {
 	GalStarsScrollPos++;
 	
-	for (int Offs = 0; Offs < 252; Offs++) {
-		int x, y;
+	for (INT32 Offs = 0; Offs < 252; Offs++) {
+		INT32 x, y;
 		
 		x = ((Stars[Offs].x + GalStarsScrollPos) & 0x01ff) >>1;
 		y = (Stars[Offs].y + ((GalStarsScrollPos + Stars[Offs].x) >> 9)) & 0xff;
@@ -95,8 +95,8 @@ void JumpbugRenderStarLayer()
 {
 	if (GalCheckStarsBlinkState()) GalStarsBlinkState++;
 	
-	for (int Offs = 0; Offs < 252; Offs++) {
-		int x, y;
+	for (INT32 Offs = 0; Offs < 252; Offs++) {
+		INT32 x, y;
 		
 		x = Stars[Offs].x >> 1;
 		y = Stars[Offs].y >> 1;
@@ -140,8 +140,8 @@ void ScrambleRenderStarLayer()
 {
 	if (GalCheckStarsBlinkState()) GalStarsBlinkState++;
 	
-	for (int Offs = 0; Offs < 252; Offs++) {
-		int x, y;
+	for (INT32 Offs = 0; Offs < 252; Offs++) {
+		INT32 x, y;
 		
 		x = Stars[Offs].x >> 1;
 		y = Stars[Offs].y;
@@ -178,12 +178,12 @@ void ScrambleRenderStarLayer()
 
 void MarinerRenderStarLayer()
 {
-	unsigned char *Prom = GalProm + 0x120;
+	UINT8 *Prom = GalProm + 0x120;
 	
 	GalStarsScrollPos++;
 	
-	for (int Offs = 0; Offs < 252; Offs++) {
-		int x, y;
+	for (INT32 Offs = 0; Offs < 252; Offs++) {
+		INT32 x, y;
 		
 		x = ((Stars[Offs].x + GalStarsScrollPos) & 0x01ff) >>1;
 		y = (Stars[Offs].y + ((GalStarsScrollPos + Stars[Offs].x) >> 9)) & 0xff;
@@ -204,8 +204,8 @@ void RescueRenderStarLayer()
 {
 	if (GalCheckStarsBlinkState()) GalStarsBlinkState++;
 	
-	for (int Offs = 0; Offs < 252; Offs++) {
-		int x, y;
+	for (INT32 Offs = 0; Offs < 252; Offs++) {
+		INT32 x, y;
 		
 		x = Stars[Offs].x >> 1;
 		y = Stars[Offs].y;

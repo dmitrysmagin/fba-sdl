@@ -49,29 +49,34 @@ struct IremGA20_channel_def
 typedef struct _ga20_state ga20_state;
 struct _ga20_state
 {
-	unsigned char *rom;
-	int rom_size;
-	unsigned short regs[0x40];
+	UINT8 *rom;
+	INT32 rom_size;
+	UINT16 regs[0x40];
 	struct IremGA20_channel_def channel[4];
-	int frequency;
+	INT32 frequency;
 };
 
 static struct _ga20_state chips[MAX_GA20];
 static struct _ga20_state *chip;
 
-static short *tempstream[2];
-static int *computed_steps;
+static UINT32 computed_steps;
 
 // 14318180/4 -> 3579545/4 -> 894886/60 -> 14915
 // 44100 / 60 -> 735
 
-void iremga20_update(int device, short *buffer, int length)
+static INT32 nNumChips;
+
+void iremga20_update(INT32 device, INT16 *buffer, INT32 length)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_update called without init\n"));
+	if (device > nNumChips) bprintf(PRINT_ERROR, _T("iremga20_update called with invalid chip %x\n"), device);
+#endif
+
 	chip = &chips[device];
-	unsigned int rate[4], pos[4], frac[4], end[4], vol[4], play[4];
-	unsigned char *pSamples;
-	short *outL, *outR;
-	int i, sampleout;
+	UINT32 rate[4], pos[4], frac[4], end[4], vol[4], play[4];
+	UINT8 *pSamples;
+	INT32 i, sampleout;
 
 	/* precache some values */
 	for (i=0; i < 4; i++)
@@ -85,12 +90,8 @@ void iremga20_update(int device, short *buffer, int length)
 	}
 
 	pSamples = chip->rom;
-	outL = tempstream[0];
-	outR = tempstream[1];
 
-	int samples = (chip->frequency * length) / nBurnSoundLen;
-
-	for (i = 0; i < samples; i++)
+	for (i = 0; i < length; i++, buffer+=2)
 	{
 		sampleout = 0;
 
@@ -98,7 +99,7 @@ void iremga20_update(int device, short *buffer, int length)
 		if (play[0])
 		{
 			sampleout += (pSamples[pos[0]] - 0x80) * vol[0];
-			frac[0] += rate[0];
+			frac[0] += rate[0] * computed_steps;
 			pos[0] += frac[0] >> 24;
 			frac[0] &= 0xffffff;
 			play[0] = (pos[0] < end[0]);
@@ -106,7 +107,7 @@ void iremga20_update(int device, short *buffer, int length)
 		if (play[1])
 		{
 			sampleout += (pSamples[pos[1]] - 0x80) * vol[1];
-			frac[1] += rate[1];
+			frac[1] += rate[1] * computed_steps;
 			pos[1] += frac[1] >> 24;
 			frac[1] &= 0xffffff;
 			play[1] = (pos[1] < end[1]);
@@ -114,7 +115,7 @@ void iremga20_update(int device, short *buffer, int length)
 		if (play[2])
 		{
 			sampleout += (pSamples[pos[2]] - 0x80) * vol[2];
-			frac[2] += rate[2];
+			frac[2] += rate[2] * computed_steps;
 			pos[2] += frac[2] >> 24;
 			frac[2] &= 0xffffff;
 			play[2] = (pos[2] < end[2]);
@@ -122,15 +123,15 @@ void iremga20_update(int device, short *buffer, int length)
 		if (play[3])
 		{
 			sampleout += (pSamples[pos[3]] - 0x80) * vol[3];
-			frac[3] += rate[3];
+			frac[3] += rate[3] * computed_steps;
 			pos[3] += frac[3] >> 24;
 			frac[3] &= 0xffffff;
 			play[3] = (pos[3] < end[3]);
 		}
 
 		sampleout >>= 2;
-		outL[i] = sampleout;
-		outR[i] = sampleout;
+		buffer[0] += sampleout;
+		buffer[1] += sampleout;
 	}
 
 	/* update the regs now */
@@ -140,21 +141,18 @@ void iremga20_update(int device, short *buffer, int length)
 		chip->channel[i].frac = frac[i];
 		chip->channel[i].play = play[i];
 	}
-
-	// actually output sound to fba's buffer
-	{
-		for (i = 0; i < length; i++, buffer+=2) {
-			buffer[0] += outL[computed_steps[i]];
-			buffer[1] += outR[computed_steps[i]];
-		}
-	}
 }
 
-void iremga20_write(int device, int offset, int data)
+void iremga20_write(INT32 device, INT32 offset, INT32 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_write called without init\n"));
+	if (device > nNumChips) bprintf(PRINT_ERROR, _T("iremga20_write called with invalid chip %x\n"), device);
+#endif
+
 	chip = &chips[device];
 
-	int channel = offset >> 3;
+	INT32 channel = offset >> 3;
 
 	chip->regs[offset] = data;
 
@@ -192,8 +190,13 @@ void iremga20_write(int device, int offset, int data)
 	}
 }
 
-unsigned char iremga20_read(int device, int offset)
+UINT8 iremga20_read(INT32 device, INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_read called without init\n"));
+	if (device > nNumChips) bprintf(PRINT_ERROR, _T("iremga20_read called with invalid chip %x\n"), device);
+#endif
+
 	chip = &chips[device];
 
 	switch (offset & 0x7)
@@ -208,11 +211,16 @@ unsigned char iremga20_read(int device, int offset)
 	return 0;
 }
 
-void iremga20_reset(int device)
+void iremga20_reset(INT32 device)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_reset called without init\n"));
+	if (device > nNumChips) bprintf(PRINT_ERROR, _T("iremga20_reset called with invalid chip %x\n"), device);
+#endif
+
 	chip = &chips[device];
 
-	for(int i = 0; i < 4; i++ ) {
+	for(INT32 i = 0; i < 4; i++ ) {
 		chip->channel[i].rate = 0;
 		chip->channel[i].size = 0;
 		chip->channel[i].start = 0;
@@ -225,12 +233,14 @@ void iremga20_reset(int device)
 		chip->channel[i].play = 0;
 	}
 
-	for ( int i = 0; i < 0x40; i++ )
+	for ( INT32 i = 0; i < 0x40; i++ )
 		chip->regs[i] = 0;
 }
 
-void iremga20_init(int device, unsigned char *rom, int rom_size, int frequency)
+void iremga20_init(INT32 device, UINT8 *rom, INT32 rom_size, INT32 frequency)
 {
+	DebugSnd_IremGA20Initted = 1;
+
 	chip = &chips[device];
 
 	/* Initialize our chip structure */
@@ -240,28 +250,28 @@ void iremga20_init(int device, unsigned char *rom, int rom_size, int frequency)
 
 	iremga20_reset(device);
 	
-	if (device == 0) {
-		tempstream[0] = (short*)malloc((chip->frequency) * sizeof(short));
-		tempstream[1] = (short*)malloc((chip->frequency) * sizeof(short));
-
-		computed_steps = (int*)malloc(nBurnSoundLen * sizeof(int));
-
-		float step = chip->frequency / (1.00000 * nBurnSoundLen);
-		for (int i = 0; i < nBurnSoundLen; i++) {
-			computed_steps[i] = (int)(step * i);
-		}
-	}
+	computed_steps = (UINT32)((float)(chip->frequency / (1.00000 * nBurnSoundLen)));
+	
+	nNumChips = device;
 }
 
 void iremga20_exit()
 {
-	free (tempstream[0]);
-	free (tempstream[1]);
-	free (computed_steps);
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_exit called without init\n"));
+#endif
+
+	DebugSnd_IremGA20Initted = 0;
+	nNumChips = 0;
 }
 
-int iremga20_scan(int device, int nAction, int *pnMin)
+INT32 iremga20_scan(INT32 device, INT32 nAction, INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_IremGA20Initted) bprintf(PRINT_ERROR, _T("iremga20_scan called without init\n"));
+	if (device > nNumChips) bprintf(PRINT_ERROR, _T("iremga20_scan called with invalid chip %x\n"), device);
+#endif
+
 	chip = &chips[device];
 
 	struct BurnArea ba;

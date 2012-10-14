@@ -56,3 +56,5 @@ int VidSoftFXApplyEffectDirectX(IDirectDrawSurface7* pSurf, RECT* pRect);
 #ifdef SOFTFX_ENABLE_SDL
 int VidSoftFXApplyEffectSDL(SDL_Surface* pSurf);
 #endif
+
+int VidFilterApplyEffect(unsigned char* pd, int pitch);

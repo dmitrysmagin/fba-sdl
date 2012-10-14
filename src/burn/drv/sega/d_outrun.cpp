@@ -5,7 +5,7 @@
 Input Defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo OutrunInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 6, "p1 coin"    },
@@ -916,7 +916,7 @@ static struct BurnRomInfo Toutrun2RomDesc[] = {
 	{ "opr-12305.70",     0x10000, 0xba9ce677, SYS16_ROM_PCMDATA | BRF_SND },
 	{ "opr-12306.71",     0x10000, 0xe49249fd, SYS16_ROM_PCMDATA | BRF_SND },
 	
-	{ "317-unknown-toutrun1.key", 0x02000, 0x00000000, SYS16_ROM_KEY | BRF_ESS | BRF_PRG | BRF_NODUMP },
+	{ "317-unknown-toutrun2.key", 0x02000, 0x00000000, SYS16_ROM_KEY | BRF_ESS | BRF_PRG | BRF_NODUMP },
 };
 
 
@@ -969,7 +969,7 @@ static struct BurnRomInfo Toutrun3RomDesc[] = {
 	{ "opr-12305.70",     0x10000, 0xba9ce677, SYS16_ROM_PCMDATA | BRF_SND },
 	{ "opr-12306.71",     0x10000, 0xe49249fd, SYS16_ROM_PCMDATA | BRF_SND },
 	
-	{ "317-unknown.key",  0x02000, 0x33e632ae, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
+	{ "317-0107.key",     0x02000, 0x33e632ae, SYS16_ROM_KEY | BRF_ESS | BRF_PRG },
 };
 
 
@@ -991,7 +991,7 @@ void OutrunPPI0WritePortC(UINT8 data)
 	}
 }
 
-unsigned short __fastcall OutrunReadWord(unsigned int a)
+UINT16 __fastcall OutrunReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x140060: {
@@ -1007,7 +1007,7 @@ unsigned short __fastcall OutrunReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall OutrunReadByte(unsigned int a)
+UINT8 __fastcall OutrunReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x140001: {
@@ -1038,7 +1038,7 @@ unsigned char __fastcall OutrunReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
+void __fastcall OutrunWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x100000 && a <= 0x10ffff) {
 		System16BTileWordWrite(a - 0x100000, d);
@@ -1051,7 +1051,7 @@ void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
 			UINT32 *dst = (UINT32 *)System16SpriteRamBuff;
 
 			/* swap the halves of the sprite RAM */
-			for (unsigned int i = 0; i < System16SpriteRamSize/4; i++) {
+			for (UINT32 i = 0; i < System16SpriteRamSize/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1068,7 +1068,7 @@ void __fastcall OutrunWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
+void __fastcall OutrunWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x100000 && a <= 0x10ffff) {
 		System16BTileByteWrite((a - 0x100000) ^ 1, d);
@@ -1092,7 +1092,7 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 			UINT32 *dst = (UINT32 *)System16SpriteRamBuff;
 
 			/* swap the halves of the sprite RAM */
-			for (unsigned int i = 0; i < System16SpriteRamSize/4; i++) {
+			for (UINT32 i = 0; i < System16SpriteRamSize/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1117,7 +1117,7 @@ void __fastcall OutrunWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall Outrun2ReadByte(unsigned int a)
+UINT8 __fastcall Outrun2ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x090000:
@@ -1126,7 +1126,7 @@ unsigned char __fastcall Outrun2ReadByte(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1143,7 +1143,7 @@ unsigned char __fastcall Outrun2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Outrun2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Outrun2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x090000: {
@@ -1157,7 +1157,7 @@ void __fastcall Outrun2WriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall Outrun2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Outrun2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x090001: {
@@ -1171,7 +1171,7 @@ void __fastcall Outrun2WriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned short __fastcall ShangonReadWord(unsigned int a)
+UINT16 __fastcall ShangonReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x141002: {
@@ -1194,7 +1194,7 @@ unsigned short __fastcall ShangonReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall ShangonReadByte(unsigned int a)
+UINT8 __fastcall ShangonReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x141003: {
@@ -1218,7 +1218,7 @@ unsigned char __fastcall ShangonReadByte(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1239,7 +1239,7 @@ unsigned char __fastcall ShangonReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall ShangonWriteWord(unsigned int a, unsigned short d)
+void __fastcall ShangonWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x100000 && a <= 0x10ffff) {
 		System16BTileWordWrite(a - 0x100000, d);
@@ -1267,7 +1267,7 @@ void __fastcall ShangonWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
+void __fastcall ShangonWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x100000 && a <= 0x10ffff) {
 		System16BTileByteWrite((a - 0x100000) ^ 1, d);
@@ -1319,9 +1319,9 @@ void __fastcall ShangonWriteByte(unsigned int a, unsigned char d)
 Driver Inits
 ====================================================*/
 
-unsigned char OutrunProcessAnalogControls(UINT16 value)
+UINT8 OutrunProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1356,9 +1356,9 @@ unsigned char OutrunProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char ShangonProcessAnalogControls(UINT16 value)
+UINT8 ShangonProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1367,7 +1367,7 @@ unsigned char ShangonProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -1393,7 +1393,7 @@ unsigned char ShangonProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-static int OutrunInit()
+static INT32 OutrunInit()
 {
 	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
 	
@@ -1401,10 +1401,10 @@ static int OutrunInit()
 	
 	System16PCMDataSizePreAllocate = 0x60000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
-		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x30000);
 		memcpy(pTemp, System16PCMData, 0x30000);
 		memset(System16PCMData, 0, 0x60000);
 		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
@@ -1419,13 +1419,13 @@ static int OutrunInit()
 		memcpy(System16PCMData + 0x48000, pTemp + 0x20000, 0x8000);
 		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
 		memcpy(System16PCMData + 0x58000, pTemp + 0x28000, 0x8000);
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int OutrunbInit()
+static INT32 OutrunbInit()
 {
 	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
 	
@@ -1433,12 +1433,12 @@ static int OutrunbInit()
 	
 	System16PCMDataSizePreAllocate = 0x60000;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		UINT16 *word;
 		UINT8 *byte;
-		int i, length;
+		INT32 i, length;
 		
 		/* main CPU: swap bits 11,12 and 6,7 */
 		word = (UINT16 *)System16Rom;
@@ -1472,7 +1472,7 @@ static int OutrunbInit()
 			byte[i] = BITSWAP08(byte[i], 7,5,6,4,3,2,1,0);
 		}
 			
-		unsigned char *pTemp = (unsigned char*)malloc(0x30000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x30000);
 		memcpy(pTemp, System16PCMData, 0x30000);
 		memset(System16PCMData, 0, 0x60000);
 		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
@@ -1481,13 +1481,13 @@ static int OutrunbInit()
 		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
 		memcpy(System16PCMData + 0x40000, pTemp + 0x20000, 0x8000);
 		memcpy(System16PCMData + 0x50000, pTemp + 0x28000, 0x8000);
-		free(pTemp);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int ShangonInit()
+static INT32 ShangonInit()
 {
 	System16ProcessAnalogControlsDo = ShangonProcessAnalogControls;
 	
@@ -1495,7 +1495,7 @@ static int ShangonInit()
 	
 	System16PCMDataSizePreAllocate = 0x40000;
 
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		SekOpen(0);
@@ -1509,7 +1509,7 @@ static int ShangonInit()
 		System16RoadColorOffset2 = 0x7c0;
 		System16RoadColorOffset3 = 0x7c0;
 		
-		unsigned char *pTemp = (unsigned char*)malloc(0x20000);
+		UINT8 *pTemp = (UINT8*)BurnMalloc(0x20000);
 		memcpy(pTemp, System16PCMData, 0x20000);
 		memset(System16PCMData, 0, 0x40000);
 		memcpy(System16PCMData + 0x00000, pTemp + 0x00000, 0x8000);
@@ -1520,23 +1520,22 @@ static int ShangonInit()
 		memcpy(System16PCMData + 0x28000, pTemp + 0x10000, 0x8000);
 		memcpy(System16PCMData + 0x30000, pTemp + 0x18000, 0x8000);
 		memcpy(System16PCMData + 0x38000, pTemp + 0x18000, 0x8000);
+		BurnFree(pTemp);
 	}
 	
 	return nRet;
 }
 
-static int Shangon2Init()
+static INT32 Shangon2Init()
 {
 	System16ProcessAnalogControlsDo = ShangonProcessAnalogControls;
 	
 	System16PCMDataSizePreAllocate = 0x40000;
 	
-	int nRet = ShangonInit();
-	
-	return nRet;
+	return ShangonInit();
 }
 
-static int ToutrunInit()
+static INT32 ToutrunInit()
 {
 	System16ProcessAnalogControlsDo = OutrunProcessAnalogControls;
 	
@@ -1544,9 +1543,7 @@ static int ToutrunInit()
 	
 	System16PCMDataSizePreAllocate = 0x60000;
 	
-	int nRet = System16Init();
-	
-	return nRet;
+	return System16Init();
 }
 
 /*====================================================
@@ -1675,7 +1672,7 @@ struct BurnDriverD BurnDrvToutrun2 = {
 
 struct BurnDriver BurnDrvToutrun3 = {
 	"toutrun3", "toutrun", NULL, NULL, "1989",
-	"Turbo Out Run (upright, FD1094 317-unknown)\0", NULL, "Sega", "Out Run",
+	"Turbo Out Run (upright, FD1094 317-0107)\0", NULL, "Sega", "Out Run",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_OUTRUN | HARDWARE_SEGA_FD1094_ENC | HARDWARE_SEGA_SPRITE_LOAD32, GBF_RACING, 0,
 	NULL, Toutrun3RomInfo, Toutrun3RomName, NULL, NULL, ToutrunInputInfo, ToutruncDIPInfo,

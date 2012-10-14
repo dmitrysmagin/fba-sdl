@@ -8,36 +8,36 @@
 #define CAVE_VBLANK_LINES (271.5 - 240)
 // #define CAVE_VBLANK_LINES (12)
 
-static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01, *Rom02, *RomZ80;
-static unsigned char *Ram01, *Ram02, *Ram03, *RamZ80;
-static unsigned char *DefEEPROM;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01, *Rom02, *RomZ80;
+static UINT8 *Ram01, *Ram02, *Ram03, *RamZ80;
+static UINT8 *DefEEPROM;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
-static char nVBlank;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
+static INT8 nVBlank;
 
-static int nCurrentBank;
+static INT32 nCurrentBank;
 
-static int SoundLatch;
-static int SoundLatchReply[48];
-static int SoundLatchStatus;
+static INT32 SoundLatch;
+static INT32 SoundLatchReply[48];
+static INT32 SoundLatchStatus;
 
-static int SoundLatchReplyIndex;
-static int SoundLatchReplyMax;
+static INT32 SoundLatchReplyIndex;
+static INT32 SoundLatchReplyMax;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static int nCaveCyclesDone[2];
+static INT32 nCaveCyclesDone[2];
 
-int nWhichGame;				// 0 - sailormn/sailormno
+INT32 nWhichGame;				// 0 - sailormn/sailormno
 							// 1 - agallet
 
 static struct BurnInputInfo sailormnInputList[] = {
@@ -72,22 +72,22 @@ STDINPUTINFO(sailormn)
 
 static void UpdateIRQStatus()
 {
-	int nIRQPending = (nVideoIRQ == 0 || nSoundIRQ == 0 || nUnknownIRQ == 0);
+	INT32 nIRQPending = (nVideoIRQ == 0 || nSoundIRQ == 0 || nUnknownIRQ == 0);
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-static void drvZ80Bankswitch(int nBank)
+static void drvZ80Bankswitch(INT32 nBank)
 {
 	nBank &= 0x1F;
 	if (nBank != nCurrentBank) {
-		unsigned char* nStartAddress = RomZ80 + (nBank << 14);
+		UINT8* nStartAddress = RomZ80 + (nBank << 14);
 		ZetMapArea(0x4000, 0x7FFF, 0, nStartAddress);
 		ZetMapArea(0x4000, 0x7FFF, 2, nStartAddress);
 		nCurrentBank = nBank;
 	}
 }
 
-static void drvYM2151IRQHandler(int nStatus)
+static void drvYM2151IRQHandler(INT32 nStatus)
 {
 	if (nStatus) {
 //		ZetRaiseIrq(255);
@@ -98,7 +98,7 @@ static void drvYM2151IRQHandler(int nStatus)
 	}
 }
 
-unsigned char __fastcall sailormnZIn(unsigned short nAddress)
+UINT8 __fastcall sailormnZIn(UINT16 nAddress)
 {
 	nAddress &= 0xFF;
 
@@ -136,7 +136,7 @@ unsigned char __fastcall sailormnZIn(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall sailormnZOut(unsigned short nAddress, unsigned char nValue)
+void __fastcall sailormnZOut(UINT16 nAddress, UINT8 nValue)
 {
 	nAddress &= 0xFF;
 
@@ -197,9 +197,10 @@ void __fastcall sailormnZOut(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int drvZInit()
+static INT32 drvZInit()
 {
-	ZetInit(1);
+	ZetInit(0);
+	ZetOpen(0);
 
 	ZetSetInHandler(sailormnZIn);
 	ZetSetOutHandler(sailormnZOut);
@@ -220,35 +221,36 @@ static int drvZInit()
 	ZetMapArea    (0xE000, 0xFFFF, 2, RamZ80);			//
 
 	ZetMemEnd();
+	ZetClose();
 
 	return 0;
 }
 
-unsigned char __fastcall sailormnReadByte(unsigned int sekAddress)
+UINT8 __fastcall sailormnReadByte(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, "Attempt to read byte value of location %x\n", sekAddress);
 
 	switch (sekAddress) {
 		case 0xB80000:
 		case 0xB80001: {
-			unsigned char nRet = ((nVBlank ^ 1) << 2) | (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = ((nVBlank ^ 1) << 2) | (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0xB80002:
 		case 0xB80003: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0xB80004:
 		case 0xB80005: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0xB80006:
 		case 0xB80007: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -284,27 +286,27 @@ unsigned char __fastcall sailormnReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall sailormnReadWord(unsigned int sekAddress)
+UINT16 __fastcall sailormnReadWord(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, "Attempt to read word value of location %x\n", sekAddress);
 
 	switch (sekAddress) {
 		case 0xB80000: {
-			unsigned short nRet = ((nVBlank ^ 1) << 2) | (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = ((nVBlank ^ 1) << 2) | (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0xB80002: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0xB80004: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0xB80006: {
-			unsigned short nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT16 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -344,7 +346,7 @@ unsigned short __fastcall sailormnReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall sailormnWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall sailormnWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 //	bprintf(PRINT_NORMAL, "Attempt to write byte value %x to location %x\n", byteValue, sekAddress);
 
@@ -369,7 +371,7 @@ void __fastcall sailormnWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall sailormnWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall sailormnWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 //	bprintf(PRINT_NORMAL, "Attempt to write word value %x to location %x\n", wordValue, sekAddress);
 
@@ -438,22 +440,22 @@ void __fastcall sailormnWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-void __fastcall sailormnWriteBytePalette(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall sailormnWriteBytePalette(UINT32 sekAddress, UINT8 byteValue)
 {
 	CavePalWriteByte(sekAddress & 0xFFFF, byteValue);
 }
 
-void __fastcall sailormnWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall sailormnWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	CavePalWriteWord(sekAddress & 0xFFFF, wordValue);
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
-	MSM6295Exit(1);
 	MSM6295Exit(0);
+	MSM6295Exit(1);
 	BurnYM2151Exit();
 
 	CaveTileExit();
@@ -464,23 +466,23 @@ static int DrvExit()
 
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
 	SekClose();
 
 	nCurrentBank = -1;
+	
+	ZetOpen(0);
 	drvZ80Bankswitch(0);
-
 	ZetReset();
+	ZetClose();
 
 	EEPROMReset();
 
@@ -504,7 +506,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (CaveRecalcPalette) {
 		CavePalUpdate8Bit(0x4400, 12);
@@ -533,19 +535,19 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 4;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 4;
 
-	int nCyclesTotal[2];
+	INT32 nCyclesTotal[2];
 
-	int nCyclesSegment;
+	INT32 nCyclesSegment;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -554,7 +556,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 10; i++) {
+	for (INT32 i = 0; i < 10; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -563,28 +565,29 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCaveCyclesDone[0] = 0;
 #if 0
-	nCyclesTotal[1] = (int)((long long)8000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[1] = (INT32)((INT64)8000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 #else
-	nCyclesTotal[1] = (int)(8000000 / CAVE_REFRESHRATE);
+	nCyclesTotal[1] = (INT32)(8000000 / CAVE_REFRESHRATE);
 #endif
 	nCaveCyclesDone[1] -= nCyclesTotal[1];
 	if (nCaveCyclesDone[1] < 0) {
 		nCaveCyclesDone[1] = 0;
 	}
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	nVBlank = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
+	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -625,8 +628,8 @@ static int DrvFrame()
 		{
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
@@ -641,8 +644,8 @@ static int DrvFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -650,15 +653,17 @@ static int DrvFrame()
 			}
 		}
 	}
+	
+	ZetClose();
 
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x080000;		// 68K program
 	Rom02			= Next; Next += 0x200000;
 	RomZ80			= Next; Next += 0x080000;
@@ -688,12 +693,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void sailormnDecodeSprites(unsigned char* pData, int nLen)
+static void sailormnDecodeSprites(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -701,12 +706,12 @@ static void sailormnDecodeSprites(unsigned char* pData, int nLen)
 	return;
 }
 
-static void sailormnDecodeTiles(unsigned char* pData, int nLen)
+static void sailormnDecodeTiles(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -714,9 +719,9 @@ static void sailormnDecodeTiles(unsigned char* pData, int nLen)
 	return;
 }
 
-static int sailormnLoadRoms()
+static INT32 sailormnLoadRoms()
 {
-	unsigned char* pTemp;
+	UINT8* pTemp;
 
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -725,13 +730,13 @@ static int sailormnLoadRoms()
 	// Load Z80 ROM
 	BurnLoadRom(RomZ80, 2, 1);
 
-	pTemp = (unsigned char*)malloc(0x400000);
+	pTemp = (UINT8*)BurnMalloc(0x400000);
 	BurnLoadRom(pTemp + 0x000000, 3, 1);
 	BurnLoadRom(pTemp + 0x200000, 4, 1);
-	for (int i = 0; i < 0x400000; i++) {
+	for (INT32 i = 0; i < 0x400000; i++) {
 		CaveSpriteROM[i ^ 0x950C4] = pTemp[BITSWAP24(i, 23, 22, 21, 20, 15, 10, 12, 6, 11, 1, 13, 3, 16, 17, 2, 5, 14, 7, 18, 8, 4, 19, 9, 0)];
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 	sailormnDecodeSprites(CaveSpriteROM, 0x400000);
 
 	BurnLoadRom(CaveTileROM[0], 5, 1);
@@ -745,17 +750,17 @@ static int sailormnLoadRoms()
 	BurnLoadRom(CaveTileROM[2] + 0x800000, 11, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0xA00000);
 
-	pTemp = (unsigned char*)malloc(0x600000);
+	pTemp = (UINT8*)BurnMalloc(0x600000);
 	BurnLoadRom(pTemp + 0x000000, 12, 1);
 	BurnLoadRom(pTemp + 0x200000, 13, 1);
 	BurnLoadRom(pTemp + 0x400000, 14, 1);
-	for (int i = 0; i < 0x500000; i++) {
+	for (INT32 i = 0; i < 0x500000; i++) {
 		CaveTileROM[2][(i << 2) + 0] |= (pTemp[i] & 0x03) << 4;
 		CaveTileROM[2][(i << 2) + 1] |= (pTemp[i] & 0x0C) << 2;
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 15, 1);
@@ -769,7 +774,7 @@ static int sailormnLoadRoms()
 	return 0;
 }
 
-static int agalletLoadRoms()
+static INT32 agalletLoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -788,15 +793,15 @@ static int agalletLoadRoms()
 	BurnLoadRom(CaveTileROM[2], 6, 1);
 	sailormnDecodeTiles(CaveTileROM[2], 0x200000);
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
+	UINT8* pTemp = (UINT8*)BurnMalloc(0x200000);
 	BurnLoadRom(pTemp, 7, 1);
-	for (int i = 0; i < 0x0100000; i++) {
+	for (INT32 i = 0; i < 0x0100000; i++) {
 		CaveTileROM[2][(i << 2) + 0] |= (pTemp[i] & 0x03) << 4;
 		CaveTileROM[2][(i << 2) + 1] |= (pTemp[i] & 0x0C) << 2;
 		CaveTileROM[2][(i << 2) + 2] |= (pTemp[i] & 0x30);
 		CaveTileROM[2][(i << 2) + 3] |= (pTemp[i] & 0xC0) >> 2;
 	}
-	free(pTemp);
+	BurnFree(pTemp);
 
 	// Load OKIM6295 data
 	BurnLoadRom(MSM6295ROM + 0x0000000, 8, 1);
@@ -808,12 +813,12 @@ static int agalletLoadRoms()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
 	if (pnMin) {						// Return minimum compatible version
-		*pnMin = 0x020902;
+		*pnMin = 0x029719;
 	}
 
 	EEPROMScan(nAction, pnMin);			// Scan EEPROM
@@ -851,9 +856,11 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 
 		if (nAction & ACB_WRITE) {
-			int nBank = nCurrentBank;
+			INT32 nBank = nCurrentBank;
 			nCurrentBank = -1;
+			ZetOpen(0);
 			drvZ80Bankswitch(nBank);
+			ZetClose();
 
 		  CaveRecalcPalette = 1;
 		}
@@ -862,26 +869,21 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static const UINT8 agallet_default_eeprom[48] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff, 0x00,0x00,0x00,0x00,0x00,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02, 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0xff,0xff,0xff,0xff,0xff,0xff};
-static const UINT8 sailormn_default_eeprom[18] = {0xa5,0x00,0xa5,0x00,0xa5,0x00,0xa5,0x00,0xa5,0x01,0xa5,0x01,0xa5,0x04,0xa5,0x01,0xa5,0x02};
-
-static int gameInit()
+static INT32 gameInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
-
-	
 
 	if (nWhichGame) {
 		// Load the roms into memory
@@ -948,32 +950,26 @@ static int gameInit()
 	BurnYM2151Init(32000000 / 8, 25.0);
 	BurnYM2151SetIrqHandler(&drvYM2151IRQHandler);
 
-	MSM6295Init(0, 16000, 80.0, 1);
-	MSM6295Init(1, 16000, 80.0, 1);
+	MSM6295Init(0, 16000, 100.0, 1);
+	MSM6295Init(1, 16000, 100.0, 1);
 	
 	EEPROMInit(&eeprom_interface_93C46);
 	if (!EEPROMAvailable()) EEPROMFill(DefEEPROM,0, 0x80);
 
 	bDrawScreen = true;
 
-#if 0
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, "  * Using speed-hacks (detecting idle loops).\n");
-#endif
-#endif
-
 	DrvDoReset();
 
 	return 0;
 }
 
-static int sailormnInit()
+static INT32 sailormnInit()
 {
 	nWhichGame = 0;
 	return gameInit();
 }
 
-static int agalletInit()
+static INT32 agalletInit()
 {
 	nWhichGame = 1;
 	return gameInit();
@@ -1006,7 +1002,7 @@ static struct BurnRomInfo sailormnRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_OPT },
+	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1038,7 +1034,7 @@ static struct BurnRomInfo sailormnuRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_OPT },
+	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1070,7 +1066,7 @@ static struct BurnRomInfo sailormnjRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_OPT },
+	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1102,7 +1098,7 @@ static struct BurnRomInfo sailormnkRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_OPT },
+	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1134,7 +1130,7 @@ static struct BurnRomInfo sailormntRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_OPT },
+	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1166,7 +1162,7 @@ static struct BurnRomInfo sailormnhRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_OPT },
+	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1198,7 +1194,7 @@ static struct BurnRomInfo sailormnoRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_OPT },
+	{ "sailormn_europe.nv", 0x0080, 0x59a7dc50, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1230,7 +1226,7 @@ static struct BurnRomInfo sailormnouRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_OPT },
+	{ "sailormn_usa.nv", 0x0080, 0x3915abe3, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1262,7 +1258,7 @@ static struct BurnRomInfo sailormnojRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_OPT },
+	{ "sailormn_japan.nv", 0x0080, 0xea03c30a, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1294,7 +1290,7 @@ static struct BurnRomInfo sailormnokRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_OPT },
+	{ "sailormn_korea.nv", 0x0080, 0x0e7de398, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1326,7 +1322,7 @@ static struct BurnRomInfo sailormnotRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_OPT },
+	{ "sailormn_taiwan.nv", 0x0080, 0x6c7e8c2a, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1358,7 +1354,7 @@ static struct BurnRomInfo sailormnohRomDesc[] = {
 	{ "bpsm.u48",     0x200000, 0x498E4ED1, BRF_SND },			 // 15 MSM6295 #0 ADPCM data
 	{ "bpsm.u47",     0x080000, 0x0F2901B9, BRF_SND },			 // 16 MSM6295 #1 ADPCM data
 	
-	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_OPT },
+	{ "sailormn_hongkong.nv", 0x0080, 0x4d24c874, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1380,7 +1376,7 @@ static struct BurnRomInfo agalletRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_europe.nv", 0x0080, 0xec38bf65, BRF_OPT },
+	{ "agallet_europe.nv", 0x0080, 0xec38bf65, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1402,7 +1398,7 @@ static struct BurnRomInfo agalletuRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_usa.nv", 0x0080, 0x72e65056, BRF_OPT },
+	{ "agallet_usa.nv", 0x0080, 0x72e65056, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1424,7 +1420,7 @@ static struct BurnRomInfo agalletjRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_japan.nv", 0x0080, 0x0753f547, BRF_OPT },
+	{ "agallet_japan.nv", 0x0080, 0x0753f547, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1446,7 +1442,7 @@ static struct BurnRomInfo agalletkRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_korea.nv", 0x0080, 0x7f41c253, BRF_OPT },
+	{ "agallet_korea.nv", 0x0080, 0x7f41c253, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1468,7 +1464,7 @@ static struct BurnRomInfo agallettRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_taiwan.nv", 0x0080, 0x0af46742, BRF_OPT },
+	{ "agallet_taiwan.nv", 0x0080, 0x0af46742, BRF_ESS | BRF_PRG },
 };
 
 
@@ -1490,7 +1486,7 @@ static struct BurnRomInfo agallethRomDesc[] = {
 	{ "bp962a.u48",   0x200000, 0xAE00A1CE, BRF_SND },			 //  8 MSM6295 #0 ADPCM data
 	{ "bp962a.u47",   0x200000, 0x6D4E9737, BRF_SND },			 //  9 MSM6295 #1 ADPCM data
 	
-	{ "agallet_hongkong.nv", 0x0080, 0x998d1a74, BRF_OPT },
+	{ "agallet_hongkong.nv", 0x0080, 0x998d1a74, BRF_ESS | BRF_PRG },
 };
 
 

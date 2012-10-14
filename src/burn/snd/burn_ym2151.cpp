@@ -2,25 +2,29 @@
 #include "burn_sound.h"
 #include "burn_ym2151.h"
 
-void (*BurnYM2151Render)(short* pSoundBuf, int nSegmentLength);
+void (*BurnYM2151Render)(INT16* pSoundBuf, INT32 nSegmentLength);
 
-unsigned char BurnYM2151Registers[0x0100];
-unsigned int nBurnCurrentYM2151Register;
+UINT8 BurnYM2151Registers[0x0100];
+UINT32 nBurnCurrentYM2151Register;
 
-static int nBurnYM2151SoundRate;
+static INT32 nBurnYM2151SoundRate;
 
-static short* pBuffer;
-static short* pYM2151Buffer[2];
+static INT16* pBuffer;
+static INT16* pYM2151Buffer[2];
 
-static int nBurnPosition;
-static unsigned int nSampleSize;
-static unsigned int nFractionalPosition;
-static unsigned int nSamplesRendered;
+static INT32 nBurnPosition;
+static UINT32 nSampleSize;
+static UINT32 nFractionalPosition;
+static UINT32 nSamplesRendered;
 
-static int nYM2151Volume;
+static INT32 nYM2151Volume;
 
-static void YM2151RenderResample(short* pSoundBuf, int nSegmentLength)
+static void YM2151RenderResample(INT16* pSoundBuf, INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("YM2151RenderResample called without init\n"));
+#endif
+	
 	nBurnPosition += nSegmentLength;
 
 	if (nBurnPosition >= nBurnSoundRate) {
@@ -36,7 +40,7 @@ static void YM2151RenderResample(short* pSoundBuf, int nSegmentLength)
 
 		nSamplesRendered -= (nFractionalPosition >> 16) - 4;
 
-		for (unsigned int i = 0; i <= nSamplesRendered; i++) {
+		for (UINT32 i = 0; i <= nSamplesRendered; i++) {
 			pYM2151Buffer[0][4 + i] = pYM2151Buffer[0][(nFractionalPosition >> 16) + i];
 			pYM2151Buffer[1][4 + i] = pYM2151Buffer[1][(nFractionalPosition >> 16) + i];
 		}
@@ -48,15 +52,15 @@ static void YM2151RenderResample(short* pSoundBuf, int nSegmentLength)
 	pYM2151Buffer[0] = pBuffer + 4 + nSamplesRendered;
 	pYM2151Buffer[1] = pBuffer + 4 + nSamplesRendered + 65536;
 
-	YM2151UpdateOne(0, pYM2151Buffer, (unsigned int)(nBurnPosition + 1) * nBurnYM2151SoundRate / nBurnSoundRate - nSamplesRendered);
-	nSamplesRendered += (unsigned int)(nBurnPosition + 1) * nBurnYM2151SoundRate / nBurnSoundRate - nSamplesRendered;
+	YM2151UpdateOne(0, pYM2151Buffer, (UINT32)(nBurnPosition + 1) * nBurnYM2151SoundRate / nBurnSoundRate - nSamplesRendered);
+	nSamplesRendered += (UINT32)(nBurnPosition + 1) * nBurnYM2151SoundRate / nBurnSoundRate - nSamplesRendered;
 
 	pYM2151Buffer[0] = pBuffer;
 	pYM2151Buffer[1] = pBuffer + 65536;
 
 	nSegmentLength <<= 1;
 
-	for (int i = 0; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
+	for (INT32 i = 0; i < nSegmentLength; i += 2, nFractionalPosition += nSampleSize) {
 
 		// Left channel
 		pSoundBuf[i + 0] = INTERPOLATE4PS_CUSTOM((nFractionalPosition >> 4) & 0x0FFF,
@@ -76,8 +80,12 @@ static void YM2151RenderResample(short* pSoundBuf, int nSegmentLength)
 	}
 }
 
-static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
+static void YM2151RenderNormal(INT16* pSoundBuf, INT32 nSegmentLength)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("YM2151RenderNormal called without init\n"));
+#endif
+
 	nBurnPosition += nSegmentLength;
 
 	pYM2151Buffer[0] = pBuffer;
@@ -90,9 +98,9 @@ static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
 		BurnSoundCopy_FM_A(pYM2151Buffer[0], pYM2151Buffer[1], pSoundBuf, nSegmentLength, nYM2151Volume, nYM2151Volume);
 #endif
 	} else {
-		for (int n = 0; n < nSegmentLength; n++) {
-			for (int i = 0; i < 2; i++) {
-				int nSample = pYM2151Buffer[i][n] * (nYM2151Volume >> 10);
+		for (INT32 n = 0; n < nSegmentLength; n++) {
+			for (INT32 i = 0; i < 2; i++) {
+				INT32 nSample = pYM2151Buffer[i][n] * (nYM2151Volume >> 10);
 				nSample >>= 8;
 				
 				if (nSample < -32768) nSample = -32768;
@@ -106,18 +114,36 @@ static void YM2151RenderNormal(short* pSoundBuf, int nSegmentLength)
 
 void BurnYM2151Reset()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("BurnYM2151Reset called without init\n"));
+#endif
+
 	YM2151ResetChip(0);
 }
 
 void BurnYM2151Exit()
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("BurnYM2151Exit called without init\n"));
+#endif
+
+	BurnYM2151SetIrqHandler(NULL);
+	BurnYM2151SetPortHandler(NULL);
+
 	YM2151Shutdown();
 
-	free(pBuffer);
+	if (pBuffer) {
+		free(pBuffer);
+		pBuffer = NULL;
+	}
+	
+	DebugSnd_YM2151Initted = 0;
 }
 
-int BurnYM2151Init(int nClockFrequency, float nVolume)
+INT32 BurnYM2151Init(INT32 nClockFrequency, float nVolume)
 {
+	DebugSnd_YM2151Initted = 1;
+	
 	if (nBurnSoundRate <= 0) {
 		YM2151Init(1, nClockFrequency, 11025);
 		return 0;
@@ -133,20 +159,20 @@ int BurnYM2151Init(int nClockFrequency, float nVolume)
 
 		BurnYM2151Render = YM2151RenderResample;
 
-		nYM2151Volume = (int)((double)16384.0 * 100.0 / nVolume);
+		nYM2151Volume = (INT32)((double)16384.0 * 100.0 / nVolume);
 	} else {
 		nBurnYM2151SoundRate = nBurnSoundRate;
 		BurnYM2151Render = YM2151RenderNormal;
 
-		nYM2151Volume = (int)((double)65536.0 * 100.0 / nVolume);
+		nYM2151Volume = (INT32)((double)65536.0 * 100.0 / nVolume);
 	}
 
 	YM2151Init(1, nClockFrequency, nBurnYM2151SoundRate);
 
-	pBuffer = (short*)malloc(65536 * 2 * sizeof(short));
-	memset(pBuffer, 0, 65536 * 2 * sizeof(short));
+	pBuffer = (INT16*)malloc(65536 * 2 * sizeof(INT16));
+	memset(pBuffer, 0, 65536 * 2 * sizeof(INT16));
 
-	nSampleSize = (unsigned int)nBurnYM2151SoundRate * (1 << 16) / nBurnSoundRate;
+	nSampleSize = (UINT32)nBurnYM2151SoundRate * (1 << 16) / nBurnSoundRate;
 	nFractionalPosition = 4 << 16;
 	nSamplesRendered = 0;
 	nBurnPosition = 0;
@@ -154,8 +180,12 @@ int BurnYM2151Init(int nClockFrequency, float nVolume)
 	return 0;
 }
 
-void BurnYM2151Scan(int nAction)
+void BurnYM2151Scan(INT32 nAction)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("BurnYM2151Scan called without init\n"));
+#endif
+	
 	if ((nAction & ACB_DRIVER_DATA) == 0) {
 		return;
 	}
@@ -163,7 +193,7 @@ void BurnYM2151Scan(int nAction)
 	SCAN_VAR(BurnYM2151Registers);
 
 	if (nAction & ACB_WRITE) {
-		for (int i = 0; i < 0x0100; i++) {
+		for (INT32 i = 0; i < 0x0100; i++) {
 			YM2151WriteReg(0, i, BurnYM2151Registers[i]);
 		}
 	}

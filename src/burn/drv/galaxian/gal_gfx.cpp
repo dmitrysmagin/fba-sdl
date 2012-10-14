@@ -7,106 +7,106 @@ GalExtendTileInfo GalExtendTileInfoFunction;
 GalExtendSpriteInfo GalExtendSpriteInfoFunction;
 GalRenderFrame GalRenderFrameFunction;
 
-unsigned char GalFlipScreenX;
-unsigned char GalFlipScreenY;
-unsigned char *GalGfxBank;
-unsigned char GalPaletteBank;
-unsigned char GalSpriteClipStart;
-unsigned char GalSpriteClipEnd;
-unsigned char FroggerAdjust;
-unsigned char GalBackgroundRed;
-unsigned char GalBackgroundGreen;
-unsigned char GalBackgroundBlue;
-unsigned char GalBackgroundEnable;
-unsigned char SfxTilemap;
-unsigned char GalOrientationFlipX;
-unsigned char GalColourDepth;
-unsigned char DarkplntBulletColour;
-unsigned char DambustrBgColour1;
-unsigned char DambustrBgColour2;
-unsigned char DambustrBgPriority;
-unsigned char DambustrBgSplitLine;
-unsigned char *RockclimTiles;
-unsigned short RockclimScrollX;
-unsigned short RockclimScrollY;
+UINT8 GalFlipScreenX;
+UINT8 GalFlipScreenY;
+UINT8 *GalGfxBank;
+UINT8 GalPaletteBank;
+UINT8 GalSpriteClipStart;
+UINT8 GalSpriteClipEnd;
+UINT8 FroggerAdjust;
+UINT8 GalBackgroundRed;
+UINT8 GalBackgroundGreen;
+UINT8 GalBackgroundBlue;
+UINT8 GalBackgroundEnable;
+UINT8 SfxTilemap;
+UINT8 GalOrientationFlipX;
+UINT8 GalColourDepth;
+UINT8 DarkplntBulletColour;
+UINT8 DambustrBgColour1;
+UINT8 DambustrBgColour2;
+UINT8 DambustrBgPriority;
+UINT8 DambustrBgSplitLine;
+UINT8 *RockclimTiles;
+UINT16 RockclimScrollX;
+UINT16 RockclimScrollY;
 
 // Graphics decode helpers
-int CharPlaneOffsets[2]   = { 0, 0x4000 };
-int CharXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
-int CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-int SpritePlaneOffsets[2] = { 0, 0x4000 };
-int SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+INT32 CharPlaneOffsets[2]   = { 0, 0x4000 };
+INT32 CharXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
+INT32 CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+INT32 SpritePlaneOffsets[2] = { 0, 0x4000 };
+INT32 SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+INT32 SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
 // Tile extend helpers
-void UpperExtendTileInfo(unsigned short *Code, int*, int, int)
+void UpperExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code += 0x100;
 }
 
-void PiscesExtendTileInfo(unsigned short *Code, int*, int, int)
+void PiscesExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code |= GalGfxBank[0] << 8;
 }
 
-void Batman2ExtendTileInfo(unsigned short *Code, int*, int, int)
+void Batman2ExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	if (*Code & 0x80) *Code |= GalGfxBank[0] << 8;
 }
 
-void GmgalaxExtendTileInfo(unsigned short *Code, int*, int, int)
+void GmgalaxExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code |= GalGfxBank[0] << 9;
 }
 
-void MooncrstExtendTileInfo(unsigned short *Code, int*, int, int)
+void MooncrstExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	if (GalGfxBank[2] && (*Code & 0xc0) == 0x80) *Code = (*Code & 0x3f) | (GalGfxBank[0] << 6) | (GalGfxBank[1] << 7) | 0x0100;
 }
 
-void MoonqsrExtendTileInfo(unsigned short *Code, int*, int Attr, int)
+void MoonqsrExtendTileInfo(UINT16 *Code, INT32*, INT32 Attr, INT32)
 {
 	*Code |= (Attr & 0x20) << 3;
 }
 
-void SkybaseExtendTileInfo(unsigned short *Code, int*, int, int)
+void SkybaseExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code |= GalGfxBank[2] << 8;
 }
 
-void JumpbugExtendTileInfo(unsigned short *Code, int*, int, int)
+void JumpbugExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	if ((*Code & 0xc0) == 0x80 && (GalGfxBank[2] & 0x01)) *Code += 128 + ((GalGfxBank[0] & 0x01) << 6) + ((GalGfxBank[1] & 0x01) << 7) + ((~GalGfxBank[4] & 0x01) << 8);
 }
 
-void FroggerExtendTileInfo(unsigned short*, int *Colour, int, int)
+void FroggerExtendTileInfo(UINT16*, INT32 *Colour, INT32, INT32)
 {
 	*Colour = ((*Colour >> 1) & 0x03) | ((*Colour << 2) & 0x04);
 }
 
-void MshuttleExtendTileInfo(unsigned short *Code, int*, int Attr, int)
+void MshuttleExtendTileInfo(UINT16 *Code, INT32*, INT32 Attr, INT32)
 {
 	*Code |= (Attr & 0x30) << 4;
 }
 
-void Fourin1ExtendTileInfo(unsigned short *Code, int*, int, int)
+void Fourin1ExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code |= Fourin1Bank << 8;
 }
 
-void MarinerExtendTileInfo(unsigned short *Code, int*, int, int x)
+void MarinerExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32 x)
 {
-	unsigned char *Prom = GalProm + 0x120;
+	UINT8 *Prom = GalProm + 0x120;
 	
 	*Code |= (Prom[x] & 0x01) << 8;
 }
 
-void MimonkeyExtendTileInfo(unsigned short *Code, int*, int, int)
+void MimonkeyExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
 {
 	*Code |= (GalGfxBank[0] << 8) | (GalGfxBank[1] << 9);
 }
 
-void DambustrExtendTileInfo(unsigned short *Code, int*, int, int x)
+void DambustrExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32 x)
 {
 	if (GalGfxBank[0] == 0) {
 		*Code |= 0x300;
@@ -119,94 +119,94 @@ void DambustrExtendTileInfo(unsigned short *Code, int*, int, int x)
 	}
 }
 
-void Ad2083ExtendTileInfo(unsigned short *Code, int *Colour, int Attr, int)
+void Ad2083ExtendTileInfo(UINT16 *Code, INT32 *Colour, INT32 Attr, INT32)
 {
-	int Bank = Attr & 0x30;
+	INT32 Bank = Attr & 0x30;
 	*Code |= (Bank << 4);
 	*Colour |= ((Attr & 0x40) >> 3);
 }
 
-void RacknrolExtendTileInfo(unsigned short *Code, int*, int, int x)
+void RacknrolExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32 x)
 {
-	unsigned char Bank = GalGfxBank[x] & 7;	
+	UINT8 Bank = GalGfxBank[x] & 7;	
 	*Code |= Bank << 8;
 }
 
 // Sprite extend helpers
-void UpperExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void UpperExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code += 0x40;
 }
 
-void PiscesExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void PiscesExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= GalGfxBank[0] << 6;
 }
 
-void GmgalaxExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void GmgalaxExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= (GalGfxBank[0] << 7) | 0x40;
 }
 
-void MooncrstExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void MooncrstExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	if (GalGfxBank[2] && (*Code & 0x30) == 0x20) *Code = (*Code & 0x0f) | (GalGfxBank[0] << 4) | (GalGfxBank[1] << 5) | 0x40;
 }
 
-void MoonqsrExtendSpriteInfo(const unsigned char *Base, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void MoonqsrExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= (Base[2] & 0x20) << 1;
 }
 
-void SkybaseExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void SkybaseExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= GalGfxBank[2] << 6;
 }
 
-void RockclimExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void RockclimExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	if (GalGfxBank[2]) *Code |= 0x40;
 }
 
-void JumpbugExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void JumpbugExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	if ((*Code & 0x30) == 0x20 && (GalGfxBank[2] & 0x01) != 0) *Code += 32 + ((GalGfxBank[0] & 0x01) << 4) + ((GalGfxBank[1] & 0x01) << 5) + ((~GalGfxBank[4] & 0x01) << 6);
 }
 
-void FroggerExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short*, unsigned char *Colour)
+void FroggerExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16*, UINT8 *Colour)
 {
 	*Colour = ((*Colour >> 1) & 0x03) | ((*Colour << 2) & 0x04);
 }
 
-void CalipsoExtendSpriteInfo(const unsigned char *Base, int*, int*, unsigned char *xFlip, unsigned char *yFlip, unsigned short *Code, unsigned char*)
+void CalipsoExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8 *xFlip, UINT8 *yFlip, UINT16 *Code, UINT8*)
 {
 	*Code = Base[1];
 	*xFlip = 0;
 	*yFlip = 0;
 }
 
-void MshuttleExtendSpriteInfo(const unsigned char *Base, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void MshuttleExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= (Base[2] & 0x30) << 2;
 }
 
-void Fourin1ExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void Fourin1ExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= Fourin1Bank << 6;
 }
 
-void DkongjrmExtendSpriteInfo(const unsigned char *Base, int*, int*, unsigned char *xFlip, unsigned char*, unsigned short *Code, unsigned char*)
+void DkongjrmExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8 *xFlip, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code = (Base[1] & 0x7f) | 0x80;
 	*xFlip = 0;
 }
 
-void MimonkeyExtendSpriteInfo(const unsigned char*, int*, int*, unsigned char*, unsigned char*, unsigned short *Code, unsigned char*)
+void MimonkeyExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code |= (GalGfxBank[0] << 6) | (GalGfxBank[1] << 7);
 }
 
-void Ad2083ExtendSpriteInfo(const unsigned char *Base, int*, int*, unsigned char *xFlip, unsigned char*, unsigned short *Code, unsigned char*)
+void Ad2083ExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8 *xFlip, UINT8*, UINT16 *Code, UINT8*)
 {
 	*Code = (Base[1] & 0x7f) | ((Base[2] & 0x30) << 2);
 	*xFlip = 0;
@@ -289,31 +289,31 @@ void HardCodeMooncrstPROM()
 #define RGB_MAXIMUM			224
 #define MAX_NETS			3
 #define MAX_RES_PER_NET			18
-#define Combine2Weights(tab,w0,w1)	((int)(((tab)[0]*(w0) + (tab)[1]*(w1)) + 0.5))
-#define Combine3Weights(tab,w0,w1,w2)	((int)(((tab)[0]*(w0) + (tab)[1]*(w1) + (tab)[2]*(w2)) + 0.5))
+#define Combine2Weights(tab,w0,w1)	((INT32)(((tab)[0]*(w0) + (tab)[1]*(w1)) + 0.5))
+#define Combine3Weights(tab,w0,w1,w2)	((INT32)(((tab)[0]*(w0) + (tab)[1]*(w1) + (tab)[2]*(w2)) + 0.5))
 
-static double ComputeResistorWeights(int MinVal, int MaxVal, double Scaler, int Count1, const int *Resistances1, double *Weights1, int PullDown1, int PullUp1,	int Count2, const int *Resistances2, double *Weights2, int PullDown2, int PullUp2, int Count3, const int *Resistances3, double *Weights3, int PullDown3, int PullUp3)
+static double ComputeResistorWeights(INT32 MinVal, INT32 MaxVal, double Scaler, INT32 Count1, const INT32 *Resistances1, double *Weights1, INT32 PullDown1, INT32 PullUp1,	INT32 Count2, const INT32 *Resistances2, double *Weights2, INT32 PullDown2, INT32 PullUp2, INT32 Count3, const INT32 *Resistances3, double *Weights3, INT32 PullDown3, INT32 PullUp3)
 {
-	int NetworksNum;
+	INT32 NetworksNum;
 
-	int ResCount[MAX_NETS];
+	INT32 ResCount[MAX_NETS];
 	double r[MAX_NETS][MAX_RES_PER_NET];
 	double w[MAX_NETS][MAX_RES_PER_NET];
 	double ws[MAX_NETS][MAX_RES_PER_NET];
-	int r_pd[MAX_NETS];
-	int r_pu[MAX_NETS];
+	INT32 r_pd[MAX_NETS];
+	INT32 r_pu[MAX_NETS];
 
 	double MaxOut[MAX_NETS];
 	double *Out[MAX_NETS];
 
-	int i, j, n;
+	INT32 i, j, n;
 	double Scale;
 	double Max;
 
 	NetworksNum = 0;
 	for (n = 0; n < MAX_NETS; n++) {
-		int Count, pd, pu;
-		const int *Resistances;
+		INT32 Count, pd, pu;
+		const INT32 *Resistances;
 		double *Weights;
 
 		switch (n) {
@@ -416,14 +416,14 @@ static double ComputeResistorWeights(int MinVal, int MaxVal, double Scaler, int 
 
 void GalaxianCalcPalette()
 {
-	static const int RGBResistances[3] = {1000, 470, 220};
+	static const INT32 RGBResistances[3] = {1000, 470, 220};
 	double rWeights[3], gWeights[3], bWeights[2];
 	
 	ComputeResistorWeights(0, RGB_MAXIMUM, -1.0, 3, &RGBResistances[0], rWeights, 470, 0, 3, &RGBResistances[0], gWeights, 470, 0, 2, &RGBResistances[1], bWeights, 470, 0);
 			
 	// Colour PROM
-	for (int i = 0; i < 32; i++) {
-		unsigned char Bit0, Bit1, Bit2, r, g, b;
+	for (INT32 i = 0; i < 32; i++) {
+		UINT8 Bit0, Bit1, Bit2, r, g, b;
 
 		Bit0 = BIT(GalProm[i + (GalPaletteBank * 0x20)],0);
 		Bit1 = BIT(GalProm[i + (GalPaletteBank * 0x20)],1);
@@ -443,9 +443,9 @@ void GalaxianCalcPalette()
 	}
 	
 	// Stars
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
-		int Bits, r, g, b;
-		int Map[4] = {0x00, 0x88, 0xcc, 0xff};
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
+		INT32 Bits, r, g, b;
+		INT32 Map[4] = {0x00, 0x88, 0xcc, 0xff};
 
 		Bits = (i >> 0) & 0x03;
 		r = Map[Bits];
@@ -458,7 +458,7 @@ void GalaxianCalcPalette()
 	}
 
 	// Bullets
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
 		GalPalette[i + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0xff, 0);
 	}
 	GalPalette[GAL_PALETTE_NUM_COLOURS_BULLETS - 1 + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0x00, 0);
@@ -466,14 +466,14 @@ void GalaxianCalcPalette()
 
 void RockclimCalcPalette()
 {
-	static const int RGBResistances[3] = {1000, 470, 220};
+	static const INT32 RGBResistances[3] = {1000, 470, 220};
 	double rWeights[3], gWeights[3], bWeights[2];
 	
 	ComputeResistorWeights(0, RGB_MAXIMUM, -1.0, 3, &RGBResistances[0], rWeights, 470, 0, 3, &RGBResistances[0], gWeights, 470, 0, 2, &RGBResistances[1], bWeights, 470, 0);
 			
 	// Colour PROM
-	for (int i = 0; i < 64; i++) {
-		unsigned char Bit0, Bit1, Bit2, r, g, b;
+	for (INT32 i = 0; i < 64; i++) {
+		UINT8 Bit0, Bit1, Bit2, r, g, b;
 
 		Bit0 = BIT(GalProm[i + (GalPaletteBank * 0x20)],0);
 		Bit1 = BIT(GalProm[i + (GalPaletteBank * 0x20)],1);
@@ -493,9 +493,9 @@ void RockclimCalcPalette()
 	}
 	
 	// Stars
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
-		int Bits, r, g, b;
-		int Map[4] = {0x00, 0x88, 0xcc, 0xff};
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
+		INT32 Bits, r, g, b;
+		INT32 Map[4] = {0x00, 0x88, 0xcc, 0xff};
 
 		Bits = (i >> 0) & 0x03;
 		r = Map[Bits];
@@ -508,7 +508,7 @@ void RockclimCalcPalette()
 	}
 
 	// Bullets
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
 		GalPalette[i + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0xff, 0);
 	}
 	GalPalette[GAL_PALETTE_NUM_COLOURS_BULLETS - 1 + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0x00, 0);
@@ -518,8 +518,8 @@ void MarinerCalcPalette()
 {
 	GalaxianCalcPalette();
 	
-	for (int i = 0; i < 16; i++) {
-		int b = 0x0e * BIT(i, 0) + 0x1f * BIT(i, 1) + 0x43 * BIT(i, 2) + 0x8f * BIT(i, 3);
+	for (INT32 i = 0; i < 16; i++) {
+		INT32 b = 0x0e * BIT(i, 0) + 0x1f * BIT(i, 1) + 0x43 * BIT(i, 2) + 0x8f * BIT(i, 3);
 		GalPalette[i + GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(0, 0, b, 0);
 	}
 }
@@ -528,10 +528,10 @@ void StratgyxCalcPalette()
 {
 	GalaxianCalcPalette();
 	
-	for (int i = 0; i < 8; i++) {
-		int r = BIT(i, 0) * 0x7c;
-		int g = BIT(i, 1) * 0x3c;
-		int b = BIT(i, 2) * 0x47;
+	for (INT32 i = 0; i < 8; i++) {
+		INT32 r = BIT(i, 0) * 0x7c;
+		INT32 g = BIT(i, 1) * 0x3c;
+		INT32 b = BIT(i, 2) * 0x47;
 		GalPalette[i + GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(r, g, b, 0);
 	}
 }
@@ -540,8 +540,8 @@ void RescueCalcPalette()
 {
 	GalaxianCalcPalette();
 	
-	for (int i = 0; i < 128; i++) {
-		int b = i * 2;
+	for (INT32 i = 0; i < 128; i++) {
+		INT32 b = i * 2;
 		GalPalette[i + GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(0, 0, b, 0);
 	}
 }
@@ -550,24 +550,24 @@ void MinefldCalcPalette()
 {
 	RescueCalcPalette();
 	
-	for (int i = 0; i < 128; i++) {
-		int r = (int)(i * 1.5);
-		int g = (int)(i * 0.75);
-		int b = i / 2;
+	for (INT32 i = 0; i < 128; i++) {
+		INT32 r = (INT32)(i * 1.5);
+		INT32 g = (INT32)(i * 0.75);
+		INT32 b = i / 2;
 		GalPalette[i + 128 + GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(r, g, b, 0);
 	}
 }
 
 void DarkplntCalcPalette()
 {
-	static const int RGBResistances[3] = {1000, 470, 220};
+	static const INT32 RGBResistances[3] = {1000, 470, 220};
 	double rWeights[3], gWeights[3], bWeights[2];
 	
 	ComputeResistorWeights(0, RGB_MAXIMUM, -1.0, 3, &RGBResistances[0], rWeights, 470, 0, 3, &RGBResistances[0], gWeights, 470, 0, 2, &RGBResistances[1], bWeights, 470, 0);
 			
 	// Colour PROM
-	for (int i = 0; i < 32; i++) {
-		unsigned char Bit0, Bit1, Bit2, r, g, b;
+	for (INT32 i = 0; i < 32; i++) {
+		UINT8 Bit0, Bit1, Bit2, r, g, b;
 
 		Bit0 = BIT(GalProm[i + (GalPaletteBank * 0x20)],0);
 		Bit1 = BIT(GalProm[i + (GalPaletteBank * 0x20)],1);
@@ -585,9 +585,9 @@ void DarkplntCalcPalette()
 	}
 	
 	// Stars
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
-		int Bits, r, g, b;
-		int Map[4] = {0x00, 0x88, 0xcc, 0xff};
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
+		INT32 Bits, r, g, b;
+		INT32 Map[4] = {0x00, 0x88, 0xcc, 0xff};
 
 		Bits = (i >> 0) & 0x03;
 		r = Map[Bits];
@@ -606,14 +606,14 @@ void DarkplntCalcPalette()
 
 void DambustrCalcPalette()
 {
-	static const int RGBResistances[3] = {1000, 470, 220};
+	static const INT32 RGBResistances[3] = {1000, 470, 220};
 	double rWeights[3], gWeights[3], bWeights[2];
 	
 	ComputeResistorWeights(0, RGB_MAXIMUM, -1.0, 3, &RGBResistances[0], rWeights, 470, 0, 3, &RGBResistances[0], gWeights, 470, 0, 2, &RGBResistances[1], bWeights, 470, 0);
 			
 	// Colour PROM
-	for (int i = 0; i < 32; i++) {
-		unsigned char Bit0, Bit1, Bit2, r, g, b;
+	for (INT32 i = 0; i < 32; i++) {
+		UINT8 Bit0, Bit1, Bit2, r, g, b;
 
 		Bit0 = BIT(GalProm[i + (GalPaletteBank * 0x20)],0);
 		Bit1 = BIT(GalProm[i + (GalPaletteBank * 0x20)],1);
@@ -633,9 +633,9 @@ void DambustrCalcPalette()
 	}
 	
 	// Stars
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
-		int Bits, r, g, b;
-		int Map[4] = {0x00, 0x88, 0xcc, 0xff};
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_STARS; i++) {
+		INT32 Bits, r, g, b;
+		INT32 Map[4] = {0x00, 0x88, 0xcc, 0xff};
 
 		Bits = (i >> 0) & 0x03;
 		r = Map[Bits];
@@ -648,15 +648,15 @@ void DambustrCalcPalette()
 	}
 
 	// Bullets
-	for (int i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
+	for (INT32 i = 0; i < GAL_PALETTE_NUM_COLOURS_BULLETS - 1; i++) {
 		GalPalette[i + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0xff, 0);
 	}
 	GalPalette[GAL_PALETTE_NUM_COLOURS_BULLETS - 1 + GAL_PALETTE_BULLETS_OFFSET] = BurnHighCol(0xff, 0xff, 0x00, 0);
 	
-	for (int i = 0; i < 8; i++) {
-		int r = BIT(i, 0) * 0x47;
-		int g = BIT(i, 1) * 0x47;
-		int b = BIT(i, 2) * 0x4f;
+	for (INT32 i = 0; i < 8; i++) {
+		INT32 r = BIT(i, 0) * 0x47;
+		INT32 g = BIT(i, 1) * 0x47;
+		INT32 b = BIT(i, 2) * 0x4f;
 		GalPalette[i + GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(r, g, b, 0);
 	}
 }
@@ -675,7 +675,7 @@ void GalaxianDrawBackground()
 
 void RockclimDrawBackground()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -714,14 +714,14 @@ void FroggerDrawBackground()
 	GalPalette[GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(0, 0, 0x47, 0);
 	
 	if (GalFlipScreenX) {
-		for (int y = 0; y < nScreenHeight; y++) {
-			for (int x = nScreenWidth - 1; x > 128 - 8; x--) {
+		for (INT32 y = 0; y < nScreenHeight; y++) {
+			for (INT32 x = nScreenWidth - 1; x > 128 - 8; x--) {
 				pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 			}
 		}
 	} else {
-		for (int y = 0; y < nScreenHeight; y++) {
-			for (int x = 0; x < 128 + 8; x++) {
+		for (INT32 y = 0; y < nScreenHeight; y++) {
+			for (INT32 x = 0; x < 128 + 8; x++) {
 				pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 			}
 		}
@@ -732,8 +732,8 @@ void TurtlesDrawBackground()
 {
 	GalPalette[GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(GalBackgroundRed * 0x55, GalBackgroundGreen * 0x47, GalBackgroundBlue * 0x55, 0);
 	
-	for (int y = 0; y < nScreenHeight; y++) {
-		for (int x = 0; x < nScreenWidth; x++) {
+	for (INT32 y = 0; y < nScreenHeight; y++) {
+		for (INT32 x = 0; x < nScreenWidth; x++) {
 			pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 		}
 	}
@@ -744,8 +744,8 @@ void ScrambleDrawBackground()
 	GalPalette[GAL_PALETTE_BACKGROUND_OFFSET] = BurnHighCol(0, 0, 0x56, 0);
 	
 	if (GalBackgroundEnable) {
-		for (int y = 0; y < nScreenHeight; y++) {
-			for (int x = 0; x < nScreenWidth; x++) {
+		for (INT32 y = 0; y < nScreenHeight; y++) {
+			for (INT32 x = 0; x < nScreenWidth; x++) {
 				pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 			}
 		}
@@ -760,14 +760,14 @@ void AnteaterDrawBackground()
 	
 	if (GalBackgroundEnable) {
 		if (GalFlipScreenX) {
-			for (int y = 0; y < nScreenHeight; y++) {
-				for (int x = nScreenWidth - 1; x > 256 - 56; x--) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
+				for (INT32 x = nScreenWidth - 1; x > 256 - 56; x--) {
 					pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 				}
 			}
 		} else {
-			for (int y = 0; y < nScreenHeight; y++) {
-				for (int x = 0; x < 56; x++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
+				for (INT32 x = 0; x < 56; x++) {
 					pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET;
 				}
 			}
@@ -777,12 +777,12 @@ void AnteaterDrawBackground()
 
 void MarinerDrawBackground()
 {
-	unsigned char *BgColourProm = GalProm + 0x20;
-	int x;
+	UINT8 *BgColourProm = GalProm + 0x20;
+	INT32 x;
 
 	if (GalFlipScreenX) {
 		for (x = 0; x < 32; x++) {
-			int Colour;
+			INT32 Colour;
 		
 			if (x == 0) {
 				Colour = 0;
@@ -790,16 +790,16 @@ void MarinerDrawBackground()
 				Colour = BgColourProm[0x20 + x - 1];
 			}
 		
-			int xStart = 8 * (31 - x);
-			for (int sy = 0; sy < nScreenHeight; sy++) {
-				for (int sx = xStart; sx < xStart + 8; sx++) {
+			INT32 xStart = 8 * (31 - x);
+			for (INT32 sy = 0; sy < nScreenHeight; sy++) {
+				for (INT32 sx = xStart; sx < xStart + 8; sx++) {
 					pTransDraw[(sy * nScreenWidth) + sx] = GAL_PALETTE_BACKGROUND_OFFSET + Colour;
 				}
 			}
 		}
 	} else {
 		for (x = 0; x < 32; x++) {
-			int Colour;
+			INT32 Colour;
 		
 			if (x == 31) {
 				Colour = 0;
@@ -807,9 +807,9 @@ void MarinerDrawBackground()
 				Colour = BgColourProm[x + 1];
 			}
 		
-			int xStart = x * 8;
-			for (int sy = 0; sy < nScreenHeight; sy++) {
-				for (int sx = xStart; sx < xStart + 8; sx++) {
+			INT32 xStart = x * 8;
+			for (INT32 sy = 0; sy < nScreenHeight; sy++) {
+				for (INT32 sx = xStart; sx < xStart + 8; sx++) {
 					pTransDraw[(sy * nScreenWidth) + sx] = GAL_PALETTE_BACKGROUND_OFFSET + Colour;
 				}
 			}
@@ -821,10 +821,10 @@ void MarinerDrawBackground()
 
 void StratgyxDrawBackground()
 {
-	unsigned char *BgColourProm = GalProm + 0x20;
+	UINT8 *BgColourProm = GalProm + 0x20;
 	
-	for (int x = 0; x < 32; x++) {
-		int xStart, Colour = 0;
+	for (INT32 x = 0; x < 32; x++) {
+		INT32 xStart, Colour = 0;
 
 		if ((~BgColourProm[x] & 0x02) && GalBackgroundRed)   Colour |= 0x01;
 		if ((~BgColourProm[x] & 0x02) && GalBackgroundGreen) Colour |= 0x02;
@@ -836,8 +836,8 @@ void StratgyxDrawBackground()
 			xStart = 8 * x;
 		}
 		
-		for (int sy = 0; sy < nScreenHeight; sy++) {
-			for (int sx = xStart; sx < xStart + 8; sx++) {
+		for (INT32 sy = 0; sy < nScreenHeight; sy++) {
+			for (INT32 sx = xStart; sx < xStart + 8; sx++) {
 				pTransDraw[(sy * nScreenWidth) + sx] = GAL_PALETTE_BACKGROUND_OFFSET + Colour;
 			}
 		}
@@ -847,22 +847,22 @@ void StratgyxDrawBackground()
 void RescueDrawBackground()
 {
 	if (GalBackgroundEnable) {
-		int x;
+		INT32 x;
 
 		for (x = 0; x < 128; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET + x;
 			}
 		}
 		
 		for (x = 0; x < 120; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + (x + 128)] = GAL_PALETTE_BACKGROUND_OFFSET + x + 8;
 			}
 		}
 		
 		for (x = 0; x < 8; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + (x + 248)] = GAL_PALETTE_BACKGROUND_OFFSET;
 			}
 		}
@@ -874,22 +874,22 @@ void RescueDrawBackground()
 void MinefldDrawBackground()
 {
 	if (GalBackgroundEnable) {
-		int x;
+		INT32 x;
 
 		for (x = 0; x < 128; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET + x;
 			}
 		}
 		
 		for (x = 0; x < 120; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + (x + 128)] = GAL_PALETTE_BACKGROUND_OFFSET + x + 128;
 			}
 		}
 		
 		for (x = 0; x < 8; x++) {
-			for (int y = 0; y < nScreenHeight; y++) {
+			for (INT32 y = 0; y < nScreenHeight; y++) {
 				pTransDraw[(y * nScreenWidth) + (x + 248)] = GAL_PALETTE_BACKGROUND_OFFSET;
 			}
 		}
@@ -900,19 +900,19 @@ void MinefldDrawBackground()
 
 void DambustrDrawBackground()
 {
-	int xClipStart = GalFlipScreenX ? 254 - DambustrBgSplitLine : 0;
-	int xClipEnd = GalFlipScreenX ? 0 : 254 - DambustrBgSplitLine;
+	INT32 xClipStart = GalFlipScreenX ? 254 - DambustrBgSplitLine : 0;
+	INT32 xClipEnd = GalFlipScreenX ? 0 : 254 - DambustrBgSplitLine;
 	
-	for (int x = 0; x < 256 - DambustrBgSplitLine; x++) {
+	for (INT32 x = 0; x < 256 - DambustrBgSplitLine; x++) {
 		if (DambustrBgPriority && (x < xClipStart || x > xClipEnd)) continue;
-		for (int y = 0; y < nScreenHeight; y++) {
+		for (INT32 y = 0; y < nScreenHeight; y++) {
 			pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET + ((GalFlipScreenX) ? DambustrBgColour2 : DambustrBgColour1);
 		}
 	}
 	
-	for (int x = 255; x > 256 - DambustrBgSplitLine; x--) {
+	for (INT32 x = 255; x > 256 - DambustrBgSplitLine; x--) {
 		if (DambustrBgPriority && (x < xClipStart || x > xClipEnd)) continue;
-		for (int y = 0; y < nScreenHeight; y++) {
+		for (INT32 y = 0; y < nScreenHeight; y++) {
 			pTransDraw[(y * nScreenWidth) + x] = GAL_PALETTE_BACKGROUND_OFFSET + ((GalFlipScreenX) ? DambustrBgColour1 : DambustrBgColour2);
 		}
 	}
@@ -921,10 +921,10 @@ void DambustrDrawBackground()
 }
 
 // Char Layer rendering
-static void GalRenderBgLayer(unsigned char *pVideoRam)
+static void GalRenderBgLayer(UINT8 *pVideoRam)
 {
-	int mx, my, Attr, Colour, x, y, TileIndex = 0, RamPos;
-	unsigned short Code;
+	INT32 mx, my, Attr, Colour, x, y, TileIndex = 0, RamPos;
+	UINT16 Code;
 	
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -948,20 +948,20 @@ static void GalRenderBgLayer(unsigned char *pVideoRam)
 			if (GalFlipScreenX) x = nScreenWidth - 8 - x;
 			if (GalFlipScreenY) y = nScreenHeight - 8 - y;
 		
-			int px, py;
+			INT32 px, py;
 		
 			UINT32 nPalette = Colour << GalColourDepth;
 		
 			for (py = 0; py < 8; py++) {
 				for (px = 0; px < 8; px++) {
-					unsigned char c = GalChars[(Code * 64) + (py * 8) + px];
+					UINT8 c = GalChars[(Code * 64) + (py * 8) + px];
 					if (GalFlipScreenX) c = GalChars[(Code * 64) + (py * 8) + (7 - px)];
 					if (GalFlipScreenY) c = GalChars[(Code * 64) + ((7 - py) * 8) + px];
 					if (GalFlipScreenX && GalFlipScreenY) c = GalChars[(Code * 64) + ((7 - py) * 8) + (7 - px)];
 				
 					if (c) {
-						int xPos = x + px;
-						int yPos = y + py;
+						INT32 xPos = x + px;
+						INT32 yPos = y + py;
 					
 						if (SfxTilemap) {
 							if (GalFlipScreenX) {
@@ -988,7 +988,7 @@ static void GalRenderBgLayer(unsigned char *pVideoRam)
 						}
 					
 						if (yPos >= 0 && yPos < nScreenHeight) {					
-							unsigned short* pPixel = pTransDraw + (yPos * nScreenWidth);
+							UINT16* pPixel = pTransDraw + (yPos * nScreenWidth);
 						
 							if (xPos >= 0 && xPos < nScreenWidth) {
 								pPixel[xPos] = c | nPalette;
@@ -1004,22 +1004,22 @@ static void GalRenderBgLayer(unsigned char *pVideoRam)
 }
 
 // Sprite Rendering
-static void GalRenderSprites(const unsigned char *SpriteBase)
+static void GalRenderSprites(const UINT8 *SpriteBase)
 {
-	int SprNum;
-	int ClipOfs = GalFlipScreenX ? 16 : 0;
-	int xMin = GalSpriteClipStart - ClipOfs;
-	int xMax = GalSpriteClipEnd - ClipOfs + 1;
+	INT32 SprNum;
+	INT32 ClipOfs = GalFlipScreenX ? 16 : 0;
+	INT32 xMin = GalSpriteClipStart - ClipOfs;
+	INT32 xMax = GalSpriteClipEnd - ClipOfs + 1;
 	
 	for (SprNum = 7; SprNum >= 0; SprNum--) {
-		const unsigned char *Base = &SpriteBase[SprNum * 4];
-		unsigned char Base0 = FroggerAdjust ? ((Base[0] >> 4) | (Base[0] << 4)) : Base[0];
-		int sy = 240 - (Base0 - (SprNum < 3));
-		unsigned short Code = Base[1] & 0x3f;
-		unsigned char xFlip = Base[1] & 0x40;
-		unsigned char yFlip = Base[1] & 0x80;
-		unsigned char Colour = Base[2] & ((GalColourDepth == 3) ? 0x03 : 0x07);
-		int sx = Base[3];
+		const UINT8 *Base = &SpriteBase[SprNum * 4];
+		UINT8 Base0 = FroggerAdjust ? ((Base[0] >> 4) | (Base[0] << 4)) : Base[0];
+		INT32 sy = 240 - (Base0 - (SprNum < 3));
+		UINT16 Code = Base[1] & 0x3f;
+		UINT8 xFlip = Base[1] & 0x40;
+		UINT8 yFlip = Base[1] & 0x80;
+		UINT8 Colour = Base[2] & ((GalColourDepth == 3) ? 0x03 : 0x07);
+		INT32 sx = Base[3];
 
 		if (GalExtendSpriteInfoFunction) GalExtendSpriteInfoFunction(Base, &sx, &sy, &xFlip, &yFlip, &Code, &Colour);
 		
@@ -1075,14 +1075,14 @@ static void GalRenderSprites(const unsigned char *SpriteBase)
 }
 
 // Bullet rendering
-static inline void GalDrawPixel(int x, int y, int Colour)
+static inline void GalDrawPixel(INT32 x, INT32 y, INT32 Colour)
 {
 	if (y >= 0 && y < nScreenHeight && x >= 0 && x < nScreenWidth) {
 		pTransDraw[(y * nScreenWidth) + x] = Colour;
 	}
 }
 
-void GalaxianDrawBullets(int Offs, int x, int y)
+void GalaxianDrawBullets(INT32 Offs, INT32 x, INT32 y)
 {
 	x -= 4;
 	
@@ -1092,7 +1092,7 @@ void GalaxianDrawBullets(int Offs, int x, int y)
 	GalDrawPixel(x++, y, GAL_PALETTE_BULLETS_OFFSET + Offs);
 }
 
-void TheendDrawBullets(int Offs, int x, int y)
+void TheendDrawBullets(INT32 Offs, INT32 x, INT32 y)
 {
 	x -= 4;
 	
@@ -1104,14 +1104,14 @@ void TheendDrawBullets(int Offs, int x, int y)
 	GalDrawPixel(x++, y, GAL_PALETTE_BULLETS_OFFSET + Offs);
 }
 
-void ScrambleDrawBullets(int, int x, int y)
+void ScrambleDrawBullets(INT32, INT32 x, INT32 y)
 {
 	x -= 6;
 	
 	GalDrawPixel(x, y, GAL_PALETTE_BULLETS_OFFSET + 7);
 }
 
-void MoonwarDrawBullets(int, int x, int y)
+void MoonwarDrawBullets(INT32, INT32 x, INT32 y)
 {
 	x -= 6;
 	
@@ -1120,7 +1120,7 @@ void MoonwarDrawBullets(int, int x, int y)
 	GalDrawPixel(x, y, GAL_PALETTE_BULLETS_OFFSET + 7);
 }
 
-void MshuttleDrawBullets(int, int x, int y)
+void MshuttleDrawBullets(INT32, INT32 x, INT32 y)
 {
 	GalPalette[GAL_PALETTE_BULLETS_OFFSET + 0] = BurnHighCol(0xff, 0xff, 0xff, 0);
 	GalPalette[GAL_PALETTE_BULLETS_OFFSET + 1] = BurnHighCol(0xff, 0xff, 0x00, 0);
@@ -1141,7 +1141,7 @@ void MshuttleDrawBullets(int, int x, int y)
 	GalDrawPixel(x, y, ((x & 0x40) == 0) ? GAL_PALETTE_BULLETS_OFFSET +  + ((x >> 2) & 7) : GAL_PALETTE_BULLETS_OFFSET +  + 4);
 }
 
-void DarkplntDrawBullets(int, int x, int y)
+void DarkplntDrawBullets(INT32, INT32 x, INT32 y)
 {
 	if (GalFlipScreenX) x++;
 	
@@ -1150,15 +1150,15 @@ void DarkplntDrawBullets(int, int x, int y)
 	GalDrawPixel(x, y, GAL_PALETTE_BULLETS_OFFSET + DarkplntBulletColour);
 }
 
-void DambustrDrawBullets(int Offs, int x, int y)
+void DambustrDrawBullets(INT32 Offs, INT32 x, INT32 y)
 {
-	int Colour;
+	INT32 Colour;
 	
 	if (GalFlipScreenX) x++;
 	
 	x -= 6;
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		if (Offs < 16) {
 			Colour = GAL_PALETTE_BULLETS_OFFSET + 7;
 			y--;
@@ -1171,24 +1171,24 @@ void DambustrDrawBullets(int Offs, int x, int y)
 	GalDrawPixel(x, y, Colour);
 }
 
-static void GalDrawBullets(const unsigned char *Base)
+static void GalDrawBullets(const UINT8 *Base)
 {
-	for (int y = 0; y < nScreenHeight; y++) {
-		unsigned char Shell = 0xff;
-		unsigned char Missile = 0xff;
-		unsigned char yEff;
-		int Which;
+	for (INT32 y = 0; y < nScreenHeight; y++) {
+		UINT8 Shell = 0xff;
+		UINT8 Missile = 0xff;
+		UINT8 yEff;
+		INT32 Which;
 		
 		yEff = (GalFlipScreenY) ? (y + 16 - 1) ^ 255 : y + 16 - 1;
 		
 		for (Which = 0; Which < 3; Which++) {
-			if ((unsigned char)(Base[Which * 4 + 1] + yEff) == 0xff) Shell = Which;
+			if ((UINT8)(Base[Which * 4 + 1] + yEff) == 0xff) Shell = Which;
 		}
 		
 		yEff = (GalFlipScreenY) ? (y + 16) ^ 255 : y + 16;
 		
 		for (Which = 3; Which < 8; Which++) {
-			if ((unsigned char)(Base[Which * 4 + 1] + yEff) == 0xff) {
+			if ((UINT8)(Base[Which * 4 + 1] + yEff) == 0xff) {
 				if (Which != 7) {
 					Shell = Which;
 				} else {
@@ -1243,13 +1243,24 @@ void DambustrRenderFrame()
 	if (DambustrBgPriority) {
 		if (GalRenderBackgroundFunction) GalRenderBackgroundFunction();
 		memset(GalVideoRam2, 0x20, 0x400);
-		for (int i = 0; i < 32; i++) {
-			int Colour = GalSpriteRam[(i << 1) | 1] & 7;
+		for (INT32 i = 0; i < 32; i++) {
+			INT32 Colour = GalSpriteRam[(i << 1) | 1] & 7;
 			if (Colour > 3) {
-				for (int j = 0; j < 32; j++) GalVideoRam2[(32 * j) + i] = GalVideoRam[(32 * j) + i];
+				for (INT32 j = 0; j < 32; j++) GalVideoRam2[(32 * j) + i] = GalVideoRam[(32 * j) + i];
 			}
 		}
 		GalRenderBgLayer(GalVideoRam2);
 	}	
+	BurnTransferCopy(GalPalette);
+}
+
+void FantastcRenderFrame()
+{
+	BurnTransferClear();
+	GalCalcPaletteFunction();
+	if (GalRenderBackgroundFunction) GalRenderBackgroundFunction();
+	GalRenderBgLayer(GalVideoRam);
+	GalRenderSprites(&GalSpriteRam[0x40]);
+	if (GalDrawBulletsFunction) GalDrawBullets(&GalSpriteRam[0xc0]);
 	BurnTransferCopy(GalPalette);
 }

@@ -2,6 +2,7 @@
 // Based on code by Zsolt Vasvari
 
 #include "burnint.h"
+#include "zet.h"
 #include "driver.h"
 #include "dac.h"
 extern "C" {
@@ -10,17 +11,17 @@ extern "C" {
 
 //------------------------------------------------------------------------------------------------
 
-static int draw_type;
-static unsigned char *Mem = NULL;
-static unsigned char *Rom0, *Rom1, *Prom;
+static INT32 draw_type;
+static UINT8 *Mem = NULL;
+static UINT8 *Rom0, *Rom1, *Prom;
 
-static unsigned char flipscreen, palette_1, palette_2, ttmahjng_port_select;
-static int speakres_vrx;
+static UINT8 flipscreen, palette_1, palette_2, ttmahjng_port_select;
+static INT32 speakres_vrx;
 
-static short *pAY8910Buffer[3];
-static short *pFMBuffer = NULL;
+static INT16 *pAY8910Buffer[3];
+static INT16 *pFMBuffer = NULL;
 
-static unsigned char  DrvJoy1[24], DrvJoy2[8], Dips, DrvReset;
+static UINT8  DrvJoy1[24], DrvJoy2[8], Dips, DrvReset;
 
 //------------------------------------------------------------------------------------------------
 
@@ -184,28 +185,28 @@ STDDIPINFO(speakres)
 
 //------------------------------------------------------------------------------------------------
 
-static unsigned char ttmahjng_input_port_matrix_r()
+static UINT8 ttmahjng_input_port_matrix_r()
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (ttmahjng_port_select)
 	{
 		case 1: {
-			for (int i = 0; i < 5; i++) ret |= DrvJoy1[ 3 + i] << i;
+			for (INT32 i = 0; i < 5; i++) ret |= DrvJoy1[ 3 + i] << i;
 			ret |= DrvJoy1[1] << 5;
 		}
 		break;
 		case 2:	{
-			for (int i = 0; i < 5; i++) ret |= DrvJoy1[ 8 + i] << i;
+			for (INT32 i = 0; i < 5; i++) ret |= DrvJoy1[ 8 + i] << i;
 			ret |= DrvJoy1[2] << 5;
 		}
 		break;
 		case 4:	{
-			for (int i = 0; i < 5; i++) ret |= DrvJoy1[13 + i] << i;
+			for (INT32 i = 0; i < 5; i++) ret |= DrvJoy1[13 + i] << i;
 		}
 		break;
 		case 8:	{
-			for (int i = 0; i < 4; i++) ret |= DrvJoy1[18 + i] << i;
+			for (INT32 i = 0; i < 4; i++) ret |= DrvJoy1[18 + i] << i;
 		}
 		break;
 		default: break;
@@ -215,9 +216,9 @@ static unsigned char ttmahjng_input_port_matrix_r()
 }
 
 
-unsigned char __fastcall route16_cpu0_read(unsigned short offset)
+UINT8 __fastcall route16_cpu0_read(UINT16 offset)
 {
-	unsigned char nRet = 0;
+	UINT8 nRet = 0;
 
 	switch (offset)
 	{
@@ -260,7 +261,7 @@ unsigned char __fastcall route16_cpu0_read(unsigned short offset)
 
 		case 0x6000: // 	speakres
 		{
-			int bit2=4, bit1=2, bit0=1;
+			INT32 bit2=4, bit1=2, bit0=1;
 
 			// just using a counter, the constants are the number of reads
 			// before going low, each read is 40 cycles apart. the constants
@@ -286,7 +287,7 @@ unsigned char __fastcall route16_cpu0_read(unsigned short offset)
 }
 
 
-void __fastcall route16_cpu0_write(unsigned short offset, unsigned char data)
+void __fastcall route16_cpu0_write(UINT16 offset, UINT8 data)
 {
 	if (offset >= 0x4000 && offset < 0x4400) {
 		Rom0[offset] = data;
@@ -305,8 +306,7 @@ void __fastcall route16_cpu0_write(unsigned short offset, unsigned char data)
 	switch (offset)
 	{
 		case 0x2800:			// stratvox
-			// DAC_0_data_w
-			DACWrite(data >> 1);
+			DACWrite(0, data);
 		break;
 
 		case 0x4800:
@@ -333,7 +333,7 @@ void __fastcall route16_cpu0_write(unsigned short offset, unsigned char data)
 	}
 }
 
-void __fastcall route16_cpu0_out(unsigned short offset, unsigned char data)
+void __fastcall route16_cpu0_out(UINT16 offset, UINT8 data)
 {
 	switch (offset & 0x1ff)
 	{
@@ -348,15 +348,15 @@ void __fastcall route16_cpu0_out(unsigned short offset, unsigned char data)
 }
 
 
-static int GetRoms()
+static INT32 GetRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *Rom0Load = Rom0;
-	unsigned char *Rom1Load = Rom1;
-	unsigned char *PromLoad = Prom;
+	UINT8 *Rom0Load = Rom0;
+	UINT8 *Rom1Load = Rom1;
+	UINT8 *PromLoad = Prom;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -383,7 +383,7 @@ static int GetRoms()
 }
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	flipscreen = palette_1 = palette_2 = ttmahjng_port_select = 0;
 	speakres_vrx = 0;
@@ -405,19 +405,24 @@ static int DrvDoReset()
 	return 0;
 }
 
-void stratvox_sn76477_write(unsigned int, unsigned int)
+void stratvox_sn76477_write(UINT32, UINT32)
 {
 
 }
 
-static int DrvInit()
+static INT32 DrvSyncDAC()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x200);
+	return (INT32)(float)(nBurnSoundLen * (ZetTotalCycles() / (2500000.000 / (nBurnFPS / 100.000))));
+}
+
+static INT32 DrvInit()
+{
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x200);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -429,7 +434,7 @@ static int DrvInit()
 	// Load Roms
 	if (GetRoms()) return 1;
 
-	ZetInit(2);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetOutHandler(route16_cpu0_out);
 	ZetSetReadHandler(route16_cpu0_read);
@@ -442,6 +447,7 @@ static int DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetWriteHandler(route16_cpu0_write);
 	ZetMapArea (0x0000, 0x1fff, 0, Rom1 + 0x0000); // ROM
@@ -456,9 +462,10 @@ static int DrvInit()
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
 	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
 
-	DACInit(0, 1);
-
 	AY8910Init(0, 1250000, nBurnSoundRate, NULL, NULL, &stratvox_sn76477_write, NULL);
+	
+	DACInit(0, 0, 1, DrvSyncDAC);
+	DACSetVolShift(0, 2);
 
 	DrvDoReset();
 
@@ -466,14 +473,14 @@ static int DrvInit()
 }
 
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	DACExit();
 	ZetExit();
 	AY8910Exit(0);
 
-	free (Mem);
-	free (pFMBuffer);
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	draw_type = 0;
 
@@ -489,9 +496,9 @@ static int DrvExit()
 //------------------------------------------------------------------------------------------------
 // Drawing functions
 
-static inline unsigned int route16_make_pen(unsigned char color)
+static inline UINT32 route16_make_pen(UINT8 color)
 {
-	unsigned int ret = 0;
+	UINT32 ret = 0;
 	if (color & 1) ret |= 0x00ff0000;
 	if (color & 2) ret |= 0x0000ff00;
 	if (color & 4) ret |= 0x000000ff;
@@ -499,9 +506,9 @@ static inline unsigned int route16_make_pen(unsigned char color)
 }
 
 
-static inline unsigned int ttmajng_make_pen(unsigned char color)
+static inline UINT32 ttmajng_make_pen(UINT8 color)
 {
-	unsigned int ret = 0;
+	UINT32 ret = 0;
 	if (color & 4) ret |= 0x00ff0000;
 	if (color & 2) ret |= 0x0000ff00;
 	if (color & 1) ret |= 0x000000ff;
@@ -509,22 +516,22 @@ static inline unsigned int ttmajng_make_pen(unsigned char color)
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	unsigned char *prom1 = Prom + 0x0000;
-	unsigned char *prom2 = Prom + 0x0100;
+	UINT8 *prom1 = Prom + 0x0000;
+	UINT8 *prom2 = Prom + 0x0100;
 
-	for (int offs = 0; offs < 0x4000; offs++)
+	for (INT32 offs = 0; offs < 0x4000; offs++)
 	{
-		unsigned char y = offs >> 6;
-		unsigned char x = offs << 2;
+		UINT8 y = offs >> 6;
+		UINT8 x = offs << 2;
 
-		unsigned char d1 = Rom0[0x8000 + offs];
-		unsigned char d2 = Rom1[0x8000 + offs];
+		UINT8 d1 = Rom0[0x8000 + offs];
+		UINT8 d2 = Rom1[0x8000 + offs];
 
-		for (int i = 0; i < 4; i++)
+		for (INT32 i = 0; i < 4; i++)
 		{
-			unsigned char color1, color2;
+			UINT8 color1, color2;
 
 			// stratvox & ttmahjng
 			if (draw_type) {
@@ -535,9 +542,9 @@ static int DrvDraw()
 				color2 = prom2[((palette_2 << 6) & 0x80) | (((color1 << 6) & 0x80) | ((color1 << 7) & 0x80)) | (palette_2 << 2) | ((d2 >> 3) & 2) | (d2 & 1)];
 			}
 
-			unsigned char final_color = color1 | color2;
+			UINT8 final_color = color1 | color2;
 
-			unsigned int pen;
+			UINT32 pen;
 			if (draw_type == 1) {
 				pen = ttmajng_make_pen(final_color);
 			} else {
@@ -559,24 +566,31 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	
+	INT32 DACIRQFireSlice[48];
+	for (INT32 i = 0; i < 48; i++) {
+		DACIRQFireSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 49));
+	}
 
-	int nCyclesSegment;
-	int nCyclesDone[2], nCyclesTotal[2];
+	INT32 nCyclesSegment;
+	INT32 nCyclesDone[2], nCyclesTotal[2];
 
 	nCyclesTotal[0] = 2500000 / 60;
 	nCyclesTotal[1] = 2500000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
+	
+	ZetNewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #0
 		nCurrentCPU = 0;
@@ -594,68 +608,60 @@ static int DrvFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 9 && draw_type == 3) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO); // space echo
+		if (draw_type == 3) { // space echo
+			for (INT32 j = 0; j < 48; j++) {
+				if (i == DACIRQFireSlice[j]) {
+					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+				}
+			}
+		}
 		ZetClose();
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
 			}
-
-			DACUpdate(pSoundBuf, nSegmentLength);
-
+			
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
 			}
 		}
-
-		DACUpdate(pSoundBuf, nSegmentLength);
+		
+		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	if (pBurnDraw) {
@@ -669,7 +675,7 @@ static int DrvFrame()
 //------------------------------------------------------------------------------------------------
 // Savestates
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -737,9 +743,9 @@ static struct BurnRomInfo route16RomDesc[] = {
 STD_ROM_PICK(route16)
 STD_ROM_FN(route16)
 
-static int route16Init()
+static INT32 route16Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	draw_type = 0;
 
@@ -790,9 +796,9 @@ static struct BurnRomInfo route16aRomDesc[] = {
 STD_ROM_PICK(route16a)
 STD_ROM_FN(route16a)
 
-static int route16aInit()
+static INT32 route16aInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	draw_type = 0;
 
@@ -852,7 +858,7 @@ static struct BurnRomInfo route16bRomDesc[] = {
 STD_ROM_PICK(route16b)
 STD_ROM_FN(route16b)
 
-static int route16bInit()
+static INT32 route16bInit()
 {
 	draw_type = 0;
 
@@ -924,7 +930,7 @@ static struct BurnRomInfo speakresRomDesc[] = {
 STD_ROM_PICK(speakres)
 STD_ROM_FN(speakres)
 
-static int speakresInit()
+static INT32 speakresInit()
 {
 	draw_type = 2;
 
@@ -1025,9 +1031,9 @@ static struct BurnRomInfo spacechoRomDesc[] = {
 STD_ROM_PICK(spacecho)
 STD_ROM_FN(spacecho)
 
-static int spacechoInit()
+static INT32 spacechoInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	draw_type = 3;
 
@@ -1068,7 +1074,7 @@ static struct BurnRomInfo ttmahjngRomDesc[] = {
 STD_ROM_PICK(ttmahjng)
 STD_ROM_FN(ttmahjng)
 
-static int ttmahjngInit()
+static INT32 ttmahjngInit()
 {
 	draw_type = 1;
 

@@ -40,7 +40,7 @@ TCHAR szAppExeName[EXE_NAME_SIZE + 1];
 bool bCmdOptUsed = 0;
 bool bAlwaysProcessKeyboardInput = false;
 
-bool bNoChangeNumLock = 0;
+bool bNoChangeNumLock = 1;
 static bool bNumlockStatus;
 
 bool bMonitorAutoCheck = true;
@@ -118,7 +118,10 @@ CHAR *astring_from_utf8(const char *utf8string)
 	if (result != NULL)
 		WideCharToMultiByte(CP_ACP, 0, wstring, -1, result, char_count, NULL, NULL);
 
-	free(wstring);
+	if (wstring) {
+		free(wstring);
+		wstring = NULL;
+	}
 	return result;
 }
 
@@ -139,7 +142,10 @@ char *utf8_from_astring(const CHAR *astring)
 	if (result != NULL)
 		WideCharToMultiByte(CP_UTF8, 0, wstring, -1, result, char_count, NULL, NULL);
 
-	free(wstring);
+	if (wstring) {
+		free(wstring);
+		wstring = NULL;
+	}
 	return result;
 }
 
@@ -491,11 +497,15 @@ static int AppInit()
 
 	// Create a handle to the main thread of execution
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, false, DUPLICATE_SAME_ACCESS);
-
+	
+	// Init the Burn library
+	BurnLibInit();
+	
 	// Load config for the application
 	ConfigAppLoad();
 
 	FBALocaliseInit(szLocalisationTemplate);
+	BurnerDoGameListLocalisation();
 
 	if (bMonitorAutoCheck) MonitorAutoCheck();
 
@@ -519,9 +529,6 @@ static int AppInit()
 	SDL_Init(0);
 #endif
 
-	// Init the Burn library
-	BurnLibInit();
-
 	ComputeGammaLUT();
 
 	if (VidSelect(nVidSelect)) {
@@ -540,12 +547,24 @@ static int AppInit()
 #endif
 
 	bNumlockStatus = SetNumLock(false);
+	
+	if(bEnableIcons && !bIconsLoaded) {
+		// load driver icons
+		LoadDrvIcons();
+		bIconsLoaded = 1;
+	}
 
 	return 0;
 }
 
 static int AppExit()
 {
+	if(bIconsLoaded) {
+		// unload driver icons
+		UnloadDrvIcons();
+		bIconsLoaded = 0;
+	}
+	
 	SetNumLock(bNumlockStatus);
 
 	DrvExit();						// Make sure any game driver is exitted
@@ -558,6 +577,7 @@ static int AppExit()
 #endif
 
 	FBALocaliseExit();
+	BurnerExitGameListLocalisation();
 
 	if (hAccel) {
 		DestroyAcceleratorTable(hAccel);
@@ -636,17 +656,27 @@ int ProcessCmdLine()
 
 	if (_tcslen(szName)) {
 		if (_tcscmp(szName, _T("-listinfo")) == 0) {
-			write_datfile(0, stdout);
-			return 1;
-		}
-		
-		if (_tcscmp(szName, _T("-listinfowithmd")) == 0) {
-			write_datfile(1, stdout);
+			write_datfile(DAT_ARCADE_ONLY, stdout);
 			return 1;
 		}
 		
 		if (_tcscmp(szName, _T("-listinfomdonly")) == 0) {
-			write_datfile(2, stdout);
+			write_datfile(DAT_MEGADRIVE_ONLY, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listinfopceonly")) == 0) {
+			write_datfile(DAT_PCENGINE_ONLY, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listinfotg16only")) == 0) {
+			write_datfile(DAT_TG16_ONLY, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listinfosgxonly")) == 0) {
+			write_datfile(DAT_SGX_ONLY, stdout);
 			return 1;
 		}
 		
@@ -656,7 +686,7 @@ int ProcessCmdLine()
 			int nAspectX;
 			int nAspectY;
 			for (i = 0; i < nBurnDrvCount; i++) {
-				nBurnDrvSelect = i;
+				nBurnDrvActive = i;
 				BurnDrvGetVisibleSize(&nWidth, &nHeight);
 				BurnDrvGetAspect(&nAspectX, &nAspectY);
 				printf("%s\t%ix%i\t%i:%i\t0x%08X\t\"%s\"\t%i\t%i\t%x\t%x\t\"%s\"\n", BurnDrvGetTextA(DRV_NAME), nWidth, nHeight, nAspectX, nAspectY, BurnDrvGetHardwareCode(), BurnDrvGetTextA(DRV_SYSTEM), BurnDrvIsWorking(), BurnDrvGetMaxPlayers(), BurnDrvGetGenreFlags(), BurnDrvGetFamilyFlags(), BurnDrvGetTextA(DRV_COMMENT));
@@ -707,8 +737,8 @@ int ProcessCmdLine()
 				}
 			} else {
 				for (i = 0; i < nBurnDrvCount; i++) {
-					nBurnDrvSelect = i;
-					if (_tcscmp(BurnDrvGetText(DRV_NAME), szName) == 0) {
+					nBurnDrvActive = i;
+					if ((_tcscmp(BurnDrvGetText(DRV_NAME), szName) == 0) && (!(BurnDrvGetFlags() & BDF_BOARDROM))){
 						MediaInit();
 						DrvInit(i, true);
 						break;
@@ -735,6 +765,11 @@ int ProcessCmdLine()
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
+	DSCore_Init();
+	DICore_Init();
+	DDCore_Init();
+	Dx9Core_Init();
+
 	// Try to initiate DWMAPI.DLL on Windows 7
 	if(IsWindows7()) {
 		InitDWMAPI();
@@ -763,24 +798,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	AppDirectory();								// Set current directory to be the applications directory
 
 	// Make sure there are roms and cfg subdirectories
-	TCHAR szDirs[14][MAX_PATH] = {
+	TCHAR szDirs[19][MAX_PATH] = {
 		{_T("config")},
-		{_T("config\\games")},
-		{_T("config\\localisation")},
-		{_T("config\\presets")},
+		{_T("config/games")},
+		{_T("config/ips")},
+		{_T("config/localisation")},
+		{_T("config/presets")},
 		{_T("recordings")},
 		{_T("ROMs")},
 		{_T("savestates")},
 		{_T("screenshots")},
-		{_T("support\\")},
-		{_T("support\\previews\\")},
-		{_T("support\\titles\\")},
-		{_T("support\\cheats\\")},
-		{_T("support\\hiscores\\")},
-		{_T("support\\samples\\")},
+		{_T("support/")},
+		{_T("support/previews/")},
+		{_T("support/titles/")},
+		{_T("support/icons/")},
+		{_T("support/cheats/")},
+		{_T("support/hiscores/")},
+		{_T("support/samples/")},
+		{_T("support/ips/")},
+		{_T("support/neocdz/")},
+		{_T("neocdiso/")},
 	};
 
-	for(int x = 0; x < 14; x++) {
+	for(int x = 0; x < 19; x++) {
 		CreateDirectory(szDirs[x], NULL);
 	}
 
@@ -805,10 +845,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 			RunMessageLoop();					// Run the application message loop
 		}
 	}
-
-	AppExit();									// Exit the application
 	
 	ConfigAppSave();							// Save config for the application
+
+	AppExit();									// Exit the application	
 
 	return 0;
 }

@@ -6,50 +6,53 @@
  ********************************************************************************/
 
 #include "tiles_generic.h"
+#include "sek.h"
 #include "burn_gun.h"
 #include "eeprom.h"
 #include "x1010.h"
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-static unsigned char *Rom68K;
-static unsigned char *RomGfx;
+static UINT8 *Rom68K;
+static UINT8 *RomGfx;
 
-static unsigned char *Ram68K;
-static unsigned char *RamUnknown;
+static UINT8 *Ram68K;
+static UINT8 *RamUnknown;
+static UINT8 *RamNV;
 
-static unsigned short *RamSpr;
-static unsigned short *RamSprBak;
-static unsigned short *RamPal;
-static unsigned int *CurPal;
-static unsigned short *RamTMP68301;
-static unsigned short *RamVReg;
+static UINT16 *RamSpr;
+static UINT16 *RamSprBak;
+static UINT16 *RamPal;
+static UINT32 *CurPal;
+static UINT16 *RamTMP68301;
+static UINT16 *RamVReg;
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy5[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static int DrvAxis[4];
-static unsigned char DrvAnalogInput[4];
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy5[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static INT32 DrvAxis[4];
+static UINT8 DrvAnalogInput[4];
 
-static unsigned char DrvReset = 0;
-static unsigned char bRecalcPalette = 0;
+static UINT8 DrvReset = 0;
+static UINT8 bRecalcPalette = 0;
 
-static unsigned int gfx_code_mask;
-//static unsigned char bMahjong = 0;
-static unsigned char Mahjong_keyboard = 0;
+static UINT32 gfx_code_mask;
+//static UINT8 bMahjong = 0;
+static UINT8 Mahjong_keyboard = 0;
+static UINT8 HasNVRam;
 
-static int yoffset;
-static int sva_x;
-static int sva_y;
+static INT32 yoffset;
+static INT32 sva_x;
+static INT32 sva_y;
 
 #define M68K_CYCS	50000000 / 3
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo grdiansInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 0,	"p1 coin"},
@@ -589,8 +592,8 @@ static struct BurnInputInfo DeerhuntInputList[] = {
 	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
 	A("P1 Up / Down",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse y-axis"),
 
-	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 fire 1"},
-	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 fire 2"},
+	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"mouse button 1"},
+	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 1,	"mouse button 2"},
 	{"P1 Button 3",		BIT_DIGITAL,	DrvJoy3 + 6,	"p1 fire 3"},
 	{"P1 Button 4",		BIT_DIGITAL,	DrvJoy2 + 6,	"p1 fire 4"},
 
@@ -742,16 +745,16 @@ static struct BurnInputInfo WschampInputList[] = {
 	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
 	A("P1 Up / Down",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse y-axis"),
 
-	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 fire 1"},
-	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 1,	"p1 fire 2"},
+	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"mouse button 1"},
+	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 1,	"mouse button 2"},
 	{"P1 Button 3",		BIT_DIGITAL,	DrvJoy3 + 6,	"p1 fire 3"},
 	{"P1 Button 4",		BIT_DIGITAL,	DrvJoy2 + 6,	"p1 fire 4"},
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvJoy4 + 1,	"p2 coin"},
 	{"P2 Start",		BIT_DIGITAL,	DrvJoy3 + 7,	"p2 start"},
 
-	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 2,	"mouse x-axis"),
-	A("P2 Up / Down",	BIT_ANALOG_REL, DrvAxis + 3,	"mouse y-axis"),
+	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 2,	"p2 x-axis"),
+	A("P2 Up / Down",	BIT_ANALOG_REL, DrvAxis + 3,	"p2 y-axis"),
 
 	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy1 + 4,	"p2 fire 1"},
 	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy1 + 5,	"p2 fire 2"},
@@ -1069,10 +1072,9 @@ static struct BurnRomInfo deerhunbRomDesc[] = {
 STD_ROM_PICK(deerhunb)
 STD_ROM_FN(deerhunb)
 
-
 static struct BurnRomInfo deerhuncRomDesc[] = {
-	{ "as0906e02.u06",	0x100000, 0x190cca42, 1 }, //  0 68000 code
-	{ "as0907e02.u07",	0x100000, 0x9de2b901, 1 }, //  1
+	{ "as0937e01.u06",	0x100000, 0x8d74088e, 1 }, //  0 68000 code
+	{ "as0938e01.u07",	0x100000, 0xc7657889, 1 }, //  1
 
 	{ "as0901m01.u38",	0x800000, 0x1d6acf8f, 2 }, //  2 GFX
 	{ "as0902m01.u39",	0x800000, 0xc7ca2128, 2 }, //  3
@@ -1084,6 +1086,21 @@ static struct BurnRomInfo deerhuncRomDesc[] = {
 
 STD_ROM_PICK(deerhunc)
 STD_ROM_FN(deerhunc)
+
+static struct BurnRomInfo deerhundRomDesc[] = {
+	{ "as0906e02.u06",	0x100000, 0x190cca42, 1 }, //  0 68000 code
+	{ "as0907e02.u07",	0x100000, 0x9de2b901, 1 }, //  1
+
+	{ "as0901m01.u38",	0x800000, 0x1d6acf8f, 2 }, //  2 GFX
+	{ "as0902m01.u39",	0x800000, 0xc7ca2128, 2 }, //  3
+	{ "as0903m01.u40",	0x800000, 0xe8ef81b3, 2 }, //  4
+	{ "as0904m01.u41",	0x800000, 0xd0f97fdc, 2 }, //  5
+
+	{ "as0905m01.u18",	0x400000, 0x8d8165bb, 3 }, //  6 PCM
+};
+
+STD_ROM_PICK(deerhund)
+STD_ROM_FN(deerhund)
 
 static struct BurnRomInfo turkhuntRomDesc[] = {
 	{ "asx906e01.u06",	0x100000, 0xc96266e1, 1 }, //  0 68000 code
@@ -1178,9 +1195,9 @@ STD_ROM_PICK(funcube4)
 STD_ROM_FN(funcube4)
 
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x7c00) >> 7;	// Red
 	r |= r >> 5;
@@ -1194,17 +1211,17 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 // ---- Toshiba TMP68301  ---------------------------------------------
 
-static int tmp68301_timer[3] = {0, 0, 0};
-static int tmp68301_timer_counter[3] = {0, 0, 0};
-static int tmp68301_irq_vector[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static INT32 tmp68301_timer[3] = {0, 0, 0};
+static INT32 tmp68301_timer_counter[3] = {0, 0, 0};
+static INT32 tmp68301_irq_vector[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-static void tmp68301_update_timer( int i )
+static void tmp68301_update_timer( INT32 i )
 {
-	unsigned short TCR	=	RamTMP68301[(0x200 + i * 0x20)/2];
-	unsigned short MAX1	=	RamTMP68301[(0x204 + i * 0x20)/2];
-	unsigned short MAX2	=	RamTMP68301[(0x206 + i * 0x20)/2];
+	UINT16 TCR	=	BURN_ENDIAN_SWAP_INT16(RamTMP68301[(0x200 + i * 0x20)/2]);
+	UINT16 MAX1	=	BURN_ENDIAN_SWAP_INT16(RamTMP68301[(0x204 + i * 0x20)/2]);
+	UINT16 MAX2	=	BURN_ENDIAN_SWAP_INT16(RamTMP68301[(0x206 + i * 0x20)/2]);
 
-	int max = 0;
+	INT32 max = 0;
 	double duration = 0;
 
 //	timer_adjust(tmp68301_timer[i],TIME_NEVER,i,0);
@@ -1221,7 +1238,7 @@ static void tmp68301_update_timer( int i )
 	switch ( (TCR & 0xc000)>>14 ) {					// CK2..1
 	case 0:	// System clock (CLK)
 		if (max) {
-			int scale = (TCR & 0x3c00)>>10;			// P4..1
+			INT32 scale = (TCR & 0x3c00)>>10;			// P4..1
 			if (scale > 8) scale = 8;
 			duration = M68K_CYCS;					//Machine->drv->cpu[0].cpu_clock;
 			duration /= 1 << scale;
@@ -1238,7 +1255,7 @@ static void tmp68301_update_timer( int i )
 		if (duration) {
 			// timer_adjust(tmp68301_timer[i],TIME_IN_HZ(duration),i,0);
 			// active tmp68301 timer i, and set duration
-			tmp68301_timer[i] = (int) (M68K_CYCS / duration);
+			tmp68301_timer[i] = (INT32) (M68K_CYCS / duration);
 			//tmp68301_timer_counter[i] = 0;
 			//bprintf(PRINT_NORMAL, _T("Tmp68301: update timer #%d duration to %d (%8.3f)\n"), i, tmp68301_timer[i], duration);
 		} else
@@ -1247,18 +1264,18 @@ static void tmp68301_update_timer( int i )
 	}
 }
 
-static void tmp68301_timer_callback(int i)
+static void tmp68301_timer_callback(INT32 i)
 {
-	unsigned short TCR	= RamTMP68301[(0x200 + i * 0x20)/2];
-	unsigned short IMR	= RamTMP68301[0x94/2];		// Interrupt Mask Register (IMR)
-	unsigned short ICR	= RamTMP68301[0x8e/2+i];	// Interrupt Controller Register (ICR7..9)
-	unsigned short IVNR	= RamTMP68301[0x9a/2];		// Interrupt Vector Number Register (IVNR)
+	UINT16 TCR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[(0x200 + i * 0x20)/2]);
+	UINT16 IMR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x94/2]);		// Interrupt Mask Register (IMR)
+	UINT16 ICR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x8e/2+i]);	// Interrupt Controller Register (ICR7..9)
+	UINT16 IVNR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x9a/2]);		// Interrupt Vector Number Register (IVNR)
 
 //  logerror("CPU #0 PC %06X: callback timer %04X, j = %d\n",activecpu_get_pc(),i,tcount);
 //	bprintf(PRINT_NORMAL, _T("Tmp68301: timer[%d] TCR: %04x IMR: %04x\n"), i, TCR, IMR);
 
 	if	( (TCR & 0x0004) &&	!(IMR & (0x100<<i))	) {
-		int level = ICR & 0x0007;
+		INT32 level = ICR & 0x0007;
 		// Interrupt Vector Number Register (IVNR)
 		tmp68301_irq_vector[level]	=	IVNR & 0x00e0;
 		tmp68301_irq_vector[level]	+=	4+i;
@@ -1279,17 +1296,17 @@ static void tmp68301_timer_callback(int i)
 	}
 }
 
-static void tmp68301_update_irq_state(int i)
+static void tmp68301_update_irq_state(INT32 i)
 {
 	/* Take care of external interrupts */
-	unsigned short IMR	= RamTMP68301[0x94/2];		// Interrupt Mask Register (IMR)
-	unsigned short IVNR	= RamTMP68301[0x9a/2];		// Interrupt Vector Number Register (IVNR)
+	UINT16 IMR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x94/2]);		// Interrupt Mask Register (IMR)
+	UINT16 IVNR	= BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x9a/2]);		// Interrupt Vector Number Register (IVNR)
 
 	if	( !(IMR & (1<<i)) )	{
-		unsigned short ICR = RamTMP68301[0x80/2+i];	// Interrupt Controller Register (ICR0..2)
+		UINT16 ICR = BURN_ENDIAN_SWAP_INT16(RamTMP68301[0x80/2+i]);	// Interrupt Controller Register (ICR0..2)
 
 		// Interrupt Controller Register (ICR0..2)
-		int level = ICR & 0x0007;
+		INT32 level = ICR & 0x0007;
 
 		// Interrupt Vector Number Register (IVNR)
 		tmp68301_irq_vector[level]	=	IVNR & 0x00e0;
@@ -1304,7 +1321,7 @@ static void tmp68301_update_irq_state(int i)
 	}
 }
 
-static void tmp68301_regs_w(unsigned int addr, unsigned short /*val*/ )
+static void tmp68301_regs_w(UINT32 addr, UINT16 /*val*/ )
 {
 	//bprintf(PRINT_NORMAL, _T("Tmp68301: write val %04x to location %06x\n"), val, addr);
 	//tmp68301_update_timer( (addr >> 5) & 3 );
@@ -1315,24 +1332,24 @@ static void tmp68301_regs_w(unsigned int addr, unsigned short /*val*/ )
 	}
 }
 
-void __fastcall Tmp68301WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall Tmp68301WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	sekAddress &= 0x0003ff;
-	unsigned char *p = (unsigned char *)RamTMP68301;
+	UINT8 *p = (UINT8 *)RamTMP68301;
 	p[sekAddress ^ 1] = byteValue;
 //	bprintf(PRINT_NORMAL, _T("TMP68301 Reg %04X <- %04X & %04X   %04x\n"),sekAddress&0xfffe, (sekAddress&1)?byteValue:byteValue<<8,(sekAddress&1)?0x00ff:0xff00, RamTMP68301[sekAddress>>1]);
 }
 
-void __fastcall Tmp68301WriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall Tmp68301WriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	sekAddress &= 0x0003ff;
-	RamTMP68301[ sekAddress >> 1 ] = wordValue;
+	RamTMP68301[ sekAddress >> 1 ] = BURN_ENDIAN_SWAP_INT16(wordValue);
 	tmp68301_regs_w( sekAddress, wordValue );
 //	bprintf(PRINT_NORMAL, _T("TMP68301 Reg %04X <- %04X & %04X   %04x\n"),sekAddress,wordValue,0xffff, RamTMP68301[sekAddress>>1]);
 }
 
 
-unsigned char __fastcall grdiansReadByte(unsigned int sekAddress)
+UINT8 __fastcall grdiansReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -1342,7 +1359,7 @@ unsigned char __fastcall grdiansReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall grdiansReadWord(unsigned int sekAddress)
+UINT16 __fastcall grdiansReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x600000: return ~DrvInput[3]; // DIP 1
@@ -1360,7 +1377,7 @@ unsigned short __fastcall grdiansReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall grdiansWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall grdiansWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -1369,7 +1386,7 @@ void __fastcall grdiansWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall grdiansWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall grdiansWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x800000:
@@ -1394,22 +1411,22 @@ void __fastcall grdiansWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-unsigned char __fastcall setaSoundRegReadByte(unsigned int sekAddress)
+UINT8 __fastcall setaSoundRegReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("x1-010 to read byte value of location %x\n"), sekAddress);
 	return 0;
 }
 
-unsigned short __fastcall setaSoundRegReadWord(unsigned int sekAddress)
+UINT16 __fastcall setaSoundRegReadWord(UINT32 sekAddress)
 {
 	return x1010_sound_read_word((sekAddress & 0x3ffff) >> 1);
 }
 
-void __fastcall setaSoundRegWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall setaSoundRegWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	// bprintf(PRINT_NORMAL, _T("x1-010 to write byte value %x to location %x\n"), byteValue, sekAddress);
-	unsigned int offset = (sekAddress & 0x00003fff) >> 1;
-	int channel, reg;
+	UINT32 offset = (sekAddress & 0x00003fff) >> 1;
+	INT32 channel, reg;
 
 	if (sekAddress & 1) {
 
@@ -1432,11 +1449,11 @@ void __fastcall setaSoundRegWriteByte(unsigned int sekAddress, unsigned char byt
 
 }
 
-void __fastcall setaSoundRegWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall setaSoundRegWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	//bprintf(PRINT_NORMAL, _T("x1-010 to write word value %x to location %x\n"), wordValue, sekAddress);
-	unsigned int offset = (sekAddress & 0x00003fff) >> 1;
-	int channel, reg;
+	UINT32 offset = (sekAddress & 0x00003fff) >> 1;
+	INT32 channel, reg;
 
 	x1_010_chip->HI_WORD_BUF[ offset ] = wordValue >> 8;
 
@@ -1452,12 +1469,12 @@ void __fastcall setaSoundRegWriteWord(unsigned int sekAddress, unsigned short wo
 	x1_010_chip->reg[offset] = wordValue & 0xff;
 }
 
-void __fastcall grdiansPaletteWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall grdiansPaletteWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	bprintf(PRINT_NORMAL, _T("Pal to write byte value %x to location %x\n"), byteValue, sekAddress);
 }
 
-void __fastcall grdiansPaletteWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall grdiansPaletteWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	//bprintf(PRINT_NORMAL, _T("Pal to write word value %x to location %x\n"), wordValue, sekAddress);
 	sekAddress &= 0x00FFFF;
@@ -1466,16 +1483,16 @@ void __fastcall grdiansPaletteWriteWord(unsigned int sekAddress, unsigned short 
 	CurPal[sekAddress] = CalcCol( wordValue );
 }
 
-void __fastcall grdiansClearWriteByte(unsigned int, unsigned char) {}
-void __fastcall grdiansClearWriteWord(unsigned int, unsigned short) {}
+void __fastcall grdiansClearWriteByte(UINT32, UINT8) {}
+void __fastcall grdiansClearWriteWord(UINT32, UINT16) {}
 
-int __fastcall grdiansSekIrqCallback(int irq)
+INT32 __fastcall grdiansSekIrqCallback(INT32 irq)
 {
 	//bprintf(PRINT_NORMAL, _T("Sek Irq Call back %d vector %04x\n"), irq, tmp68301_irq_vector[irq]);
 	return tmp68301_irq_vector[irq];
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 //	SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
@@ -1485,7 +1502,7 @@ static int DrvDoReset()
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gundamex")) {
 		EEPROMReset(); // gundam
 		if (EEPROMAvailable() == 0) {
-			unsigned char EEPROMDATA[2] = { 0x08, 0x70 };
+			UINT8 EEPROMDATA[2] = { 0x08, 0x70 };
 			EEPROMFill(EEPROMDATA, 0, 2);
 		}
 	}
@@ -1493,9 +1510,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex(int CodeSize, int GfxSize, int PcmSize, int ExtRamSize)
+static INT32 MemIndex(INT32 CodeSize, INT32 GfxSize, INT32 PcmSize, INT32 ExtRamSize)
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom68K 		= Next; Next += CodeSize;			// 68000 ROM
 	RomGfx		= Next; Next += GfxSize;			// GFX Rom
 	X1010SNDROM	= Next; Next += PcmSize;			// PCM
@@ -1504,27 +1521,28 @@ static int MemIndex(int CodeSize, int GfxSize, int PcmSize, int ExtRamSize)
 
 	Ram68K		= Next; Next += 0x010000;
 	RamUnknown	= Next; Next += ExtRamSize;
-	RamSpr		= (unsigned short *) Next; Next += 0x040000;
-	RamSprBak	= (unsigned short *) Next; Next += 0x040000;
-	RamPal		= (unsigned short *) Next; Next += 0x010000;
-	RamTMP68301	= (unsigned short *) Next; Next += 0x000400;
+	if (HasNVRam) RamNV = Next; Next += 0x10000;
+	RamSpr		= (UINT16 *) Next; Next += 0x020000 * sizeof(UINT16);
+	RamSprBak	= (UINT16 *) Next; Next += 0x020000 * sizeof(UINT16);
+	RamPal		= (UINT16 *) Next; Next += 0x008000 * sizeof(UINT16);
+	RamTMP68301	= (UINT16 *) Next; Next += 0x000200 * sizeof(UINT16);
 
-	RamVReg		= (unsigned short *) Next; Next += 0x000040;
+	RamVReg		= (UINT16 *) Next; Next += 0x000020 * sizeof(UINT16);
 
 	RamEnd		= Next;
 
-	CurPal		= (unsigned int *) Next; Next += 0x008000 * sizeof(unsigned int);
+	CurPal		= (UINT32 *) Next; Next += 0x008000 * sizeof(UINT32);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-static void loadDecodeGfx(unsigned char *p, int cnt, int offset2x)
+static void loadDecodeGfx(UINT8 *p, INT32 cnt, INT32 offset2x)
 {
-	unsigned char * d = RomGfx;
-	unsigned char * q = p + 1;
+	UINT8 * d = RomGfx;
+	UINT8 * q = p + 1;
 
-	for (int i=0; i<cnt; i++, p+=2, q+=2, d+=8) {
+	for (INT32 i=0; i<cnt; i++, p+=2, q+=2, d+=8) {
 		*(d+0) |= (( (*p >> 7) & 1 ) << offset2x) | (( (*q >> 7) & 1 ) << (offset2x + 1));
 		*(d+1) |= (( (*p >> 6) & 1 ) << offset2x) | (( (*q >> 6) & 1 ) << (offset2x + 1));
 		*(d+2) |= (( (*p >> 5) & 1 ) << offset2x) | (( (*q >> 5) & 1 ) << (offset2x + 1));
@@ -1537,14 +1555,14 @@ static void loadDecodeGfx(unsigned char *p, int cnt, int offset2x)
 
 }
 
-static int grdiansInit()
+static INT32 grdiansInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0200000, 0x2000000, 0x0200000, 0x00C000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0200000, 0x2000000, 0x0200000, 0x00C000);
 
@@ -1555,15 +1573,15 @@ static int grdiansInit()
 	nRet = BurnLoadRom(Rom68K + 0x100000, 3, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0800000);
-	for (int i=0; i<8; i+=2) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0800000);
+	for (INT32 i=0; i<8; i+=2) {
 		BurnLoadRom(tmpGfx + 0x0200000, i+5, 1);
 		memcpy(tmpGfx + 0x0600000, tmpGfx + 0x0200000, 0x0200000);
 		BurnLoadRom(tmpGfx + 0x0000000, i+4, 1);
 		loadDecodeGfx( tmpGfx, 0x0800000 / 2, i );
 	}
 
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 12, 1);
@@ -1577,13 +1595,13 @@ static int grdiansInit()
 		SekMapMemory(Ram68K,		0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 		SekMapMemory(RamUnknown,	0x304000, 0x30FFFF, SM_RAM);	// ? seems tile data
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0xC00000, 0xC3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0xC40000, 0xC4FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0xC60000, 0xC6003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0xB00000, 0xB03FFF, SM_READ | SM_WRITE);
@@ -1632,7 +1650,7 @@ static int grdiansInit()
 
 // -- mj4simai -----------------------------------------------------------
 
-unsigned char __fastcall mj4simaiReadByte(unsigned int sekAddress)
+UINT8 __fastcall mj4simaiReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -1642,7 +1660,7 @@ unsigned char __fastcall mj4simaiReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall mj4simaiReadWord(unsigned int sekAddress)
+UINT16 __fastcall mj4simaiReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -1673,7 +1691,7 @@ unsigned short __fastcall mj4simaiReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall mj4simaiWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall mj4simaiWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -1682,7 +1700,7 @@ void __fastcall mj4simaiWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall mj4simaiWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall mj4simaiWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x600200: break; // NOP
@@ -1705,14 +1723,14 @@ void __fastcall mj4simaiWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int mj4simaiInit()
+static INT32 mj4simaiInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0200000, 0x2000000, 0x0500000, 0x000000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0200000, 0x2000000, 0x0500000, 0x000000);
 
@@ -1723,13 +1741,13 @@ static int mj4simaiInit()
 	nRet = BurnLoadRom(Rom68K + 0x100000, 3, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0800000);
-	for (int i=0; i<6; i+=2) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0800000);
+	for (INT32 i=0; i<6; i+=2) {
 		BurnLoadRom(tmpGfx + 0x0000000, i+4, 1);
 		BurnLoadRom(tmpGfx + 0x0400000, i+5, 1);
 		loadDecodeGfx( tmpGfx, 0x0800000 / 2, i );
 	}
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 10, 1);
@@ -1742,13 +1760,13 @@ static int mj4simaiInit()
 		SekMapMemory(Rom68K,		0x000000, 0x1FFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram68K,		0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0xC00000, 0xC3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0xC40000, 0xC4FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0xC60000, 0xC6003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0xB00000, 0xB03FFF, SM_READ | SM_WRITE);
@@ -1795,7 +1813,7 @@ static int mj4simaiInit()
 
 // -- myangel -----------------------------------------------------------
 
-unsigned char __fastcall myangelReadByte(unsigned int sekAddress)
+UINT8 __fastcall myangelReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -1805,7 +1823,7 @@ unsigned char __fastcall myangelReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall myangelReadWord(unsigned int sekAddress)
+UINT16 __fastcall myangelReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x700000: return ~DrvInput[0];
@@ -1825,7 +1843,7 @@ unsigned short __fastcall myangelReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall myangelWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall myangelWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -1834,7 +1852,7 @@ void __fastcall myangelWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall myangelWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall myangelWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x700200: break; // NOP
@@ -1855,14 +1873,14 @@ void __fastcall myangelWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static int myangelInit()
+static INT32 myangelInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0200000, 0x1000000, 0x0300000, 0x000000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0200000, 0x1000000, 0x0300000, 0x000000);
 
@@ -1873,13 +1891,13 @@ static int myangelInit()
 	nRet = BurnLoadRom(Rom68K + 0x100000, 3, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0400000);
-	for (int i=0; i<8; i+=2) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0400000);
+	for (INT32 i=0; i<8; i+=2) {
 		BurnLoadRom(tmpGfx + 0x0000000, i+4, 1);
 		BurnLoadRom(tmpGfx + 0x0200000, i+5, 1);
 		loadDecodeGfx( tmpGfx, 0x0400000 / 2, i );
 	}
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 12, 1);
@@ -1892,13 +1910,13 @@ static int myangelInit()
 		SekMapMemory(Rom68K,		0x000000, 0x1FFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram68K,		0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0xC00000, 0xC3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0xC40000, 0xC4FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0xC60000, 0xC6003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0xB00000, 0xB03FFF, SM_READ | SM_WRITE);
@@ -1943,7 +1961,7 @@ static int myangelInit()
 
 // -- myangel2 -----------------------------------------------------------
 
-unsigned char __fastcall myangel2ReadByte(unsigned int sekAddress)
+UINT8 __fastcall myangel2ReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -1953,7 +1971,7 @@ unsigned char __fastcall myangel2ReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall myangel2ReadWord(unsigned int sekAddress)
+UINT16 __fastcall myangel2ReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x600000: return ~DrvInput[0];
@@ -1973,7 +1991,7 @@ unsigned short __fastcall myangel2ReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall myangel2WriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall myangel2WriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -1982,7 +2000,7 @@ void __fastcall myangel2WriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall myangel2WriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall myangel2WriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x600200: break; // NOP
@@ -2003,14 +2021,14 @@ void __fastcall myangel2WriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static int myangel2Init()
+static INT32 myangel2Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0200000, 0x1800000, 0x0500000, 0x000000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0200000, 0x1800000, 0x0500000, 0x000000);
 
@@ -2021,13 +2039,13 @@ static int myangel2Init()
 	nRet = BurnLoadRom(Rom68K + 0x100000, 3, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0600000);
-	for (int i = 0; i < 8; i+=2) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0600000);
+	for (INT32 i = 0; i < 8; i+=2) {
 		BurnLoadRom(tmpGfx + 0x0000000,  i + 4, 1);
 		BurnLoadRom(tmpGfx + 0x0200000,  i + 5, 1);
 		loadDecodeGfx(tmpGfx, 0x0600000 / 2, i);
 	}
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 12, 1);
@@ -2040,13 +2058,13 @@ static int myangel2Init()
 		SekMapMemory(Rom68K,		0x000000, 0x1FFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram68K,		0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0xD00000, 0xD3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0xD40000, 0xD4FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0xD60000, 0xD6003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0xB00000, 0xB03FFF, SM_READ | SM_WRITE);
@@ -2091,7 +2109,7 @@ static int myangel2Init()
 
 // -- pzlbowl -----------------------------------------------------------
 
-unsigned char __fastcall pzlbowlReadByte(unsigned int sekAddress)
+UINT8 __fastcall pzlbowlReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -2101,7 +2119,7 @@ unsigned char __fastcall pzlbowlReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall pzlbowlReadWord(unsigned int sekAddress)
+UINT16 __fastcall pzlbowlReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400300: return ~DrvInput[3]; // DIP 1
@@ -2111,7 +2129,7 @@ unsigned short __fastcall pzlbowlReadWord(unsigned int sekAddress)
 
 		case 0x500004: {
 			//readinputport(4) | (rand() & 0x80 )
-			static unsigned short prot = 0;
+			static UINT16 prot = 0;
 			prot ^= 0x80;
 			return ~(prot | DrvInput[2]);
 			}
@@ -2121,7 +2139,7 @@ unsigned short __fastcall pzlbowlReadWord(unsigned int sekAddress)
 		case 0x700000: {
 			/*  The game checks for a specific value read from the ROM region.
     			The offset to use is stored in RAM at address 0x20BA16 */
-			unsigned int address = (*(unsigned short *)(Ram68K + 0x00ba16) << 16) | *(unsigned short *)(Ram68K + 0x00ba18);
+			UINT32 address = (*(UINT16 *)(Ram68K + 0x00ba16) << 16) | *(UINT16 *)(Ram68K + 0x00ba18);
 			bprintf(PRINT_NORMAL, _T("pzlbowl Protection read address %08x [%02x %02x %02x %02x]\n"), address,
 			        Rom68K[ address - 2 ], Rom68K[ address - 1 ], Rom68K[ address - 0 ], Rom68K[ address + 1 ]);
 			return Rom68K[ address - 2 ]; }
@@ -2131,7 +2149,7 @@ unsigned short __fastcall pzlbowlReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall pzlbowlWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall pzlbowlWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -2140,7 +2158,7 @@ void __fastcall pzlbowlWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall pzlbowlWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall pzlbowlWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -2162,14 +2180,14 @@ void __fastcall pzlbowlWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static int pzlbowlInit()
+static INT32 pzlbowlInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0100000, 0x1000000, 0x0500000, 0x000000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0100000, 0x1000000, 0x0500000, 0x000000);
 
@@ -2178,12 +2196,12 @@ static int pzlbowlInit()
 	nRet = BurnLoadRom(Rom68K + 0x000000, 1, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0400000);
-	for (int i=0; i<4; i++) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0400000);
+	for (INT32 i=0; i<4; i++) {
 		BurnLoadRom(tmpGfx, i+2, 1);
 		loadDecodeGfx( tmpGfx, 0x0400000 / 2, i*2 );
 	}
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 6, 1);
@@ -2196,13 +2214,13 @@ static int pzlbowlInit()
 		SekMapMemory(Rom68K,		0x000000, 0x0FFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram68K,		0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x800000, 0x83FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x840000, 0x84FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0x860000, 0x86003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0x900000, 0x903FFF, SM_READ | SM_WRITE);
@@ -2247,7 +2265,7 @@ static int pzlbowlInit()
 
 // -- penbros -----------------------------------------------------------
 
-unsigned char __fastcall penbrosReadByte(unsigned int sekAddress)
+UINT8 __fastcall penbrosReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -2257,7 +2275,7 @@ unsigned char __fastcall penbrosReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall penbrosReadWord(unsigned int sekAddress)
+UINT16 __fastcall penbrosReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x500300: return ~DrvInput[3]; // DIP 1
@@ -2275,7 +2293,7 @@ unsigned short __fastcall penbrosReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall penbrosWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall penbrosWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -2284,7 +2302,7 @@ void __fastcall penbrosWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall penbrosWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall penbrosWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -2306,14 +2324,14 @@ void __fastcall penbrosWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static int penbrosInit()
+static INT32 penbrosInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0100000, 0x1000000, 0x0300000, 0x040000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0100000, 0x1000000, 0x0300000, 0x040000);
 
@@ -2322,12 +2340,12 @@ static int penbrosInit()
 	nRet = BurnLoadRom(Rom68K + 0x000000, 1, 2); if (nRet != 0) return 1;
 
 	// Load Gfx
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0400000);
-	for (int i=0; i<3; i++) {
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0400000);
+	for (INT32 i=0; i<3; i++) {
 		BurnLoadRom(tmpGfx, i+2, 1);
 		loadDecodeGfx( tmpGfx, 0x0400000 / 2, i*2 );
 	}
-	free(tmpGfx);
+	BurnFree(tmpGfx);
 
 	// Leave 1MB empty (addressable by the chip)
 	BurnLoadRom(X1010SNDROM + 0x100000, 5, 1);
@@ -2345,13 +2363,13 @@ static int penbrosInit()
 		SekMapMemory(RamUnknown + 0x30000,	
 									0x300000, 0x30FFFF, SM_RAM);
 
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0xB00000, 0xB3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0xB40000, 0xB4FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,
+		SekMapMemory((UINT8 *)RamVReg,
 									0xB60000, 0xB6003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,
+		SekMapMemory((UINT8 *)RamTMP68301,
 									0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(1,			0xA00000, 0xA03FFF, SM_READ | SM_WRITE);
@@ -2396,7 +2414,7 @@ static int penbrosInit()
 
 // -- gundamex -----------------------------------------------------------
 
-void __fastcall gundamexWriteWord(unsigned int address, unsigned short data)
+void __fastcall gundamexWriteWord(UINT32 address, UINT16 data)
 {
 	switch (address)
 	{
@@ -2426,7 +2444,7 @@ void __fastcall gundamexWriteWord(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall gundamexWriteByte(unsigned int address, unsigned char data)
+void __fastcall gundamexWriteByte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfffc00) == 0xfffc00) {
 		Tmp68301WriteByte(address, data);
@@ -2434,7 +2452,7 @@ void __fastcall gundamexWriteByte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall gundamexReadWord(unsigned int address)
+UINT16 __fastcall gundamexReadWord(UINT32 address)
 {
 	switch (address)
 	{
@@ -2464,20 +2482,20 @@ unsigned short __fastcall gundamexReadWord(unsigned int address)
 	}
 
 	if ((address & 0xfffc00) == 0xfffc00) {
-		return RamTMP68301[(address & 0x3ff) / 2];
+		return BURN_ENDIAN_SWAP_INT16(RamTMP68301[(address & 0x3ff) / 2]);
 	}
 
 	return 0;
 }
 
-static int gundamexInit()
+static INT32 gundamexInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	Mem = NULL;
 	MemIndex(0x0300000, 0x2000000, 0x0300000, 0x010000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex(0x0300000, 0x2000000, 0x0300000, 0x010000);
 
@@ -2488,7 +2506,7 @@ static int gundamexInit()
 	nRet = BurnLoadRom(Rom68K + 0x100000, 3, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Rom68K + 0x200000, 4, 0); if (nRet != 0) return 1;
 
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0600000);
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0600000);
 	nRet = BurnLoadRom(tmpGfx + 0x0000000,  5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(tmpGfx + 0x0200000,  6, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(tmpGfx + 0x0400000,  7, 1); if (nRet != 0) return 1;
@@ -2501,6 +2519,8 @@ static int gundamexInit()
 	nRet = BurnLoadRom(tmpGfx + 0x0200000, 12, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(tmpGfx + 0x0400000, 13, 1); if (nRet != 0) return 1;
 	loadDecodeGfx(tmpGfx, 0x600000 / 2, 4);
+	
+	BurnFree(tmpGfx);
 
 	BurnLoadRom(X1010SNDROM + 0x100000, 14, 1);
 
@@ -2513,10 +2533,10 @@ static int gundamexInit()
 		SekMapMemory(Ram68K,				0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 		SekMapMemory(Rom68K + 0x200000,			0x500000, 0x57FFFF, SM_ROM);	// CPU 0 ROM
 
-		SekMapMemory((unsigned char *)RamSpr,		0xc00000, 0xc3FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,		0xc40000, 0xc4FFFF, SM_ROM);	// Palette
+		SekMapMemory((UINT8 *)RamSpr,		0xc00000, 0xc3FFFF, SM_RAM);	// sprites
+		SekMapMemory((UINT8 *)RamPal,		0xc40000, 0xc4FFFF, SM_ROM);	// Palette
 		SekMapMemory(RamUnknown + 0x00000,		0xc50000, 0xc5FFFF, SM_RAM);
-		SekMapMemory((unsigned char *)RamVReg,		0xc60000, 0xc6003F, SM_RAM);	// Video Registers
+		SekMapMemory((UINT8 *)RamVReg,		0xc60000, 0xc6003F, SM_RAM);	// Video Registers
 
 		SekMapHandler(1,			0xb00000, 0xb03FFF, SM_READ | SM_WRITE);
 		SekMapHandler(2,			0xc40000, 0xc4FFFF, SM_WRITE);
@@ -2542,7 +2562,7 @@ static int gundamexInit()
 	GenericTilesInit();
 
 	// Hack to skip black screen on EEPROM failure
-	//*((unsigned short*)(Rom68K + 0x00f98)) = 0x4e71;
+	//*((UINT16*)(Rom68K + 0x00f98)) = 0x4e71;
 
 	yoffset = 0;
 	sva_x = 0;
@@ -2561,7 +2581,7 @@ static int gundamexInit()
 
 // -- samshoot -----------------------------------------------------------
 
-void __fastcall samshootWriteWord(unsigned int address, unsigned short data)
+void __fastcall samshootWriteWord(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffff0) == 0x400300) {
 		x1010_sound_bank_w( (address & 0x0f) >> 1, data );
@@ -2569,7 +2589,7 @@ void __fastcall samshootWriteWord(unsigned int address, unsigned short data)
 	}
 }	
 
-unsigned short __fastcall samshootReadWord(unsigned int address)
+UINT16 __fastcall samshootReadWord(UINT32 address)
 {
 	switch (address)
 	{
@@ -2604,14 +2624,16 @@ unsigned short __fastcall samshootReadWord(unsigned int address)
 	return 0;
 }
 
-static int samshootInit()
+static INT32 samshootInit()
 {
-	int nRet;
+	INT32 nRet;
+	
+	HasNVRam = 1;
 
 	Mem = NULL;
 	MemIndex(0x0200000, 0x2000000, 0x0500000, 0x010000);
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex(0x0200000, 0x2000000, 0x0500000, 0x010000);
 
@@ -2619,7 +2641,7 @@ static int samshootInit()
 	nRet = BurnLoadRom(Rom68K + 0x000001, 0, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Rom68K + 0x000000, 1, 2); if (nRet != 0) return 1;
 
-	unsigned char * tmpGfx = (unsigned char *)malloc(0x0800000);
+	UINT8 * tmpGfx = (UINT8 *)BurnMalloc(0x0800000);
 
 	nRet = BurnLoadRom(tmpGfx, 2, 1); if (nRet != 0) return 1;
 	loadDecodeGfx(tmpGfx, 0x800000 / 2, 0);
@@ -2629,6 +2651,8 @@ static int samshootInit()
 	loadDecodeGfx(tmpGfx, 0x800000 / 2, 4);
 	nRet = BurnLoadRom(tmpGfx, 5, 1); if (nRet != 0) return 1;
 	loadDecodeGfx(tmpGfx, 0x800000 / 2, 6);
+	
+	BurnFree(tmpGfx);
 
 	BurnLoadRom(X1010SNDROM + 0x100000, 6, 1);
 
@@ -2640,12 +2664,12 @@ static int samshootInit()
 		SekMapMemory(Rom68K,				0x000000, 0x1FFFFF, SM_ROM);	// CPU 0 ROM
 		SekMapMemory(Ram68K,				0x200000, 0x20FFFF, SM_RAM);	// CPU 0 RAM
 
-		SekMapMemory(RamUnknown + 0x00000,		0x300000, 0x30FFFF, SM_RAM);
+		SekMapMemory(RamNV + 0x00000,		0x300000, 0x30FFFF, SM_RAM);
 
-		SekMapMemory((unsigned char *)RamSpr,		0x800000, 0x83FFFF, SM_RAM);	// sprites
-		SekMapMemory((unsigned char *)RamPal,		0x840000, 0x84FFFF, SM_ROM);	// Palette
-		SekMapMemory((unsigned char *)RamVReg,		0x860000, 0x86003F, SM_RAM);	// Video Registers
-		SekMapMemory((unsigned char *)RamTMP68301,	0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
+		SekMapMemory((UINT8 *)RamSpr,		0x800000, 0x83FFFF, SM_RAM);	// sprites
+		SekMapMemory((UINT8 *)RamPal,		0x840000, 0x84FFFF, SM_ROM);	// Palette
+		SekMapMemory((UINT8 *)RamVReg,		0x860000, 0x86003F, SM_RAM);	// Video Registers
+		SekMapMemory((UINT8 *)RamTMP68301,	0xFFFC00, 0xFFFFFF, SM_ROM);	// TMP68301 Registers
 
 		SekMapHandler(2,			0x840000, 0x84FFFF, SM_WRITE);	// Palette
 		SekMapHandler(1,			0x900000, 0x903FFF, SM_READ | SM_WRITE);
@@ -2688,21 +2712,22 @@ static int samshootInit()
 }
 
 
-static int grdiansExit()
+static INT32 grdiansExit()
 {
 	SekExit();
 	x1010_exit();
 
 	GenericTilesExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gundamex")) {
 		EEPROMExit();
 	}
 
-	BurnGunExit();
+	if (nBurnGunNumPlayers) BurnGunExit();
+	
+	HasNVRam = 0;
 
 //	bMahjong = 0;
 
@@ -2721,51 +2746,51 @@ static int grdiansExit()
 	if (sy <= -8) return;											\
 	if (sy >= nScreenHeight) return;										\
 																	\
-	unsigned short * pd = pTransDraw;				\
-	unsigned char * ps = RomGfx + (code << 6); 						\
+	UINT16 * pd = pTransDraw;				\
+	UINT8 * ps = RomGfx + (code << 6); 						\
 																	\
 	if (sx < 0 || sx > nScreenWidth - 8 || sy < 0 || sy > nScreenHeight - 8) {		\
 		if ( flipy ) {												\
 			pd += (sy + 7) * nScreenWidth + sx;							\
 			if ( flipx ) {											\
-				for (int i=7;i>=0;i--,pd-=nScreenWidth)					\
+				for (INT32 i=7;i>=0;i--,pd-=nScreenWidth)					\
 					if ( sy+i < 0 || sy+i >= nScreenHeight )				\
 						ps += 8;									\
 					else											\
-						for (int j=7;j>=0;j--,ps++) {				\
-							unsigned char c = op;					\
+						for (INT32 j=7;j>=0;j--,ps++) {				\
+							UINT8 c = op;					\
 							if ( c && sx+j >= 0 && sx+j < nScreenWidth ) 	\
 								*(pd + j) = c | color;				\
 						}											\
 			} else													\
-				for (int i=7;i>=0;i--,pd-=nScreenWidth)					\
+				for (INT32 i=7;i>=0;i--,pd-=nScreenWidth)					\
 					if ( sy+i < 0 || sy+i >= nScreenHeight )				\
 						ps += 8;									\
 					else											\
-						for (int j=0;j<8;j++,ps++) {				\
-							unsigned char c = op;					\
+						for (INT32 j=0;j<8;j++,ps++) {				\
+							UINT8 c = op;					\
 							if ( c && sx+j >= 0 && sx+j < nScreenWidth ) 	\
 								*(pd + j) = c | color;				\
 						}											\
 		} else {													\
 			pd += sy * nScreenWidth + sx;									\
 			if ( flipx ) {											\
-				for (int i=0;i<8;i++,pd+=nScreenWidth)						\
+				for (INT32 i=0;i<8;i++,pd+=nScreenWidth)						\
 					if ( sy+i < 0 || sy+i >= nScreenHeight )				\
 						ps += 8;									\
 					else											\
-						for (int j=7;j>=0;j--,ps++) {				\
-							unsigned char c = op;					\
+						for (INT32 j=7;j>=0;j--,ps++) {				\
+							UINT8 c = op;					\
 							if ( c && sx+j >= 0 && sx+j < nScreenWidth ) 	\
 								*(pd + j) = c | color;				\
 						}											\
 			} else													\
-				for (int i=0;i<8;i++,pd+=nScreenWidth)						\
+				for (INT32 i=0;i<8;i++,pd+=nScreenWidth)						\
 					if ( sy+i < 0 || sy+i >= nScreenHeight )				\
 						ps += 8;									\
 					else											\
-						for (int j=0;j<8;j++,ps++) {				\
-							unsigned char c = op;					\
+						for (INT32 j=0;j<8;j++,ps++) {				\
+							UINT8 c = op;					\
 							if ( c && sx+j >= 0 && sx+j < nScreenWidth ) 	\
 								*(pd + j) = c | color;				\
 						}											\
@@ -2777,81 +2802,81 @@ static int grdiansExit()
 	if ( flipy ) {													\
 		pd += (sy + 7) * nScreenWidth + sx;								\
 		if ( flipx ) 												\
-			for (int i=0;i<8;i++,pd-=nScreenWidth)							\
-				for (int j=7;j>=0;j--,ps++) {						\
-					unsigned char c = op;							\
+			for (INT32 i=0;i<8;i++,pd-=nScreenWidth)							\
+				for (INT32 j=7;j>=0;j--,ps++) {						\
+					UINT8 c = op;							\
 					if ( c ) *(pd + j) = c | color;					\
 				}													\
 		else														\
-			for (int i=0;i<8;i++,pd-=nScreenWidth)							\
-				for (int j=0;j<8;j++,ps++) {						\
-					unsigned char c = op;							\
+			for (INT32 i=0;i<8;i++,pd-=nScreenWidth)							\
+				for (INT32 j=0;j<8;j++,ps++) {						\
+					UINT8 c = op;							\
 					if ( c ) *(pd + j) = c | color;					\
 				}													\
 	} else {														\
 		pd += sy * nScreenWidth + sx;										\
 		if ( flipx ) 												\
-			for (int i=0;i<8;i++,pd+=nScreenWidth)							\
-				for (int j=7;j>=0;j--,ps++) {						\
-					unsigned char c = op;							\
+			for (INT32 i=0;i<8;i++,pd+=nScreenWidth)							\
+				for (INT32 j=7;j>=0;j--,ps++) {						\
+					UINT8 c = op;							\
 					if ( c ) *(pd + j) = c | color;					\
 				}													\
 		else														\
-			for (int i=0;i<8;i++,pd+=nScreenWidth)							\
-				for (int j=0;j<8;j++,ps++) {						\
-					unsigned char c = op;							\
+			for (INT32 i=0;i<8;i++,pd+=nScreenWidth)							\
+				for (INT32 j=0;j<8;j++,ps++) {						\
+					UINT8 c = op;							\
 					if ( c ) *(pd + j) = c | color;					\
 				}													\
 	}																\
 
 
-static void drawgfx0(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx0(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	//	4bpp tiles (----3210)
 	DRAWGFX( *ps & 0x0f );
 }
 
-static void drawgfx1(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx1(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	//	4bpp tiles (3210----)
 	DRAWGFX( *ps >> 4 );
 }
 
-static void drawgfx2(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx2(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	// 6bpp tiles (--543210)
 	DRAWGFX( *ps & 0x3f );
 }
 
-static void drawgfx3(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx3(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	// 8bpp tiles (76543210)
 	DRAWGFX( *ps );
 }
 
-static void drawgfx4(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx4(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	// 3bpp tiles?  (-----210)
 	DRAWGFX( *ps & 0x07 );
 }
 
-static void drawgfx5(unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy)
+static void drawgfx5(UINT32 code,UINT32 color,INT32 flipx,INT32 flipy,INT32 sx,INT32 sy)
 {
 	// 2bpp tiles??? (--10----)
 	DRAWGFX( (*ps >> 4) & 0x03 );
 }
 
-static void drawgfxN(unsigned int,unsigned int,int,int,int,int)
+static void drawgfxN(UINT32,UINT32,INT32,INT32,INT32,INT32)
 {
 	// unknown 
 }
 
-typedef void (*pDrawgfx)(unsigned int,unsigned int,int,int,int,int);
+typedef void (*pDrawgfx)(UINT32,UINT32,INT32,INT32,INT32,INT32);
 
 static void DrvDraw()
 {
 	if (bRecalcPalette) {
-		for (int i=0;i<0x08000; i++)
+		for (INT32 i=0;i<0x08000; i++)
 			CurPal[i] = CalcCol( RamPal[i] );
 		bRecalcPalette = 0;	
 	}
@@ -2859,29 +2884,29 @@ static void DrvDraw()
 //	memset(pBurnDraw, 0, nScreenWidth * nScreenHeight * 2);
 	BurnTransferClear();
 
-	if (RamVReg[0x30/2] & 1) { // Blank Screen
+	if (BURN_ENDIAN_SWAP_INT16(RamVReg[0x30/2]) & 1) { // Blank Screen
 		memcpy(RamSprBak, RamSpr, 0x040000);
 		return;
 	}
 
-	unsigned short *s1  = RamSprBak + 0x3000 / 2;
-	unsigned short *end = RamSprBak + 0x040000 / 2;
+	UINT16 *s1  = RamSprBak + 0x3000 / 2;
+	UINT16 *end = RamSprBak + 0x040000 / 2;
 
 	for ( ; s1 < end; s1+=4 ) {
-		int num		= s1[0];
-		int xoffs	= s1[1];
-		int yoffs	= s1[2];
-		int sprite	= s1[3];
+		INT32 num		= BURN_ENDIAN_SWAP_INT16(s1[0]);
+		INT32 xoffs	= BURN_ENDIAN_SWAP_INT16(s1[1]);
+		INT32 yoffs	= BURN_ENDIAN_SWAP_INT16(s1[2]);
+		INT32 sprite	= BURN_ENDIAN_SWAP_INT16(s1[3]);
 		pDrawgfx drawgfx = drawgfxN;
 
 		// Single-sprite address
-		unsigned short *s2 = RamSprBak + (sprite & 0x7fff) * 4;
+		UINT16 *s2 = RamSprBak + (sprite & 0x7fff) * 4;
 
 		// Single-sprite tile size
-		int global_sizex = xoffs & 0x0c00;
-		int global_sizey = yoffs & 0x0c00;
+		INT32 global_sizex = xoffs & 0x0c00;
+		INT32 global_sizey = yoffs & 0x0c00;
 
-		int use_global_size = num & 0x1000;
+		INT32 use_global_size = num & 0x1000;
 
 		xoffs &= 0x3ff;
 		yoffs &= 0x3ff;
@@ -2916,21 +2941,21 @@ static void DrvDraw()
 
 			if (sprite & 0x8000) {
 				// "tilemap" sprite
-				int clip_min_y;
-				int clip_max_y;
-				int clip_min_x;
-				int clip_max_x;
+				INT32 clip_min_y;
+				INT32 clip_max_y;
+				INT32 clip_min_x;
+				INT32 clip_max_x;
 
-				int dx,x,y;
-				int flipx;
-				int flipy;
-				int sx       = s2[0];
-				int sy       = s2[1];
-				int scrollx  = s2[2];
-				int scrolly  = s2[3];
-				int tilesize = (scrollx & 0x8000) >> 15;
-				int page     = (scrollx & 0x7c00) >> 10;
-				int height   = ((sy & 0xfc00) >> 10) + 1;
+				INT32 dx,x,y;
+				INT32 flipx;
+				INT32 flipy;
+				INT32 sx       = BURN_ENDIAN_SWAP_INT16(s2[0]);
+				INT32 sy       = BURN_ENDIAN_SWAP_INT16(s2[1]);
+				INT32 scrollx  = BURN_ENDIAN_SWAP_INT16(s2[2]);
+				INT32 scrolly  = BURN_ENDIAN_SWAP_INT16(s2[3]);
+				INT32 tilesize = (scrollx & 0x8000) >> 15;
+				INT32 page     = (scrollx & 0x7c00) >> 10;
+				INT32 height   = ((sy & 0xfc00) >> 10) + 1;
 
 				sx &= 0x3ff;
 				sy &= 0x1ff;
@@ -2956,25 +2981,25 @@ static void DrvDraw()
                    fine in all the games we have for now. */
 				for (y = 0; y < (0x40 >> tilesize); y++)
 				{
-					int py = ((scrolly - (y+1) * (8 << tilesize) + 0x10) & 0x1ff) - 0x10 - yoffset;
+					INT32 py = ((scrolly - (y+1) * (8 << tilesize) + 0x10) & 0x1ff) - 0x10 - yoffset;
 
 					if (py < clip_min_y - 0x10) continue;
 					if (py > clip_max_y) continue;
 
 					for (x = 0; x < 0x40;x++)
 					{
-						int px = ((dx + x * (8 << tilesize) + 0x10) & 0x3ff) - 0x10;
-						int tx, ty;
-						int attr, code, color;
-						unsigned short *s3;
+						INT32 px = ((dx + x * (8 << tilesize) + 0x10) & 0x3ff) - 0x10;
+						INT32 tx, ty;
+						INT32 attr, code, color;
+						UINT16 *s3;
 
 						if (px < clip_min_x - 0x10) continue;
 						if (px > clip_max_x) continue;
 
 						s3 = RamSprBak + 2 * ((page * 0x2000/4) + ((y & 0x1f) << 6) + (x & 0x03f));
 
-						attr  = s3[0];
-						code  = s3[1] + ((attr & 0x0007) << 16);
+						attr  = BURN_ENDIAN_SWAP_INT16(s3[0]);
+						code  = BURN_ENDIAN_SWAP_INT16(s3[1]) + ((attr & 0x0007) << 16);
 						flipx = (attr & 0x0010);
 						flipy = (attr & 0x0008);
 						color = (attr & 0xffe0) >> 5;
@@ -2989,17 +3014,17 @@ static void DrvDraw()
 
 			} else {
 				// "normal" sprite	
-				int sx    = s2[0];
-				int sy    = s2[1];
-				int attr  = s2[2];
-				int code  = s2[3] + ((attr & 0x0007) << 16);
-				int flipx = (attr & 0x0010);
-				int flipy = (attr & 0x0008);
-				int color = (attr & 0xffe0) >> 5;
+				INT32 sx    = BURN_ENDIAN_SWAP_INT16(s2[0]);
+				INT32 sy    = BURN_ENDIAN_SWAP_INT16(s2[1]);
+				INT32 attr  = BURN_ENDIAN_SWAP_INT16(s2[2]);
+				INT32 code  = BURN_ENDIAN_SWAP_INT16(s2[3]) + ((attr & 0x0007) << 16);
+				INT32 flipx = (attr & 0x0010);
+				INT32 flipy = (attr & 0x0008);
+				INT32 color = (attr & 0xffe0) >> 5;
 
-				int sizex = use_global_size ? global_sizex : sx;
-				int sizey = use_global_size ? global_sizey : sy;
-				int x,y;
+				INT32 sizex = use_global_size ? global_sizex : sx;
+				INT32 sizey = use_global_size ? global_sizey : sy;
+				INT32 x,y;
 				sizex = (1 << ((sizex & 0x0c00)>> 10))-1;
 				sizey = (1 << ((sizey & 0x0c00)>> 10))-1;
 
@@ -3020,7 +3045,7 @@ static void DrvDraw()
 			}
 
 		}
-		if (s1[0] & 0x8000) break;	// end of list marker
+		if (BURN_ENDIAN_SWAP_INT16(s1[0]) & 0x8000) break;	// end of list marker
 	}
 
 	BurnTransferCopy(CurPal);
@@ -3033,7 +3058,7 @@ static void DrvDraw()
 #define	SETA2_INTER_LEAVE		32
 #define M68K_CYCS_PER_INTER	(M68K_CYCS_PER_FRAME / SETA2_INTER_LEAVE)
 
-static int grdiansFrame()
+static INT32 grdiansFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
@@ -3045,7 +3070,7 @@ static int grdiansFrame()
 	DrvInput[6] = 0x00;													// Joy4
 //	DrvInput[7] = 0x00;													// Joy5
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -3054,20 +3079,20 @@ static int grdiansFrame()
 		DrvInput[6] |= (DrvJoy5[i] & 1) << i;
 	}
 
-	int nCyclesDone = 0;
-	int nCyclesNext = 0;
-	int nCyclesExec = 0;
+	INT32 nCyclesDone = 0;
+	INT32 nCyclesNext = 0;
+	INT32 nCyclesExec = 0;
 
 	SekNewFrame();
 
 	SekOpen(0);
 
-	for(int i=0; i<SETA2_INTER_LEAVE; i++) {
+	for(INT32 i=0; i<SETA2_INTER_LEAVE; i++) {
 		nCyclesNext += M68K_CYCS_PER_INTER;
 		nCyclesExec = SekRun( nCyclesNext - nCyclesDone );
 		nCyclesDone += nCyclesExec;
 
-		for (int j=0;j<3;j++)
+		for (INT32 j=0;j<3;j++)
 		if (tmp68301_timer[j]) {
 			tmp68301_timer_counter[j] += nCyclesExec;
 			if (tmp68301_timer_counter[j] >= tmp68301_timer[j]) {
@@ -3092,18 +3117,18 @@ static int grdiansFrame()
 	return 0;
 }
 
-static int samshootDraw()
+static INT32 samshootDraw()
 {
 	DrvDraw();
 
-	for (int i = 0; i < BurnDrvGetMaxPlayers(); i++) {
+	for (INT32 i = 0; i < BurnDrvGetMaxPlayers(); i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 
 	return 0;
 }
 
-static int samshootFrame()
+static INT32 samshootFrame()
 {
 	if (DrvReset)														// Reset machine
 		DrvDoReset();
@@ -3111,7 +3136,7 @@ static int samshootFrame()
 	{
 		memset (DrvInput, 0xff, 5);
 	
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInput[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInput[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInput[2] ^= (DrvJoy3[i] & 1) << i;
@@ -3119,33 +3144,33 @@ static int samshootFrame()
 			DrvInput[4] ^= (DrvJoy5[i] & 1) << i;
 		}
 
-		BurnGunMakeInputs(0, (short)DrvAxis[0], (short)DrvAxis[1]);
-		BurnGunMakeInputs(1, (short)DrvAxis[2], (short)DrvAxis[3]);
+		BurnGunMakeInputs(0, (INT16)DrvAxis[0], (INT16)DrvAxis[1]);
+		BurnGunMakeInputs(1, (INT16)DrvAxis[2], (INT16)DrvAxis[3]);
 		
 		float x0 = (320 - ((float)((BurnGunX[0] >> 8) + 8))) / 320 * 160;
 		float y0 = (240 - ((float)((BurnGunY[0] >> 8) + 8))) / 240 * 240;
 		float x1 = (320 - ((float)((BurnGunX[1] >> 8) + 8))) / 320 * 160;
 		float y1 = (240 - ((float)((BurnGunY[1] >> 8) + 8))) / 240 * 240;
-		DrvAnalogInput[0] = (unsigned char)x0 + 36;
-		DrvAnalogInput[1] = (unsigned char)y0 + 22;
-		DrvAnalogInput[2] = (unsigned char)x1 + 36;
-		DrvAnalogInput[3] = (unsigned char)y1 + 22;
+		DrvAnalogInput[0] = (UINT8)x0 + 36;
+		DrvAnalogInput[1] = (UINT8)y0 + 22;
+		DrvAnalogInput[2] = (UINT8)x1 + 36;
+		DrvAnalogInput[3] = (UINT8)y1 + 22;
 	}
 
-	int nCyclesDone = 0;
-	int nCyclesNext = 0;
-	int nCyclesExec = 0;
+	INT32 nCyclesDone = 0;
+	INT32 nCyclesNext = 0;
+	INT32 nCyclesExec = 0;
 
 	SekNewFrame();
 
 	SekOpen(0);
 
-	for(int i=0; i<SETA2_INTER_LEAVE; i++) {
+	for(INT32 i=0; i<SETA2_INTER_LEAVE; i++) {
 		nCyclesNext += M68K_CYCS_PER_INTER;
 		nCyclesExec = SekRun( nCyclesNext - nCyclesDone );
 		nCyclesDone += nCyclesExec;
 
-		for (int j=0;j<3;j++)
+		for (INT32 j=0;j<3;j++)
 		if (tmp68301_timer[j]) {
 			tmp68301_timer_counter[j] += nCyclesExec;
 			if (tmp68301_timer_counter[j] >= tmp68301_timer[j]) {
@@ -3172,7 +3197,7 @@ static int samshootFrame()
 	return 0;
 }
 
-static int grdiansScan(int nAction,int *pnMin)
+static INT32 grdiansScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -3186,6 +3211,17 @@ static int grdiansScan(int nAction,int *pnMin)
 		ba.szName = "All Ram";
 		BurnAcb(&ba);
 	}
+	
+#if 0
+	// This is causing crashes
+	if (nAction & ACB_NVRAM && HasNVRam) {
+		memset(&ba, 0, sizeof(ba));
+		ba.Data = RamNV;
+		ba.nLen = 0x10000;
+		ba.szName = "Backup Ram";
+		BurnAcb(&ba);
+	}
+#endif
 
 	if (nAction & ACB_DRIVER_DATA) {
 
@@ -3210,7 +3246,7 @@ static int grdiansScan(int nAction,int *pnMin)
 			bRecalcPalette = 1;
 
 			// x1-010 bank changed
-			for (int i=0; i<SETA_NUM_BANKS; i++)
+			for (INT32 i=0; i<SETA_NUM_BANKS; i++)
 				memcpy(X1010SNDROM + i * 0x20000, X1010SNDROM + 0x100000 + x1_010_chip->sound_banks[i] * 0x20000, 0x20000);
 		}
 	}
@@ -3222,7 +3258,7 @@ struct BurnDriver BurnDrvGrdians = {
 	"grdians", NULL, NULL, NULL, "1995",
 	"Guardians\0Denjin Makai II\0", NULL, "Banpresto", "Newer Seta",
 	L"Guardians\0\u96FB\u795E\u9B54\u584A \uFF29\uFF29\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_SCRFIGHT, 0,
 	NULL, grdiansRomInfo, grdiansRomName, NULL, NULL, grdiansInputInfo, grdiansDIPInfo,
 	grdiansInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	304, 232, 4, 3
@@ -3232,7 +3268,7 @@ struct BurnDriver BurnDrvMj4simai = {
 	"mj4simai", NULL, NULL, NULL, "1996",
 	"Wakakusamonogatari Mahjong Yonshimai (Japan)\0", NULL, "Maboroshi Ware", "Newer Seta",
 	L"\u82E5\u8349\u7269\u8A9E \u9EBB\u96C0\u56DB\u59C9\u59B9 (Japan)\0Wakakusamonogatari Mahjong Yonshimai\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S, GBF_MAHJONG, 0,
+	BDF_GAME_WORKING, 1, HARDWARE_SETA2, GBF_MAHJONG, 0,
 	NULL, mj4simaiRomInfo, mj4simaiRomName, NULL, NULL, mj4simaiInputInfo, mj4simaiDIPInfo,
 	mj4simaiInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	384, 240, 4, 3
@@ -3242,7 +3278,7 @@ struct BurnDriver BurnDrvMyangel = {
 	"myangel", NULL, NULL, NULL, "1996",
 	"Kosodate Quiz My Angel (Japan)\0", NULL, "Namco", "Newer Seta",
 	L"\u5B50\u80B2\u3066\u30AF\u30A4\u30BA \u30DE\u30A4 \u30A8\u30F3\u30B8\u30A7\u30EB (Japan)\0Kosodate Quiz My Angel\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_QUIZ, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_QUIZ, 0,
 	NULL, myangelRomInfo, myangelRomName, NULL, NULL, myangelInputInfo, myangelDIPInfo,
 	myangelInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	376, 240, 4, 3
@@ -3252,7 +3288,7 @@ struct BurnDriver BurnDrvMyangel2 = {
 	"myangel2", NULL, NULL, NULL, "1996",
 	"Kosodate Quiz My Angel 2 (Japan)\0", NULL, "Namco", "Newer Seta",
 	L"\u5B50\u80B2\u3066\u30AF\u30A4\u30BA \u30DE\u30A4 \u30A8\u30F3\u30B8\u30A7\u30EB \uFF12 (Japan)\0Kosodate Quiz My Angel 2\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_QUIZ, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_QUIZ, 0,
 	NULL, myangel2RomInfo, myangel2RomName, NULL, NULL, myangelInputInfo, myangel2DIPInfo,
 	myangel2Init, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	376, 240, 4, 3
@@ -3262,7 +3298,7 @@ struct BurnDriver BurnDrvPzlbowl = {
 	"pzlbowl", NULL, NULL, NULL, "1999",
 	"Puzzle De Bowling (Japan)\0", NULL, "Nihon System / Moss", "Newer Seta",
 	L"Puzzle De Bowling\0\u30D1\u30BA\u30EB \uFF24\uFF25 \u30DC\u30FC\u30EA\u30F3\u30B0\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_PUZZLE, 0,
 	NULL, pzlbowlRomInfo, pzlbowlRomName, NULL, NULL, grdiansInputInfo, pzlbowlDIPInfo,
 	pzlbowlInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	384, 240, 4, 3
@@ -3272,7 +3308,7 @@ struct BurnDriver BurnDrvPenbros = {
 	"penbros", NULL, NULL, NULL, "2000",
 	"Penguin Brothers (Japan)\0", NULL, "Subsino", "Newer Seta",
 	L"\u30DA\u30F3\u30AE\u30F3 \u30D6\u30E9\u30B6\u30FC\u30BA (Japan)\0Penguin Brothers\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_PLATFORM, 0,
 	NULL, penbrosRomInfo, penbrosRomName, NULL, NULL, penbrosInputInfo, penbrosDIPInfo,
 	penbrosInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 224, 4, 3
@@ -3282,7 +3318,7 @@ struct BurnDriver BurnDrvGundamex = {
 	"gundamex", NULL, NULL, NULL, "1994",
 	"Mobile Suit Gundam EX Revue\0", NULL, "Banpresto", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_VSFIGHT, 0,
 	NULL, gundamexRomInfo, gundamexRomName, NULL, NULL, GundamexInputInfo, GundamexDIPInfo,
 	gundamexInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	384, 224, 4, 3
@@ -3292,7 +3328,7 @@ struct BurnDriver BurnDrvDeerhunt = {
 	"deerhunt", NULL, NULL, NULL, "2000",
 	"Deer Hunting USA V4.3\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, deerhuntRomInfo, deerhuntRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3302,7 +3338,7 @@ struct BurnDriver BurnDrvDeerhuna = {
 	"deerhunta", "deerhunt", NULL, NULL, "2000",
 	"Deer Hunting USA V4.2\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, deerhunaRomInfo, deerhunaRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3312,7 +3348,7 @@ struct BurnDriver BurnDrvDeerhunb = {
 	"deerhuntb", "deerhunt", NULL, NULL, "2000",
 	"Deer Hunting USA V4.0\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, deerhunbRomInfo, deerhunbRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3320,10 +3356,20 @@ struct BurnDriver BurnDrvDeerhunb = {
 
 struct BurnDriver BurnDrvDeerhunc = {
 	"deerhuntc", "deerhunt", NULL, NULL, "2000",
+	"Deer Hunting USA V3.0\0", NULL, "Sammy USA Corporation", "Newer Seta",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
+	NULL, deerhuncRomInfo, deerhuncRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
+	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
+	320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvDeerhund = {
+	"deerhuntd", "deerhunt", NULL, NULL, "2000",
 	"Deer Hunting USA V2\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
-	NULL, deerhuncRomInfo, deerhuncRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
+	NULL, deerhundRomInfo, deerhundRomName, NULL, NULL, DeerhuntInputInfo, DeerhuntDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
 };
@@ -3332,7 +3378,7 @@ struct BurnDriver BurnDrvTurkhunt = {
 	"turkhunt", NULL, NULL, NULL, "2001",
 	"Turkey Hunting USA V1.0\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING, 1, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, turkhuntRomInfo, turkhuntRomName, NULL, NULL, DeerhuntInputInfo, TurkhuntDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3342,7 +3388,7 @@ struct BurnDriver BurnDrvWschamp = {
 	"wschamp", NULL, NULL, NULL, "2001",
 	"Wing Shooting Championship V2.00\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, wschampRomInfo, wschampRomName, NULL, NULL, WschampInputInfo, WschampDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3352,7 +3398,7 @@ struct BurnDriver BurnDrvWschampa = {
 	"wschampa", "wschamp", NULL, NULL, "2001",
 	"Wing Shooting Championship V1.01\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, wschampaRomInfo, wschampaRomName, NULL, NULL, WschampInputInfo, WschampDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3362,13 +3408,13 @@ struct BurnDriver BurnDrvTrophyh = {
 	"trophyh", NULL, NULL, NULL, "2002",
 	"Trophy Hunting - Bear & Moose V1.0\0", NULL, "Sammy USA Corporation", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA2, GBF_SHOOT, 0,
 	NULL, trophyhRomInfo, trophyhRomName, NULL, NULL, WschampInputInfo, TrophyhDIPInfo,
 	samshootInit, grdiansExit, samshootFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
 };
 
-static int funcubeInit()
+static INT32 funcubeInit()
 {
 	return 1;
 }
@@ -3377,7 +3423,7 @@ struct BurnDriverD BurnDrvFuncube2 = {
 	"funcube2", NULL, NULL, NULL, "2001",
 	"Funcube 2 (v1.1)\0", "Unemulated Sub CPU", "Namco", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	0, 2, HARDWARE_SETA2, GBF_PUZZLE, 0,
 	NULL, funcube2RomInfo, funcube2RomName, NULL, NULL, grdiansInputInfo, grdiansDIPInfo,
 	funcubeInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3
@@ -3387,7 +3433,7 @@ struct BurnDriverD BurnDrvFuncube4 = {
 	"funcube4", NULL, NULL, NULL, "2001",
 	"Funcube 4 (v1.0)\0", "Unemulated Sub CPU", "Namco", "Newer Seta",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	0, 2, HARDWARE_SETA2, GBF_PUZZLE, 0,
 	NULL, funcube4RomInfo, funcube4RomName, NULL, NULL, grdiansInputInfo, grdiansDIPInfo,
 	funcubeInit, grdiansExit, grdiansFrame, NULL, grdiansScan, &bRecalcPalette, 0x8000,
 	320, 240, 4, 3

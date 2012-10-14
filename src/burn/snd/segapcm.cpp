@@ -7,21 +7,25 @@ struct segapcm
 	UINT8  *ram;
 	UINT8 low[16];
 	const UINT8 *rom;
-	int bankshift;
-	int bankmask;
-	int UpdateStep;
+	INT32 bankshift;
+	INT32 bankmask;
+	INT32 UpdateStep;
 };
 
 static struct segapcm *Chip = NULL;
-static int *Left = NULL;
-static int *Right = NULL;
+static INT32 *Left = NULL;
+static INT32 *Right = NULL;
 
-void SegaPCMUpdate(short* pSoundBuf, int nLength)
+void SegaPCMUpdate(INT16* pSoundBuf, INT32 nLength)
 {
-	int Channel;
+#if defined FBA_DEBUG
+	if (!DebugSnd_SegaPCMInitted) bprintf(PRINT_ERROR, _T("SegaPCMUpdate called without init\n"));
+#endif
+
+	INT32 Channel;
 	
-	memset(Left, 0, nLength * sizeof(int));
-	memset(Right, 0, nLength * sizeof(int));
+	memset(Left, 0, nLength * sizeof(INT32));
+	memset(Right, 0, nLength * sizeof(INT32));
 
 	for (Channel = 0; Channel < 16; Channel++) {
 		UINT8 *Regs = Chip->ram + 8 * Channel;
@@ -30,7 +34,7 @@ void SegaPCMUpdate(short* pSoundBuf, int nLength)
 			UINT32 Addr = (Regs[0x85] << 16) | (Regs[0x84] << 8) | Chip->low[Channel];
 			UINT32 Loop = (Regs[0x05] << 16) | (Regs[0x04] << 8);
 			UINT8 End = Regs[6] + 1;
-			int i;
+			INT32 i;
 			
 			for (i = 0; i < nLength; i++) {
 				INT8 v = 0;
@@ -57,7 +61,7 @@ void SegaPCMUpdate(short* pSoundBuf, int nLength)
 		}
 	}
 	
-	for (int i = 0; i < nLength; i++) {
+	for (INT32 i = 0; i < nLength; i++) {
 		if (Left[i] > 32767) Left[i] = 32767;
 		if (Left[i] < -32768) Left[i] = -32768;
 		
@@ -70,9 +74,9 @@ void SegaPCMUpdate(short* pSoundBuf, int nLength)
 	}
 }
 
-void SegaPCMInit(int clock, int bank, UINT8 *pPCMData, int PCMDataSize)
+void SegaPCMInit(INT32 clock, INT32 bank, UINT8 *pPCMData, INT32 PCMDataSize)
 {
-	int Mask, RomMask;
+	INT32 Mask, RomMask;
 	
 	Chip = (struct segapcm*)malloc(sizeof(*Chip));
 	memset(Chip, 0, sizeof(*Chip));
@@ -82,8 +86,8 @@ void SegaPCMInit(int clock, int bank, UINT8 *pPCMData, int PCMDataSize)
 	Chip->ram = (UINT8*)malloc(0x800);
 	memset(Chip->ram, 0xff, 0x800);
 	
-	Left = (int*)malloc(nBurnSoundLen * sizeof(int));
-	Right = (int*)malloc(nBurnSoundLen * sizeof(int));
+	Left = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
+	Right = (INT32*)malloc(nBurnSoundLen * sizeof(INT32));
 
 	Chip->bankshift = bank;
 	Mask = bank >> 16;
@@ -96,50 +100,74 @@ void SegaPCMInit(int clock, int bank, UINT8 *pPCMData, int PCMDataSize)
 	Chip->bankmask = Mask & (RomMask >> Chip->bankshift);
 	
 	double Rate = (double)clock / 128 / nBurnSoundRate;
-	Chip->UpdateStep = (int)(Rate * 0x10000);
+	Chip->UpdateStep = (INT32)(Rate * 0x10000);
+	
+	DebugSnd_SegaPCMInitted = 1;
 }
 
 void SegaPCMExit()
 {
-	free(Chip);
-	Chip = NULL;
+#if defined FBA_DEBUG
+	if (!DebugSnd_SegaPCMInitted) bprintf(PRINT_ERROR, _T("SegaPCMExit called without init\n"));
+#endif
+
+	if (Chip) {
+		free(Chip);
+		Chip = NULL;
+	}
 	
-	free(Left);
-	Left = NULL;
+	if (Left) {
+		free(Left);
+		Left = NULL;
+	}
 	
-	free(Right);
-	Right = NULL;
+	if (Right) {
+		free(Right);
+		Right = NULL;
+	}
+	
+	DebugSnd_SegaPCMInitted = 0;
 }
 
-int SegaPCMScan(int nAction,int *pnMin)
+INT32 SegaPCMScan(INT32 nAction,INT32 *pnMin)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_SegaPCMInitted) bprintf(PRINT_ERROR, _T("SegaPCMScan called without init\n"));
+#endif
+
 	struct BurnArea ba;
-	char szName[16];
-	
-	if ((nAction & ACB_DRIVER_DATA) == 0) {
-		return 1;
-	}
 	
 	if (pnMin != NULL) {
-		*pnMin = 0x029680;
+		*pnMin = 0x029719;
 	}
 	
-	sprintf(szName, "SegaPCM");
-	ba.Data		= &Chip;
-	ba.nLen		= sizeof(struct segapcm);
-	ba.nAddress = 0;
-	ba.szName	= szName;
-	BurnAcb(&ba);
+	if (nAction & ACB_DRIVER_DATA) {
+		ScanVar(Chip->low, 16 * sizeof(UINT8), "SegaPCMlow");
+		
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = Chip->ram;
+		ba.nLen	  = 0x800;
+		ba.szName = "SegaPCMRAM";	
+		BurnAcb(&ba);
+	}
 	
 	return 0;
 }
 
-unsigned char SegaPCMRead(unsigned int Offset)
+UINT8 SegaPCMRead(UINT32 Offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_SegaPCMInitted) bprintf(PRINT_ERROR, _T("SegaPCMRead called without init\n"));
+#endif
+
 	return Chip->ram[Offset & 0x07ff];
 }
 
-void SegaPCMWrite(unsigned int Offset, unsigned char Data)
+void SegaPCMWrite(UINT32 Offset, UINT8 Data)
 {
+#if defined FBA_DEBUG
+	if (!DebugSnd_SegaPCMInitted) bprintf(PRINT_ERROR, _T("SegaPCMWrite called without init\n"));
+#endif
+
 	Chip->ram[Offset & 0x07ff] = Data;
 }

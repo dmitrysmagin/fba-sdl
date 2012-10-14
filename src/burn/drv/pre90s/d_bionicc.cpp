@@ -2,48 +2,50 @@
 // Based on MAME driver by Steven Frew, Phil Stroffolino, and Paul Leaman
 
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2151.h"
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
-static unsigned char DrvDips[2];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
+static UINT8 DrvDips[2];
 
-static unsigned char *Mem, *MemEnd;
-static unsigned char *AllRam, *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KRAM0;
-static unsigned char *DrvTextRAM;
-static unsigned char *DrvVidRAM0;
-static unsigned char *DrvVidRAM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *Drv68KRAM1;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvSprBuf;
+static UINT8 *Mem, *MemEnd;
+static UINT8 *AllRam, *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KRAM0;
+static UINT8 *DrvTextRAM;
+static UINT8 *DrvVidRAM0;
+static UINT8 *DrvVidRAM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *Drv68KRAM1;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvSprBuf;
 
-static unsigned int *DrvPalette;
-static unsigned int *Palette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
+static UINT8 DrvRecalc;
 
 
-static unsigned char *soundlatch;
+static UINT8 *soundlatch;
 
-static int flipscreen;
+static INT32 flipscreen;
 
-static int fg_scroll_x; 
-static int fg_scroll_y;
-static int bg_scroll_x;
-static int bg_scroll_y;
+static INT32 fg_scroll_x; 
+static INT32 fg_scroll_y;
+static INT32 bg_scroll_x;
+static INT32 bg_scroll_y;
 
-static int fg_enable;
-static int bg_enable;
+static INT32 fg_enable;
+static INT32 bg_enable;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -134,12 +136,12 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-static void bionicc_palette_write(int offset)
+static void bionicc_palette_write(INT32 offset)
 {
 	offset >>= 1;
 
-	int r, g, b, bright;
-	int data =  *((unsigned short*)(DrvPalRAM + (offset << 1)));
+	INT32 r, g, b, bright;
+	INT32 data =  *((UINT16*)(DrvPalRAM + (offset << 1)));
 
 	bright = (data&0x0f);
 
@@ -158,7 +160,7 @@ static void bionicc_palette_write(int offset)
 	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
 }
 
-void __fastcall bionicc_write_byte(unsigned int address, unsigned char data)
+void __fastcall bionicc_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfffff800) == 0xff8000) {
 		address &= 0x7ff;
@@ -181,12 +183,12 @@ void __fastcall bionicc_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall bionicc_write_word(unsigned int address, unsigned short data)
+void __fastcall bionicc_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffff800) == 0xff8000) {
 		address &= 0x7ff;
 
-		*((unsigned short*)(DrvPalRAM + address)) = data;
+		*((UINT16*)(DrvPalRAM + address)) = data;
 
 		bionicc_palette_write(address);
 
@@ -212,7 +214,7 @@ void __fastcall bionicc_write_word(unsigned int address, unsigned short data)
 			return;
 
 		case 0xfe801a:
-			unsigned short *inp = (unsigned short*)(Drv68KRAM1 + 0x3ffa);
+			UINT16 *inp = (UINT16*)(Drv68KRAM1 + 0x3ffa);
 			inp[0] = (DrvInputs[0] >> 4) ^ 0x0f;
 			inp[1] = DrvInputs[2] ^ 0xff;
 			inp[2] = DrvInputs[1] ^ 0xff;
@@ -220,7 +222,7 @@ void __fastcall bionicc_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-unsigned char __fastcall bionicc_read_byte(unsigned int address)
+UINT8 __fastcall bionicc_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -240,7 +242,7 @@ unsigned char __fastcall bionicc_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall bionicc_read_word(unsigned int address)
+UINT16 __fastcall bionicc_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -254,7 +256,7 @@ unsigned short __fastcall bionicc_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall bionicc_sound_read(unsigned short address)
+UINT8 __fastcall bionicc_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -268,7 +270,7 @@ unsigned char __fastcall bionicc_sound_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall bionicc_sound_write(unsigned short address, unsigned char data)
+void __fastcall bionicc_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -282,9 +284,9 @@ void __fastcall bionicc_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KROM	= Next; Next += 0x0040000;
 	DrvZ80ROM	= Next; Next += 0x0008000;
@@ -294,7 +296,7 @@ static int MemIndex()
 	DrvGfxROM2	= Next; Next += 0x0080000;
 	DrvGfxROM3	= Next; Next += 0x0080000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x00400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -309,7 +311,7 @@ static int MemIndex()
 
 	DrvZ80RAM	= Next; Next += 0x0000800;
 
-	Palette		= (unsigned int*)Next; Next += 0x00400 * sizeof(int);
+	Palette		= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	RamEnd		= Next;
 
@@ -318,7 +320,7 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -347,24 +349,24 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	static int CharPlanes[2]    = { 0x000004, 0x000000 };
-	static int Tile0Planes[4]   = { 0x040004, 0x040000, 0x000004, 0x000000 };
-	static int Tile1Planes[4]   = { 0x100004, 0x100000, 0x000004, 0x000000 };
-	static int SpriPlanes[4]    = { 0x180000, 0x100000, 0x080000, 0x000000 };
-	static int CharXOffsets[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b,
+	static INT32 CharPlanes[2]    = { 0x000004, 0x000000 };
+	static INT32 Tile0Planes[4]   = { 0x040004, 0x040000, 0x000004, 0x000000 };
+	static INT32 Tile1Planes[4]   = { 0x100004, 0x100000, 0x000004, 0x000000 };
+	static INT32 SpriPlanes[4]    = { 0x180000, 0x100000, 0x080000, 0x000000 };
+	static INT32 CharXOffsets[16] = { 0x000, 0x001, 0x002, 0x003, 0x008, 0x009, 0x00a, 0x00b,
 					0x100, 0x101, 0x102, 0x103, 0x108, 0x109, 0x10a, 0x10b };
-	static int SpriXOffsets[16] = {	0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
+	static INT32 SpriXOffsets[16] = {	0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007,
 					0x080, 0x081, 0x082, 0x083, 0x084, 0x085, 0x086, 0x087 };
-	static int CharYOffsets[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
+	static INT32 CharYOffsets[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 					0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0 };
-	static int SpriYOffsets[16] = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
+	static INT32 SpriYOffsets[16] = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
 					0x040, 0x048, 0x050, 0x058, 0x060, 0x068, 0x070, 0x078 };
 
 	memcpy (tmp, DrvGfxROM0, 0x08000);
@@ -383,19 +385,19 @@ static int DrvGfxDecode()
 
 	GfxDecode(0x00800, 4, 16, 16, SpriPlanes,  SpriXOffsets,  SpriYOffsets,  0x100, tmp, DrvGfxROM3);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -412,7 +414,7 @@ static int DrvInit()
 		if (BurnLoadRom(DrvGfxROM1 + 0x0000, 6, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM1 + 0x8000, 7, 1)) return 1;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x8000, i +  8, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM3 + i * 0x8000, i + 16, 1)) return 1;
 		}
@@ -435,7 +437,7 @@ static int DrvInit()
 	SekSetWriteWordHandler(0,	bionicc_write_word);
 	SekClose();
 
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -456,27 +458,27 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM2151Exit();
 	SekExit();
 	ZetExit();
 
-	free (Mem);
+	BurnFree (Mem);
 
 	GenericTilesExit();
 
 	return 0;
 }
 
-static void draw_foreground(int priority)
+static void draw_foreground(INT32 priority)
 {
-	unsigned short *vidram = (unsigned short*)DrvVidRAM0;
+	UINT16 *vidram = (UINT16*)DrvVidRAM0;
 
-	for (int offs = 0; offs < 0x4000 / 4; offs++)
+	for (INT32 offs = 0; offs < 0x4000 / 4; offs++)
 	{
-		int sx = (offs & 0x3f) << 4;
-		int sy = (offs >> 6) << 4;
+		INT32 sx = (offs & 0x3f) << 4;
+		INT32 sy = (offs >> 6) << 4;
 
 		sx -= fg_scroll_x;
 		sy -= fg_scroll_y;
@@ -486,12 +488,12 @@ static void draw_foreground(int priority)
 		if (sx < -15 || sx > 255 || sy < 1 || sy > 239) continue;
 		sy -= 16;
 
-		int attr  = vidram[(offs << 1) | 1];
-		int code  = (vidram[offs << 1] & 0xff) | ((attr & 0x07) << 8);
-		int color = (attr & 0x18) >> 3;
-		int flipx = attr & 0x80;
-		int flipy = attr & 0x40;
-		int prior = (attr & 0x20) >> 5;
+		INT32 attr  = vidram[(offs << 1) | 1];
+		INT32 code  = (vidram[offs << 1] & 0xff) | ((attr & 0x07) << 8);
+		INT32 color = (attr & 0x18) >> 3;
+		INT32 flipx = attr & 0x80;
+		INT32 flipy = attr & 0x40;
+		INT32 prior = (attr & 0x20) >> 5;
 
 		if ((attr & 0xc0) == 0xc0) {
 			flipx = 0;
@@ -517,11 +519,11 @@ static void draw_foreground(int priority)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x400; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x400; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
@@ -534,12 +536,12 @@ static int DrvDraw()
 
 	if (bg_enable)
 	{
-		unsigned short *vidram = (unsigned short*)DrvVidRAM1;
+		UINT16 *vidram = (UINT16*)DrvVidRAM1;
 
-		for (int offs = 0; offs < 0x4000 / 4; offs++)
+		for (INT32 offs = 0; offs < 0x4000 / 4; offs++)
 		{
-			int sx = (offs & 0x3f) << 3;
-			int sy = (offs >> 6) << 3;
+			INT32 sx = (offs & 0x3f) << 3;
+			INT32 sy = (offs >> 6) << 3;
 
 			sx -= bg_scroll_x;
 			sy -= bg_scroll_y;
@@ -549,11 +551,11 @@ static int DrvDraw()
 			if (sy < 9 || sy > 239 || sx < -7 || sx > 255) continue;
 			sy -= 16;
 
-			int attr  = vidram[(offs << 1) | 1];
-			int code  = (vidram[offs << 1] & 0xff) | ((attr & 0x07) << 8);
-			int color = (attr & 0x18) >> 3;
-			int flipx = attr & 0x80;
-			int flipy = attr & 0x40;
+			INT32 attr  = vidram[(offs << 1) | 1];
+			INT32 code  = (vidram[offs << 1] & 0xff) | ((attr & 0x07) << 8);
+			INT32 color = (attr & 0x18) >> 3;
+			INT32 flipx = attr & 0x80;
+			INT32 flipy = attr & 0x40;
 
 			if (flipy) {
 				if (flipx) {
@@ -576,19 +578,19 @@ static int DrvDraw()
 	}
 
 	{
-		unsigned short *vidram = (unsigned short*)DrvSprBuf;
+		UINT16 *vidram = (UINT16*)DrvSprBuf;
 	
-		for (int offs = (0x500-8)/2; offs >= 0; offs -= 4)
+		for (INT32 offs = (0x500-8)/2; offs >= 0; offs -= 4)
 		{
-			int code = vidram[offs] & 0x7ff;
+			INT32 code = vidram[offs] & 0x7ff;
 
 			if (code != 0x7ff)
 			{
-				int attr = vidram[offs+1];
-				int color = (attr&0x3C)>>2;
-				int flipx = attr & 0x02;
-				int sx = (short)vidram[offs+3];
-				int sy = (short)vidram[offs+2];
+				INT32 attr = vidram[offs+1];
+				INT32 color = (attr&0x3C)>>2;
+				INT32 flipx = attr & 0x02;
+				INT32 sx = (INT16)vidram[offs+3];
+				INT32 sy = (INT16)vidram[offs+2];
 				if(sy>512-16) sy-=512;
 
 				if (sx < -15 || sx > 255 || sy < 1 || sy > 239) continue;
@@ -609,27 +611,27 @@ static int DrvDraw()
 	}
 
 	{
-		unsigned short *vidram = (unsigned short*)DrvTextRAM;
+		UINT16 *vidram = (UINT16*)DrvTextRAM;
 
-		for (int offs = 0; offs < 0x800 / 2; offs++)
+		for (INT32 offs = 0; offs < 0x800 / 2; offs++)
 		{
-			int sx = (offs << 3) & 0xf8;
-			int sy = (offs >> 2) & 0xf8;
+			INT32 sx = (offs << 3) & 0xf8;
+			INT32 sy = (offs >> 2) & 0xf8;
 			sy -= 16;
 			if (sy < 0 || sy > 223) continue;
 
-			int attr  = vidram[offs + 0x400];
-			int code  = (vidram[offs] & 0xff) | ((attr & 0xc0) << 2);
-			int color = attr & 0x3f;
+			INT32 attr  = vidram[offs + 0x400];
+			INT32 code  = (vidram[offs] & 0xff) | ((attr & 0xc0) << 2);
+			INT32 color = attr & 0x3f;
 
 			Render8x8Tile_Mask(pTransDraw, code, sx, sy, color, 2, 3, 0x300, DrvGfxROM0);
 		}
 	}
 
 	if (flipscreen) {
-		int nSize = (nScreenWidth * nScreenHeight) - 1;
-		for (int i = 0; i < nSize >> 1; i++) {
-			int n = pTransDraw[i];
+		INT32 nSize = (nScreenWidth * nScreenHeight) - 1;
+		for (INT32 i = 0; i < nSize >> 1; i++) {
+			INT32 n = pTransDraw[i];
 			pTransDraw[i] = pTransDraw[nSize - i];
 			pTransDraw[nSize - i] = n;
 		}
@@ -640,7 +642,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -649,23 +651,23 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = DrvInputs[1] = DrvInputs[2] = 0xff;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= DrvJoy1[i] << i;
 			DrvInputs[1] ^= DrvJoy2[i] << i;
 			DrvInputs[2] ^= DrvJoy3[i] << i;
 		}
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = 8;
-	int nTotalCycles[2] = { 12000000 / 60, 3579545 / 60 };
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 8;
+	INT32 nTotalCycles[2] = { 12000000 / 60, 3579545 / 60 };
 
 	ZetNewFrame();
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nTotalCycles[0] -= SekRun(nTotalCycles[0] / (nInterleave - i));
 		if (i != (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
@@ -674,8 +676,8 @@ static int DrvFrame()
 		if ((i & 1) == 1) ZetNmi();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -684,8 +686,8 @@ static int DrvFrame()
 	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		BurnYM2151Render(pSoundBuf, nSegmentLength);
 	}
 
@@ -703,7 +705,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -780,9 +782,9 @@ STD_ROM_FN(bionicc)
 
 struct BurnDriver BurnDrvbionicc = {
 	"bionicc", NULL, NULL, NULL, "1987",
-	"Bionic Commando (Euro)\0", NULL, "Capcom", "Misc",
+	"Bionic Commando (Euro)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
 	NULL, bioniccRomInfo, bioniccRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -832,9 +834,9 @@ STD_ROM_FN(bionicc1)
 
 struct BurnDriver BurnDrvbionicc1 = {
 	"bionicc1", "bionicc", NULL, NULL, "1987",
-	"Bionic Commando (US set 1)\0", NULL, "Capcom", "Misc",
+	"Bionic Commando (US set 1)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
 	NULL, bionicc1RomInfo, bionicc1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -884,9 +886,9 @@ STD_ROM_FN(bionicc2)
 
 struct BurnDriver BurnDrvbionicc2 = {
 	"bionicc2", "bionicc", NULL, NULL, "1987",
-	"Bionic Commando (US set 2)\0", NULL, "Capcom", "Misc",
+	"Bionic Commando (US set 2)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
 	NULL, bionicc2RomInfo, bionicc2RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3
@@ -936,9 +938,9 @@ STD_ROM_FN(topsecrt)
 
 struct BurnDriver BurnDrvtopsecrt = {
 	"topsecrt", "bionicc", NULL, NULL, "1987",
-	"Top Secret (Japan)\0", NULL, "Capcom", "Misc",
+	"Top Secret (Japan)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
 	NULL, topsecrtRomInfo, topsecrtRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 224, 4, 3

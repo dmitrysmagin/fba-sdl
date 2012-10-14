@@ -3,29 +3,29 @@
 #include "tiles_generic.h"
 #include "konamiic.h"
 
-int K051960_irq_enabled;
-int K051960_nmi_enabled;
-int K051960_spriteflip;
+INT32 K051960_irq_enabled;
+INT32 K051960_nmi_enabled;
+INT32 K051960_spriteflip;
 
-static unsigned char *K051960Ram = NULL;
-static unsigned char K051960SpriteRomBank[3];
-int K051960ReadRoms;
-static int K051960RomOffset;
-static unsigned int K051960RomMask;
-static unsigned char *K051960Rom;
-static unsigned char blank_tile[0x100];
+static UINT8 *K051960Ram = NULL;
+static UINT8 K051960SpriteRomBank[3];
+INT32 K051960ReadRoms;
+static INT32 K051960RomOffset;
+static UINT32 K051960RomMask;
+static UINT8 *K051960Rom;
+static UINT8 blank_tile[0x100];
 
-static int nSpriteXOffset;
-static int nSpriteYOffset;
+static INT32 nSpriteXOffset;
+static INT32 nSpriteYOffset;
 
-typedef void (*K051960_Callback)(int *Code, int *Colour, int *Priority, int *Shadow);
+typedef void (*K051960_Callback)(INT32 *Code, INT32 *Colour, INT32 *Priority, INT32 *Shadow);
 static K051960_Callback K051960Callback;
 
-void K051960SpritesRender(unsigned char *pSrc, int Priority)
+void K051960SpritesRender(UINT8 *pSrc, INT32 Priority)
 {
 #define NUM_SPRITES 128
-	int Offset, PriCode;
-	int SortedList[NUM_SPRITES];
+	INT32 Offset, PriCode;
+	INT32 SortedList[NUM_SPRITES];
 
 	for (Offset = 0; Offset < NUM_SPRITES; Offset++) SortedList[Offset] = -1;
 
@@ -36,12 +36,12 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 	}
 
 	for (PriCode = 0; PriCode < NUM_SPRITES; PriCode++) {
-		int ox, oy, Code, Colour, Pri, Shadow, Size, w, h, x, y, xFlip, yFlip, xZoom, yZoom;
+		INT32 ox, oy, Code, Colour, Pri, Shadow, Size, w, h, x, y, xFlip, yFlip, xZoom, yZoom;
 
-		static const int xOffset[8] = { 0, 1, 4, 5, 16, 17, 20, 21 };
-		static const int yOffset[8] = { 0, 2, 8, 10, 32, 34, 40, 42 };
-		static const int Width[8] =  { 1, 2, 1, 2, 4, 2, 4, 8 };
-		static const int Height[8] = { 1, 1, 2, 2, 2, 4, 4, 8 };
+		static const INT32 xOffset[8] = { 0, 1, 4, 5, 16, 17, 20, 21 };
+		static const INT32 yOffset[8] = { 0, 2, 8, 10, 32, 34, 40, 42 };
+		static const INT32 Width[8] =  { 1, 2, 1, 2, 4, 2, 4, 8 };
+		static const INT32 Height[8] = { 1, 1, 2, 2, 2, 4, 4, 8 };
 
 		Offset = SortedList[PriCode];
 		if (Offset == -1) continue;
@@ -78,7 +78,7 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 		yZoom = 0x10000 / 128 * (128 - yZoom);
 
 		if (xZoom == 0x10000 && yZoom == 0x10000) {
-			int sx,sy;
+			INT32 sx,sy;
 
 			for (y = 0; y < h; y++)	{
 				sy = oy + 16 * y;
@@ -86,7 +86,7 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 				sy -= 16;
 				
 				for (x = 0; x < w; x++)	{
-					int c = Code;
+					INT32 c = Code;
 
 					sx = ox + 16 * x;
 					if (xFlip) c += xOffset[(w - 1 - x)];
@@ -114,7 +114,7 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 				}
 			}
 		} else {
-			int sx, sy, zw, zh;
+			INT32 sx, sy, zw, zh;
 			
 			for (y = 0; y < h; y++)	{
 				sy = oy + ((yZoom * y + (1 << 11)) >> 12);
@@ -123,7 +123,7 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 				sy -= 16;
 
 				for (x = 0; x < w; x++)	{
-					int c = Code;
+					INT32 c = Code;
 
 					sx = ox + ((xZoom * x + (1 << 11)) >> 12);
 					zw = (ox + ((xZoom * (x + 1) + (1 << 11)) >> 12)) - sx;
@@ -143,9 +143,9 @@ void K051960SpritesRender(unsigned char *pSrc, int Priority)
 	}
 }
 
-unsigned char K0519060FetchRomData(unsigned int Offset)
+UINT8 K0519060FetchRomData(UINT32 Offset)
 {
-	int Code, Colour, Pri, Shadow, Off1, Addr;
+	INT32 Code, Colour, Pri, Shadow, Off1, Addr;
 	
 	Addr = K051960RomOffset + (K051960SpriteRomBank[0] << 8) + ((K051960SpriteRomBank[1] & 0x03) << 16);
 	Code = (Addr & 0x3ffe0) >> 5;
@@ -161,7 +161,7 @@ unsigned char K0519060FetchRomData(unsigned int Offset)
 	return K051960Rom[Addr];
 }
 
-unsigned char K051960Read(unsigned int Offset)
+UINT8 K051960Read(UINT32 Offset)
 {
 	if (K051960ReadRoms) {
 		K051960RomOffset = (Offset & 0x3fc) >> 2;
@@ -171,17 +171,17 @@ unsigned char K051960Read(unsigned int Offset)
 	return K051960Ram[Offset];
 }
 
-void K051960Write(unsigned int Offset, unsigned char Data)
+void K051960Write(UINT32 Offset, UINT8 Data)
 {
 	K051960Ram[Offset] = Data;
 }
 
-void K051960SetCallback(void (*Callback)(int *Code, int *Colour, int *Priority, int *Shadow))
+void K051960SetCallback(void (*Callback)(INT32 *Code, INT32 *Colour, INT32 *Priority, INT32 *Shadow))
 {
 	K051960Callback = Callback;
 }
 
-void K051960SetSpriteOffset(int x, int y)
+void K051960SetSpriteOffset(INT32 x, INT32 y)
 {
 	nSpriteXOffset = x;
 	nSpriteYOffset = y;
@@ -198,11 +198,11 @@ void K051960Reset()
 	K051960_spriteflip = 0;
 }
 
-void K051960Init(unsigned char* pRomSrc, unsigned int RomMask)
+void K051960Init(UINT8* pRomSrc, UINT32 RomMask)
 {
 	nSpriteXOffset = nSpriteYOffset = 0;
 
-	K051960Ram = (unsigned char*)malloc(0x400);
+	K051960Ram = (UINT8*)BurnMalloc(0x400);
 	
 	K051960RomMask = RomMask;
 	
@@ -217,8 +217,7 @@ void K051960Init(unsigned char* pRomSrc, unsigned int RomMask)
 
 void K051960Exit()
 {
-	free(K051960Ram);
-	K051960Ram = NULL;
+	BurnFree(K051960Ram);
 	
 	K051960Callback = NULL;
 	K051960RomMask = 0;
@@ -231,7 +230,7 @@ void K051960Exit()
 	K051960Callback = NULL;
 }
 
-void K051960Scan(int nAction)
+void K051960Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -253,7 +252,7 @@ void K051960Scan(int nAction)
 	}
 }
 
-void K051937Write(unsigned int Offset, unsigned char Data)
+void K051937Write(UINT32 Offset, UINT8 Data)
 {
 	if (Offset == 0) {
 		K051960_irq_enabled = Data & 0x01;
@@ -269,7 +268,7 @@ void K051937Write(unsigned int Offset, unsigned char Data)
 	}
 }
 
-unsigned char K051937Read(unsigned int Offset)
+UINT8 K051937Read(UINT32 Offset)
 {
 	if (K051960ReadRoms && Offset >= 4 && Offset < 8)
 	{
@@ -279,7 +278,7 @@ unsigned char K051937Read(unsigned int Offset)
 	{
 		if (Offset == 0)
 		{
-			static int counter;
+			static INT32 counter;
 			return (counter++) & 1;
 		}
 

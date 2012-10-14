@@ -1,14 +1,16 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "taito.h"
 #include "taito_ic.h"
 #include "burn_ym2610.h"
 #include "eeprom.h"
 #include "burn_gun.h"
 
-static int Sci;
-static int Dblaxle;
-static int OldSteer; // Hack to centre the steering in SCI
-static int SciSpriteFrame;
+static INT32 Sci;
+static INT32 Dblaxle;
+static INT32 OldSteer; // Hack to centre the steering in SCI
+static INT32 SciSpriteFrame;
 
 static void AquajackDraw();
 static void BsharkDraw();
@@ -21,7 +23,7 @@ static void SpacegunDraw();
 
 static bool bUseAsm68KCoreOldValue = false;
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo AquajackInputList[] =
 {
@@ -67,6 +69,29 @@ static struct BurnInputInfo BsharkInputList[] =
 };
 
 STDINPUTINFO(Bshark)
+
+static struct BurnInputInfo BsharkjjsInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 1, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 0, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 0, "p2 coin"   },
+	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 1, "p2 start"  },
+
+	{"Up"                , BIT_DIGITAL   , TC0220IOCInputPort2 + 2, "p1 up"     },
+	{"Down"              , BIT_DIGITAL   , TC0220IOCInputPort2 + 3, "p1 down"   },
+	{"Left"              , BIT_DIGITAL   , TC0220IOCInputPort2 + 5, "p1 left"   },
+	{"Right"             , BIT_DIGITAL   , TC0220IOCInputPort2 + 4, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 6, "p1 fire 1" },
+	{"Fire 2"            , BIT_DIGITAL   , TC0220IOCInputPort2 + 7, "p1 fire 2" },
+	
+	{"Reset"             , BIT_DIGITAL   , &TaitoReset           , "reset"     },
+	{"Service"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "service"   },
+	{"Tilt"              , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "tilt"      },
+	{"Dip 1"             , BIT_DIPSWITCH , TC0220IOCDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , TC0220IOCDip + 1       , "dip"       },
+};
+
+STDINPUTINFO(Bsharkjjs)
 
 static struct BurnInputInfo ChasehqInputList[] =
 {
@@ -464,8 +489,8 @@ static void SpacegunMakeInputs()
 	if (TC0220IOCInputPort2[6]) TC0220IOCInput[2] -= 0x40;
 	if (TC0220IOCInputPort2[7]) TC0220IOCInput[2] -= 0x80;
 	
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
-	BurnGunMakeInputs(1, (short)TaitoAnalogPort2, (short)TaitoAnalogPort3);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
+	BurnGunMakeInputs(1, (INT16)TaitoAnalogPort2, (INT16)TaitoAnalogPort3);
 }
 
 static struct BurnDIPInfo AquajackDIPList[]=
@@ -593,17 +618,17 @@ static struct BurnDIPInfo BsharkDIPList[]=
 	{0x0b, 0x01, 0x08, 0x00, "Off"                            },
 	{0x0b, 0x01, 0x08, 0x08, "On"                             },
 	
-	{0   , 0xfe, 0   , 4   , "Coinage"                        },
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
 	{0x0b, 0x01, 0x30, 0x00, "4 Coins 1 Credit"               },
 	{0x0b, 0x01, 0x30, 0x10, "3 Coins 1 Credit"               },
 	{0x0b, 0x01, 0x30, 0x20, "2 Coins 1 Credit"               },
 	{0x0b, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
 	
-	{0   , 0xfe, 0   , 4   , "Price to Continue"              },
-	{0x0b, 0x01, 0xc0, 0x00, "3 Coins 1 Credit"               },
-	{0x0b, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
-	{0x0b, 0x01, 0xc0, 0x80, "1 Coin  1 Credit"               },
-	{0x0b, 0x01, 0xc0, 0xc0, "Same as Start"                  },
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0b, 0x01, 0xc0, 0xc0, "1 Coin 2 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x80, "1 Coin 3 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x40, "1 Coin 4 Credits"               },
+	{0x0b, 0x01, 0xc0, 0x00, "1 Coin 6 Credits"               },
 	
 	// Dip 2
 	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
@@ -667,6 +692,100 @@ static struct BurnDIPInfo BsharkjDIPList[]=
 };
 
 STDDIPINFO(Bsharkj)
+
+static struct BurnDIPInfo BsharkjjsDIPList[]=
+{
+	// Default Values
+	{0x0d, 0xff, 0xff, 0xff, NULL                             },
+	{0x0e, 0xff, 0xff, 0xf7, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Mirror Screen"                  },
+	{0x0d, 0x01, 0x01, 0x01, "Off"                            },
+	{0x0d, 0x01, 0x01, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0d, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0d, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0d, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0d, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coin A"                         },
+	{0x0d, 0x01, 0x30, 0x10, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0x30, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0x30, 0x20, "1 Coin  2 Credits"              },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                         },
+	{0x0d, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0xc0, "1 Coin  1 Credit"               },
+	{0x0d, 0x01, 0xc0, 0x00, "2 Coins 3 Credits"              },
+	{0x0d, 0x01, 0xc0, 0x80, "1 Coin  2 Credits"              },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0e, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0e, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0e, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0e, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 4   , "Speed of Sight"                 },
+	{0x0e, 0x01, 0x0c, 0x0c, "Slow"                           },
+	{0x0e, 0x01, 0x0c, 0x08, "Medium"                         },
+	{0x0e, 0x01, 0x0c, 0x04, "Fast"                           },
+	{0x0e, 0x01, 0x0c, 0x00, "Fastest"                        },
+};
+
+STDDIPINFO(Bsharkjjs)
+
+static struct BurnDIPInfo BsharkuDIPList[]=
+{
+	// Default Values
+	{0x0b, 0xff, 0xff, 0xff, NULL                             },
+	{0x0c, 0xff, 0xff, 0xf7, NULL                             },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Mirror Screen"                  },
+	{0x0b, 0x01, 0x01, 0x01, "Off"                            },
+	{0x0b, 0x01, 0x01, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"                   },
+	{0x0b, 0x01, 0x04, 0x04, "Off"                            },
+	{0x0b, 0x01, 0x04, 0x00, "On"                             },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"                    },
+	{0x0b, 0x01, 0x08, 0x00, "Off"                            },
+	{0x0b, 0x01, 0x08, 0x08, "On"                             },
+	
+	{0   , 0xfe, 0   , 4   , "Coinage"                        },
+	{0x0b, 0x01, 0x30, 0x00, "4 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x10, "3 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x20, "2 Coins 1 Credit"               },
+	{0x0b, 0x01, 0x30, 0x30, "1 Coin  1 Credit"               },
+	
+	{0   , 0xfe, 0   , 4   , "Price to Continue"              },
+	{0x0b, 0x01, 0xc0, 0x00, "3 Coins 1 Credit"               },
+	{0x0b, 0x01, 0xc0, 0x40, "2 Coins 1 Credit"               },
+	{0x0b, 0x01, 0xc0, 0x80, "1 Coin  1 Credit"               },
+	{0x0b, 0x01, 0xc0, 0xc0, "Same as Start"                  },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Difficulty"                     },
+	{0x0c, 0x01, 0x03, 0x02, "Easy"                           },
+	{0x0c, 0x01, 0x03, 0x03, "Normal"                         },
+	{0x0c, 0x01, 0x03, 0x01, "Hard"                           },
+	{0x0c, 0x01, 0x03, 0x00, "Hardest"                        },
+	
+	{0   , 0xfe, 0   , 4   , "Speed of Sight"                 },
+	{0x0c, 0x01, 0x0c, 0x0c, "Slow"                           },
+	{0x0c, 0x01, 0x0c, 0x08, "Medium"                         },
+	{0x0c, 0x01, 0x0c, 0x04, "Fast"                           },
+	{0x0c, 0x01, 0x0c, 0x00, "Fastest"                        },
+};
+
+STDDIPINFO(Bsharku)
 
 static struct BurnDIPInfo ChasehqDIPList[]=
 {
@@ -1472,62 +1591,93 @@ static struct BurnDIPInfo SpacegunDIPList[]=
 STDDIPINFO(Spacegun)
 
 static struct BurnRomInfo AquajackRomDesc[] = {
-	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "34.17",         0x20000, 0xcd4d0969, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-22.ic31",   0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-26.ic17",   0x20000, 0xcd4d0969, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
-	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-24.ic69",   0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-23.ic67",   0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	{ "b77-20.ic54",   0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
+	{ "b77-05.ic105",  0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
 	
-	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-04.ic16",   0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-03.ic15",   0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-02.ic14",   0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-01.ic13",   0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
+	{ "b77-07.ic33",   0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
 	
-	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
+	{ "b77-06.ic39",   0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
+	{ "b77-09.ic58",   0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
 	
-	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
+	{ "b77-08.ic57",   0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
 	
-	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },
-	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b77-17.ic1",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b77-18.ic37",   0x00100, 0x7b7d8ff4, BRF_OPT },
 };
 
 STD_ROM_PICK(Aquajack)
 STD_ROM_FN(Aquajack)
 
+static struct BurnRomInfo AquajackuRomDesc[] = {
+	{ "b77-22.ic31",   0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-25.ic17",   0x20000, 0xba4a39ff, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "b77-24.ic69",   0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-23.ic67",   0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "b77-20.ic54",   0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	
+	{ "b77-05.ic105",  0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
+	
+	{ "b77-04.ic16",   0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-03.ic15",   0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-02.ic14",   0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-01.ic13",   0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "b77-07.ic33",   0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
+	
+	{ "b77-06.ic39",   0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "b77-09.ic58",   0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
+	
+	{ "b77-08.ic57",   0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
+	
+	{ "b77-17.ic1",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b77-18.ic37",   0x00100, 0x7b7d8ff4, BRF_OPT },
+};
+
+STD_ROM_PICK(Aquajacku)
+STD_ROM_FN(Aquajacku)
+
 static struct BurnRomInfo AquajackjRomDesc[] = {
-	{ "b77-22.rom",    0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "b77-21.rom",    0x20000, 0x23436845, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-22.ic31",   0x20000, 0x67400dde, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b77-21.ic17",   0x20000, 0x23436845, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "b77-24.rom",    0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
-	{ "b77-23.rom",    0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-24.ic69",   0x20000, 0x95e643ed, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "b77-23.ic67",   0x20000, 0x395a7d1c, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
-	{ "b77-20.rom",    0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
+	{ "b77-20.ic54",   0x10000, 0x84ba54b7, BRF_ESS | BRF_PRG | TAITO_Z80ROM1 },
 	
-	{ "b77-05.rom",    0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
+	{ "b77-05.ic105",  0x80000, 0x7238f0ff, BRF_GRA | TAITO_CHARS },
 	
-	{ "b77-04.rom",    0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-03.rom",    0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-02.rom",    0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
-	{ "b77-01.rom",    0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-04.ic16",   0x80000, 0xbed0be6c, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-03.ic15",   0x80000, 0x9a3030a7, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-02.ic14",   0x80000, 0xdaea0d2e, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "b77-01.ic13",   0x80000, 0xcdab000d, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
 	
-	{ "b77-07.rom",    0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
+	{ "b77-07.ic33",   0x80000, 0x7db1fc5e, BRF_GRA | TAITO_ROAD },
 	
-	{ "b77-06.rom",    0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
+	{ "b77-06.ic39",   0x80000, 0xce2aed00, BRF_GRA | TAITO_SPRITEMAP },
 	
-	{ "b77-09.rom",    0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
+	{ "b77-09.ic58",   0x80000, 0x948e5ad9, BRF_SND | TAITO_YM2610A },
 	
-	{ "b77-08.rom",    0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
+	{ "b77-08.ic57",   0x80000, 0x119b9485, BRF_SND | TAITO_YM2610B },
 	
-	{ "b77-17.bin",    0x00100, 0xfbf81f30, BRF_OPT },
-	{ "b77-18.bin",    0x00100, 0x7b7d8ff4, BRF_OPT },
+	{ "b77-17.ic1",    0x00100, 0xfbf81f30, BRF_OPT },
+	{ "b77-18.ic37",   0x00100, 0x7b7d8ff4, BRF_OPT },
 };
 
 STD_ROM_PICK(Aquajackj)
@@ -1537,7 +1687,7 @@ static struct BurnRomInfo BsharkRomDesc[] = {
 	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "c34_67.64",     0x20000, 0x39307c74, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_68.74",     0x20000, 0x4e374ce2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
 	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
@@ -1604,6 +1754,78 @@ static struct BurnRomInfo BsharkjRomDesc[] = {
 
 STD_ROM_PICK(Bsharkj)
 STD_ROM_FN(Bsharkj)
+
+static struct BurnRomInfo BsharkjjsRomDesc[] = {
+	{ "c34_79.98",     0x20000, 0xbc3f2e93, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_77.75",     0x20000, 0x917916d0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_78.97",     0x20000, 0xf2fcc880, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_76.74",     0x20000, 0xde97fac0, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "c34_82.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_80.112",    0x20000, 0xe1783eb4, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_83.129",    0x20000, 0xeec0b364, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_81.113",    0x20000, 0x23ce6bcf, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA | TAITO_CHARS },
+	
+	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA | TAITO_ROAD },
+	
+	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND | TAITO_YM2610A },
+	
+	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND | TAITO_YM2610B },
+	
+	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },
+	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },
+	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },
+};
+
+STD_ROM_PICK(Bsharkjjs)
+STD_ROM_FN(Bsharkjjs)
+
+static struct BurnRomInfo BsharkuRomDesc[] = {
+	{ "c34_71.98",     0x20000, 0xdf1fa629, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_69.75",     0x20000, 0xa54c137a, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_70.97",     0x20000, 0xd77d81e2, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "c34_67.74",     0x20000, 0x39307c74, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	
+	{ "c34_74.128",    0x20000, 0x6869fa99, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_72.112",    0x20000, 0xc09c0f91, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_75.129",    0x20000, 0x6ba65542, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c34_73.113",    0x20000, 0xf2fe62b5, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	
+	{ "c34_05.3",      0x80000, 0x596b83da, BRF_GRA | TAITO_CHARS },
+	
+	{ "c34_04.17",     0x80000, 0x2446b0da, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_03.16",     0x80000, 0xa18eab78, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_02.15",     0x80000, 0x8488ba10, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	{ "c34_01.14",     0x80000, 0x3ebe8c63, BRF_GRA | TAITO_SPRITESA_BYTESWAP32 },
+	
+	{ "c34_07.42",     0x80000, 0xedb07808, BRF_GRA | TAITO_ROAD },
+	
+	{ "c34_06.12",     0x80000, 0xd200b6eb, BRF_GRA | TAITO_SPRITEMAP },
+	
+	{ "c34_08.127",    0x80000, 0x89a30450, BRF_SND | TAITO_YM2610A },
+	
+	{ "c34_09.126",    0x80000, 0x39d12b50, BRF_SND | TAITO_YM2610B },
+	
+	{ "c34_18.22",     0x10000, 0x7245a6f6, BRF_OPT },
+	{ "c34_19.72",     0x00100, 0x2ee9c404, BRF_OPT },
+	{ "c34_20.89",     0x00100, 0xfbf81f30, BRF_OPT },
+	{ "c34_21.7",      0x00400, 0x10728853, BRF_OPT },
+	{ "c34_22.8",      0x00400, 0x643e8bfc, BRF_OPT },
+};
+
+STD_ROM_PICK(Bsharku)
+STD_ROM_FN(Bsharku)
 
 static struct BurnRomInfo ChasehqRomDesc[] = {
 	{ "b52-130.36",    0x20000, 0x4e7beb46, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -2349,8 +2571,8 @@ static struct BurnRomInfo SpacegunRomDesc[] = {
 	{ "c57-17.59",         0x020000, 0xe197edb8, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "c57-22.73",         0x020000, 0x5855fde3, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	
-	{ "c57-15.27",         0x020000, 0xb36eb8f1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
-	{ "c57-16.29",         0x020000, 0xbfb5d1e7, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c57-15+.27",        0x020000, 0xb36eb8f1, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
+	{ "c57-16+.29",        0x020000, 0xbfb5d1e7, BRF_ESS | BRF_PRG | TAITO_68KROM2_BYTESWAP },
 	
 	{ "c57-06.52",         0x080000, 0x4ebadd5b, BRF_GRA | TAITO_CHARS },
 	
@@ -2377,9 +2599,9 @@ static struct BurnRomInfo SpacegunRomDesc[] = {
 STD_ROM_PICK(Spacegun)
 STD_ROM_FN(Spacegun)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                   = Next; Next += Taito68KRom1Size;
 	Taito68KRom2                   = Next; Next += Taito68KRom2Size;
@@ -2402,14 +2624,14 @@ static int MemIndex()
 	TaitoChars                     = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
 	TaitoSpritesA                  = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
 	TaitoSpritesB                  = Next; Next += TaitoNumSpriteB * TaitoSpriteBWidth * TaitoSpriteBHeight;
-	TaitoPalette                   = (unsigned int*)Next; Next += 0x01000 * sizeof(unsigned int);
+	TaitoPalette                   = (UINT32*)Next; Next += 0x01000 * sizeof(UINT32);
 
 	TaitoMemEnd                    = Next;
 
 	return 0;
 }
 
-static int TaitoZDoReset()
+static INT32 TaitoZDoReset()
 {
 	TaitoDoReset();
 
@@ -2431,7 +2653,7 @@ static void TaitoZCpuAReset(UINT16 d)
 	}
 }
 
-void __fastcall Aquajack68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Aquajack68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0xa00000, 0xa0ffff)
 
@@ -2442,7 +2664,7 @@ void __fastcall Aquajack68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Aquajack68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Aquajack68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0xa00000, 0xa0ffff)
 	TC0100SCN0CtrlWordWrite_Map(0xa20000)
@@ -2465,7 +2687,7 @@ void __fastcall Aquajack68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Aquajack68K2ReadByte(unsigned int a)
+UINT8 __fastcall Aquajack68K2ReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	
@@ -2482,7 +2704,7 @@ unsigned char __fastcall Aquajack68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall Aquajack68K2ReadWord(unsigned int a)
+UINT16 __fastcall Aquajack68K2ReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	
@@ -2503,7 +2725,7 @@ unsigned short __fastcall Aquajack68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Aquajack68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Aquajack68K2WriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	
@@ -2532,11 +2754,11 @@ void __fastcall Aquajack68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-static UINT8 BsharkStickRead(int Offset)
+static UINT8 BsharkStickRead(INT32 Offset)
 {
 	switch (Offset) {
 		case 0x00: {
-			int Temp = (TaitoAnalogPort0 >> 4) & 0xfff;
+			INT32 Temp = (TaitoAnalogPort0 >> 4) & 0xfff;
 			Temp = 0xfff - Temp;
 			Temp += 1;
 			if (Temp == 0x1000) Temp = 0;
@@ -2559,7 +2781,7 @@ static UINT8 BsharkStickRead(int Offset)
 	return 0;
 }
 
-unsigned char __fastcall Bshark68K1ReadByte(unsigned int a)
+UINT8 __fastcall Bshark68K1ReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x400000)
 	
@@ -2580,7 +2802,7 @@ unsigned char __fastcall Bshark68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Bshark68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Bshark68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0ByteWrite_Map(0xd00000, 0xd0ffff)
@@ -2592,7 +2814,7 @@ void __fastcall Bshark68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Bshark68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Bshark68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0WordWrite_Map(0xd00000, 0xd0ffff)
@@ -2619,7 +2841,7 @@ void __fastcall Bshark68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned short __fastcall Bshark68K2ReadWord(unsigned int a)
+UINT16 __fastcall Bshark68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x40000a: {
@@ -2643,7 +2865,7 @@ unsigned short __fastcall Bshark68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Bshark68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Bshark68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x400000:
@@ -2691,7 +2913,7 @@ static UINT8 ChasehqInputBypassRead()
 {
 	UINT8 Port = TC0220IOCPortRead();
 	
-	int Steer = (TaitoAnalogPort0 >> 4);
+	INT32 Steer = (TaitoAnalogPort0 >> 4);
 	
 	switch (Port) {
 		case 0x08:
@@ -2715,7 +2937,7 @@ static UINT8 ChasehqInputBypassRead()
 	}
 }
 
-unsigned char __fastcall Chasehq68K1ReadByte(unsigned int a)
+UINT8 __fastcall Chasehq68K1ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x400001: {
@@ -2734,7 +2956,7 @@ unsigned char __fastcall Chasehq68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Chasehq68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Chasehq68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
 	
@@ -2770,7 +2992,7 @@ void __fastcall Chasehq68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Chasehq68K1ReadWord(unsigned int a)
+UINT16 __fastcall Chasehq68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x400002: {
@@ -2789,7 +3011,7 @@ unsigned short __fastcall Chasehq68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Chasehq68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Chasehq68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
 	TC0100SCN0CtrlWordWrite_Map(0xc20000)
@@ -2821,7 +3043,7 @@ static UINT8 ContcircInputBypassRead()
 {
 	UINT8 Port = TC0220IOCPortRead();
 	
-	int Steer = (TaitoAnalogPort0 >> 4) & 0xfff;
+	INT32 Steer = (TaitoAnalogPort0 >> 4) & 0xfff;
 	Steer = 0xfff - Steer;
 	if (Steer == 0xfff) Steer = 0;
 	if (Steer > 0x5f && Steer < 0x80) Steer = 0x5f;
@@ -2843,7 +3065,7 @@ static UINT8 ContcircInputBypassRead()
 	}
 }
 
-void __fastcall Contcirc68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Contcirc68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x200000, 0x20ffff)
 	
@@ -2854,7 +3076,7 @@ void __fastcall Contcirc68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Contcirc68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Contcirc68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x200000, 0x20ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x220000)
@@ -2878,7 +3100,7 @@ void __fastcall Contcirc68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Contcirc68K2ReadByte(unsigned int a)
+UINT8 __fastcall Contcirc68K2ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x100001: {
@@ -2893,7 +3115,7 @@ unsigned char __fastcall Contcirc68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Contcirc68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Contcirc68K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x100001: {
@@ -2907,7 +3129,7 @@ void __fastcall Contcirc68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Contcirc68K2ReadWord(unsigned int a)
+UINT16 __fastcall Contcirc68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x100000: {
@@ -2930,7 +3152,7 @@ unsigned short __fastcall Contcirc68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Contcirc68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Contcirc68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x100000: {
@@ -2959,7 +3181,7 @@ void __fastcall Contcirc68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-static UINT16 DblaxleSteerRead(int Offset)
+static UINT16 DblaxleSteerRead(INT32 Offset)
 {
 	int Steer = TaitoAnalogPort0 >> 5;
 	if (Steer > 0x3f) Steer |= 0xf800;
@@ -2977,7 +3199,7 @@ static UINT16 DblaxleSteerRead(int Offset)
 	return 0x00;
 }
 
-unsigned char __fastcall Dblaxle68K1ReadByte(unsigned int a)
+UINT8 __fastcall Dblaxle68K1ReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordSwapRead_Map(0x400000)
 	
@@ -2994,7 +3216,7 @@ unsigned char __fastcall Dblaxle68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dblaxle68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Dblaxle68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordSwapWrite_Map(0x400000)
 	
@@ -3020,7 +3242,7 @@ void __fastcall Dblaxle68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Dblaxle68K1ReadWord(unsigned int a)
+UINT16 __fastcall Dblaxle68K1ReadWord(UINT32 a)
 {
 	TC0510NIOHalfWordSwapRead_Map(0x400000)
 	
@@ -3038,7 +3260,7 @@ unsigned short __fastcall Dblaxle68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dblaxle68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Dblaxle68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordSwapWrite_Map(0x400000)
 	TC0480SCPCtrlWordWrite_Map(0xa30000)
@@ -3054,7 +3276,7 @@ void __fastcall Dblaxle68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall Enforce68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Enforce68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x600000, 0x60ffff)
 	
@@ -3065,7 +3287,7 @@ void __fastcall Enforce68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Enforce68K1ReadWord(unsigned int a)
+UINT16 __fastcall Enforce68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x500002: {
@@ -3080,7 +3302,7 @@ unsigned short __fastcall Enforce68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Enforce68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Enforce68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x600000, 0x60ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x620000)
@@ -3103,7 +3325,7 @@ void __fastcall Enforce68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Enforce68K2ReadByte(unsigned int a)
+UINT8 __fastcall Enforce68K2ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300001: {
@@ -3118,7 +3340,7 @@ unsigned char __fastcall Enforce68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Enforce68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Enforce68K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x300001: {
@@ -3132,7 +3354,7 @@ void __fastcall Enforce68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Enforce68K2ReadWord(unsigned int a)
+UINT16 __fastcall Enforce68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x200002: {
@@ -3155,7 +3377,7 @@ unsigned short __fastcall Enforce68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Enforce68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Enforce68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x200000: {
@@ -3195,18 +3417,18 @@ static const UINT8 nightstr_stick[128]=
 	0x46,0x47,0x48,0x49,0xb8
 };
 
-static UINT8 NightstrStickRead(int Offset)
+static UINT8 NightstrStickRead(INT32 Offset)
 {
 	switch (Offset) {
 		case 0x00: {
-			unsigned char Temp = 0x7f + (TaitoAnalogPort0 >> 4);
+			UINT8 Temp = 0x7f + (TaitoAnalogPort0 >> 4);
 			if (Temp < 0x01) Temp = 0x01;
 			if (Temp > 0xfe) Temp = 0xfe;
 			return nightstr_stick[(Temp * 0x64) / 0x100];
 		}
 		
 		case 0x01: {
-			unsigned char Temp = 0x7f - (TaitoAnalogPort1 >> 4);
+			UINT8 Temp = 0x7f - (TaitoAnalogPort1 >> 4);
 			if (Temp < 0x01) Temp = 0x01;
 			if (Temp > 0xfe) Temp = 0xfe;
 			return nightstr_stick[(Temp * 0x64) / 0x100];
@@ -3224,7 +3446,7 @@ static UINT8 NightstrStickRead(int Offset)
 	return 0xff;
 }
 
-unsigned char __fastcall Nightstr68K1ReadByte(unsigned int a)
+UINT8 __fastcall Nightstr68K1ReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x400000)
 	
@@ -3244,7 +3466,7 @@ unsigned char __fastcall Nightstr68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Nightstr68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Nightstr68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0ByteWrite_Map(0xc00000, 0xc0ffff)
@@ -3263,7 +3485,7 @@ void __fastcall Nightstr68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Nightstr68K1ReadWord(unsigned int a)
+UINT16 __fastcall Nightstr68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x820002: {
@@ -3282,7 +3504,7 @@ unsigned short __fastcall Nightstr68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Nightstr68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x400000)
 	TC0100SCN0WordWrite_Map(0xc00000, 0xc0ffff)
@@ -3336,9 +3558,9 @@ void __fastcall Nightstr68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-static UINT8 SciSteerRead(int Offset)
+static UINT8 SciSteerRead(INT32 Offset)
 {
-	int Steer = TaitoAnalogPort0 >> 4;
+	INT32 Steer = TaitoAnalogPort0 >> 4;
 	if (Steer > 0x5f && Steer < 0x80) Steer = 0x5f;
 	if (Steer > 0xf80 && Steer < 0xfa0) Steer = 0xfa0;
 	if ((OldSteer < Steer) && (Steer > 0xfc0)) Steer = 0;
@@ -3357,7 +3579,7 @@ static UINT8 SciSteerRead(int Offset)
 	return 0xff;
 }
 
-unsigned char __fastcall Sci68K1ReadByte(unsigned int a)
+UINT8 __fastcall Sci68K1ReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	
@@ -3375,7 +3597,7 @@ unsigned char __fastcall Sci68K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Sci68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Sci68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0100SCN0ByteWrite_Map(0xa00000, 0xa0ffff)
@@ -3407,7 +3629,7 @@ void __fastcall Sci68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall Sci68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Sci68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0xa00000, 0xa0ffff)
 	TC0100SCN0CtrlWordWrite_Map(0xa20000)
@@ -3444,7 +3666,7 @@ static const eeprom_interface spacegun_eeprom_intf =
 	1				/* reset delay */
 };
 
-static UINT8 SpacegunInputBypassRead(int Offset)
+static UINT8 SpacegunInputBypassRead(INT32 Offset)
 {
 	switch (Offset) {
 		case 0x03: {
@@ -3459,7 +3681,7 @@ static UINT8 SpacegunInputBypassRead(int Offset)
 	return 0;
 }
 
-static void SpacegunInputBypassWrite(int Offset, UINT16 Data)
+static void SpacegunInputBypassWrite(INT32 Offset, UINT16 Data)
 {
 	switch (Offset) {
 		case 0x03: {
@@ -3473,7 +3695,7 @@ static void SpacegunInputBypassWrite(int Offset, UINT16 Data)
 	}
 }
 
-void __fastcall Spacegun68K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Spacegun68K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x900000, 0x90ffff)
 	
@@ -3484,7 +3706,7 @@ void __fastcall Spacegun68K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Spacegun68K1ReadWord(unsigned int a)
+UINT16 __fastcall Spacegun68K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xb00002: {
@@ -3499,7 +3721,7 @@ unsigned short __fastcall Spacegun68K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Spacegun68K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Spacegun68K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x900000, 0x90ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x920000)
@@ -3517,7 +3739,7 @@ void __fastcall Spacegun68K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Spacegun68K2ReadByte(unsigned int a)
+UINT8 __fastcall Spacegun68K2ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc0000d: {
@@ -3549,7 +3771,7 @@ unsigned char __fastcall Spacegun68K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Spacegun68K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Spacegun68K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x800008: {
@@ -3573,7 +3795,7 @@ void __fastcall Spacegun68K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Spacegun68K2ReadWord(unsigned int a)
+UINT16 __fastcall Spacegun68K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x800000:
@@ -3599,7 +3821,7 @@ unsigned short __fastcall Spacegun68K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Spacegun68K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Spacegun68K2WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x800000:
@@ -3657,7 +3879,7 @@ void __fastcall Spacegun68K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall TaitoZZ80Read(unsigned short a)
+UINT8 __fastcall TaitoZZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -3694,7 +3916,7 @@ unsigned char __fastcall TaitoZZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TaitoZZ80Write(unsigned short a, unsigned char d)
+void __fastcall TaitoZZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -3759,18 +3981,18 @@ void __fastcall TaitoZZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[4]        = { 0, 1, 2, 3 };
-static int CharXOffsets[8]            = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int CharYOffsets[8]            = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int DblaxleCharPlaneOffsets[4] = { 0, 1, 2, 3 };
-static int DblaxleCharXOffsets[16]    = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
-static int DblaxleCharYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int SpritePlaneOffsets[4]      = { 0, 8, 16, 24 };
-static int SpriteXOffsets[16]         = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int SpriteYOffsets[16]         = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int Sprite16x8YOffsets[8]      = { 0, 64, 128, 192, 256, 320, 384, 448 };
+static INT32 CharPlaneOffsets[4]        = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]            = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 CharYOffsets[8]            = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 DblaxleCharPlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 DblaxleCharXOffsets[16]    = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
+static INT32 DblaxleCharYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 SpritePlaneOffsets[4]      = { 0, 8, 16, 24 };
+static INT32 SpriteXOffsets[16]         = { 32, 33, 34, 35, 36, 37, 38, 39, 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 SpriteYOffsets[16]         = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 Sprite16x8YOffsets[8]      = { 0, 64, 128, 192, 256, 320, 384, 448 };
 
-static void TaitoZFMIRQHandler(int, int nStatus)
+static void TaitoZFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -3779,9 +4001,9 @@ static void TaitoZFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int TaitoZSynchroniseStream(int nSoundRate)
+static INT32 TaitoZSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / (16000000 / 4);
+	return (INT64)ZetTotalCycles() * nSoundRate / (16000000 / 4);
 }
 
 static double TaitoZGetTime()
@@ -3789,9 +4011,9 @@ static double TaitoZGetTime()
 	return (double)ZetTotalCycles() / (16000000 / 4);
 }
 
-static int TaitoZ68KSynchroniseStream(int nSoundRate)
+static INT32 TaitoZ68KSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)SekTotalCycles() * nSoundRate / (nTaitoCyclesTotal[1] * 60);
+	return (INT64)SekTotalCycles() * nSoundRate / (nTaitoCyclesTotal[1] * 60);
 }
 
 static double TaitoZ68KGetTime()
@@ -3802,7 +4024,7 @@ static double TaitoZ68KGetTime()
 static void TaitoZZ80Init()
 {
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(TaitoZZ80Read);
 	ZetSetWriteHandler(TaitoZZ80Write);
@@ -3830,9 +4052,9 @@ static void SwitchToMusashi()
 	}
 }
 
-static int AquajackInit()
+static INT32 AquajackInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -3861,8 +4083,8 @@ static int AquajackInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -3903,7 +4125,7 @@ static int AquajackInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -3922,9 +4144,9 @@ static int AquajackInit()
 	return 0;
 }
 
-static int BsharkInit()
+static INT32 BsharkInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	Sci = 1;
 	
@@ -3954,8 +4176,8 @@ static int BsharkInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -3993,7 +4215,7 @@ static int BsharkInit()
 	SekSetWriteWordHandler(0, Bshark68K2WriteWord);
 	SekClose();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
 	BurnTimerAttachSek(12000000);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4012,9 +4234,9 @@ static int BsharkInit()
 	return 0;
 }
 
-static int ChasehqInit()
+static INT32 ChasehqInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4052,8 +4274,8 @@ static int ChasehqInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4093,7 +4315,7 @@ static int ChasehqInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4112,9 +4334,9 @@ static int ChasehqInit()
 	return 0;
 }
 
-static int ContcircInit()
+static INT32 ContcircInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4143,8 +4365,8 @@ static int ContcircInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4186,7 +4408,7 @@ static int ContcircInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4205,9 +4427,9 @@ static int ContcircInit()
 	return 0;
 }
 
-static int DblaxleInit()
+static INT32 DblaxleInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	Dblaxle = 1;
 	
@@ -4238,8 +4460,8 @@ static int DblaxleInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4278,7 +4500,7 @@ static int DblaxleInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4299,9 +4521,9 @@ static int DblaxleInit()
 	return 0;
 }
 
-static int EnforceInit()
+static INT32 EnforceInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4330,8 +4552,8 @@ static int EnforceInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4374,7 +4596,7 @@ static int EnforceInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4393,9 +4615,9 @@ static int EnforceInit()
 	return 0;
 }
 
-static int NightstrInit()
+static INT32 NightstrInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4433,8 +4655,8 @@ static int NightstrInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4474,7 +4696,7 @@ static int NightstrInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4493,9 +4715,9 @@ static int NightstrInit()
 	return 0;
 }
 
-static int SciInit()
+static INT32 SciInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	Sci = 1;
 	
@@ -4526,8 +4748,8 @@ static int SciInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4566,7 +4788,7 @@ static int SciInit()
 	
 	TaitoZZ80Init();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoZFMIRQHandler, TaitoZSynchroniseStream, TaitoZGetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4585,9 +4807,9 @@ static int SciInit()
 	return 0;
 }
 
-static int SpacegunInit()
+static INT32 SpacegunInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -4615,8 +4837,8 @@ static int SpacegunInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -4654,7 +4876,7 @@ static int SpacegunInit()
 	SekSetWriteByteHandler(0, Spacegun68K2WriteByte);
 	SekClose();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, NULL, TaitoZ68KSynchroniseStream, TaitoZ68KGetTime, 0);
 	BurnTimerAttachSek(16000000);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -4679,16 +4901,16 @@ static int SpacegunInit()
 	return 0;
 }
 
-static int TaitoZExit()
+static INT32 TaitoZExit()
 {
+	BurnYM2610SetSoundMixMode(0);
+	
 	TaitoExit();
 
 	SciSpriteFrame = 0;
 	OldSteer = 0;
 	Dblaxle = 0;
 	Sci = 0;
-	
-	BurnYM2610SetSoundMixMode(0);
 	
 	// Switch back CPU core if needed
 	if (bUseAsm68KCoreOldValue) {
@@ -4702,42 +4924,42 @@ static int TaitoZExit()
 	return 0;
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
-	r = pal5bit(nColour >>  0);
-	g = pal5bit(nColour >>  5);
-	b = pal5bit(nColour >> 10);
+	r = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >>  0);
+	g = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >>  5);
+	b = pal5bit(BURN_ENDIAN_SWAP_INT16(nColour) >> 10);
 
 	return BurnHighCol(r, g, b, 0);
 }
 
 static void TaitoZCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
-static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, int yFlip, int xScale, int yScale, unsigned char* pSource)
+static void RenderSpriteZoom(INT32 Code, INT32 sx, INT32 sy, INT32 Colour, INT32 xFlip, INT32 yFlip, INT32 xScale, INT32 yScale, UINT8* pSource)
 {
 	// We can use sprite A for sizes, etc. as only Chase HQ uses sprite B and it has the same sizes and count
 	
 	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x100);
 	
@@ -4747,14 +4969,14 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}	
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
-		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
+		INT32 dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		INT32 dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (xFlip) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -4771,37 +4993,37 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth) {
-			int Pixels = ex - nScreenWidth;
+			INT32 Pixels = ex - nScreenWidth;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight) {
-			int Pixels = ey - nScreenHeight;
+			INT32 Pixels = ey - nScreenHeight;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x < ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						pPixel[x] = c | Colour;
 					}
@@ -4814,17 +5036,17 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}
 }
 
-static void AquajackRenderSprites(int PriorityDraw)
+static void AquajackRenderSprites(INT32 PriorityDraw)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	for (Offset = 0x200 - 4; Offset >= 0; Offset -= 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -4833,16 +5055,16 @@ static void AquajackRenderSprites(int PriorityDraw)
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
 
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		yFlip = (Data & 0x8000) >> 15;
 		Tile = Data & 0x1fff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0x7e00) >> 9;
 		y = Data & 0x1ff;
 		
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		Colour = (Data & 0xff00) >> 8;
 		xZoom = (Data & 0x3f);
 
@@ -4863,7 +5085,7 @@ static void AquajackRenderSprites(int PriorityDraw)
 			px = xFlip ? (3 - k) : k;
 			py = yFlip ? (7 - j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 2)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 4);
@@ -4881,17 +5103,17 @@ static void AquajackRenderSprites(int PriorityDraw)
 	}
 }
 
-static void BsharkRenderSprites(int PriorityDraw, int yOffset, int SpriteRamSize)
+static void BsharkRenderSprites(INT32 PriorityDraw, INT32 yOffset, INT32 SpriteRamSize)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	for (Offset = 0; Offset < SpriteRamSize - 4; Offset += 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -4900,15 +5122,15 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset, int SpriteRamSize
 		Colour = (Data & 0x7f80) >> 7;
 		xZoom = (Data & 0x3f);
 		
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		Tile = Data & 0x1fff;
 		if (!Tile) continue;
 				
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0x7e00) >> 9;
 		y = Data & 0x1ff;
 
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		yFlip = (Data & 0x8000) >> 15;
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
@@ -4931,7 +5153,7 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset, int SpriteRamSize
 			px = xFlip ? (3 - k) : k;
 			py = yFlip ? (7 - j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 2)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 			Code &= (TaitoNumSpriteA - 1);
 			
 			xCur = x + ((k * xZoom) / 4);
@@ -4948,17 +5170,17 @@ static void BsharkRenderSprites(int PriorityDraw, int yOffset, int SpriteRamSize
 	}
 }
 
-static void ChasehqRenderSprites(int PriorityDraw)
+static void ChasehqRenderSprites(INT32 PriorityDraw)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	for (Offset = 0; Offset < 0x400; Offset += 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -4967,15 +5189,15 @@ static void ChasehqRenderSprites(int PriorityDraw)
 		Colour = (Data & 0x7f80) >> 7;
 		xZoom = (Data & 0x7f);
 		
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		Tile = Data & 0x7ff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0xfe00) >> 9;
 		y = Data & 0x1ff;
 				
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		yFlip = (Data & 0x8000) >> 15;
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
@@ -4999,7 +5221,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				px = xFlip ? (7 - k) : k;
 				py = yFlip ? (7 - j) : j;
 				
-				Code = SpriteMap[MapOffset + px + (py << 3)];
+				Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 3)]);
 				Code &= (TaitoNumSpriteA - 1);
 				
 				xCur = x + ((k * xZoom) / 8);
@@ -5022,7 +5244,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				px = xFlip ? (3 - k) : k;
 				py = yFlip ? (7 - j) : j;
 				
-				Code = SpriteMap[MapOffset + px + (py << 2)];
+				Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 				Code &= (TaitoNumSpriteB - 1);
 				
 				xCur = x + ((k * xZoom) / 4);
@@ -5045,7 +5267,7 @@ static void ChasehqRenderSprites(int PriorityDraw)
 				px = xFlip ? (1 - k) : k;
 				py = yFlip ? (7 - j) : j;
 				
-				Code = SpriteMap[MapOffset + px + (py << 1)];
+				Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 1)]);
 				Code &= (TaitoNumSpriteB - 1);
 				
 				xCur = x + ((k * xZoom) / 2);
@@ -5062,17 +5284,17 @@ static void ChasehqRenderSprites(int PriorityDraw)
 	}
 }
 
-static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
+static void ContcircRenderSprites(INT32 PriorityDraw, INT32 VisibleYOffset)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	for (Offset = 0x380 - 4; Offset >= 0; Offset -= 4) {
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		Priority = (Data & 0x8000) >> 15;
 			
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -5082,15 +5304,15 @@ static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 		yFlip = (Data & 0x2000) >> 13;
 		x = Data & 0x1ff;
 		
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Tile = Data & 0x7ff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0xfe00) >> 9;
 		y = Data & 0x1ff;
 		
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		Colour = (Data & 0xff00) >> 8;
 		xZoom = (Data & 0x7f);		
 
@@ -5112,7 +5334,7 @@ static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 			px = xFlip ? (7 - k) : k;
 			py = yFlip ? (15 - j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 3)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 3)]);
 			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 8);
@@ -5128,19 +5350,19 @@ static void ContcircRenderSprites(int PriorityDraw, int VisibleYOffset)
 	}
 }
 
-static void SciRenderSprites(int PriorityDraw, int yOffs)
+static void SciRenderSprites(INT32 PriorityDraw, INT32 yOffs)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, StartOffs, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, StartOffs, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	StartOffs = (SciSpriteFrame & 1) ? 0x800 : 0;
 	
 	for (Offset = StartOffs; Offset < StartOffs + 0x800; Offset += 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -5149,15 +5371,15 @@ static void SciRenderSprites(int PriorityDraw, int yOffs)
 		Colour = (Data & 0x7f80) >> 7;
 		xZoom = (Data & 0x3f);
 		
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		Tile = Data & 0x1fff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0x7e00) >> 9;
 		y = Data & 0x1ff;
 
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		yFlip = (Data & 0x8000) >> 15;
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
@@ -5180,7 +5402,7 @@ static void SciRenderSprites(int PriorityDraw, int yOffs)
 			px = xFlip ? (3-k) : k;
 			py = yFlip ? (7-j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 2)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 			Code &= (TaitoNumSpriteA - 1);
 
 			xCur = x + ((k * xZoom) / 4);
@@ -5196,17 +5418,17 @@ static void SciRenderSprites(int PriorityDraw, int yOffs)
 	}
 }
 
-static void SpacegunRenderSprites(int PriorityDraw)
+static void SpacegunRenderSprites(INT32 PriorityDraw)
 {
 	UINT16 *SpriteMap = (UINT16*)TaitoSpriteMapRom;
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
-	int Offset, Data, Tile, Colour, xFlip, yFlip;
-	int x, y, Priority, xCur, yCur;
-	int xZoom, yZoom, zx, zy;
-	int SpriteChunk, MapOffset, Code, j, k, px, py;
+	INT32 Offset, Data, Tile, Colour, xFlip, yFlip;
+	INT32 x, y, Priority, xCur, yCur;
+	INT32 xZoom, yZoom, zx, zy;
+	INT32 SpriteChunk, MapOffset, Code, j, k, px, py;
 	
 	for (Offset = 0x300 - 4; Offset >= 0; Offset -= 4) {
-		Data = SpriteRam[Offset + 1];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 1]);
 		Priority = (Data & 0x8000) >> 15;
 		
 		if (Priority != 0 && Priority != 1) bprintf(PRINT_NORMAL, _T("Unused Priority %x\n"), Priority);
@@ -5215,16 +5437,16 @@ static void SpacegunRenderSprites(int PriorityDraw)
 		xFlip = (Data & 0x4000) >> 14;
 		x = Data & 0x1ff;
 
-		Data = SpriteRam[Offset + 3];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 3]);
 		yFlip = (Data & 0x8000) >> 15;
 		Tile = Data & 0x1fff;
 		if (!Tile) continue;
 		
-		Data = SpriteRam[Offset + 0];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 0]);
 		yZoom = (Data & 0xfe00) >> 9;
 		y = Data & 0x1ff;
 		
-		Data = SpriteRam[Offset + 2];
+		Data = BURN_ENDIAN_SWAP_INT16(SpriteRam[Offset + 2]);
 		Colour = (Data & 0xff00) >> 8;
 		xZoom = (Data & 0x7f);
 
@@ -5245,7 +5467,7 @@ static void SpacegunRenderSprites(int PriorityDraw)
 			px = xFlip ? (3 - k) : k;
 			py = yFlip ? (7 - j) : j;
 
-			Code = SpriteMap[MapOffset + px + (py << 2)];
+			Code = BURN_ENDIAN_SWAP_INT16(SpriteMap[MapOffset + px + (py << 2)]);
 			Code &= (TaitoNumSpriteA - 1);			
 
 			xCur = x + ((k * xZoom) / 4);
@@ -5264,7 +5486,7 @@ static void SpacegunRenderSprites(int PriorityDraw)
 
 static void AquajackDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -5288,7 +5510,7 @@ static void AquajackDraw()
 
 static void BsharkDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoZCalcPalette();
@@ -5313,7 +5535,7 @@ static void BsharkDraw()
 
 static void ChasehqDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -5337,7 +5559,7 @@ static void ChasehqDraw()
 
 static void ContcircDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -5361,7 +5583,7 @@ static void ContcircDraw()
 
 static void EnforceDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -5414,7 +5636,7 @@ static void DblaxleDraw()
 
 static void SciDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoZCalcPalette();
@@ -5440,7 +5662,7 @@ static void SciDraw()
 
 static void SpacegunDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -5459,14 +5681,14 @@ static void SpacegunDraw()
 	if (!(Disable & 0x04)) TC0100SCNRenderCharLayer(0);
 	BurnTransferCopy(TC0110PCRPalette);
 	
-	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+	for (INT32 i = 0; i < nBurnGunNumPlayers; i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 }
 
-static int TaitoZFrame()
+static INT32 TaitoZFrame()
 {
-	int nInterleave = TaitoFrameInterleave;
+	INT32 nInterleave = TaitoFrameInterleave;
 
 	if (TaitoReset) TaitoZDoReset();
 
@@ -5477,8 +5699,8 @@ static int TaitoZFrame()
 	SekNewFrame();
 	if (TaitoNumZ80s) ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -5502,17 +5724,23 @@ static int TaitoZFrame()
 			if (i == (TaitoFrameInterleave - 1)) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 			SekClose();
 		}
+		
+		if (TaitoNumZ80s) {
+			ZetOpen(0);
+			BurnTimerUpdate(i * (nTaitoCyclesTotal[2] / nInterleave));
+			ZetClose();
+		}
 	}
 	
 	if (TaitoNumZ80s) {
 		ZetOpen(0);
 		BurnTimerEndFrame(nTaitoCyclesTotal[2]);
-		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+		if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 		ZetClose();
 	} else {
 		SekOpen(1);
 		if (TaitoCpuACtrl & 0x01) BurnTimerEndFrame(nTaitoCyclesTotal[1]);
-		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+		if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 		if (TaitoCpuACtrl & 0x01) SekSetIRQLine(TaitoIrqLine, SEK_IRQSTATUS_AUTO);
 		SekClose();
 	}
@@ -5522,7 +5750,7 @@ static int TaitoZFrame()
 	return 0;
 }
 
-static int TaitoZScan(int nAction, int *pnMin)
+static INT32 TaitoZScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -5563,10 +5791,12 @@ static int TaitoZScan(int nAction, int *pnMin)
 	}
 	
 	if (nAction & ACB_WRITE) {
-		ZetOpen(0);
-		ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
-		ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
-		ZetClose();
+		if (TaitoNumZ80s) {
+			ZetOpen(0);
+			ZetMapArea(0x4000, 0x7fff, 0, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
+			ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + 0x4000 + (TaitoZ80Bank * 0x4000));
+			ZetClose();
+		}
 	}
 
 	return 0;
@@ -5592,9 +5822,19 @@ struct BurnDriver BurnDrvAquajackj = {
 	NULL, 0x1000, 320, 240, 4, 3
 };
 
+struct BurnDriver BurnDrvAquajacku = {
+	"aquajacku", "aquajack", NULL, NULL, "1990",
+	"Aquajack (US)\0", NULL, "Taito Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_MISC, 0,
+	NULL, AquajackuRomInfo, AquajackuRomName, NULL, NULL, AquajackInputInfo, AquajackjDIPInfo,
+	AquajackInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	NULL, 0x1000, 320, 240, 4, 3
+};
+
 struct BurnDriver BurnDrvBshark = {
 	"bshark", NULL, NULL, NULL, "1989",
-	"Battle Shark (US)\0", NULL, "Taito America Corporation", "Taito-Z",
+	"Battle Shark (World)\0", NULL, "Taito Corporation Japan", "Taito-Z",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
 	NULL, BsharkRomInfo, BsharkRomName, NULL, NULL, BsharkInputInfo, BsharkDIPInfo,
@@ -5608,6 +5848,26 @@ struct BurnDriver BurnDrvBsharkj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
 	NULL, BsharkjRomInfo, BsharkjRomName, NULL, NULL, BsharkInputInfo, BsharkjDIPInfo,
+	BsharkInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvBsharkjjs = {
+	"bsharkjjs", "bshark", NULL, NULL, "1989",
+	"Battle Shark (Japan, Joystick)\0", NULL, "Taito Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, BsharkjjsRomInfo, BsharkjjsRomName, NULL, NULL, BsharkjjsInputInfo, BsharkjjsDIPInfo,
+	BsharkInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
+	NULL, 0x1000, 320, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvBsharku = {
+	"bsharku", "bshark", NULL, NULL, "1989",
+	"Battle Shark (US)\0", NULL, "Taito America Corporation", "Taito-Z",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOZ, GBF_SHOOT, 0,
+	NULL, BsharkuRomInfo, BsharkuRomName, NULL, NULL, BsharkInputInfo, BsharkuDIPInfo,
 	BsharkInit, TaitoZExit, TaitoZFrame, NULL, TaitoZScan,
 	NULL, 0x1000, 320, 240, 4, 3
 };

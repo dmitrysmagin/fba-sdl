@@ -71,6 +71,34 @@ int AppDirectory()
 	return 0;
 }
 
+void UpdatePath(TCHAR* path)
+{
+	int pathlen = _tcslen(path);
+	if (pathlen) {
+		DWORD attrib = INVALID_FILE_ATTRIBUTES;
+		TCHAR curdir[MAX_PATH] = _T("");
+		int curlen = 0;
+
+		attrib = GetFileAttributes(path);
+		if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_DIRECTORY) && path[pathlen - 1] != _T('\\')) {
+			path[pathlen] = _T('\\');
+			path[pathlen + 1] = _T('\0');
+
+			pathlen++;
+		}
+
+		GetCurrentDirectory(sizeof(curdir), curdir);
+		curlen = _tcslen(curdir);
+
+		if (_tcsnicmp(curdir, path, curlen) == 0 && path[curlen] == _T('\\')) {
+			TCHAR newpath[MAX_PATH];
+
+			_tcscpy(newpath, path + curlen + 1);
+			_tcscpy(path, newpath);
+		}
+	}
+}
+
 // ---------------------------------------------------------------------------
 
 static void MyRegCreateKeys(int nDepth, TCHAR* pNames[], HKEY* pResult)

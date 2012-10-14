@@ -93,7 +93,7 @@ Slam Masters                             54321076  65432107    3131     19
 #include "cps.h"
 
 
-static int bitswap1(int src,int key,int select)
+static INT32 bitswap1(INT32 src,INT32 key,INT32 select)
 {
 	if (select & (1 << ((key >> 0) & 7)))
 		src = (src & 0xfc) | ((src & 0x01) << 1) | ((src & 0x02) >> 1);
@@ -107,7 +107,7 @@ static int bitswap1(int src,int key,int select)
 	return src;
 }
 
-static int bitswap2(int src,int key,int select)
+static INT32 bitswap2(INT32 src,INT32 key,INT32 select)
 {
 	if (select & (1 << ((key >>12) & 7)))
 		src = (src & 0xfc) | ((src & 0x01) << 1) | ((src & 0x02) >> 1);
@@ -121,7 +121,7 @@ static int bitswap2(int src,int key,int select)
 	return src;
 }
 
-static int bytedecode(int src,int swap_key1,int swap_key2,int xor_key,int select)
+static INT32 bytedecode(INT32 src,INT32 swap_key1,INT32 swap_key2,INT32 xor_key,INT32 select)
 {
 	src = bitswap1(src,swap_key1 & 0xffff,select & 0xff);
 	src = ((src & 0x7f) << 1) | ((src & 0x80) >> 7);
@@ -134,28 +134,28 @@ static int bytedecode(int src,int swap_key1,int swap_key2,int xor_key,int select
 	return src;
 }
 
-void kabuki_decode(unsigned char *src,unsigned char *dest_op,unsigned char *dest_data,
-		int base_addr,int length,int swap_key1,int swap_key2,int addr_key,int xor_key)
+void kabuki_decode(UINT8 *src,UINT8 *dest_op,UINT8 *dest_data,
+		INT32 base_addr,INT32 length,INT32 swap_key1,INT32 swap_key2,INT32 addr_key,INT32 xor_key)
 {
-	int A;
-	int select;
+	INT32 A;
+	INT32 select;
 
 	for (A = 0;A < length;A++)
 	{
 		/* decode opcodes */
 		select = (A + base_addr) + addr_key;
-		dest_op[A] = (unsigned char)bytedecode(src[A],swap_key1,swap_key2,xor_key,select);
+		dest_op[A] = (UINT8)bytedecode(src[A],swap_key1,swap_key2,xor_key,select);
 
 		/* decode data */
 		select = ((A + base_addr) ^ 0x1fc0) + addr_key + 1;
-		dest_data[A] = (unsigned char)bytedecode(src[A],swap_key1,swap_key2,xor_key,select);
+		dest_data[A] = (UINT8)bytedecode(src[A],swap_key1,swap_key2,xor_key,select);
 	}
 }
 
-static void cps1_decode(int swap_key1,int swap_key2,int addr_key,int xor_key)
+static void cps1_decode(INT32 swap_key1,INT32 swap_key2,INT32 addr_key,INT32 xor_key)
 {
-	unsigned char *rom = CpsZRom;
-	int diff = nCpsZRomLen / 2;
+	UINT8 *rom = CpsZRom;
+	INT32 diff = nCpsZRomLen / 2;
 
 	CpsZRom=rom+diff;
 	kabuki_decode(rom,rom+diff,rom,0x0000,0x8000, swap_key1,swap_key2,addr_key,xor_key);

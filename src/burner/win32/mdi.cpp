@@ -166,7 +166,7 @@ void DestroyBurnerMDI(int nAction)
 		{
 			if(hVideoWindow) 
 			{
-				SendMessage(hWndChildFrame, WM_MDIDESTROY, (DWORD) hVideoWindow, 0L);
+				SendMessage(hWndChildFrame, WM_MDIDESTROY, (INT_PTR) hVideoWindow, 0L);
 				hVideoWindow = NULL;
 			}
 			if(hWndChildFrame) 

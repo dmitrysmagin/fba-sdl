@@ -1,46 +1,47 @@
 #include "tiles_generic.h"
+#include "zet.h"
 #include "burn_ym2203.h"
 #include "msm5205.h"
 
-static unsigned char Wc90b1InputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Wc90b1InputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Wc90b1Dip[2]        = {0, 0};
-static unsigned char Wc90b1Input[2]      = {0x00, 0x00};
-static unsigned char Wc90b1Reset         = 0;
+static UINT8 Wc90b1InputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Wc90b1InputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Wc90b1Dip[2]        = {0, 0};
+static UINT8 Wc90b1Input[2]      = {0x00, 0x00};
+static UINT8 Wc90b1Reset         = 0;
 
-static unsigned char *Mem                = NULL;
-static unsigned char *MemEnd             = NULL;
-static unsigned char *RamStart           = NULL;
-static unsigned char *RamEnd             = NULL;
-static unsigned char *Wc90b1Z80Rom1      = NULL;
-static unsigned char *Wc90b1Z80Rom2      = NULL;
-static unsigned char *Wc90b1Z80Rom3      = NULL;
-static unsigned char *Wc90b1Z80Ram1      = NULL;
-static unsigned char *Wc90b1Z80Ram2      = NULL;
-static unsigned char *Wc90b1Z80Ram3      = NULL;
-static unsigned char *Wc90b1FgVideoRam   = NULL;
-static unsigned char *Wc90b1BgVideoRam   = NULL;
-static unsigned char *Wc90b1TextVideoRam = NULL;
-static unsigned char *Wc90b1SpriteRam    = NULL;
-static unsigned char *Wc90b1PaletteRam   = NULL;
-static unsigned char *Wc90b1SharedRam    = NULL;
-static unsigned int  *Wc90b1Palette      = NULL;
-static unsigned char *Wc90b1CharTiles    = NULL;
-static unsigned char *Wc90b1Tiles        = NULL;
-static unsigned char *Wc90b1Sprites      = NULL;
-static unsigned char *Wc90b1TempGfx      = NULL;
+static UINT8 *Mem                = NULL;
+static UINT8 *MemEnd             = NULL;
+static UINT8 *RamStart           = NULL;
+static UINT8 *RamEnd             = NULL;
+static UINT8 *Wc90b1Z80Rom1      = NULL;
+static UINT8 *Wc90b1Z80Rom2      = NULL;
+static UINT8 *Wc90b1Z80Rom3      = NULL;
+static UINT8 *Wc90b1Z80Ram1      = NULL;
+static UINT8 *Wc90b1Z80Ram2      = NULL;
+static UINT8 *Wc90b1Z80Ram3      = NULL;
+static UINT8 *Wc90b1FgVideoRam   = NULL;
+static UINT8 *Wc90b1BgVideoRam   = NULL;
+static UINT8 *Wc90b1TextVideoRam = NULL;
+static UINT8 *Wc90b1SpriteRam    = NULL;
+static UINT8 *Wc90b1PaletteRam   = NULL;
+static UINT8 *Wc90b1SharedRam    = NULL;
+static UINT32 *Wc90b1Palette     = NULL;
+static UINT8 *Wc90b1CharTiles    = NULL;
+static UINT8 *Wc90b1Tiles        = NULL;
+static UINT8 *Wc90b1Sprites      = NULL;
+static UINT8 *Wc90b1TempGfx      = NULL;
 
-static unsigned char Wc90b1Scroll0Y;
-static unsigned char Wc90b1Scroll0X;
-static unsigned char Wc90b1Scroll1Y;
-static unsigned char Wc90b1Scroll1X;
-static unsigned char Wc90b1ScrollXLo;
+static UINT8 Wc90b1Scroll0Y;
+static UINT8 Wc90b1Scroll0X;
+static UINT8 Wc90b1Scroll1Y;
+static UINT8 Wc90b1Scroll1X;
+static UINT8 Wc90b1ScrollXLo;
 
-static unsigned char Wc90b1SoundLatch = 0;
-static int Wc90b1MSM5205Next;
+static UINT8 Wc90b1SoundLatch = 0;
+static INT32 Wc90b1MSM5205Next;
 
-static int nCyclesDone[3], nCyclesTotal[3];
-static int nCyclesSegment;
+static INT32 nCyclesDone[3], nCyclesTotal[3];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo Wc90b1InputList[] = {
 	{"Coin 1"            , BIT_DIGITAL  , Wc90b1InputPort0 + 7, "p1 coin"   },
@@ -69,7 +70,7 @@ static struct BurnInputInfo Wc90b1InputList[] = {
 
 STDINPUTINFO(Wc90b1)
 
-inline static void Wc90b1ClearOpposites(unsigned char* nJoystickInputs)
+inline static void Wc90b1ClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -83,7 +84,7 @@ inline static void Wc90b1MakeInputs()
 {
 	Wc90b1Input[0] = Wc90b1Input[1] = 0x00;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		Wc90b1Input[0] |= (Wc90b1InputPort0[i] & 1) << i;
 		Wc90b1Input[1] |= (Wc90b1InputPort1[i] & 1) << i;
 	}
@@ -227,9 +228,9 @@ static struct BurnRomInfo Wc90b2RomDesc[] = {
 STD_ROM_PICK(Wc90b2)
 STD_ROM_FN(Wc90b2)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Wc90b1Z80Rom1            = Next; Next += 0x20000;
 	Wc90b1Z80Rom2            = Next; Next += 0x20000;
@@ -252,14 +253,14 @@ static int MemIndex()
 	Wc90b1CharTiles          = Next; Next += (2048 *  8 *  8);
 	Wc90b1Tiles              = Next; Next += (4096 * 16 * 16);
 	Wc90b1Sprites            = Next; Next += (4096 * 16 * 16);
-	Wc90b1Palette            = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	Wc90b1Palette            = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	MemEnd                   = Next;
 
 	return 0;
 }
 
-static int Wc90b1DoReset()
+static INT32 Wc90b1DoReset()
 {
 	Wc90b1Scroll0X = Wc90b1Scroll0Y = 0;
 	Wc90b1Scroll1X = Wc90b1Scroll1Y = 0;
@@ -268,7 +269,7 @@ static int Wc90b1DoReset()
 	Wc90b1SoundLatch = 0;
 	Wc90b1MSM5205Next = 0;
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -282,7 +283,7 @@ static int Wc90b1DoReset()
 	return 0;
 }
 
-unsigned char __fastcall Wc90b1Read1(unsigned short a)
+UINT8 __fastcall Wc90b1Read1(UINT16 a)
 {
 	switch (a) {
 		case 0xfd00: {
@@ -314,11 +315,11 @@ unsigned char __fastcall Wc90b1Read1(unsigned short a)
 	return 0;
 }
 
-void __fastcall Wc90b1Write1(unsigned short a, unsigned char d)
+void __fastcall Wc90b1Write1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfc00: {
-			int BankAddress;
+			INT32 BankAddress;
 
 			BankAddress = 0x10000 + ((d & 0xf8) << 8);
 			ZetMapArea(0xf000, 0xf7ff, 0, Wc90b1Z80Rom1 + BankAddress);
@@ -367,7 +368,7 @@ void __fastcall Wc90b1Write1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Wc90b1Read2(unsigned short a)
+UINT8 __fastcall Wc90b1Read2(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -378,11 +379,11 @@ unsigned char __fastcall Wc90b1Read2(unsigned short a)
 	return 0;
 }
 
-void __fastcall Wc90b1Write2(unsigned short a, unsigned char d)
+void __fastcall Wc90b1Write2(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfc00: {
-			int BankAddress;
+			INT32 BankAddress;
 
 			BankAddress = 0x10000 + ((d & 0xf8) << 8);
 			ZetMapArea(0xf000, 0xf7ff, 0, Wc90b1Z80Rom2 + BankAddress);
@@ -401,7 +402,7 @@ void __fastcall Wc90b1Write2(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Wc90b1Read3(unsigned short a)
+UINT8 __fastcall Wc90b1Read3(UINT16 a)
 {
 	switch (a) {
 		case 0xe800: {
@@ -421,11 +422,11 @@ unsigned char __fastcall Wc90b1Read3(unsigned short a)
 	return 0;
 }
 
-void __fastcall Wc90b1Write3(unsigned short a, unsigned char d)
+void __fastcall Wc90b1Write3(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
-			int BankAddress;
+			INT32 BankAddress;
 
 			BankAddress = 0x8000 + ((d & 0x01) * 0x4000);
 			ZetMapArea(0x8000, 0xbfff, 0, Wc90b1Z80Rom3 + BankAddress);
@@ -462,9 +463,9 @@ void __fastcall Wc90b1Write3(unsigned short a, unsigned char d)
 	}
 }
 
-inline static int Wc90b1SynchroniseStream(int nSoundRate)
+inline static INT32 Wc90b1SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 5000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 5000000;
 }
 
 inline static double Wc90b1GetTime()
@@ -474,7 +475,7 @@ inline static double Wc90b1GetTime()
 
 static void Wc90b1MSM5205Vck0()
 {
-	static int Toggle = 0;
+	static INT32 Toggle = 0;
 	
 	Toggle ^= 1;
 	
@@ -486,29 +487,29 @@ static void Wc90b1MSM5205Vck0()
 	}
 }
 
-static int CharPlaneOffsets[4]   = { 0, 0x20000, 0x40000, 0x60000 };
-static int CharXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int TilePlaneOffsets[4]   = { 0, 0x100000, 0x200000, 0x300000 };
-static int TileXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 0x8000, 0x8001, 0x8002, 0x8003, 0x8004, 0x8005, 0x8006, 0x8007 };
-static int TileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 0x4000, 0x4008, 0x4010, 0x4018, 0x4020, 0x4028, 0x4030, 0x4038 };
-static int SpritePlaneOffsets[4] = { 0x300000, 0x200000, 0x100000, 0 };
-static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 CharPlaneOffsets[4]   = { 0, 0x20000, 0x40000, 0x60000 };
+static INT32 CharXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TilePlaneOffsets[4]   = { 0, 0x100000, 0x200000, 0x300000 };
+static INT32 TileXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 0x8000, 0x8001, 0x8002, 0x8003, 0x8004, 0x8005, 0x8006, 0x8007 };
+static INT32 TileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 0x4000, 0x4008, 0x4010, 0x4018, 0x4020, 0x4028, 0x4030, 0x4038 };
+static INT32 SpritePlaneOffsets[4] = { 0x300000, 0x200000, 0x100000, 0 };
+static INT32 SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-static int Wc90b1Init()
+static INT32 Wc90b1Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	Wc90b1TempGfx = (unsigned char*)malloc(0x80000);
+	Wc90b1TempGfx = (UINT8*)BurnMalloc(0x80000);
 	if (Wc90b1TempGfx == NULL) return 1;
 
 	// Load Z80 #1 Program Roms
@@ -563,15 +564,15 @@ static int Wc90b1Init()
 	nRet = BurnLoadRom(Wc90b1TempGfx + 0x50000, 18, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90b1TempGfx + 0x60000, 19, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Wc90b1TempGfx + 0x70000, 20, 1); if (nRet != 0) return 1;
-	for (int i = 0; i < 0x80000; i++) {
+	for (INT32 i = 0; i < 0x80000; i++) {
 		Wc90b1TempGfx[i] ^= 0xff;
 	}
 	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, Wc90b1TempGfx, Wc90b1Sprites);
 
-	free(Wc90b1TempGfx);
+	BurnFree(Wc90b1TempGfx);
 
 	// Setup the Z80 emulation
-	ZetInit(3);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(Wc90b1Read1);
 	ZetSetWriteHandler(Wc90b1Write1);
@@ -600,6 +601,7 @@ static int Wc90b1Init()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(1);
 	ZetOpen(1);
 	ZetSetReadHandler(Wc90b1Read2);
 	ZetSetWriteHandler(Wc90b1Write2);
@@ -627,6 +629,7 @@ static int Wc90b1Init()
 	ZetMemEnd();
 	ZetClose();
 
+	ZetInit(2);
 	ZetOpen(2);
 	ZetSetReadHandler(Wc90b1Read3);
 	ZetSetWriteHandler(Wc90b1Write3);
@@ -652,15 +655,14 @@ static int Wc90b1Init()
 	return 0;
 }
 
-static int Wc90b1Exit()
+static INT32 Wc90b1Exit()
 {
 	ZetExit();
 	GenericTilesExit();
 	BurnYM2203Exit();
 	MSM5205Exit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 	
 	Wc90b1Scroll0X = Wc90b1Scroll0Y = 0;
 	Wc90b1Scroll1X = Wc90b1Scroll1Y = 0;
@@ -673,7 +675,7 @@ static int Wc90b1Exit()
 
 static void Wc90b1RenderBgLayer()
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -709,7 +711,7 @@ static void Wc90b1RenderBgLayer()
 
 static void Wc90b1RenderFgLayer()
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -744,7 +746,7 @@ static void Wc90b1RenderFgLayer()
 
 static void Wc90b1RenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -770,17 +772,17 @@ static void Wc90b1RenderCharLayer()
 	}
 }
 
-static void Wc90b1RenderSpriteLayer(int Priority)
+static void Wc90b1RenderSpriteLayer(INT32 Priority)
 {
-	int Offset, sx, sy;
+	INT32 Offset, sx, sy;
 	
 	for (Offset = 0x800 - 8; Offset >= 0; Offset -= 8) {
 		if ((~(Wc90b1SpriteRam[Offset + 3] >> 7) & 1) == Priority) {
-			int Code = (Wc90b1SpriteRam[Offset + 3] & 0x3f) << 4;
-			int Bank = Wc90b1SpriteRam[Offset + 0];
-			int Flags = Wc90b1SpriteRam[Offset + 4];
-			int xFlip = Bank & 0x01;
-			int yFlip = Bank & 0x02;
+			INT32 Code = (Wc90b1SpriteRam[Offset + 3] & 0x3f) << 4;
+			INT32 Bank = Wc90b1SpriteRam[Offset + 0];
+			INT32 Flags = Wc90b1SpriteRam[Offset + 4];
+			INT32 xFlip = Bank & 0x01;
+			INT32 yFlip = Bank & 0x02;
 			
 			Code += (Bank & 0xf0) >> 4;
 			Code <<= 2;
@@ -826,9 +828,9 @@ static void Wc90b1RenderSpriteLayer(int Priority)
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 0) & 0x0f;
 	g = (nColour >> 4) & 0x0f;
@@ -841,9 +843,9 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-static int Wc90b1CalcPalette()
+static INT32 Wc90b1CalcPalette()
 {
-	int i;
+	INT32 i;
 
 	for (i = 0; i < 0x800; i++) {
 		Wc90b1Palette[i / 2] = CalcCol(Wc90b1PaletteRam[i | 1] | (Wc90b1PaletteRam[i & ~1] << 8));
@@ -864,26 +866,25 @@ static void Wc90b1Draw()
 	BurnTransferCopy(Wc90b1Palette);
 }
 
-static int Wc90b1Frame()
+static INT32 Wc90b1Frame()
 {
-	int nInterleave = MSM5205CalcInterleave(0, 5000000);
-	int nVBlankIRQFire = (int)((double)242 / 260 * nInterleave);
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = MSM5205CalcInterleave(0, 5000000);
+	INT32 nVBlankIRQFire = (INT32)((double)242 / 260 * nInterleave);
 
 	if (Wc90b1Reset) Wc90b1DoReset();
 
 	Wc90b1MakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)7159090 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)7159090 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[2] = (int)(double)(5000000 / 60);
+	nCyclesTotal[0] = (INT32)((INT64)7159090 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)7159090 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[2] = (INT32)(double)(5000000 / 60);
 	
 	nCyclesDone[0] = nCyclesDone[1] = nCyclesDone[2] = 0;
 
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext, nCurrentCPU;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext, nCurrentCPU;
 
 		nCurrentCPU = 0;
 		ZetOpen(nCurrentCPU);
@@ -907,38 +908,23 @@ static int Wc90b1Frame()
 		ZetOpen(nCurrentCPU);
 		BurnTimerUpdate(i * (nCyclesTotal[2] / nInterleave));
 		MSM5205Update();
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 		ZetClose();
 	}
 
 	ZetOpen(2);
 	BurnTimerEndFrame(nCyclesTotal[2]);
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 	ZetClose();
 	
-	if (pBurnSoundOut) {
-		ZetOpen(2);
-		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
-		ZetClose();
-	}
-
 	if (pBurnDraw) Wc90b1Draw();
 
 	return 0;
 }
 
-static int Wc90b1Scan(int nAction,int *pnMin)
+static INT32 Wc90b1Scan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

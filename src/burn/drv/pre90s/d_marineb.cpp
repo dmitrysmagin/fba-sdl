@@ -2,6 +2,7 @@
 
 
 #include "tiles_generic.h"
+#include "zet.h"
 
 #include "driver.h"
 extern "C" {
@@ -10,40 +11,40 @@ extern "C" {
 
 enum { SPRINGER = 0, MARINEB };
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *RamStart;
-static unsigned char *RamEnd;
-static unsigned int  *TempPalette;
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalcPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *RamStart;
+static UINT8 *RamEnd;
+static UINT32 *TempPalette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalcPalette;
 
-static unsigned char DrvInputPort0[8];
-static unsigned char DrvInputPort1[8];
-static unsigned char DrvInputPort2[8];
-static unsigned char DrvDip;
-static unsigned char DrvInput[3];
-static unsigned char DrvReset;
+static UINT8 DrvInputPort0[8];
+static UINT8 DrvInputPort1[8];
+static UINT8 DrvInputPort2[8];
+static UINT8 DrvDip;
+static UINT8 DrvInput[3];
+static UINT8 DrvReset;
 
-static unsigned char *DrvZ80ROM;  
-static unsigned char *DrvZ80RAM;  
-static unsigned char *DrvColPROM; 
-static unsigned char *DrvVidRAM;  
-static unsigned char *DrvColRAM;  
-static unsigned char *DrvSprRAM;  
-static unsigned char *DrvGfxROM0; 
-static unsigned char *DrvGfxROM1; 
-static unsigned char *DrvGfxROM2; 
+static UINT8 *DrvZ80ROM;  
+static UINT8 *DrvZ80RAM;  
+static UINT8 *DrvColPROM; 
+static UINT8 *DrvVidRAM;  
+static UINT8 *DrvColRAM;  
+static UINT8 *DrvSprRAM;  
+static UINT8 *DrvGfxROM0; 
+static UINT8 *DrvGfxROM1; 
+static UINT8 *DrvGfxROM2; 
 
-static unsigned char DrvPaletteBank;	
-static unsigned char DrvColumnScroll;	
-static unsigned char ActiveLowFlipscreen;
-static unsigned char DrvFlipScreenY;
-static unsigned char DrvFlipScreenX;
-static int DrvInterruptEnable;
-static int hardware;
+static UINT8 DrvPaletteBank;	
+static UINT8 DrvColumnScroll;	
+static UINT8 ActiveLowFlipscreen;
+static UINT8 DrvFlipScreenY;
+static UINT8 DrvFlipScreenX;
+static INT32 DrvInterruptEnable;
+static INT32 hardware;
 
-static short *pAY8910Buffer[3];
+static INT16 *pAY8910Buffer[3];
 
 
 
@@ -99,9 +100,9 @@ static struct BurnDIPInfo MarinebDIPList[]=
 
 STDDIPINFO(Marineb)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM			= Next; Next += 0x10000;	
 	DrvColPROM    		= Next; Next += 0x200;	
@@ -109,12 +110,12 @@ static int MemIndex()
 	DrvGfxROM1   		= Next; Next += 64 * 16 * 16;
 	DrvGfxROM2    		= Next; Next += 64 * 32 * 32;
 	
-	TempPalette = (unsigned int*)Next; Next += 0x100 * sizeof(unsigned int); // calculate one time
-	DrvPalette  = (unsigned int*)Next; Next += 0x100 * sizeof(unsigned int);
+	TempPalette = (UINT32*)Next; Next += 0x100 * sizeof(UINT32); // calculate one time
+	DrvPalette  = (UINT32*)Next; Next += 0x100 * sizeof(UINT32);
 	
-	pAY8910Buffer[0]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
 	
 	RamStart	= Next;
 
@@ -149,7 +150,7 @@ static void CleanAndInitStuff()
 }
 
 
-unsigned char __fastcall marineb_read(unsigned short address)
+UINT8 __fastcall marineb_read(UINT16 address)
 {
 	switch (address) {		
 		case 0xa800:
@@ -169,7 +170,7 @@ unsigned char __fastcall marineb_read(unsigned short address)
 }
 
 
-void __fastcall marineb_write(unsigned short address, unsigned char data)
+void __fastcall marineb_write(UINT16 address, UINT8 data)
 {
 	switch (address) {
 	
@@ -200,7 +201,7 @@ void __fastcall marineb_write(unsigned short address, unsigned char data)
 	}	
 }
 
-void __fastcall marineb_write_port(unsigned short port, unsigned char data)
+void __fastcall marineb_write_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0xFF) {	
 		case 0x08:
@@ -210,7 +211,7 @@ void __fastcall marineb_write_port(unsigned short port, unsigned char data)
 	}	
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {	
 	memset (RamStart, 0, RamEnd - RamStart);
 	
@@ -231,9 +232,9 @@ static int DrvDoReset()
 
 static void DrvCreatePalette()
 {
-	for (int i = 0; i < 256; i++)
+	for (INT32 i = 0; i < 256; i++)
 	{
-		int bit0, bit1, bit2, r, g, b;
+		INT32 bit0, bit1, bit2, r, g, b;
 
 		// Red
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
@@ -256,29 +257,29 @@ static void DrvCreatePalette()
 }
 
 
-static int MarinebCharPlane[2] = { 0, 4 };
-static int MarinebCharXOffs[8] = { 0, 1, 2, 3, 64, 65, 66, 67 };
-static int MarinebCharYOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 MarinebCharPlane[2] = { 0, 4 };
+static INT32 MarinebCharXOffs[8] = { 0, 1, 2, 3, 64, 65, 66, 67 };
+static INT32 MarinebCharYOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-static int MarinebSmallSpriteCharPlane[2] = { 0, 65536 };
-static int MarinebSmallSpriteXOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-static int MarinebSmallSpriteYOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+static INT32 MarinebSmallSpriteCharPlane[2] = { 0, 65536 };
+static INT32 MarinebSmallSpriteXOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+static INT32 MarinebSmallSpriteYOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
-static int MarinebBigSpriteCharPlane[2] = { 0, 65536 };
-static int MarinebBigSpriteXOffs[32] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71, 256, 257, 258, 259, 260, 261, 262, 263, 320, 321, 322, 323, 324, 325, 326, 327 };
-static int MarinebBigSpriteYOffs[32] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184, 512, 520, 528, 536, 544, 552, 560, 568, 640, 648, 656, 664, 672, 680, 688, 696 };
+static INT32 MarinebBigSpriteCharPlane[2] = { 0, 65536 };
+static INT32 MarinebBigSpriteXOffs[32] = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71, 256, 257, 258, 259, 260, 261, 262, 263, 320, 321, 322, 323, 324, 325, 326, 327 };
+static INT32 MarinebBigSpriteYOffs[32] = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184, 512, 520, 528, 536, 544, 552, 560, 568, 640, 648, 656, 664, 672, 680, 688, 696 };
 
 
-static int MarinebLoadRoms()
+static INT32 MarinebLoadRoms()
 {						   
 	// Load roms	
 	
 	// Z80
-	for (int i = 0; i < 5; i++) {
+	for (INT32 i = 0; i < 5; i++) {
 		if (BurnLoadRom(DrvZ80ROM + (i * 0x1000), i, 1)) return 1;			
 	}			
 
-	unsigned char *tmp = (unsigned char*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) return 1;
 		
 	// Chars
@@ -296,7 +297,8 @@ static int MarinebLoadRoms()
 		
 	// Big Sprites
 	GfxDecode(0x40, 2, 32, 32, MarinebBigSpriteCharPlane, MarinebBigSpriteXOffs, MarinebBigSpriteYOffs, 0x400, tmp, DrvGfxROM2);				
-	free(tmp);
+
+	BurnFree(tmp);
 		
 	// ColorRoms
 	if (BurnLoadRom(DrvColPROM, 8, 1)) return 1;
@@ -305,16 +307,16 @@ static int MarinebLoadRoms()
 	return 0;
 }			  
 
-static int SpringerLoadRoms()
+static INT32 SpringerLoadRoms()
 {						   
 	// Load roms	
 	
 	// Z80
-	for (int i = 0; i < 5; i++) {
+	for (INT32 i = 0; i < 5; i++) {
 		if (BurnLoadRom(DrvZ80ROM + (i * 0x1000), i, 1)) return 1;			
 	}			
 
-	unsigned char *tmp = (unsigned char*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) return 1;
 		
 	// Chars
@@ -332,7 +334,8 @@ static int SpringerLoadRoms()
 	GfxDecode(0x40, 2, 16, 16, MarinebSmallSpriteCharPlane, MarinebSmallSpriteXOffs, MarinebSmallSpriteYOffs, 0x100, tmp, DrvGfxROM1);		
 	// Big Sprites
 	GfxDecode(0x40, 2, 32, 32, MarinebBigSpriteCharPlane, MarinebBigSpriteXOffs, MarinebBigSpriteYOffs, 0x400, tmp, DrvGfxROM2);				
-	free(tmp);			
+
+	BurnFree(tmp);
 		
 	// ColorRoms
 	if (BurnLoadRom(DrvColPROM, 9, 1)) return 1;
@@ -341,12 +344,12 @@ static int SpringerLoadRoms()
 	return 0;
 }
 
-static int DrvInit() 
+static INT32 DrvInit() 
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 	
@@ -361,7 +364,7 @@ static int DrvInit()
 	
 	DrvCreatePalette();	
 	
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	
 	ZetMapArea (0x0000, 0x7fff, 0, DrvZ80ROM);
@@ -399,14 +402,13 @@ static int DrvInit()
 
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	ZetExit();	
 	AY8910Exit(0);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 	
 	CleanAndInitStuff();
 	
@@ -415,26 +417,26 @@ static int DrvExit()
 
 static void RenderMarinebBg()
 {	
-	int TileIndex = 0;
+	INT32 TileIndex = 0;
 
-	for (int my = 0; my < 32; my++) {		
-		for (int mx = 0; mx < 32; mx++) {	
+	for (INT32 my = 0; my < 32; my++) {		
+		for (INT32 mx = 0; mx < 32; mx++) {	
 			
 			TileIndex = (my * 32) + mx; 
 			
-			int code = DrvVidRAM[TileIndex];			
-		    int color = DrvColRAM[TileIndex];
+			INT32 code = DrvVidRAM[TileIndex];			
+		    INT32 color = DrvColRAM[TileIndex];
 			
 			code |= ((color & 0xc0) << 2);
 			
 			color &= 0x0f;
 			color |= DrvPaletteBank << 4;
 			
-			int flipx = (color >> 4) & 0x02; 
-			int flipy = (color >> 4) & 0x01;					
+			INT32 flipx = (color >> 4) & 0x02; 
+			INT32 flipy = (color >> 4) & 0x01;					
 			
-			int x = mx << 3;
-			int y = my << 3;		
+			INT32 x = mx << 3;
+			INT32 y = my << 3;		
 			
 			// stuff from 192 to 256 does not scroll
 			if ((x >> 3) < 24) {
@@ -464,26 +466,26 @@ static void RenderMarinebBg()
 
 static void RenderSpringerBg()
 {	
-	int TileIndex = 0;
+	INT32 TileIndex = 0;
 
-	for (int my = 0; my < 32; my++) {		
-		for (int mx = 0; mx < 32; mx++) {	
+	for (INT32 my = 0; my < 32; my++) {		
+		for (INT32 mx = 0; mx < 32; mx++) {	
 			
 			TileIndex = (my * 32) + mx; 
 			
-			int code = DrvVidRAM[TileIndex];			
-		    int color = DrvColRAM[TileIndex];
+			INT32 code = DrvVidRAM[TileIndex];			
+		    INT32 color = DrvColRAM[TileIndex];
 			
 			code |= ((color & 0xc0) << 2);
 			
 			color &= 0x0f;
 			color |= DrvPaletteBank << 4;
 			
-			int flipx = (color >> 4) & 0x02; 
-			int flipy = (color >> 4) & 0x01;					
+			INT32 flipx = (color >> 4) & 0x02; 
+			INT32 flipy = (color >> 4) & 0x01;					
 			
-			int x = mx << 3;				
-			int y = my << 3;
+			INT32 x = mx << 3;				
+			INT32 y = my << 3;
 
 			y -= 16; // remove garbage on left side
 
@@ -509,9 +511,9 @@ static void MarinebDrawSprites()
 	// Render Tiles
 	RenderMarinebBg();	
 	
-	for (int offs = 0x0f; offs >= 0; offs--) {
+	for (INT32 offs = 0x0f; offs >= 0; offs--) {
 	
-		int gfx, sx, sy, code, color, flipx, flipy, offs2;
+		INT32 gfx, sx, sy, code, color, flipx, flipy, offs2;
 
 		if ((offs == 0) || (offs == 2))
 			continue; 
@@ -592,9 +594,9 @@ static void SpringerDrawSprites()
 	// Render Tiles
 	RenderSpringerBg();	
 	
-	for (int offs = 0x0f; offs >= 0; offs--)
+	for (INT32 offs = 0x0f; offs >= 0; offs--)
 	{
-		int gfx, sx, sy, code, color, flipx, flipy, offs2;
+		INT32 gfx, sx, sy, code, color, flipx, flipy, offs2;
 
 		if ((offs == 0) || (offs == 2))
 			continue;  
@@ -671,11 +673,11 @@ static void SpringerDrawSprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {	
 	if (DrvRecalcPalette) {
-		for (int i = 0; i < 256; i++) {
-			unsigned int tmp = TempPalette[i];
+		for (INT32 i = 0; i < 256; i++) {
+			UINT32 tmp = TempPalette[i];
 			// Recalc Colors 
 			DrvPalette[i] = BurnHighCol((tmp >> 16)  & 0xFF, (tmp >> 8) & 0xFF, tmp & 0xFF, 0);			
 		}
@@ -696,7 +698,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) { 
 		DrvDoReset(); 
@@ -704,7 +706,7 @@ static int DrvFrame()
 
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i; 
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -717,22 +719,16 @@ static int DrvFrame()
 	ZetClose();
 	
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
-			nSample  = pAY8910Buffer[0][n];
-			nSample += pAY8910Buffer[1][n];
-			nSample += pAY8910Buffer[2][n];
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
+			nSample  = pAY8910Buffer[0][n] >> 2;
+			nSample += pAY8910Buffer[1][n] >> 2;
+			nSample += pAY8910Buffer[2][n] >> 2;
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -746,7 +742,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -770,7 +766,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int MarinebInit()
+static INT32 MarinebInit()
 {	
 	CleanAndInitStuff();
 	hardware = MARINEB;	
@@ -778,7 +774,7 @@ static int MarinebInit()
 	return DrvInit();
 }
 
-static int SpringerInit()
+static INT32 SpringerInit()
 {
 	CleanAndInitStuff();
 	
@@ -812,7 +808,7 @@ STD_ROM_FN(Marineb)
 
 struct BurnDriver BurnDrvMarineb = {
 	"marineb", NULL, NULL, NULL, "1982",
-	"Marine Boy\0", NULL, "Orca", "misc",
+	"Marine Boy\0", NULL, "Orca", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, 0, 0,
 	NULL, MarinebRomInfo, MarinebRomName, NULL, NULL, MarinebInputInfo, MarinebDIPInfo,
@@ -845,7 +841,7 @@ STD_ROM_FN(Springer)
 
 struct BurnDriver BurnDrvSpringer = {
 	"springer", NULL, NULL, NULL, "1982",
-	"Springer\0", NULL, "Orca", "misc",
+	"Springer\0", NULL, "Orca", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, 0, 0,
 	NULL, SpringerRomInfo, SpringerRomName, NULL, NULL, MarinebInputInfo, MarinebDIPInfo,

@@ -1,1 +1,1 @@
-void mc8123_decrypt_rom(int banknum, int numbanks, unsigned char *pRom, unsigned char *pFetch, unsigned char *pKey);
+void mc8123_decrypt_rom(INT32 banknum, INT32 numbanks, UINT8 *pRom, UINT8 *pFetch, UINT8 *pKey);

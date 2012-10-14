@@ -175,15 +175,15 @@ static int InpdListBegin()
 	memset(&LvCol, 0, sizeof(LvCol));
 	LvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 
-	LvCol.cx = 0x90;
+	LvCol.cx = 0xa0;
 	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_INPUT, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 0, (LPARAM)&LvCol);
 
-	LvCol.cx = 0x90;
+	LvCol.cx = 0xa0;
 	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_MAPPING, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 1, (LPARAM)&LvCol);
 
-	LvCol.cx = 0x28;
+	LvCol.cx = 0x38;
 	LvCol.pszText = FBALoadStringEx(hAppInst, IDS_INPUT_STATE, true);
 	SendMessage(hInpdList, LVM_INSERTCOLUMN, 2, (LPARAM)&LvCol);
 
@@ -286,7 +286,7 @@ static void InitComboboxes()
 	SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)FBALoadStringEx(hAppInst, IDS_INPUT_INP_HOTRODR, true));
 
 	// Scan presets directory for .ini files and add them to the list
-	if ((search = FindFirstFile(_T("config\\presets\\*.ini"), &findData)) != INVALID_HANDLE_VALUE) {
+	if ((search = FindFirstFile(_T("config/presets/*.ini"), &findData)) != INVALID_HANDLE_VALUE) {
 		do {
 			findData.cFileName[_tcslen(findData.cFileName) - 4] = 0;
 			SendMessage(hInpdPci, CB_ADDSTRING, 0, (LPARAM)findData.cFileName);
@@ -469,9 +469,9 @@ static int ListItemActivate()
 	return 0;
 }
 
+#if 0
 static int NewMacroButton()
 {
-#if 0
 	LVITEM LvItem;
 	int nSel;
 
@@ -499,10 +499,10 @@ static int NewMacroButton()
 	}
 
 	InpMacroCreate(nSel);
-#endif
 
 	return 0;
 }
+#endif
 
 static int DeleteInput(unsigned int i)
 {
@@ -722,7 +722,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 
 		if (Id == IDC_INPD_NEWMACRO && Notify == BN_CLICKED) {
 
-			NewMacroButton();
+//			NewMacroButton();
 
 			return 0;
 		}

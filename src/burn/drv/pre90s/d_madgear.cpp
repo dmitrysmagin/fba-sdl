@@ -1,46 +1,48 @@
 #include "tiles_generic.h"
+#include "sek.h"
+#include "zet.h"
 #include "burn_ym2203.h"
 #include "msm6295.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[3]        = {0, 0, 0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[3]        = {0, 0, 0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *Drv68KRom           = NULL;
-static unsigned char *Drv68KRam           = NULL;
-static unsigned char *DrvZ80Rom           = NULL;
-static unsigned char *DrvZ80Ram           = NULL;
-static unsigned char *DrvVideoRam         = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvSpriteRamBuffer  = NULL;
-static unsigned char *DrvPaletteRam       = NULL;
-static unsigned char *DrvScroll1Ram       = NULL;
-static unsigned char *DrvScroll2Ram       = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvBgTiles          = NULL;
-static unsigned char *DrvFgTiles          = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *Drv68KRom           = NULL;
+static UINT8 *Drv68KRam           = NULL;
+static UINT8 *DrvZ80Rom           = NULL;
+static UINT8 *DrvZ80Ram           = NULL;
+static UINT8 *DrvVideoRam         = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvSpriteRamBuffer  = NULL;
+static UINT8 *DrvPaletteRam       = NULL;
+static UINT8 *DrvScroll1Ram       = NULL;
+static UINT8 *DrvScroll2Ram       = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvBgTiles          = NULL;
+static UINT8 *DrvFgTiles          = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT16 DrvFgScrollX;
 static UINT16 DrvFgScrollY;
 static UINT16 DrvBgScrollX;
 static UINT16 DrvBgScrollY;
-static unsigned char DrvSpritePriMask;
-static unsigned char DrvSpriteFlipYMask;
-static unsigned char DrvZ80RomBank;
-static unsigned char DrvSoundLatch;
+static UINT8 DrvSpritePriMask;
+static UINT8 DrvSpriteFlipYMask;
+static UINT8 DrvZ80RomBank;
+static UINT8 DrvSoundLatch;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo DrvInputList[] =
 {
@@ -101,7 +103,7 @@ static struct BurnInputInfo LastduelInputList[] =
 
 STDINPUTINFO(Lastduel)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -117,7 +119,7 @@ static inline void DrvMakeInputs()
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -516,9 +518,9 @@ static struct BurnRomInfo LastduelbRomDesc[] = {
 STD_ROM_PICK(Lastduelb)
 STD_ROM_FN(Lastduelb)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x80000;
 	DrvZ80Rom              = Next; Next += 0x10000;
@@ -541,14 +543,14 @@ static int MemIndex()
 	DrvBgTiles             = Next; Next += 0x0800 * 16 * 16;
 	DrvFgTiles             = Next; Next += 0x1000 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -570,7 +572,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MadgearDoReset()
+static INT32 MadgearDoReset()
 {
 	DrvDoReset();
 	
@@ -579,7 +581,7 @@ static int MadgearDoReset()
 	return 0;
 }
 
-unsigned char __fastcall Madgear68KReadByte(unsigned int a)
+UINT8 __fastcall Madgear68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xfc4000: {
@@ -614,7 +616,7 @@ unsigned char __fastcall Madgear68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Madgear68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Madgear68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xfc4000: {
@@ -659,7 +661,7 @@ void __fastcall Madgear68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall MadgearZ80Read(unsigned short a)
+UINT8 __fastcall MadgearZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xf000: {
@@ -682,7 +684,7 @@ unsigned char __fastcall MadgearZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall MadgearZ80Write(unsigned short a, unsigned char d)
+void __fastcall MadgearZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xf000: {
@@ -723,7 +725,7 @@ void __fastcall MadgearZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Lastduel68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Lastduel68KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfc4001: {
@@ -742,7 +744,7 @@ void __fastcall Lastduel68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Lastduel68KReadWord(unsigned int a)
+UINT16 __fastcall Lastduel68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xfc4000: {
@@ -769,7 +771,7 @@ unsigned short __fastcall Lastduel68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Lastduel68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Lastduel68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0xfc0000:
@@ -810,7 +812,7 @@ void __fastcall Lastduel68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall LastduelZ80Read(unsigned short a)
+UINT8 __fastcall LastduelZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe800: {
@@ -833,7 +835,7 @@ unsigned char __fastcall LastduelZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall LastduelZ80Write(unsigned short a, unsigned char d)
+void __fastcall LastduelZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe800: {
@@ -862,7 +864,7 @@ void __fastcall LastduelZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-inline static void DrvYM2203IRQHandler(int, int nStatus)
+inline static void DrvYM2203IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -871,9 +873,9 @@ inline static void DrvYM2203IRQHandler(int, int nStatus)
 	}
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3579545;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3579545;
 }
 
 inline static double DrvGetTime()
@@ -881,30 +883,30 @@ inline static double DrvGetTime()
 	return (double)ZetTotalCycles() / 3579545;
 }
 
-static int CharPlaneOffsets[2]     = { 4, 0 };
-static int CharXOffsets[8]         = { 0, 1, 2, 3, 8, 9, 10, 11 };
-static int CharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
-static int BgTilePlaneOffsets[4]   = { 12, 8, 4, 0 };
-static int FgTilePlaneOffsets[4]   = { 4, 12, 0, 8 };
-static int TileXOffsets[16]        = { 0, 1, 2, 3, 16, 17, 18, 19, 512, 513, 514, 515, 528, 529, 530, 531 };
-static int TileYOffsets[16]        = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
-static int SpritePlaneOffsets[4]   = { 0, 0x100000, 0x200000, 0x300000 };
-static int SpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int SpriteYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 CharPlaneOffsets[2]     = { 4, 0 };
+static INT32 CharXOffsets[8]         = { 0, 1, 2, 3, 8, 9, 10, 11 };
+static INT32 CharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
+static INT32 BgTilePlaneOffsets[4]   = { 12, 8, 4, 0 };
+static INT32 FgTilePlaneOffsets[4]   = { 4, 12, 0, 8 };
+static INT32 TileXOffsets[16]        = { 0, 1, 2, 3, 16, 17, 18, 19, 512, 513, 514, 515, 528, 529, 530, 531 };
+static INT32 TileYOffsets[16]        = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
+static INT32 SpritePlaneOffsets[4]   = { 0, 0x100000, 0x200000, 0x300000 };
+static INT32 SpriteXOffsets[16]      = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 SpriteYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -945,7 +947,7 @@ static int DrvInit()
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 16, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 17, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -962,7 +964,7 @@ static int DrvInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(MadgearZ80Read);
 	ZetSetWriteHandler(MadgearZ80Write);
@@ -981,6 +983,7 @@ static int DrvInit()
 	DrvSpriteFlipYMask = 0x80;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	MSM6295Init(0, 7575, 98, 1);
@@ -991,19 +994,19 @@ static int DrvInit()
 	return 0;
 }
 
-static int Ledstrm2Init()
+static INT32 Ledstrm2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1038,7 +1041,7 @@ static int Ledstrm2Init()
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 11, 1); if (nRet != 0) return 1;
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1055,7 +1058,7 @@ static int Ledstrm2Init()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(MadgearZ80Read);
 	ZetSetWriteHandler(MadgearZ80Write);
@@ -1074,6 +1077,7 @@ static int Ledstrm2Init()
 	DrvSpriteFlipYMask = 0x80;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	MSM6295Init(0, 7575, 98, 1);
@@ -1084,19 +1088,19 @@ static int Ledstrm2Init()
 	return 0;
 }
 
-static int LastduelInit()
+static INT32 LastduelInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1130,7 +1134,7 @@ static int LastduelInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x1000, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, DrvTempRom, DrvSprites);
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1148,7 +1152,7 @@ static int LastduelInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(LastduelZ80Read);
 	ZetSetWriteHandler(LastduelZ80Write);
@@ -1165,6 +1169,7 @@ static int LastduelInit()
 	DrvSpriteFlipYMask = 0x40;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	// Reset the driver
@@ -1173,19 +1178,19 @@ static int LastduelInit()
 	return 0;
 }
 
-static int LastduelbInit()
+static INT32 LastduelbInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1234,7 +1239,7 @@ static int LastduelbInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x70000, 27, 1); if (nRet != 0) return 1;
 	GfxDecode(0x1000, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, DrvTempRom, DrvSprites);
 	
-	free(DrvTempRom);
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1252,7 +1257,7 @@ static int LastduelbInit()
 	SekClose();
 	
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetSetReadHandler(LastduelZ80Read);
 	ZetSetWriteHandler(LastduelZ80Write);
@@ -1269,6 +1274,7 @@ static int LastduelbInit()
 	DrvSpriteFlipYMask = 0x40;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	// Reset the driver
@@ -1277,13 +1283,12 @@ static int LastduelbInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 	ZetExit();
 	
 	BurnYM2203Exit();
-	MSM6295Exit(0);
 	
 	GenericTilesExit();
 	
@@ -1296,24 +1301,21 @@ static int DrvExit()
 	DrvZ80RomBank = 0;
 	DrvSoundLatch = 0;
 	
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int MadgearExit()
+static INT32 MadgearExit()
 {
 	MSM6295Exit(0);
-	DrvExit();
-
-	return 0;
+	return DrvExit();
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	static const unsigned char ztable[16] = { 0x0, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11 };
-	int i, r, g, b;
+	static const UINT8 ztable[16] = { 0x0, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11 };
+	INT32 i, r, g, b;
 
 	i = ztable[(nColour >> 0) & 15];
 	r = ((nColour >> 12) & 15) * i;
@@ -1325,18 +1327,18 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)DrvPaletteRam, pd = DrvPalette; i < 0x800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)DrvPaletteRam, pd = DrvPalette; i < 0x800; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
 static void DrvRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)DrvScroll2Ram;
 	
@@ -1393,9 +1395,9 @@ static void DrvRenderBgLayer()
 	}
 }
 
-static void DrvRenderFgLayer(int Priority)
+static void DrvRenderFgLayer(INT32 Priority)
 {
-	int mx, my, Code, Colour, x, y, TileIndex, Split, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex, Split, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)DrvScroll1Ram;
 	
@@ -1457,7 +1459,7 @@ static void DrvRenderFgLayer(int Priority)
 
 static void LastduelRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)DrvScroll2Ram;
 	
@@ -1515,9 +1517,9 @@ static void LastduelRenderBgLayer()
 	}
 }
 
-static void LastduelRenderFgLayer(int Priority)
+static void LastduelRenderFgLayer(INT32 Priority)
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, Split, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, Split, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)DrvScroll1Ram;
 	
@@ -1578,13 +1580,13 @@ static void LastduelRenderFgLayer(int Priority)
 	}
 }
 
-static void DrvRenderSprites(int Priority)
+static void DrvRenderSprites(INT32 Priority)
 {
-	int Offset;
+	INT32 Offset;
 	UINT16 *SpriteRam = (UINT16*)DrvSpriteRamBuffer;
 	
 	for (Offset = 0x400 - 4; Offset >= 0; Offset -= 4) {
-		int Attr, sy, sx, xFlip, yFlip, Code, Colour;
+		INT32 Attr, sy, sx, xFlip, yFlip, Code, Colour;
 		
 		Attr = SpriteRam[Offset + 1];
 		if (DrvSpritePriMask) {
@@ -1638,7 +1640,7 @@ static void DrvRenderSprites(int Priority)
 
 static void DrvRenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, yFlip, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, yFlip, TileIndex = 0;
 	
 	UINT16 *VideoRam = (UINT16*)DrvVideoRam;
 
@@ -1700,10 +1702,9 @@ static void LastduelDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
 
 	if (DrvReset) MadgearDoReset();
 
@@ -1716,8 +1717,8 @@ static int DrvFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -1731,32 +1732,12 @@ static int DrvFrame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		ZetClose();
-		
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-		}
-	}
 	
 	if (pBurnDraw) DrvDraw();
 	
@@ -1769,10 +1750,9 @@ static int DrvFrame()
 	return 0;
 }
 
-static int LastduelFrame()
+static INT32 LastduelFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
 
 	if (DrvReset) DrvDoReset();
 
@@ -1785,8 +1765,8 @@ static int LastduelFrame()
 	SekNewFrame();
 	ZetNewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -1800,30 +1780,12 @@ static int LastduelFrame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		ZetClose();
-		
-		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
-	}
 	
 	if (pBurnDraw) LastduelDraw();
 	
@@ -1836,7 +1798,7 @@ static int LastduelFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1873,9 +1835,9 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int MadgearScan(int nAction, int *pnMin)
+static INT32 MadgearScan(INT32 nAction, INT32 *pnMin)
 {
-	int i = DrvScan(nAction, pnMin);
+	INT32 i = DrvScan(nAction, pnMin);
 	
 	if (i == 0) {
 		if (nAction & ACB_DRIVER_DATA) {
@@ -1897,7 +1859,7 @@ struct BurnDriver BurnDrvLastduel = {
 	"lastduel", NULL, NULL, NULL, "1988",
 	"Last Duel (US New Ver.)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, LastduelRomInfo, LastduelRomName, NULL, NULL, LastduelInputInfo, LastduelDIPInfo,
 	LastduelInit, DrvExit, LastduelFrame, NULL, DrvScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1907,7 +1869,7 @@ struct BurnDriver BurnDrvLastduelo = {
 	"lastduelo", "lastduel", NULL, NULL, "1988",
 	"Last Duel (US Old Ver.)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, LastdueloRomInfo, LastdueloRomName, NULL, NULL, LastduelInputInfo, LastduelDIPInfo,
 	LastduelInit, DrvExit, LastduelFrame, NULL, DrvScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1917,7 +1879,7 @@ struct BurnDriver BurnDrvLastduelj = {
 	"lastduelj", "lastduel", NULL, NULL, "1988",
 	"Last Duel (Japan)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, LastdueljRomInfo, LastdueljRomName, NULL, NULL, LastduelInputInfo, LastduelDIPInfo,
 	LastduelInit, DrvExit, LastduelFrame, NULL, DrvScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1927,7 +1889,7 @@ struct BurnDriver BurnDrvLsstduelb = {
 	"lastduelb", "lastduel", NULL, NULL, "1988",
 	"Last Duel (bootleg)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_BOOTLEG, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, LastduelbRomInfo, LastduelbRomName, NULL, NULL, LastduelInputInfo, LastduelDIPInfo,
 	LastduelbInit, DrvExit, LastduelFrame, NULL, DrvScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1937,7 +1899,7 @@ struct BurnDriver BurnDrvMadgear = {
 	"madgear", NULL, NULL, NULL, "1989",
 	"Mad Gear (US)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_RACING, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_RACING, 0,
 	NULL, DrvRomInfo, DrvRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, MadgearExit, DrvFrame, NULL, MadgearScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1947,7 +1909,7 @@ struct BurnDriver BurnDrvMadgearj = {
 	"madgearj", "madgear", NULL, NULL, "1989",
 	"Mad Gear (Japan)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_RACING, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_RACING, 0,
 	NULL, DrvjRomInfo, DrvjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, MadgearExit, DrvFrame, NULL, MadgearScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1957,7 +1919,7 @@ struct BurnDriver BurnDrvMadgearu = {
 	"ledstorm", "madgear", NULL, NULL, "1988",
 	"Led Storm (US)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_RACING, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_RACING, 0,
 	NULL, DrvuRomInfo, DrvuRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, MadgearExit, DrvFrame, NULL, MadgearScan,
 	NULL, 0x800, 240, 384, 3, 4
@@ -1967,7 +1929,7 @@ struct BurnDriver BurnDrvLedstrm2 = {
 	"ledstorm2", "madgear", NULL, NULL, "1988",
 	"Led Storm Rally 2011 (US)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_RACING, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_RACING, 0,
 	NULL, Ledstrm2RomInfo, Ledstrm2RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	Ledstrm2Init, MadgearExit, DrvFrame, NULL, MadgearScan,
 	NULL, 0x800, 240, 384, 3, 4

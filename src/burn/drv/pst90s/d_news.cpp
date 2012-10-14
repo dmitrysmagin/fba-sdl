@@ -1,30 +1,31 @@
 #include "tiles_generic.h"
+#include "zet.h"
 #include "msm6295.h"
 
 // FB Alpha - "News" Driver
 
 // Input Related Variables
-static unsigned char NewsInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char NewsDip[1]        = {0};
-static unsigned char NewsInput[1]      = {0x00};
-static unsigned char NewsReset         = 0;
+static UINT8 NewsInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 NewsDip[1]        = {0};
+static UINT8 NewsInput[1]      = {0x00};
+static UINT8 NewsReset         = 0;
 
 // Memory Holders
-static unsigned char *Mem              = NULL;
-static unsigned char *MemEnd           = NULL;
-static unsigned char *RamStart         = NULL;
-static unsigned char *RamEnd           = NULL;
-static unsigned char *NewsRom          = NULL;
-static unsigned char *NewsRam          = NULL;
-static unsigned char *NewsFgVideoRam   = NULL;
-static unsigned char *NewsBgVideoRam   = NULL;
-static unsigned char *NewsPaletteRam   = NULL;
-static unsigned int  *NewsPalette      = NULL;
-static unsigned char *NewsTiles        = NULL;
-static unsigned char *NewsTempGfx      = NULL;
+static UINT8 *Mem              = NULL;
+static UINT8 *MemEnd           = NULL;
+static UINT8 *RamStart         = NULL;
+static UINT8 *RamEnd           = NULL;
+static UINT8 *NewsRom          = NULL;
+static UINT8 *NewsRam          = NULL;
+static UINT8 *NewsFgVideoRam   = NULL;
+static UINT8 *NewsBgVideoRam   = NULL;
+static UINT8 *NewsPaletteRam   = NULL;
+static UINT32 *NewsPalette     = NULL;
+static UINT8 *NewsTiles        = NULL;
+static UINT8 *NewsTempGfx      = NULL;
 
 // Misc Variables, system control values, etc.
-static int BgPic;
+static INT32 BgPic;
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo NewsInputList[] =
@@ -45,7 +46,7 @@ static struct BurnInputInfo NewsInputList[] =
 
 STDINPUTINFO(News)
 
-inline void NewsClearOpposites(unsigned char* nJoystickInputs)
+inline void NewsClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x0c) == 0x0c) {
 		*nJoystickInputs &= ~0x0c;
@@ -61,7 +62,7 @@ inline void NewsMakeInputs()
 	NewsInput[0] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		NewsInput[0] |= (NewsInputPort0[i] & 1) << i;
 	}
 
@@ -151,7 +152,7 @@ STD_ROM_PICK(Newsa)
 STD_ROM_FN(Newsa)
 
 // Misc Driver Functions and Memory Handlers
-int NewsDoReset()
+INT32 NewsDoReset()
 {
 	BgPic = 0;
 
@@ -164,9 +165,9 @@ int NewsDoReset()
 	return 0;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 8) & 0x0f;
 	g = (nColour >> 4) & 0x0f;
@@ -179,7 +180,7 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-unsigned char __fastcall NewsRead(unsigned short a)
+UINT8 __fastcall NewsRead(UINT16 a)
 {
 	switch (a) {
 		case 0xc000: {
@@ -198,7 +199,7 @@ unsigned char __fastcall NewsRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall NewsWrite(unsigned short a, unsigned char d)
+void __fastcall NewsWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc002: {
@@ -213,7 +214,7 @@ void __fastcall NewsWrite(unsigned short a, unsigned char d)
 	}
 
 	if (a >= 0x9000 && a <= 0x91ff) {
-		int Offset = a - 0x9000;
+		INT32 Offset = a - 0x9000;
 
 		NewsPaletteRam[Offset] = d;
 		NewsPalette[Offset / 2] = CalcCol(NewsPaletteRam[Offset | 1] | (NewsPaletteRam[Offset & ~1] << 8));
@@ -224,9 +225,9 @@ void __fastcall NewsWrite(unsigned short a, unsigned char d)
 
 
 // Function to Allocate and Index required memory
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	NewsRom              = Next; Next += 0x10000;
 	MSM6295ROM           = Next; Next += 0x40000;
@@ -241,30 +242,30 @@ static int MemIndex()
 	RamEnd = Next;
 
 	NewsTiles            = Next; Next += (16384 * 8 * 8);
-	NewsPalette          = (unsigned int*)Next; Next += 0x00100 * sizeof(unsigned int);
+	NewsPalette          = (UINT32*)Next; Next += 0x00100 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
 
 // Driver Init and Exit Functions
-int NewsInit()
+INT32 NewsInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	NewsTempGfx = (unsigned char*)malloc(0x80000);
+	NewsTempGfx = (UINT8*)BurnMalloc(0x80000);
 
 	// Load Z80 Program Rom
 	nRet = BurnLoadRom(NewsRom, 0, 1); if (nRet != 0) return 1;
@@ -273,13 +274,13 @@ int NewsInit()
 	nRet = BurnLoadRom(NewsTempGfx + 0x00000, 1, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NewsTempGfx + 0x00001, 2, 2); if (nRet != 0) return 1;
 	GfxDecode(16384, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, NewsTempGfx, NewsTiles);
-	free(NewsTempGfx);
+	BurnFree(NewsTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 3, 1); if (nRet != 0) return 1;
 
 	// Setup the Z80 emulation
-	ZetInit(1);
+	ZetInit(0);
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, NewsRom        );
 	ZetMapArea(0x0000, 0x7fff, 2, NewsRom        );
@@ -308,15 +309,14 @@ int NewsInit()
 	return 0;
 }
 
-int NewsExit()
+INT32 NewsExit()
 {
 	MSM6295Exit(0);
 	ZetExit();
 
 	GenericTilesExit();
 
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	BgPic = 0;
 
@@ -326,7 +326,7 @@ int NewsExit()
 // Graphics Emulation
 void NewsRenderBgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -351,7 +351,7 @@ void NewsRenderBgLayer()
 
 void NewsRenderFgLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -381,7 +381,7 @@ void NewsDraw()
 }
 
 // Frame Function
-int NewsFrame()
+INT32 NewsFrame()
 {
 	if (NewsReset) NewsDoReset();
 
@@ -399,7 +399,7 @@ int NewsFrame()
 }
 
 // Scan RAM
-static int NewsScan(int nAction,int *pnMin)
+static INT32 NewsScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -412,6 +412,12 @@ static int NewsScan(int nAction,int *pnMin)
 		ba.Data	  = RamStart;
 		ba.nLen	  = RamEnd-RamStart;
 		ba.szName = "All Ram";
+		BurnAcb(&ba);
+		
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = NewsPalette;
+		ba.nLen	  = 0x100 * sizeof(UINT32);
+		ba.szName = "Palette";
 		BurnAcb(&ba);
 	}
 

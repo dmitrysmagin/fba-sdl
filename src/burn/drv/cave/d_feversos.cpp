@@ -4,31 +4,30 @@
 
 #define CAVE_VBLANK_LINES 12
 
-static unsigned char DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned short DrvInput[2] = {0x0000, 0x0000};
+static UINT8 DrvJoy1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT16 DrvInput[2] = {0x0000, 0x0000};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *Ram02;
+static UINT8 *DefaultEEPROM = NULL;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int nSpeedhack;
+static INT8 nVideoIRQ;
+static INT8 nSoundIRQ;
+static INT8 nUnknownIRQ;
 
-static char nVideoIRQ;
-static char nSoundIRQ;
-static char nUnknownIRQ;
+static INT8 nIRQPending;
 
-static char nIRQPending;
-
-static int nCurrentCPU;
-static int nCyclesDone[2];
-static int nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCurrentCPU;
+static INT32 nCyclesDone[2];
+static INT32 nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo feversosInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 8,	"p1 coin"},
@@ -66,7 +65,7 @@ static void UpdateIRQStatus()
 	SekSetIRQLine(1, nIRQPending ? SEK_IRQSTATUS_ACK : SEK_IRQSTATUS_NONE);
 }
 
-unsigned char __fastcall feversosReadByte(unsigned int sekAddress)
+UINT8 __fastcall feversosReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x300003: {
@@ -77,19 +76,19 @@ unsigned char __fastcall feversosReadByte(unsigned int sekAddress)
 		case 0x800001:
 		case 0x800002:
 		case 0x800003: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x800004:
 		case 0x800005: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x800006:
 		case 0x800007: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -111,7 +110,7 @@ unsigned char __fastcall feversosReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall feversosReadWord(unsigned int sekAddress)
+UINT16 __fastcall feversosReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x300002: {
@@ -120,17 +119,17 @@ unsigned short __fastcall feversosReadWord(unsigned int sekAddress)
 
 		case 0x800000:
 		case 0x800002: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			return nRet;
 		}
 		case 0x800004: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nVideoIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
 		}
 		case 0x800006: {
-			unsigned char nRet = (nUnknownIRQ << 1) | nVideoIRQ;
+			UINT8 nRet = (nUnknownIRQ << 1) | nVideoIRQ;
 			nUnknownIRQ = 1;
 			UpdateIRQStatus();
 			return nRet;
@@ -148,7 +147,7 @@ unsigned short __fastcall feversosReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall feversosWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall feversosWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x300001:
@@ -168,7 +167,7 @@ void __fastcall feversosWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall feversosWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall feversosWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x300000:
@@ -221,7 +220,7 @@ void __fastcall feversosWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-static void TriggerSoundIRQ(int nStatus)
+static void TriggerSoundIRQ(INT32 nStatus)
 {
 	nSoundIRQ = nStatus ^ 1;
 	UpdateIRQStatus();
@@ -231,7 +230,7 @@ static void TriggerSoundIRQ(int nStatus)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
@@ -243,14 +242,12 @@ static int DrvExit()
 
 	SekExit();				// Deallocate 68000s
 
-	// Deallocate all used memory
-	free(Mem);
-	Mem = NULL;
+	BurnFree(Mem);
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -266,12 +263,10 @@ static int DrvDoReset()
 
 	nIRQPending = 0;
 
-	YMZ280BReset();
-
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	CavePalUpdate4Bit(0, 128);				// Update the palette
 	CaveClearScreen(CavePalette[0x3F00]);
@@ -285,22 +280,15 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
-#if 0 && defined USE_SPEEDHACKS
-	unsigned int nCurrentPC = SekGetPC(-1);
-
-	if (!nIRQPending && nCurrentPC >= nSpeedhack && nCurrentPC <= nSpeedhack + 0x18) {
-		return 1;
-	}
-#endif
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nCyclesVBlank;
-	int nInterleave = 8;
+	INT32 nCyclesVBlank;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -309,7 +297,7 @@ static int DrvFrame()
 	// Compile digital inputs
 	DrvInput[0] = 0x0000;  												// Player 1
 	DrvInput[1] = 0x0000;  												// Player 2
-	for (int i = 0; i < 10; i++) {
+	for (INT32 i = 0; i < 10; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 	}
@@ -318,24 +306,24 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * CAVE_REFRESHRATE));
 	nCyclesDone[0] = 0;
 
-	nCyclesVBlank = nCyclesTotal[0] - (int)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
+	nCyclesVBlank = nCyclesTotal[0] - (INT32)((nCyclesTotal[0] * CAVE_VBLANK_LINES) / 271.5);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 
-	for (int i = 1; i <= nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+		INT32 nNext;
 
 		// Render sound segment
 		if ((i & 1) == 0) {
 			if (pBurnSoundOut) {
-				int nSegmentEnd = nBurnSoundLen * i / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentEnd = nBurnSoundLen * i / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				YMZ280BRender(pSoundBuf, nSegmentEnd - nSoundBufferPos);
 				nSoundBufferPos = nSegmentEnd;
 			}
@@ -378,8 +366,8 @@ static int DrvFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				YMZ280BRender(pSoundBuf, nSegmentLength);
 			}
@@ -391,16 +379,17 @@ static int DrvFrame()
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01			= Next; Next += 0x100000;		// 68K program
 	CaveSpriteROM	= Next; Next += 0x1000000;
 	CaveTileROM[0]	= Next; Next += 0x400000;		// Tile layer 0
 	CaveTileROM[1]	= Next; Next += 0x400000;		// Tile layer 1
 	YMZ280BROM		= Next; Next += 0x400000;
+	DefaultEEPROM	= Next; Next += 0x000080;
 	RamStart		= Next;
 	Ram01			= Next; Next += 0x010000;		// CPU #0 work RAM
 	Ram02			= Next; Next += 0x001000;
@@ -415,12 +404,12 @@ static int MemIndex()
 	return 0;
 }
 
-static void NibbleSwap1(unsigned char* pData, int nLen)
+static void NibbleSwap1(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[0] = *pOrg & 15;
 		pDest[1] = *pOrg >> 4;
 	}
@@ -428,12 +417,12 @@ static void NibbleSwap1(unsigned char* pData, int nLen)
 	return;
 }
 
-static void NibbleSwap2(unsigned char* pData, int nLen)
+static void NibbleSwap2(UINT8* pData, INT32 nLen)
 {
-	unsigned char* pOrg = pData + nLen - 1;
-	unsigned char* pDest = pData + ((nLen - 1) << 1);
+	UINT8* pOrg = pData + nLen - 1;
+	UINT8* pDest = pData + ((nLen - 1) << 1);
 
-	for (int i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
+	for (INT32 i = 0; i < nLen; i++, pOrg--, pDest -= 2) {
 		pDest[1] = *pOrg & 15;
 		pDest[0] = *pOrg >> 4;
 	}
@@ -441,7 +430,7 @@ static void NibbleSwap2(unsigned char* pData, int nLen)
 	return;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01 + 0, 1, 2);
@@ -457,12 +446,14 @@ static int LoadRoms()
 	NibbleSwap2(CaveTileROM[1], 0x200000);
 
 	BurnLoadRom(YMZ280BROM, 6, 1);
+	
+	BurnLoadRom(DefaultEEPROM, 7, 1);
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -494,46 +485,36 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(DrvInput);
 	}
 
-		if (nAction & ACB_WRITE) {
-
+	if (nAction & ACB_WRITE) {
 		CaveRecalcPalette = 1;
-		}
+	}
 
 	return 0;
 }
 
-static const UINT8 default_eeprom[16] =	{0x00,0x0C,0x11,0x0D,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x11,0x11,0xFF,0xFF,0xFF,0xFF};
-static const UINT8 default_eeprom_feversos[18] = {0x00,0x0C,0x16,0x27,0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x11,0x11,0xFF,0xFF,0xFF,0xFF,0x05,0x19};  /* Fever SOS (code checks for the 0x0519 or it won't boot) */
-
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	BurnSetRefreshRate(CAVE_REFRESHRATE);
 
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();													// Index the allocated memory
 
-	EEPROMInit(&eeprom_interface_93C46);
-	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "dfeveron")) {
-		if (!EEPROMAvailable()) EEPROMFill(default_eeprom,0, sizeof(default_eeprom));
-	}
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "feversos")) {
-		if (!EEPROMAvailable()) EEPROMFill(default_eeprom_feversos,0, sizeof(default_eeprom_feversos));
-	}
-
 	// Load the roms into memory
 	if (LoadRoms()) {
 		return 1;
 	}
+
+	EEPROMInit(&eeprom_interface_93C46);
+	if (!EEPROMAvailable()) EEPROMFill(DefaultEEPROM,0, 0x80);	
 
 	{
 		SekInit(0, 0x68000);												// Allocate 68000
@@ -569,15 +550,6 @@ static int DrvInit()
 
 	bDrawScreen = true;
 
-	// Fever SOS:      0x07766C - 0x077684
-	// Dangun Feveron: 0x0772F2 - 0x07730A
-
-	nSpeedhack = (strcmp(BurnDrvGetTextA(DRV_NAME), "feversos") == 0) ? 0x07766C : 0x0772F2;
-
-#if defined FBA_DEBUG && defined USE_SPEEDHACKS
-	bprintf(PRINT_IMPORTANT, _T("  * Using speed-hacks (detecting idle loops).\n"));
-#endif
-
 	DrvDoReset(); // Reset machine
 
 	return 0;
@@ -596,7 +568,7 @@ static struct BurnRomInfo feversosRomDesc[] = {
 
 	{ "cv01-u19.bin", 0x400000, 0x5F5514DA, BRF_SND },			 //  6 YMZ280B (AD)PCM data
 	
-	{ "eeprom-feversos.bin", 0x0080, 0xd80303aa, BRF_OPT },
+	{ "eeprom-feversos.bin", 0x0080, 0xd80303aa, BRF_ESS | BRF_PRG },
 };
 
 
@@ -615,7 +587,7 @@ static struct BurnRomInfo dfeveronRomDesc[] = {
 
 	{ "cv01-u19.bin", 0x400000, 0x5F5514DA, BRF_SND },			 //  6 YMZ280B (AD)PCM data
 	
-	{ "eeprom-dfeveron.bin", 0x0080, 0xc3174959, BRF_OPT },
+	{ "eeprom-dfeveron.bin", 0x0080, 0xc3174959, BRF_ESS | BRF_PRG },
 };
 
 

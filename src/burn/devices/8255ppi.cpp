@@ -48,6 +48,7 @@ typedef struct
 } ppi8255;
 
 static ppi8255 chips[MAX_PPIS];
+static INT32 nNumChips = 0;
 
 static void ppi8255_get_handshake_signals(ppi8255 *chip, UINT8 *result)
 {
@@ -99,7 +100,7 @@ static void ppi8255_get_handshake_signals(ppi8255 *chip, UINT8 *result)
 	*result |= handshake & mask;
 }
 
-static void ppi8255_write_port(ppi8255 *chip, int port, int chipnum)
+static void ppi8255_write_port(ppi8255 *chip, INT32 port, INT32 chipnum)
 {
 	UINT8 write_data;
 
@@ -149,9 +150,9 @@ static void ppi8255_write_port(ppi8255 *chip, int port, int chipnum)
 	}
 }
 
-static void ppi8255_input(ppi8255 *chip, int port, UINT8 data, int which)
+static void ppi8255_input(ppi8255 *chip, INT32 port, UINT8 data, INT32 which)
 {
-	int changed = 0;
+	INT32 changed = 0;
 
 	chip->read[port] = data;
 
@@ -183,7 +184,7 @@ static void ppi8255_input(ppi8255 *chip, int port, UINT8 data, int which)
 	}
 }
 
-static UINT8 ppi8255_read_port(ppi8255 *chip, int port, int chipnum)
+static UINT8 ppi8255_read_port(ppi8255 *chip, INT32 port, INT32 chipnum)
 {
 	UINT8 result = 0x00;
 
@@ -236,8 +237,13 @@ static UINT8 ppi8255_read_port(ppi8255 *chip, int port, int chipnum)
 	return result;
 }
 
-UINT8 ppi8255_r(int which, int offset)
+UINT8 ppi8255_r(INT32 which, INT32 offset)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_8255PPIInitted) bprintf(PRINT_ERROR, _T("ppi8255_r called without init\n"));
+	if (which > nNumChips) bprintf(PRINT_ERROR, _T("ppi8255_r called with invalid chip %x\n"), which);
+#endif
+
 	ppi8255 *chip = &chips[which];
 	UINT8 result = 0;
 
@@ -259,10 +265,10 @@ UINT8 ppi8255_r(int which, int offset)
 	return result;
 }
 
-static void set_mode(int which, int data, int call_handlers)
+static void set_mode(INT32 which, INT32 data, INT32 call_handlers)
 {
 	ppi8255 *chip = &chips[which];
-	int i;
+	INT32 i;
 
 	/* parse out mode */
 	chip->groupA_mode = (data >> 5) & 3;
@@ -344,8 +350,13 @@ static void set_mode(int which, int data, int call_handlers)
 	}
 }
 
-void ppi8255_w(int which, int offset, UINT8 data)
+void ppi8255_w(INT32 which, INT32 offset, UINT8 data)
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_8255PPIInitted) bprintf(PRINT_ERROR, _T("ppi8255_w called without init\n"));
+	if (which > nNumChips) bprintf(PRINT_ERROR, _T("ppi8255_w called with invalid chip %x\n"), which);
+#endif
+
 	ppi8255	*chip = &chips[which];
 	
 	offset %= 4;
@@ -386,7 +397,7 @@ void ppi8255_w(int which, int offset, UINT8 data)
 			else
 			{
 	  			/* bit set/reset */
-	  			int bit;
+	  			INT32 bit;
 
 	  			bit = (data >> 1) & 0x07;
 
@@ -401,20 +412,28 @@ void ppi8255_w(int which, int offset, UINT8 data)
 	}
 }
 
-void ppi8255_init(int num)
+void ppi8255_init(INT32 num)
 {
-	for (int i = 0; i < num; i++) {
+	DebugDev_8255PPIInitted = 1;
+	
+	for (INT32 i = 0; i < num; i++) {
 		ppi8255 *chip = &chips[i];
 	
 		memset(chip, 0, sizeof(*chip));
 	
 		set_mode(i, 0x1b, 0);
 	}
+	
+	nNumChips = num;
 }
 
 void ppi8255_exit()
 {
-	for (int i = 0; i < MAX_PPIS; i++) {
+#if defined FBA_DEBUG
+	if (!DebugDev_8255PPIInitted) bprintf(PRINT_ERROR, _T("ppi8255_exit called without init\n"));
+#endif
+
+	for (INT32 i = 0; i < MAX_PPIS; i++) {
 		ppi8255 *chip = &chips[i];
 	
 		memset(chip, 0, sizeof(*chip));
@@ -438,13 +457,28 @@ void ppi8255_exit()
 	PPI2PortWriteA = NULL;
 	PPI2PortWriteB = NULL;
 	PPI2PortWriteC = NULL;
+	
+	DebugDev_8255PPIInitted = 0;
+	nNumChips = 0;
 }
 
 void ppi8255_scan()
 {
+#if defined FBA_DEBUG
+	if (!DebugDev_8255PPIInitted) bprintf(PRINT_ERROR, _T("ppi8255_scan called without init\n"));
+#endif
+
 	SCAN_VAR(chips);
 }
 
-void ppi8255_set_portC( int which, UINT8 data ) { ppi8255_input(&chips[which], 2, data, which); }
+void ppi8255_set_portC( INT32 which, UINT8 data )
+{
+#if defined FBA_DEBUG
+	if (!DebugDev_8255PPIInitted) bprintf(PRINT_ERROR, _T("ppi8255_set_portC called without init\n"));
+	if (which > nNumChips) bprintf(PRINT_ERROR, _T("ppi8255_set_portC called with invalid chip %x\n"), which);
+#endif
+
+	ppi8255_input(&chips[which], 2, data, which);
+}
 
 #undef MAX_PPIS
