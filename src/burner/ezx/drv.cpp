@@ -73,7 +73,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
-SndInit();
+	SndInit();
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];

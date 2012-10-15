@@ -26,11 +26,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
 #include <getopt.h>
+
 #include "main.h"
 #include "fba_player.h"
-//#include "gp2xmemfuncs.h"
 #include "burner.h"
 #include "snd.h"
 #include "config.h"
@@ -43,19 +42,10 @@ extern "C"
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
 
-char szAppBurnVer[16];
+char szAppBurnVer[16] = "0.2.97.24";
 
-char nub0[11];
-char nub1[11];
-
-int nAppVirtualFps = 6000;			// App fps * 100
+int nAppVirtualFps = 6000; // App fps * 100
 bool bRunPause=0;
-bool bAlwaysProcessKeyboardInput=0;
-
-
-unsigned short *fb;
-
-
 
 int FindDrvByFileName(const char * fn)
 {
@@ -77,7 +67,6 @@ int FindDrvByFileName(const char * fn)
 	return -1;
 }
 
-
 void parse_cmd(int argc, char *argv[], char *path)
 {
 	int option_index, c;
@@ -86,7 +75,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 	printf("num args: %d\n",argc);
 	for (c=0;c<argc;c++)
 	{
-	    printf("args %d is %s\n",c,argv[c]);
+		printf("args %d is %s\n",c,argv[c]);
 	}
 
 	static struct option long_opts[] = {
@@ -120,51 +109,33 @@ void parse_cmd(int argc, char *argv[], char *path)
 				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 1;
 				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 2;
 				break;
-            case 'z':
+			case 'z':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
 				config_options.option_z80core = z2;
 				break;
-            case 'a':
+			case 'a':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>3) || (z2<0)) z2=0;
 				config_options.option_rescale = z2;
 				break;
-            case 'o':
+			case 'o':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
 				config_options.option_rotate = z2;
 				break;
-            case 'd':
+			case 'd':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>100) || (z2<10)) z2=100;
 				config_options.option_sense = z2;
-				break;
-            case 'c':
-				if(!optarg) continue;
-				int tst;
-				if (EOF == sscanf(optarg,"%d",&tst))
-				{
-				    printf("Invalid clockspeed\n");
-				}
-				else
-				{
-				    int clk;
-				    strcpy(config_options.option_selectspeed,optarg);
-                    clk = open("/proc/pandora/cpu_mhz_max", O_RDWR);
-                    read (clk,config_options.option_startspeed,5);
-                    write (clk,config_options.option_selectspeed,strlen(config_options.option_selectspeed)+1);
-                    close(clk);
-                    printf("start speed=%s   new speed=%s\n",config_options.option_startspeed,config_options.option_selectspeed);
-				}
 				break;
 			case 'f':
 				if(!optarg) continue;
@@ -185,13 +156,10 @@ void parse_cmd(int argc, char *argv[], char *path)
 /*
  * application main()
  */
-
-int main( int argc, char **argv )
+#undef main
+int main(int argc, char **argv )
 {
-    strcpy(szAppBurnVer,"0.2.97.24");
-char path[MAX_PATH];
-
-
+	char path[MAX_PATH];
 
 	if (argc < 2)
 	{
@@ -202,7 +170,7 @@ char path[MAX_PATH];
 		BurnLibInit();
 		for (nBurnDrvSelect[0]=0; nBurnDrvSelect[0]<nBurnDrvCount; nBurnDrvSelect[0]++)
 		{
-		    nBurnDrvActive=nBurnDrvSelect[0];
+			nBurnDrvActive=nBurnDrvSelect[0];
 			printf ("%-20s ", BurnDrvGetTextA(DRV_NAME)); c++;
 			if (c == 3)
 			{
@@ -214,67 +182,9 @@ char path[MAX_PATH];
 		return 0;
 	}
 
-
-/*    int tmp;
-    tmp = open("/proc/pandora/nub0/mode", O_RDWR);
-    read (tmp,nub0,10);
-    write (tmp,"absolute",9);
-    close(tmp);
-    printf("Changed nub 0 to joystick\n");
-    tmp = open("/proc/pandora/nub1/mode", O_RDWR);
-    read (tmp,nub1,10);
-    write (tmp,"absolute",9);
-    close(tmp);
-    printf("Changed nub 1 to joystick\n");
-
-    FILE * joyexists;
-    joyexists=NULL;
-    long timeout;
-    timeout=0;
-    while ((joyexists==NULL) && (timeout<100000))
-    {
-     //   printf(".");
-        joyexists=fopen("/dev/input/js0","r");
-        usleep(20);
-        timeout++;
-    }
-    if (joyexists)
-    {
-        printf("js0 now exists\n");
-        fclose(joyexists);
-    }
-    else
-    {
-        printf("timeout creating js0... reverting nub 0 to original setting\n");
-        tmp = open("/proc/pandora/nub0/mode", O_WRONLY);
-        write (tmp,nub0,10);
-        close(tmp);
-    }
-
-    joyexists=NULL;
-    timeout=0;
-    while ((joyexists==NULL) && (timeout<100000))
-    {
-        joyexists=fopen("/dev/input/js1","r");
-        usleep(20);
-        timeout++;
-    }
-    if (joyexists)
-    {
-        printf("js1 now exists\n");
-        fclose(joyexists);
-    }
-    else
-    {
-        printf("timeout creating js1... reverting nub 1 to original setting\n");
-        tmp = open("/proc/pandora/nub1/mode", O_WRONLY);
-        write (tmp,nub1,10);
-        close(tmp);
-    }
-*/
 	//Initialize configuration options
 	config_options.option_sound_enable = 2;
-	config_options.option_rescale = 2;
+	config_options.option_rescale = 0; // no scaling by default
 	config_options.option_rotate = 0;
 	config_options.option_samplerate = 0;
 	config_options.option_showfps = 1;
@@ -305,32 +215,14 @@ char path[MAX_PATH];
 	config_keymap.pause=SDLK_p;
 	config_keymap.quit=SDLK_q;
 
+	// Run emu loop
+	run_fba_emulator (path);
 
-
-//	gp2x_initialize();
-//	printf("platform init finished\n");
-
-	//Initialize sound thread
-		run_fba_emulator (path);
-
-/*    	if (strcmp(config_options.option_startspeed,config_options.option_selectspeed))
-	{
-	    printf("resetting cpu speed to %s\n",config_options.option_startspeed);
-	    int clk;
-	    clk = open("/proc/pandora/cpu_mhz_max", O_WRONLY);
-	    write (clk,config_options.option_startspeed,strlen(config_options.option_startspeed)+1);
-	    close(clk);
-
-	}
-
-	gp2x_terminate(config_options.option_frontend);
-
-*/
 	return 0;
 }
 
 
-/* const */ TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize)
+TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize)
 {
 #if defined (UNICODE)
 	static TCHAR szStringBuffer[1024];
@@ -354,7 +246,7 @@ char path[MAX_PATH];
 }
 
 
-/* const */ char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize)
+char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize)
 {
 #if defined (UNICODE)
 	static char szStringBuffer[1024];
@@ -376,10 +268,4 @@ char path[MAX_PATH];
 
 	return (char*)pszInString;
 #endif
-}
-
-
-bool AppProcessKeyboardInput()
-{
-	return true;
 }

@@ -2,7 +2,26 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+
+#ifndef WIN32
 #include <sys/mman.h>
+#else
+
+// emulate mmap/munmap on windows, just replace with malloc/free
+#define PROT_READ 0
+#define MAP_PRIVATE 0 
+
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+{
+	return (void *)(-1);
+}
+
+int munmap(void *addr, size_t length)
+{
+	return -1;
+}
+
+#endif
 
 int bBurnUseRomCache = 0;
 static int pBurnCacheFile = 0;
@@ -20,11 +39,12 @@ static struct BurnCacheHeader {
 static void * BurnCacheBase = 0;
 static int BurnCacheSize = 0;
 
-extern char szAppRomPath[];		// bzip.cpp
+extern char szAppRomPaths[20][20];
 void show_rom_loading_text(char * szText, int nSize, int nTotalSize);	// fba_player.cpp
 
 void DisableReadAhead()
 {
+#ifndef WIN32
 	char * value = "0\r";
 	int fReadAhead = open("/proc/sys/vm/max-readahead",O_RDWR|O_TRUNC);
 	if (fReadAhead)
@@ -38,6 +58,7 @@ void DisableReadAhead()
 		write(fReadAhead,value,2);
 		close(fReadAhead);
 	}
+#endif
 }
 
 int BurnCacheInit(const char * cfname, char *rom_name)
@@ -45,8 +66,8 @@ int BurnCacheInit(const char * cfname, char *rom_name)
 	pBurnCacheFile = 0;
 	BurnCacheBase = 0;
 	
-	strcpy(szAppRomPath, cfname);
-	char * p = strrchr(szAppRomPath, '/');
+	strcpy(szAppRomPaths[0], cfname);
+	char * p = strrchr(szAppRomPaths[0], '/');
 	if (p) {
 		p++;
 		strcpy(rom_name, p);

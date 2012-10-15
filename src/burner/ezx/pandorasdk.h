@@ -3,25 +3,12 @@
 
 #include <math.h>
 #include <fcntl.h>
-#include <linux/fb.h>
-#include <pthread.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <sys/soundcard.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include "usbjoy.h"
-//#include "SDL/SDL.h"
-//#include "SDL\SDL_ttf.h"
-//#include "SDL/SDL_image.h"
-//#include "SDL/SDL_net.h"
-//#include "SDL\SDL_rotozoom.h"
-//#include "SDL/SDL_mixer.h"
 
 #define MY_LEFT                     (1)
 #define MY_RIGHT                     (2)
@@ -69,7 +56,7 @@ enum{
 
 void gp2x_initialize();
 void gp2x_terminate(char *frontend);
-//void gp2x_setvideo_mode(int hw, int vh);
+
 unsigned long gp2x_joystick_read(void);
 void gp2x_video_flip(void);
 void gp2x_clear_framebuffers();

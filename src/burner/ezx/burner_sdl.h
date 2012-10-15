@@ -1,6 +1,6 @@
 #include "SDL/SDL.h"
 
-#ifndef _WIN32
+#ifndef RECT
 typedef struct tagRECT {
 	int left;
 	int top;
@@ -30,12 +30,8 @@ typedef unsigned char BYTE;
 int SetBurnHighCol(int nDepth);
 extern int nAppVirtualFps;
 extern bool bRunPause;
-extern bool bAlwaysProcessKeyboardInput;
 TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize);
 char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
-bool AppProcessKeyboardInput();
-
-
 
 //config.cpp
 int ConfigAppLoad();
@@ -63,8 +59,7 @@ int InputInit();
 int InputExit();
 int InputMake(bool bCopy);
 
-//TODO:
-//#define szAppBurnVer 1
+extern char szAppBurnVer[16];
 
 class StringSet {
 public:

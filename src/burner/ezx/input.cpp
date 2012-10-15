@@ -1,6 +1,7 @@
+#include <SDL/SDL.h>
+
 #include "burner.h"
 #include "pandorasdk.h"
-#include "SDL/SDL.h"
 
 extern SDL_Joystick *joys[4];
 extern char joyCount;
@@ -11,25 +12,25 @@ int nAnalogSpeed=0x0100;
 
 #define MAX_INPUT_inp (19)
 
-struct GameInp {
+struct GameInput {
 	//unsigned char *pVal;  // Destination for the Input Value
 	union {
 		UINT8* pVal;					// Most inputs use a char*
 		UINT16* pShortVal;				// All analog inputs use a short*
 	};
-	//int *ipVal;             //for x axis steering
+	//int *ipVal;			 //for x axis steering
 	unsigned char nType;  // 0=binary (0,1) 1=analog (0x01-0xFF) 2=dip switch
-    unsigned char nConst;
+	unsigned char nConst;
 	int nBit;   // bit offset of Keypad data
 };
 
 struct DIPInfo{
 	unsigned char nDIP;
 	unsigned short nFirstDIP;
-	struct GameInp *DIPData;
+	struct GameInput *DIPData;
 } DIPInfo;
 // Mapping of PC inputs to game inputs
-struct GameInp GameInp[4][MAX_INPUT_inp];
+struct GameInput GameInput[4][MAX_INPUT_inp];
 unsigned int nGameInpCount = 0;
 static bool bInputOk = false;
 unsigned char *ServiceDip = 0;
@@ -48,13 +49,13 @@ int DoInputBlank(int /*bDipSwitch*/)
   // Get the targets in the library for the Input Values
   for (i=0; i<nGameInpCount; i++)
   {
-    struct BurnInputInfo bii;
-    memset(&bii,0,sizeof(bii));
-    BurnDrvGetInputInfo(&bii,i);
+	struct BurnInputInfo bii;
+	memset(&bii,0,sizeof(bii));
+	BurnDrvGetInputInfo(&bii,i);
 
-    printf("c %s\n",bii.szInfo);
+	printf("c %s\n",bii.szInfo);
 
-    //if (bDipSwitch==0 && bii.nType==2) continue; // Don't blank the dip switches
+	//if (bDipSwitch==0 && bii.nType==2) continue; // Don't blank the dip switches
 
 	if (bii.nType==BIT_DIPSWITCH)
 	{
@@ -62,8 +63,8 @@ int DoInputBlank(int /*bDipSwitch*/)
 		{
 			DIPInfo.nFirstDIP = i;
 			DIPInfo.nDIP = nGameInpCount - i;
-			DIPInfo.DIPData = (struct GameInp *)malloc(DIPInfo.nDIP * sizeof(struct GameInp));
-			memset(DIPInfo.DIPData,0,DIPInfo.nDIP * sizeof(struct GameInp));
+			DIPInfo.DIPData = (struct GameInput *)malloc(DIPInfo.nDIP * sizeof(struct GameInput));
+			memset(DIPInfo.DIPData,0,DIPInfo.nDIP * sizeof(struct GameInput));
 		}
 		DIPInfo.DIPData[i-DIPInfo.nFirstDIP].pVal = bii.pVal;
 		DIPInfo.DIPData[i-DIPInfo.nFirstDIP].nType = bii.nType;
@@ -83,19 +84,19 @@ int DoInputBlank(int /*bDipSwitch*/)
 	}
 
 	sprintf(controlName,"p%i coin",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][0].nBit = 4;
-		GameInp[iJoyNum][0].pVal = bii.pVal;
-		GameInp[iJoyNum][0].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][0].nBit = 4;
+		GameInput[iJoyNum][0].pVal = bii.pVal;
+		GameInput[iJoyNum][0].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i start",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][1].nBit = 5;
-		GameInp[iJoyNum][1].pVal = bii.pVal;
-		GameInp[iJoyNum][1].nType = bii.nType;
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][1].nBit = 5;
+		GameInput[iJoyNum][1].pVal = bii.pVal;
+		GameInput[iJoyNum][1].nType = bii.nType;
 		switch (iJoyNum)
 		{
 			case 0:
@@ -106,154 +107,154 @@ int DoInputBlank(int /*bDipSwitch*/)
 			break;
 		}
 	}
-    else {
+	else {
 	sprintf(controlName,"p%i up",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][2].nBit = 0;
-		GameInp[iJoyNum][2].pVal = bii.pVal;
-		GameInp[iJoyNum][2].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][2].nBit = 0;
+		GameInput[iJoyNum][2].pVal = bii.pVal;
+		GameInput[iJoyNum][2].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i down",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][3].nBit = 1;
-		GameInp[iJoyNum][3].pVal = bii.pVal;
-		GameInp[iJoyNum][3].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][3].nBit = 1;
+		GameInput[iJoyNum][3].pVal = bii.pVal;
+		GameInput[iJoyNum][3].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i left",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][4].nBit = 2;
-		GameInp[iJoyNum][4].pVal = bii.pVal;
-		GameInp[iJoyNum][4].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][4].nBit = 2;
+		GameInput[iJoyNum][4].pVal = bii.pVal;
+		GameInput[iJoyNum][4].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i right",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][5].nBit = 3;
-		GameInp[iJoyNum][5].pVal = bii.pVal;
-		GameInp[iJoyNum][5].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"p%i x-axis",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-		GameInp[iJoyNum][12].nBit = 2;
-		GameInp[iJoyNum][12].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][12].nType = bii.nType;
-		GameInp[iJoyNum][13].nBit = 3;
-		GameInp[iJoyNum][13].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][13].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"mouse x-axis");
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-		GameInp[iJoyNum][12].nBit = 2;
-		GameInp[iJoyNum][12].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][12].nType = bii.nType;
-		GameInp[iJoyNum][13].nBit = 3;
-		GameInp[iJoyNum][13].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][13].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"p%i y-axis",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-		GameInp[iJoyNum][14].nBit = 0;
-		GameInp[iJoyNum][14].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][14].nType = bii.nType;
-		GameInp[iJoyNum][15].nBit = 1;
-		GameInp[iJoyNum][15].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][15].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"mouse y-axis");
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-		GameInp[iJoyNum][14].nBit = 0;
-		GameInp[iJoyNum][14].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][14].nType = bii.nType;
-		GameInp[iJoyNum][15].nBit = 1;
-		GameInp[iJoyNum][15].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][15].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"p%i z-axis",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-        GameInp[iJoyNum][16].nBit = 11;
-		GameInp[iJoyNum][16].pShortVal = bii.pShortVal;
-		GameInp[iJoyNum][16].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][5].nBit = 3;
+		GameInput[iJoyNum][5].pVal = bii.pVal;
+		GameInput[iJoyNum][5].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"p%i x-axis",iJoyNum+1);
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][12].nBit = 2;
+		GameInput[iJoyNum][12].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][12].nType = bii.nType;
+		GameInput[iJoyNum][13].nBit = 3;
+		GameInput[iJoyNum][13].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][13].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"mouse x-axis");
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][12].nBit = 2;
+		GameInput[iJoyNum][12].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][12].nType = bii.nType;
+		GameInput[iJoyNum][13].nBit = 3;
+		GameInput[iJoyNum][13].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][13].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"p%i y-axis",iJoyNum+1);
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][14].nBit = 0;
+		GameInput[iJoyNum][14].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][14].nType = bii.nType;
+		GameInput[iJoyNum][15].nBit = 1;
+		GameInput[iJoyNum][15].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][15].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"mouse y-axis");
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][14].nBit = 0;
+		GameInput[iJoyNum][14].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][14].nType = bii.nType;
+		GameInput[iJoyNum][15].nBit = 1;
+		GameInput[iJoyNum][15].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][15].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"p%i z-axis",iJoyNum+1);
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][16].nBit = 11;
+		GameInput[iJoyNum][16].pShortVal = bii.pShortVal;
+		GameInput[iJoyNum][16].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 1",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][6].nBit = 6;
-		GameInp[iJoyNum][6].pVal = bii.pVal;
-		GameInp[iJoyNum][6].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][6].nBit = 6;
+		GameInput[iJoyNum][6].pVal = bii.pVal;
+		GameInput[iJoyNum][6].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 2",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][7].nBit = 7;
-		GameInp[iJoyNum][7].pVal = bii.pVal;
-		GameInp[iJoyNum][7].nType = bii.nType;
-    }
-    else {
-    sprintf(controlName,"mouse button 1");
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][6].nBit = 6;
-		GameInp[iJoyNum][6].pVal = bii.pVal;
-		GameInp[iJoyNum][6].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][7].nBit = 7;
+		GameInput[iJoyNum][7].pVal = bii.pVal;
+		GameInput[iJoyNum][7].nType = bii.nType;
+	}
+	else {
+	sprintf(controlName,"mouse button 1");
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][6].nBit = 6;
+		GameInput[iJoyNum][6].pVal = bii.pVal;
+		GameInput[iJoyNum][6].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"mouse button 2");
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][7].nBit = 7;
-		GameInp[iJoyNum][7].pVal = bii.pVal;
-		GameInp[iJoyNum][7].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][7].nBit = 7;
+		GameInput[iJoyNum][7].pVal = bii.pVal;
+		GameInput[iJoyNum][7].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 3",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][8].nBit = 8;
-		GameInp[iJoyNum][8].pVal = bii.pVal;
-		GameInp[iJoyNum][8].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][8].nBit = 8;
+		GameInput[iJoyNum][8].pVal = bii.pVal;
+		GameInput[iJoyNum][8].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 4",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][9].nBit = 9;
-		GameInp[iJoyNum][9].pVal = bii.pVal;
-		GameInp[iJoyNum][9].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][9].nBit = 9;
+		GameInput[iJoyNum][9].pVal = bii.pVal;
+		GameInput[iJoyNum][9].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 5",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][10].nBit = 10;
-		GameInp[iJoyNum][10].pVal = bii.pVal;
-		GameInp[iJoyNum][10].nType = bii.nType;
-    }
-    else {
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][10].nBit = 10;
+		GameInput[iJoyNum][10].pVal = bii.pVal;
+		GameInput[iJoyNum][10].nType = bii.nType;
+	}
+	else {
 	sprintf(controlName,"p%i fire 6",iJoyNum+1);
-    if (strcmp(bii.szInfo, controlName) == 0)
-    {
-    	GameInp[iJoyNum][11].nBit = 11;
-		GameInp[iJoyNum][11].pVal = bii.pVal;
-		GameInp[iJoyNum][11].nType = bii.nType;
-    }}}}}}}}}}}}}}}}}}}
+	if (strcmp(bii.szInfo, controlName) == 0)
+	{
+		GameInput[iJoyNum][11].nBit = 11;
+		GameInput[iJoyNum][11].pVal = bii.pVal;
+		GameInput[iJoyNum][11].nType = bii.nType;
+	}}}}}}}}}}}}}}}}}}}
 
 #if 0
 if (pgi->pVal != NULL)
@@ -268,34 +269,34 @@ else
 
 int InpInit()
 {
-  unsigned int i=0;
-  int nRet=0;
-  bInputOk = false;
-  // Count the number of inputs
-  nGameInpCount=0;
-  for (i=0;i<0x1000;i++) {
-    nRet = BurnDrvGetInputInfo(NULL,i);
-    if (nRet!=0) {   // end of input list
-    	nGameInpCount=i;
-    	break;
-    }
-  }
+	unsigned int i=0;
+	int nRet=0;
 
-  memset(GameInp,0,MAX_INPUT_inp*4*sizeof(struct GameInp));
-  DoInputBlank(1);
+	bInputOk = false;
+	// Count the number of inputs
+	nGameInpCount=0;
+	for (i=0;i<0x1000;i++) {
+		nRet = BurnDrvGetInputInfo(NULL,i);
+		if (nRet!=0) {   // end of input list
+			nGameInpCount=i;
+			break;
+		}
+	}
 
-  bInputOk = true;
+	memset(GameInput,0,MAX_INPUT_inp*4*sizeof(struct GameInput));
+	DoInputBlank(1);
 
-  return 0;
+	bInputOk = true;
+
+	return 0;
 }
 
 int InpExit()
 {
-  bInputOk = false;
-  nGameInpCount = 0;
-  if (DIPInfo.nDIP)
-	free (DIPInfo.DIPData);
-  return 0;
+	bInputOk = false;
+	nGameInpCount = 0;
+	if (DIPInfo.nDIP) free (DIPInfo.DIPData);
+	return 0;
 }
 
 int InpMake(unsigned int key[])
@@ -319,109 +320,109 @@ int InpMake(unsigned int key[])
 	{
 		for (i=0; i<MAX_INPUT_inp; i++)
 		{
-		    nJoy=0;
-			if (GameInp[joyNum][i].pVal == NULL) continue;
+			nJoy=0;
+			if (GameInput[joyNum][i].pVal == NULL) continue;
 
-			if ( GameInp[joyNum][i].nBit >= 0 )
+			if ( GameInput[joyNum][i].nBit >= 0 )
 			{
-				down = key[joyNum] & (1U << GameInp[joyNum][i].nBit);
+				down = key[joyNum] & (1U << GameInput[joyNum][i].nBit);
 
-				if (GameInp[joyNum][i].nType!=1) {
+				if (GameInput[joyNum][i].nType!=1) {
 					// Set analog controls to full
 
 					if (i<12)
 					{
-                        if (down) *(GameInp[joyNum][i].pVal)=0xff; else *(GameInp[joyNum][i].pVal)=0x01;
+						if (down) *(GameInput[joyNum][i].pVal)=0xff; else *(GameInput[joyNum][i].pVal)=0x01;
 					}
 
 
 					if (i==12) //analogue x
 					{
-					    nJoy=SDL_JoystickGetAxis(joys[joyNum],0) << 1;
-					    if (down) nJoy=-32768 << 1;
-					    nJoy *= nAnalogSpeed;
-                        nJoy >>= 13;
+						nJoy=SDL_JoystickGetAxis(joys[joyNum],0) << 1;
+						if (down) nJoy=-32768 << 1;
+						nJoy *= nAnalogSpeed;
+						nJoy >>= 13;
 
-                        // Clip axis to 8 bits
-                        if (nJoy < -32768) {
-                            nJoy = -32768;
-                        }
-                        if (nJoy >  32767) {
-                            nJoy =  32767;
-                        }
+						// Clip axis to 8 bits
+						if (nJoy < -32768) {
+							nJoy = -32768;
+						}
+						if (nJoy >  32767) {
+							nJoy =  32767;
+						}
 
-                        *(GameInp[joyNum][i].pShortVal)=nJoy;
+						*(GameInput[joyNum][i].pShortVal)=nJoy;
 					}
 					if (i==13) //analogue right
 					{
-                        if (down) {nJoy=32768 << 1;
-					    nJoy *= nAnalogSpeed;
-                        nJoy >>= 13;
+						if (down) {nJoy=32768 << 1;
+						nJoy *= nAnalogSpeed;
+						nJoy >>= 13;
 
-                        // Clip axis to 8 bits
-                        if (nJoy < -32768) {
-                            nJoy = -32768;
-                        }
-                        if (nJoy >  32767) {
-                            nJoy =  32767;
-                        }
-                        *(GameInp[joyNum][i].pShortVal)=nJoy;}
+						// Clip axis to 8 bits
+						if (nJoy < -32768) {
+							nJoy = -32768;
+						}
+						if (nJoy >  32767) {
+							nJoy =  32767;
+						}
+						*(GameInput[joyNum][i].pShortVal)=nJoy;}
 					}
 					if (i==14) //analogue y
 					{
-					    nJoy=SDL_JoystickGetAxis(joys[joyNum],1) << 1;
-					    if (down) nJoy=-32768 << 1;
-					    nJoy *= nAnalogSpeed;
-                        nJoy >>= 13;
+						nJoy=SDL_JoystickGetAxis(joys[joyNum],1) << 1;
+						if (down) nJoy=-32768 << 1;
+						nJoy *= nAnalogSpeed;
+						nJoy >>= 13;
 
-                        // Clip axis to 8 bits
-                        if (nJoy < -32768) {
-                            nJoy = -32768;
-                        }
-                        if (nJoy >  32767) {
-                            nJoy =  32767;
-                        }
-                        *(GameInp[joyNum][i].pShortVal)=nJoy;
+						// Clip axis to 8 bits
+						if (nJoy < -32768) {
+							nJoy = -32768;
+						}
+						if (nJoy >  32767) {
+							nJoy =  32767;
+						}
+						*(GameInput[joyNum][i].pShortVal)=nJoy;
 					}
 					if (i==15) //analogue down
 					{
-                        if (down) {nJoy=32768 << 1;
-					    nJoy *= nAnalogSpeed;
-                        nJoy >>= 13;
+						if (down) {nJoy=32768 << 1;
+						nJoy *= nAnalogSpeed;
+						nJoy >>= 13;
 
-                        // Clip axis to 8 bits
-                        if (nJoy < -32768) {
-                            nJoy = -32768;
-                        }
-                        if (nJoy >  32767) {
-                            nJoy =  32767;
-                        }
-                        *(GameInp[joyNum][i].pShortVal)=nJoy;}
+						// Clip axis to 8 bits
+						if (nJoy < -32768) {
+							nJoy = -32768;
+						}
+						if (nJoy >  32767) {
+							nJoy =  32767;
+						}
+						*(GameInput[joyNum][i].pShortVal)=nJoy;}
 					}
 					if (i==16) //analogue z
 					{
-					    nJoy=(-SDL_JoystickGetAxis(joys[joyNum+1],1)) << 1;
-					    //printf("%d\n",nJoy);
-					    if (down) nJoy=32768 << 1;
-					    nJoy *= nAnalogSpeed;
-                        nJoy >>= 13;
+						nJoy=(-SDL_JoystickGetAxis(joys[joyNum+1],1)) << 1;
+						//printf("%d\n",nJoy);
+						if (down) nJoy=32768 << 1;
+						nJoy *= nAnalogSpeed;
+						nJoy >>= 13;
 
-                        // Clip axis to 8 bits
-                        if (nJoy < -32768) {
-                            nJoy = -32768;
-                        }
-                        if (nJoy >  32767) {
-                            nJoy =  32767;
-                        }
-                        *(GameInp[joyNum][i].pShortVal)=nJoy;
+						// Clip axis to 8 bits
+						if (nJoy < -32768) {
+							nJoy = -32768;
+						}
+						if (nJoy >  32767) {
+							nJoy =  32767;
+						}
+						*(GameInput[joyNum][i].pShortVal)=nJoy;
 					}
 
 				}
 				else
 				{
 					// Binary controls
-					if (down) *(GameInp[joyNum][i].pVal)=1;    else *(GameInp[joyNum][i].pVal)=0;
-					//(GameInp[joyNum][i].pVal)=0;
+					if (down) *(GameInput[joyNum][i].pVal)=1;	else *(GameInput[joyNum][i].pVal)=0;
+					//(GameInput[joyNum][i].pVal)=0;
 				}
 			}
 		}
@@ -443,7 +444,7 @@ extern int GameScreenMode;
 void InpDIP()
 {
 	struct BurnDIPInfo bdi;
-	struct GameInp* pgi;
+	struct GameInput* pgi;
 	int i, j;
 	int nDIPOffset = 0;
 
@@ -468,7 +469,7 @@ void InpDIP()
 		if (bdi.nFlags == 0xFE) {
 			if ( bdi.szText )
 				if ( ( strcmp(bdi.szText, "Difficulty") == 0  ) ||
-				     ( strcmp(bdi.szText, "Game Level") == 0  )
+					 ( strcmp(bdi.szText, "Game Level") == 0  )
 
 				   ) bDifficultyFound = true;
 		} else {

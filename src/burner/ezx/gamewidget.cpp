@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "moose.h"
 #include "gamewidget.h"
@@ -175,6 +176,7 @@ unsigned int EZX_GetTicks (void)
 
 void EZX_Delay (unsigned int ms)
 {
+#if 0
 	int was_error;
 	struct timespec elapsed, tv;
 	elapsed.tv_sec = ms/1000;
@@ -185,6 +187,9 @@ void EZX_Delay (unsigned int ms)
 		tv.tv_nsec = elapsed.tv_nsec;
 		was_error = nanosleep(&tv, &elapsed);
 	} while ( was_error && (errno == EINTR) );
+#else
+	usleep(ms*1000);
+#endif
 }
 
 static void copy_row2(unsigned short *src, int src_w, unsigned short *dst, int dst_w)

@@ -40,6 +40,7 @@
  */
 
 #include <string.h>
+#include "tchar.h"
 #include "font.h"
 
 static char *font[] = {

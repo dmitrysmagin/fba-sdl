@@ -43,6 +43,10 @@ typedef char TCHAR;
 #define _stricmp strcmp
 #define _strnicmp strncmp
 
+#ifdef WIN32
+#define strnlen(A, B) (strlen(A))
+#endif
+
 #undef __fastcall
 #undef _fastcall
 #define __fastcall			/*what does this correspond to?*/
