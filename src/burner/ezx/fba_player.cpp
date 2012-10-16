@@ -56,7 +56,7 @@ extern int ConfigAppSave();
 void uploadfb(void);
 extern char szAppBurnVer[16];
 
-int fwidth,fheight;
+int fwidth = 320, fheight = 240; // text surface
 
 extern unsigned int nFramesRendered;
 static int frame_count = 0;
@@ -169,7 +169,7 @@ void do_keypad()
 		if (config_options.option_sound_enable) SDL_PauseAudio(bPauseOn);
 	}
 	//if (joy & MY_KS) ServiceRequest=1:
-	if ((joy & MY_BUTT_SL) && (joy & MY_BUTT_SR))
+	/*if ((joy & MY_BUTT_SL) && (joy & MY_BUTT_SR))
 	{
 		if (joy & MY_BUTT_Y) ChangeFrameskip();
 		else
@@ -215,7 +215,7 @@ void do_keypad()
 		}
 	}
 	else
-		if (joy & MY_START && joy & MY_SELECT) P1P2Start = 1;
+		if (joy & MY_START && joy & MY_SELECT) P1P2Start = 1;*/
 
 /*	for (int i=0;i<joyCount;i++)
 	{
@@ -279,7 +279,7 @@ void show_rom_loading_text(char * szText, int nSize, int nTotalSize)
 	}
 
 	//if (config_options.option_rescale<3) memcpy (VideoBuffer, titlefb, fwidth*fheight*2); else memcpy (VideoBuffer, titlefb, pwidth*fwidth*2);
-	memcpy (VideoBuffer,titlefb, fwidth*fheight*2);
+	memcpy (VideoBuffer,titlefb, 320*240*2 /*fwidth*fheight*2*/);
 	gp2x_video_flip();
 
 }
@@ -300,7 +300,7 @@ void show_rom_error_text(char * szText)
 	DrawString ("Exiting - press any key", (uint16 *) titlefb, doffset, 200, fwidth);
 
 
-	memcpy (VideoBuffer, titlefb, fwidth*fheight*2);
+	memcpy (VideoBuffer, titlefb, 320*240*2/*fwidth*fheight*2*/);
 	gp2x_video_flip();
 	SDL_Event event;
 	while (event.type!=SDL_KEYDOWN)
@@ -467,24 +467,25 @@ void run_fba_emulator(const char *fn)
 
 	load_keymap(BurnDrvGetTextA(DRV_NAME));
 	gp2x_initialize();
-	BurnDrvGetFullSize(&fwidth, &fheight);
-	if (((config_options.option_rotate==0) && (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)) || (config_options.option_rotate==2))
+	//BurnDrvGetFullSize(&fwidth, &fheight);
+	/*if (((config_options.option_rotate==0) && (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)) || (config_options.option_rotate==2))
 	{
 		int t;
 		t=fheight;
 		fheight=fwidth;
 		fwidth=t;
-	}
+	}*/
 	titlefb=(unsigned short*)malloc(fwidth * fheight*2);
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
-	memset (titlefb, 0, fwidth*fheight*2);
-	DrawString ("Finalburn Alpha for Pandora (v 0.2.97.24)", titlefb, 10, 20, fwidth);
+	memset (titlefb, 0, 320*240*2/*fwidth*fheight*2*/);
+	DrawString ("Finalburn Alpha for GCW-Zero (v 0.2.97.24)", titlefb, 10, 20, fwidth);
 	DrawString ("Based on FinalBurnAlpha", titlefb, 10, 35, fwidth);
 	DrawString ("Now loading ... ", titlefb, 10, 105, fwidth);
 	show_rom_loading_text("Open Zip", 0, 0);
-	memcpy (VideoBuffer, titlefb, fwidth*fheight*2); gp2x_video_flip();
+	memcpy (VideoBuffer, titlefb, 320*240*2 /*fwidth*fheight*2*/);
+	gp2x_video_flip();
 
 	InpInit();
 	InpDIP();

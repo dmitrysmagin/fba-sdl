@@ -198,20 +198,20 @@ int main(int argc, char **argv )
 	strcpy(config_options.option_frontend, "./capex.sh");
 	printf("about to parse cmd\n");
 	parse_cmd(argc, argv,path);
-	printf("finshed parsing\n");
+	printf("finished parsing\n");
 
 	config_keymap.up=SDLK_UP;
 	config_keymap.down=SDLK_DOWN;
 	config_keymap.left=SDLK_LEFT;
 	config_keymap.right=SDLK_RIGHT;
-	config_keymap.fire1=SDLK_HOME; //a
-	config_keymap.fire2=SDLK_PAGEDOWN; //x
-	config_keymap.fire3=SDLK_END; //b
-	config_keymap.fire4=SDLK_PAGEUP; //y
-	config_keymap.fire5=SDLK_RSHIFT;
-	config_keymap.fire6=SDLK_RCTRL;
-	config_keymap.coin1=SDLK_LCTRL;
-	config_keymap.start1=SDLK_LALT;
+	config_keymap.fire1=SDLK_LCTRL;		// A
+	config_keymap.fire2=SDLK_SPACE;		// X
+	config_keymap.fire3=SDLK_LALT;		// B
+	config_keymap.fire4=SDLK_LSHIFT;	// Y
+	config_keymap.fire5=SDLK_TAB;		// L
+	config_keymap.fire6=SDLK_BACKSPACE;	// R
+	config_keymap.coin1=SDLK_ESCAPE;	// SELECT
+	config_keymap.start1=SDLK_RETURN;	// START
 	config_keymap.pause=SDLK_p;
 	config_keymap.quit=SDLK_q;
 

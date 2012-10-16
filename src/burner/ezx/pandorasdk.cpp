@@ -13,8 +13,6 @@
 #define BLOCKSIZE 1024
 #define SetTaken(Start, Size) TakenSize[(Start - 0x2000000) / BLOCKSIZE] = (Size - 1) / BLOCKSIZE + 1
 
-//extern CFG_OPTIONS config_options;
-
 extern char **environ;
 
 extern CFG_OPTIONS config_options;
@@ -37,77 +35,14 @@ SDL_Joystick *joys[4];
 const char* WINDOW_TITLE = "FBA";
 
 SDL_Surface* myscreen;
-SDL_Surface* framebuffer[4];
-SDL_Surface* SDL_VideoBuffer;
+//SDL_Surface* framebuffer[4];
+//SDL_Surface* SDL_VideoBuffer;
 
 int vb;
-
-int scaleheight=480;
-int scalewidth=800;
 
 void gp2x_initialize()
 {
 	BurnDrvGetFullSize(&WINDOW_WIDTH, &WINDOW_HEIGHT);
-	if (((config_options.option_rotate==0) && (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)) || (config_options.option_rotate==2))
-	{
-		int t;
-		t=WINDOW_HEIGHT;
-		WINDOW_HEIGHT=WINDOW_WIDTH;
-		WINDOW_WIDTH=t;
-	}
-	printf("dw:%d dh:%d\n",WINDOW_WIDTH,WINDOW_HEIGHT);
-	if (config_options.option_rescale==0) // no rescale
-	{
-		scaleheight=WINDOW_HEIGHT;
-		scalewidth=WINDOW_WIDTH;
-		if (scaleheight>480) scaleheight=480;
-		if (scalewidth>800) scalewidth=800;
-	}
-	if (config_options.option_rescale==1)
-	{
-		scaleheight=WINDOW_HEIGHT*2;
-		scalewidth=WINDOW_WIDTH*2;
-		if (scaleheight>480) scaleheight=480;
-		if (scalewidth>800) scalewidth=800;
-	}
-	if (config_options.option_rescale==2)
-	{
-		float xw,xh;
-		xh=(float)480/(float)WINDOW_HEIGHT;
-		xw=(float)800/(float)WINDOW_WIDTH;
-		if (xh>xw)
-		{
-			scalewidth=(int)((float)WINDOW_WIDTH*xw);
-			scaleheight=(int)((float)WINDOW_HEIGHT*xw);
-		}
-		else
-		{
-			scalewidth=(int)((float)WINDOW_WIDTH*xh);
-			scaleheight=(int)((float)WINDOW_HEIGHT*xh);
-
-		}
-		if (scaleheight>480) scaleheight=480;
-		if (scalewidth>800) scalewidth=800;
-	}
-	if (config_options.option_rescale==3)
-	{
-		scaleheight=480;
-		scalewidth=800;
-	}
-
-	char scaling[64];
-	sprintf(scaling,"SDL_OMAP_LAYER_SIZE=%dx%d",scalewidth,scaleheight);
-	printf("scaling x:%d y:%d   %s\n",scalewidth,scaleheight,scaling);
-
-	for (int i=0;environ[i];i++)
-	{
-		if (strstr(environ[i],"SDL_OMAP_LAYER_SIZE="))
-		{
-			strcpy(environ[i],scaling);
-		}
-
-	}
-
 
 	printf("Setting screen to %d x %d\n",WINDOW_WIDTH,WINDOW_HEIGHT);
 	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_TIMER))<0)
@@ -116,13 +51,14 @@ void gp2x_initialize()
 	}
 
 	// Initialize SDL
-	//myscreen = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 16, SDL_HWSURFACE | SDL_HWPALETTE | SDL_DOUBLEBUF);
-	myscreen = SDL_SetVideoMode(scalewidth, scaleheight, 16, SDL_SWSURFACE);
+	myscreen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
 	if(!myscreen)
 	{
 		printf("SDL_SetVideoMode screen not initialised.\n"); // debug output example for serial cable
 	}
 	else printf("SDL_SetVideoMode successful.\n");
+	VideoBuffer=(unsigned short*)myscreen->pixels;
+
 	SDL_ShowCursor(SDL_DISABLE);							// Disable mouse cursor on gp2x
 	SDL_WM_SetCaption( WINDOW_TITLE, 0 );					// Sets the window title (not needed for gp2x)
 
@@ -145,8 +81,7 @@ void gp2x_initialize()
 		//if (joyCount>1) joys[0]=SDL_JoystickOpen(1);
 		//if (joyCount>2) joys[1]=SDL_JoystickOpen(2);
 	}
-	VideoBuffer=(unsigned short*)malloc((WINDOW_WIDTH*2) * WINDOW_HEIGHT);
-	SDL_VideoBuffer=SDL_CreateRGBSurfaceFrom(VideoBuffer,WINDOW_WIDTH*2,WINDOW_HEIGHT,16,WINDOW_WIDTH*2,0xF800,0x7E0,0x1F,0x0);
+
 	gp2x_video_flip();
 }
 
@@ -172,6 +107,8 @@ void gp2x_terminate(char *frontend)
 #endif
 }
 
+// don't forget to check orientation BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)
+// because we should change dpad directions
 int get_pc_keyboard()
 {
 	int pckeydata=0;
@@ -312,11 +249,18 @@ int get_pc_keyboard()
 						PAUSEDOWN=1;
 				}
 			}
-
-		if (UPDOWN) pckeydata|=MY_UP;
-		if (LEFTDOWN) pckeydata|=MY_LEFT;
-		if (RIGHTDOWN) pckeydata|=MY_RIGHT;
-		if (DOWNDOWN) pckeydata|=MY_DOWN;
+		if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
+			if (UPDOWN) pckeydata|=MY_LEFT;
+			if (LEFTDOWN) pckeydata|=MY_DOWN;
+			if (RIGHTDOWN) pckeydata|=MY_UP;
+			if (DOWNDOWN) pckeydata|=MY_RIGHT;
+		} else {
+			if (UPDOWN) pckeydata|=MY_UP;
+			if (LEFTDOWN) pckeydata|=MY_LEFT;
+			if (RIGHTDOWN) pckeydata|=MY_RIGHT;
+			if (DOWNDOWN) pckeydata|=MY_DOWN;
+		}
+		
 		if (ADOWN) pckeydata|=MY_BUTT_A;
 		if (YDOWN) pckeydata|=MY_BUTT_Y;
 		if (XDOWN) pckeydata|=MY_BUTT_X;
@@ -347,41 +291,18 @@ int get_pc_keyboard()
 		return pckeydata;
 }
 
-
-unsigned long gp2x_joystick_read(void)
+unsigned long gp2x_joystick_read(void) // called from do_keypad() in fba_player.cpp
 {
 	int value=get_pc_keyboard();
 	return value;
 }
 
-void drawSprite(SDL_Surface* imageSurface, SDL_Surface* screenSurface, int srcX, int srcY, int dstX, int dstY, int width, int height)
-{
-	SDL_Rect srcRect;
-	srcRect.x = srcX;
-	srcRect.y = srcY;
-	srcRect.w = width;
-	srcRect.h = height;
-
-	SDL_Rect dstRect;
-	dstRect.x = dstX;
-	dstRect.y = dstY;
-	dstRect.w = scalewidth;
-	dstRect.h = scaleheight;
-	SDL_SoftStretch(imageSurface, &srcRect, screenSurface, &dstRect);
-	//SDL_BlitSurface(imageSurface, &srcRect, screenSurface, &dstRect);
-}
-
-
-
 void gp2x_clear_framebuffers()
 {
-	memset(VideoBuffer,0,WINDOW_HEIGHT*WINDOW_WIDTH*2);
+	memset(VideoBuffer,0,/*WINDOW_HEIGHT*WINDOW_WIDTH*2*/320*240*2);
 }
 
 void gp2x_video_flip()
 {
-	SDL_LockSurface(myscreen);
-	drawSprite(SDL_VideoBuffer,myscreen,0,0,0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
-	SDL_UnlockSurface(myscreen);
 	SDL_Flip(myscreen);
 }
