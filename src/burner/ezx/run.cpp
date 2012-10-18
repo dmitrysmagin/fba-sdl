@@ -135,7 +135,7 @@ static void BurnerVideoTrans384x224SW()
 {
 #define COLORMIX(a, b) ( ((((a & 0xF81F) + (b & 0xF81F)) >> 1) & 0xF81F) | ((((a & 0x07E0) + (b & 0x07E0)) >> 1) & 0x07E0) )
 	// CPS1 & CPS2 384x224
-	unsigned short * p = /*(unsigned short *)myscreen->pixels+8*320;*/&VideoBuffer[2560];
+	unsigned short * p = &VideoBuffer[2560];
 	unsigned short * q = BurnVideoBuffer;
 	
 	for (int i=0; i<224; i++)
@@ -231,7 +231,7 @@ static void BurnerVideoTrans256x256()
 static void BurnerVideoTrans448x224() 
 {
 	// IGS 448x224
-/*
+
 	unsigned short * p = &VideoBuffer[2560];
 	unsigned short * q = BurnVideoBuffer;
 	
@@ -245,8 +245,8 @@ static void BurnerVideoTrans448x224()
 			p += 5;
 			q += 7;
 		}
-*/
-	memcpy(&VideoBuffer[0],BurnVideoBuffer,448*224*2);
+
+	//memcpy(&VideoBuffer[0],BurnVideoBuffer,448*224*2);
 }
 
 static void BurnerVideoTrans352x240() 
@@ -372,8 +372,8 @@ int VideoInit()
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnVideoBuffer = &VideoBuffer[3584];
 		BurnVideoBufferAlloced = false;
-		BurnerVideoTrans = BurnerVideoTransDemo;
-		PhysicalBufferWidth	= VideoBufferWidth;						
+		BurnerVideoTrans = BurnerVideoTrans448x224; //BurnerVideoTransDemo;
+		PhysicalBufferWidth	= 320; //VideoBufferWidth;
 	} else
 	if (VideoBufferWidth == 352 && VideoBufferHeight == 240) {
 		// V-Systom

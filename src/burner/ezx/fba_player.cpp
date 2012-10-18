@@ -509,7 +509,7 @@ void run_fba_emulator(const char *fn)
 	frame_count = 0;
 	GameLooping = true;
 
-	//bShowFPS = true;
+	bShowFPS = true;
 
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) printf("flipped!\n");
 
@@ -537,7 +537,7 @@ void run_fba_emulator(const char *fn)
 
 			while (GameLooping)
 			{
-				timer = EZX_GetTicks()/frametime;;
+				timer = EZX_GetTicks()/frametime;
 				if(timer-tick>frame_limit && bShowFPS)
 				{
 					fps = nFramesRendered;

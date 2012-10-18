@@ -9,7 +9,7 @@
 #
 
 # Specify the name of the executable file, without ".exe"
-NAME		= fbasdl
+NAME		= fbasdl.dge
 EXE		= $(NAME)
 INSTALLDIR	= /usr/local/games/fba/
 ROMDIR		= /usr/local/share/roms/
@@ -79,7 +79,7 @@ endif
 #	Specify paths/files
 #
 
-objdir	= obj/GNU_SDL/$(NAME)/
+objdir	= obj/dingux_sdl/$(NAME)/
 srcdir	= src/
 
 alldir	= burn \
@@ -117,7 +117,7 @@ alldir	= burn \
 		intf/video/sdl \
 		intf/video/scalers \
 		cpu \
-		cpu/a68k \
+		cpu/a68k/mips32r1 \
 		cpu/arm \
 		cpu/arm7 \
 		cpu/c68k \
@@ -146,7 +146,7 @@ alldir	= burn \
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
-lib	=  -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lmingw32 -lSDL -lz -lopengl32 -lglu32
+lib	=  -lstdc++ -lpng -lSDL -lz
 
 drvobj	= 	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o d_hotdogst.o d_korokoro.o d_mazinger.o \
 			d_metmqstr.o d_pwrinst2.o d_sailormn.o d_tjumpman.o d_uopoko.o \
@@ -287,7 +287,7 @@ autobj += $(depobj)
 ifdef BUILD_X86_ASM
 autobj += burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o superscale.o
 endif
- 
+
 ifdef	BUILD_A68K
 a68k.o	= $(objdir)cpu/a68k/a68k.o
 endif
@@ -321,9 +321,9 @@ allobj += \
 	  $(foreach file,$(autobj:.o=.cpp), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
 		$(firstword $(subst .cpp,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.asm), \
+	  $(foreach file,$(autobj:.o=.s), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .asm,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
+		$(firstword $(subst .s,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
 	  $(foreach file,$(autobj:.o=.rc), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
 		$(firstword $(subst .rc,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
@@ -349,20 +349,20 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 #
 
 HOSTCC = gcc
-CC	= gcc
-CXX	= g++
+CC	= mipsel-linux-gcc
+CXX	= mipsel-linux-g++
 LD	= $(CXX)
-AS	= nasm
+AS	= mipsel-linux-as
 
 #       D3DUtils & D3DMath need these
 #       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
 
 HOSTCFLAGS = $(incdir)
-CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST
-CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
-		-DLSB_FIRST
-
+CFLAGS   = -O2 -G0 -march=mips32 -mtune=r4600 -mno-mips16 -funroll-loops \
+		-finline-functions -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST # -O3 crashes on a68k.c with gcc 4.7.1
+CXXFLAGS = -O3 -G0 -march=mips32 -mtune=r4600 -mno-mips16 -funroll-loops \
+		-finline-functions -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST
+		
 DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
 
 ifdef SPECIALBUILD
@@ -413,13 +413,13 @@ endif
 CFLAGS += $(DEF) $(incdir)
 CXXFLAGS += $(DEF) $(incdir)
 LDFLAGS += -s
-ASFLAGS = -O1
+ASFLAGS = -I$(incdir) -O3 -G0
 
 ifeq ($(OS),Windows_NT)
 CFLAGS_CONSOLE = -mno-cygwin -mconsole -pipe -Wall -W $(DEF) $(incdir)
-ASFLAGS += -f coff
+ASFLAGS +=
 else
-ASFLAGS += -f elf
+ASFLAGS +=
 endif
 
 #
@@ -428,7 +428,7 @@ endif
 #
 #
 
-vpath %.asm	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
+vpath %.s	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.cpp	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.c	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.h	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
@@ -449,11 +449,11 @@ ifeq ($(MAKELEVEL),0)
 ifdef DEPEND
 
 all:	init $(autdep) $(autobj)
-	@$(MAKE) -f makefile.ezx-mingw
+	@$(MAKE) -f makefile.ezx-dingux
 else
 
 all:	init $(autobj)
-	@$(MAKE) -f makefile.ezx-mingw
+	@$(MAKE) -f makefile.ezx-dingux
 endif
 else
 
@@ -547,12 +547,12 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(CC) -mconsole $(CFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+	@$(HOSTCC) -mconsole $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
 		-s $< -o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.asm) \
-		$(@D)/a68k_tab.asm 00 $(ppro)
+	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.s) $(@D)/a68ktbl.inc
 	@echo Assembling A68K MC68000 core...
-	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
+	@$(CC) $(CFLAGS) -mabicalls -c -o $@ $(@:.o=.s)
+	#@$(AS) $(ASFLAGS) $(@:.o=.s) -o $@
 endif
 
 # Musashi
@@ -582,7 +582,7 @@ $(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m6
 
 $(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(CC) $(CFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
+	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
 endif
 #
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
@@ -688,9 +688,10 @@ endif
 	@echo Compiling $<...
 	@$(CC) $(CFLAGS) -Wno-unused -Wno-conversion -Wno-missing-prototypes -c $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
-%.o:	%.asm
+%.o:	%.s
 	@echo Assembling $<...
-	@$(AS) $(ASFLAGS) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
+	#@$(AS) $(ASFLAGS) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
+	@$(CC) $(CFLAGS) -mabicalls -c -o $(subst $(srcdir),$(objdir),$(<D))/$(@F) $<
 
 else
 
@@ -698,9 +699,10 @@ else
 	@echo Compiling $<...
 	@$(CC) $(CFLAGS) -Wno-unused -Wno-conversion -Wno-missing-prototypes -c $< -o $@
 
-%.o:	%.asm
+%.o:	%.s
 	@echo Assembling $<...
-	@$(AS) $(ASFLAGS) $< -o $@
+	#$(AS) $(ASFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) -mabicalls -c -o $@ $<
 
 %.o:
 	@echo Compiling $<...
@@ -723,6 +725,10 @@ ifdef DEPEND
 	@$(CXX) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CXXFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
 %.d:	%.rc
+	@echo Generating depend file for $<...
+	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
+
+%.d:	%.s
 	@echo Generating depend file for $<...
 	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
 

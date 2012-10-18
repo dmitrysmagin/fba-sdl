@@ -162,7 +162,7 @@ static int configure(int rate,int channels,int format){
 	printf("audio format %d\n",obtained.format);
 	printf("audio samples %d\n",obtained.samples);
 
-	SDL_AudioDriverName(drv_name, sizeof(drv_name));
+	//SDL_AudioDriverName(drv_name, sizeof(drv_name));
 
 	SDL_PauseAudio(0);
 
