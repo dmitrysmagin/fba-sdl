@@ -8,15 +8,11 @@
 #include "burner.h"
 #include "snd.h"
 #include "config.h"
-#include "gamewidget.h"
 
 int BUFFSIZE;
 int NUM_BUFS;
 
-int expectedperframe;
-unsigned int sampletime;
-
-extern bool GameMute;
+bool GameMute;
 extern CFG_OPTIONS config_options;
 extern int nBurnFPS;
 
@@ -228,27 +224,16 @@ static int play(unsigned char* data,int len,int flags){
 #endif
 }
 
-// return: delay in seconds between first and last sample in buffer
-static float get_delay(void){
-	return (float)(buffered_bytes + ao_data.buffersize)/(float)ao_data.bps;
-}
-
 int SndInit()
 {
 	if (config_options.option_sound_enable)
 	{
 		if ((BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1) || (BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1_GENERIC))
 		{
-			/*nBurnSoundRate = 11025;
-			nAudioChannels = 1;
-			BUFFSIZE=512;
-			NUM_BUFS=4;
-			expectedperframe=734;*/
 			nAudioChannels = 2;
 			nBurnSoundRate = 11025;
 			BUFFSIZE=2048/2;
 			NUM_BUFS=6;
-			expectedperframe=1468/2;
 			printf("using low snd for cps1\n");
 		}
 		else
@@ -259,19 +244,16 @@ int SndInit()
 					nBurnSoundRate = 22050;
 					BUFFSIZE=2048;
 					NUM_BUFS=6;
-					expectedperframe=1468;
 				break;
 				case 2:
 					nBurnSoundRate = 44100;
 					BUFFSIZE=4096;
 					NUM_BUFS=10;
-					expectedperframe=2936;
 				break;
 				default:
 					nBurnSoundRate = 11025;
 					BUFFSIZE=1024;
 					NUM_BUFS=5;
-					expectedperframe=734;
 				break;
 			}
 		}
@@ -331,7 +313,7 @@ int SndOpen()
 			nBurnSoundLen	= 0;
 		}
 	}
-	sampletime=EZX_GetTicks();
+
 	return -1;
 }
 

@@ -22,7 +22,7 @@
 #ifndef _FBA_PLAYER_
 #define _FBA_PLAYER_
 
-#include "gamewidget.h"
+extern unsigned short *VideoBuffer; // in pandorasdk.cpp
 
 void run_fba_emulator(const char *);
 
