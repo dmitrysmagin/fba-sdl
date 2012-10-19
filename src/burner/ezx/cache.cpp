@@ -2,6 +2,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #ifndef WIN32
 #include <sys/mman.h>
@@ -13,12 +14,22 @@
 
 void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-	return (void *)(-1);
+	int fsize;
+	char *p;
+
+	fsize = lseek( fd, 0, SEEK_END );
+	p = (char *)malloc(fsize);
+	if(!p) return (void *)(-1);
+
+	lseek( fd, 0, SEEK_SET );
+	read( fd, p, fsize );
+	return (void *)p;
 }
 
 int munmap(void *addr, size_t length)
 {
-	return -1;
+	if(addr) free(addr);
+	return 0;
 }
 
 #endif

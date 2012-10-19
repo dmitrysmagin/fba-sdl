@@ -491,14 +491,7 @@ void run_fba_emulator(const char *fn)
 
 	load_keymap(BurnDrvGetTextA(DRV_NAME));
 	gp2x_initialize();
-	//BurnDrvGetFullSize(&fwidth, &fheight);
-	/*if (((config_options.option_rotate==0) && (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)) || (config_options.option_rotate==2))
-	{
-		int t;
-		t=fheight;
-		fheight=fwidth;
-		fwidth=t;
-	}*/
+
 	titlefb=(unsigned short*)malloc(fwidth * fheight*2);
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
@@ -578,18 +571,6 @@ void run_fba_emulator(const char *fn)
 finish:
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	ConfigAppSave();
-/*	DrvExit();
-	printf("DrvExit()\n");
-	BurnLibExit();
-	printf("BurnLibExit()\n");
-	if (config_options.option_sound_enable)
-		SndExit();
-		printf("SndExit()\n");
-	VideoExit();
-	printf("VideoExit()\n");
-	InpExit();
-	printf("InpExit()\n");*/
-//	BurnCacheExit();
 }
 
 int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
