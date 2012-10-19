@@ -3,7 +3,7 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "gamewidget.h"
+#include "fba_player.h"
 #include "snd.h"
 #include "font.h"
 #include "pandorasdk.h"
