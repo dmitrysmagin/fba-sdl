@@ -214,7 +214,7 @@ drvobj	= 	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwang
 endif
 
 depobj = bzip.o cache.o config.o drv.o fba_player.o font.o \
-		gamewidget.o input.o ips_manager.o main.o neocdlist.o pandorasdk.o run.o \
+		input.o ips_manager.o main.o neocdlist.o pandorasdk.o run.o \
 		scrn.o snd.o stated.o stringset.o support_paths.o \
 		\
 		ioapi.o unzip.o conc.o dat.o image.o \

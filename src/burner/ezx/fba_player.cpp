@@ -76,6 +76,8 @@ extern volatile short *pOutput[];
 extern bool bPauseOn;
 int pausecnt=0;
 
+bool GameLooping;
+
 int joyMap[8] = {0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x10,0x20};
 /*struct keymap_item FBA_KEYMAP[] = {
 		{"-----",	0, false },
@@ -400,6 +402,28 @@ void load_keymap(char * nm)
 
 }
 
+long long get_ticks_us()
+{
+#ifndef WIN32
+	long long ticks;
+	struct timeval current_time;
+	gettimeofday(&current_time, NULL);
+
+	return (long long)current_time.tv_sec * 1000000 + (long long)current_time.tv_usec;
+#else
+	return SDL_GetTicks() * 1000;
+#endif
+}
+
+void sleep_us(int value)
+{
+#ifndef WIN32
+	usleep(value);
+#else
+	SDL_Delay(value / 1000);
+#endif
+}
+
 void run_fba_emulator(const char *fn)
 {
 	atexit(shutdown);
@@ -513,87 +537,40 @@ void run_fba_emulator(const char *fn)
 
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) printf("flipped!\n");
 
+	printf ("Let's go!\n");
+
+	gp2x_clear_framebuffers();
+
+	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
+
 	{
-		printf ("Lets go!\n");
+		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
+		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec
 
-		gp2x_clear_framebuffers();
-
-	if (config_options.option_sound_enable==2)
-	{
-		/*nBurnFPS=6000;
-		unsigned int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS;
-		int fps = 0;
-
-		fprintf(stderr,"frametime=%d, frame_limit=%d\n",frametime,frame_limit);
-
-*/
-		if (!config_options.option_sound_enable || SndOpen() == 0)
-		{
-			EZX_StartTicks();
-
-			//nBurnFPS=6000;
-			int now, done=0, timer = 0, ticks=0, tick=0, i=0, fps = 0;
-			unsigned int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS;
-
-			while (GameLooping)
-			{
-				timer = EZX_GetTicks()/frametime;
-				if(timer-tick>frame_limit && bShowFPS)
-				{
-					fps = nFramesRendered;
-					nFramesRendered = 0;
-					tick = timer;
-				}
-				now = timer;
-				ticks=now-done;
-				if(ticks<1) continue;
-				if(ticks>10) ticks=10;
-				for (i=0; i<ticks-1; i++)
-				{
-					RunOneFrame(false,fps);
-					SndFrameRendered();
-				}
-				if(ticks>=1)
-				{
-					RunOneFrame(true,fps);
-					SndFrameRendered();
-				}
-
-				done = now;
-			}
-		}
-	}
-
-	if (config_options.option_sound_enable==0)
-	{
-	int now, done=0, timer = 0, ticks=0, tick=0, i=0, fps = 0;
-	unsigned int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS;
-
+		start = get_ticks_us();
 		while (GameLooping)
 		{
-			timer = EZX_GetTicks()/frametime;;
-			if(timer-tick>frame_limit && bShowFPS)
-			{
-				fps = nFramesRendered;
-				nFramesRendered = 0;
-				tick = timer;
-			}
-			now = timer;
-			ticks=now-done;
-			if(ticks<1) continue;
-			if(ticks>10) ticks=10;
-			for (i=0; i<ticks-1; i++)
-			{
-				RunOneFrame(false,fps);
-			}
-			if(ticks>=1)
-			{
-				RunOneFrame(true,fps);
+			RunOneFrame(draw_this_frame, fps);
+			if (config_options.option_sound_enable) SndFrameRendered();
+
+			now = get_ticks_us();
+			draw_this_frame = true;
+			frame_count++;
+			if(now - start >= 1000000) {
+				start = now;
+				fps = frame_limit - skipped_frames;
+				skipped_frames = 0;
+				frame_count = 0;
 			}
 
-			done = now;
+			lim = (frame_count) * frametime;
+			if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
+
+			wait = lim - (now - start);
+			if(wait > 0) sleep_us(wait);
+
+			//printf("diff: %i, lim: %i, wait: %i, skipped: %i\n", now-start, lim, wait, skipped_frames);
 		}
-	}
 	}
 
 	printf ("Finished emulating\n");

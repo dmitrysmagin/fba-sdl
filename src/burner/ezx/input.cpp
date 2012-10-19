@@ -439,7 +439,7 @@ int InpMake(unsigned int key[])
 	return 0;
 }
 
-extern int GameScreenMode;
+int GameScreenMode;
 
 void InpDIP()
 {
