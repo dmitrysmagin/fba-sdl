@@ -60,10 +60,7 @@ void gp2x_terminate(char *frontend);
 unsigned long gp2x_joystick_read(void);
 void gp2x_video_flip(void);
 void gp2x_clear_framebuffers();
-void * UpperMalloc(size_t size);
-void UpperFree(void* mem);
-int GetUpperSize(void* mem);
-//void drawSprite(SDL_Surface*, SDL_Surface*, int , int, int  ,int, int , int );
+
 #ifdef __cplusplus
  } // End of extern "C"
 #endif

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <SDL/SDL.h>
 
+#include "version.h"
 #include "fba_player.h"
 #include "font.h"
 #include "snd.h"
@@ -42,10 +43,12 @@ extern "C"
 #define DRV_NAME (0)
 #endif
 
+#define _s(A) #A
+#define _a(A) _s(A)
+#define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
+
 extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
-extern char nub0[11];
-extern char nub1[11];
 extern char szAppRomPaths[20] [20];
 
 extern int nAnalogSpeed;
@@ -250,7 +253,6 @@ int InpInit();
 int InpExit();
 void InpDIP();
 
-//extern char szAppRomPath[];
 extern int nBurnFPS;
 int fps=0;
 
@@ -497,7 +499,7 @@ void run_fba_emulator(const char *fn)
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
 	memset (titlefb, 0, 320*240*2/*fwidth*fheight*2*/);
-	DrawString ("Finalburn Alpha for GCW-Zero (v 0.2.97.24)", titlefb, 10, 20, fwidth);
+	DrawString ("Finalburn Alpha for OpenDingux (v " VERSION ")", titlefb, 10, 20, fwidth);
 	DrawString ("Based on FinalBurnAlpha", titlefb, 10, 35, fwidth);
 	DrawString ("Now loading ... ", titlefb, 10, 105, fwidth);
 	show_rom_loading_text("Open Zip", 0, 0);
@@ -544,7 +546,7 @@ void run_fba_emulator(const char *fn)
 		while (GameLooping)
 		{
 			RunOneFrame(draw_this_frame, fps);
-			if (config_options.option_sound_enable) SndFrameRendered();
+			SndFrameRendered();
 
 			now = get_ticks_us();
 			draw_this_frame = true;

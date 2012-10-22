@@ -28,7 +28,6 @@ int WINDOW_WIDTH;
 int WINDOW_HEIGHT;
 
 
-//struct usbjoy *joys[4];
 char joyCount = 0;
 
 SDL_Joystick *joys[4];

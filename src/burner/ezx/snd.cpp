@@ -32,9 +32,10 @@ static volatile int S_SndRenderFrame = 0;
 ao_struct ao_data;
 
 // General purpose Ring-buffering routines
-int SAMPLESIZE=1024;
+int SAMPLESIZE=256;
+int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
 
-static unsigned char *buffer[15];
+static unsigned char *buffer[16];
 
 static unsigned int buf_read=0;
 static unsigned int buf_write=0;
@@ -95,9 +96,8 @@ void outputaudio(void *unused, Uint8 *stream, int len) {
 	read_buffer(stream, len);
 }
 
-static int configure(int rate,int channels,int format){
-
-	/* SDL Audio Specifications */
+static int configure(int rate,int channels,int format)
+{
 	SDL_AudioSpec aspec, obtained;
 	char drv_name[80];
 
@@ -107,41 +107,20 @@ static int configure(int rate,int channels,int format){
 
 	ao_data.bps=channels*rate;
 	if(format != AUDIO_U8 && format != AUDIO_S8)
-	  ao_data.bps*=2;
+		ao_data.bps*=2;
 
 	aspec.format   = format;
-
-	/* The desired audio frequency in samples-per-second. */
 	aspec.freq	 = rate;
-
-	/* Number of channels (mono/stereo) */
 	aspec.channels = channels;
-
-	/* The desired size of the audio buffer in samples. This number should be a power of two, 
-	and may be adjusted by the audio driver to a value more suitable for the hardware. Good values seem 
-	to range between 512 and 8192 inclusive, depending on the application and CPU speed. Smaller values yield 
-	faster response time, but can lead to underflow if the application is doing heavy processing and cannot fill 
-	the audio buffer in time. A stereo sample consists of both right and left channels in LR ordering. 
-	Note that the number of samples is directly related to time by the following formula: ms = (samples*1000)/freq */
 	aspec.samples  = SAMPLESIZE;
-
-	/* This should be set to a function that will be called when the audio device is ready for more data. 
-	It is passed a pointer to the audio buffer, and the length in bytes of the audio buffer. This function 
-	usually runs in a separate thread, and so you should protect data structures that it accesses by 
-	calling SDL_LockAudio and SDL_UnlockAudio in your code. The callback prototype is:
-	void callback(void *userdata, Uint8 *stream, int len); userdata is the pointer stored in userdata 
-	field of the SDL_AudioSpec. stream is a pointer to the audio buffer you want to fill with information 
-	and len is the length of the audio buffer in bytes. */
 	aspec.callback = outputaudio;
-
-	/* This pointer is passed as the first parameter to the callback function. */
 	aspec.userdata = NULL;
 
 	/* initialize the SDL Audio system */
-		if (SDL_Init (SDL_INIT_AUDIO/*|SDL_INIT_NOPARACHUTE*/)) {
-			printf("SDL: Initializing of SDL Audio failed: %s.\n", SDL_GetError());
-			return 0;
-		}
+	if (SDL_Init (SDL_INIT_AUDIO/*|SDL_INIT_NOPARACHUTE*/)) {
+		printf("SDL: Initializing of SDL Audio failed: %s.\n", SDL_GetError());
+		return 0;
+	}
 
 	/* Open the audio device and start playing sound! */
 	if(SDL_OpenAudio(&aspec, &obtained) < 0) {
@@ -155,10 +134,11 @@ static int configure(int rate,int channels,int format){
 
 	ao_data.buffersize=obtained.size;
 
-	printf("audio format %d\n",obtained.format);
-	printf("audio samples %d\n",obtained.samples);
+	printf("audio frequency %d\n", obtained.freq);
+	printf("audio samples %d\n", obtained.samples);
+	printf("audio channels %d\n", obtained.channels);
 
-	//SDL_AudioDriverName(drv_name, sizeof(drv_name));
+	SDL_AudioDriverName(drv_name, sizeof(drv_name));
 
 	SDL_PauseAudio(0);
 
@@ -166,7 +146,8 @@ static int configure(int rate,int channels,int format){
 }
 
 // close audio device
-static void uninit(void){
+static void uninit(void)
+{
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
@@ -207,8 +188,8 @@ static int get_space(void){
 // plays 'len' bytes of 'data'
 // it should round it down to outburst*n
 // return: number of bytes played
-static int play(unsigned char* data,int len,int flags){
-
+static int play(unsigned char* data,int len,int flags)
+{
 #if 0
 	int ret;
 
@@ -232,8 +213,8 @@ int SndInit()
 		{
 			nAudioChannels = 2;
 			nBurnSoundRate = 11025;
-			BUFFSIZE=2048/2;
-			NUM_BUFS=6;
+			BUFFSIZE=256*4;
+			NUM_BUFS=8;
 			printf("using low snd for cps1\n");
 		}
 		else
@@ -242,18 +223,18 @@ int SndInit()
 			{
 				case 1:
 					nBurnSoundRate = 22050;
-					BUFFSIZE=2048;
-					NUM_BUFS=6;
+					BUFFSIZE=256*4*2;
+					NUM_BUFS=8;
 				break;
 				case 2:
 					nBurnSoundRate = 44100;
-					BUFFSIZE=4096;
-					NUM_BUFS=10;
+					BUFFSIZE=256*4*4;
+					NUM_BUFS=8;
 				break;
 				default:
 					nBurnSoundRate = 11025;
-					BUFFSIZE=1024;
-					NUM_BUFS=5;
+					BUFFSIZE=256*4;
+					NUM_BUFS=8;
 				break;
 			}
 		}
@@ -271,46 +252,43 @@ int SndInit()
 int SndOpen()
 {
 	unsigned int BufferSize;
-	unsigned int bufferStart;
 
-	BufferSize = (nBurnSoundLen * nAudioChannels * AUDIO_BLOCKS)*2+512;
+	BufferSize = nBurnSoundLen * nAudioChannels * 2 * AUDIO_BLOCKS; printf("SND: BufferSize: %i\n", BufferSize);
 	EzxAudioBuffer= (unsigned short *)malloc(BufferSize);
-	AudioBufferSize = nBurnSoundLen * nAudioChannels * 2;
 	memset(EzxAudioBuffer,0,BufferSize);
-	EzxAudioBuffer[1]=(EzxAudioBuffer[0]=(nBurnSoundLen * nAudioChannels * 2));
-	EzxAudioBuffer[2]=(1000000000/nBurnSoundRate)&0xFFFF;
-	EzxAudioBuffer[3]=(1000000000/nBurnSoundRate)>>16;
-	bufferStart = (unsigned int)&EzxAudioBuffer[4];
-	pOutput[0] = (short*)bufferStart;
-	pOutput[1] = (short*)(bufferStart+1*EzxAudioBuffer[1]);
-	pOutput[2] = (short*)(bufferStart+2*EzxAudioBuffer[1]);
-	pOutput[3] = (short*)(bufferStart+3*EzxAudioBuffer[1]);
-	pOutput[4] = (short*)(bufferStart+4*EzxAudioBuffer[1]);
-	pOutput[5] = (short*)(bufferStart+5*EzxAudioBuffer[1]);
-	pOutput[6] = (short*)(bufferStart+6*EzxAudioBuffer[1]);
-	pOutput[7] = (short*)(bufferStart+7*EzxAudioBuffer[1]);
+
+	AudioBufferSize = nBurnSoundLen * nAudioChannels * 2;
+	printf("SND: AudioBufferSize: %i\n", AudioBufferSize);
+
+	pOutput[0] = (short*)EzxAudioBuffer;
+	pOutput[1] = (short*)(EzxAudioBuffer+1*AudioBufferSize/2);
+	pOutput[2] = (short*)(EzxAudioBuffer+2*AudioBufferSize/2);
+	pOutput[3] = (short*)(EzxAudioBuffer+3*AudioBufferSize/2);
+	pOutput[4] = (short*)(EzxAudioBuffer+4*AudioBufferSize/2);
+	pOutput[5] = (short*)(EzxAudioBuffer+5*AudioBufferSize/2);
+	pOutput[6] = (short*)(EzxAudioBuffer+6*AudioBufferSize/2);
+	pOutput[7] = (short*)(EzxAudioBuffer+7*AudioBufferSize/2);
+
 	if ( !GameMute )
 	{
-		int frag = 10 + config_options.option_samplerate;
-		frag |= 2 << 16;
-
 		if (config_options.option_sound_enable==2)
 		{
 			for(int i=0;i<NUM_BUFS;i++) buffer[i]=(unsigned char *) malloc(BUFFSIZE);
-			SAMPLESIZE=512;  //lowest value accepted by audio driver
+			SAMPLESIZE=sample_sizes[config_options.option_samplerate];  //lowest value accepted by audio driver
 			dspfd=configure(nBurnSoundRate,nAudioChannels,AUDIO_S16);
-		}
-		// printf("SOUND: Init done (%d)\n", dspfd);
-		if ((dspfd > 0) && (config_options.option_sound_enable==2))
-		{
-			if (config_options.option_sound_enable==2) pBurnSoundOut  = (short*)pOutput[0];
-			if (config_options.option_sound_enable==2) audio_resume();
-			return 0;
-		}
-		else
-		{
-			nBurnSoundRate	= 0;
-			nBurnSoundLen	= 0;
+
+			// printf("SOUND: Init done (%d)\n", dspfd);
+			if (dspfd > 0)
+			{
+				pBurnSoundOut  = (short*)pOutput[0];
+				audio_resume();
+				return 0;
+			}
+			else
+			{
+				nBurnSoundRate = 0;
+				nBurnSoundLen = 0;
+			}
 		}
 	}
 
