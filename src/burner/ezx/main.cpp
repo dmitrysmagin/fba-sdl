@@ -205,15 +205,15 @@ int main(int argc, char **argv )
 	config_keymap.left=SDLK_LEFT;
 	config_keymap.right=SDLK_RIGHT;
 	config_keymap.fire1=SDLK_LCTRL;		// A
-	config_keymap.fire2=SDLK_SPACE;		// X
-	config_keymap.fire3=SDLK_LALT;		// B
+	config_keymap.fire2=SDLK_LALT;		// B
+	config_keymap.fire3=SDLK_SPACE;		// X
 	config_keymap.fire4=SDLK_LSHIFT;	// Y
-	config_keymap.fire5=SDLK_TAB;		// L
-	config_keymap.fire6=SDLK_BACKSPACE;	// R
+	//config_keymap.fire5=SDLK_TAB;		// L
+	//config_keymap.fire6=SDLK_BACKSPACE;	// R
 	config_keymap.coin1=SDLK_ESCAPE;	// SELECT
 	config_keymap.start1=SDLK_RETURN;	// START
-	config_keymap.pause=SDLK_p;
-	config_keymap.quit=SDLK_q;
+	config_keymap.pause=SDLK_BACKSPACE;
+	config_keymap.quit=SDLK_TAB;
 
 	// Run emu loop
 	run_fba_emulator (path);
