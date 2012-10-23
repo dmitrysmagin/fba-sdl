@@ -28,7 +28,7 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {256, 512, 768}; // 11025, 22050, 44100
+int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
 int sample_rates[3] = {11025, 22050, 32000 };
 
 static unsigned char *buffer[16];
@@ -45,8 +45,8 @@ static int write_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 	while(len>0){
-		//if(full_buffers == NUM_BUFS) break; // this may cause clicks on some occasions, but CondWait reduces fps
-		while(full_buffers == NUM_BUFS) SDL_CondWait(sound_cv, sound_mutex);
+		if(full_buffers == NUM_BUFS) break; // this may cause clicks on some occasions, but CondWait reduces fps
+		//while(full_buffers == NUM_BUFS) SDL_CondWait(sound_cv, sound_mutex);
 
 		*(buffer[buf_write] + buf_write_pos++) = *data++;
 		len--;
