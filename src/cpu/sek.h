@@ -177,7 +177,7 @@ int SekCurrentScanline();
 #define SM_RAM (SM_READ | SM_WRITE | SM_FETCH)
 
 // Map areas of memory
-int (unsigned char* pMemory, unsigned int nStart, unsigned int nEnd, int nType);
+int SekMapMemory(unsigned char* pMemory, unsigned int nStart, unsigned int nEnd, int nType);
 int SekMapHandler(unsigned int nHandler, unsigned int nStart, unsigned int nEnd, int nType);
 
 // Set handlers
