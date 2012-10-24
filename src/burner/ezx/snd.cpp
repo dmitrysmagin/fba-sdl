@@ -10,6 +10,8 @@
 #include "snd.h"
 #include "config.h"
 
+extern bool bPauseOn;
+
 SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
 
@@ -54,7 +56,6 @@ static int write_buffer(unsigned char* data,int len)
 
 static int read_buffer(unsigned char* data,int len)
 {
-	//printf("buffered_bytes: %i, buf_read: %i, full_buffers: %i\n", buffered_bytes, buf_read,full_buffers );
 	while(len>0){
 		if(buffered_bytes < len) break;
 
@@ -235,7 +236,7 @@ void SndExit()
 
 void SndFrameRendered()
 {
-	if ((dspfd > 0) && (config_options.option_sound_enable==2))
+	if ((dspfd > 0) && (config_options.option_sound_enable==2) && !bPauseOn)
 	{
 		play((unsigned char *)nBurnSoundBuffer, AudioBufferSize,0);
 	}
