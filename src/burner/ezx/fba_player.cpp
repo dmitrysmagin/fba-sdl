@@ -559,9 +559,11 @@ void run_fba_emulator(const char *fn)
 			}
 
 			lim = (frame_count) * frametime;
-			if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
+			//if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
 
 			wait = lim - (now - start);
+
+			if(wait <= -frametime) if(++skipped_frames < frame_limit) draw_this_frame = false;
 			if(wait > 0) sleep_us(wait);
 
 			//printf("diff: %i, lim: %i, wait: %i, skipped: %i\n", now-start, lim, wait, skipped_frames);
