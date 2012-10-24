@@ -10,9 +10,6 @@
 #include "snd.h"
 #include "config.h"
 
-int BUFFSIZE;
-int NUM_BUFS;
-
 SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
 
@@ -29,35 +26,26 @@ static int AudioBufferSize = 0;
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
 int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
-int sample_rates[3] = {11025, 22050, 32000 };
+int sample_rates[3] = {11025, 22050, 44100 };
 
-static unsigned char *buffer[16];
-
-static unsigned int buf_read=0;
-static unsigned int buf_write=0;
+int BUFFSIZE;
+static unsigned char *buffer;
 static unsigned int buf_read_pos=0;
 static unsigned int buf_write_pos=0;
 
-static int full_buffers=0;
 static int buffered_bytes=0;
 
 static int write_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 	while(len>0){
-		if(full_buffers == NUM_BUFS) break; // this may cause clicks on some occasions, but CondWait reduces fps
-		//while(full_buffers == NUM_BUFS) SDL_CondWait(sound_cv, sound_mutex);
+		//if(BUFFSIZE - buffered_bytes < len) break; // this may cause clicks on some occasions, but CondWait reduces fps
+		while(BUFFSIZE - buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
 
-		*(buffer[buf_write] + buf_write_pos++) = *data++;
+		buffer[buf_write_pos] = *data++;
+		buf_write_pos = (buf_write_pos + 1) % BUFFSIZE;
 		len--;
 		buffered_bytes++;
-
-		if(buf_write_pos>=BUFFSIZE){
-			// block is full, find next!
-			buf_write=(buf_write+1)%NUM_BUFS;
-			++full_buffers;
-			buf_write_pos=0;
-		}
 	}
 	SDL_CondSignal(sound_cv);
 	SDL_UnlockMutex(sound_mutex);
@@ -66,19 +54,14 @@ static int write_buffer(unsigned char* data,int len)
 
 static int read_buffer(unsigned char* data,int len)
 {
+	//printf("buffered_bytes: %i, buf_read: %i, full_buffers: %i\n", buffered_bytes, buf_read,full_buffers );
 	while(len>0){
-		if(full_buffers == 0) return 0;
+		if(buffered_bytes < len) break;
 
-		*data++ = *(buffer[buf_read] + buf_read_pos++);
+		*data++ = buffer[buf_read_pos];
+		buf_read_pos = (buf_read_pos + 1) % BUFFSIZE;
 		len--;
 		buffered_bytes--;
-
-		if(buf_read_pos >= BUFFSIZE){
-			// block is empty, find next!
-			buf_read=(buf_read+1)%NUM_BUFS;
-			--full_buffers;
-			buf_read_pos=0;
-		}
 	}
 	return 0;
 }
@@ -144,14 +127,9 @@ static void uninit(void)
 static void reset_audio(void){
 
 	/* Reset ring-buffer state */
-	buf_read=0;
-	buf_write=0;
 	buf_read_pos=0;
 	buf_write_pos=0;
-
-	full_buffers=0;
 	buffered_bytes=0;
-
 }
 
 // stop playing, keep buffers (for pause)
@@ -191,8 +169,7 @@ int SndInit()
 
 		SAMPLESIZE = sample_sizes[i];
 		nBurnSoundRate = sample_rates[i];
-		BUFFSIZE=SAMPLESIZE*2*nAudioChannels;
-		NUM_BUFS=8;
+		BUFFSIZE=SAMPLESIZE*2*nAudioChannels * 4;
 
 		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS );
 	}
@@ -213,8 +190,8 @@ int SndOpen()
 
 	if (config_options.option_sound_enable==2)
 	{
-		for(int i=0;i<NUM_BUFS;i++) buffer[i]=(unsigned char *) malloc(BUFFSIZE);
-		SAMPLESIZE=sample_sizes[config_options.option_samplerate];  //lowest value accepted by audio driver
+		buffer = (unsigned char *) malloc(BUFFSIZE);
+		SAMPLESIZE = sample_sizes[config_options.option_samplerate];  //lowest value accepted by audio driver
 		dspfd = configure(nBurnSoundRate, nAudioChannels, AUDIO_S16);
 
 		if (dspfd > 0)
