@@ -41,8 +41,8 @@ static int write_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 	while(len>0){
-		//if(BUFFSIZE - buffered_bytes < len) break; // this may cause clicks on some occasions, but CondWait reduces fps
-		while(BUFFSIZE - buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+		//if(buffered_bytes == BUFFSIZE) break; // this may cause clicks on some occasions, but CondWait reduces fps
+		while(buffered_bytes == BUFFSIZE) SDL_CondWait(sound_cv, sound_mutex);
 
 		buffer[buf_write_pos] = *data++;
 		buf_write_pos = (buf_write_pos + 1) % BUFFSIZE;
@@ -56,7 +56,9 @@ static int write_buffer(unsigned char* data,int len)
 
 static int read_buffer(unsigned char* data,int len)
 {
+	if(bPauseOn) return 0;
 	while(len>0){
+		//while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex); // this brings smoother sound but hangs on exit
 		if(buffered_bytes < len) break;
 
 		*data++ = buffer[buf_read_pos];
@@ -117,8 +119,9 @@ static int configure(int rate,int channels,int format)
 // close audio device
 static void uninit(void)
 {
-	SDL_DestroyMutex(sound_mutex);
+	SDL_PauseAudio(1);
 	SDL_DestroyCond(sound_cv);
+	SDL_DestroyMutex(sound_mutex);
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
