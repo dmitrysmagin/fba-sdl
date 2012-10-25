@@ -171,7 +171,7 @@ void do_keypad()
 	{
 		bPauseOn=!bPauseOn;
 		pausecnt=20;
-		if (config_options.option_sound_enable) SDL_PauseAudio(bPauseOn);
+		if (config_options.option_sound_enable == 2) SDL_PauseAudio(bPauseOn);
 	}
 	//if (joy & MY_KS) ServiceRequest=1:
 	/*if ((joy & MY_BUTT_SL) && (joy & MY_BUTT_SR))
@@ -556,15 +556,17 @@ void run_fba_emulator(const char *fn)
 				fps = frame_limit - skipped_frames;
 				skipped_frames = 0;
 				frame_count = 0;
+				draw_this_frame = false;
+				continue;
 			}
 
 			lim = (frame_count) * frametime;
-			//if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
+			if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
 
 			wait = lim - (now - start);
 
-			if(wait <= -frametime) if(++skipped_frames < frame_limit) draw_this_frame = false;
-			if(wait > 0) sleep_us(wait);
+			//if(wait <= -frametime) if(++skipped_frames < frame_limit) draw_this_frame = false;
+			if(config_options.option_sound_enable != 2 && wait > 0) sleep_us(wait);
 
 			//printf("diff: %i, lim: %i, wait: %i, skipped: %i\n", now-start, lim, wait, skipped_frames);
 		}

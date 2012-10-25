@@ -5,12 +5,21 @@
 #include <stdio.h>
 #include <SDL/SDL.h>
 
+#ifdef USE_LIBAO
+#include <ao/ao.h>
+#endif
+
 #include "version.h"
 #include "burner.h"
 #include "snd.h"
 #include "config.h"
 
 extern bool bPauseOn;
+
+#ifdef USE_LIBAO
+ao_device *ao_dev;
+ao_sample_format ao;
+#endif
 
 SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
@@ -27,8 +36,8 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
-int sample_rates[3] = {11025, 22050, 44100 };
+int sample_sizes[3] = {512, 1024, 1536}; // 11025, 22050, 44100
+int sample_rates[3] = {11025, 22050, 44100};
 
 int BUFFSIZE;
 static unsigned char *buffer;
@@ -37,51 +46,58 @@ static unsigned int buf_write_pos=0;
 
 static int buffered_bytes=0;
 
-static int write_buffer(unsigned char* data,int len)
+static int sdl_write_buffer(unsigned char* data, int len)
 {
 	SDL_LockMutex(sound_mutex);
-	while(len>0){
-		//if(buffered_bytes == BUFFSIZE) break; // this may cause clicks on some occasions, but CondWait reduces fps
-		while(buffered_bytes == BUFFSIZE) SDL_CondWait(sound_cv, sound_mutex);
 
-		buffer[buf_write_pos] = *data++;
-		buf_write_pos = (buf_write_pos + 1) % BUFFSIZE;
-		len--;
-		buffered_bytes++;
+	while(BUFFSIZE - buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+
+	if(buf_write_pos + len <= BUFFSIZE ) {
+		memcpy(buffer + buf_write_pos, data, len);
+	} else {
+		int tail = BUFFSIZE - buf_write_pos;
+		memcpy(buffer + buf_write_pos, data, tail);
+		memcpy(buffer, data + tail, len - tail);
 	}
+	buf_write_pos = (buf_write_pos + len) % BUFFSIZE;
+	buffered_bytes += len;
+
 	SDL_CondSignal(sound_cv);
 	SDL_UnlockMutex(sound_mutex);
-	return 0;
+	return len;
 }
 
-static int read_buffer(unsigned char* data,int len)
+static int sdl_read_buffer(unsigned char* data,int len)
 {
-	if(bPauseOn) return 0;
-	while(len>0){
-		//while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex); // this brings smoother sound but hangs on exit
-		if(buffered_bytes < len) break;
+	SDL_LockMutex(sound_mutex);
 
-		*data++ = buffer[buf_read_pos];
-		buf_read_pos = (buf_read_pos + 1) % BUFFSIZE;
-		len--;
-		buffered_bytes--;
+	if(buffered_bytes > len) {
+		if(buf_read_pos + len <= BUFFSIZE ) {
+			memcpy(data, buffer + buf_read_pos, len);
+		} else {
+			int tail = BUFFSIZE - buf_read_pos;
+			memcpy(data, buffer + buf_read_pos, tail);
+			memcpy(data + tail, buffer, len - tail);
+		}
+		buf_read_pos = (buf_read_pos + len) % BUFFSIZE;
+		buffered_bytes -= len;
 	}
-	return 0;
+
+	SDL_CondSignal(sound_cv);
+	SDL_UnlockMutex(sound_mutex);
+	return len;
 }
 
 
 // end ring buffer stuff
 
 // SDL Callback function
-void outputaudio(void *unused, Uint8 *stream, int len)
+void sdl_callback(void *unused, Uint8 *stream, int len)
 {
-	SDL_LockMutex(sound_mutex);
-	read_buffer(stream, len);
-	SDL_CondSignal(sound_cv);
-	SDL_UnlockMutex(sound_mutex);
+	sdl_read_buffer(stream, len);
 }
 
-static int configure(int rate,int channels,int format)
+static int sdl_open_audio(int rate,int channels,int format)
 {
 	SDL_AudioSpec aspec, obtained;
 
@@ -89,7 +105,7 @@ static int configure(int rate,int channels,int format)
 	aspec.freq     = rate;
 	aspec.channels = channels;
 	aspec.samples  = SAMPLESIZE;
-	aspec.callback = outputaudio;
+	aspec.callback = sdl_callback;
 	aspec.userdata = NULL;
 
 	/* initialize the SDL Audio system */
@@ -117,7 +133,7 @@ static int configure(int rate,int channels,int format)
 }
 
 // close audio device
-static void uninit(void)
+static void sdl_close_audio(void)
 {
 	SDL_PauseAudio(1);
 	SDL_DestroyCond(sound_cv);
@@ -126,24 +142,14 @@ static void uninit(void)
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-
-// stop playing and empty buffers (for seeking/pause)
-static void reset_audio(void){
-
-	/* Reset ring-buffer state */
-	buf_read_pos=0;
-	buf_write_pos=0;
-	buffered_bytes=0;
-}
-
 // stop playing, keep buffers (for pause)
-static void audio_pause(void)
+static void sdl_pause_audio(void)
 {
 	SDL_PauseAudio(1);
 }
 
-// resume playing, after audio_pause()
-static void audio_resume(void)
+// resume playing, after sdl_pause_audio()
+static void sdl_resume_audio(void)
 {
 	SDL_PauseAudio(0);
 }
@@ -153,33 +159,36 @@ static void audio_resume(void)
 // return: number of bytes played
 static int play(unsigned char* data,int len,int flags)
 {
-	return write_buffer(data, len);
+	return sdl_write_buffer(data, len);
 }
 
 int SndInit()
 {
-	if (config_options.option_sound_enable)
-	{
+	if (config_options.option_sound_enable) {
 		int i = config_options.option_samplerate;
 		
 		if(i > 2) i = 0;
 
 		if ((BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1) || (BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1_GENERIC))
 		{
-			if(BURN_VERSION == 0x029671) nAudioChannels = 1; // fix for v 0.2.96.71
-			i = 0;
-			printf("using low snd for cps1\n");
+			if(BURN_VERSION == 0x029671) { // fix for v 0.2.96.71
+				nAudioChannels = 1; 
+				config_options.option_samplerate = i = 0;
+				printf("using low snd for cps1\n");
+			}
 		}
 
-		SAMPLESIZE = sample_sizes[i];
 		nBurnSoundRate = sample_rates[i];
-		BUFFSIZE=SAMPLESIZE*2*nAudioChannels * 4;
+		if(config_options.option_sound_enable == 2) {
+			SAMPLESIZE = sample_sizes[i];
+			BUFFSIZE=SAMPLESIZE*2*nAudioChannels * 4;
+			dspfd = -1;
+		}
 
 		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS );
 	}
-	pBurnSoundOut	= NULL;
 
-	dspfd = -1;
+	pBurnSoundOut	= NULL;
 
 	return 0;
 }
@@ -192,16 +201,36 @@ int SndOpen()
 
 	printf("SND: AudioBufferSize: %i\n", AudioBufferSize);
 
-	if (config_options.option_sound_enable==2)
+	#ifdef USE_LIBAO
+	if (config_options.option_sound_enable == 1) {
+		ao_initialize();
+		ao.bits = 16; // AUDIO_S16
+		ao.rate = nBurnSoundRate;
+		ao.channels = nAudioChannels;
+		ao.byte_format = AO_FMT_LITTLE;
+		ao.matrix = NULL;
+		ao_dev = ao_open_live(ao_default_driver_id(), &ao, NULL);
+		if(ao_dev) {
+			pBurnSoundOut  = (short *)nBurnSoundBuffer;
+			return 0;
+		} else {
+			pBurnSoundOut = NULL;
+			nBurnSoundRate = 0;
+			nBurnSoundLen = 0;
+		}
+	}
+	#endif
+
+	if (config_options.option_sound_enable == 2)
 	{
 		buffer = (unsigned char *) malloc(BUFFSIZE);
-		SAMPLESIZE = sample_sizes[config_options.option_samplerate];  //lowest value accepted by audio driver
-		dspfd = configure(nBurnSoundRate, nAudioChannels, AUDIO_S16);
+		SAMPLESIZE = sample_sizes[config_options.option_samplerate];
+		dspfd = sdl_open_audio(nBurnSoundRate, nAudioChannels, AUDIO_S16);
 
 		if (dspfd > 0)
 		{
 			pBurnSoundOut  = (short *)nBurnSoundBuffer;
-			audio_resume();
+			sdl_resume_audio();
 			return 0;
 		}
 		else
@@ -216,8 +245,16 @@ int SndOpen()
 
 void SndClose()
 {
-	if ((dspfd > 0) && (config_options.option_sound_enable==2)) uninit();
-	dspfd = -1;
+	#ifdef USE_LIBAO
+	if(config_options.option_sound_enable == 1) {
+		ao_close(ao_dev);
+		ao_shutdown();
+	}
+	#endif
+	if ((dspfd > 0) && (config_options.option_sound_enable==2)) {
+		sdl_close_audio();
+		dspfd = -1;
+	}
 }
 
 void SndPlay()
@@ -226,10 +263,9 @@ void SndPlay()
 
 void SndExit()
 {
-	if ((dspfd > 0) && (config_options.option_sound_enable==2)) uninit();
+	SndClose();
 
 	pBurnSoundOut = NULL;
-	dspfd = -1;
 	if (nBurnSoundBuffer)
 	{
 		free(nBurnSoundBuffer);
@@ -239,9 +275,17 @@ void SndExit()
 
 void SndFrameRendered()
 {
-	if ((dspfd > 0) && (config_options.option_sound_enable==2) && !bPauseOn)
-	{
-		play((unsigned char *)nBurnSoundBuffer, AudioBufferSize,0);
+	if(!bPauseOn) {
+		#ifdef USE_LIBAO
+		if(config_options.option_sound_enable == 1) {
+			ao_play(ao_dev, (char *)nBurnSoundBuffer, AudioBufferSize);
+		}
+		#endif
+
+		if ((dspfd > 0) && (config_options.option_sound_enable == 2))
+		{
+			play((unsigned char *)nBurnSoundBuffer, AudioBufferSize,0);
+		}
 	}
 }
 
