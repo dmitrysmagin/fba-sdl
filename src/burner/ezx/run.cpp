@@ -117,6 +117,7 @@ static void BurnerVideoTrans384x256()
 			p += 5;
 			q += 6;
 		}
+#undef COLORMIX
 }
 
 static void BurnerVideoTrans384x224Clip() 
@@ -142,12 +143,13 @@ static void BurnerVideoTrans384x224SW()
 		for (int j=0; j<64; j++) {
 			p[0] = q[0];
 			p[1] = q[1];
-			p[2] = q[2];
-			p[3] = COLORMIX(q[3],q[4]);
+			p[2] = COLORMIX(q[2],q[3]);
+			p[3] = q[4];
 			p[4] = q[5];
 			p += 5;
 			q += 6;
 		}
+#undef COLORMIX
 }
 
 static void BurnerVideoTrans304x224() 

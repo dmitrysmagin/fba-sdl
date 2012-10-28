@@ -71,7 +71,9 @@ static int sdl_read_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 
-	if(buffered_bytes > len) {
+	//while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+
+	if(buffered_bytes >= len) {
 		if(buf_read_pos + len <= BUFFSIZE ) {
 			memcpy(data, buffer + buf_read_pos, len);
 		} else {
@@ -136,6 +138,13 @@ static int sdl_open_audio(int rate,int channels,int format)
 static void sdl_close_audio(void)
 {
 	SDL_PauseAudio(1);
+
+	SDL_LockMutex(sound_mutex);
+	buffered_bytes = BUFFSIZE;
+	SDL_CondSignal(sound_cv);
+	SDL_UnlockMutex(sound_mutex);
+	SDL_Delay(100);
+
 	SDL_DestroyCond(sound_cv);
 	SDL_DestroyMutex(sound_mutex);
 	SDL_CloseAudio();
@@ -179,12 +188,6 @@ int SndInit()
 		}
 
 		nBurnSoundRate = sample_rates[i];
-		if(config_options.option_sound_enable == 2) {
-			SAMPLESIZE = sample_sizes[i];
-			BUFFSIZE=SAMPLESIZE*2*nAudioChannels * 4;
-			dspfd = -1;
-		}
-
 		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS );
 	}
 
@@ -223,8 +226,9 @@ int SndOpen()
 
 	if (config_options.option_sound_enable == 2)
 	{
-		buffer = (unsigned char *) malloc(BUFFSIZE);
 		SAMPLESIZE = sample_sizes[config_options.option_samplerate];
+		BUFFSIZE = SAMPLESIZE*2*nAudioChannels * 8;
+		buffer = (unsigned char *) malloc(BUFFSIZE);
 		dspfd = sdl_open_audio(nBurnSoundRate, nAudioChannels, AUDIO_S16);
 
 		if (dspfd > 0)
