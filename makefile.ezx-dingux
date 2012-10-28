@@ -381,10 +381,10 @@ AS	= mipsel-linux-as
 #       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
 
 HOSTCFLAGS = $(incdir)
-CFLAGS   = -O2 -G0 -march=mips32 -mtune=r4600 -mno-mips16 -funroll-loops -DUSE_LIBAO \
-		-finline-functions -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST # -O3 crashes on a68k.c with gcc 4.7.1
-CXXFLAGS = -O3 -G0 -march=mips32 -mtune=r4600 -mno-mips16 -funroll-loops -DUSE_LIBAO \
-		-finline-functions -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST
+CFLAGS   = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
+		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST -DUSE_LIBAO # -O3 crashes on a68k.c with gcc 4.7.1
+CXXFLAGS = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
+		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST -DUSE_LIBAO 
 		
 DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
 
