@@ -7,6 +7,10 @@
  #define __fastcall
 #endif
 
+#ifdef BUILD_A68K
+ #define EMU_A68K
+#endif
+
 #ifdef BUILD_C68K
  #define EMU_C68K
  #include "c68k.h"
