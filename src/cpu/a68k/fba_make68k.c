@@ -7640,7 +7640,7 @@ void CodeSegmentBegin(void)
 
 	/* ASG - only one interface to memory now */
 	fprintf(fp, "\t\t EXTERN %sm68k_ICount\n", PREF);
-	fprintf(fp, "\t\t EXTERN %sa68k_memory_intf\n", PREF);
+	fprintf(fp, "\t\t GLOBAL %sa68k_memory_intf\n", PREF);
 	fprintf(fp, "\t\t EXTERN %smem_amask\n", PREF);
 
 	fprintf(fp, "; Vars Mame declares / needs access to\n\n");
@@ -8051,6 +8051,8 @@ void CodeSegmentEnd(void)
 	fprintf(fp, "\t\t DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n");
 	fprintf(fp, "\t\t DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n");
 	fprintf(fp, "\t\t DD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n\n");
+
+	fprintf(fp, "%sa68k_memory_intf\tDD 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n\n", PREF);
 
 	/* Safe Memory Locations */
 

@@ -552,10 +552,10 @@ extern "C" {
 
  unsigned int mame_debug = 0, cur_mrhard = 0, m68k_illegal_opcode = 0, illegal_op = 0, illegal_pc = 0, opcode_entry = 0;
 
- struct A68KInter a68k_memory_intf;
+ //struct A68KInter a68k_memory_intf;
 }
 
-//extern "C" struct A68KInter a68k_memory_intf;
+extern "C" struct A68KInter a68k_memory_intf;
 
 unsigned char  __fastcall A68KRead8 (unsigned int a) { return ReadByte(a);}
 unsigned short __fastcall A68KRead16(unsigned int a) { return ReadWord(a);}
