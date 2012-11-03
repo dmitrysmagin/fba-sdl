@@ -241,45 +241,50 @@ int		DisOp;
 /* Register Location Offsets */
 
 #define MEMBASE		S5
-#define MEMBASESTR	"$21"
+#define MEMBASESTR	"$s5"
 
 #define ICOUNT				PREF "m68k_ICount"
 #define OP_ROM				PREF "OP_ROM"
 #define OP_RAM				PREF "OP_RAM"
 
-#define MEMINTF_DBGCALLBACK	"0x78(" MEMBASESTR ")"
-#define MEMINTF_READBYTE	"0x7C(" MEMBASESTR ")"
-#define MEMINTF_READWORD	"0x80(" MEMBASESTR ")"
-#define MEMINTF_READLONG	"0x84(" MEMBASESTR ")"
-#define MEMINTF_WRITEBYTE	"0x88(" MEMBASESTR ")"
-#define MEMINTF_WRITEWORD	"0x8C(" MEMBASESTR ")"
-#define MEMINTF_WRITELONG	"0x90(" MEMBASESTR ")"
-#define MEMINTF_CHANGEPC	"0x94(" MEMBASESTR ")"
-#define MEMINTF_READBYTEPC	"0x98(" MEMBASESTR ")"
-#define MEMINTF_READWORDPC	"0x9C(" MEMBASESTR ")"
-#define MEMINTF_READLONGPC	"0xA0(" MEMBASESTR ")"
-#define MEMINTF_DIR16		"0xA4(" MEMBASESTR ")"
-#define MEMINTF_DIR32		"0xA8(" MEMBASESTR ")"
+#define MEMINTF_DBGCALLBACK	"0x8C(" MEMBASESTR ")"
+#define MEMINTF_READBYTE	"0x90(" MEMBASESTR ")"
+#define MEMINTF_READWORD	"0x94(" MEMBASESTR ")"
+#define MEMINTF_READLONG	"0x98(" MEMBASESTR ")"
+#define MEMINTF_WRITEBYTE	"0x9C(" MEMBASESTR ")"
+#define MEMINTF_WRITEWORD	"0xA0(" MEMBASESTR ")"
+#define MEMINTF_WRITELONG	"0xA4(" MEMBASESTR ")"
+#define MEMINTF_CHANGEPC	"0xA8(" MEMBASESTR ")"
+#define MEMINTF_READBYTEPC	"0xAC(" MEMBASESTR ")"
+#define MEMINTF_READWORDPC	"0xB0(" MEMBASESTR ")"
+#define MEMINTF_READLONGPC	"0xB4(" MEMBASESTR ")"
+#define MEMINTF_DIR16		"0xB8(" MEMBASESTR ")"
+#define MEMINTF_DIR32		"0xBC(" MEMBASESTR ")"
 
 #define REG_A7				"0x3C(" MEMBASESTR ")"
-#define REG_USP				"0x68(" MEMBASESTR ")"
 #define REG_ISP				"0x40(" MEMBASESTR ")"
 #define REG_SRH				"0x44(" MEMBASESTR ")"
 #define REG_CCR				"0x48(" MEMBASESTR ")"
-#define REG_PC				"0x4C(" MEMBASESTR ")"
-#define REG_IRQ				"0x50(" MEMBASESTR ")"
-#define REG_IRQ_CALLBACK	"0x54(" MEMBASESTR ")"
-#define REG_RESET_CALLBACK	"0x5C(" MEMBASESTR ")"
-#define FULLPC				"0x74(" MEMBASESTR ")"
-#define CPUVERSION			"0x70(" MEMBASESTR ")"
-#define PREVIOUSPC			"0x58(" MEMBASESTR ")"
+// REG_XC - 0x48
+#define REG_PC				"0x50(" MEMBASESTR ")"
+#define REG_IRQ				"0x54(" MEMBASESTR ")"
+// REG_SR - 0x58
+#define REG_IRQ_CALLBACK	"0x5C(" MEMBASESTR ")"
+#define PREVIOUSPC			"0x60(" MEMBASESTR ")" // REG_PPC
+#define REG_RESET_CALLBACK	"0x64(" MEMBASESTR ")"
+// REG_RTE_CALLBACK - 0x68
+// REG_CMP_CALLBACK - 0x6C
+// asmbank - 0x80
+#define CPUVERSION			"0x84(" MEMBASESTR ")"
+#define FULLPC				"0x88(" MEMBASESTR ")"
 
 /* 68010 Regs */
 
-#define REG_SFC_BASE		0x60
-#define REG_VBR				"0x6C(" MEMBASESTR ")"
-#define REG_SFC				"0x60(" MEMBASESTR ")"
-#define REG_DFC				"0x64(" MEMBASESTR ")"
+#define REG_SFC_BASE		0x70
+#define REG_SFC				"0x70(" MEMBASESTR ")"
+#define REG_DFC				"0x74(" MEMBASESTR ")"
+#define REG_USP				"0x78(" MEMBASESTR ")"
+#define REG_VBR				"0x7C(" MEMBASESTR ")"
 
 /* 11 registers + space for 10 work registers + A0 - A3 : Stack must be kept on 16 bytes boundaries */
 #define STACKFRAME_SIZE		(7 * (4 * 4))
@@ -338,8 +343,8 @@ int OpcodeArray[65536];
 /* Lookup Arrays */
 
 static char* regnameslong[] =
-{ "$0","$1","$2","$3","$4","$5","$6","$7","$8","$9","$10","$11","$12","$13","$14","$15","$16","$17","$18","$19","$20","$21","$22","$23","$24","$25","$26","$27","$28","$29","$30","$31" };
-//{ "$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3","$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7","$t8","$t9","$k0","$k1","$gp","$sp","$fp","$ra" };
+//{ "$0","$1","$2","$3","$4","$5","$6","$7","$8","$9","$10","$11","$12","$13","$14","$15","$16","$17","$18","$19","$20","$21","$22","$23","$24","$25","$26","$27","$28","$29","$30","$31" };
+{ "$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3","$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7","$t8","$t9","$k0","$k1","$gp","$sp","$fp","$ra" };
 
 //static char* regnamesword[] =
 //{ "$0","$1","$2","$3","$4","$5","$6","$7","$8","$9","$10","$11","$12","$13","$14","$15","$16","$17","$18","$19","$20","$21","$22","$23","$24","$25","$26","$27","$28","$29","$30","$31" };
@@ -6718,9 +6723,9 @@ void JumpTable(void)
 			fprintf(fp, ".word %d\n", l);
 		} else {
 			if (op > -1)
-				fprintf(fp, "(OP%d_%4.4x - OP%d_1000) + (%d * 1000000h)\n", CPU, op, CPU, l);
+				fprintf(fp, "(OP%d_%4.4x - OP%d_1000) + (%d * 0x1000000)\n", CPU, op, CPU, l);
 			else
-				fprintf(fp, "(ILLEGAL - OP%d_1000) + (%d * 1000000h)\n", CPU, l);
+				fprintf(fp, "(ILLEGAL - OP%d_1000) + (%d * 0x1000000)\n", CPU, l);
 		}
 	}
 #else
@@ -6832,14 +6837,10 @@ char macroinc[] =
 ".endm\n"
 "\n"
 ".macro m_jal address\n"
-"    addiu $sp,$sp,-16\n"
-"    lui   $gp,%hi(_gp)\n"
-"    addiu $gp,%lo(_gp)\n"
-"    la    $t0,\\address\n"
-"    jalr  $t0\n"
-"    nop\n"
-"    addiu $sp,$sp,16\n"
-"    nop\n"
+"    .set  noat\n"
+"    la    $at,\\address\n"
+"    jalr  $at\n"
+"    .set  at\n"
 ".endm\n";
 
 
@@ -6871,8 +6872,8 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t .globl %s_OPCODETABLE\n", CPUtype);
 
 	/* ASG - only one interface to memory now */
-	//fprintf(fp, "\t\t .globl %sa68k_memory_intf\n", PREF);
-	fwrite(macroinc, 1, sizeof(macroinc), fp);
+	fprintf(fp, "\t\t .globl %sa68k_memory_intf\n", PREF);
+	fwrite(macroinc, 1, sizeof(macroinc)-1, fp);
 
 	fprintf(fp, "\n\n # Vars Mame declares / needs access to\n\n");
 
@@ -6955,8 +6956,8 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t .ent   %s_RUN\n", CPUtype);
 	fprintf(fp, "%s_RUN:\n", CPUtype);
 
-	fprintf(fp, "\t\t addiu %s,%s,%d\n", regnameslong[SP], regnameslong[SP], -STACKFRAME_SIZE);
-	fprintf(fp, "\t\t .frame %s, %d, %s\n\n", regnameslong[SP], STACKFRAME_SIZE, regnameslong[RA]);
+	fprintf(fp, "\t\t .frame %s, %d, %s\n", regnameslong[SP], STACKFRAME_SIZE, regnameslong[RA]);
+	fprintf(fp, "\t\t addiu %s,%s,%d\n\n", regnameslong[SP], regnameslong[SP], -STACKFRAME_SIZE);
 #if (MEMBASE == GP)
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[GP], STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
 #endif
@@ -7342,22 +7343,24 @@ void CodeSegmentEnd(void)
 
 	fprintf(fp, "R_ISP:\t .word 0\t\t\t # Supervisor Stack\n");
 	fprintf(fp, "R_SR_H:\t .word 0\t\t\t # Status Register High TuSuuIII\n");
-	fprintf(fp, "R_SR:\t .word 0\t\t\t # Motorola Format SR\n\n");
-
+	fprintf(fp, "R_CCR:\t .word 0\n");
+	fprintf(fp, "R_XC:\t .word 0\n");
 	fprintf(fp, "R_PC:\t .word 0\t\t\t # Program Counter\n");
 	fprintf(fp, "R_IRQ:\t .word 0\t\t\t # IRQ Request Level\n\n");
+
+	fprintf(fp, "R_SR:\t .word 0\t\t\t # Motorola Format SR\n\n");
 
 	fprintf(fp, "R_IRQ_CALLBACK:\t .word 0\t\t\t # irq callback (get vector)\n\n");
 
 	fprintf(fp, "R_PPC:\t .word 0\t\t\t # Previous Program Counter\n");
-
 	fprintf(fp, "R_RESET_CALLBACK:\t .word 0\t\t\t # Reset Callback\n");
-
+	fprintf(fp, "R_RTE_CALLBACK:\t .word 0\n");
+	fprintf(fp, "R_CMP_CALLBACK:\t .word 0\n");
 	fprintf(fp, "R_SFC:\t .word 0\t\t\t # Source Function Call\n");
 	fprintf(fp, "R_DFC:\t .word 0\t\t\t # Destination Function Call\n");
 	fprintf(fp, "R_USP:\t .word 0\t\t\t # User Stack\n");
 	fprintf(fp, "R_VBR:\t .word 0\t\t\t # Vector Base\n");
-
+	fprintf(fp, "asmbank:\t .word 0\n\n");
 	fprintf(fp, "CPUversion:\t .word 0\n\n");
 	fprintf(fp, "FullPC:\t .word 0\n\n");
 	fprintf(fp, "%sa68k_memory_intf:\n", PREF);
@@ -7391,7 +7394,7 @@ void CodeSegmentEnd(void)
 	fprintf(fp, "\n\n\n\n");
 
 
-	fprintf(fp, "\t\t SECTION .bss\n");
+	fprintf(fp, "\t\t .data\n");
 
 	fprintf(fp, "\n\t\t .align 4\n\n");
 
