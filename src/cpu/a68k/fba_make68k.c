@@ -8032,6 +8032,9 @@ void CodeSegmentEnd(void)
 
 	fprintf(fp, "R_RESET_CALLBACK\t DD 0\t\t\t ; Reset Callback\n");
 
+	fprintf(fp, "R_RTE_CALLBACK\t DD 0\n");
+	fprintf(fp, "R_CMP_CALLBACK\t DD 0\n");
+
 	fprintf(fp, "R_SFC\t DD 0\t\t\t ; Source Function Call\n");
 	fprintf(fp, "R_DFC\t DD 0\t\t\t ; Destination Function Call\n");
 	fprintf(fp, "R_USP\t DD 0\t\t\t ; User Stack\n");
