@@ -111,7 +111,7 @@ static int sdl_open_audio(int rate,int channels,int format)
 	aspec.userdata = NULL;
 
 	/* initialize the SDL Audio system */
-	if (SDL_Init (SDL_INIT_AUDIO/*|SDL_INIT_NOPARACHUTE*/)) {
+	if (SDL_Init (SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE)) {
 		printf("SDL: Initializing of SDL Audio failed: %s.\n", SDL_GetError());
 		return 0;
 	}

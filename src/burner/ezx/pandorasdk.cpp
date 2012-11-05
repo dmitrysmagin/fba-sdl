@@ -44,7 +44,7 @@ void gp2x_initialize()
 	BurnDrvGetFullSize(&WINDOW_WIDTH, &WINDOW_HEIGHT);
 
 	printf("Setting screen to %d x %d\n",WINDOW_WIDTH,WINDOW_HEIGHT);
-	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_TIMER))<0)
+	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))<0)
 	{
 		printf("sdl failed to init\n");
 	}
