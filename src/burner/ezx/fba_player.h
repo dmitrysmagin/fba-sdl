@@ -24,6 +24,7 @@
 
 extern unsigned short *VideoBuffer; // in pandorasdk.cpp
 
+void CreateCapexLists();
 void run_fba_emulator(const char *);
 
 #endif	// _FBA_PLAYER_

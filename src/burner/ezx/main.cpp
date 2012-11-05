@@ -166,7 +166,7 @@ int main(int argc, char **argv )
 		int c;
 		printf ("Usage: %s <path to rom><shortname>.zip\n   ie: %s ./uopoko.zip\n Note: Path and .zip extension are mandatory.\n\n",argv[0], argv[0]);
 		printf ("Supported (but not necessarily working via fba-gp2x) roms:\n\n");
-		config_options.option_create_lists=1;
+
 		BurnLibInit();
 		for (nBurnDrvSelect[0]=0; nBurnDrvSelect[0]<nBurnDrvCount; nBurnDrvSelect[0]++)
 		{
@@ -179,6 +179,7 @@ int main(int argc, char **argv )
 			}
 		}
 		printf ("\n\n");
+		CreateCapexLists(); // generate rominfo.fba and zipname.fba
 		return 0;
 	}
 
@@ -187,7 +188,7 @@ int main(int argc, char **argv )
 	config_options.option_rescale = 0; // no scaling by default
 	config_options.option_rotate = 0;
 	config_options.option_samplerate = 0;
-	config_options.option_showfps = 1;
+	config_options.option_showfps = 0;
 	config_options.option_create_lists=0;
 	config_options.option_forcem68k=0;
 	config_options.option_forcec68k=0;
@@ -195,7 +196,11 @@ int main(int argc, char **argv )
 	config_options.option_sense=100;
 	strcpy(config_options.option_startspeed,"NULL");
 	strcpy(config_options.option_selectspeed,"NULL");
-	strcpy(config_options.option_frontend, "./capex.sh");
+	#ifdef WIN32
+	strcpy(config_options.option_frontend, "./fbacapex.exe");
+	#else
+	strcpy(config_options.option_frontend, "./fbacapex.dge");
+	#endif
 	printf("about to parse cmd\n");
 	parse_cmd(argc, argv,path);
 	printf("finished parsing\n");

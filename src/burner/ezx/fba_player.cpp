@@ -528,7 +528,7 @@ void run_fba_emulator(const char *fn)
 	frame_count = 0;
 	GameLooping = true;
 
-	bShowFPS = true;
+	bShowFPS = config_options.option_showfps;
 
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) printf("flipped!\n");
 
