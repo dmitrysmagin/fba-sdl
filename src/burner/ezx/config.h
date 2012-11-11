@@ -12,6 +12,7 @@ typedef struct
 	int option_rotate;
 	int option_samplerate;
 	int option_showfps;
+	int option_frameskip;
 	int option_forcem68k;
     int option_forcec68k;
     int option_z80core;

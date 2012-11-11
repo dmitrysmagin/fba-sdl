@@ -83,7 +83,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"sound-dsp", 0, &config_options.option_sound_enable, 1},
 		{"no-sound", 0, &config_options.option_sound_enable, 0},
 		{"samplerate", required_argument, 0, 'r'},
-		{"clock", required_argument, 0, 'c'},
+		{"frameskip", required_argument, 0, 'c'},
 		{"scaling", required_argument, 0, 'a'},
 		{"rotate", required_argument, 0, 'o'},
 		{"sense", required_argument, 0, 'd'},
@@ -108,6 +108,16 @@ void parse_cmd(int argc, char *argv[], char *path)
 				if(strcmp(optarg, "11025") == 0) config_options.option_samplerate = 0;
 				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 1;
 				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 2;
+				break;
+			case 'c':
+				if(!optarg) continue;
+				if(strcmp(optarg, "auto") == 0) config_options.option_frameskip = -1;
+				else {
+					z2=0;
+					sscanf(optarg,"%d",&z2);
+					if ((z2>60) || (z2<0)) z2=0;
+					config_options.option_frameskip = z2;
+				}
 				break;
 			case 'z':
 				if(!optarg) continue;
@@ -189,6 +199,7 @@ int main(int argc, char **argv )
 	config_options.option_rotate = 0;
 	config_options.option_samplerate = 0;
 	config_options.option_showfps = 0;
+	config_options.option_frameskip = -1; // auto frameskip by default
 	config_options.option_create_lists=0;
 	config_options.option_forcem68k=0;
 	config_options.option_forcec68k=0;
