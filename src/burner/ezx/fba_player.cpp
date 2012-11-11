@@ -566,7 +566,7 @@ void run_fba_emulator(const char *fn)
 			} else { // manual frameskip 0..10
 				if(config_options.option_frameskip > 0) {
 					if(skipped_frames < config_options.option_frameskip) { 
-						if(--skip_limit <= 0) { 
+						if(--skip_limit < 0) { 
 							draw_this_frame = false;
 							skip_limit = frame_limit / config_options.option_frameskip;
 							skipped_frames++; 
