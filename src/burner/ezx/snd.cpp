@@ -36,7 +36,7 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {512, 1024, 1536}; // 11025, 22050, 44100
+int sample_sizes[3] = {256, 256, 512}; // 11025, 22050, 44100
 int sample_rates[3] = {11025, 22050, 44100};
 
 int BUFFSIZE;
@@ -71,7 +71,7 @@ static int sdl_read_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 
-	//while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+	while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
 
 	if(buffered_bytes >= len) {
 		if(buf_read_pos + len <= BUFFSIZE ) {
