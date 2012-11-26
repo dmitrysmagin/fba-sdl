@@ -27,7 +27,6 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include "configfile.h"
 
 
 #define	EZX_EMU_VER	"1.12"
