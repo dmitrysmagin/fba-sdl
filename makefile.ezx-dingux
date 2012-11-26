@@ -574,7 +574,7 @@ $(a68k.o):	fba_make68k.c
 		-s $< -o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe)
 	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.s) $(@D)/a68ktbl.inc
 	@echo Assembling A68K MC68000 core...
-	@$(CC) $(CFLAGS) -mabicalls -c -o $@ $(@:.o=.s)
+	@$(CC) $(CFLAGS) -c -o $@ $(@:.o=.s)
 	#@$(AS) $(ASFLAGS) $(@:.o=.s) -o $@
 endif
 
