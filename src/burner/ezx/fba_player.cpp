@@ -369,10 +369,10 @@ void load_keymap(char * nm)
 	signed long argd;
 	char line[256];
 	char fullpath[256];
-	strcpy(fullpath,"/home/user/.config/fba/");
+	strcpy(fullpath,"./config/");
 	strcat(fullpath,nm);
 	strcat(fullpath,".kmp");
-	if ((f = fopen(fullpath,"r")) == NULL) f = fopen("/home/user/.config/fba/default.kmp", "r");
+	if ((f = fopen(fullpath,"r")) == NULL) f = fopen("./config/default.kmp", "r");
 	if (f==NULL) return;
 
 			while(fgets(line,sizeof(line),f) != NULL){
