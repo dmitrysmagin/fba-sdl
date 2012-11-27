@@ -4,13 +4,16 @@ int nIniVersion = 0;
 
 static void CreateConfigName(char* szConfig)
 {
+#if 0
 	memcpy(szConfig, "fbasdl.ini", 12);
+#endif
 	return;
 }
 
 // Read in the config file for the whole application
 int ConfigAppLoad()
 {
+#if 0
 	char szConfig[MAX_PATH];
 	char szLine[256];
 	FILE *h;
@@ -59,12 +62,14 @@ int ConfigAppLoad()
 	}
 
 	fclose(h);
+#endif
 	return 0;
 }
 
 // Write out the config file for the whole application
 int ConfigAppSave()
 {
+#if 0
 	char szConfig[MAX_PATH];
 	FILE *h;
 
@@ -106,5 +111,6 @@ int ConfigAppSave()
 #undef VAR
 
 	fclose(h);
+#endif
 	return 0;
 }

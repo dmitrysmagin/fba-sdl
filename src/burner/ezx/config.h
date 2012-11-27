@@ -14,9 +14,9 @@ typedef struct
 	int option_showfps;
 	int option_frameskip;
 	int option_forcem68k;
-    int option_forcec68k;
-    int option_z80core;
-    int option_sense;
+	int option_forcec68k;
+	int option_z80core;
+	int option_sense;
 	char option_frontend[MAX_PATH];
 	int option_create_lists;
 	char option_startspeed[6];
@@ -31,9 +31,9 @@ typedef struct
 	int right;
 	int fire1;
 	int fire2;
-    int fire3;
-    int fire4;
-    int fire5;
+	int fire3;
+	int fire4;
+	int fire5;
 	int fire6;
 	int coin1;
 	int coin2;
@@ -44,5 +44,8 @@ typedef struct
 	int fps;
 
 } CFG_KEYMAP;
+
+int ConfigAppLoad();
+int ConfigAppSave();
 
 #endif

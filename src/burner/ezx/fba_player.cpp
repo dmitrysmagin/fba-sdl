@@ -19,8 +19,6 @@
  * $Id: fba_player.cpp,v 0.10 2006/12/03 $
  */
 
-#define CALC_FPS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL/SDL.h>
@@ -33,11 +31,7 @@
 #include "burnint.h"
 #include "config.h"
 #include "cache.h"
-
-extern "C"
-{
 #include "pandorasdk.h"
-};
 
 #ifndef DRV_NAME
 #define DRV_NAME (0)
@@ -47,17 +41,14 @@ extern "C"
 #define _a(A) _s(A)
 #define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
-extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
+//extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
 extern char szAppRomPaths[20] [20];
+char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;
 
-extern int ConfigAppLoad();
-extern int ConfigAppSave();
-
 void uploadfb(void);
-extern char szAppBurnVer[16];
 
 int fwidth = 320, fheight = 240; // text surface
 
@@ -336,11 +327,11 @@ void CreateCapexLists()
 	}
 	fclose(zipf);
 	fclose(romf);
-	char temp[24];
+	/*char temp[24];
 	strcpy(temp,"FBA ");
 	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
-	create_datfile(temp, 0);
+	create_datfile(temp, 0);*/
 
 }
 

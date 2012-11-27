@@ -42,7 +42,7 @@ extern "C"
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
 
-char szAppBurnVer[16] = "0.2.97.24";
+extern char szAppBurnVer[16];
 
 int nAppVirtualFps = 6000; // App fps * 100
 bool bRunPause=0;
