@@ -215,7 +215,7 @@ endif
 
 depobj = bzip.o cache.o config.o drv.o fba_player.o font.o \
 		input.o ips_manager.o main.o neocdlist.o pandorasdk.o run.o \
-		scrn.o snd.o stated.o stringset.o support_paths.o \
+		sdlinput.o scrn.o snd.o stated.o stringset.o support_paths.o \
 		\
 		ioapi.o unzip.o conc.o dat.o image.o \
 		misc_ezx.o state.o statec.o zipfn.o \

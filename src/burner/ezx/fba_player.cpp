@@ -32,6 +32,7 @@
 #include "config.h"
 #include "cache.h"
 #include "pandorasdk.h"
+#include "sdlinput.h"
 
 #ifndef DRV_NAME
 #define DRV_NAME (0)
@@ -48,188 +49,19 @@ char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;
 
-void uploadfb(void);
-
 int fwidth = 320, fheight = 240; // text surface
 
 extern unsigned int nFramesRendered;
 static int frame_count = 0;
-unsigned int FBA_KEYPAD[4];
-signed int FBA_AXIS[4] [4];
-unsigned char ServiceRequest = 0;
-unsigned char P1P2Start = 0;
 unsigned short *titlefb;
 extern bool bShowFPS;
 void ChangeFrameskip();
-extern SDL_Joystick *joys[4];
-extern char joyCount;
 
 extern CFG_OPTIONS config_options;
 extern CFG_KEYMAP config_keymap;
-extern volatile short *pOutput[];
 extern bool bPauseOn;
-int pausecnt=0;
 
 bool GameLooping;
-
-int joyMap[8] = {0x0040,0x0080,0x0100,0x0200,0x0400,0x0800,0x10,0x20};
-/*struct keymap_item FBA_KEYMAP[] = {
-		{"-----",	0, false },
-		{"START",	1, false },
-		{"COIN",	2, false },
-		{"A",		3, false },
-		{"B", 		4, false },
-		{"C",		5, false },
-		{"D",		6, false },
-		{"E",		7, false },
-		{"F",		8, false },
-
-		{"A+B",		9, false },
-		{"C+D",	   10, false },
-		{"A+B+C",  11, false },
-
-		{"A-Turbo",	3, true  },
-		{"B-Turbo",	4, true  },
-		{"C-Turbo",	5, true  },
-		{"D-Turbo",	6, true  },
-		{"E-Turbo",	7, true  },
-		{"F-Turbo",	8, true  } 	};
-*/
-
-void do_keypad()
-{
-	static unsigned int turbo = 0;
-	unsigned long joy = gp2x_joystick_read();
-	int bVert = ((BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) && (config_options.option_rotate==1));
-	//int bVert=config_options.option_rescale<=2;
-	turbo ++;
-
-	FBA_KEYPAD[0] = 0;
-	FBA_KEYPAD[1] = 0;
-	FBA_KEYPAD[2] = 0;
-	FBA_KEYPAD[3] = 0;
-	ServiceRequest =0;
-	P1P2Start = 0;
-
-	/*FBA_AXIS[0] [0]=SDL_JoystickGetAxis(0,0);
-	FBA_AXIS[0] [1]=SDL_JoystickGetAxis(0,1);
-	FBA_AXIS[0] [2]=SDL_JoystickGetAxis(0,2);
-	FBA_AXIS[0] [3]=SDL_JoystickGetAxis(0,3);*/
-
-	if ( joy & MY_UP  ) FBA_KEYPAD[0] |= bVert?0x0004:0x0001;
-	if ( joy & MY_DOWN  ) FBA_KEYPAD[0] |= bVert?0x0008:0x0002;
-	if ( joy & MY_LEFT  ) FBA_KEYPAD[0] |= bVert?0x0002:0x0004;
-	if ( joy & MY_RIGHT ) FBA_KEYPAD[0] |= bVert?0x0001:0x0008;
-
-	if ( joy & MY_SELECT )	FBA_KEYPAD[0] |= 0x0010;
-	if ( joy & MY_START )		FBA_KEYPAD[0] |= 0x0020;
-
-	if ( joy & MY_BUTT_A )	FBA_KEYPAD[0] |= 0x0040;	// A
-	if ( joy & MY_BUTT_X )  FBA_KEYPAD[0] |= 0x0080;	// B
-		//if (bVert)
-			//ezx_change_volume(1);
-		//else
-			//FBA_KEYPAD[0] |= 0x0080;	// B
-	if ( joy & MY_BUTT_B )	FBA_KEYPAD[0] |= 0x0100;	// C
-	if ( joy & MY_BUTT_Y ) FBA_KEYPAD[0] |= 0x0200;	// D
-		//if (bVert)
-			//ezx_change_volume(-1);
-		//else
-//			FBA_KEYPAD[0] |= 0x0200;	// D
-	if ( joy & MY_BUTT_SL )	FBA_KEYPAD[0] |= 0x0400;						// E
-		//if (bVert)
-			//FBA_KEYPAD[0] |= 0x0100;
-		//else
-		//	FBA_KEYPAD[0] |= 0x0400;
-	if ( joy & MY_BUTT_SR )	FBA_KEYPAD[0] |= 0x0800;						// F
-		//if (bVert)
-			//FBA_KEYPAD[0] |= 0x0200;
-		//else
-			//FBA_KEYPAD[0] |= 0x0800;
-	/*if ( joy & MY_VOL_UP )
-		if (bVert)
-			FBA_KEYPAD[0] |= 0x0040;
-		else
-			ezx_change_volume(1);
-	if ( joy & MY_VOL_DOWN )
-		if (bVert)
-			FBA_KEYPAD[0] |= 0x0080;
-		else
-			ezx_change_volume(-1);*/
-	if (joy & MY_QT) GameLooping=false;
-	if (pausecnt>0) pausecnt--;
-	if ((joy & MY_PAUSE) && (pausecnt==0))
-	{
-		bPauseOn=!bPauseOn;
-		pausecnt=20;
-		if (config_options.option_sound_enable == 2) SDL_PauseAudio(bPauseOn);
-	}
-	//if (joy & MY_KS) ServiceRequest=1:
-	/*if ((joy & MY_BUTT_SL) && (joy & MY_BUTT_SR))
-	{
-		if (joy & MY_BUTT_Y) ChangeFrameskip();
-		else
-		if (joy & MY_START) GameLooping = false;
-		else
-		if ( joy & MY_SELECT) ServiceRequest = 1;
-		else
-		if ( joy & MY_BUTT_X)
-		{
-			FILE * filterfile;
-			filterfile=fopen("/etc/pandora/conf/dss_fir/none_up","r");
-			if (filterfile)
-			{
-				int i;
-				char f [161];
-				int tmp;
-				fgets(f,160,filterfile);
-				fgets(f,160,filterfile);
-				fread(f,20,8,filterfile);
-				f[160]=0;
-				tmp = open("/sys/devices/platform/omapdss/overlay1/filter_coef_up_h", O_WRONLY);
-				if (tmp) printf("success %d\n",strlen(f)); else printf("failed\n");
-				printf("%d\n",write (tmp,f,strlen(f)+1));
-				close(tmp);
-				fgets(f,160,filterfile);
-				fread(f,20,8,filterfile);
-				f[160]=0;
-				tmp = open("/sys/devices/platform/omapdss/overlay1/filter_coef_up_v3", O_WRONLY);
-				write (tmp,f,strlen(f)+1);
-				close(tmp);
-				fgets(f,160,filterfile);
-				fread(f,20,8,filterfile);
-				f[160]=0;
-				tmp = open("/sys/devices/platform/omapdss/overlay1/filter_coef_up_v5", O_WRONLY);
-				write (tmp,f,strlen(f)+1);
-				close(tmp);
-				//printf(f);
-
-				fclose(filterfile);
-
-
-			}
-		}
-	}
-	else
-		if (joy & MY_START && joy & MY_SELECT) P1P2Start = 1;*/
-
-/*	for (int i=0;i<joyCount;i++)
-	{
-	int numButtons = joy_buttons(joys[i]);
-		if (numButtons > 8)
-			numButtons = 8;
-		joy_update(joys[i]);
-		if(joy_getaxe(JOYUP, joys[i])) FBA_KEYPAD[i] |= bVert?0x0004:0x0001;
-		if(joy_getaxe(JOYDOWN, joys[i])) FBA_KEYPAD[i] |= bVert?0x0008:0x0002;
-		if(joy_getaxe(JOYLEFT, joys[i])) FBA_KEYPAD[i] |= bVert?0x0002:0x0004;
-		if(joy_getaxe(JOYRIGHT, joys[i])) FBA_KEYPAD[i] |= bVert?0x0001:0x0008;
-
-		for (int nButton = 0; nButton < numButtons; nButton++) {
-			if(joy_getbutton(nButton, joys[i]))
-				FBA_KEYPAD[i] |= joyMap[nButton];
-		}
-	}*/
-}
 
 int DrvInit(int nDrvNum, bool bRestore);
 int DrvExit();

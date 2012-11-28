@@ -11,7 +11,7 @@
 
 
 extern int fps;
-extern unsigned int FBA_KEYPAD[4];
+extern unsigned int FBA_KEYPAD[4]; // sdlinput.cpp
 extern CFG_OPTIONS config_options;
 extern void do_keypad();
 
@@ -29,7 +29,7 @@ bool bShowFPS = false;
 bool bPauseOn = false;
 
 int InpMake(unsigned int[]);
-void uploadfb(void);
+
 void VideoBufferUpdate(void);
 void VideoTrans();
 
@@ -46,7 +46,7 @@ int RunOneFrame(bool bDraw, int fps)
 {
 	do_keypad();
 	InpMake(FBA_KEYPAD);
-	if (bPauseOn==false)
+	if (!bPauseOn)
 	{
 		nFramesEmulated++;
 		nCurrentFrame++;
@@ -56,7 +56,7 @@ int RunOneFrame(bool bDraw, int fps)
 		{
 			nFramesRendered++;
 			VideoBufferUpdate();
-			pBurnDraw = (unsigned char *)&BurnVideoBuffer[0];
+			pBurnDraw = (unsigned char *)BurnVideoBuffer; //(unsigned char *)&BurnVideoBuffer[0];
 		}
 
 		BurnDrvFrame();
@@ -76,9 +76,7 @@ int RunOneFrame(bool bDraw, int fps)
 
 			gp2x_video_flip();
 		}
-	}
-	if (bPauseOn)
-	{
+	} else {
 		DrawString ("PAUSED", (unsigned short *) &VideoBuffer[0], (PhysicalBufferWidth>>1)-24, 120,PhysicalBufferWidth);
 		gp2x_video_flip();
 	}
