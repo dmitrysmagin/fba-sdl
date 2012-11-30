@@ -30,7 +30,6 @@ bool bPauseOn = false;
 
 int InpMake(unsigned int[]);
 
-void VideoBufferUpdate(void);
 void VideoTrans();
 
 int RunReset()
@@ -55,13 +54,11 @@ int RunOneFrame(bool bDraw, int fps)
 		if ( bDraw )
 		{
 			nFramesRendered++;
-			VideoBufferUpdate();
-			pBurnDraw = (unsigned char *)BurnVideoBuffer; //(unsigned char *)&BurnVideoBuffer[0];
+			pBurnDraw = (unsigned char *)BurnVideoBuffer; 
 		}
 
 		BurnDrvFrame();
 
-		pBurnDraw = NULL;
 		if ( bDraw )
 		{
 			VideoTrans();
@@ -299,7 +296,6 @@ int VideoInit()
 {
 	BurnDrvGetFullSize(&VideoBufferWidth, &VideoBufferHeight);
 	printf("w=%d h=%d\n",VideoBufferWidth, VideoBufferHeight);
-//	printf("Screen Size: %d x %d\n", VideoBufferWidth, VideoBufferHeight);
 
 	nBurnBpp = 2;
 	BurnHighCol = myHighCol16;
@@ -332,7 +328,7 @@ int VideoInit()
 				PhysicalBufferWidth = 320;
 			/*break;
 			default:
-				BurnVideoBuffer = &VideoBuffer[3072];
+				BurnVideoBuffer = VideoBuffer;
 				BurnVideoBufferAlloced = false;
 				BurnerVideoTrans = BurnerVideoTransDemo;
 				PhysicalBufferWidth	= VideoBufferWidth;
@@ -350,7 +346,7 @@ int VideoInit()
 		}
 		else
 		{
-			BurnVideoBuffer = &VideoBuffer[0];
+			BurnVideoBuffer = VideoBuffer;
 			BurnVideoBufferAlloced = false;
 			BurnerVideoTrans = BurnerVideoTransDemo;
 		}
@@ -366,7 +362,7 @@ int VideoInit()
 	} else 
 	if (VideoBufferWidth == 320 && VideoBufferHeight == 224) {
 		// Cave gaia & Neogeo with NEO_DISPLAY_OVERSCAN
-		BurnVideoBuffer = &VideoBuffer[2560];
+		BurnVideoBuffer = VideoBuffer;
 		BurnVideoBufferAlloced = false;
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnerVideoTrans = BurnerVideoTransDemo;
@@ -374,7 +370,7 @@ int VideoInit()
 	} else
 	if (VideoBufferWidth == 320 && VideoBufferHeight == 240) {
 		// Cave & Toaplan
-		BurnVideoBuffer = &VideoBuffer[0];
+		BurnVideoBuffer = VideoBuffer;
 		BurnVideoBufferAlloced = false;
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnerVideoTrans = BurnerVideoTransDemo;
@@ -412,20 +408,20 @@ int VideoInit()
 	if (VideoBufferWidth == 448 && VideoBufferHeight == 224) {
 		// IGS
 		nBurnPitch  = VideoBufferWidth * 2;
-		BurnVideoBuffer = &VideoBuffer[3584];
+		BurnVideoBuffer = VideoBuffer;
 		BurnVideoBufferAlloced = false;
-		BurnerVideoTrans = BurnerVideoTrans448x224; //BurnerVideoTransDemo;
-		PhysicalBufferWidth	= 320; //VideoBufferWidth;
+		BurnerVideoTrans = BurnerVideoTrans448x224;
+		PhysicalBufferWidth	= 320;
 	} else
 	if (VideoBufferWidth == 352 && VideoBufferHeight == 240) {
-		// V-Systom
+		// V-System
 		BurnVideoBuffer = (unsigned short *)malloc( VideoBufferWidth * VideoBufferHeight * 2 );
 		BurnVideoBufferAlloced = true;
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnerVideoTrans = BurnerVideoTrans352x240;
 		PhysicalBufferWidth = 320;
 	} else {
-		BurnVideoBuffer = NULL;
+		BurnVideoBuffer = VideoBuffer;
 		BurnVideoBufferAlloced = false;
 		nBurnPitch  = VideoBufferWidth * 2;
 		BurnerVideoTrans = BurnerVideoTransDemo;
@@ -433,40 +429,6 @@ int VideoInit()
 	}
 
 	return 0;
-}
-
-// 'VideoBuffer' is updated each frame due to double buffering, so we sometimes need to ensure BurnVideoBuffer is updated too.
-void VideoBufferUpdate (void)
-{
-	if (BurnVideoBufferAlloced == false) BurnVideoBuffer = &VideoBuffer[0];
-	/*if (BurnVideoBufferAlloced == false)
-	{
-		if (VideoBufferWidth == 384 && VideoBufferHeight == 224)
-		{
-			BurnVideoBuffer = &VideoBuffer[3072];
-		}
-		else if (VideoBufferWidth == 384 && VideoBufferHeight == 240)
-		{
-			BurnVideoBuffer = &VideoBuffer[0];
-		}
-		else if (VideoBufferWidth == 320 && VideoBufferHeight == 240)
-		{
-			BurnVideoBuffer = &VideoBuffer[0];
-		}
-		else if (VideoBufferWidth == 320 && VideoBufferHeight == 224)
-		{
-			BurnVideoBuffer = &VideoBuffer[2560];
-			//BurnVideoBuffer = &VideoBuffer[0];
-		}
-		else if (VideoBufferWidth == 448)
-		{
-			BurnVideoBuffer = &VideoBuffer[3584];
-		}
-		else
-		{
-			BurnVideoBuffer = NULL;
-		}
-	}*/
 }
 
 void VideoTrans()
