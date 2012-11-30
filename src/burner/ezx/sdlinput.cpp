@@ -37,8 +37,6 @@ extern bool GameLooping; // fba_player.cpp
 // external functions
 void ChangeFrameskip(); // run.cpp
 
-// don't forget to check orientation BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)
-// because we should change dpad directions
 unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
 {
 	static int pckeydata = 0;
@@ -47,35 +45,34 @@ unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
 	while(SDL_PollEvent(&event)) {
 		if (event.type == SDL_KEYUP) {
 			if (event.key.keysym.sym == config_keymap.up) pckeydata &= ~BUTTON_UP;
-			if (event.key.keysym.sym == config_keymap.down) pckeydata &= ~BUTTON_DOWN;
-			if (event.key.keysym.sym == config_keymap.left) pckeydata &= ~BUTTON_LEFT;
-			if (event.key.keysym.sym == config_keymap.right) pckeydata &= ~BUTTON_RIGHT;
-			if (event.key.keysym.sym == config_keymap.fire1) pckeydata &= ~BUTTON_A;
-			if (event.key.keysym.sym == config_keymap.fire2) pckeydata &= ~BUTTON_B;
-			if (event.key.keysym.sym == config_keymap.fire3) pckeydata &= ~BUTTON_X;
-			if (event.key.keysym.sym == config_keymap.fire4) pckeydata &= ~BUTTON_Y;
-			if (event.key.keysym.sym == config_keymap.fire5) pckeydata &= ~BUTTON_SL;
-			if (event.key.keysym.sym == config_keymap.fire6) pckeydata &= ~BUTTON_SR;
-			if (event.key.keysym.sym == config_keymap.coin1) pckeydata &= ~BUTTON_SELECT;
-			if (event.key.keysym.sym == config_keymap.start1) pckeydata &= ~BUTTON_START;
-			if (event.key.keysym.sym == config_keymap.quit) pckeydata &= ~BUTTON_QT;
-			if (event.key.keysym.sym == config_keymap.pause) pckeydata &= ~BUTTON_PAUSE;
-		}
-		if (event.type == SDL_KEYDOWN) {
+			else if (event.key.keysym.sym == config_keymap.down) pckeydata &= ~BUTTON_DOWN;
+			else if (event.key.keysym.sym == config_keymap.left) pckeydata &= ~BUTTON_LEFT;
+			else if (event.key.keysym.sym == config_keymap.right) pckeydata &= ~BUTTON_RIGHT;
+			else if (event.key.keysym.sym == config_keymap.fire1) pckeydata &= ~BUTTON_A;
+			else if (event.key.keysym.sym == config_keymap.fire2) pckeydata &= ~BUTTON_B;
+			else if (event.key.keysym.sym == config_keymap.fire3) pckeydata &= ~BUTTON_X;
+			else if (event.key.keysym.sym == config_keymap.fire4) pckeydata &= ~BUTTON_Y;
+			else if (event.key.keysym.sym == config_keymap.fire5) pckeydata &= ~BUTTON_SL;
+			else if (event.key.keysym.sym == config_keymap.fire6) pckeydata &= ~BUTTON_SR;
+			else if (event.key.keysym.sym == config_keymap.coin1) pckeydata &= ~BUTTON_SELECT;
+			else if (event.key.keysym.sym == config_keymap.start1) pckeydata &= ~BUTTON_START;
+			else if (event.key.keysym.sym == config_keymap.quit) pckeydata &= ~BUTTON_QT;
+			else if (event.key.keysym.sym == config_keymap.pause) pckeydata &= ~BUTTON_PAUSE;
+		} else if (event.type == SDL_KEYDOWN) {
 			if (event.key.keysym.sym == config_keymap.up) pckeydata |= BUTTON_UP;
-			if (event.key.keysym.sym == config_keymap.down) pckeydata |= BUTTON_DOWN;
-			if (event.key.keysym.sym == config_keymap.left) pckeydata |= BUTTON_LEFT;
-			if (event.key.keysym.sym == config_keymap.right) pckeydata |= BUTTON_RIGHT;
-			if (event.key.keysym.sym == config_keymap.fire1) pckeydata |= BUTTON_A;
-			if (event.key.keysym.sym == config_keymap.fire2) pckeydata |= BUTTON_B;
-			if (event.key.keysym.sym == config_keymap.fire3) pckeydata |= BUTTON_X;
-			if (event.key.keysym.sym == config_keymap.fire4) pckeydata |= BUTTON_Y;
-			if (event.key.keysym.sym == config_keymap.fire5) pckeydata |= BUTTON_SL;
-			if (event.key.keysym.sym == config_keymap.fire6) pckeydata |= BUTTON_SR;
-			if (event.key.keysym.sym == config_keymap.coin1) pckeydata |= BUTTON_SELECT;
-			if (event.key.keysym.sym == config_keymap.start1) pckeydata |= BUTTON_START;
-			if (event.key.keysym.sym == config_keymap.quit) pckeydata |= BUTTON_QT;
-			if (event.key.keysym.sym == config_keymap.pause) pckeydata |= BUTTON_PAUSE;
+			else if (event.key.keysym.sym == config_keymap.down) pckeydata |= BUTTON_DOWN;
+			else if (event.key.keysym.sym == config_keymap.left) pckeydata |= BUTTON_LEFT;
+			else if (event.key.keysym.sym == config_keymap.right) pckeydata |= BUTTON_RIGHT;
+			else if (event.key.keysym.sym == config_keymap.fire1) pckeydata |= BUTTON_A;
+			else if (event.key.keysym.sym == config_keymap.fire2) pckeydata |= BUTTON_B;
+			else if (event.key.keysym.sym == config_keymap.fire3) pckeydata |= BUTTON_X;
+			else if (event.key.keysym.sym == config_keymap.fire4) pckeydata |= BUTTON_Y;
+			else if (event.key.keysym.sym == config_keymap.fire5) pckeydata |= BUTTON_SL;
+			else if (event.key.keysym.sym == config_keymap.fire6) pckeydata |= BUTTON_SR;
+			else if (event.key.keysym.sym == config_keymap.coin1) pckeydata |= BUTTON_SELECT;
+			else if (event.key.keysym.sym == config_keymap.start1) pckeydata |= BUTTON_START;
+			else if (event.key.keysym.sym == config_keymap.quit) pckeydata |= BUTTON_QT;
+			else if (event.key.keysym.sym == config_keymap.pause) pckeydata |= BUTTON_PAUSE;
 		}
 	}
 
@@ -86,7 +83,7 @@ void do_keypad()
 {
 	static int pausecnt = 0;
 	unsigned int joy = sdl_input_read();
-	int bVert = (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL);
+	int bVert = BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL;
 
 	FBA_KEYPAD[0] = 0;
 	FBA_KEYPAD[1] = 0;
@@ -124,11 +121,12 @@ void do_keypad()
 		else if (joy & BUTTON_START) GameLooping = false;
 		else if (joy & BUTTON_SELECT) ServiceRequest = 1;
 	}
-	else if (joy & BUTTON_START && joy & BUTTON_SELECT) P1P2Start = 1; // put enter GUI here later
+	else if ((joy & BUTTON_START) && (joy & BUTTON_SELECT)) P1P2Start = 1; // put enter GUI here later
 }
 
 void sdl_input_init()
 {
+#if 0
 	joyCount = SDL_NumJoysticks();
 	if (joyCount > 5) joyCount = 5;
 	printf("%d Joystick(s) Found\n", joyCount);
@@ -142,5 +140,5 @@ void sdl_input_init()
 			printf("Axis %d\n",SDL_JoystickNumAxes(joys[i]));
 		}
 	}
-
+#endif
 }

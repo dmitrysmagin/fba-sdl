@@ -335,7 +335,7 @@ int InpMake(unsigned int key[])
 						if (down) *(GameInput[joyNum][i].pVal)=0xff; else *(GameInput[joyNum][i].pVal)=0x01;
 					}
 
-
+#if 0
 					if (i==12) //analogue x
 					{
 						nJoy=SDL_JoystickGetAxis(joys[joyNum],0) << 1;
@@ -416,7 +416,7 @@ int InpMake(unsigned int key[])
 						}
 						*(GameInput[joyNum][i].pShortVal)=nJoy;
 					}
-
+#endif
 				}
 				else
 				{
