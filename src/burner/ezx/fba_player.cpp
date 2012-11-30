@@ -361,6 +361,7 @@ void run_fba_emulator(const char *fn)
 
 	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
 
+	#if 1
 	{
 		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
 		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec
@@ -385,7 +386,7 @@ void run_fba_emulator(const char *fn)
 
 			lim = (frame_count) * frametime;
 			if(config_options.option_frameskip == -1) { // auto frameskip
-				if(now-start > lim) if(++skipped_frames < frame_limit) draw_this_frame = false;
+				if(now-start > lim) if(++skipped_frames < frame_limit/3) draw_this_frame = false;
 			} else { // manual frameskip 0..10
 				if(config_options.option_frameskip > 0) {
 					if(skipped_frames < config_options.option_frameskip) { 
@@ -399,11 +400,87 @@ void run_fba_emulator(const char *fn)
 			}
 
 			wait = lim - (now - start);
+			if(wait >= 300000) {
+				start = now;
+				fps = frame_limit - skipped_frames;
+				skipped_frames = 0;
+				frame_count = 0;
+			} else
 			if(config_options.option_sound_enable != 2 && wait > 0) sleep_us(wait);
 
-			//printf("diff: %i, lim: %i, wait: %i, skipped: %i\n", now-start, lim, wait, skipped_frames);
+			//printf("%i:, diff: %i, lim: %i, wait: %i\n", frame_count, now-start, lim, wait);
 		}
 	}
+	#else
+	{
+		int now, next1=0, /*lim=0, wait=0,*/ frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
+		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec
+		int skip_limit = 0;
+
+		int here, last = 0, diff=0;
+
+		while (GameLooping) {
+			RunOneFrame(draw_this_frame, fps);
+			SndFrameRendered();
+
+			draw_this_frame = true;
+			frame_count++;
+			if(frame_count == frame_limit) {
+				fps = frame_limit - skipped_frames;
+				frame_count = 0;
+				skipped_frames = 0;
+			}
+
+			/*if(config_options.option_sound_enable != 2) {
+				here = get_ticks_us();
+				if(last == 0) last = here;
+				diff = here - last; diff = frametime - diff;
+				if(diff > 0) sleep_us(diff);
+				//printf("%i - last: %i, here: %i, diff: %i\n", frame_count, last, here, diff);
+				last = here;
+			}*/
+
+			//printf("%i - ", frame_count);
+
+			if(config_options.option_frameskip == -1) { // auto frameskip
+				now = get_ticks_us(); //printf("now: %i ", now);
+				if(next1 == 0) next1 = now + 1;
+
+				if(next1 > now) {
+					/*if(skipped_frames == 0)*/ do {
+						SndSynchronize();
+						now = get_ticks_us();
+					} while(next1 > now);
+					//skipped_frames = 0;
+				} else {
+					if(skipped_frames < frame_limit/4) {
+						skipped_frames++;
+						draw_this_frame = false;
+					} else {
+						//skipped_frames = 0;
+						next1 = now;
+					}
+				}
+
+				next1 += frametime;
+				//printf("next: %i , skipped_frames = %i\n", next1, skipped_frames);
+			} else { // manual frameskip 0..10
+				if(config_options.option_frameskip > 0) {
+					if(skipped_frames < config_options.option_frameskip) { 
+						if(--skip_limit < 0) { 
+							draw_this_frame = false;
+							skip_limit = frame_limit / config_options.option_frameskip;
+							skipped_frames++;
+						}
+					}
+				}
+
+			}
+
+			//printf("%i - diff: %i, flag: %i\n", frame_count, next1 - now, draw_this_frame);
+		}
+	}
+	#endif
 
 	printf ("Finished emulating\n");
 

@@ -36,7 +36,7 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {256, 256, 512}; // 11025, 22050, 44100
+int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
 int sample_rates[3] = {11025, 22050, 44100};
 
 int BUFFSIZE;
@@ -49,7 +49,7 @@ static int buffered_bytes=0;
 static int sdl_write_buffer(unsigned char* data, int len)
 {
 	SDL_LockMutex(sound_mutex);
-
+#if 0
 	while(BUFFSIZE - buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
 
 	if(buf_write_pos + len <= BUFFSIZE ) {
@@ -61,7 +61,15 @@ static int sdl_write_buffer(unsigned char* data, int len)
 	}
 	buf_write_pos = (buf_write_pos + len) % BUFFSIZE;
 	buffered_bytes += len;
+#else
+	for(int i = 0; i < len; i += 4) {
+		while(buffered_bytes == BUFFSIZE) SDL_CondWait(sound_cv, sound_mutex);
 
+		memcpy(buffer + buf_write_pos, data + i, 4);
+		buf_write_pos = (buf_write_pos + 4) % BUFFSIZE;
+		buffered_bytes += 4;
+	}
+#endif
 	SDL_CondSignal(sound_cv);
 	SDL_UnlockMutex(sound_mutex);
 	return len;
@@ -293,3 +301,11 @@ void SndFrameRendered()
 	}
 }
 
+void SndSynchronize()
+{
+	if(config_options.option_sound_enable == 2) {
+		SDL_LockMutex(sound_mutex);
+		while(buffered_bytes > BUFFSIZE / 2/*BUFFSIZE - buffered_bytes < AudioBufferSize*/) SDL_CondWait(sound_cv, sound_mutex);
+		SDL_UnlockMutex(sound_mutex);
+	}
+}
