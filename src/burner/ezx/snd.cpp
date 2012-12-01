@@ -36,7 +36,7 @@ static int AudioBufferSize = 0;
 
 // General purpose Ring-buffering routines
 int SAMPLESIZE=256;
-int sample_sizes[3] = {256, 512, 1024}; // 11025, 22050, 44100
+int sample_sizes[3] = {512, 1024, 1024}; // 11025, 22050, 44100
 int sample_rates[3] = {11025, 22050, 44100};
 
 int BUFFSIZE;
@@ -298,14 +298,5 @@ void SndFrameRendered()
 		{
 			play((unsigned char *)nBurnSoundBuffer, AudioBufferSize,0);
 		}
-	}
-}
-
-void SndSynchronize()
-{
-	if(config_options.option_sound_enable == 2) {
-		SDL_LockMutex(sound_mutex);
-		while(buffered_bytes > BUFFSIZE / 2/*BUFFSIZE - buffered_bytes < AudioBufferSize*/) SDL_CondWait(sound_cv, sound_mutex);
-		SDL_UnlockMutex(sound_mutex);
 	}
 }
