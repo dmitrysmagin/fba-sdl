@@ -235,7 +235,7 @@ int SndOpen()
 	if (config_options.option_sound_enable == 2)
 	{
 		SAMPLESIZE = sample_sizes[config_options.option_samplerate];
-		BUFFSIZE = SAMPLESIZE*2*nAudioChannels * 8;
+		BUFFSIZE = 16384; //SAMPLESIZE*2*nAudioChannels * 8;
 		buffer = (unsigned char *) malloc(BUFFSIZE);
 		dspfd = sdl_open_audio(nBurnSoundRate, nAudioChannels, AUDIO_S16);
 

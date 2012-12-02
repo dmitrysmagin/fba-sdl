@@ -249,6 +249,18 @@ void sleep_us(int value)
 #endif
 }
 
+static struct timeval start;
+
+unsigned int GetTicks (void)
+{
+	unsigned int ticks;
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	ticks=(now.tv_sec-start.tv_sec)*1000000+now.tv_usec-start.tv_usec;
+	//ticks=(int)(SDL_GetTicks()-startms)
+	return ticks;
+}
+
 void run_fba_emulator(const char *fn)
 {
 	atexit(shutdown);
@@ -361,6 +373,7 @@ void run_fba_emulator(const char *fn)
 
 	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
 
+#if 0
 	{
 		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
 		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec
@@ -403,6 +416,40 @@ void run_fba_emulator(const char *fn)
 			//printf("%i:, diff: %i, lim: %i, wait: %i\n", frame_count, now-start, lim, wait);
 		}
 	}
+#else
+	{
+		int now, done=0, timer = 0, ticks=0, tick=0, i=0, fps = 0;
+		unsigned int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS;
+
+		gettimeofday(&start, NULL);
+		while (GameLooping)
+		{
+			timer = GetTicks()/frametime;;
+			if(timer-tick>frame_limit && bShowFPS)
+			{
+				fps = nFramesRendered;
+				nFramesRendered = 0;
+				tick = timer;
+			}
+			now = timer;
+			ticks=now-done;
+			if(ticks<1) continue;
+			if(ticks>10) ticks=10;
+			for (i=0; i<ticks-1; i++)
+			{
+				RunOneFrame(false,fps);
+				SndFrameRendered();
+			}
+			if(ticks>=1)
+			{
+				RunOneFrame(true,fps);
+				SndFrameRendered();
+			}
+
+			done = now;
+		}
+	}
+#endif
 
 	printf ("Finished emulating\n");
 
