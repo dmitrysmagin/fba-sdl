@@ -126,7 +126,6 @@ void do_keypad()
 
 void sdl_input_init()
 {
-#if 0
 	joyCount = SDL_NumJoysticks();
 	if (joyCount > 5) joyCount = 5;
 	printf("%d Joystick(s) Found\n", joyCount);
@@ -140,5 +139,4 @@ void sdl_input_init()
 			printf("Axis %d\n",SDL_JoystickNumAxes(joys[i]));
 		}
 	}
-#endif
 }
