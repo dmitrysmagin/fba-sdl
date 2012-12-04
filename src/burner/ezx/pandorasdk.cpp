@@ -25,11 +25,7 @@ SDL_Surface* myscreen;
 
 void gp2x_initialize()
 {
-	BurnDrvGetFullSize(&WINDOW_WIDTH, &WINDOW_HEIGHT);
-
-	printf("Setting screen to %d x %d\n",WINDOW_WIDTH,WINDOW_HEIGHT);
-	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE))<0)
-	{
+	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
 		printf("sdl failed to init\n");
 	}
 
@@ -37,16 +33,15 @@ void gp2x_initialize()
 	myscreen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
 	if(!myscreen)
 	{
-		printf("SDL_SetVideoMode screen not initialised.\n"); // debug output example for serial cable
+		printf("SDL_SetVideoMode screen not initialised.\n");
 	}
 	else printf("SDL_SetVideoMode successful.\n");
-	VideoBuffer=(unsigned short*)myscreen->pixels;
+	VideoBuffer = (unsigned short*)myscreen->pixels;
 
-	SDL_ShowCursor(SDL_DISABLE);							// Disable mouse cursor on gp2x
-	SDL_WM_SetCaption( WINDOW_TITLE, 0 );					// Sets the window title (not needed for gp2x)
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_WM_SetCaption( WINDOW_TITLE, 0 );
 
 	sdl_input_init();
-	gp2x_video_flip();
 }
 
 void gp2x_terminate(char *frontend)
