@@ -28,6 +28,7 @@ extern CFG_OPTIONS config_options;
 extern int nBurnFPS;
 
 int dspfd = -1;
+static int fix_mono = false; // workaround for faulty mono of a380 and rxz50
 
 unsigned short *nBurnSoundBuffer; // buffer where Burn driver will write snd data
 
@@ -65,7 +66,8 @@ static int sdl_write_buffer(unsigned char* data, int len)
 	for(int i = 0; i < len; i += 4) {
 		while(buffered_bytes == BUFFSIZE) SDL_CondWait(sound_cv, sound_mutex);
 
-		memcpy(buffer + buf_write_pos, data + i, 4);
+		*(int*)((char*)(buffer + buf_write_pos)) = *(int*)((char*)(data + i));
+		//memcpy(buffer + buf_write_pos, data + i, 4);
 		buf_write_pos = (buf_write_pos + 4) % BUFFSIZE;
 		buffered_bytes += 4;
 	}
@@ -79,18 +81,34 @@ static int sdl_read_buffer(unsigned char* data,int len)
 {
 	SDL_LockMutex(sound_mutex);
 
-	while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+	if(fix_mono) {
+		while(buffered_bytes*2 < len) SDL_CondWait(sound_cv, sound_mutex);
 
-	if(buffered_bytes >= len) {
-		if(buf_read_pos + len <= BUFFSIZE ) {
-			memcpy(data, buffer + buf_read_pos, len);
-		} else {
-			int tail = BUFFSIZE - buf_read_pos;
-			memcpy(data, buffer + buf_read_pos, tail);
-			memcpy(data + tail, buffer, len - tail);
+		if(buffered_bytes*2 >= len) {
+			unsigned int *p = (unsigned int *)data;
+
+			for(int i = len; i -= 4;) {
+				unsigned int sample = *(unsigned short*)((char*)(buffer + buf_read_pos));
+				*p = sample | (sample << 16);
+				buf_read_pos = (buf_read_pos + 2) % BUFFSIZE;
+				p++;
+			}
+			buffered_bytes -= len/2;
 		}
-		buf_read_pos = (buf_read_pos + len) % BUFFSIZE;
-		buffered_bytes -= len;
+	} else {
+		while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
+
+		if(buffered_bytes >= len) {
+			if(buf_read_pos + len <= BUFFSIZE ) {
+				memcpy(data, buffer + buf_read_pos, len);
+			} else {
+				int tail = BUFFSIZE - buf_read_pos;
+				memcpy(data, buffer + buf_read_pos, tail);
+				memcpy(data + tail, buffer, len - tail);
+			}
+			buf_read_pos = (buf_read_pos + len) % BUFFSIZE;
+			buffered_bytes -= len;
+		}
 	}
 
 	SDL_CondSignal(sound_cv);
@@ -189,10 +207,10 @@ int SndInit()
 		if ((BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1) || (BurnDrvGetHardwareCode() == HARDWARE_CAPCOM_CPS1_GENERIC))
 		{
 			if(BURN_VERSION == 0x029671) { // fix for v 0.2.96.71
-				nAudioChannels = 1; 
+				fix_mono = true;
 				config_options.option_samplerate = i = 0;
 				printf("using low snd for cps1\n");
-			}
+			} else fix_mono = false;
 		}
 
 		nBurnSoundRate = sample_rates[i];
