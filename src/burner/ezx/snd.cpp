@@ -224,7 +224,7 @@ int SndInit()
 int SndOpen()
 {
 	nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS );
-	AudioBufferSize = nBurnSoundLen * nAudioChannels * 2;
+	AudioBufferSize = nBurnSoundLen * (fix_mono ? 1 : nAudioChannels) * 2;
 	nBurnSoundBuffer= (unsigned short *)malloc(AudioBufferSize);
 	memset(nBurnSoundBuffer,0,AudioBufferSize);
 
