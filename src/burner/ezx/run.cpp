@@ -6,7 +6,6 @@
 #include "fba_player.h"
 #include "snd.h"
 #include "font.h"
-#include "pandorasdk.h"
 #include "config.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
@@ -60,11 +59,11 @@ int RunOneFrame(bool bDraw, int fps)
 				DrawString (buf, (unsigned short *) &VideoBuffer[0], 0, 0,PhysicalBufferWidth);
 			}
 
-			gp2x_video_flip();
+			VideoFlip();
 		}
 	} else {
 		DrawString ("PAUSED", (unsigned short *) &VideoBuffer[0], (PhysicalBufferWidth>>1)-24, 120,PhysicalBufferWidth);
-		gp2x_video_flip();
+		VideoFlip();
 	}
 	return 0;
 }
@@ -72,6 +71,6 @@ int RunOneFrame(bool bDraw, int fps)
 void ChangeFrameskip()
 {
 	bShowFPS = !bShowFPS;
-	gp2x_clear_framebuffers();
+	VideoClear();
 	nFramesRendered = 0;
 }

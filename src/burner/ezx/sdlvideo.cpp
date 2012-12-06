@@ -1,8 +1,13 @@
 
+#include <stdio.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <sys/stat.h>
 #include <SDL/SDL.h>
 
 #include "burner.h"
 #include "fba_player.h"
+#include "config.h"	
 #include "sdlvideo.h"
 #include "sdlinput.h"
 
@@ -12,6 +17,13 @@ int PhysicalBufferWidth = 0;
 
 unsigned short *BurnVideoBuffer = NULL;
 static bool BurnVideoBufferAlloced = false;
+
+extern CFG_OPTIONS config_options;
+extern CFG_KEYMAP config_keymap;
+
+unsigned short *VideoBuffer = NULL;
+
+SDL_Surface* myscreen;
 
 // --------------------------------
 
@@ -375,4 +387,59 @@ void VideoExit()
 	BurnVideoBuffer = NULL;
 	BurnVideoBufferAlloced = false;
 	BurnerVideoTrans = BurnerVideoTransDemo;
-} 
+}
+
+void SystemInit()
+{
+	static const char* WINDOW_TITLE = "FBA";
+
+	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
+		printf("sdl failed to init\n");
+	}
+
+	// Initialize SDL
+	myscreen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+	if(!myscreen)
+	{
+		printf("SDL_SetVideoMode screen not initialised.\n");
+	}
+	else printf("SDL_SetVideoMode successful.\n");
+	VideoBuffer = (unsigned short*)myscreen->pixels;
+
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_WM_SetCaption( WINDOW_TITLE, 0 );
+
+	sdl_input_init();
+}
+
+void SystemExit(char *frontend)
+{
+	struct stat info;
+	SDL_Quit();
+#ifndef WIN32
+	if( (lstat(frontend, &info) == 0) && S_ISREG(info.st_mode) )
+	{
+	char path[256];
+	char *p;
+		strcpy(path, frontend);
+		p = strrchr(path, '/');
+		if(p == NULL) p = strrchr(path, '\\');
+		if(p != NULL)
+		{
+			*p = '\0';
+			chdir(path);
+		}
+		execl(frontend, frontend, NULL);
+	}
+#endif
+}
+
+void VideoClear()
+{
+	memset(VideoBuffer,0,320*240*2);
+}
+
+void VideoFlip()
+{
+	SDL_Flip(myscreen);
+}
