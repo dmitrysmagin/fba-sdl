@@ -1,7 +1,7 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "pandorasdk.h"
+#include "sdlvideo.h"
 
 extern SDL_Joystick *joys[4];
 extern char joyCount;
