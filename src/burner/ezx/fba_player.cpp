@@ -30,7 +30,6 @@
 
 #include "burnint.h"
 #include "config.h"
-#include "cache.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
 
@@ -179,7 +178,6 @@ void shutdown()
 	VideoExit();
 	InpExit();
 
-	BurnCacheExit();
 	SystemExit(config_options.option_frontend);
 }
 
@@ -280,8 +278,6 @@ void run_fba_emulator(const char *fn)
 	printf("about to load rom\n");
 	char romname[MAX_PATH];
 	char *p;
-	if (BurnCacheInit(fn, romname))
-		goto finish;
 
 	strcpy(szAppRomPaths[0], fn);
 	p = strrchr(szAppRomPaths[0], '/');
