@@ -92,7 +92,7 @@ void blit_loading_screen()
 void show_rom_loading_text(char *szText, int nSize, int nTotalSize)
 {
 	int doffset=20;
-	static int size = 0;
+	static long long size = 0;
 
 	DrawRect((uint16 *)load_screen->pixels, doffset, 120, 300, 20, 0, fwidth);
 
