@@ -48,11 +48,11 @@ char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;
 
+SDL_Surface *load_screen;
 int fwidth = 320, fheight = 240; // text surface
 
 extern unsigned int nFramesRendered;
 static int frame_count = 0;
-unsigned short *titlefb;
 extern bool bShowFPS;
 void ChangeFrameskip();
 
@@ -78,59 +78,55 @@ void InpDIP();
 extern int nBurnFPS;
 int fps=0;
 
-void show_rom_loading_text(char * szText, int nSize, int nTotalSize)
+void blit_loading_screen()
+{
+	extern SDL_Surface *screen;
+	SDL_Rect dst;
+
+	dst.x = (screen->w - 320) / 2;
+	dst.y = (screen->h - 240) / 2;
+	SDL_BlitSurface(load_screen, NULL, screen, &dst);
+	SDL_Flip(screen);
+}
+
+void show_rom_loading_text(char *szText, int nSize, int nTotalSize)
 {
 	int doffset=20;
-	/*if (config_options.option_rescale>=3)
-	{
-		pwidth=240;
-		doffset=0;
-	}*/
-	static long long size = 0;
-	//printf("!!! %s, %d / %d\n", szText, size + nSize, nTotalSize);
+	static int size = 0;
 
-	DrawRect((uint16 *) titlefb, doffset, 120, 300, 20, 0, fwidth);
+	DrawRect((uint16 *)load_screen->pixels, doffset, 120, 300, 20, 0, fwidth);
 
 	if (szText)
-		DrawString (szText, (uint16 *) titlefb, doffset, 120, fwidth);
+		DrawString (szText, (uint16 *)load_screen->pixels, doffset, 120, fwidth);
 
 	if (nTotalSize == 0) {
 		size = 0;
-		DrawRect((uint16 *) titlefb, doffset, 140, 280, 12, 0x00FFFFFF, fwidth);
-		DrawRect((uint16 *) titlefb, doffset+1, 141, 278, 10, 0x00808080, fwidth);
+		DrawRect((uint16 *)load_screen->pixels, doffset, 140, 280, 12, 0x00FFFFFF, fwidth);
+		DrawRect((uint16 *)load_screen->pixels, doffset+1, 141, 278, 10, 0x00808080, fwidth);
 	} else {
 		size += nSize;
 		if (size > nTotalSize) size = nTotalSize;
-		DrawRect((uint16 *) titlefb, doffset+1, 141, size * 278 / nTotalSize, 10, 0x00FFFF00, fwidth);
+		DrawRect((uint16 *)load_screen->pixels, doffset+1, 141, size * 278 / nTotalSize, 10, 0x00FFFF00, fwidth);
 	}
 
-	//if (config_options.option_rescale<3) memcpy (VideoBuffer, titlefb, fwidth*fheight*2); else memcpy (VideoBuffer, titlefb, pwidth*fwidth*2);
-	memcpy (VideoBuffer,titlefb, 320*240*2 /*fwidth*fheight*2*/);
-	VideoFlip();
+	blit_loading_screen();
 }
 
-void show_rom_error_text(char * szText)
+void show_rom_error_text(char *szText)
 {
-
 	int doffset=20;
 
-	static long long size = 0;
-	//printf("!!! %s, %d / %d\n", szText, size + nSize, nTotalSize);
+	DrawRect((uint16 *)load_screen->pixels, doffset, 120, 300, 20, 0, fwidth);
 
-	DrawRect((uint16 *) titlefb, doffset, 120, 300, 20, 0, fwidth);
-
-	DrawString ("Error loading rom:", (uint16 *) titlefb, doffset, 160, fwidth);
+	DrawString ("Error loading rom (not found):", (uint16 *)load_screen->pixels, doffset, 160, fwidth);
 	if (szText)
-		DrawString (szText, (uint16 *) titlefb, doffset, 180, fwidth);
-	DrawString ("Exiting - press any key", (uint16 *) titlefb, doffset, 200, fwidth);
+		DrawString (szText, (uint16 *)load_screen->pixels, doffset, 180, fwidth);
+	DrawString ("Exiting - press any key", (uint16 *)load_screen->pixels, doffset, 200, fwidth);
 
+	blit_loading_screen();
 
-	memcpy (VideoBuffer, titlefb, 320*240*2/*fwidth*fheight*2*/);
-	VideoFlip();
 	SDL_Event event;
-	while (event.type!=SDL_KEYDOWN)
-		SDL_WaitEvent(&event);
-
+	while (event.type!=SDL_KEYDOWN) SDL_WaitEvent(&event);
 }
 
 void CreateCapexLists()
@@ -162,7 +158,6 @@ void CreateCapexLists()
 	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
 	create_datfile(temp, 0);*/
-
 }
 
 void shutdown()
@@ -175,6 +170,7 @@ void shutdown()
 	if (config_options.option_sound_enable)
 		SndExit();
 
+	SDL_FreeSurface(load_screen);
 	VideoExit();
 	InpExit();
 
@@ -326,17 +322,15 @@ void run_fba_emulator(const char *fn)
 	VideoInit();
 	printf("completed videoinit()\n");
 
-	titlefb=(unsigned short*)malloc(fwidth * fheight*2);
+	load_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, fwidth, fheight, 16, 0, 0, 0, 0);
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
-	memset (titlefb, 0, 320*240*2/*fwidth*fheight*2*/);
-	DrawString ("Finalburn Alpha for OpenDingux (v " VERSION ")", titlefb, 10, 20, fwidth);
-	DrawString ("Based on FinalBurnAlpha", titlefb, 10, 35, fwidth);
-	DrawString ("Now loading ... ", titlefb, 10, 105, fwidth);
+	DrawString ("Finalburn Alpha for OpenDingux (v " VERSION ")", (uint16 *)load_screen->pixels, 10, 20, fwidth);
+	DrawString ("Based on FinalBurnAlpha", (uint16 *)load_screen->pixels, 10, 35, fwidth);
+	DrawString ("Now loading ... ", (uint16 *)load_screen->pixels, 10, 105, fwidth);
 	show_rom_loading_text("Open Zip", 0, 0);
-	memcpy (VideoBuffer, titlefb, 320*240*2 /*fwidth*fheight*2*/);
-	VideoFlip();
+	blit_loading_screen();
 
 	InpInit();
 	InpDIP();
