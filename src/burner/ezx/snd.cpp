@@ -29,7 +29,7 @@ extern int nBurnFPS;
 
 int dspfd = -1;
 
-unsigned short *nBurnSoundBuffer; // buffer where Burn driver will write snd data
+unsigned short *nBurnSoundBuffer = NULL; // buffer where Burn driver will write snd data
 
 static int nAudioChannels = 2;
 static int AudioBufferSize = 0;
@@ -188,6 +188,7 @@ int SndInit()
 		if(i > 2) i = 0;
 
 		nBurnSoundRate = sample_rates[i];
+		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS ); // it's needed to be here or outrun crashes
 	}
 
 	pBurnSoundOut	= NULL;
@@ -197,9 +198,9 @@ int SndInit()
 
 int SndOpen()
 {
-	nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS );
+	nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS ); // calculate it second time since nBurnFPS could change
 	AudioBufferSize = nBurnSoundLen * nAudioChannels * 2;
-	nBurnSoundBuffer= (unsigned short *)malloc(AudioBufferSize);
+	nBurnSoundBuffer = (unsigned short *)malloc(AudioBufferSize);
 	memset(nBurnSoundBuffer,0,AudioBufferSize);
 
 	printf("SND: AudioBufferSize: %i\n", AudioBufferSize);
