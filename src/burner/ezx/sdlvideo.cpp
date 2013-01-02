@@ -35,6 +35,63 @@ static void Blit_null() {}
 
 static void (*BurnerVideoTrans)() = Blit_null;
 
+static void Blit_864x224_to_320x240() 
+{
+#define COLORMIX(a, b) ( ((((a & 0xF81F) + (b & 0xF81F)) >> 1) & 0xF81F) | ((((a & 0x07E0) + (b & 0x07E0)) >> 1) & 0x07E0) )
+	// Taito 864x224
+	unsigned short * p = &VideoBuffer[2560];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<224; i++)
+		for (int j=0; j<32; j++) {
+			p[0] = COLORMIX(q[0], q[1]); // 0, 1, 2
+			p[1] = COLORMIX(q[3], q[4]); // 3, 4, 5
+			p[2] = COLORMIX(q[6], q[7]); // 6, 7, 8
+			p[3] = COLORMIX(q[9], q[10]); // 9, 10, 11
+			p[4] = COLORMIX(q[12], q[13]); // 12, 13
+			p[5] = COLORMIX(q[14], q[15]); // 14, 15, 16
+			p[6] = COLORMIX(q[17], q[18]); // 17, 18, 19
+			p[7] = COLORMIX(q[20], q[21]); // 20, 21, 22
+			p[8] = COLORMIX(q[23], q[24]); // 23, 24, 25
+			p[9] = COLORMIX(q[26], q[27]); // 26, 27
+			p += 10;
+			q += 27;
+		}
+#undef COLORMIX
+}
+
+static void Blit_640x240_to_320x240() 
+{
+#define COLORMIX(a, b) ( ((((a & 0xF81F) + (b & 0xF81F)) >> 1) & 0xF81F) | ((((a & 0x07E0) + (b & 0x07E0)) >> 1) & 0x07E0) )
+	// Taito 640x240
+	unsigned short * p = &VideoBuffer[0];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<240; i++)
+		for (int j=0; j<320; j++) {
+			p[0] = COLORMIX(q[0], q[1]);
+			p += 1;
+			q += 2;
+		}
+#undef COLORMIX
+}
+
+static void Blit_640x224_to_320x240() 
+{
+#define COLORMIX(a, b) ( ((((a & 0xF81F) + (b & 0xF81F)) >> 1) & 0xF81F) | ((((a & 0x07E0) + (b & 0x07E0)) >> 1) & 0x07E0) )
+	// Taito 640x224
+	unsigned short * p = &VideoBuffer[2560];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<224; i++)
+		for (int j=0; j<320; j++) {
+			p[0] = COLORMIX(q[0], q[1]);
+			p += 1;
+			q += 2;
+		}
+#undef COLORMIX
+}
+
 static void Blit_448x224_to_320x240() 
 {
 	// IGS 448x224
@@ -224,6 +281,9 @@ typedef struct
 } BLIT_TABLE;
 
 BLIT_TABLE blit_table[] = {
+	{320, 240, 864, 224, Blit_864x224_to_320x240, Blit_864x224_to_320x240}, // Taito (darius)
+	{320, 240, 640, 240, Blit_640x240_to_320x240, Blit_640x240_to_320x240}, // Taito (warriorb)
+	{320, 240, 640, 224, Blit_640x224_to_320x240, Blit_640x224_to_320x240}, // Taito (darius2d)
 	{320, 240, 448, 224, Blit_448x224_to_320x240, Blit_448x224_to_320x240}, // IGS (PGM)
 	{320, 240, 384, 256, Blit_384x256_to_320x240, Blit_384x256_to_320x240}, // Irem
 	{320, 240, 384, 240, Blit_384x240_to_320x240, Blit_384x240_to_320x240}, // Cave
