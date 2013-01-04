@@ -309,8 +309,10 @@ void C68k_Set_Reset_Callback(c68k_struc *CPU, void (*Func)(void))
 --------------------------------------------------------*/
 void C68k_Init(c68k_struc *CPU)
 {
-	CPU->Interrupt_CallBack = C68k_InterruptCallback;
-	CPU->Reset_CallBack = C68k_ResetCallback;
+	// These callbacks are set before calling C68k_Init, no need to stub them
+	// This fixes outrun eventually
+	if(!CPU->Interrupt_CallBack) CPU->Interrupt_CallBack = C68k_InterruptCallback;
+	if(!CPU->Reset_CallBack) CPU->Reset_CallBack = C68k_ResetCallback;
 	if ( !bC68KInit ) {
 		C68k_Exec(NULL, 0);
 		bC68KInit = 1;
