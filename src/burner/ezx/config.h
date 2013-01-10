@@ -13,10 +13,10 @@ typedef struct
 	int option_samplerate;
 	int option_showfps;
 	int option_frameskip;
-	int option_forcem68k;
-	int option_forcec68k;
+	int option_68kcore;
 	int option_z80core;
 	int option_sense;
+	int option_useswap;
 	char option_frontend[MAX_PATH];
 	int option_create_lists;
 	char option_startspeed[6];
@@ -42,10 +42,12 @@ typedef struct
 	int pause;
 	int quit;
 	int fps;
-
 } CFG_KEYMAP;
 
 int ConfigAppLoad();
 int ConfigAppSave();
+
+extern CFG_OPTIONS config_options;
+extern CFG_KEYMAP config_keymap;
 
 #endif

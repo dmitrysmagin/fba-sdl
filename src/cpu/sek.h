@@ -1,5 +1,8 @@
 // 68000 (Sixty Eight K) Interface - header file
 
+#ifndef _SEK_H_
+#define _SEK_H_
+
 #include <stdint.h>
 
 #ifndef FASTCALL
@@ -7,8 +10,8 @@
  #define __fastcall
 #endif
 
-#ifdef BUILD_A68K
- #define EMU_A68K
+#if defined BUILD_A68K
+ #define EMU_A68K								// Use A68K Assembler 68000 emulator
 #endif
 
 #ifdef BUILD_C68K
@@ -48,9 +51,7 @@
 #ifdef EMU_A68K
  extern "C" void __cdecl M68000_RUN();
  extern "C" void __cdecl M68000_RESET();
-#endif
 
-#ifdef EMU_A68K
  // The format of the data in a68k.asm (at the _M68000_regs location)
  struct A68KContext {
 	unsigned int d[8], a[8];
@@ -68,12 +69,11 @@
 
  extern "C" unsigned char* OP_ROM;
  extern "C" unsigned char* OP_RAM;
-
-
- void __fastcall AsekChangePc(unsigned int pc);
-#endif
  extern "C" int m68k_ICount;
+#endif
+
 #ifdef EMU_M68K
+ extern "C" int m68k_ICount;
  extern "C" int nSekM68KContextSize[SEK_MAX];
  extern "C" char* SekM68KContext[SEK_MAX];
 #endif
@@ -81,7 +81,7 @@
 #ifdef EMU_C68K
  extern "C" c68k_struc * SekC68KCurrentContext;
  extern "C" c68k_struc * SekC68KContext[SEK_MAX]; 
- #define m68k_ICount	(SekC68KCurrentContext->ICount)
+ #define c68k_ICount	(SekC68KCurrentContext->ICount)
 #endif
 
 typedef unsigned char (__fastcall *pSekReadByteHandler)(unsigned int a);
@@ -122,6 +122,12 @@ struct SekExt {
 #define SEK_DEF_WRITE_WORD(i, a, d) { pSekExt->WriteByte[i]((a),(unsigned char)((d) >> 8)); pSekExt->WriteByte[i]((a) + 1, (unsigned char)((d) & 0xff)); }
 #define SEK_DEF_READ_LONG(i, a) { unsigned int d; d = pSekExt->ReadWord[i](a) << 16; d |= pSekExt->ReadWord[i]((a) + 2); return d; }
 #define SEK_DEF_WRITE_LONG(i, a, d) { pSekExt->WriteWord[i]((a),(unsigned short)((d) >> 16)); pSekExt->WriteWord[i]((a) + 2,(unsigned short)((d) & 0xffff)); }
+
+#define SEK_CORE_A68K (2)
+#define SEK_CORE_M68K (1)
+#define SEK_CORE_C68K (0)
+
+extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
 
 extern struct SekExt *SekExt[SEK_MAX], *pSekExt;
 extern int nSekActive;										// The cpu which is currently being emulated
@@ -202,3 +208,5 @@ int SekSetCmpCallback(pSekCmpCallback pCallback);
 int SekGetPC(int n);
 
 int SekScan(int nAction);
+
+#endif //_SEK_H_

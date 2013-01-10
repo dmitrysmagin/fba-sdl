@@ -1,6 +1,5 @@
 /*
- * NES for MOTO EZX Modile Phone
- * Copyright (C) 2006 OopsWare. CHINA.
+ * FinalBurn Alpha for Dingux/OpenDingux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * SPECIAL THANKS:
- *   Sam Revitch  	http://lsb.blogdns.net/ezx-devkit
- *
- * $Id: main.cpp,v 0.10 2006/06/07 $
  *
  */
 
@@ -86,9 +80,8 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"showfps", 0, &config_options.option_showfps, 1},
 		{"no-showfps", 0, &config_options.option_showfps, 0},
 		{"create-lists", 0, &config_options.option_create_lists, 1},
-		{"force-m68k", 0, &config_options.option_forcem68k, 1},
-		{"force-c68k", 0, &config_options.option_forcec68k, 1},
-		{"filter", required_argument, 0, 's'},
+		{"use-swap", 0, &config_options.option_useswap, 1},
+		{"68kcore", required_argument, 0, 's'},
 		{"z80core", required_argument, 0, 'z'},
 		{"frontend", required_argument, 0, 'f'}
 	};
@@ -114,6 +107,13 @@ void parse_cmd(int argc, char *argv[], char *path)
 					if ((z2>60) || (z2<0)) z2=0;
 					config_options.option_frameskip = z2;
 				}
+				break;
+			case 's':
+				if(!optarg) continue;
+				z2=0;
+				sscanf(optarg,"%d",&z2);
+				if ((z2>2) || (z2<0)) z2=0;
+				config_options.option_68kcore = z2;
 				break;
 			case 'z':
 				if(!optarg) continue;
@@ -197,10 +197,10 @@ int main(int argc, char **argv )
 	config_options.option_showfps = 0;
 	config_options.option_frameskip = -1; // auto frameskip by default
 	config_options.option_create_lists=0;
-	config_options.option_forcem68k=0;
-	config_options.option_forcec68k=0;
+	config_options.option_68kcore=1; // 0 - c68k, 1 - m68k, 2 - a68k
 	config_options.option_z80core=0;
 	config_options.option_sense=100;
+	config_options.option_useswap=0; // use internal swap for legacy dingux
 	strcpy(config_options.option_startspeed,"NULL");
 	strcpy(config_options.option_selectspeed,"NULL");
 	#ifdef WIN32
@@ -226,6 +226,9 @@ int main(int argc, char **argv )
 	config_keymap.start1=SDLK_RETURN;	// START
 	config_keymap.pause=SDLK_p;
 	config_keymap.quit=SDLK_q;
+
+	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
+	nSekCpuCore = config_options.option_68kcore;
 
 	// Run emu loop
 	run_fba_emulator (path);

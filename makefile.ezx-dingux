@@ -39,7 +39,7 @@ PERL = 1
 
 # Choose emulation cores
 #BUILD_A68K = 1
-#BUILD_C68K = 1
+BUILD_C68K = 1
 BUILD_M68K = 1
 
 #
