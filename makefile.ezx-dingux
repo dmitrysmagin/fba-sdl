@@ -1,4 +1,4 @@
-# Makefile for FBA, for use with GNU make (Cygwin/MinGW)
+# Makefile for FBA, for use with GNU make
 #
 # The first pass makes sure all intermediary targets are present. The second pass updates
 # any targets, if necessary. (Intermediary) targets which have their own unique rules
@@ -8,31 +8,14 @@
 #	Flags. Uncomment any of these declarations to enable their function.
 #
 
-# Specify the name of the executable file, without ".exe"
-NAME		= fbasdl.dge
-EXE		= $(NAME)
-INSTALLDIR	= /usr/local/games/fba/
-ROMDIR		= /usr/local/share/roms/
-BINDIR		= /usr/local/bin/
-FILES		= fbasdl.ini gamelist.txt fb.png
-
-# Inluclude Unicode support
-#UNICODE = 1
+# Specify the name of the executable file
+NAME = fbasdl.dge
 
 # Check for changes in header files
 DEPEND = 1
 
 # Include features for debugging drivers
 # DEBUG	= 1
-
-# Force recompilation of files that need it (i.e. use __TIME__, __DATE__, SPECIALBUILD).
-FORCE_UPDATE = 1
-
-# Use the __fastcall calling convention when interfacing with A68K/Musashi
-#FASTCALL = 1
-
-# Compress executable with upx (the DEBUG option ignores this)
-# COMPRESS = 1
 
 # Perl is available
 PERL = 1
@@ -41,6 +24,7 @@ PERL = 1
 #BUILD_A68K = 1
 BUILD_C68K = 1
 BUILD_M68K = 1
+#USE_LIBAO = 1
 
 #
 #	Declare variables
@@ -49,15 +33,8 @@ BUILD_M68K = 1
 # Make a special build, pass the quoted text as comment (use FORCE_UPDATE declaration below to force recompilation of resources)
 # SPECIALBUILD = "This text will appear in the property sheet of the .exe file"
 
-
 ifndef	CPUTYPE
 	CPUTYPE	= i686
-endif
-
-ifdef BUILD_X86_ASM
-	MMX	= 1
-else
-	MMX = 0
 endif
 
 ifdef	DEBUG
@@ -68,7 +45,6 @@ endif
 
 ifeq	($(CPUTYPE),i686)
 	ppro = ppro
-
 endif
 
 ifneq	($(CPUTYPE),i686)
@@ -79,7 +55,7 @@ endif
 #	Specify paths/files
 #
 
-objdir	= obj/dingux_sdl/$(NAME)/
+objdir	= obj/dingux/
 srcdir	= src/
 
 alldir	= burn \
@@ -146,7 +122,11 @@ alldir	= burn \
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
-lib	=  -lstdc++ -lpng -lSDL -lz -lao
+lib = -lstdc++ -lpng -lSDL -lz
+
+ifdef USE_LIBAO
+	lib += -lao
+endif
 
 ifdef MINIMAL
 drvobj	= d_cps1.o d_cps2.o d_neogeo.o
@@ -307,10 +287,6 @@ endif
 
 autobj += $(depobj)
 
-ifdef BUILD_X86_ASM
-autobj += burn_sound_a.o eagle_fm.o 2xsaimmx.o hq2x32.o hq3x32.o hq4x32.o superscale.o
-endif
-
 ifdef	BUILD_A68K
 a68k.o	= $(objdir)cpu/a68k/a68k.o
 endif
@@ -321,8 +297,6 @@ endif
 
 autdep	= $(autobj:.o=.d)
 
-#app_windres.rc = $(srcdir)dep/generated/app_windres.rc
-#license.rc = $(srcdir)dep/generated/license.rc
 driverlist.h = $(srcdir)dep/generated/driverlist.h
 ctv.h	= $(srcdir)dep/generated/ctv.h
 toa_gp9001_func.h = $(srcdir)dep/generated/toa_gp9001_func.h
@@ -346,10 +320,7 @@ allobj += \
 		$(firstword $(subst .cpp,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
 	  $(foreach file,$(autobj:.o=.s), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .s,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.rc), \
-		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .rc,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
+		$(firstword $(subst .s,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
 
 ifdef BUILD_A68K
 allobj += $(a68k.o)
@@ -360,10 +331,7 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 		$(firstword $(subst .c,.d,$(wildcard $(srcdir)$(dir)/$(file))))))) \
 	  $(foreach file,$(autobj:.o=.cpp), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .cpp,.d,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.rc), \
-		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .rc,.d,$(wildcard $(srcdir)$(dir)/$(file)))))))
+		$(firstword $(subst .cpp,.d,$(wildcard $(srcdir)$(dir)/$(file)))))))
 
 #
 #
@@ -372,28 +340,30 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 #
 
 HOSTCC = gcc
+HOSTCXX = g++
 CC	= mipsel-linux-gcc
 CXX	= mipsel-linux-g++
 LD	= $(CXX)
 AS	= mipsel-linux-as
 
-#       D3DUtils & D3DMath need these
-#       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
-
 HOSTCFLAGS = $(incdir)
 CFLAGS   = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
-		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST -DUSE_LIBAO # -O3 crashes on a68k.c with gcc 4.7.1
+		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST
 CXXFLAGS = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
-		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST -DUSE_LIBAO 
-		
-DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
+		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST
+
+CFLAGS += -D__cdecl="" -D__fastcall=""
+CXXFLAGS += -D__cdecl="" -D__fastcall=""
+
+ifdef USE_LIBAO
+	CFLAGS += -DUSE_LIBAO
+	CXXFLAGS += -DUSE_LIBAO
+endif
+
+DEF = -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
 
 ifdef SPECIALBUILD
 	DEF += -DSPECIALBUILD=$(SPECIALBUILD)
-endif
-
-ifdef FASTCALL
-	DEF += -DFASTCALL
 endif
 
 ifdef	DEBUG
@@ -412,14 +382,6 @@ ifdef BUILD_M68K
 	DEF += -DBUILD_M68K
 endif
 
-ifdef BUILD_X86_ASM
-	DEF += -DBUILD_X86_ASM
-endif
-
-ifdef	MMX
-	DEF	+= -DMMX
-endif
-
 DEF += -DFILENAME=$(NAME)
 
 ifdef PROFILE
@@ -428,22 +390,17 @@ else
 	LDFLAGS	=
 endif
 
-ifdef BUILD_X86_ASM
-	CFLAGS	 += -mmmx
-	CXXFLAGS += -mmmx
+ifdef DEBUG
+	CFLAGS		+= -g
+	CXXFLAGS	+= -g
+else
+	LDFLAGS		+= -s
 endif
 
 CFLAGS += $(DEF) $(incdir)
 CXXFLAGS += $(DEF) $(incdir)
-LDFLAGS += -s
-ASFLAGS = -I$(incdir) -O3 -G0
-
-ifeq ($(OS),Windows_NT)
-CFLAGS_CONSOLE = -mno-cygwin -mconsole -pipe -Wall -W $(DEF) $(incdir)
-ASFLAGS +=
-else
-ASFLAGS +=
-endif
+LDFLAGS +=
+ASFLAGS = -I$(incdir) -O1 -G0
 
 #
 #
@@ -455,7 +412,6 @@ vpath %.s	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.cpp	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.c	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.h	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
-vpath %.rc	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 
 vpath %.o 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
 vpath %.d 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
@@ -466,7 +422,7 @@ vpath %.d 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
 #
 #
 
-.PHONY:	all init cleandep touch clean
+.PHONY:	all init cleandep clean
 
 ifeq ($(MAKELEVEL),0)
 ifdef DEPEND
@@ -496,16 +452,6 @@ $(NAME):	$(allobj)
 	@echo
 	@echo Linking executable $(NAME)...
 	@$(LD) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(lib)
-
-ifdef	DEBUG
-
-#	Don't compress when making a debug build
-
-else
-ifdef	COMPRESS
-	@upx --best $@
-endif
-endif
 endif
 
 #
@@ -529,39 +475,6 @@ endif
 endif
 
 #
-#	Fix the .rc file
-#
-
-resource.o resource.d:	$(app_windres.rc) version.rc version.h
-
-$(license.rc): $(srcdir)license.txt $(srcdir)dep/scripts/license2rtf.pl $(srcdir)dep/scripts/license2rc.pl
-
-ifdef	PERL
-	@perl $(srcdir)dep/scripts/license2rtf.pl $< -o $(srcdir)dep/generated/$(@F:.rc=.rtf)
-	@perl $(srcdir)dep/scripts/license2rc.pl $(srcdir)dep/generated/$(@F:.rc=.rtf) -o $@
-else
-ifeq ($(MAKELEVEL),1)
-	@echo
-	@echo Warning: Perl is not available on this system.
-	@echo $@ cannot be updated or created!
-	@echo
-endif
-endif
-
-$(app_windres.rc): app.rc $(license.rc) $(srcdir)dep/scripts/fixrc.pl $(srcdir)burner/resource/fba.ico $(srcdir)burner/resource/about.bmp $(srcdir)burner/resource/preview.bmp $(srcdir)burner/resource/misc.bmp
-
-ifdef	PERL
-	@perl $(srcdir)dep/scripts/fixrc.pl $< -o $@
-else
-ifeq ($(MAKELEVEL),1)
-	@echo
-	@echo Warning: Perl is not available on this system.
-	@echo $@ cannot be updated or created!
-	@echo
-endif
-endif
-
-#
 #	Compile 68000 cores
 #
 
@@ -570,43 +483,45 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(HOSTCC) -mconsole $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
-		-s $< -o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.c=.exe) $(@:.o=.s) $(@D)/a68ktbl.inc
+	@$(HOSTCC) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+		-s $< -o $(objdir)dep/generated/fba_make68k
+	@$(objdir)dep/generated/fba_make68k $(@:.o=.s) $(@D)/a68ktbl.inc
 	@echo Assembling A68K MC68000 core...
 	@$(CC) $(CFLAGS) -c -o $@ $(@:.o=.s)
 	#@$(AS) $(ASFLAGS) $(@:.o=.s) -o $@
 endif
 
 # Musashi
+
 ifdef BUILD_M68K
 $(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)dep/generated/m68kops.h $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kcpu.c\)...
 	@$(CC) $(CFLAGS) -c $(srcdir)cpu/m68k/m68kcpu.c -o $(objdir)cpu/m68k/m68kcpu.o
 
-$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kops.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
 
-$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopac.o: $(objdir)cpu/m68k/m68kmake $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopac.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopac.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopac.c -o $(objdir)cpu/m68k/m68kopac.o
 
-$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopdm.o: $(objdir)cpu/m68k/m68kmake $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopdm.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopdm.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopdm.c -o $(objdir)cpu/m68k/m68kopdm.o
 
-$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kopnz.o: $(objdir)cpu/m68k/m68kmake $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kopnz.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kopnz.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kopnz.c -o $(objdir)cpu/m68k/m68kopnz.o
 
-$(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
+$(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m68k_in.c
 	$(objdir)/cpu/m68k/m68kmake $(objdir)dep/generated/ $(srcdir)cpu/m68k/m68k_in.c
 
-$(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
+$(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
+	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 endif
+
 #
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
 #
@@ -615,9 +530,8 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)dep/generated/$(@F)...
-	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)dep/generated/ctv_make
+	@$(objdir)dep/generated/ctv_make >$@
 
 #
 #	Extra rules for generated header file toa_gp9001_func.h, needed by toa_gp9001.cpp
@@ -672,9 +586,8 @@ pgm_draw.d pgm_draw.o:	$(pgm_sprite.h)
 
 $(pgm_sprite.h):	pgm_sprite_create.cpp
 	@echo Generating $(srcdir)dep/generated/$(@F)...
-	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)dep/generated/pgm_sprite_create
+	@$(objdir)dep/generated/pgm_sprite_create >$@
 
 ifeq ($(MAKELEVEL),1)
 ifdef DEPEND
@@ -685,23 +598,10 @@ endif
 endif
 
 #
-#	Generic rule for resource files
-#
-
-%.o:	%.rc
-	@echo Compiling resource file $(<F)...
-	@windres $(DEF) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F) $(foreach dir,$(alldir),--include-dir $(srcdir)$(dir))
-
-#
 #	Generic rules for C/C++ files
 #
 
 ifeq ($(MAKELEVEL),0)
-
-ifdef FORCE_UPDATE
-resource.o: FORCE
-about.o: FORCE
-endif
 
 %.o:	%.cpp
 	@echo Compiling $<...
@@ -747,10 +647,6 @@ ifdef DEPEND
 	@echo Generating depend file for $<...
 	@$(CXX) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CXXFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
-%.d:	%.rc
-	@echo Generating depend file for $<...
-	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
-
 %.d:	%.s
 	@echo Generating depend file for $<...
 	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
@@ -776,18 +672,6 @@ cleandep:
 	@echo Removing depend files from $(objdir)...
 	@for dir in $(alldir); do rm -f $(objdir)$$dir/*.d; done
 
-touch:
-	@echo Marking all targets for $(NAME) as uptodate...
-	@for dir in $(alldir); do touch -c $(objdir)$$dir/*; done
-	@do touch -c $(srcdir)/generated/*
-	@touch $(NAME).exe
-install:
-	mkdir -p $(INSTALLDIR)
-	mkdir -p $(ROMDIR)
-	cp $(EXE) $(INSTALLDIR)
-	cp $(FILES) $(INSTALLDIR)
-	ln -fs $(INSTALLDIR)$(EXE) $(BINDIR)$(EXE)
-
 clean:
 	@echo Removing all files from $(objdir)...
 	@rm -f -r $(objdir)
@@ -795,10 +679,10 @@ clean:
 
 ifdef	PERL
 	@echo Removing all files generated with perl scripts...
-	@rm -f -r $(app_windres.rc) $(driverlist)
+	@rm -f -r $(driverlist)
 endif
 	@echo Removing executable file...
-	@rm -f $(EXE)
+	@rm -f $(NAME)
 
 #
 #	Rule to force recompilation of any target that depends on it
