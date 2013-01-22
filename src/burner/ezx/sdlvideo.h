@@ -2,6 +2,7 @@
 #ifndef _SDLVIDEO_H_
 #define _SDLVIDEO_H_
 
+extern unsigned short *VideoBuffer;
 extern int VideoBufferWidth;
 extern int VideoBufferHeight;
 extern int PhysicalBufferWidth;
