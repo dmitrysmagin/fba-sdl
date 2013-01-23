@@ -445,9 +445,3 @@ finish:
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	ConfigAppSave();
 }
-
-int BurnStateLoad(const char * szName, int bAll, int (*pLoadGame)());
-int BurnStateSave(const char * szName, int bAll);
-
-
-

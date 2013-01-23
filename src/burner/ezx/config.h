@@ -19,8 +19,6 @@ typedef struct
 	int option_useswap;
 	char option_frontend[MAX_PATH];
 	int option_create_lists;
-	char option_startspeed[6];
-	char option_selectspeed[6];
 } CFG_OPTIONS;
 
 typedef struct

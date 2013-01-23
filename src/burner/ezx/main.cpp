@@ -196,8 +196,6 @@ int main(int argc, char **argv )
 	config_options.option_z80core=0;
 	config_options.option_sense=100;
 	config_options.option_useswap=0; // use internal swap for legacy dingux
-	strcpy(config_options.option_startspeed,"NULL");
-	strcpy(config_options.option_selectspeed,"NULL");
 	#ifdef WIN32
 	strcpy(config_options.option_frontend, "./fbacapex.exe");
 	#else
