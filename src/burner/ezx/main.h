@@ -1,6 +1,5 @@
 /*
- * NES for MOTO EZX Modile Phone
- * Copyright (C) 2006 OopsWare. CHINA.
+ * FinalBurn Alpha for Dingux/OpenDingux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SPECIAL THANKS:
- *   Sam Revitch  	http://lsb.blogdns.net/ezx-devkit
- *
- * $Id: main.h,v 0.10 2006/06/07 $
  */
 
-#ifndef MAIN_WIDGET_H
-#define MAIN_WIDGET_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #include <stddef.h>
 #include <stdio.h>
+#include <SDL/SDL.h>
 
-
-#define	EZX_EMU_VER	"1.12"
-
-#endif // MAIN_WIDGET_H
-/*
-#ifdef __cplusplus
- extern "C" {
-#endif
-
-void parse_cmd(int , char *, char *);
-
-#ifdef __cplusplus
- } // End of extern "C"
-#endif
-*/
-extern char szAppBurnVer[16];
-
+#endif // MAIN_H
