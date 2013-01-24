@@ -19,6 +19,8 @@
 #define BUTTON_SR       0x0800
 #define BUTTON_QT       0x1000
 #define BUTTON_PAUSE    0x2000
+#define BUTTON_QSAVE    0x4000
+#define BUTTON_QLOAD    0x8000
 
 char joyCount = 0;
 SDL_Joystick *joys[4];
@@ -37,9 +39,10 @@ extern bool GameLooping; // fba_player.cpp
 // external functions
 void ChangeFrameskip(); // run.cpp
 
-unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
+static int pckeydata = 0;
+
+unsigned int sdl_input_read() // called from do_keypad()
 {
-	static int pckeydata = 0;
 	SDL_Event event;
 
 	while(SDL_PollEvent(&event)) {
@@ -58,6 +61,8 @@ unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
 			else if (event.key.keysym.sym == config_keymap.start1) pckeydata &= ~BUTTON_START;
 			else if (event.key.keysym.sym == config_keymap.quit) pckeydata &= ~BUTTON_QT;
 			else if (event.key.keysym.sym == config_keymap.pause) pckeydata &= ~BUTTON_PAUSE;
+			else if (event.key.keysym.sym == config_keymap.qsave) pckeydata &= ~BUTTON_QSAVE;
+			else if (event.key.keysym.sym == config_keymap.qload) pckeydata &= ~BUTTON_QLOAD;
 		} else if (event.type == SDL_KEYDOWN) {
 			if (event.key.keysym.sym == config_keymap.up) pckeydata |= BUTTON_UP;
 			else if (event.key.keysym.sym == config_keymap.down) pckeydata |= BUTTON_DOWN;
@@ -73,6 +78,8 @@ unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
 			else if (event.key.keysym.sym == config_keymap.start1) pckeydata |= BUTTON_START;
 			else if (event.key.keysym.sym == config_keymap.quit) pckeydata |= BUTTON_QT;
 			else if (event.key.keysym.sym == config_keymap.pause) pckeydata |= BUTTON_PAUSE;
+			else if (event.key.keysym.sym == config_keymap.qsave) pckeydata |= BUTTON_QSAVE;
+			else if (event.key.keysym.sym == config_keymap.qload) pckeydata |= BUTTON_QLOAD;
 		}
 	}
 
@@ -81,7 +88,6 @@ unsigned int sdl_input_read() // called from do_keypad() in fba_player.cpp
 
 void do_keypad()
 {
-	static int pausecnt = 0;
 	unsigned int joy = sdl_input_read();
 	int bVert = BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL;
 
@@ -108,20 +114,41 @@ void do_keypad()
 	if (joy & BUTTON_SR) FBA_KEYPAD[0] |= 0x0800;	// F
 
 	if (joy & BUTTON_QT) GameLooping=false;
-	if (pausecnt > 0) pausecnt--;
-	if ((joy & BUTTON_PAUSE) && (pausecnt==0))
-	{
-		bPauseOn=!bPauseOn;
-		pausecnt=20;
+
+	if (joy & BUTTON_PAUSE) {
+		bPauseOn = !bPauseOn;
 		if (config_options.option_sound_enable == 2) SDL_PauseAudio(bPauseOn);
+		pckeydata &= ~BUTTON_PAUSE;
 	}
 
-	if ((joy & BUTTON_SL) && (joy & BUTTON_SR)) {
-		if (joy & BUTTON_Y) ChangeFrameskip();
-		else if (joy & BUTTON_START) GameLooping = false;
+	if(!bPauseOn) { // savestate fails inside pause
+		if (joy & BUTTON_QSAVE) {
+			StatedSave(nSavestateSlot);
+			pckeydata &= ~BUTTON_QSAVE;
+		}
+
+		if (joy & BUTTON_QLOAD) {
+			StatedLoad(nSavestateSlot);
+			pckeydata &= ~BUTTON_QLOAD;
+			bPauseOn = 0;
+		}
+	}
+
+	if ((joy & BUTTON_SL) && (joy & BUTTON_SR)) { // potential bug if keys are redefined!
+		if (joy & BUTTON_Y) { 
+			ChangeFrameskip();
+			pckeydata &= ~BUTTON_Y;
+		} else if (joy & BUTTON_B && !bPauseOn) {
+			StatedSave(nSavestateSlot);
+			pckeydata &= ~BUTTON_B;
+		} else if (joy & BUTTON_A && !bPauseOn) {
+			StatedLoad(nSavestateSlot);
+			pckeydata &= ~BUTTON_A;
+			bPauseOn = 0;
+		} else if (joy & BUTTON_START) GameLooping = false;  // put enter GUI here later
 		else if (joy & BUTTON_SELECT) ServiceRequest = 1;
 	}
-	else if ((joy & BUTTON_START) && (joy & BUTTON_SELECT)) P1P2Start = 1; // put enter GUI here later
+	else if ((joy & BUTTON_START) && (joy & BUTTON_SELECT)) P1P2Start = 1;
 }
 
 void sdl_input_init()

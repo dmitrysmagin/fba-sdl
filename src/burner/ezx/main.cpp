@@ -219,6 +219,8 @@ int main(int argc, char **argv )
 	config_keymap.start1=SDLK_RETURN;	// START
 	config_keymap.pause=SDLK_p;
 	config_keymap.quit=SDLK_q;
+	config_keymap.qsave=SDLK_s;      // quick save
+	config_keymap.qload=SDLK_l;      // quick load
 
 	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
 	nSekCpuCore = config_options.option_68kcore;

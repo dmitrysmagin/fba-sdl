@@ -53,6 +53,11 @@ extern int RunReset();
 //inpdipsw.cpp
 void InpDIPSWResetDIPs();
 
+// stated.cpp
+extern int nSavestateSlot;
+int StatedAuto(int bSave);
+int StatedLoad(int nSlot);
+int StatedSave(int nSlot);
 
 //interface/inp_interface.cpp
 int InputInit();

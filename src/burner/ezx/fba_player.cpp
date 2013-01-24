@@ -167,9 +167,6 @@ void shutdown()
 
 	BurnLibExit();
 
-	if (config_options.option_sound_enable)
-		SndExit();
-
 	SDL_FreeSurface(load_screen);
 	VideoExit();
 	InpExit();
@@ -256,13 +253,6 @@ unsigned int GetTicks (void)
 void run_fba_emulator(const char *fn)
 {
 	atexit(shutdown);
-	int pwidth=fwidth;
-	int doffset=20;
-	if (config_options.option_rescale>=3)
-	{
-		pwidth=240;
-		doffset=0;
-	}
 
 	printf("about to burnlibinit()\n");
 	BurnLibInit();
@@ -358,8 +348,6 @@ void run_fba_emulator(const char *fn)
 	printf ("Let's go!\n");
 
 	VideoClear();
-
-	if(SndOpen()) config_options.option_sound_enable = 0; // disable sound if error
 
 #if 0
 	{

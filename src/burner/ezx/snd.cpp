@@ -191,9 +191,10 @@ int SndInit()
 		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS ); // it's needed to be here or outrun crashes
 	}
 
+	if(SndOpen()) config_options.option_sound_enable = 0; else return 0;
 	pBurnSoundOut	= NULL;
 
-	return 0;
+	return -1;
 }
 
 int SndOpen()

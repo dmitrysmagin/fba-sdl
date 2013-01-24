@@ -57,8 +57,8 @@ int DrvInit(int nDrvNum, bool bRestore)
 	DrvExit();						// Make sure exitted
 //	AudSoundInit();						// Init Sound (not critical if it fails)
 
-	nBurnSoundRate = 0;					// Assume no sound
-	pBurnSoundOut = NULL;
+//	nBurnSoundRate = 0;					// Assume no sound
+//	pBurnSoundOut = NULL;
 //	if (bAudOkay) {
 //		nBurnSoundRate = nAudSampleRate;
 //		nBurnSoundLen = nAudSegLen;
@@ -127,6 +127,7 @@ int DrvExit()
 //		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
 //		memset(nAudNextSound, 0, nAudSegLen << 2);
 //	}
+	SndExit();
 
 	nBurnDrvSelect[0] = ~0U;			// no driver selected
 

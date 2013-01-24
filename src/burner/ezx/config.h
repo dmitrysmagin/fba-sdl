@@ -39,7 +39,8 @@ typedef struct
 	int start2;
 	int pause;
 	int quit;
-	int fps;
+	int qsave;
+	int qload;
 } CFG_KEYMAP;
 
 int ConfigAppLoad();
