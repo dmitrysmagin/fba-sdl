@@ -365,7 +365,7 @@ ifdef SPECIALBUILD
 endif
 
 ifdef	DEBUG
-	DEF += -D_DEBUG
+	DEF += -D_DEBUG -g
 endif
 
 ifdef BUILD_A68K
@@ -388,14 +388,13 @@ else
 	LDFLAGS	=
 endif
 
-ifdef BUILD_X86_ASM
-	CFLAGS	 += -mmmx
-	CXXFLAGS += -mmmx
-endif
-
 CFLAGS += $(DEF) $(incdir)
 CXXFLAGS += $(DEF) $(incdir)
+
+ifndef DEBUG
 LDFLAGS += -s
+endif
+
 ASFLAGS = -O1
 
 ifeq ($(OS),Windows_NT)
