@@ -120,7 +120,7 @@ static int sdl_open_audio(int rate,int channels,int format)
 	aspec.userdata = NULL;
 
 	/* initialize the SDL Audio system */
-	if (SDL_Init (SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE)) {
+	if (SDL_InitSubSystem (SDL_INIT_AUDIO | SDL_INIT_NOPARACHUTE)) {
 		printf("SDL: Initializing of SDL Audio failed: %s.\n", SDL_GetError());
 		return 0;
 	}
@@ -191,10 +191,9 @@ int SndInit()
 		nBurnSoundLen = ((nBurnSoundRate * 100) / nBurnFPS ); // it's needed to be here or outrun crashes
 	}
 
-	if(SndOpen()) config_options.option_sound_enable = 0; else return 0;
-	pBurnSoundOut	= NULL;
+	pBurnSoundOut = NULL;
 
-	return -1;
+	return 0;
 }
 
 int SndOpen()
@@ -246,6 +245,7 @@ int SndOpen()
 		}
 	}
 
+	config_options.option_sound_enable = 0;
 	return -1;
 }
 
@@ -272,6 +272,8 @@ void SndExit()
 	SndClose();
 
 	pBurnSoundOut = NULL;
+	nBurnSoundRate = 0;
+	nBurnSoundLen = 0;
 	if (nBurnSoundBuffer)
 	{
 		free(nBurnSoundBuffer);
