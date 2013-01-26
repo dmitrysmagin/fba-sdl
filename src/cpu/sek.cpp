@@ -1925,8 +1925,6 @@ int SekScan(int nAction)
 
 	memset(&ba, 0, sizeof(ba));
 
-	nSekActive = -1;
-
 	for (int i = 0; i <= nSekCount; i++) {
 		char szName[] = "MC68000 #n";
 		int nType = nSekCPUType[i];
@@ -1992,10 +1990,17 @@ int SekScan(int nAction)
 
 #ifdef EMU_C68K
 			if(nSekCpuCore == SEK_CORE_C68K) {
+				// PC must contain regular m68000 value
+				SekC68KContext[i]->PC -= SekC68KContext[i]->BasePC;
+
 				ba.Data = SekC68KContext[i];
-				ba.nLen = (unsigned int)&(SekC68KContext[i]->Rebase_PC) - (unsigned int)SekC68KContext[i];
+				ba.nLen = (unsigned int)&(SekC68KContext[i]->BasePC) - (unsigned int)SekC68KContext[i];
 				ba.szName = szName;
 				BurnAcb(&ba);
+
+				// restore pointer in PC
+				SekC68KContext[i]->BasePC = (unsigned int)FIND_F(SekC68KContext[i]->PC) - (SekC68KContext[i]->PC & ~SEK_PAGEM);
+				SekC68KContext[i]->PC += SekC68KContext[i]->BasePC;
 			}
 #endif
 	}
