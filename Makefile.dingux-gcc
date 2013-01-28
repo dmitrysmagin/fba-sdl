@@ -8,8 +8,8 @@
 #	Flags. Uncomment any of these declarations to enable their function.
 #
 
-# Specify the name of the executable file
-NAME = fbasdl.dge
+# Specify the name of the executable file, without ".exe"
+NAME = fbasdl
 
 # Check for changes in header files
 DEPEND = 1
@@ -24,7 +24,7 @@ PERL = 1
 #BUILD_A68K = 1
 BUILD_C68K = 1
 BUILD_M68K = 1
-#USE_LIBAO = 1
+
 
 #
 #	Declare variables
@@ -32,6 +32,7 @@ BUILD_M68K = 1
 
 # Make a special build, pass the quoted text as comment (use FORCE_UPDATE declaration below to force recompilation of resources)
 # SPECIALBUILD = "This text will appear in the property sheet of the .exe file"
+
 
 ifndef	CPUTYPE
 	CPUTYPE	= i686
@@ -55,7 +56,7 @@ endif
 #	Specify paths/files
 #
 
-objdir	= obj/dingux/
+objdir	= obj/dingux-gcc/
 srcdir	= src/
 
 alldir	= burn \
@@ -80,8 +81,6 @@ alldir	= burn \
 		burn/drv/taito \
 		burn/drv/toaplan \
 		burn/snd \
-		burner \
-		burner/ezx \
 		intf \
 		intf/audio \
 		intf/audio/sdl \
@@ -93,7 +92,7 @@ alldir	= burn \
 		intf/video/sdl \
 		intf/video/scalers \
 		cpu \
-		cpu/a68k/mips32r1 \
+		cpu/a68k \
 		cpu/arm \
 		cpu/arm7 \
 		cpu/c68k \
@@ -118,14 +117,15 @@ alldir	= burn \
 		dep/mingw/include \
 		dep/scripts \
 		dep/vc/include \
-		dep/generated
+		dep/generated \
+		sdl-dingux
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
+ifeq ($(OS),Windows_NT)
+lib = -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lSDL -lz
+else
 lib = -lstdc++ -lpng -lSDL -lz
-
-ifdef USE_LIBAO
-	lib += -lao
 endif
 
 ifdef MINIMAL
@@ -318,9 +318,9 @@ allobj += \
 	  $(foreach file,$(autobj:.o=.cpp), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
 		$(firstword $(subst .cpp,.o,$(wildcard $(srcdir)$(dir)/$(file))))))) \
-	  $(foreach file,$(autobj:.o=.s), \
+	  $(foreach file,$(autobj:.o=.asm), \
 		$(foreach dir,$(alldir),$(subst $(srcdir),$(objdir), \
-		$(firstword $(subst .s,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
+		$(firstword $(subst .asm,.o,$(wildcard $(srcdir)$(dir)/$(file)))))))
 
 ifdef BUILD_A68K
 allobj += $(a68k.o)
@@ -341,23 +341,20 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 
 HOSTCC = gcc
 HOSTCXX = g++
-CC	= mipsel-linux-gcc
-CXX	= mipsel-linux-g++
+CC	= gcc
+CXX	= g++
 LD	= $(CXX)
-AS	= mipsel-linux-as
+AS	= nasm
 
 HOSTCFLAGS = $(incdir)
-CFLAGS   = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
-		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST
-CXXFLAGS = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
-		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST
+CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
+		-DLSB_FIRST
+CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
+		-DLSB_FIRST
 
+ifneq ($(OS),Windows_NT)
 CFLAGS += -D__cdecl="" -D__fastcall=""
 CXXFLAGS += -D__cdecl="" -D__fastcall=""
-
-ifdef USE_LIBAO
-	CFLAGS += -DUSE_LIBAO
-	CXXFLAGS += -DUSE_LIBAO
 endif
 
 DEF = -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
@@ -367,7 +364,7 @@ ifdef SPECIALBUILD
 endif
 
 ifdef	DEBUG
-	DEF += -D_DEBUG
+	DEF += -D_DEBUG -g
 endif
 
 ifdef BUILD_A68K
@@ -390,17 +387,21 @@ else
 	LDFLAGS	=
 endif
 
-ifdef DEBUG
-	CFLAGS		+= -g
-	CXXFLAGS	+= -g
-else
-	LDFLAGS		+= -s
-endif
-
 CFLAGS += $(DEF) $(incdir)
 CXXFLAGS += $(DEF) $(incdir)
-LDFLAGS +=
-ASFLAGS = -I$(incdir) -O1 -G0
+
+ifndef DEBUG
+LDFLAGS += -s
+endif
+
+ASFLAGS = -O1
+
+ifeq ($(OS),Windows_NT)
+CFLAGS_CONSOLE = -mno-cygwin -mconsole -pipe -Wall -W $(DEF) $(incdir)
+ASFLAGS += -f coff
+else
+ASFLAGS += -f elf
+endif
 
 #
 #
@@ -408,7 +409,7 @@ ASFLAGS = -I$(incdir) -O1 -G0
 #
 #
 
-vpath %.s	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
+vpath %.asm	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.cpp	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.c	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
 vpath %.h	$(foreach dir,$(alldir),$(srcdir)$(dir)/ )
@@ -428,11 +429,11 @@ ifeq ($(MAKELEVEL),0)
 ifdef DEPEND
 
 all:	init $(autdep) $(autobj)
-	@$(MAKE) -f makefile.ezx-dingux
+	@$(MAKE) -f makefile.dingux-gcc
 else
 
 all:	init $(autobj)
-	@$(MAKE) -f makefile.ezx-dingux
+	@$(MAKE) -f makefile.dingux-gcc
 endif
 else
 
@@ -484,11 +485,11 @@ ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
 	@$(HOSTCC) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
-		-s $< -o $(objdir)dep/generated/fba_make68k
-	@$(objdir)dep/generated/fba_make68k $(@:.o=.s) $(@D)/a68ktbl.inc
+		-s $< -o $(objdir)generated/fba_make68k
+	@$(objdir)generated/fba_make68k $(@:.o=.asm) \
+		$(@D)/a68k_tab.asm 00 $(ppro)
 	@echo Assembling A68K MC68000 core...
-	@$(CC) $(CFLAGS) -c -o $@ $(@:.o=.s)
-	#@$(AS) $(ASFLAGS) $(@:.o=.s) -o $@
+	@$(AS) $(ASFLAGS) $(@:.o=.asm) -o $@
 endif
 
 # Musashi
@@ -611,10 +612,9 @@ ifeq ($(MAKELEVEL),0)
 	@echo Compiling $<...
 	@$(CC) $(CFLAGS) -Wno-unused -Wno-conversion -Wno-missing-prototypes -c $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
-%.o:	%.s
+%.o:	%.asm
 	@echo Assembling $<...
-	#@$(AS) $(ASFLAGS) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
-	@$(CC) $(CFLAGS) -mabicalls -c -o $(subst $(srcdir),$(objdir),$(<D))/$(@F) $<
+	@$(AS) $(ASFLAGS) $< -o $(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
 else
 
@@ -622,10 +622,9 @@ else
 	@echo Compiling $<...
 	@$(CC) $(CFLAGS) -Wno-unused -Wno-conversion -Wno-missing-prototypes -c $< -o $@
 
-%.o:	%.s
+%.o:	%.asm
 	@echo Assembling $<...
-	#$(AS) $(ASFLAGS) $< -o $@
-	@$(CC) $(CFLAGS) -mabicalls -c -o $@ $<
+	@$(AS) $(ASFLAGS) $< -o $@
 
 %.o:
 	@echo Compiling $<...
@@ -646,10 +645,6 @@ ifdef DEPEND
 %.d:	%.cpp
 	@echo Generating depend file for $<...
 	@$(CXX) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CXXFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
-
-%.d:	%.s
-	@echo Generating depend file for $<...
-	@$(CC) -MM -MT "$(subst $(srcdir),$(objdir),$(<D))/$(*F).o $(subst $(srcdir),$(objdir),$(<D))/$(@F)" -x c++ $(CFLAGS) $< >$(subst $(srcdir),$(objdir),$(<D))/$(@F)
 
 endif
 
