@@ -1,8 +1,6 @@
 // Driver Save State module
 #include "burner.h"
 
-FILE *bfp = NULL;
-
 // If bAll=0 save/load all non-volatile ram to .fs
 // If bAll=1 save/load all ram to .fs
 
@@ -38,11 +36,6 @@ static INT32 StateInfo(INT32* pnLen, INT32* pnMinVer, INT32 bAll)
 	*pnMinVer = nMin;
 
 	return 0;
-}
-
-static int __cdecl ReadAcb(struct BurnArea* pba)
-{
-	fread(pba->Data, 1, pba->nLen, bfp);
 }
 
 // State load
@@ -152,12 +145,18 @@ INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)
 	fread(&nCurrentFrame, 1, 4, fp);					//
 
 	fseek(fp, 0x0C, SEEK_CUR);							// Move file pointer to the start of the compressed block
+	Def = (UINT8*)malloc(nDefLen);
+	if (Def == NULL) {
+		return -1;
+	}
+	memset(Def, 0, nDefLen);
+	fread(Def, 1, nDefLen, fp);							// Read in deflated block
 
-	bfp = fp;
-	BurnAcb = ReadAcb;
-
-	if (bAll) BurnAreaScan(ACB_FULLSCAN | ACB_WRITE, NULL);		// scan all ram, write (to driver <- decompress)
-	else      BurnAreaScan(ACB_NVRAM    | ACB_WRITE, NULL);		// scan nvram,   write (to driver <- decompress)
+	nRet = BurnStateDecompress(Def, nDefLen, bAll);		// Decompress block into driver
+	if (Def) {
+		free(Def);											// free deflated block
+		Def = NULL;
+	}
 
 	fseek(fp, nChunkData + nChunkSize, SEEK_SET);
 
@@ -171,7 +170,7 @@ INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)
 // State load
 INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)())
 {
-	const char szHeader[] = "FBS ";						// File identifier
+	const char szHeader[] = "FB1 ";						// File identifier
 	char szReadHeader[4] = "";
 	INT32 nRet = 0;
 
@@ -193,14 +192,7 @@ INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)())
 	}
 }
 
-static int __cdecl WriteAcb(struct BurnArea *pba)
-{
-	//printf("WRITE ACB - len: %i, name: %s\n", pba->nLen, pba->szName);
-	fwrite(pba->Data, 1, pba->nLen, bfp);
-	nTotalLen += pba->nLen;
-}
-
-// Write a savestate as a chunk of an "FBS " file
+// Write a savestate as a chunk of an "FB1 " file
 // nOffset is the absolute offset from the beginning of the file
 // -1: Append at current position
 // -2: Append at EOF
@@ -214,6 +206,7 @@ INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll)
 	char szGame[33];
 	UINT8 *Def = NULL;
 	INT32 nDefLen = 0;									// Deflated version
+	INT32 nRet = 0;
 
 	if (fp == NULL) {
 		return -1;
@@ -259,13 +252,20 @@ INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll)
 	fwrite(&nZero, 1, 4, fp);							//
 	fwrite(&nZero, 1, 4, fp);							//
 
-	bfp = fp;
-	nTotalLen = 0;
-	BurnAcb = WriteAcb;
+	nRet = BurnStateCompress(&Def, &nDefLen, bAll);		// Compress block from driver and return deflated buffer
+	if (Def == NULL) {
+		return -1;
+	}
 
-	if (bAll) BurnAreaScan(ACB_FULLSCAN | ACB_READ, NULL);		// scan all ram, read (from driver <- decompress)
-	else      BurnAreaScan(ACB_NVRAM    | ACB_READ, NULL);		// scan nvram,   read (from driver <- decompress)
-	nDefLen = nTotalLen;
+	nRet = fwrite(Def, 1, nDefLen, fp);					// Write block to disk
+	if (Def) {
+		free(Def);											// free deflated block and close file
+		Def = NULL;
+	}
+
+	if (nRet != nDefLen) {								// error writing block to disk
+		return -1;
+	}
 
 	if (nDefLen & 3) {									// Chunk size must be a multiple of 4
 		fwrite(&nZero, 1, 4 - (nDefLen & 3), fp);		// Pad chunk if needed
@@ -287,7 +287,7 @@ INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll)
 // State save
 INT32 BurnStateSave(TCHAR* szName, INT32 bAll)
 {
-	const char szHeader[] = "FBS ";						// File identifier
+	const char szHeader[] = "FB1 ";						// File identifier
 	INT32 nLen = 0, nVer = 0;
 	INT32 nRet = 0;
 
