@@ -28,7 +28,7 @@
 #include "font.h"
 #include "snd.h"
 
-#include "burnint.h"
+#include "burner.h"
 #include "config.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
@@ -43,7 +43,6 @@
 
 //extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
-extern char szAppRomPaths[20] [20];
 char szAppBurnVer[16] = VERSION;
 
 extern int nAnalogSpeed;

@@ -22,9 +22,9 @@
 #include <sys/types.h>
 #include <getopt.h>
 
+#include "burner.h"
 #include "main.h"
 #include "fba_player.h"
-#include "burner.h"
 #include "snd.h"
 #include "config.h"
 #include "sdlvideo.h"
