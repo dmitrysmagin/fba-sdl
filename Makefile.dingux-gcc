@@ -194,11 +194,10 @@ drvobj	= 	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwang
 endif
 
 depobj = bzip.o config.o drv.o fba_player.o font.o \
-		input.o ips_manager.o main.o neocdlist.o run.o \
-		sdlinput.o sdlvideo.o scrn.o snd.o stated.o stringset.o support_paths.o \
+		input.o ips_manager.o main.o neocdlist.o paths.o run.o \
+		sdlinput.o sdlvideo.o scrn.o snd.o stated.o stringset.o \
 		\
-		ioapi.o unzip.o conc.o dat.o image.o \
-		misc_ezx.o state.o zipfn.o \
+		ioapi.o unzip.o dat.o image.o misc_ezx.o state.o zipfn.o \
 		\
 		interface.o \
 		\

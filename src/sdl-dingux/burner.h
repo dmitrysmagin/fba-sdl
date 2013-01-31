@@ -1,5 +1,21 @@
-// FB Alpha - Emulator for MC68000/Z80 based arcade games
-//            Refer to the "license.txt" file for more info
+/*
+ * FinalBurn Alpha for Dingux/OpenDingux
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 
 #ifndef _BURNER_H_
 #define _BURNER_H_
@@ -25,6 +41,7 @@
 #include "title.h"
 #include "burn.h"
 #include "png.h"
+#include "burner_sdl.h"
 
 // ---------------------------------------------------------------------------
 // OS dependent functionality
@@ -38,22 +55,10 @@ typedef struct tagIMAGE {
 	unsigned int	flags;
 } IMAGE;
 
-#if defined (BUILD_WIN32)
- #include "burner_win32.h"
-#elif defined (BUILD_SDL)
- #include "burner_sdl.h"
-#elif defined (_XBOX)
- #include "burner_xbox.h"
-#endif
-
-#include "png.h"
-
 // ---------------------------------------------------------------------------
 // OS independent functionality
 
 #include "interface.h"
-
-
 
 #define IMG_FREE		(1 << 0)
 
@@ -145,18 +150,11 @@ void ComputeGammaLUT();
 INT32 write_datfile(INT32 bType, FILE* fDat);
 INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 
-// sshot.cpp
-INT32 MakeScreenShot();
-
 // state.cpp
 INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)());
 INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)());
 INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll);
 INT32 BurnStateSave(TCHAR* szName, INT32 bAll);
-
-// statec.cpp
-INT32 BurnStateCompress(UINT8** pDef, INT32* pnDefLen, INT32 bAll);
-INT32 BurnStateDecompress(UINT8* Def, INT32 nDefLen, INT32 bAll);
 
 // zipfn.cpp
 struct ZipEntry { char* szName;	UINT32 nLen; UINT32 nCrc; };
@@ -168,7 +166,6 @@ INT32 ZipLoadFile(UINT8* Dest, INT32 nLen, INT32* pnWrote, INT32 nEntry);
 INT32 __cdecl ZipLoadOneFile(char* arcName, const char* fileName, void** Dest, INT32* pnWrote);
 
 // bzip.cpp
-
 #define BZIP_STATUS_OK		(0)
 #define BZIP_STATUS_BADDATA	(1)
 #define BZIP_STATUS_ERROR	(2)
@@ -179,11 +176,12 @@ INT32 BzipInit();
 INT32 BzipExit();
 INT32 BzipStatus();
 
-// support_paths.cpp
-extern TCHAR szAppPreviewsPath[MAX_PATH];
-extern TCHAR szAppTitlesPath[MAX_PATH];
-extern TCHAR szAppCheatsPath[MAX_PATH];
-extern TCHAR szAppIpsPath[MAX_PATH];
-extern TCHAR szAppIconsPath[MAX_PATH];
+// paths.cpp
+extern char szAppHomePath[MAX_PATH];
+extern char szAppSavePath[MAX_PATH];
+extern char szAppHiscorePath[MAX_PATH];
+extern char szAppSamplesPath[MAX_PATH];
+extern char szAppIpsPath[MAX_PATH];
+void BurnPathsInit();
 
 #endif // _BURNER_H_
