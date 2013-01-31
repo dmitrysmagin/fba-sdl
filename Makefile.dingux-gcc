@@ -195,7 +195,7 @@ endif
 
 depobj = bzip.o config.o drv.o fba_player.o font.o \
 		input.o main.o neocdlist.o paths.o run.o \
-		sdlinput.o sdlvideo.o scrn.o snd.o stated.o stringset.o stubs.o \
+		sdlinput.o sdlvideo.o scrn.o snd.o stated.o stubs.o \
 		\
 		ioapi.o unzip.o dat.o misc_ezx.o state.o zipfn.o \
 		\
