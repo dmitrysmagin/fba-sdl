@@ -67,13 +67,6 @@ typedef struct tagIMAGE {
 #define FIND_WS(s) while (*s && !_istspace(*s)) { s++; }	// Find whitespace
 #define FIND_QT(s) while (*s && *s != _T('\"')) { s++; }	// Find quote
 
-// image.cpp
-void img_free(IMAGE* img);
-INT32 img_alloc(IMAGE* img);
-
-bool PNGIsImage(FILE* fp);
-INT32 PNGLoad(IMAGE* img, FILE* fp, INT32 nPreset);
-
 // gami.cpp
 extern struct GameInp* GameInp;
 extern UINT32 nGameInpCount;
