@@ -8,9 +8,7 @@
 
 char szAppHomePath[MAX_PATH] = "./.fba";			// ~/.fba
 char szAppSavePath[MAX_PATH] = "./.fba/saves";		// ~/.fba/saves
-char szAppHiscorePath[MAX_PATH] = "./.fba/hiscore";	// ~/.fba/hiscore depends on src/burn/hiscore.cpp
-char szAppSamplesPath[MAX_PATH] = "./.fba/samples";	// ~/.fba/samples depends on src/burn/snd/samples.cpp
-char szAppIpsPath[MAX_PATH] = "./.fba/ips";			// ~/.fba/ips depends on src/sdl-dingux/ips_manager.cpp
+char szAppSamplesPath[MAX_PATH] = "./.fba/samples";	// ~/.fba/samples // for burn/snd/samples.cpp
 
 void BurnPathsInit()
 {
