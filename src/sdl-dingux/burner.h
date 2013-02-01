@@ -131,6 +131,10 @@ INT32 BurnStateLoadEmbed(FILE* fp, INT32 nOffset, INT32 bAll, INT32 (*pLoadGame)
 INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)());
 INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll);
 INT32 BurnStateSave(TCHAR* szName, INT32 bAll);
+extern int nSavestateSlot;
+int StatedAuto(int bSave);
+int StatedLoad(int nSlot);
+int StatedSave(int nSlot);
 
 // zipfn.cpp
 struct ZipEntry { char* szName;	UINT32 nLen; UINT32 nCrc; };
