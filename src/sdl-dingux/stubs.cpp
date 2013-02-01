@@ -13,3 +13,6 @@ void HiscoreInit() {}
 void HiscoreReset() {}
 void HiscoreApply() {}
 void HiscoreExit() {}
+
+// replaces scrn.cpp
+void Reinitialise() {}
