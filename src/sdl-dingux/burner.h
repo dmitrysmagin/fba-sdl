@@ -116,30 +116,13 @@ INT32 GamcAnalogJoy(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nJoy, I
 INT32 GamcPlayer(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nDevice);
 INT32 GamcPlayerHotRod(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nFlags, INT32 nSlide);
 
-// misc.cpp
-#define QUOTE_MAX (128)															// Maximum length of "quoted strings"
-INT32 QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc);					// Read a quoted string from szSrc and poINT32 to the end
-TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel);
-
-TCHAR* ExtractFilename(TCHAR* fullname);
-TCHAR* DriverToName(UINT32 nDrv);
-UINT32 NameToDriver(TCHAR* szName);
-
-extern INT32 bDoGamma;
-extern INT32 bHardwareGammaOnly;
-extern double nGamma;
-
-INT32 SetBurnHighCol(INT32 nDepth);
-char* DecorateGameName(UINT32 nBurnDrv);
-TCHAR* DecorateGenreInfo();
-void ComputeGammaLUT();
-
 // dat.cpp
 #define DAT_ARCADE_ONLY		0
 #define DAT_MEGADRIVE_ONLY	1
 #define DAT_PCENGINE_ONLY	2
 #define DAT_TG16_ONLY		3
 #define DAT_SGX_ONLY		4
+char* DecorateGameName(UINT32 nBurnDrv);
 INT32 write_datfile(INT32 bType, FILE* fDat);
 INT32 create_datfile(TCHAR* szFilename, INT32 bType);
 

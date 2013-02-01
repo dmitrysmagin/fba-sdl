@@ -152,11 +152,11 @@ void CreateCapexLists()
 	}
 	fclose(zipf);
 	fclose(romf);
-	/*char temp[24];
+	char temp[24];
 	strcpy(temp,"FBA ");
 	strcat(temp,szAppBurnVer);
 	strcat(temp,".dat");
-	create_datfile(temp, 0);*/
+	create_datfile(temp, 0);
 }
 
 void shutdown()

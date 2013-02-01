@@ -4,6 +4,73 @@
 
 #include "burner.h"
 
+char* DecorateGameName(UINT32 nBurnDrv)
+{
+	static char szDecoratedName[256];
+	UINT32 nOldBurnDrv = nBurnDrvActive;
+
+	nBurnDrvActive = nBurnDrv;
+
+	const char* s1 = "";
+	const char* s2 = "";
+	const char* s3 = "";
+	const char* s4 = "";
+	const char* s5 = "";
+	const char* s6 = "";
+	const char* s7 = "";
+	const char* s8 = "";
+	const char* s9 = "";
+	const char* s10 = "";
+	const char* s11 = "";
+	const char* s12 = "";
+	const char* s13 = "";
+	const char* s14 = "";
+
+	s1 = BurnDrvGetTextA(DRV_FULLNAME);
+	if ((BurnDrvGetFlags() & BDF_DEMO) || (BurnDrvGetFlags() & BDF_HACK) || (BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+		s2 = " [";
+		if (BurnDrvGetFlags() & BDF_DEMO) {
+			s3 = "Demo";
+			if ((BurnDrvGetFlags() & BDF_HACK) || (BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s4 = ", ";
+			}
+		}
+		if (BurnDrvGetFlags() & BDF_HACK) {
+			s5 = "Hack";
+			if ((BurnDrvGetFlags() & BDF_HOMEBREW) || (BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s6 = ", ";
+			}
+		}
+		if (BurnDrvGetFlags() & BDF_HOMEBREW) {
+			s7 = "Homebrew";
+			if ((BurnDrvGetFlags() & BDF_PROTOTYPE) || (BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s8 = ", ";
+			}
+		}
+		if (BurnDrvGetFlags() & BDF_PROTOTYPE) {
+			s9 = "Prototype";
+			if ((BurnDrvGetFlags() & BDF_BOOTLEG) || (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0)) {
+				s10 = ", ";
+			}
+		}
+		if (BurnDrvGetFlags() & BDF_BOOTLEG) {
+			s11 = "Bootleg";
+			if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+				s12 = ", ";
+			}
+		}
+		if (BurnDrvGetTextA(DRV_COMMENT) && strlen(BurnDrvGetTextA(DRV_COMMENT)) > 0) {
+			s13 = BurnDrvGetTextA(DRV_COMMENT);
+		}
+		s14 = "]";
+	}
+
+	sprintf(szDecoratedName, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s", s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14);
+
+	nBurnDrvActive = nOldBurnDrv;
+	return szDecoratedName;
+}
+
 static void ReplaceAmpersand(char *szBuffer, char *szGameName)
 {
 	UINT32 nStringPos = 0;
