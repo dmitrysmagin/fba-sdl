@@ -267,6 +267,11 @@ void SndPlay()
 {
 }
 
+void SndPause(int flag)
+{
+	if ((dspfd > 0) && (config_options.option_sound_enable == 2)) SDL_PauseAudio(flag);
+}
+
 void SndExit()
 {
 	SndClose();
