@@ -23,7 +23,6 @@
 #include <getopt.h>
 
 #include "burner.h"
-#include "main.h"
 #include "fba_player.h"
 #include "snd.h"
 #include "config.h"
