@@ -21,6 +21,7 @@
 
 #include "version.h"
 #include "burner.h"
+#include "config.h"
 
 #define _s(A) #A
 #define _a(A) _s(A)
@@ -58,15 +59,18 @@ typedef struct {
 static void gui_Stub() { }
 static void gui_LoadState() { extern int done; if(!StatedLoad(nSavestateSlot)) done = 1; }
 static void gui_Savestate() { StatedSave(nSavestateSlot); }
-static void call_exit() { exit(0); } // this implicitly calls shutdown() which in turn calls gui_Exit()
+static void call_exit() { extern bool GameLooping; extern int done; GameLooping = false; done = 1; }
+static void call_continue() { extern int done; done = 1; }
+static void gui_KeyMenuRun();
 
 /* data definitions */
-char *gui_ScaleNames[] = {"simple2x", "fullscreen"};
-char *gui_YesNo[] = {"no", "yes"};
+char *gui_KeyNames[] = {"A", "B", "X", "Y", "L", "R"};
+int gui_KeyData[] = {0, 1, 2, 3, 4, 5};
+int gui_KeyValue[] = {SDLK_LCTRL, SDLK_LALT, SDLK_SPACE, SDLK_LSHIFT, SDLK_TAB, SDLK_BACKSPACE};
 
 MENUITEM gui_MainMenuItems[] = {
-	{(char *)"Continue", NULL, 0, NULL, &gui_Stub},
-	{(char *)"Game config", NULL, 0, NULL, &gui_Stub},
+	{(char *)"Continue", NULL, 0, NULL, &call_continue},
+	{(char *)"Key config", NULL, 0, NULL, &gui_KeyMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
 	{(char *)"Reset", NULL, 0, NULL, &gui_Stub},
@@ -75,6 +79,18 @@ MENUITEM gui_MainMenuItems[] = {
 };
 
 MENU gui_MainMenu = { 6, 0, (MENUITEM *)&gui_MainMenuItems };
+
+MENUITEM gui_KeyMenuItems[] = {
+	{(char *)"Fire 1   - ", &gui_KeyData[0], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Fire 2   - ", &gui_KeyData[1], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Fire 3   - ", &gui_KeyData[2], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Fire 4   - ", &gui_KeyData[3], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Fire 5   - ", &gui_KeyData[4], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Fire 6   - ", &gui_KeyData[5], 5, (char **)&gui_KeyNames, NULL},
+	{NULL, NULL, 0, NULL, NULL}
+};
+
+MENU gui_KeyMenu = { 6, 0, (MENUITEM *)&gui_KeyMenuItems };
 
 int done = 0; // flag to indicate exit status
 extern unsigned char gui_font[2048];
@@ -204,6 +220,21 @@ void gui_MenuRun(MENU *menu)
 		SDL_Delay(16);
 		gui_Flip();
 	}
+}
+
+static void gui_KeyMenuRun()
+{
+	// key decode
+	int *key = &config_keymap.fire1;
+	for(int i = 0; i < 6; key++, i++)
+		for(int j = 0; j < 6; j++) if(gui_KeyValue[j] == *key) gui_KeyData[i] = j;
+
+	gui_MenuRun(&gui_KeyMenu);
+
+	// key encode
+	key = &config_keymap.fire1;
+	for(int i = 0; i < 6; key++, i++)
+		*key = gui_KeyValue[gui_KeyData[i]];
 }
 
 /* exported functions */ 
