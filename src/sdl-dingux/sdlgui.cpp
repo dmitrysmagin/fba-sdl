@@ -248,6 +248,7 @@ void gui_Run()
 	SDL_EnableKeyRepeat(/*SDL_DEFAULT_REPEAT_DELAY*/ 150, /*SDL_DEFAULT_REPEAT_INTERVAL*/30);
 	gui_MenuRun(&gui_MainMenu);
 	SDL_EnableKeyRepeat(0, 0);
+	ConfigGameSave();
 }
 
 void gui_Exit()

@@ -61,7 +61,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	nMaxPlayers = BurnDrvGetMaxPlayers();
 //	GameInpInit();					// Init game input
 
-//	ConfigGameLoad(true);
+	ConfigGameLoad();
 //	InputMake(true);
 
 //	GameInpDefault();
@@ -108,7 +108,7 @@ int DrvExit()
 				bSaveRAM = false;
 			}
 
-	//		ConfigGameSave(bSaveInputs);
+			ConfigGameSave();
 
 //			GameInpExit();				// Exit game input
 			BurnDrvExit();				// Exit the driver

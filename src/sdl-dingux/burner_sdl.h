@@ -77,6 +77,8 @@ extern CFG_KEYMAP config_keymap;
 
 int ConfigAppLoad();
 int ConfigAppSave();
+int ConfigGameLoad();
+int ConfigGameSave();
 
 // drv.cpp
 extern int bDrvOkay; // 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
