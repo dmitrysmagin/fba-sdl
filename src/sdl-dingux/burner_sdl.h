@@ -90,8 +90,16 @@ int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
 int AppError(TCHAR* szText, int bWarning);
 
 //run.cpp
-extern int RunMessageLoop();
-extern int RunReset();
+extern bool bShowFPS;
+extern bool bPauseOn;
+int RunReset();
+int RunOneFrame(bool bDraw, int fps);
+
+// input.cpp
+extern int nAnalogSpeed;
+int InpInit();
+int InpExit();
+void InpDIP();
 
 //inpdipsw.cpp
 void InpDIPSWResetDIPs();

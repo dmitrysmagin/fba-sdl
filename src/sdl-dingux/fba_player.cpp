@@ -41,38 +41,11 @@
 #define _a(A) _s(A)
 #define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
-//extern INT32 create_datfile(TCHAR* szFilename, INT32 bType);
-
 char szAppBurnVer[16] = VERSION;
-
-extern int nAnalogSpeed;
-
 SDL_Surface *load_screen;
 int fwidth = 320, fheight = 240; // text surface
-
-extern unsigned int nFramesRendered;
 static int frame_count = 0;
-extern bool bShowFPS;
-void ChangeFrameskip();
-
-extern bool bPauseOn;
-
 bool GameLooping;
-
-int DrvInit(int nDrvNum, bool bRestore);
-int DrvExit();
-
-int RunReset();
-int RunOneFrame(bool bDraw, int fps);
-
-int VideoInit();
-void VideoExit();
-
-int InpInit();
-int InpExit();
-void InpDIP();
-
-extern int nBurnFPS;
 int fps=0;
 
 void blit_loading_screen()
