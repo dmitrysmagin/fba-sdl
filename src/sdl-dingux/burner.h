@@ -159,6 +159,7 @@ INT32 BzipStatus();
 // paths.cpp
 extern char szAppHomePath[MAX_PATH];
 extern char szAppSavePath[MAX_PATH];
+extern char szAppConfigPath[MAX_PATH];
 extern char szAppSamplesPath[MAX_PATH]; // for burn/snd/samples.cpp
 void BurnPathsInit();
 

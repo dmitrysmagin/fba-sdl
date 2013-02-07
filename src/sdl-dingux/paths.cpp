@@ -8,6 +8,7 @@
 
 char szAppHomePath[MAX_PATH] = "./.fba";			// ~/.fba
 char szAppSavePath[MAX_PATH] = "./.fba/saves";		// ~/.fba/saves
+char szAppConfigPath[MAX_PATH] = "./.fba/configs";	// ~/.fba/configs
 char szAppSamplesPath[MAX_PATH] = "./.fba/samples";	// ~/.fba/samples // for burn/snd/samples.cpp
 
 void BurnPathsInit()
@@ -24,6 +25,9 @@ void BurnPathsInit()
 
 	sprintf(szAppSavePath, "%s/saves", szAppHomePath);
 	mkdir(szAppSavePath, 0777);
+
+	sprintf(szAppConfigPath, "%s/configs", szAppHomePath);
+	mkdir(szAppConfigPath, 0777);
 #else
 	getcwd(szAppHomePath, MAX_PATH);
 	strcat(szAppHomePath, "/.fba");
@@ -31,5 +35,8 @@ void BurnPathsInit()
 
 	sprintf(szAppSavePath, "%s/saves", szAppHomePath);
 	mkdir(szAppSavePath);
+
+	sprintf(szAppConfigPath, "%s/configs", szAppHomePath);
+	mkdir(szAppConfigPath);
 #endif
 }
