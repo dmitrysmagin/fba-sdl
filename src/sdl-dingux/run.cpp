@@ -6,12 +6,10 @@
 #include "fba_player.h"
 #include "snd.h"
 #include "font.h"
-#include "config.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
 
 extern unsigned int FBA_KEYPAD[4]; // sdlinput.cpp
-extern CFG_OPTIONS config_options;
 
 bool bShowFPS = false;
 bool bPauseOn = false;

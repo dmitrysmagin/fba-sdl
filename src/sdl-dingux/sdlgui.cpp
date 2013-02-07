@@ -21,7 +21,6 @@
 
 #include "version.h"
 #include "burner.h"
-#include "config.h"
 
 #define _s(A) #A
 #define _a(A) _s(A)

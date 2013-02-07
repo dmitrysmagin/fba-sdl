@@ -25,7 +25,6 @@
 #include "burner.h"
 #include "fba_player.h"
 #include "snd.h"
-#include "config.h"
 #include "sdlvideo.h"
 
 CFG_OPTIONS config_options;

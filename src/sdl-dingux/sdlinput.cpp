@@ -20,7 +20,6 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "config.h"
 #include "snd.h"
 #include "sdlgui.h"
 #include "sdlinput.h"
@@ -64,9 +63,6 @@ unsigned char ServiceRequest = 0;
 unsigned char P1P2Start = 0;
 
 // external variables
-extern CFG_OPTIONS config_options; // main.cpp
-extern CFG_KEYMAP config_keymap; // main.cpp
-
 extern bool bPauseOn; // run.cpp
 extern bool GameLooping; // fba_player.cpp
 

@@ -7,7 +7,6 @@
 
 #include "burner.h"
 #include "fba_player.h"
-#include "config.h"	
 #include "sdlvideo.h"
 #include "sdlinput.h"
 

@@ -29,7 +29,6 @@
 #include "snd.h"
 
 #include "burner.h"
-#include "config.h"
 #include "sdlgui.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
@@ -56,8 +55,6 @@ static int frame_count = 0;
 extern bool bShowFPS;
 void ChangeFrameskip();
 
-extern CFG_OPTIONS config_options;
-extern CFG_KEYMAP config_keymap;
 extern bool bPauseOn;
 
 bool GameLooping;

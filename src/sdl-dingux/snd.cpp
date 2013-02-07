@@ -12,7 +12,6 @@
 #include "version.h"
 #include "burner.h"
 #include "snd.h"
-#include "config.h"
 
 extern bool bPauseOn;
 
@@ -24,7 +23,6 @@ ao_sample_format ao;
 SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
 
-extern CFG_OPTIONS config_options;
 extern int nBurnFPS;
 
 int dspfd = -1;
