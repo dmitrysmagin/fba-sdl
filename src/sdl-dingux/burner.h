@@ -67,55 +67,6 @@ typedef struct tagIMAGE {
 #define FIND_WS(s) while (*s && !_istspace(*s)) { s++; }	// Find whitespace
 #define FIND_QT(s) while (*s && *s != _T('\"')) { s++; }	// Find quote
 
-// gami.cpp
-extern struct GameInp* GameInp;
-extern UINT32 nGameInpCount;
-extern UINT32 nMacroCount;
-extern UINT32 nMaxMacro;
-
-extern INT32 nAnalogSpeed;
-
-extern INT32 nFireButtons;
-
-extern bool bStreetFighterLayout;
-extern bool bLeftAltkeyMapped;
-
-INT32 GameInpInit();
-INT32 GameInpExit();
-TCHAR* InputCodeDesc(INT32 c);
-TCHAR* InpToDesc(struct GameInp* pgi);
-TCHAR* InpMacroToDesc(struct GameInp* pgi);
-void GameInpCheckLeftAlt();
-void GameInpCheckMouse();
-INT32 GameInpBlank(INT32 bDipSwitch);
-INT32 GameInputAutoIni(INT32 nPlayer, TCHAR* lpszFile, bool bOverWrite);
-INT32 ConfigGameLoadHardwareDefaults();
-INT32 GameInpDefault();
-INT32 GameInpWrite(FILE* h);
-INT32 GameInpRead(TCHAR* szVal, bool bOverWrite);
-INT32 GameInpMacroRead(TCHAR* szVal, bool bOverWrite);
-INT32 GameInpCustomRead(TCHAR* szVal, bool bOverWrite);
-
-// Player Default Controls
-extern INT32 nPlayerDefaultControls[4];
-extern TCHAR szPlayerDefaultIni[4][MAX_PATH];
-
-// cong.cpp
-extern const INT32 nConfigMinVersion;					// Minimum version of application for which input files are valid
-extern bool bSaveInputs;
-INT32 ConfigGameLoad(bool bOverWrite);				// char* lpszName = NULL
-INT32 ConfigGameSave(bool bSave);
-
-// conc.cpp
-INT32 ConfigCheatLoad();
-
-// gamc.cpp
-INT32 GamcMisc(struct GameInp* pgi, char* szi, INT32 nPlayer);
-INT32 GamcAnalogKey(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nSlide);
-INT32 GamcAnalogJoy(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nJoy, INT32 nSlide);
-INT32 GamcPlayer(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nDevice);
-INT32 GamcPlayerHotRod(struct GameInp* pgi, char* szi, INT32 nPlayer, INT32 nFlags, INT32 nSlide);
-
 // dat.cpp
 #define DAT_ARCADE_ONLY		0
 #define DAT_MEGADRIVE_ONLY	1

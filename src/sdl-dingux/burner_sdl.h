@@ -26,9 +26,10 @@ typedef unsigned char BYTE;
 #define	__cdecl
 #endif
 
-//main.cpp
-int SetBurnHighCol(int nDepth);
-extern int nAppVirtualFps;
+// fba_player.cpp
+extern char szAppBurnVer[16];
+
+// main.cpp
 extern bool bRunPause;
 TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize);
 char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
@@ -89,7 +90,7 @@ int DrvExit();
 int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
 int AppError(TCHAR* szText, int bWarning);
 
-//run.cpp
+// run.cpp
 extern bool bShowFPS;
 extern bool bPauseOn;
 int RunReset();
@@ -101,16 +102,7 @@ int InpInit();
 int InpExit();
 void InpDIP();
 
-//inpdipsw.cpp
-void InpDIPSWResetDIPs();
-
-//interface/inp_interface.cpp
-int InputInit();
-int InputExit();
-int InputMake(bool bCopy);
-
-extern char szAppBurnVer[16];
-
+// stringset.cpp
 class StringSet {
 public:
 	TCHAR* szText;
