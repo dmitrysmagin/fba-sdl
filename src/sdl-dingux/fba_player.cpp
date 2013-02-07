@@ -195,7 +195,7 @@ void sleep_us(int value)
 #endif
 }
 
-static struct timeval start;
+struct timeval start;
 
 unsigned int GetTicks (void)
 {

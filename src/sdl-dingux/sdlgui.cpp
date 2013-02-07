@@ -17,10 +17,12 @@
  *
  */
 
+#include <sys/time.h>
 #include <SDL/SDL.h>
 
 #include "version.h"
 #include "burner.h"
+#include "sdlvideo.h"
 
 #define _s(A) #A
 #define _a(A) _s(A)
@@ -245,10 +247,21 @@ void gui_Init()
 
 void gui_Run()
 {
+	struct timeval s, e;
+	extern struct timeval start;
+
+	gettimeofday(&s, NULL);
+
+	VideoClear();
 	SDL_EnableKeyRepeat(/*SDL_DEFAULT_REPEAT_DELAY*/ 150, /*SDL_DEFAULT_REPEAT_INTERVAL*/30);
 	gui_MenuRun(&gui_MainMenu);
 	SDL_EnableKeyRepeat(0, 0);
 	ConfigGameSave();
+	VideoClear();
+
+	gettimeofday(&e, NULL);
+	start.tv_sec += e.tv_sec - s.tv_sec;
+	start.tv_usec += e.tv_usec - s.tv_usec;
 }
 
 void gui_Exit()
