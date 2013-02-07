@@ -427,7 +427,7 @@ void SystemExit(char *frontend)
 
 void VideoClear()
 {
-	memset(VideoBuffer,0,320*240*2);
+	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
 }
 
 void VideoFlip()
