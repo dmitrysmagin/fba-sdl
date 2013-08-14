@@ -451,7 +451,8 @@ ifeq ($(MAKELEVEL),1)
 $(NAME):	$(allobj)
 	@echo
 	@echo Linking executable $(NAME)...
-	@$(LD) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(lib)
+	@mkdir -p bin
+	@$(LD) $(CFLAGS) $(LDFLAGS) -o bin/$@ $^ $(lib)
 endif
 
 #
@@ -676,7 +677,7 @@ ifdef	PERL
 	@rm -f -r $(driverlist)
 endif
 	@echo Removing executable file...
-	@rm -f $(NAME)
+	@rm -f bin/$(NAME)
 
 #
 #	Rule to force recompilation of any target that depends on it
