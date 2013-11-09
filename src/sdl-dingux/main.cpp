@@ -223,6 +223,8 @@ int main(int argc, char **argv )
 	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
 	nSekCpuCore = config_options.option_68kcore;
 
+	bForce60Hz = true;
+
 	// Run emu loop
 	run_fba_emulator (path);
 
