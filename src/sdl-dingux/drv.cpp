@@ -20,6 +20,8 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	BzipClose();
 
+	//ProgressDestroy();
+
 	if (nRet) {
 		return 1;
 	} else {
@@ -55,6 +57,15 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 int DrvInit(int nDrvNum, bool bRestore)
 {
 	DrvExit();						// Make sure exitted
+	//AudSoundInit();						// Init Sound (not critical if it fails)
+
+	/*nBurnSoundRate = 0;					// Assume no sound
+	pBurnSoundOut = NULL;
+	if (bAudOkay) {
+		nBurnSoundRate = nAudSampleRate[0];
+		nBurnSoundLen = nAudSegLen;
+	}*/
+
 	nBurnDrvSelect[0] = nDrvNum;		// Set the driver number
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
@@ -100,11 +111,14 @@ int DrvInitCallback()
 int DrvExit()
 {
 	if (bDrvOkay) {
+//		StopReplay();
 //		VidExit();
 
 		if (nBurnDrvSelect[0] < nBurnDrvCount) {
-			if (bSaveRAM) {
+			//MemCardEject();				// Eject memory card if present
 
+			if (bSaveRAM) {
+				//StatedAuto(1);			// Save NV (or full) RAM
 				bSaveRAM = false;
 			}
 
@@ -118,6 +132,8 @@ int DrvExit()
 	BurnExtLoadRom = NULL;
 
 	bDrvOkay = 0;					// Stop using the BurnDrv functions
+
+	//bRunPause = 0;					// Don't pause when exitted
 
 //	if (bAudOkay) {
 //		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut
