@@ -115,15 +115,15 @@ static int sdl_open_common(int rate, int channels, int format, int mutex)
 	SDL_AudioSpec aspec, obtained;
 
 	SAMPLESIZE = sdl_calc_samples(rate);
-	BUFFSIZE = SAMPLESIZE * channels * 2 * 6;
+	BUFFSIZE = SAMPLESIZE * channels * 2 * 8;
 	buffer = (unsigned char *) malloc(BUFFSIZE);
 
 	// add some silence to the buffer
-	buffered_bytes = SAMPLESIZE * channels * 2;
+	buffered_bytes = 0;
 	buf_read_pos = 0;
-	buf_write_pos = buffered_bytes;
+	buf_write_pos = 0;
 
-	aspec.format   = format;
+	aspec.format   = AUDIO_S16;
 	aspec.freq     = rate;
 	aspec.channels = channels;
 	aspec.samples  = SAMPLESIZE;
