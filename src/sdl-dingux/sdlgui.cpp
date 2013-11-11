@@ -258,15 +258,9 @@ static void gui_SoundMenuRun()
 
 	gui_MenuRun(&gui_SoundMenu);
 
-	if(old_drv != config_options.option_sound_enable) {
-		SndExit();
-		SndInit();
-	}
-
-	if(old_rate != config_options.option_samplerate) {
-		BurnDrvExit();
-		BurnDrvInit();
-		//DrvInitCallback();
+	if(old_drv != config_options.option_sound_enable ||
+	  old_rate != config_options.option_samplerate) {
+		DrvInitCallback();
 	}
 }
 
