@@ -56,10 +56,10 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 
 int DrvInit(int nDrvNum, bool bRestore)
 {
-	DrvExit();						// Make sure exitted
-	//AudSoundInit();						// Init Sound (not critical if it fails)
+	DrvExit();			// Make sure exitted
+	SndInit(); //AudSoundInit();	// Init Sound (not critical if it fails)
 
-	/*nBurnSoundRate = 0;					// Assume no sound
+	/*nBurnSoundRate = 0;		// Assume no sound
 	pBurnSoundOut = NULL;
 	if (bAudOkay) {
 		nBurnSoundRate = nAudSampleRate[0];
@@ -76,8 +76,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 //	InputMake(true);
 
 //	GameInpDefault();
-	SndInit();
-	//SndOpen();
 
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
@@ -87,9 +85,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 		_stprintf (szTemp, _T("There was an error starting '%s'.\n"), BurnDrvGetText(DRV_FULLNAME));
 		return 1;
 	}
-
-	//SndInit();
-	SndOpen();
 
 	BurnExtLoadRom = DrvLoadRom;
 
