@@ -51,8 +51,12 @@ SNDDRV SndDrvList[] =
 #endif
 	},
 	{	// SDL with mutexes
+		&sdl_open_m, &sdl_close_m, &sdl_play_m, &sdl_pause
+	},
+	{	// SDL with SDL_LockAudio
 		&sdl_open, &sdl_close, &sdl_play, &sdl_pause
 	}
+
 };
 
 SNDDRV *pSndDrv = &SndDrvList[0];
@@ -60,7 +64,7 @@ SNDDRV *pSndDrv = &SndDrvList[0];
 // General code for sound
 int SndInit()
 {
-	if(config_options.option_sound_enable > 2)
+	if(config_options.option_sound_enable > 3)
 		config_options.option_sound_enable = 0;
 
 	pSndDrv = &SndDrvList[config_options.option_sound_enable];

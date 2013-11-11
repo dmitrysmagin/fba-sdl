@@ -15,14 +15,14 @@ SDL_mutex *sound_mutex;
 SDL_cond *sound_cv;
 
 // sdl-related buffers
-int BUFFSIZE;
+static int BUFFSIZE;
 static unsigned char *buffer;
-static unsigned int buf_read_pos=0;
-static unsigned int buf_write_pos=0;
+static unsigned int buf_read_pos = 0;
+static unsigned int buf_write_pos = 0;
 
 static int buffered_bytes=0;
 
-static int sdl_write_buffer(unsigned char* data, int len)
+static int sdl_write_buffer_m(unsigned char* data, int len)
 {
 	SDL_LockMutex(sound_mutex);
 #if 0
@@ -52,12 +52,22 @@ static int sdl_write_buffer(unsigned char* data, int len)
 	return len;
 }
 
+static int sdl_write_buffer(unsigned char* data, int len)
+{
+	for(int i = 0; i < len; i += 4) {
+		if(buffered_bytes == BUFFSIZE) return len; // just drop samples
+
+		*(int*)((char*)(buffer + buf_write_pos)) = *(int*)((char*)(data + i));
+		//memcpy(buffer + buf_write_pos, data + i, 4);
+		buf_write_pos = (buf_write_pos + 4) % BUFFSIZE;
+		buffered_bytes += 4;
+	}
+
+	return len;
+}
+
 static int sdl_read_buffer(unsigned char* data,int len)
 {
-	SDL_LockMutex(sound_mutex);
-
-	while(buffered_bytes < len) SDL_CondWait(sound_cv, sound_mutex);
-
 	if(buffered_bytes >= len) {
 		if(buf_read_pos + len <= BUFFSIZE ) {
 			memcpy(data, buffer + buf_read_pos, len);
@@ -70,19 +80,24 @@ static int sdl_read_buffer(unsigned char* data,int len)
 		buffered_bytes -= len;
 	}
 
-	SDL_CondSignal(sound_cv);
-	SDL_UnlockMutex(sound_mutex);
 	return len;
 }
 
+void sdl_callback_m(void *unused, Uint8 *stream, int len)
+{
+	SDL_LockMutex(sound_mutex);
 
-// end ring buffer stuff
+	sdl_read_buffer((unsigned char *)stream, len);
 
-// SDL Callback function
+	SDL_CondSignal(sound_cv);
+	SDL_UnlockMutex(sound_mutex);
+}
+
 void sdl_callback(void *unused, Uint8 *stream, int len)
 {
-	sdl_read_buffer(stream, len);
+	sdl_read_buffer((unsigned char *)stream, len);
 }
+
 
 static inline int sdl_calc_samples(int rate)
 {
@@ -94,7 +109,7 @@ static inline int sdl_calc_samples(int rate)
 	return s;
 }
 
-int sdl_open(int rate, int channels, int format)
+static int sdl_open_common(int rate, int channels, int format, int mutex)
 {
 	int SAMPLESIZE;
 	SDL_AudioSpec aspec, obtained;
@@ -112,7 +127,7 @@ int sdl_open(int rate, int channels, int format)
 	aspec.freq     = rate;
 	aspec.channels = channels;
 	aspec.samples  = SAMPLESIZE;
-	aspec.callback = sdl_callback;
+	aspec.callback = (mutex ? sdl_callback_m : sdl_callback);
 	aspec.userdata = NULL;
 
 	/* initialize the SDL Audio system */
@@ -127,8 +142,11 @@ int sdl_open(int rate, int channels, int format)
 			return(0);
 	}
 
-	sound_mutex = SDL_CreateMutex();
-	sound_cv = SDL_CreateCond();
+	if(mutex) {
+		sound_mutex = SDL_CreateMutex();
+		sound_cv = SDL_CreateCond();
+		printf("Using mutexes for synchro\n");
+	}
 
 	printf("audio frequency %d\n", obtained.freq);
 	printf("audio samples %d\n", obtained.samples);
@@ -139,35 +157,65 @@ int sdl_open(int rate, int channels, int format)
 	return 1;
 }
 
+int sdl_open_m(int rate, int channels, int format)
+{
+	return sdl_open_common(rate, channels, format, 1);
+}
+
+int sdl_open(int rate, int channels, int format)
+{
+	return sdl_open_common(rate, channels, format, 0);
+}
+
+
 // close audio device
-void sdl_close(void)
+static void sdl_close_common(int mutex)
 {
 	SDL_PauseAudio(1);
 
-	SDL_LockMutex(sound_mutex);
-	buffered_bytes = BUFFSIZE;
-	SDL_CondSignal(sound_cv);
-	SDL_UnlockMutex(sound_mutex);
-	SDL_Delay(100);
+	if(mutex) {
+		SDL_LockMutex(sound_mutex);
+		buffered_bytes = BUFFSIZE;
+		SDL_CondSignal(sound_cv);
+		SDL_UnlockMutex(sound_mutex);
+		SDL_Delay(100);
 
-	SDL_DestroyCond(sound_cv);
-	SDL_DestroyMutex(sound_mutex);
+		SDL_DestroyCond(sound_cv);
+		SDL_DestroyMutex(sound_mutex);
+	}
 	SDL_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	free(buffer);
 	buffer = NULL;
 }
 
-// stop playing, keep buffers (for pause)
+void sdl_close_m(void)
+{
+	sdl_close_common(1);
+}
+
+void sdl_close(void)
+{
+	sdl_close_common(0);
+}
+
 void sdl_pause(int flag)
 {
 	SDL_PauseAudio(flag);
 }
 
-// plays 'len' bytes of 'data'
-// it should round it down to outburst*n
-// return: number of bytes played
+int sdl_play_m(unsigned char *data, int len)
+{
+	return sdl_write_buffer_m(data, len);
+}
+
 int sdl_play(unsigned char *data, int len)
 {
-	return sdl_write_buffer(data, len);
+	int result;
+
+	SDL_LockAudio();
+	result = sdl_write_buffer(data, len);
+	SDL_UnlockAudio();
+
+	return result;
 }

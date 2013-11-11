@@ -62,6 +62,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 	}
 
 	static struct option long_opts[] = {
+		{"sound-sdl-old", 0, &config_options.option_sound_enable, 3},
 		{"sound-sdl", 0, &config_options.option_sound_enable, 2},
 		{"sound-ao", 0, &config_options.option_sound_enable, 1},
 		{"no-sound", 0, &config_options.option_sound_enable, 0},
