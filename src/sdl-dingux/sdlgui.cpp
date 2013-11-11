@@ -65,6 +65,7 @@ static void call_exit() { extern bool GameLooping; extern int done; GameLooping 
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
 static void gui_SoundMenuRun();
+static void gui_reset();
 
 /* data definitions */
 char *gui_KeyNames[] = {"A", "B", "X", "Y", "L", "R"};
@@ -79,7 +80,7 @@ MENUITEM gui_MainMenuItems[] = {
 	{(char *)"Sound Settings", NULL, 0, NULL, &gui_SoundMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
-	{(char *)"Reset", NULL, 0, NULL, &gui_Stub},
+	{(char *)"Reset", NULL, 0, NULL, &gui_reset},
 	{(char *)"Exit", NULL, 0, NULL, &call_exit},
 	{NULL, NULL, 0, NULL, NULL}
 };
@@ -257,11 +258,22 @@ static void gui_SoundMenuRun()
 
 	gui_MenuRun(&gui_SoundMenu);
 
-	if(old_drv != config_options.option_sound_enable ||
-	   old_rate != config_options.option_samplerate) {
+	if(old_drv != config_options.option_sound_enable) {
 		SndExit();
 		SndInit();
 	}
+
+	if(old_rate != config_options.option_samplerate) {
+		BurnDrvExit();
+		BurnDrvInit();
+		//DrvInitCallback();
+	}
+}
+
+static void gui_reset()
+{
+	DrvInitCallback();
+	done = 1;
 }
 
 /* exported functions */ 
