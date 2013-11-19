@@ -285,6 +285,12 @@ depobj += \
 		#snes_65816.o snes_io.o snes_main.o snes_mem.o snes_ppu.o snes_spc700.o
 endif
 
+ifdef	BUILD_M68K
+ifdef	DEBUG
+depobj += m68kdasm.o
+endif
+endif
+
 autobj += $(depobj)
 
 ifdef	BUILD_A68K
