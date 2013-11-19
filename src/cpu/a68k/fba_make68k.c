@@ -620,7 +620,7 @@ void Completed(void)
 	fprintf(fp, "\n\t\t test    byte [%smame_debug],byte 0xff\n", PREF);
 	fprintf(fp, "\t\t jns  near .NoDebug\n");
 	fprintf(fp, "\t\t call  near FBADebugActive\n\n");
-	fprintf(fp, ".NoDebug\n");
+	fprintf(fp, ".NoDebug:\n");
 
 #endif
 
@@ -7743,7 +7743,7 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\n\t\t test    byte [%smame_debug],byte 0xff\n", PREF);
 	fprintf(fp, "\t\t jns  near .NoDebug\n");
 	fprintf(fp, "\t\t call  near FBADebugActive\n\n");
-	fprintf(fp, ".NoDebug\n");
+	fprintf(fp, ".NoDebug:\n");
 
 #endif
 
@@ -7990,14 +7990,14 @@ void CodeSegmentEnd(void)
 #endif
 
 	fprintf(fp, "\n\t\t align 16\n");
-	fprintf(fp, "%s_ICount\n",CPUtype);
+	fprintf(fp, "%s_ICount:\n",CPUtype);
 	fprintf(fp, "asm_count\t DD 0\n\n");
 
 	/* Memory structure for 68000 registers  */
 	/* Same layout as structure in CPUDEFS.H */
 
 	fprintf(fp, "\n\n; Register Structure\n\n");
-	fprintf(fp, "%s_regs\n",CPUtype);
+	fprintf(fp, "%s_regs:\n",CPUtype);
 
 	fprintf(fp, "R_D0\t DD 0\t\t\t ; Data Registers\n");
 	fprintf(fp, "R_D1\t DD 0\n");
@@ -8061,7 +8061,7 @@ void CodeSegmentEnd(void)
 
 	fprintf(fp, "\t\t ALIGN 16\n");
 
-	fprintf(fp, "\n\nIntelFlag\t\t\t\t; Intel Flag Lookup Table\n");
+	fprintf(fp, "\n\nIntelFlag:\t\t\t\t; Intel Flag Lookup Table\n");
 	fprintf(fp, "\t\t DD 0000h,0001h,0800h,0801h,0040h,0041h,0840h,0841h\n");
 	fprintf(fp, "\t\t DD 0080h,0081h,0880h,0881h,00C0h,00C1h,08C0h,08C1h\n");
 	fprintf(fp, "\t\t DD 0100h,0101h,0900h,0901h,0140h,0141h,0940h,0941h\n");
@@ -8076,14 +8076,14 @@ void CodeSegmentEnd(void)
 
 	/* Exception Timing Table */
 
-	fprintf(fp, "exception_cycles\n");
+	fprintf(fp, "exception_cycles:\n");
 	fprintf(fp, "\t\t DB 0, 0, 0, 0, 38, 42, 44, 38, 38, 0, 38, 38, 0, 0, 0, 0\n");
 	fprintf(fp, "\t\t DB 0, 0, 0, 0, 0, 0, 0, 0, 46, 46, 46, 46, 46, 46, 46, 46\n");
 	fprintf(fp, "\t\t DB 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38\n\n");
 
 	fprintf(fp, "; RLE Compressed Jump Table\n\n");
 
-	fprintf(fp, "%s_COMPTABLE\n\n", CPUtype);
+	fprintf(fp, "%s_COMPTABLE:\n\n", CPUtype);
 
 	fprintf(fp, "%cinclude '%s'\n\n",'%', comptab);
 
