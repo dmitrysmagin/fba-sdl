@@ -4,6 +4,7 @@
 #include "sekdebug.h"
 
 int nSekCpuCore = SEK_CORE_C68K;  // 0 - c68k, 1 - m68k, 2 - a68k
+int DebugStep = 0; // 0 - off, 1 - on
 
 #ifdef EMU_M68K
 int nSekM68KContextSize[SEK_MAX];
@@ -25,13 +26,13 @@ int nSekCPUType[SEK_MAX], nSekCycles[SEK_MAX], nSekIRQPending[SEK_MAX];
 
 #if defined (FBA_DEBUG)
 
-void (*SekDbgBreakpointHandlerRead)(unsigned int, int);
-void (*SekDbgBreakpointHandlerFetch)(unsigned int, int);
-void (*SekDbgBreakpointHandlerWrite)(unsigned int, int);
+void (*SekDbgBreakpointHandlerRead)(unsigned int, int) = NULL;
+void (*SekDbgBreakpointHandlerFetch)(unsigned int, int) = NULL;
+void (*SekDbgBreakpointHandlerWrite)(unsigned int, int) = NULL;
 
-unsigned int (*SekDbgFetchByteDisassembler)(unsigned int);
-unsigned int (*SekDbgFetchWordDisassembler)(unsigned int);
-unsigned int (*SekDbgFetchLongDisassembler)(unsigned int);
+unsigned int (*SekDbgFetchByteDisassembler)(unsigned int) = NULL;
+unsigned int (*SekDbgFetchWordDisassembler)(unsigned int) = NULL;
+unsigned int (*SekDbgFetchLongDisassembler)(unsigned int) = NULL;
 
 static struct { unsigned int address; int id; } BreakpointDataRead[9]  = { { 0, 0 }, };
 static struct { unsigned int address; int id; } BreakpointDataWrite[9] = { { 0, 0 }, };
@@ -93,7 +94,8 @@ inline static void CheckBreakpoint_R(unsigned int a, const unsigned int m)
 			UpdateA68KContext();
 #endif
 
-			SekDbgBreakpointHandlerRead(a, BreakpointDataRead[i].id);
+			if(SekDbgBreakpointHandlerRead)
+				SekDbgBreakpointHandlerRead(a, BreakpointDataRead[i].id);
 			return;
 		}
 	}
@@ -110,7 +112,8 @@ inline static void CheckBreakpoint_W(unsigned int a, const unsigned int m)
 			UpdateA68KContext();
 #endif
 
-			SekDbgBreakpointHandlerWrite(a, BreakpointDataWrite[i].id);
+			if(SekDbgBreakpointHandlerWrite)
+				SekDbgBreakpointHandlerWrite(a, BreakpointDataWrite[i].id);
 			return;
 		}
 	}
@@ -125,7 +128,8 @@ inline static void CheckBreakpoint_PC()
 			UpdateA68KContext();
 #endif
 
-			SekDbgBreakpointHandlerFetch(SekGetPC(-1), BreakpointFetch[i].id);
+			if(SekDbgBreakpointHandlerFetch)
+				SekDbgBreakpointHandlerFetch(SekGetPC(-1), BreakpointFetch[i].id);
 			return;
 		}
 	}
@@ -137,7 +141,8 @@ inline static void SingleStep_PC()
 	UpdateA68KContext();
 #endif
 
-	SekDbgBreakpointHandlerFetch(SekGetPC(-1), 0);
+	if(SekDbgBreakpointHandlerFetch)
+		SekDbgBreakpointHandlerFetch(SekGetPC(-1), 0);
 }
 
 #endif
@@ -1016,6 +1021,12 @@ int SekInit(int nCount, int nCPUType)
 	// Map the normal memory handlers
 	SekDbgDisableBreakpoints();
 
+#ifdef FBA_DEBUG
+	SekDbgFetchByteDisassembler = &SekFetchByte;
+	SekDbgFetchWordDisassembler = &SekFetchWord;
+	SekDbgFetchLongDisassembler = &SekFetchLong;
+#endif
+
 	// only m68k supports 68010 and 68EC020
 	if(nCount == 0 && nCPUType != 0x68000 && nSekCpuCore != SEK_CORE_M68K) nSekCpuCore = SEK_CORE_M68K;
 
@@ -1132,6 +1143,11 @@ void SekReset()
 
 #ifdef EMU_C68K
 	if(nSekCpuCore == SEK_CORE_C68K) C68k_Reset( SekC68KCurrentContext );
+#endif
+
+#ifdef FBA_DEBUG
+	if(DebugStep)
+		SekDbgEnableSingleStep();
 #endif
 }
 
@@ -1378,7 +1394,7 @@ int SekRun(const int nCycles)
 void SekDbgDisableBreakpoints()
 {
 #if defined FBA_DEBUG && defined EMU_M68K
-	if(nSekCpuCore == SEK_CORE_M68K) 
+	if(nSekCpuCore == SEK_CORE_M68K) {
 		m68k_set_instr_hook_callback(NULL);
 
 		M68KReadByteDebug = M68KReadByte;
@@ -1404,7 +1420,7 @@ void SekDbgEnableBreakpoints()
 {
 	if (BreakpointDataRead[0].address || BreakpointDataWrite[0].address || BreakpointFetch[0].address) {
 #if defined FBA_DEBUG && defined EMU_M68K
-		if(nSekCpuCore == SEK_CORE_M68K) 
+		if(nSekCpuCore == SEK_CORE_M68K) {
 			SekDbgDisableBreakpoints();
 
 			if (BreakpointFetch[0].address) {
@@ -1721,7 +1737,7 @@ int SekDbgGetPendingIRQ()
 
 unsigned int SekDbgGetRegister(SekRegister nRegister)
 {
-#if 0
+#ifdef FBA_DEBUG
 	if(nSekCpuCore == SEK_CORE_A68K) {
 		switch (nRegister) {
 			case SEK_REG_D0:

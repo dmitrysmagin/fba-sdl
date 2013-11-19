@@ -128,6 +128,7 @@ struct SekExt {
 #define SEK_CORE_C68K (0)
 
 extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
+extern int DebugStep; // 0 - off, 1 - on
 
 extern struct SekExt *SekExt[SEK_MAX], *pSekExt;
 extern int nSekActive;										// The cpu which is currently being emulated
