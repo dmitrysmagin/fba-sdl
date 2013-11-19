@@ -15,13 +15,13 @@ NAME = fbasdl.dge
 DEPEND = 1
 
 # Include features for debugging drivers
-# DEBUG	= 1
+# DEBUG = 1
 
 # Perl is available
 PERL = 1
 
 # Choose emulation cores
-#BUILD_A68K = 1
+BUILD_A68K = 1
 BUILD_C68K = 1
 BUILD_M68K = 1
 USE_LIBAO = 1
@@ -35,12 +35,6 @@ USE_LIBAO = 1
 
 ifndef	CPUTYPE
 	CPUTYPE	= i686
-endif
-
-ifdef	DEBUG
-	NAME := $(NAME)d
-else
-	NAME := $(NAME)
 endif
 
 ifeq	($(CPUTYPE),i686)
@@ -369,7 +363,8 @@ ifdef SPECIALBUILD
 endif
 
 ifdef	DEBUG
-	DEF += -D_DEBUG
+	DEF += -DFBA_DEBUG
+	HOSTCFLAGS += -DFBA_DEBUG
 endif
 
 ifdef BUILD_A68K
@@ -486,7 +481,7 @@ endif
 ifdef	BUILD_A68K
 $(a68k.o):	fba_make68k.c
 	@echo Compiling A68K MC68000 core...
-	@$(HOSTCC) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
+	@$(HOSTCC) $(HOSTCFLAGS) $(LDFLAGS) -DWIN32 -Wno-unused -Wno-conversion -Wno-missing-prototypes \
 		-s $< -o $(objdir)dep/generated/fba_make68k
 	@$(objdir)dep/generated/fba_make68k $(@:.o=.s) $(@D)/a68ktbl.inc
 	@echo Assembling A68K MC68000 core...
