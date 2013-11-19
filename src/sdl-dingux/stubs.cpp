@@ -16,3 +16,6 @@ void HiscoreExit() {}
 
 // replaces scrn.cpp
 void Reinitialise() {}
+
+// needed by neo_run.cpp
+void	wav_exit() {}
