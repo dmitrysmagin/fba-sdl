@@ -234,9 +234,14 @@ void __fastcall M68KWriteLong(unsigned int a, unsigned int d);
 #define m68k_read_immediate_32(address) M68KFetchLong(address)
 
 /* Memory access for the disassembler */
-#define m68k_read_disassembler_8(address) SekDbgFetchByteDisassembler(address)
-#define m68k_read_disassembler_16(address) SekDbgFetchWordDisassembler(address)
-#define m68k_read_disassembler_32(address) SekDbgFetchLongDisassembler(address)
+#define m68k_read_disassembler_8(address)			 \
+( SekDbgFetchByteDisassembler ? SekDbgFetchByteDisassembler(address) : 0 )
+
+#define m68k_read_disassembler_16(address) 			\
+( SekDbgFetchWordDisassembler ? SekDbgFetchWordDisassembler(address) : 0 )
+
+#define m68k_read_disassembler_32(address)			\
+( SekDbgFetchLongDisassembler ? SekDbgFetchLongDisassembler(address) : 0 )
 
 #if defined FBA_DEBUG
 /* Read from anywhere */
