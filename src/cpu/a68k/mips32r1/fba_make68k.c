@@ -179,6 +179,9 @@ int		DisOp;
 #define TRUE -1
 #define FALSE 0
 
+// undef to use mips32r2 opcodes
+//#define USE_MIPS32R1
+
 #define ZERO		 0
 #define AT			 1
 #define V0			 2
@@ -288,11 +291,7 @@ int		DisOp;
 
 /* 11 registers + space for 10 work registers + A0 - A3 : Stack must be kept on 16 bytes boundaries */
 #define STACKFRAME_SIZE		(7 * (4 * 4))
-#if (MEMBASE == GP)
 #define LOCALVARBASE		(STACKFRAME_SIZE - 0x2C)
-#else
-#define LOCALVARBASE		(STACKFRAME_SIZE - 0x28)
-#endif
 #define MINSTACK_POS		(1 * (4 * 4))
 
 #define FASTCALL_FIRST_REG	A0
@@ -592,38 +591,47 @@ void Completed(void)
 		fprintf(fp, "\t\t bgez  %s,3f\n", regnameslong[ICNT]);
 		fprintf(fp, "\t\t lbu   %s,%s     \t # Delay slot\n", regnameslong[TMPREG0], REG_IRQ);
 		fprintf(fp, "\t\t m_j   MainExit\n");
+		fprintf(fp, "\t\t nop                    \t # Delay slot\n\n");
 		fprintf(fp, "\t3:\n");
 		fprintf(fp, " # Check for Interrupt waiting\n\n");
-		fprintf(fp, "\t\t andi  %s,%s,0x07       \t # Delay slot\n", regnameslong[TMPREG0], regnameslong[TMPREG0]);
+		fprintf(fp, "\t\t andi  %s,%s,0x07\n", regnameslong[TMPREG0], regnameslong[TMPREG0]);
 		//fprintf(fp, "\t\t bne   %s,$0,interrupt\n", regnameslong[TMPREG0]);
 		fprintf(fp, "\t\t beq   %s,$0,3f\n", regnameslong[TMPREG0]);
 		fprintf(fp, "\t\t nop                    \t # Delay slot\n");
 		fprintf(fp, "\t\t m_j   interrupt\n");
+		fprintf(fp, "\t\t nop                    \t # Delay slot\n\n");
 		fprintf(fp, "\t3:\n");
 		/* 16 bit memory */
-		fprintf(fp, "\t\t lhu   %s,0x00(%s)    \t # Delay slot\n", regnameslong[OPCODE], regnameslong[PC]);
-
-		//fprintf(fp, "\t\t jmp   [%s_OPCODETABLE+ecx*4]\n\n", CPUtype);
-		fprintf(fp, "\t\t sll   %s,%s,2\n", regnameslong[TMPREG0], regnameslong[OPCODE]);
-		fprintf(fp, "\t\t addu  %s,%s,%s\n", regnameslong[TMPREG0], regnameslong[TMPREG0], regnameslong[OPCODETBL]);
-		fprintf(fp, "\t\t lw    %s,0x00(%s)\n", regnameslong[TMPREG0], regnameslong[TMPREG0]);
-		fprintf(fp, "\t\t jr    %s\n", regnameslong[TMPREG0]);
-		fprintf(fp, "\t\t nop                    \t # Delay slot\n\n");
+		fprintf(fp, "\t\t lhu   %s,0x00(%s)\n", regnameslong[OPCODE], regnameslong[PC]);
 	} else {
 
 		/* 16 bit memory */
 		fprintf(fp, "\t\t bgez  %s,3f\n", regnameslong[ICNT]);
 		fprintf(fp, "\t\t lhu   %s,0x00(%s)    \t # Delay slot\n", regnameslong[OPCODE], regnameslong[PC]);
 		fprintf(fp, "\t\t m_j   MainExit\n");
-		fprintf(fp, "\t3:\n");
-
-		//fprintf(fp, "\t\t jmp   [%s_OPCODETABLE+ecx*4]\n\n", CPUtype);
-		fprintf(fp, "\t\t sll   %s,%s,2         \t # Delay slot\n", regnameslong[TMPREG0], regnameslong[OPCODE]);
-		fprintf(fp, "\t\t addu  %s,%s,%s\n", regnameslong[TMPREG0], regnameslong[TMPREG0], regnameslong[OPCODETBL]);
-		fprintf(fp, "\t\t lw    %s,0x00(%s)\n", regnameslong[TMPREG0], regnameslong[TMPREG0]);
-		fprintf(fp, "\t\t jr    %s\n", regnameslong[TMPREG0]);
 		fprintf(fp, "\t\t nop                    \t # Delay slot\n\n");
+		fprintf(fp, "\t3:\n");
 	}
+
+#ifdef FBA_DEBUG
+
+	fprintf(fp, "\n# call debug\n\n", PREF);
+	//fprintf(fp, "\t\t #test    byte [%smame_debug],byte 0xff\n", PREF);
+	//fprintf(fp, "\t\t #jns  4f\n");
+	fprintf(fp, "\t\t m_jal FBADebugActive\n");
+	fprintf(fp, "\t\t nop                    \t # Delay slot\n");
+	//fprintf(fp, "\t4:\n");
+
+#endif
+
+	//fprintf(fp, "\t\t jmp   [%s_OPCODETABLE+ecx*4]\n\n", CPUtype);
+	fprintf(fp, "\t\t sll   %s,%s,2\n", regnameslong[TMPREG0], regnameslong[OPCODE]);
+	fprintf(fp, "\t\t addu  %s,%s,%s\n", regnameslong[TMPREG0], regnameslong[TMPREG0], regnameslong[OPCODETBL]);
+	fprintf(fp, "\t\t lw    %s,0x00(%s)\n", regnameslong[TMPREG0], regnameslong[TMPREG0]);
+	fprintf(fp, "\t\t jr    %s\n", regnameslong[TMPREG0]);
+	fprintf(fp, "\t\t nop                    \t # Delay slot\n\n");
+
+
 }
 /*
  * Flag Routines
@@ -6796,19 +6804,21 @@ void TestTable(void)
 
 char macroinc[] =
 "\n"
-"# most macros are taken from gpsp sources for dingux\n"
+"# most macros are fixed by Nebuleon\n"
 "# m_j macro is taken from here http://gcc.gnu.org/ml/gcc-patches/2002-12/msg00603.html\n"
 "\n"
+#ifdef USE_MIPS32R1
 ".macro m_seb dest,src\n"
 "    sll   \\dest,\\src,24\n"
-"    sra   \\dest,\\src,24\n"
+"    sra   \\dest,\\dest,24\n"
 ".endm\n"
 "\n"
 ".macro m_seh dest,src\n"
 "    sll   \\dest,\\src,16\n"
-"    sra   \\dest,\\src,16\n"
+"    sra   \\dest,\\dest,16\n"
 ".endm\n"
 "\n"
+#if 1
 ".macro m_ror dest,src,shift\n"
 "    sw    $t0,-4($sp)\n"
 "    srl   $t0,\\dest,\\shift\n"
@@ -6828,6 +6838,25 @@ char macroinc[] =
 "    lw    $t1,-8($sp)\n"
 "    lw    $t0,-4($sp)\n"
 ".endm\n"
+#else
+".macro m_ror dest, src, shift\n"
+"    .set  noat\n"
+"    srl   \\dest, \\src, \\shift\n"
+"    sll   $at, \\src, 32 - \\shift\n"
+"    or    \\dest, \\dest, $at\n"
+"    .set  at\n"
+".endm\n"
+"\n"
+".macro m_rorv dest, src, shift_reg\n"
+"    .set  noat\n"
+"    srlv  \\dest, \\src, \\shift_reg  # dest = src >> shift_reg[4..0]\n"
+"    xori  $at, \\shift_reg, 0x1F\n"
+"    addiu $at, $at, 1              # now $at = 32 - (shift_reg[4..0])\n"
+"    sllv  $at, \\src, $at\n"
+"    or    \\dest, \\dest, $at        # dest |= src << (32 - shift_reg[4..0])\n"
+"    .set  at\n"
+".endm\n"
+#endif
 "\n"
 ".macro m_j dest\n"
 "    .set  noat\n"
@@ -6842,6 +6871,37 @@ char macroinc[] =
 "    jalr  $at\n"
 "    .set  at\n"
 ".endm\n";
+#else
+".macro m_seb dest,src\n"
+"    seb   \\dest,\\src\n"
+".endm\n"
+"\n"
+".macro m_seh dest,src\n"
+"    seh   \\dest,\\src\n"
+".endm\n"
+"\n"
+".macro m_ror dest,src,shift\n"
+"    rotr \\dest, \\src, \\shift\n"
+".endm\n"
+"\n"
+".macro m_rorv dest,src,shift\n"
+"    rotrv \\dest, \\src, \\shift\n"
+".endm\n"
+"\n"
+".macro m_j dest\n"
+"    .set  noat\n"
+"    la    $at,\\dest\n"
+"    jr    $at\n"
+"    .set  at\n"
+".endm\n"
+"\n"
+".macro m_jal address\n"
+"    .set  noat\n"
+"    la    $at,\\address\n"
+"    jalr  $at\n"
+"    .set  at\n"
+".endm\n";
+#endif
 
 
 void CodeSegmentBegin(void)
@@ -6853,10 +6913,15 @@ void CodeSegmentBegin(void)
 	fprintf(fp, " # MIPS Make68K - V%s - Copyright 2005, Manuel Geran (bdiamond@free.fr)\n", VERSION);
 	fprintf(fp, " #   based on Make68K - Copyright 1998, Mike Coates (mame@btinternet.com)\n");
 	fprintf(fp, " #                                    & Darren Olafson (deo@mail.island.net)\n");
+	fprintf(fp, " #   fixes for Dingoo A320 and GCW-Zero by D. Smagin and Nebuleon\n\n");
 
 /* Needed code to make it work! */
 
+#ifdef USE_MIPS32R1
 	fprintf(fp, "\t\t .set mips32\n\n");
+#else
+	fprintf(fp, "\t\t .set mips32r2\n\n");
+#endif
 
 	fprintf(fp, "\t\t .set noreorder\n");
 	//fprintf(fp, "\t\t .set nomacro\n");
@@ -6873,6 +6938,11 @@ void CodeSegmentBegin(void)
 
 	/* ASG - only one interface to memory now */
 	fprintf(fp, "\t\t .globl %sa68k_memory_intf\n", PREF);
+
+#ifdef FBA_DEBUG
+	fprintf(fp, "\t\t .globl %sFBADebugActive\n", PREF);
+#endif
+
 	fwrite(macroinc, 1, sizeof(macroinc)-1, fp);
 
 	fprintf(fp, "\n\n # Vars Mame declares / needs access to\n\n");
@@ -6958,9 +7028,7 @@ void CodeSegmentBegin(void)
 
 	fprintf(fp, "\t\t .frame %s, %d, %s\n", regnameslong[SP], STACKFRAME_SIZE, regnameslong[RA]);
 	fprintf(fp, "\t\t addiu %s,%s,%d\n\n", regnameslong[SP], regnameslong[SP], -STACKFRAME_SIZE);
-#if (MEMBASE == GP)
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[GP], STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
-#endif
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S0], STACKFRAME_SIZE - 0x28, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S1], STACKFRAME_SIZE - 0x24, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S2], STACKFRAME_SIZE - 0x20, regnameslong[SP]);
@@ -6971,6 +7039,8 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S7], STACKFRAME_SIZE - 0x0C, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[S8], STACKFRAME_SIZE - 0x08, regnameslong[SP]);
 	fprintf(fp, "\t\t sw    %s,0x%2.2X(%s)\n", regnameslong[RA], STACKFRAME_SIZE - 0x04, regnameslong[SP]);
+
+	fprintf(fp, "\t\t .cpload $gp\n");
 
 	//fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[MEMBASE], regnameslong[A0]);
 	fprintf(fp, "\t\t la    %s,%sM68000_regs\n", regnameslong[MEMBASE], PREF);
@@ -6998,9 +7068,19 @@ void CodeSegmentBegin(void)
 	/* See if was only called to check for Interrupt */
 
 	fprintf(fp, "\t\t bltz  %s,MainExit\n", regnameslong[ICNT]);
+	fprintf(fp, "\t\t nop  \t\t # Delay slot\n\n", regnameslong[ICNT]);
+
+#ifdef FBA_DEBUG
+	fprintf(fp, "\n# call debug\n\n", PREF);
+	//fprintf(fp, "\t\t #test    byte [%smame_debug],byte 0xff\n", PREF);
+	//fprintf(fp, "\t\t #jns  4f\n");
+	fprintf(fp, "\t\t m_jal FBADebugActive\n");
+	fprintf(fp, "\t\t nop                    \t # Delay slot\n");
+	//fprintf(fp, "\t4:\n");
+#endif
 
 	/* 16 Bit Fetch */
-	fprintf(fp, "\t\t lhu   %s,0x00(%s)\t\t # Delay slot\n\n", regnameslong[OPCODE], regnameslong[PC]);
+	fprintf(fp, "\t\t lhu   %s,0x00(%s)\n", regnameslong[OPCODE], regnameslong[PC]);
 
 	fprintf(fp, "\t\t sll   %s,%s,2\n", regnameslong[TMPREG0], regnameslong[OPCODE]);
 	fprintf(fp, "\t\t addu  %s,%s,%s\n\n", regnameslong[TMPREG0], regnameslong[TMPREG0], regnameslong[OPCODETBL]);
@@ -7038,9 +7118,7 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "MC68Kexit:\n");
 	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[ICNT], ICOUNT);
 
-#if (MEMBASE == GP)
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[GP], STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
-#endif
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S0], STACKFRAME_SIZE - 0x28, regnameslong[SP]);
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S1], STACKFRAME_SIZE - 0x24, regnameslong[SP]);
 	fprintf(fp, "\t\t lw    %s,0x%2.2X(%s)\n", regnameslong[S2], STACKFRAME_SIZE - 0x20, regnameslong[SP]);
@@ -7305,6 +7383,73 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t addiu %s,%s,%d\t\t # Delay slot\n\n", regnameslong[SP], regnameslong[SP], EX_STACKFRAME_SIZE);
 	fprintf(fp, "\t .end   Exception\n");
 	fprintf(fp, "\n\n\n\n");
+
+#ifdef FBA_DEBUG
+
+/* space 1 saved register and 7 work registers : Stack must be kept on 16 bytes boundaries */
+#define DBG_STACKFRAME_SIZE		(6 * (4 * 4))
+#define DBG_LOCALVARBASE		(DBG_STACKFRAME_SIZE - 0x04)
+
+	fprintf(fp,"\n # Call FBA debugging callback\n\n");
+	fprintf(fp, "\t .ent   FBADebugActive\n");
+	fprintf(fp, "FBADebugActive:\n");
+
+	fprintf(fp, "\t\t addiu %s, %s, %d\n", regnameslong[SP], regnameslong[SP], -DBG_STACKFRAME_SIZE);
+	fprintf(fp, "\t\t .frame %s, %d, %s\n\n", regnameslong[SP], DBG_STACKFRAME_SIZE, regnameslong[RA]);
+
+	// save regs here
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[FP], DBG_STACKFRAME_SIZE - 0x38, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[GP], DBG_STACKFRAME_SIZE - 0x34, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T9], DBG_STACKFRAME_SIZE - 0x30, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[S7], DBG_STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
+	fprintf(fp, "\t\t .set noat\n");
+	fprintf(fp, "\t\t subu  %s, %s, %s\n", regnameslong[AT], regnameslong[S7], regnameslong[S6]);
+	fprintf(fp, "\t\t sw    %s, %s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T0], DBG_STACKFRAME_SIZE - 0x28, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T1], DBG_STACKFRAME_SIZE - 0x24, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T2], DBG_STACKFRAME_SIZE - 0x20, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T3], DBG_STACKFRAME_SIZE - 0x1C, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T4], DBG_STACKFRAME_SIZE - 0x18, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T5], DBG_STACKFRAME_SIZE - 0x14, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T6], DBG_STACKFRAME_SIZE - 0x10, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T7], DBG_STACKFRAME_SIZE - 0x0C, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n", regnameslong[T8], DBG_STACKFRAME_SIZE - 0x08, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n\n", regnameslong[RA], DBG_STACKFRAME_SIZE - 0x04, regnameslong[SP]);
+
+	fprintf(fp, "\t\t .set noat\n");
+	fprintf(fp, "\t\t lw    $at, %s\n", MEMINTF_DBGCALLBACK);
+	fprintf(fp, "\t\t beq   $at, $zero, 9f\n");
+	fprintf(fp, "\t\t nop         	 # Delay slot\n", PREF);
+	fprintf(fp, "\t\t jalr  $at\n");
+	fprintf(fp, "\t\t nop         	 # Delay slot\n", PREF);
+	fprintf(fp, "\t\t .set  at\n\n");
+	fprintf(fp, "9:\n");
+
+	// restore regs here
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[FP], DBG_STACKFRAME_SIZE - 0x38, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[GP], DBG_STACKFRAME_SIZE - 0x34, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T9], DBG_STACKFRAME_SIZE - 0x30, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[S7], DBG_STACKFRAME_SIZE - 0x2C, regnameslong[SP]);
+	fprintf(fp, "\t\t sw    %s, %s\n", regnameslong[S7], REG_PC);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T0], DBG_STACKFRAME_SIZE - 0x28, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T1], DBG_STACKFRAME_SIZE - 0x24, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T2], DBG_STACKFRAME_SIZE - 0x20, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T3], DBG_STACKFRAME_SIZE - 0x1C, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T4], DBG_STACKFRAME_SIZE - 0x18, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T5], DBG_STACKFRAME_SIZE - 0x14, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T6], DBG_STACKFRAME_SIZE - 0x10, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T7], DBG_STACKFRAME_SIZE - 0x0C, regnameslong[SP]);
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[T8], DBG_STACKFRAME_SIZE - 0x08, regnameslong[SP]);
+
+	fprintf(fp,"\n # Now continue as usual\n\n");
+	fprintf(fp, "\t\t lw    %s, 0x%2.2X(%s)\n", regnameslong[RA], DBG_STACKFRAME_SIZE - 0x04, regnameslong[SP]);
+	fprintf(fp, "\t\t jr    %s\n", regnameslong[RA]);
+	fprintf(fp, "\t\t addiu %s, %s,%d\t\t # Delay slot\n\n", regnameslong[SP], regnameslong[SP], DBG_STACKFRAME_SIZE);
+	fprintf(fp, "\t .end   FBADebugActive\n");
+	fprintf(fp, "\n\n\n\n");
+
+#endif
 
 }
 
