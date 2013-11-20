@@ -17,6 +17,8 @@
  *
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <sys/time.h>
 #include <SDL/SDL.h>
 
@@ -24,6 +26,12 @@
 #include "burner.h"
 #include "sdlvideo.h"
 #include "snd.h"
+
+#ifdef FBA_DEBUG
+#include "sek.h"
+#include "sekdebug.h"
+#include "m68k.h"
+#endif
 
 #define _s(A) #A
 #define _a(A) _s(A)
@@ -108,6 +116,11 @@ MENU gui_SoundMenu = { 2, 0, (MENUITEM *)&gui_SoundMenuItems };
 
 int done = 0; // flag to indicate exit status
 extern unsigned char gui_font[2048];
+
+
+#ifdef FBA_DEBUG
+int debug = 0;
+#endif
 
 /* local functions */
 
@@ -282,6 +295,9 @@ void gui_Run()
 	struct timeval s, e;
 	extern struct timeval start;
 
+#ifdef FBA_DEBUG
+	debug = 1;
+#endif
 	gettimeofday(&s, NULL);
 
 	VideoClear();
@@ -300,6 +316,189 @@ void gui_Exit()
 {
 	if(menuSurface) SDL_FreeSurface(menuSurface);
 }
+
+#ifdef FBA_DEBUG
+
+void show_disasm(int pc)
+{
+	int i, pcd;
+	char opcode[512];
+	char text[512];
+
+	for(i = 0; i < 8; i++) {
+		pcd = m68k_disassemble(opcode, pc, M68K_CPU_TYPE_68000);
+		sprintf(text, "%08x: %s", pc, opcode);
+		DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 0, 14*8 + i*8);
+		if(i == 0) {
+			int j;
+			strcpy(text, "opcode: ");
+			for(j = 0; j < pcd; j++) {
+				sprintf(opcode, " %02x", SekFetchByte(pc + j));
+				strcat(text, opcode);
+				//sprintf(text, "opcode: %02x %02x %02x %02x", SekFetchByte(pc), SekFetchByte(pc+1), SekFetchByte(pc+2), SekFetchByte(pc+3));
+			}
+			DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 0, 24*8);
+		}
+		pc += pcd;
+	}
+
+	sprintf(text, "CPU: %i", nSekActive);
+	DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 0, 26*8);
+}
+
+void show_regs()
+{
+	char *regname[18] = {
+		"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", 
+		"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7",
+		"PC", "SR"
+	};
+	char text[512];
+	int i;
+	char flags[] = "- - - - -";
+	int ccr;
+
+	for(int i = 0; i < 8; i++) {
+		sprintf(text, "%s=%08X", regname[i], SekDbgGetRegister((SekRegister)i));
+		DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 0, i*8);
+	}
+
+	for(int i = 8; i < 18; i++) {
+		sprintf(text, "%s=%08X", regname[i], SekDbgGetRegister((SekRegister)i));
+		DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 16*8, (i-8)*8);
+	}
+
+	ccr = SekDbgGetRegister(SEK_REG_CCR);
+	flags[4*2] = (ccr & (1 << 0) ? '*' : '-');
+	flags[3*2] = (ccr & (1 << 1) ? '*' : '-');
+	flags[2*2] = (ccr & (1 << 2) ? '*' : '-');
+	flags[1*2] = (ccr & (1 << 3) ? '*' : '-');
+	flags[0*2] = (ccr & (1 << 4) ? '*' : '-');
+
+	DrawString("X N Z V C", COLOR_HELP_TEXT, COLOR_BG, 1*8, 10*8);
+	DrawString(flags, COLOR_HELP_TEXT, COLOR_BG, 1*8, 11*8);
+
+	sprintf(text, "FLAGS: %08x", ccr);
+	DrawString(text, COLOR_HELP_TEXT, COLOR_BG, 0, 27*8);
+}
+
+FILE *f;
+
+void dump(int pc)
+{
+	char *regname[18] = {
+		"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", 
+		"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7",
+		"PC", "SR"
+	};
+	char flagshi[] = "XNZVC";
+	char flagslo[] = "xnzvc";
+	char text[1024];
+	char output[4096];
+	int i;
+
+	memset(text, 0, 1024);
+	memset(output, 0, 4096);
+	m68k_disassemble(text, pc, M68K_CPU_TYPE_68000);
+	sprintf(output, "%08x: %02x %02x %s \t\t\t ", pc, SekFetchByte(pc), SekFetchByte(pc+1), text);
+
+
+	for(int i = 0; i < 16; i++) {
+		sprintf(text, "%s=%08X ", regname[i], SekDbgGetRegister((SekRegister)i));
+		strcat(output, text);
+	}
+
+	/*strcat(output, "FLAGS: ");
+	strcpy(text, "xnzvc");
+	{
+		int ccr = SekDbgGetRegister(SEK_REG_CCR);
+
+		if(ccr & (1 << 4)) text[0] = 'X';
+		if(ccr & (1 << 3)) text[1] = 'N';
+		if(ccr & (1 << 2)) text[2] = 'Z';
+		if(ccr & (1 << 1)) text[3] = 'V';
+		if(ccr & (1 << 0)) text[4] = 'C';
+	}
+	strcat(output, text);*/
+
+	fprintf(f, "%s\n", output);
+}
+
+void dbg_handler(unsigned int pc, int id)
+{
+
+	static int skip = 0;
+	static int count = 2000000;
+	char text[256];
+	SDL_Event gui_event;
+
+
+	if(skip > 0) {
+		skip--;
+		return;
+	}
+
+#if 0
+	if(pc == 0x1a00 && SekFetchWord(pc) == 0x48e7)
+		debug = 1;
+	if(debug)
+		if(--count > 0) dump(pc);
+
+#else
+	/*if(pc == 0x1a00 && SekFetchWord(pc) == 0x48e7)
+		debug = 1;*/
+
+	if(debug) {
+		SDL_FillRect(menuSurface, NULL, 0);
+		show_disasm(pc);
+		show_regs();
+		gui_Flip();
+
+		while(1) {
+			while(SDL_PollEvent(&gui_event)) {
+				if(gui_event.type == SDL_KEYDOWN) {
+					if(gui_event.key.keysym.sym == SDLK_ESCAPE) {
+						fclose(f);
+						exit(0);
+					}
+
+					if(gui_event.key.keysym.sym == SDLK_LCTRL)
+						return;
+
+					if(gui_event.key.keysym.sym == SDLK_LALT) {
+						skip = 0x100;
+						return;
+					}
+
+					if(gui_event.key.keysym.sym == SDLK_SPACE) {
+						skip = 0x1000;
+						return;
+					}
+
+					if(gui_event.key.keysym.sym == SDLK_LSHIFT) {
+						debug = 0;
+						//SekDbgBreakpointHandlerFetch = NULL;
+						return;
+					}
+				}
+			}
+
+			SDL_Delay(16);
+		}
+	}
+#endif
+}
+
+void gui_RunDebug()
+{
+	printf("Enter DEBUG\n");
+
+	SekDbgEnableSingleStep();
+	SekDbgBreakpointHandlerFetch = &dbg_handler;
+
+	//f = fopen("./1.log", "w");
+}
+#endif
 
 //
 // Font: THIN8X8.pf

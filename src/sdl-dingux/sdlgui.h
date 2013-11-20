@@ -20,3 +20,7 @@
 void gui_Init();
 void gui_Run();
 void gui_Exit();
+
+#ifdef FBA_DEBUG
+void gui_RunDebug();
+#endif

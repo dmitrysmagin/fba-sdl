@@ -279,6 +279,10 @@ void run_fba_emulator(const char *fn)
 
 	VideoClear();
 
+#ifdef FBA_DEBUG
+	gui_RunDebug();
+#endif
+
 #if 0
 	{
 		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
