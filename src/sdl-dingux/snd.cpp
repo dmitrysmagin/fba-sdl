@@ -64,6 +64,8 @@ SNDDRV *pSndDrv = &SndDrvList[0];
 // General code for sound
 int SndInit()
 {
+	if(bSndOkay) SndExit();
+
 	if(config_options.option_sound_enable > 3)
 		config_options.option_sound_enable = 0;
 
