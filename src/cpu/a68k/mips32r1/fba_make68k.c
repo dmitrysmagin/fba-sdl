@@ -1048,10 +1048,18 @@ void Memory_Read(char Size, int AReg, char *Flags, int LocalStack)
 	if (AReg != FASTCALL_FIRST_REG)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_FIRST_REG], regnameslong[AReg]);
 
-	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
-
 	/* Save PC */
-	fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+#if 0
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+#else
+	fprintf(fp, "\t\t .set  noat\n");
+	fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
+#endif
+
+	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+	fprintf(fp, "\t\t nop    \t\t\t # Delay slot\n");
 
 	/* Restore registers */
 
@@ -1130,9 +1138,19 @@ void Memory_Write(char Size, int AReg, int DReg, char *Flags, int LocalStack)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_SECOND_REG], regnameslong[DReg]);
 	if (AReg != FASTCALL_FIRST_REG)
 		fprintf(fp, "\t\t or    %s,$0,%s\n", regnameslong[FASTCALL_FIRST_REG], regnameslong[AReg]);
-	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+
 	/* Save PC */
-	fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+#if 0
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+#else
+	fprintf(fp, "\t\t .set  noat\n");
+	fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+	fprintf(fp, "\t\t .set  at\n");
+#endif
+
+	fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
+	fprintf(fp, "\t\t nop    \t\t\t # Delay slot\n");
 
 	if (PreDecLongMove) {
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[T9], MEMINTF_WRITEWORD);
@@ -4632,11 +4650,24 @@ void reset(void)
 		}
 		assert(LocalStack >= MINSTACK_POS);
 
+		/* Save PC */
+	#if 0
+		fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[PC], REG_PC);
+	#else
+		fprintf(fp, "\t\t .set  noat\n");
+		fprintf(fp, "\t\t subu  %s,%s,%s\n", regnameslong[AT], regnameslong[PC], regnameslong[BASEPC]);
+		fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_PC);
+		fprintf(fp, "\t\t .set  at\n");
+	#endif
+
 		fprintf(fp, "\t\t jalr  %s\n", regnameslong[T9]);
-		fprintf(fp, "\t\t sw    %s,%s    \t # Delay slot\n", regnameslong[PC], REG_PC);
+		fprintf(fp, "\t\t nop   \t\t\t # Delay slot\n");
 
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[ICNT], ICOUNT);
 		fprintf(fp, "\t\t lw    %s,%s\n", regnameslong[PC], REG_PC);
+	#if 1
+		fprintf(fp, "\t\t addu  %s,%s,%s\n", regnameslong[PC], regnameslong[PC], regnameslong[BASEPC]);
+	#endif
 
 		if (SavedRegs[FLAG_X] == '-') {
 			fprintf(fp, "\t\t lbu   %s,0x%2.2X(%s)\n", regnameslong[FLAG_X], LocalStack, regnameslong[SP]);
