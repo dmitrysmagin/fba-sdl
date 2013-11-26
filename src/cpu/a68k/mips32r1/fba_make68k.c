@@ -1,14 +1,40 @@
 /*---------------------------------------------------------------
  * Motorola 68000 32 Bit emulator
  *
- * Copyright 1998-2001 Mike Coates, 	All rights reserved
- *							Darren Olafson
+ * Make68K for x86
+ *   Copyright (c) 1998-2001 Mike Coates, Darren Olafson
+ *
+ * MIPS Make68K for PSP
+ *   Copyright (c) 2005 Manuel Geran
+ *
+ * MIPS Make68K for OpenDingux
+ *   Copyright (c) 2012-2013 Dmitry Smagin
  *---------------------------------------------------------------
  *
  * Thanks to ...
  *
  * Neil Bradley	 (lots of optimisation help & ideas)
  *
+ *---------------------------------------------------------------
+ * Changelog for OpenDingux
+ *
+ * 2013-11-26 - Fix setting N flag in asl.b #1,reg / bpl #addr combo.
+ *              If reg was 0x80 after shifting N received 2 (should have 0/1)
+ *              and the following bpl failed. Now always discard higher bits for N.
+ *              This fixes aurail.zip
+ * 2013-11-25 - Save real PC reg to M68000_regs.pc before calling memory
+ *              callbacks, because PC could be changed from them.
+ *              This fixes hangon.zip
+ * 2013-11-21 - Fix m_seh/m_seb macros (thanks Nebuleon), now a68k-mips works!
+ *              Use both mips32r2 and r1 opcodes, define USE_MIPS32r1 to use r1.
+ *              Add debugging callbacks, now define FBA_DEBUG to activate.
+ *              $gp is saved inside M68000_RUN and reloaded with .cpload $gp
+ * 2012-11-03 - Replace mips32r2 opcodes seh, seb, ror, rorv with macros to
+ *              make it work on mips32 revision 1 (soc jz4740/jz4750)
+ *              Also replace direct jal and j with macros.
+ *              Fix M68000_regs and a68k_memory_intf structures to correspond
+ *              to their definitions in sek.h (struct A68KContext).
+ *              Now a68k-mips doesn't segfault but the emulation is incorrect.
  *---------------------------------------------------------------
  * History (so we know what bugs have been fixed)
  *
@@ -6371,6 +6397,7 @@ void asl_asr(void)
 					fprintf(fp, "\t\t andi  %s,%s,0x%2.2X\n", regnameslong[FLAG_Z], regnameslong[V0], Size == 'h' ? 0xffff : 0xff);
 				fprintf(fp, "\t\t sltiu %s,%s,1        \t # Set Zero\n", regnameslong[FLAG_Z], regnameslong[FLAG_Z]);
 				fprintf(fp, "\t\t srl   %s,%s,%d        \t # Set Sign\n", regnameslong[FLAG_N], regnameslong[V0], Size == 'w' ? 31 : (Size == 'h' ? 15 : 7));
+				fprintf(fp, "\t\t andi  %s,%s,1\n", regnameslong[FLAG_N], regnameslong[FLAG_N]); // fix
 				fprintf(fp, "\t\t or    %s,$0,%s       \t # Copy Carry to X\n", regnameslong[FLAG_X], regnameslong[FLAG_C]);
 
 				Completed();
@@ -6944,7 +6971,7 @@ void CodeSegmentBegin(void)
 	fprintf(fp, " # MIPS Make68K - V%s - Copyright 2005, Manuel Geran (bdiamond@free.fr)\n", VERSION);
 	fprintf(fp, " #   based on Make68K - Copyright 1998, Mike Coates (mame@btinternet.com)\n");
 	fprintf(fp, " #                                    & Darren Olafson (deo@mail.island.net)\n");
-	fprintf(fp, " #   fixes for Dingoo A320 and GCW-Zero by D. Smagin and Nebuleon\n\n");
+	fprintf(fp, " #   OpenDingux adaptation - Copyright 2012-2013 Dmitry Smagin\n\n");
 
 /* Needed code to make it work! */
 
@@ -7653,6 +7680,7 @@ int main(int argc, char **argv)
 	printf("  based on Make68K - Copyright 1998, Mike Coates (mame@btinternet.com)\n");
 	printf("                               1999, & Darren Olafson (deo@mail.island.net)\n");
 	printf("                               2000\n");
+	printf("  OpenDingux adaptation - Copyright 2012-2013 Dmitry Smagin\n\n");
 
 	if (argc != 3) {
 		printf("Usage: %s outfile jumptable-outfile\n", argv[0]);
