@@ -202,6 +202,39 @@ static void Blit_352x240_to_320x240()
 		}
 }
 
+static void Blit_336x240_to_320x240() 
+{
+	// Atari 336x240
+	unsigned short * p = &VideoBuffer[0];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<240; i++)
+		for (int j=0; j<16; j++) {
+			p[0] = q[0];
+			p[1] = q[1];
+			p[2] = q[2];
+			p[3] = q[3];
+			p[4] = q[4];
+			p[5] = q[5];
+			p[6] = q[6];
+			p[7] = q[7];
+			p[8] = q[8];
+			p[9] = COLORMIX(q[9], q[10]);
+			p[10] = q[11];
+			p[11] = q[12];
+			p[12] = q[13];
+			p[13] = q[14];
+			p[14] = q[15];
+			p[15] = q[16];
+			p[16] = q[17];
+			p[17] = q[18];
+			p[18] = q[19];
+			p[19] = q[20];
+			p += 20;
+			q += 21;
+		}
+}
+
 static void Blit_320x240_to_320x240() 
 {
 	// Cave & Toaplan 320x240
@@ -223,6 +256,19 @@ static void Blit_256x256_to_320x240()
 	}
 }
 
+static void Blit_224x256_to_320x240() 
+{
+	// 224x256
+	unsigned short * p = &VideoBuffer[(320-224)/2];
+	unsigned short * q = &BurnVideoBuffer[0];
+	for (int i = 0; i < 240; i++) {
+		memcpy( p, q, 224 * 2 );
+		p += 320;
+		q += 224;
+		if(i % 16 == 0) q += 224;
+	}
+}
+
 static void Blit_256x256_to_400x240() 
 {
 	// 256x256
@@ -235,6 +281,20 @@ static void Blit_256x256_to_400x240()
 		if(i % 16 == 0) q += 256; 
 	}
 }
+
+static void Blit_224x256_to_400x240() 
+{
+	// 224x256
+	unsigned short * p = &VideoBuffer[(400-224)/2];
+	unsigned short * q = &BurnVideoBuffer[0];
+	for (int i = 0; i < 240; i++) {
+		memcpy( p, q, 224 * 2 );
+		p += 400;
+		q += 224;
+		if(i % 16 == 0) q += 224;
+	}
+}
+
 static void Blit_448x224_to_400x240()
 {
 	// IGS 448x224
@@ -299,9 +359,12 @@ BLIT_TABLE blit_table[] = {
 	{320, 240, 384, 240, Blit_384x240_to_320x240, Blit_384x240_to_320x240}, // Cave
 	{320, 240, 384, 224, Blit_384x224_to_320x240, Blit_384x224_to_320x240}, // CPS1 & CPS2
 	{320, 240, 352, 240, Blit_352x240_to_320x240, Blit_352x240_to_320x240}, // V-System
+	{320, 240, 336, 240, Blit_336x240_to_320x240, Blit_336x240_to_320x240}, // Atari
 	{320, 240, 320, 240, Blit_320x240_to_320x240, Blit_320x240_to_320x240}, // Cave & Toaplan
 	{320, 240, 256, 256, Blit_256x256_to_320x240, Blit_256x256_to_320x240},
+	{320, 240, 224, 256, Blit_224x256_to_320x240, Blit_224x256_to_320x240},
 	{400, 240, 256, 256, Blit_256x256_to_400x240, Blit_256x256_to_400x240},
+	{400, 240, 224, 256, Blit_224x256_to_400x240, Blit_224x256_to_400x240},
 	{400, 240, 448, 224, Blit_448x224_to_400x240, Blit_448x224_to_400x240}, // IGS (PGM)
 	{  0,   0,   0,   0, NULL, NULL}
 };
