@@ -939,6 +939,9 @@ int SekInit(int nCount, int nCPUType)
 		nSekCount = nCount;
 	}
 
+	// only m68k supports 68010 and 68EC020
+	if(nCount == 0 && nCPUType != 0x68000 && nSekCpuCore != SEK_CORE_M68K) nSekCpuCore = SEK_CORE_M68K;
+
 	// Allocate cpu extenal data (memory map etc)
 	SekExt[nCount] = (struct SekExt*)malloc(sizeof(struct SekExt));
 	if (SekExt[nCount] == NULL) {
@@ -1026,9 +1029,6 @@ int SekInit(int nCount, int nCPUType)
 	SekDbgFetchWordDisassembler = &SekFetchWord;
 	SekDbgFetchLongDisassembler = &SekFetchLong;
 #endif
-
-	// only m68k supports 68010 and 68EC020
-	if(nCount == 0 && nCPUType != 0x68000 && nSekCpuCore != SEK_CORE_M68K) nSekCpuCore = SEK_CORE_M68K;
 
 #ifdef EMU_A68K
 	if(nSekCpuCore == SEK_CORE_A68K) {
