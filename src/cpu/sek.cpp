@@ -215,9 +215,10 @@ inline static unsigned char ReadByte(unsigned int a)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("read8 0x%08X\n"), a);
-
 	pr = FIND_R(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_R(a, ~0);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
 		a ^= 1;
 		return pr[a & SEK_PAGEM];
@@ -247,9 +248,10 @@ inline static void WriteByte(unsigned int a, unsigned char d)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("write8 0x%08X\n"), a);
-
 	pr = FIND_W(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_W(a, ~0);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
 		a ^= 1;
 		pr[a & SEK_PAGEM] = (unsigned char)d;
@@ -279,12 +281,12 @@ inline static unsigned short ReadWord(unsigned int a)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("read16 0x%08X\n"), a);
-
 	pr = FIND_R(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_R(a, ~1);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		pr=(pr + (a & SEK_PAGEM));
-		return (*(pr+1))<<8|(*pr);
+		return *((unsigned short*)(pr + (a & SEK_PAGEM)));
 	}
 	return pSekExt->ReadWord[(unsigned int)pr](a);
 }
@@ -311,13 +313,12 @@ inline static void WriteWord(unsigned int a, unsigned short d)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("write16 0x%08X\n"), a);
-
 	pr = FIND_W(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_W(a, ~1);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		pr=pr + (a & SEK_PAGEM);
-		pr[0]=d;
-		pr[1]=d>>8;
+		*((unsigned short*)(pr + (a & SEK_PAGEM))) = (unsigned short)d;
 		return;
 	}
 	pSekExt->WriteWord[(unsigned int)pr](a, d);
@@ -345,12 +346,14 @@ inline static unsigned int ReadLong(unsigned int a)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("read32 0x%08X\n"), a);
-
 	pr = FIND_R(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_R(a, ~1);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		pr=pr + (a & SEK_PAGEM);
-		return pr[1]<<24|pr[0]<<16|pr[3]<<8|pr[2];
+		unsigned int r = *((unsigned int*)(pr + (a & SEK_PAGEM)));
+		r = (r >> 16) | (r << 16);
+		return r;
 	}
 	return pSekExt->ReadLong[(unsigned int)pr](a);
 }
@@ -377,15 +380,13 @@ inline static void WriteLong(unsigned int a, unsigned int d)
 
 	a &= 0xFFFFFF;
 
-//	bprintf(PRINT_NORMAL, _T("write32 0x%08X\n"), a);
-
 	pr = FIND_W(a);
+#ifdef FBA_DEBUG
+	CheckBreakpoint_W(a, ~1);
+#endif
 	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		pr=pr + (a & SEK_PAGEM);
-		pr[2] = (unsigned char)d;
-		pr[3] = (unsigned char)(d>>8);
-		pr[0] = (unsigned char)(d>>16);
-		pr[1] = (unsigned char)(d>>24);
+		d = (d >> 16) | (d << 16);
+		*((unsigned int*)(pr + (a & SEK_PAGEM))) = d;
 		return;
 	}
 	pSekExt->WriteLong[(unsigned int)pr](a, d);
@@ -408,115 +409,6 @@ inline static void WriteLongROM(unsigned int a, unsigned int d)
 	}
 	pSekExt->WriteLong[(unsigned int)pr](a, d);
 }
-
-#if defined (FBA_DEBUG)
-
-// Breakpoint checking memory access functions
-unsigned char __fastcall ReadByteBP(unsigned int a)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_R(a);
-
-	CheckBreakpoint_R(a, ~0);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		a ^= 1;
-		return pr[a & SEK_PAGEM];
-	}
-	return pSekExt->ReadByte[(unsigned int)pr](a);
-}
-
-void __fastcall WriteByteBP(unsigned int a, unsigned char d)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_W(a);
-
-	CheckBreakpoint_W(a, ~0);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		a ^= 1;
-		pr[a & SEK_PAGEM] = (unsigned char)d;
-		return;
-	}
-	pSekExt->WriteByte[(unsigned int)pr](a, d);
-}
-
-unsigned short __fastcall ReadWordBP(unsigned int a)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_R(a);
-
-	CheckBreakpoint_R(a, ~1);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		return *((unsigned short*)(pr + (a & SEK_PAGEM)));
-	}
-	return pSekExt->ReadWord[(unsigned int)pr](a);
-}
-
-void __fastcall WriteWordBP(unsigned int a, unsigned short d)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_W(a);
-
-	CheckBreakpoint_W(a, ~1);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		*((unsigned short*)(pr + (a & SEK_PAGEM))) = (unsigned short)d;
-		return;
-	}
-	pSekExt->WriteWord[(unsigned int)pr](a, d);
-}
-
-unsigned int __fastcall ReadLongBP(unsigned int a)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_R(a);
-
-	CheckBreakpoint_R(a, ~1);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		unsigned int r = *((unsigned int*)(pr + (a & SEK_PAGEM)));
-		r = (r >> 16) | (r << 16);
-		return r;
-	}
-	return pSekExt->ReadLong[(unsigned int)pr](a);
-}
-
-void __fastcall WriteLongBP(unsigned int a, unsigned int d)
-{
-	unsigned char* pr;
-
-	a &= 0xFFFFFF;
-
-	pr = FIND_W(a);
-
-	CheckBreakpoint_W(a, ~1);
-
-	if ((unsigned int)pr >= SEK_MAXHANDLER) {
-		d = (d >> 16) | (d << 16);
-		*((unsigned int*)(pr + (a & SEK_PAGEM))) = d;
-		return;
-	}
-	pSekExt->WriteLong[(unsigned int)pr](a, d);
-}
-
-#endif
 
 // ----------------------------------------------------------------------------
 // A68K variables
@@ -600,14 +492,6 @@ unsigned int __fastcall M68KFetchWord(unsigned int a) { return (unsigned int)Fet
 unsigned int __fastcall M68KFetchLong(unsigned int a) { return               FetchLong(a); }
 
 #ifdef FBA_DEBUG
-unsigned int __fastcall M68KReadByteBP(unsigned int a) { return (unsigned int)ReadByteBP(a); }
-unsigned int __fastcall M68KReadWordBP(unsigned int a) { return (unsigned int)ReadWordBP(a); }
-unsigned int __fastcall M68KReadLongBP(unsigned int a) { return               ReadLongBP(a); }
-
-void __fastcall M68KWriteByteBP(unsigned int a, unsigned int d) { WriteByteBP(a, d); }
-void __fastcall M68KWriteWordBP(unsigned int a, unsigned int d) { WriteWordBP(a, d); }
-void __fastcall M68KWriteLongBP(unsigned int a, unsigned int d) { WriteLongBP(a, d); }
-
 void M68KCheckBreakpoint() { CheckBreakpoint_PC(); }
 void M68KSingleStep() { SingleStep_PC(); }
 
@@ -684,26 +568,6 @@ struct A68KInter a68k_inter_normal = {
 	A68KRead16,	// unused
 	A68KRead32,	// unused
 };
-
-#if defined (FBA_DEBUG)
-
-struct A68KInter a68k_inter_breakpoint = {
-	NULL,
-	ReadByteBP,
-	ReadWordBP,
-	ReadLongBP,
-	WriteByteBP,
-	WriteWordBP,
-	WriteLongBP,
-	A68KChangePC,
-	A68KFetch8,
-	A68KFetch16,
-	A68KFetch32,
-	A68KRead16,	// unused
-	A68KRead32,	// unused
-};
-
-#endif
 
 #endif
 
@@ -1419,31 +1283,18 @@ void SekDbgDisableBreakpoints()
 void SekDbgEnableBreakpoints()
 {
 	if (BreakpointDataRead[0].address || BreakpointDataWrite[0].address || BreakpointFetch[0].address) {
-#if defined FBA_DEBUG && defined EMU_M68K
+#ifdef EMU_M68K
 		if(nSekCpuCore == SEK_CORE_M68K) {
 			SekDbgDisableBreakpoints();
 
 			if (BreakpointFetch[0].address) {
 				m68k_set_instr_hook_callback(M68KCheckBreakpoint);
 			}
-
-			if (BreakpointDataRead[0].address) {
-				M68KReadByteDebug = M68KReadByteBP;
-				M68KReadWordDebug = M68KReadWordBP;
-				M68KReadLongDebug = M68KReadLongBP;
-			}
-
-			if (BreakpointDataWrite[0].address) {
-				M68KWriteByteDebug = M68KWriteByteBP;
-				M68KWriteWordDebug = M68KWriteWordBP;
-				M68KWriteLongDebug = M68KWriteLongBP;
-			}
 		}
 #endif
 
 #ifdef EMU_A68K
 		if(nSekCpuCore == SEK_CORE_A68K) {
-			a68k_memory_intf = a68k_inter_breakpoint;
 			if (BreakpointFetch[0].address) {
 				a68k_memory_intf.DebugCallback = A68KCheckBreakpoint;
 				mame_debug = 255;
