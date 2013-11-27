@@ -18,6 +18,9 @@
  *---------------------------------------------------------------
  * Changelog for OpenDingux
  *
+ * 2013-11-27 - Save $gp around calls to memory callbacks. This fixes kov.zip
+ *              In rare occasions $gp is changed inside callbacks and accessing
+ *              variables via $gp becomes invalid. Save 
  * 2013-11-26 - Fix setting N flag in asl.b #1,reg / bpl #addr combo.
  *              If reg was 0x80 after shifting N received 2 (should have 0/1)
  *              and the following bpl failed. Now always discard higher bits for N.
@@ -357,7 +360,7 @@ int  PreDecLongMove = 0;
 
 /* External register preservation */
 
-static char SavedRegs[] = "ZA--------------SSSSSSSS----GSFR";
+static char SavedRegs[] = "ZA--------------SSSSSSSS-----SFR";
 
 
 
