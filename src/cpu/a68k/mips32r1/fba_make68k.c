@@ -18,6 +18,8 @@
  *---------------------------------------------------------------
  * Changelog for OpenDingux
  *
+ * 2013-11-28 - Fix setting Carry Flag for LSL.L #imm, Dreg. It was being
+                always zeroed for long shift. This fixes ddonpach.zip
  * 2013-11-27 - Save $gp around calls to memory callbacks. This fixes kov.zip
  *              In rare occasions $gp is changed inside callbacks and accessing
  *              variables via $gp becomes invalid. Save 
@@ -5802,7 +5804,7 @@ void lsl_lsr(void)
 							} else {
 								if (Size != 'L')
 									fprintf(fp, "\t\t sll   %s,%s,%d\n", regnameslong[FLAG_C], regnameslong[V0], Size == 'W' ? 16 : 24);
-								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[FLAG_C], regnameslong[FLAG_C], regnameslong[T2]);
+								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[FLAG_C], regnameslong[V0], regnameslong[T2]);
 								fprintf(fp, "\t\t srl   %s,%s,31       \t # Set Carry\n", regnameslong[FLAG_C], regnameslong[FLAG_C]);
 								// The actual work
 								fprintf(fp, "\t\t sllv  %s,%s,%s\n", regnameslong[V0], regnameslong[V0], regnameslong[OPCODE]);
