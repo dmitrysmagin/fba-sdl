@@ -54,15 +54,15 @@
 #define WRITE_REG_32(A, D)		A = D
 
 #define READ_IMM_8()			(*(UINT8 *)PC)
-#define READ_IMM_16()			(((*((UINT8 *)PC+1))<<8)|(*(UINT8 *)PC))
+#define READ_IMM_16()			(*(UINT16 *)PC)
 #ifdef C68K_BIG_ENDIAN
-#define READ_IMM_32()			(((*((UINT8 *)PC+3))<<24)|((*((UINT8 *)PC+2))<<16)|((*((UINT8 *)PC+1))<<8)|(*(UINT8 *)PC))
+#define READ_IMM_32()			(*(UINT32 *)PC)
 #else
 #define READ_IMM_32()			(((*(UINT16 *)PC) << 16) | (*(UINT16 *)(PC + 2)))
 #endif
 
 #define READSX_IMM_8()			(INT32)(*(INT8 *)PC)
-#define READSX_IMM_16()			(INT32)((INT16)((*((INT8 *)PC+1))<<8)|(*(UINT8 *)PC))
+#define READSX_IMM_16()			(INT32)(*(INT16 *)PC)
 #define READSX_IMM_32()			MAKE_INT_32(READ_IMM_32())
 
 #define READ_MEM_8(A)			CPU->Read_Byte(A)
