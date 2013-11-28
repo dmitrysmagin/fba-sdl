@@ -7479,6 +7479,16 @@ void CodeSegmentBegin(void)
 	fprintf(fp, "\t\t sw    %s, 0x%2.2X(%s)\n\n", regnameslong[RA], DBG_STACKFRAME_SIZE - 0x04, regnameslong[SP]);
 
 	fprintf(fp, "\t\t .set noat\n");
+
+	// update flags
+#ifdef MAME_DEBUG
+	ReadCCR('W', AT);
+#else
+	ReadCCR('B', AT);
+#endif
+
+	fprintf(fp, "\t\t sw    %s,%s\n", regnameslong[AT], REG_CCR);
+
 	fprintf(fp, "\t\t lw    $at, %s\n", MEMINTF_DBGCALLBACK);
 	fprintf(fp, "\t\t beq   $at, $zero, 9f\n");
 	fprintf(fp, "\t\t nop         	 # Delay slot\n", PREF);
