@@ -1638,6 +1638,8 @@ unsigned int SekDbgGetRegister(SekRegister nRegister)
 			case SEK_REG_ISP:
 				return GetA68KISP();
 
+			case SEK_REG_CCR:
+				return M68000_regs.ccr;
 			default:
 				return 0;
 		}

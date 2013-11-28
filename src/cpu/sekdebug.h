@@ -6,7 +6,7 @@ enum SekRegister {
 	SEK_REG_SP, SEK_REG_USP, SEK_REG_ISP, SEK_REG_MSP,
 	SEK_REG_VBR,
 	SEK_REG_SFC, SEK_REG_DFC,
-	SEK_REG_CACR, SEK_REG_CAAR
+	SEK_REG_CACR, SEK_REG_CAAR, SEK_REG_CCR
 };
 
 extern void (*SekDbgBreakpointHandlerRead)(UINT32, INT32);
