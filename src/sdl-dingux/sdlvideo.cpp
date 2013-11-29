@@ -202,6 +202,39 @@ static void Blit_380x224_to_320x240()
 	}
 }
 
+static void Blit_368x224_to_320x240() 
+{
+	// zerozone 368x224
+	unsigned short * p = &VideoBuffer[2560];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<224; i++)
+		for (int j=0; j<16; j++) {
+			p[0] = q[0];
+			p[1] = q[1];
+			p[2] = q[2];
+			p[3] = q[3];
+			p[4] = COLORMIX(q[4], q[5]);
+			p[5] = q[6];
+			p[6] = q[7];
+			p[7] = q[8];
+			p[8] = q[9];
+			p[9] = q[10];
+			p[10] = COLORMIX(q[11], q[12]);
+			p[11] = q[13];
+			p[12] = q[14];
+			p[13] = q[15];
+			p[14] = q[16];
+			p[15] = COLORMIX(q[17], q[18]);
+			p[16] = q[19];
+			p[17] = q[20];
+			p[18] = q[21];
+			p[19] = q[22];
+			p += 20;
+			q += 23;
+		}
+}
+
 static void Blit_352x240_to_320x240() 
 {
 	// V-System 352x240
@@ -382,6 +415,7 @@ BLIT_TABLE blit_table[] = {
 	{320, 240, 384, 240, Blit_384x240_to_320x240, Blit_384x240_to_320x240}, // Cave
 	{320, 240, 384, 224, Blit_384x224_to_320x240, Blit_384x224_to_320x240}, // CPS1 & CPS2
 	{320, 240, 380, 224, Blit_380x224_to_320x240, Blit_380x224_to_320x240}, // silkroad
+	{320, 240, 368, 224, Blit_368x224_to_320x240, Blit_368x224_to_320x240}, // zerozone
 	{320, 240, 352, 240, Blit_352x240_to_320x240, Blit_352x240_to_320x240}, // V-System
 	{320, 240, 336, 240, Blit_336x240_to_320x240, Blit_336x240_to_320x240}, // Atari
 	{320, 240, 320, 240, Blit_320x240_to_320x240, Blit_320x240_to_320x240}, // Cave & Toaplan
