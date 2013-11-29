@@ -107,6 +107,26 @@ static void Blit_512x256_to_320x240()
 	}
 }
 
+static void Blit_512x224_to_320x240() 
+{
+	// galpinbl, hotpinbl 512x224
+	unsigned short * p = &VideoBuffer[2560];
+	unsigned short * q = BurnVideoBuffer;
+	
+	for (int i=0; i<224; i++) {
+		for (int j=0; j<64; j++) {
+			p[0] = COLORMIX(q[0], q[1]);
+			p[1] = q[2];
+			p[2] = COLORMIX(q[3], q[4]);
+			p[3] = q[5];
+			p[4] = COLORMIX(q[6], q[7]);
+			p += 5;
+			q += 8;
+		}
+		if(i % 16 == 0) q += 512;
+	}
+}
+
 static void Blit_448x224_to_320x240() 
 {
 	// IGS 448x224
@@ -435,6 +455,7 @@ BLIT_TABLE blit_table[] = {
 	{320, 240, 640, 240, Blit_640x240_to_320x240, Blit_640x240_to_320x240}, // Taito (warriorb)
 	{320, 240, 640, 224, Blit_640x224_to_320x240, Blit_640x224_to_320x240}, // Taito (darius2d)
 	{320, 240, 512, 256, Blit_512x256_to_320x240, Blit_512x256_to_320x240}, // Konami (hexion)
+	{320, 240, 512, 224, Blit_512x224_to_320x240, Blit_512x224_to_320x240}, // hotpinbl
 	{320, 240, 448, 224, Blit_448x224_to_320x240, Blit_448x224_to_320x240}, // IGS (PGM)
 	{320, 240, 384, 256, Blit_384x256_to_320x240, Blit_384x256_to_320x240}, // Irem
 	{320, 240, 384, 240, Blit_384x240_to_320x240, Blit_384x240_to_320x240}, // Cave
