@@ -1321,6 +1321,12 @@ void SekDbgEnableSingleStep()
 		mame_debug = 254;
 	}
 #endif
+
+#ifdef EMU_C68K
+	if(nSekCpuCore == SEK_CORE_C68K) {
+		SekC68KCurrentContext->Dbg_CallBack = SingleStep_PC;
+	}
+#endif
 }
 
 int SekDbgSetBreakpointDataRead(unsigned int nAddress, int nIdentifier)
@@ -1708,6 +1714,67 @@ unsigned int SekDbgGetRegister(SekRegister nRegister)
 				return m68k_get_reg(NULL, M68K_REG_CACR);
 			case SEK_REG_CAAR:
 				return m68k_get_reg(NULL, M68K_REG_CAAR);
+
+			default:
+				return 0;
+		}
+	}
+
+	if(nSekCpuCore == SEK_CORE_C68K) {
+		switch (nRegister) {
+			case SEK_REG_D0:
+				return SekC68KCurrentContext->D[0];
+			case SEK_REG_D1:
+				return SekC68KCurrentContext->D[1];
+			case SEK_REG_D2:
+				return SekC68KCurrentContext->D[2];
+			case SEK_REG_D3:
+				return SekC68KCurrentContext->D[3];
+			case SEK_REG_D4:
+				return SekC68KCurrentContext->D[4];
+			case SEK_REG_D5:
+				return SekC68KCurrentContext->D[5];
+			case SEK_REG_D6:
+				return SekC68KCurrentContext->D[6];
+			case SEK_REG_D7:
+				return SekC68KCurrentContext->D[7];
+
+			case SEK_REG_A0:
+				return SekC68KCurrentContext->A[0];
+			case SEK_REG_A1:
+				return SekC68KCurrentContext->A[1];
+			case SEK_REG_A2:
+				return SekC68KCurrentContext->A[2];
+			case SEK_REG_A3:
+				return SekC68KCurrentContext->A[3];
+			case SEK_REG_A4:
+				return SekC68KCurrentContext->A[4];
+			case SEK_REG_A5:
+				return SekC68KCurrentContext->A[5];
+			case SEK_REG_A6:
+				return SekC68KCurrentContext->A[6];
+			case SEK_REG_A7:
+				return SekC68KCurrentContext->A[7];
+
+			case SEK_REG_PC:
+				return SekC68KCurrentContext->PC - SekC68KCurrentContext->BasePC;
+
+			case SEK_REG_SR:
+				return 0;
+
+			case SEK_REG_SP:
+				return SekC68KCurrentContext->A[7];
+			case SEK_REG_USP:
+				return SekC68KCurrentContext->USP;
+			case SEK_REG_ISP:
+				return 0;
+
+			case SEK_REG_CCR:
+				return (SekC68KCurrentContext->flag_X << 4) |
+					(SekC68KCurrentContext->flag_N << 3) |
+					(SekC68KCurrentContext->flag_Z << 2) |
+					(SekC68KCurrentContext->flag_V << 1) |
+					(SekC68KCurrentContext->flag_C << 0);
 
 			default:
 				return 0;

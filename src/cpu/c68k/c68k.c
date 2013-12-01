@@ -114,6 +114,12 @@ C68k_Check_Interrupt:
 C68k_Exec_Next:
 			if (CPU->ICount > 0)
 			{
+			#ifdef FBA_DEBUG
+				if(CPU->Dbg_CallBack) {
+					CPU->PC = PC;
+					CPU->Dbg_CallBack();
+				}
+			#endif
 				Opcode = READ_IMM_16();
 				PC += 2;
 				goto *JumpTable[Opcode];
