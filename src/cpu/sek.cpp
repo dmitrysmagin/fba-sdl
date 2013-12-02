@@ -1905,6 +1905,8 @@ int SekScan(int nAction)
 
 				BurnAcb(&ba);
 
+				// Restore pc
+				A68KChangePC(SekRegs[i]->pc);
 				// Re-setup each cpu on read/write
 				if (nAction & ACB_ACCESSMASK) {
 					SekSetup(SekRegs[i]);
