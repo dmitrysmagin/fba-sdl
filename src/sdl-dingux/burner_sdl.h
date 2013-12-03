@@ -26,9 +26,6 @@ typedef unsigned char BYTE;
 #define	__cdecl
 #endif
 
-// fba_player.cpp
-extern char szAppBurnVer[16];
-
 // main.cpp
 extern bool bRunPause;
 TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize);
@@ -87,6 +84,9 @@ extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
 int DrvInit(int nDrvNum, bool bRestore);
 int DrvInitCallback(); // Used when Burn library needs to load a game. DrvInit(nBurnSelect, false)
 int DrvExit();
+
+// sdlromload.cpp
+extern char szAppBurnVer[16];
 int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
 int AppError(TCHAR* szText, int bWarning);
 

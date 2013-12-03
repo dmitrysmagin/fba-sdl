@@ -23,7 +23,6 @@
 #include <sys/time.h>
 #include <SDL/SDL.h>
 
-#include "version.h"
 #include "fba_player.h"
 #include "font.h"
 #include "snd.h"
@@ -32,72 +31,15 @@
 #include "sdlgui.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
+#include "sdlromload.h"
 
 #ifndef DRV_NAME
 #define DRV_NAME (0)
 #endif
 
-#define _s(A) #A
-#define _a(A) _s(A)
-#define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
-
-char szAppBurnVer[16] = VERSION;
-SDL_Surface *load_screen;
-int fwidth = 320, fheight = 240; // text surface
 static int frame_count = 0;
 bool GameLooping;
 int fps=0;
-
-void blit_loading_screen()
-{
-	extern SDL_Surface *screen;
-	SDL_Rect dst;
-
-	dst.x = (screen->w - 320) / 2;
-	dst.y = (screen->h - 240) / 2;
-	SDL_BlitSurface(load_screen, NULL, screen, &dst);
-	SDL_Flip(screen);
-}
-
-void show_rom_loading_text(char *szText, int nSize, int nTotalSize)
-{
-	int doffset=20;
-	static long long size = 0;
-
-	DrawRect((uint16 *)load_screen->pixels, doffset, 120, 300, 20, 0, fwidth);
-
-	if (szText)
-		DrawString (szText, (uint16 *)load_screen->pixels, doffset, 120, fwidth);
-
-	if (nTotalSize == 0) {
-		size = 0;
-		DrawRect((uint16 *)load_screen->pixels, doffset, 140, 280, 12, 0x00FFFFFF, fwidth);
-		DrawRect((uint16 *)load_screen->pixels, doffset+1, 141, 278, 10, 0x00808080, fwidth);
-	} else {
-		size += nSize;
-		if (size > nTotalSize) size = nTotalSize;
-		DrawRect((uint16 *)load_screen->pixels, doffset+1, 141, size * 278 / nTotalSize, 10, 0x00FFFF00, fwidth);
-	}
-
-	blit_loading_screen();
-}
-
-void show_rom_error_text(char *szText)
-{
-	int doffset=20;
-
-	DrawRect((uint16 *)load_screen->pixels, doffset, 120, 300, 20, 0, fwidth);
-
-	DrawString ("Error loading rom (not found):", (uint16 *)load_screen->pixels, doffset, 160, fwidth);
-	if (szText)
-		DrawString (szText, (uint16 *)load_screen->pixels, doffset, 180, fwidth);
-	DrawString ("Exiting - press any key", (uint16 *)load_screen->pixels, doffset, 200, fwidth);
-
-	blit_loading_screen();
-
-	SDL_Event event;
-	while (event.type!=SDL_KEYDOWN) SDL_WaitEvent(&event);
-}
 
 void CreateCapexLists()
 {
@@ -139,7 +81,7 @@ void shutdown()
 
 	gui_Exit();
 
-	SDL_FreeSurface(load_screen);
+	RomLoadExit();
 	VideoExit();
 	InpExit();
 
@@ -186,9 +128,7 @@ void run_fba_emulator(const char *fn)
 	BurnPathsInit();
 	gui_Init();
 
-	printf("about to burnlibinit()\n");
 	BurnLibInit();
-	printf("completed burnlibinit()\n");
 
 	ConfigAppLoad();
 
@@ -242,15 +182,9 @@ void run_fba_emulator(const char *fn)
 	VideoInit();
 	printf("completed videoinit()\n");
 
-	load_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, fwidth, fheight, 16, 0, 0, 0, 0);
-
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
-	DrawString ("Finalburn Alpha for OpenDingux (v " VERSION ")", (uint16 *)load_screen->pixels, 10, 20, fwidth);
-	DrawString ("Based on FinalBurnAlpha", (uint16 *)load_screen->pixels, 10, 35, fwidth);
-	DrawString ("Now loading ... ", (uint16 *)load_screen->pixels, 10, 105, fwidth);
-	show_rom_loading_text("Open Zip", 0, 0);
-	blit_loading_screen();
+	RomLoadInit();
 
 	InpInit();
 	InpDIP();
