@@ -33,44 +33,9 @@
 #include "sdlinput.h"
 #include "sdlromload.h"
 
-#ifndef DRV_NAME
-#define DRV_NAME (0)
-#endif
-
 static int frame_count = 0;
 bool GameLooping;
 int fps=0;
-
-void CreateCapexLists()
-{
-	printf("Create rom lists (%d)\n",nBurnDrvCount);
-	FILE * zipf;
-	FILE * romf;
-	zipf=fopen("zipname.fba","w");
-	romf=fopen("rominfo.fba","w");
-	char * fullname;
-	int j;
-	for (int i=0;i<nBurnDrvCount;i++)
-	{
-		nBurnDrvActive=i;
-		fullname=(char*)malloc(strlen(BurnDrvGetTextA(DRV_FULLNAME))+1);
-		strcpy(fullname,BurnDrvGetTextA(DRV_FULLNAME));
-		for (j=0;j<strlen(fullname);j++)
-		{
-			if (fullname[j]==',') fullname[j]=' ';
-		}
-		if (BurnDrvGetTextA(DRV_PARENT)) fprintf(romf,"FILENAME( %s %s %s \"%s\" )\n",BurnDrvGetTextA(DRV_NAME),BurnDrvGetTextA(DRV_PARENT),BurnDrvGetTextA(DRV_DATE),BurnDrvGetTextA(DRV_MANUFACTURER)); else fprintf(romf,"FILENAME( %s fba %s \"%s\" )\n",BurnDrvGetTextA(DRV_NAME),BurnDrvGetTextA(DRV_DATE),BurnDrvGetTextA(DRV_MANUFACTURER));
-		fprintf(zipf,"%s,%s,%s %s\n",BurnDrvGetTextA(DRV_NAME),fullname,BurnDrvGetTextA(DRV_DATE),BurnDrvGetTextA(DRV_MANUFACTURER));
-		free(fullname);
-	}
-	fclose(zipf);
-	fclose(romf);
-	char temp[24];
-	strcpy(temp,"FBA ");
-	strcat(temp,szAppBurnVer);
-	strcat(temp,".dat");
-	create_datfile(temp, 0);
-}
 
 void shutdown()
 {
@@ -121,66 +86,16 @@ unsigned int GetTicks (void)
 	return ticks;
 }
 
-void run_fba_emulator(const char *fn)
+void run_fba_emulator(int drvnum)
 {
 	atexit(shutdown);
 
-	BurnPathsInit();
 	gui_Init();
 
-	BurnLibInit();
-
-	ConfigAppLoad();
-
-	// process rom path and name
-	printf("about to load rom\n");
-	char romname[MAX_PATH];
-	char *p;
-
-	strcpy(szAppRomPaths[0], fn);
-	p = strrchr(szAppRomPaths[0], '/');
-	if (p) {
-		p++;
-		strcpy(romname, p);
-
-		*p = 0;
-		p = strrchr(romname, '.');
-		if (p) *p = 0;
-		else {
-			// error
-			goto finish;
-		}
-	} else {
-		// error
-		goto finish;
-	}
-
-	// find rom by name
-	for (nBurnDrvSelect[0]=0; nBurnDrvSelect[0]<nBurnDrvCount; nBurnDrvSelect[0]++)
-	{
-		nBurnDrvActive=nBurnDrvSelect[0];
-		if ( strcasecmp(romname, BurnDrvGetTextA(DRV_NAME)) == 0 )
-			break;
-	}
-	if (nBurnDrvSelect[0] >= nBurnDrvCount)
-	{
-		// unsupport rom ...
-		nBurnDrvSelect[0] = ~0U;
-		nBurnDrvActive=nBurnDrvSelect[0];
-		printf ("rom not supported!\n");
-		goto finish;
-	}
-
-	if (config_options.option_create_lists)
-	{
-		unsigned int tmp=nBurnDrvActive;
-		CreateCapexLists();
-		nBurnDrvActive=tmp;
-	}
+	ConfigAppLoad(); // move to main later
 
 	SystemInit();
 	VideoInit();
-	printf("completed videoinit()\n");
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
@@ -189,7 +104,7 @@ void run_fba_emulator(const char *fn)
 	InpInit();
 	InpDIP();
 
-	if (DrvInit(nBurnDrvSelect[0], false) != 0)
+	if (DrvInit(drvnum, false) != 0)
 	{
 		printf ("Driver initialisation failed! Likely causes are:\n- Corrupt/Missing ROM(s)\n- I/O Error\n- Memory error\n\n");
 		goto finish;
@@ -217,7 +132,7 @@ void run_fba_emulator(const char *fn)
 	gui_RunDebug();
 #endif
 
-#if 0
+#ifdef WIN32
 	{
 		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
 		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec

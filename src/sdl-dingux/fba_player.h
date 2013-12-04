@@ -20,8 +20,6 @@
 #ifndef _FBA_PLAYER_
 #define _FBA_PLAYER_
 
-
-void CreateCapexLists();
-void run_fba_emulator(const char *);
+void run_fba_emulator(int drvnum);
 
 #endif	// _FBA_PLAYER_

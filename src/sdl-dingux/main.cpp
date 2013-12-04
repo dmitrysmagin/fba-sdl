@@ -30,22 +30,91 @@
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
 
-int FindDrvByFileName(const char * fn)
+void CreateCapexLists()
 {
-	char sfn[60] = {0, };
-	for (int i=strlen(fn)-1; i>=0; i-- ) {
-		if (fn[i] == '/' || fn[i] == '\\' ) {
-			strcpy( sfn, fn + i + 1 );
-			break;
+	printf("Create rom lists (%d)\n",nBurnDrvCount);
+	FILE *zipf;
+	FILE *romf;
+	zipf = fopen("zipname.fba","w");
+	romf = fopen("rominfo.fba","w");
+	char *fullname;
+	int j;
+	for(int i = 0; i < nBurnDrvCount; i++) {
+		nBurnDrvActive = i;
+		fullname = (char*)malloc(strlen(BurnDrvGetTextA(DRV_FULLNAME)) + 1);
+		strcpy(fullname, BurnDrvGetTextA(DRV_FULLNAME));
+		for(j = 0; j < strlen(fullname); j++) {
+			if(fullname[j] == ',') fullname[j] = ' ';
 		}
-	}
-	if (sfn[0] == 0 ) strcpy( sfn, fn );
-	char * p = strrchr( sfn, '.' );
-	if (p) *p = 0;
 
-	for (nBurnDrvSelect[0]=0; nBurnDrvSelect[0]<nBurnDrvCount; nBurnDrvSelect[0]++)
-		if ( strcasecmp(sfn, BurnDrvGetText(DRV_NAME)) == 0 )
-			return nBurnDrvSelect[0];
+		if(BurnDrvGetTextA(DRV_PARENT))
+			fprintf(romf,
+				"FILENAME( %s %s %s \"%s\" )\n",
+				BurnDrvGetTextA(DRV_NAME),
+				BurnDrvGetTextA(DRV_PARENT),
+				BurnDrvGetTextA(DRV_DATE),
+				BurnDrvGetTextA(DRV_MANUFACTURER));
+		else
+			fprintf(romf,
+				"FILENAME( %s fba %s \"%s\" )\n",
+				BurnDrvGetTextA(DRV_NAME),
+				BurnDrvGetTextA(DRV_DATE),
+				BurnDrvGetTextA(DRV_MANUFACTURER));
+
+		fprintf(zipf,
+			"%s,%s,%s %s\n",
+			BurnDrvGetTextA(DRV_NAME),
+			fullname,
+			BurnDrvGetTextA(DRV_DATE),
+			BurnDrvGetTextA(DRV_MANUFACTURER));
+		free(fullname);
+	}
+	fclose(zipf);
+	fclose(romf);
+	char temp[24];
+	strcpy(temp,"FBA ");
+	strcat(temp,szAppBurnVer);
+	strcat(temp,".dat");
+	create_datfile(temp, 0);
+}
+
+int FindDrvByFileName(const char *fn)
+{
+	char romname[MAX_PATH];
+	char *p;
+
+	p = strrchr(fn, '/');
+	if(p) {
+		p++;
+		strcpy(romname, p);
+
+		*p = 0;
+		p = strrchr(romname, '.');
+		if(p) *p = 0;
+		else {
+			// error
+			return -1;
+		}
+	} else {
+		// error
+		return -1;
+	}
+
+	// find rom by name
+	for(nBurnDrvSelect[0] = 0; nBurnDrvSelect[0] < nBurnDrvCount; nBurnDrvSelect[0]++) {
+		nBurnDrvActive = nBurnDrvSelect[0];
+		if(strcasecmp(romname, BurnDrvGetTextA(DRV_NAME)) == 0)
+			return nBurnDrvActive;
+	}
+
+	if(nBurnDrvSelect[0] >= nBurnDrvCount) {
+		// unsupport rom ...
+		nBurnDrvSelect[0] = ~0U;
+		nBurnDrvActive = nBurnDrvSelect[0];
+		printf("Rom %s not supported!\n", romname);
+		return -1;
+	}
+
 	nBurnDrvSelect[0] = 0;
 	return -1;
 }
@@ -163,21 +232,23 @@ int main(int argc, char **argv )
 {
 	char path[MAX_PATH];
 
-	if (argc < 2)
-	{
-		int c;
-		printf ("Usage: %s <path to rom><shortname>.zip\n   ie: %s ./uopoko.zip\n Note: Path and .zip extension are mandatory.\n\n",argv[0], argv[0]);
-		printf ("Supported (but not necessarily working via fba-gp2x) roms:\n\n");
+	BurnLibInit();		// init Burn core
+	BurnPathsInit();	// init paths or create them if needed
 
-		BurnLibInit();
-		for (nBurnDrvSelect[0]=0; nBurnDrvSelect[0]<nBurnDrvCount; nBurnDrvSelect[0]++)
-		{
-			nBurnDrvActive=nBurnDrvSelect[0];
-			printf ("%-20s ", BurnDrvGetTextA(DRV_NAME)); c++;
-			if (c == 3)
-			{
+	if (argc < 2) {
+		int c;
+		printf ("Usage: %s <path to rom><shortname>.zip\n"
+			"   ie: %s ./uopoko.zip\n"
+			" Note: Path and .zip extension are mandatory.\n\n", argv[0], argv[0]);
+		printf ("Supported (but not necessarily working) roms:\n\n");
+
+		for(nBurnDrvSelect[0] = 0; nBurnDrvSelect[0] < nBurnDrvCount; nBurnDrvSelect[0]++) {
+			nBurnDrvActive = nBurnDrvSelect[0];
+			printf("%-20s ", BurnDrvGetTextA(DRV_NAME));
+			c++;
+			if(c == 3) {
 				c = 0;
-				printf ("\n");
+				printf("\n");
 			}
 		}
 		printf ("\n\n");
@@ -185,7 +256,7 @@ int main(int argc, char **argv )
 		return 0;
 	}
 
-	//Initialize configuration options
+	// Initialize configuration options
 	config_options.option_sound_enable = 2;
 	config_options.option_rescale = 0; // no scaling by default
 	config_options.option_rotate = 0;
@@ -202,9 +273,8 @@ int main(int argc, char **argv )
 	#else
 	strcpy(config_options.option_frontend, "./fbacapex.dge");
 	#endif
-	printf("about to parse cmd\n");
-	parse_cmd(argc, argv,path);
-	printf("finished parsing\n");
+
+	parse_cmd(argc, argv, path);
 
 	config_keymap.up=SDLK_UP;
 	config_keymap.down=SDLK_DOWN;
@@ -228,9 +298,13 @@ int main(int argc, char **argv )
 
 	bForce60Hz = true;
 
-	// Run emu loop
-	run_fba_emulator (path);
+	int drv = FindDrvByFileName(path);
+	if(drv < 0) goto finish;
 
+	// Run emu loop
+	run_fba_emulator(drv);
+
+finish:
 	return 0;
 }
 
