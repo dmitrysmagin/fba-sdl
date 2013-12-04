@@ -359,10 +359,8 @@ CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
 		-DLSB_FIRST
 
-ifneq ($(OS),Windows_NT)
-CFLAGS += -D__cdecl="" -D__fastcall=""
-CXXFLAGS += -D__cdecl="" -D__fastcall=""
-endif
+CFLAGS += -U__cdecl -U__fastcall -D__cdecl="" -D__fastcall=""
+CXXFLAGS += -U__cdecl -U__fastcall -D__cdecl="" -D__fastcall=""
 
 ifdef USE_LIBAO
 	CFLAGS += -DUSE_LIBAO
