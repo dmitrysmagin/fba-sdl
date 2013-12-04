@@ -1,14 +1,18 @@
 #ifndef _TCHAR_H_
 #define _TCHAR_H_
 
-#define	__TEXT(q)	q
-
-
-//#define	TCHAR char
-typedef char TCHAR;
-
+#ifdef UNICODE
 #include <wchar.h>
+#define __TEXT(q)	L##q
 
+typedef wchar_t TCHAR;
+typedef wchar_t _TCHAR;
+
+#else
+
+#define __TEXT(q)	q
+
+typedef char TCHAR;
 
 // WTF? This is a normal string function!
 // damn linux. :)
@@ -47,19 +51,15 @@ typedef char TCHAR;
 #define strnlen(A, B) (strlen(A))
 #endif
 
-#undef __fastcall
-#undef _fastcall
-#define __fastcall			/*what does this correspond to?*/
-#define _fastcall			/*same as above - what does this correspond to?*/
-
-//#define uintptr_t unsigned int
-
 // FBA function, change this!
 #define dprintf printf
 
-
-#endif //_TCHAR_H_
+#endif // UNICODE
 
 #define _TEXT(x)	__TEXT(x)
 #define	_T(x)		__TEXT(x)
 
+TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize);
+char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
+
+#endif //_TCHAR_H_
