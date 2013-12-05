@@ -40,9 +40,17 @@
 #define BZIP_MAX (20)								// Maximum zip files to search through
 #define DIRS_MAX (20)								// Maximum number of directories to search
 
+// Define macros for appliction title and description
+#ifdef FBA_DEBUG
+ #define APP_TITLE "FB Alpha [DEBUG]"
+#else
+ #define APP_TITLE "FB Alpha"
+#endif
+
+#define APP_DESCRIPTION "Emulator for arcade games"
+
 #include "tchar.h"
 #include "version.h"
-#include "title.h"
 #include "burn.h"
 
 // ---------------------------------------------------------------------------
