@@ -335,11 +335,14 @@ int main(int argc, char **argv )
 	int drv = FindDrvByFileName(path);
 	if(drv < 0) goto finish;
 
+	ConfigAppLoad();
 	SystemInit();	// SDL_Init
 
 	// Run emu loop
 	RunEmulator(drv);
 
+	ConfigAppSave();
+	SystemExit(config_options.option_frontend);
 finish:
 	return 0;
 }

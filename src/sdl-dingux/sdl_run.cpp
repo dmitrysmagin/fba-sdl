@@ -71,8 +71,6 @@ void RunEmulator(int drvnum)
 {
 	gui_Init();
 
-	ConfigAppLoad(); // move to main later
-
 	VideoInit();
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
@@ -189,8 +187,6 @@ void RunEmulator(int drvnum)
 #endif
 
 finish:
-	ConfigAppSave();
-
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	DrvExit();
 
@@ -200,6 +196,4 @@ finish:
 
 	VideoExit();
 	InpExit();
-
-	SystemExit(config_options.option_frontend);
 }

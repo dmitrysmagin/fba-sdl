@@ -184,8 +184,6 @@ int DrvExit();
 
 // main.cpp
 extern char szAppBurnVer[16];
-void SystemInit();
-void SystemExit(char *frontend);
 
 // run.cpp
 extern bool bShowFPS;
