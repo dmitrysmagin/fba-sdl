@@ -459,7 +459,9 @@ void dbg_handler(unsigned int pc, int id)
 				if(gui_event.type == SDL_KEYDOWN) {
 					if(gui_event.key.keysym.sym == SDLK_ESCAPE) {
 						fclose(f);
-						exit(0);
+						call_exit();
+						debug = 0;
+						return;
 					}
 
 					if(gui_event.key.keysym.sym == SDLK_LCTRL)

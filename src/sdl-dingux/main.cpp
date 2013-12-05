@@ -29,6 +29,8 @@
 #include "snd.h"
 #include "sdlvideo.h"
 
+char szAppBurnVer[16] = VERSION;
+
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
 

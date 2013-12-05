@@ -81,13 +81,9 @@ int DrvInitCallback(); // Used when Burn library needs to load a game. DrvInit(n
 int DrvExit();
 
 // main.cpp
+extern char szAppBurnVer[16];
 void SystemInit();
 void SystemExit(char *frontend);
-
-// sdlromload.cpp
-extern char szAppBurnVer[16];
-int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
-int AppError(TCHAR* szText, int bWarning);
 
 // run.cpp
 extern bool bShowFPS;

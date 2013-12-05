@@ -1,5 +1,6 @@
 // Burner Zip module
 #include "burner.h"
+#include "sdl_progress.h"
 
 int nBzipError = 0;												// non-zero if there is a problem with the opened romset
 
@@ -226,7 +227,6 @@ static int CheckRoms()
 }
 
 void show_rom_loading_text(char * szText, int nSize, int nTotalSize);
-void show_rom_error_text(char * szText);
 
 static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 {
@@ -271,7 +271,7 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 		_stprintf(szText + _tcslen(szText), _T(" %hs..."), pszRomName);
 	}
 	ProgressUpdateBurner(ri.nLen ? 1.0 / ((double)nTotalSize / ri.nLen) : 0, szText, 0);
-	//fprintf(stderr,"%s (OK)\n", szText);
+	// FIXME: eliminate later in favor of ProgressUpdateBurner
 	show_rom_loading_text(szText, ri.nLen, nTotalSize);
 
 #if defined (BUILD_WIN32)
@@ -282,11 +282,10 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 #endif
 
 	if (RomFind[i].nState == 0) {							// Rom not found in zip at all
-
-	    fprintf(stderr,"%s (not found) \n",szText);
-	    show_rom_error_text(szText);
-	    exit(0);
-
+		TCHAR szTemp[128] = _T("");
+		_stprintf(szTemp, "%s (not found)\n",szText);
+		fprintf(stderr,szTemp);
+		ProgressError(szTemp, 1);
 		return 1;
 	}
 
@@ -305,10 +304,12 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 		// Error loading from the zip file
 		TCHAR szTemp[128] = _T("");
 		_stprintf(szTemp, _T("%s reading %.30hs from %.30s"), nRet == 2 ? _T("CRC error") : _T("Error"), pszRomName, GetFilenameW(szBzipName[nCurrentZip]));
-		AppError(szTemp, 1);
+		fprintf(stderr,szTemp);
+		ProgressError(szTemp, 1);
 		return 1;
 	}
-    fprintf(stderr,"%s (OK)\n", szText);
+
+	fprintf(stderr,"%s (OK)\n", szText);
 	return 0;
 }
 

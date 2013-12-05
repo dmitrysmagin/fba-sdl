@@ -31,27 +31,8 @@
 #include "sdlgui.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
-#include "sdlromload.h"
 
-static int frame_count = 0;
 bool GameLooping;
-int fps=0;
-
-void shutdown()
-{
-	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
-	DrvExit();
-
-	BurnLibExit();
-
-	gui_Exit();
-
-	RomLoadExit();
-	VideoExit();
-	InpExit();
-
-	SystemExit(config_options.option_frontend);
-}
 
 long long get_ticks_us()
 {
@@ -88,8 +69,6 @@ unsigned int GetTicks (void)
 
 void run_fba_emulator(int drvnum)
 {
-	atexit(shutdown);
-
 	gui_Init();
 
 	ConfigAppLoad(); // move to main later
@@ -98,15 +77,15 @@ void run_fba_emulator(int drvnum)
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
-	RomLoadInit();
-
 	sdl_input_init();
 	InpInit();
 	InpDIP();
 
-	if (DrvInit(drvnum, false) != 0)
-	{
-		printf ("Driver initialisation failed! Likely causes are:\n- Corrupt/Missing ROM(s)\n- I/O Error\n- Memory error\n\n");
+	if(DrvInit(drvnum, false) != 0) {
+		printf("Driver initialisation failed! Likely causes are:\n"
+			"- Corrupt/Missing ROM(s)\n"
+			"- I/O Error\n"
+			"- Memory error\n\n");
 		goto finish;
 	}
 
@@ -117,7 +96,6 @@ void run_fba_emulator(int drvnum)
 
 	RunReset();
 
-	frame_count = 0;
 	GameLooping = true;
 
 	bShowFPS = config_options.option_showfps;
@@ -132,7 +110,7 @@ void run_fba_emulator(int drvnum)
 	gui_RunDebug();
 #endif
 
-#ifdef WIN32
+#if 0
 	{
 		int now, start, lim=0, wait=0, frame_count=0, skipped_frames=0, draw_this_frame=true, fps=0;
 		int frame_limit = nBurnFPS/100, frametime = 100000000/nBurnFPS; // 16667 usec
@@ -210,9 +188,18 @@ void run_fba_emulator(int drvnum)
 	}
 #endif
 
-	printf ("Finished emulating\n");
-
 finish:
-	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	ConfigAppSave();
+
+	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
+	DrvExit();
+
+	BurnLibExit();
+
+	gui_Exit();
+
+	VideoExit();
+	InpExit();
+
+	SystemExit(config_options.option_frontend);
 }

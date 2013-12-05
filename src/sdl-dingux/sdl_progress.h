@@ -17,11 +17,12 @@
  *
  */
 
-#ifndef _SDL_ROMLOAD_H_
-#define _SDL_ROMLOAD_H_
+#ifndef _SDL_PROGRESS_H_
+#define _SDL_PROGRESS_H_
 
+int ProgressCreate();
+int ProgressDestroy();
+int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
+int ProgressError(TCHAR* szText, int bWarning);
 
-void RomLoadInit();
-void RomLoadExit();
-
-#endif // _SDL_ROMLOAD_H_
+#endif // _SDL_PROGRESS_H_

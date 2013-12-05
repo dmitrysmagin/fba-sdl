@@ -38,6 +38,7 @@
 #define BZIP_MAX (20)								// Maximum zip files to search through
 #define DIRS_MAX (20)								// Maximum number of directories to search
 
+#include "version.h"
 #include "title.h"
 #include "burn.h"
 #include "png.h"
@@ -57,6 +58,10 @@ typedef struct tagIMAGE {
 
 // ---------------------------------------------------------------------------
 // OS independent functionality
+
+#define _s(A) #A
+#define _a(A) _s(A)
+#define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
 #include "interface.h"
 

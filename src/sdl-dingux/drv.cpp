@@ -1,6 +1,7 @@
 // Driver Init module
 #include "burner.h"
 #include "snd.h"
+#include "sdl_progress.h"
 
 int bDrvOkay = 0;						// 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
 
@@ -14,13 +15,13 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	BzipOpen(false);
 
-	//ProgressCreate();
+	ProgressCreate();
 
 	nRet = BurnDrvInit();
 
 	BzipClose();
 
-	//ProgressDestroy();
+	ProgressDestroy();
 
 	if (nRet) {
 		return 1;
@@ -42,7 +43,10 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 		char* pszFilename;
 
 		BurnDrvGetRomName(&pszFilename, i, 0);
-		sprintf(szText, "Error loading %s, requested by %s.\nThe emulation will likely suffer problems.", pszFilename, BurnDrvGetTextA(0));
+		sprintf(szText,
+			"Error loading %s, requested by %s.\n"
+			"The emulation will likely suffer problems.",
+			pszFilename, BurnDrvGetTextA(0));
 	}
 
 	BzipClose();
@@ -80,7 +84,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	if (DoLibInit()) {				// Init the Burn library's driver
 		char szTemp[512];
 
-		BurnDrvExit();				// Exit the driver
+		//BurnDrvExit(); // this may crash if it wasn't init properly
 
 		_stprintf (szTemp, _T("There was an error starting '%s'.\n"), BurnDrvGetText(DRV_FULLNAME));
 		return 1;

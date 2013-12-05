@@ -24,15 +24,8 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "version.h"
-#include "sdlromload.h"
+#include "sdl_progress.h"
 #include "font.h"
-
-#define _s(A) #A
-#define _a(A) _s(A)
-#define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
-
-char szAppBurnVer[16] = VERSION;
 
 SDL_Surface *load_screen = NULL;
 int fwidth = 320, fheight = 240; // text surface
@@ -88,7 +81,7 @@ void show_rom_error_text(char *szText)
 	while(event.type != SDL_KEYDOWN) SDL_WaitEvent(&event);
 }
 
-void RomLoadInit()
+int ProgressCreate()
 {
 	if(!load_screen)
 		load_screen = SDL_CreateRGBSurface(SDL_SWSURFACE, fwidth, fheight, 16, 0, 0, 0, 0);
@@ -99,7 +92,7 @@ void RomLoadInit()
 	show_rom_loading_text("Open Zip", 0, 0);
 }
 
-void RomLoadExit()
+int ProgressDestroy()
 {
 	if(load_screen) {
 		SDL_FreeSurface(load_screen);
@@ -112,7 +105,9 @@ int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs)
 	return 0;
 }
 
-int AppError(TCHAR* szText, int bWarning)
+
+int ProgressError(TCHAR* szText, int bWarning)
 {
+	show_rom_error_text(szText);
 	return 0;
 }
