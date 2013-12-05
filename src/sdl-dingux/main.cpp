@@ -17,9 +17,11 @@
  *
  */
 
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <getopt.h>
 
 #include "burner.h"
@@ -29,6 +31,35 @@
 
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
+
+void SystemInit()
+{
+	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
+		printf("sdl failed to init\n");
+	}
+}
+
+void SystemExit(char *frontend)
+{
+	struct stat info;
+	SDL_Quit();
+#ifndef WIN32
+	if( (lstat(frontend, &info) == 0) && S_ISREG(info.st_mode) )
+	{
+	char path[256];
+	char *p;
+		strcpy(path, frontend);
+		p = strrchr(path, '/');
+		if(p == NULL) p = strrchr(path, '\\');
+		if(p != NULL)
+		{
+			*p = '\0';
+			chdir(path);
+		}
+		execl(frontend, frontend, NULL);
+	}
+#endif
+}
 
 void CreateCapexLists()
 {
@@ -300,6 +331,8 @@ int main(int argc, char **argv )
 
 	int drv = FindDrvByFileName(path);
 	if(drv < 0) goto finish;
+
+	SystemInit();	// SDL_Init
 
 	// Run emu loop
 	run_fba_emulator(drv);

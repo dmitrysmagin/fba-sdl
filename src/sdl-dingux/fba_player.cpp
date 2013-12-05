@@ -94,13 +94,13 @@ void run_fba_emulator(int drvnum)
 
 	ConfigAppLoad(); // move to main later
 
-	SystemInit();
 	VideoInit();
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
 	RomLoadInit();
 
+	sdl_input_init();
 	InpInit();
 	InpDIP();
 

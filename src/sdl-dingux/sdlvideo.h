@@ -12,9 +12,6 @@ extern unsigned short *BurnVideoBuffer;
 int VideoInit();
 void VideoExit();
 
-void SystemInit();
-void SystemExit(char *frontend);
-
 void VideoFlip(void);
 void VideoClear();
 

@@ -1,8 +1,5 @@
 
 #include <stdio.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <sys/stat.h>
 #include <SDL/SDL.h>
 
 #include "burner.h"
@@ -474,8 +471,50 @@ BLIT_TABLE blit_table[] = {
 	{  0,   0,   0,   0, NULL, NULL}
 };
 
+void VideoTrans()
+{
+	BurnerVideoTrans();
+}
+
 int VideoInit()
 {
+	// Initialize SDL
+	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+	/*{
+		int i = 0; // 0 - 320x240, 1 - 400x240, 2 - 480x272
+		int surfacewidth, surfaceheight;
+		#define NUMOFVIDEOMODES 3
+		struct {
+			int x;
+			int y;
+		} vm[NUMOFVIDEOMODES] = {
+			{320, 240},
+			{400, 240},
+			{480, 272}
+		};
+
+		// check 3 videomodes: 480x272, 400x240, 320x240
+		for(i = NUMOFVIDEOMODES-1; i >= 0; i--) {
+			if(SDL_VideoModeOK(vm[i].x, vm[i].y, 16, SDL_SWSURFACE) != 0) {
+				surfacewidth = vm[i].x;
+				surfaceheight = vm[i].y;
+				break;
+			}
+		}
+		screen = SDL_SetVideoMode(surfacewidth, surfaceheight, 16, SDL_SWSURFACE);
+	}*/
+
+	if(!screen) {
+		printf("SDL_SetVideoMode screen not initialised.\n");
+	} else {
+		printf("SDL_SetVideoMode successful.\n");
+	}
+
+	VideoBuffer = (unsigned short*)screen->pixels;
+
+	SDL_ShowCursor(SDL_DISABLE);
+	SDL_WM_SetCaption("Final Burn SDL", 0);
+
 	BurnDrvGetFullSize(&VideoBufferWidth, &VideoBufferHeight);
 	printf("w=%d h=%d\n",VideoBufferWidth, VideoBufferHeight);
 
@@ -513,84 +552,11 @@ int VideoInit()
 	return 0;
 }
 
-void VideoTrans()
-{
-	BurnerVideoTrans();
-}
-
 void VideoExit()
 {
 	free(BurnVideoBuffer);
 	BurnVideoBuffer = NULL;
 	BurnerVideoTrans = Blit_null;
-}
-
-void SystemInit()
-{
-	static const char* WINDOW_TITLE = "FBA";
-
-	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
-		printf("sdl failed to init\n");
-	}
-
-	// Initialize SDL
-	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
-	/*{
-		int i = 0; // 0 - 320x240, 1 - 400x240, 2 - 480x272
-		int surfacewidth, surfaceheight;
-		#define NUMOFVIDEOMODES 3
-		struct {
-			int x;
-			int y;
-		} vm[NUMOFVIDEOMODES] = {
-			{320, 240},
-			{400, 240},
-			{480, 272}
-		};
-
-		// check 3 videomodes: 480x272, 400x240, 320x240
-		for(i = NUMOFVIDEOMODES-1; i >= 0; i--) {
-			if(SDL_VideoModeOK(vm[i].x, vm[i].y, 16, SDL_SWSURFACE) != 0) {
-				surfacewidth = vm[i].x;
-				surfaceheight = vm[i].y;
-				break;
-			}
-		}
-		screen = SDL_SetVideoMode(surfacewidth, surfaceheight, 16, SDL_SWSURFACE);
-	}*/
-	if(!screen)
-	{
-		printf("SDL_SetVideoMode screen not initialised.\n");
-	}
-	else printf("SDL_SetVideoMode successful.\n");
-	VideoBuffer = (unsigned short*)screen->pixels;
-
-	SDL_ShowCursor(SDL_DISABLE);
-	SDL_WM_SetCaption( WINDOW_TITLE, 0 );
-
-	sdl_input_init();
-}
-
-void SystemExit(char *frontend)
-{
-	struct stat info;
-	SDL_Quit();
-#ifndef WIN32
-	if( (lstat(frontend, &info) == 0) && S_ISREG(info.st_mode) )
-	{
-	char path[256];
-	char *p;
-		strcpy(path, frontend);
-		p = strrchr(path, '/');
-		if(p == NULL) p = strrchr(path, '\\');
-		if(p != NULL)
-		{
-			*p = '\0';
-			chdir(path);
-		}
-		execl(frontend, frontend, NULL);
-	}
-#endif
 }
 
 void VideoClear()
