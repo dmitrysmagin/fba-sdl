@@ -29,7 +29,9 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include "tchar.h"
+#ifndef MAX_PATH
+#define MAX_PATH 511
+#endif
 
 // Macro to make quoted strings
 #define MAKE_STRING_2(s) #s
@@ -38,24 +40,24 @@
 #define BZIP_MAX (20)								// Maximum zip files to search through
 #define DIRS_MAX (20)								// Maximum number of directories to search
 
+#include "tchar.h"
 #include "version.h"
 #include "title.h"
 #include "burn.h"
-#include "png.h"
-#include "burner_sdl.h"
 
 // ---------------------------------------------------------------------------
-// OS dependent functionality
-typedef struct tagIMAGE {
-	unsigned int	width;
-	unsigned int	height;
-	unsigned int	rowbytes;
-	unsigned int	imgbytes;
-	unsigned char**	rowptr;
-	unsigned char*	bmpbits;
-	unsigned int	flags;
-} IMAGE;
+// FIXME: this is needed by interface.h (eliminate later)
+#ifndef RECT
+typedef struct tagRECT {
+	int left;
+	int top;
+	int right;
+	int bottom;
+} RECT,*PRECT,*LPRECT;
+typedef const RECT *LPCRECT;
+#endif
 
+#include "interface.h"
 // ---------------------------------------------------------------------------
 // OS independent functionality
 
@@ -63,7 +65,6 @@ typedef struct tagIMAGE {
 #define _a(A) _s(A)
 #define VERSION _a(VER_MAJOR.VER_MINOR.VER_BETA.VER_ALPHA)
 
-#include "interface.h"
 
 #define IMG_FREE		(1 << 0)
 
@@ -118,5 +119,88 @@ extern char szAppSavePath[MAX_PATH];
 extern char szAppConfigPath[MAX_PATH];
 extern char szAppSamplesPath[MAX_PATH]; // for burn/snd/samples.cpp
 void BurnPathsInit();
+
+// config.cpp
+typedef struct
+{
+	int option_sound_enable;
+	int option_rescale;
+	int option_rotate;
+	int option_samplerate;
+	int option_showfps;
+	int option_frameskip;
+	int option_68kcore;
+	int option_z80core;
+	int option_sense;
+	int option_useswap;
+	char option_frontend[MAX_PATH];
+	int option_create_lists;
+} CFG_OPTIONS;
+
+typedef struct
+{
+	int up;
+	int down;
+	int left;
+	int right;
+	int fire1;
+	int fire2;
+	int fire3;
+	int fire4;
+	int fire5;
+	int fire6;
+	int coin1;
+	int coin2;
+	int start1;
+	int start2;
+	int pause;
+	int quit;
+	int qsave;
+	int qload;
+} CFG_KEYMAP;
+
+extern CFG_OPTIONS config_options;
+extern CFG_KEYMAP config_keymap;
+
+int ConfigAppLoad();
+int ConfigAppSave();
+int ConfigGameLoad();
+int ConfigGameSave();
+
+// drv.cpp
+extern int bDrvOkay; // 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
+extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
+int DrvInit(int nDrvNum, bool bRestore);
+int DrvInitCallback(); // Used when Burn library needs to load a game. DrvInit(nBurnSelect, false)
+int DrvExit();
+
+// main.cpp
+extern char szAppBurnVer[16];
+void SystemInit();
+void SystemExit(char *frontend);
+
+// run.cpp
+extern bool bShowFPS;
+extern bool bPauseOn;
+int RunReset();
+int RunOneFrame(bool bDraw, int fps);
+
+// input.cpp
+extern int nAnalogSpeed;
+int InpInit();
+int InpExit();
+void InpDIP();
+
+// stringset.cpp
+class StringSet {
+public:
+	TCHAR* szText;
+	int nLen;
+	// printf function to add text to the Bzip string
+	int __cdecl Add(TCHAR* szFormat, ...);
+	int Reset();
+	StringSet();
+	~StringSet();
+};
 
 #endif // _BURNER_H_

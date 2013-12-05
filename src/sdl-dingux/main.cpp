@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <SDL/SDL.h>
 
 #include "burner.h"
 #include "fba_player.h"
