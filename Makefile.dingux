@@ -103,13 +103,7 @@ alldir	= burn \
 		cpu/s2650 \
 		cpu/sh2 \
 		cpu/z80 \
-		dep/kaillera/client \
-		dep/libs/lib7z \
-		dep/libs/libpng \
-		dep/libs/zlib \
-		dep/mingw/include \
 		dep/scripts \
-		dep/vc/include \
 		dep/generated \
 		sdl-dingux
 
@@ -200,9 +194,6 @@ depobj += bzip.o config.o drv.o fba_player.o font.o \
 		interface.o \
 		\
 		cd_interface.o \
-		\
-		adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o gzwrite.o infback.o \
-		inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o \
 		\
 		$(drvobj) \
 		\
