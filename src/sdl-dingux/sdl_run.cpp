@@ -23,11 +23,11 @@
 #include <sys/time.h>
 #include <SDL/SDL.h>
 
-#include "fba_player.h"
 #include "font.h"
 #include "snd.h"
-
 #include "burner.h"
+
+#include "sdl_run.h"
 #include "sdlgui.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
@@ -67,7 +67,7 @@ unsigned int GetTicks (void)
 	return ticks;
 }
 
-void run_fba_emulator(int drvnum)
+void RunEmulator(int drvnum)
 {
 	gui_Init();
 

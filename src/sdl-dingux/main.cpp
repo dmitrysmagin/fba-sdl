@@ -26,7 +26,7 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "fba_player.h"
+#include "sdl_run.h"
 #include "snd.h"
 #include "sdlvideo.h"
 
@@ -338,7 +338,7 @@ int main(int argc, char **argv )
 	SystemInit();	// SDL_Init
 
 	// Run emu loop
-	run_fba_emulator(drv);
+	RunEmulator(drv);
 
 finish:
 	return 0;

@@ -64,7 +64,7 @@ unsigned char P1P2Start = 0;
 
 // external variables
 extern bool bPauseOn; // run.cpp
-extern bool GameLooping; // fba_player.cpp
+extern bool GameLooping; // sdl_run.cpp
 
 // external functions
 void ChangeFrameskip(); // run.cpp

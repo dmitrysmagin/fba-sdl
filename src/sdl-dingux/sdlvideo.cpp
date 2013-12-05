@@ -3,7 +3,7 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "fba_player.h"
+#include "sdl_run.h"
 #include "sdlvideo.h"
 #include "sdlinput.h"
 

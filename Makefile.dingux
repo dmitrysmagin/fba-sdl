@@ -184,7 +184,7 @@ ifdef USE_LIBAO
 	depobj = aoaudio.o 
 endif
 
-depobj += bzip.o config.o drv.o fba_player.o font.o \
+depobj += bzip.o config.o drv.o sdl_run.o font.o \
 		input.o main.o neocdlist.o paths.o run.o sdlaudio.o sdlgui.o \
 		sdlinput.o sdl_progress.o sdlvideo.o snd.o stringset.o stubs.o \
 		tchar.o \

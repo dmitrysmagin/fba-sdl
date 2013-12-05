@@ -17,9 +17,9 @@
  *
  */
 
-#ifndef _FBA_PLAYER_
-#define _FBA_PLAYER_
+#ifndef _SDL_RUN_H_
+#define _SDL_RUN_H_
 
-void run_fba_emulator(int drvnum);
+void RunEmulator(int drvnum);
 
-#endif	// _FBA_PLAYER_
+#endif	// _SDL_RUN_H_
