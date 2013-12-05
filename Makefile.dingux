@@ -204,9 +204,6 @@ depobj += bzip.o config.o drv.o fba_player.o font.o \
 		adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o gzwrite.o infback.o \
 		inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o \
 		\
-		png.o pngerror.o pngget.o pngmem.o pngpread.o pngread.o pngrio.o pngrtran.o pngrutil.o \
-		pngset.o pngtrans.o pngwio.o pngwrite.o pngwtran.o pngwutil.o \
-		\
 		$(drvobj) \
 		\
 		burn.o burn_gun.o burn_led.o burn_memory.o burn_sound.o burn_sound_c.o cheat.o debug_track.o load.o \
