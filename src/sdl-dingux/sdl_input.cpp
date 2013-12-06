@@ -21,8 +21,8 @@
 
 #include "burner.h"
 #include "snd.h"
-#include "sdlgui.h"
-#include "sdlinput.h"
+#include "sdl_menu.h"
+#include "sdl_input.h"
 
 #define KEYPAD_UP       0x0001
 #define KEYPAD_DOWN     0x0002

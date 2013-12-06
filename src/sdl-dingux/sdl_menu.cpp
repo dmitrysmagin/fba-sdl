@@ -24,8 +24,8 @@
 
 #include "version.h"
 #include "burner.h"
-#include "sdlvideo.h"
 #include "snd.h"
+#include "sdl_video.h"
 
 #ifdef FBA_DEBUG
 #include "sek.h"

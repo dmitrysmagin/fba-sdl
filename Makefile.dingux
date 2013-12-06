@@ -181,13 +181,15 @@ drvobj	= 	d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwang
 endif
 
 ifdef USE_LIBAO
-	depobj = aoaudio.o 
+	depobj = ao_audio.o 
 endif
 
-depobj += bzip.o config.o drv.o sdl_run.o font.o \
-		input.o main.o neocdlist.o paths.o run.o sdlaudio.o sdlgui.o \
-		sdlinput.o sdl_progress.o sdlvideo.o snd.o stringset.o stubs.o \
-		tchar.o \
+depobj += \
+		bzip.o config.o drv.o font.o stringset.o stubs.o \
+		input.o main.o neocdlist.o paths.o run.o tchar.o \
+		\
+		sdl_audio.o sdl_input.o sdl_menu.o sdl_progress.o \
+		sdl_run.o sdl_video.o snd.o \
 		\
 		ioapi.o unzip.o dat.o state.o zipfn.o \
 		\

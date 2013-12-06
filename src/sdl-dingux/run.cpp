@@ -3,11 +3,12 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "sdl_run.h"
 #include "snd.h"
 #include "font.h"
-#include "sdlvideo.h"
-#include "sdlinput.h"
+
+#include "sdl_run.h"
+#include "sdl_video.h"
+#include "sdl_input.h"
 
 extern unsigned int FBA_KEYPAD[4]; // sdlinput.cpp
 

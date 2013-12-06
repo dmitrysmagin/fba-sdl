@@ -26,9 +26,9 @@
 #include <SDL/SDL.h>
 
 #include "burner.h"
-#include "sdl_run.h"
 #include "snd.h"
-#include "sdlvideo.h"
+#include "sdl_run.h"
+#include "sdl_video.h"
 
 char szAppBurnVer[16] = VERSION;
 

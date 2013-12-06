@@ -7,8 +7,8 @@
 #include "version.h"
 #include "burner.h"
 #include "snd.h"
-#include "sdlaudio.h"
-#include "aoaudio.h"
+#include "sdl_audio.h"
+#include "ao_audio.h"
 
 extern bool bPauseOn;
 extern int nBurnFPS;

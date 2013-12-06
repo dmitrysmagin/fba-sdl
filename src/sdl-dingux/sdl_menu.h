@@ -17,6 +17,9 @@
  *
  */
 
+#ifndef _SDL_MENU_H_
+#define _SDL_MENU_H_
+
 void gui_Init();
 void gui_Run();
 void gui_Exit();
@@ -24,3 +27,5 @@ void gui_Exit();
 #ifdef FBA_DEBUG
 void gui_RunDebug();
 #endif
+
+#endif // _SDL_MENU_H_

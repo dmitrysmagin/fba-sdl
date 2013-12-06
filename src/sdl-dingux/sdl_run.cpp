@@ -28,9 +28,9 @@
 #include "burner.h"
 
 #include "sdl_run.h"
-#include "sdlgui.h"
-#include "sdlvideo.h"
-#include "sdlinput.h"
+#include "sdl_menu.h"
+#include "sdl_video.h"
+#include "sdl_input.h"
 
 bool GameLooping;
 
