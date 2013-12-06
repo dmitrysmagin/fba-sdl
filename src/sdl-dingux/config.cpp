@@ -2,23 +2,36 @@
 #include "burner.h"
 int nIniVersion = 0;
 
-static void CreateConfigName(char* szConfig)
+// ---------------------------------------------------------------------------
+// config file parsing
+
+TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel)
 {
-#if 0
-	memcpy(szConfig, "fbasdl.ini", 12);
-#endif
-	return;
+	INT32 nLen;
+	if (s == NULL) {
+		return NULL;
+	}
+	if (pszLabel == NULL) {
+		return NULL;
+	}
+	nLen = _tcslen(pszLabel);
+
+	SKIP_WS(s);													// Skip whitespace
+
+	if (_tcsncmp(s, pszLabel, nLen)){							// Doesn't match
+		return NULL;
+	}
+	return s + nLen;
 }
 
 // Read in the config file for the whole application
 int ConfigAppLoad()
 {
-#if 0
 	char szConfig[MAX_PATH];
 	char szLine[256];
 	FILE *h;
 
-	CreateConfigName(szConfig);
+	sprintf((char*)szConfig, "%s/%s", szAppHomePath, "fbasdl.ini");
 
 	if ((h = fopen(szConfig,"rt")) == NULL) {
 		return 1;
@@ -44,8 +57,6 @@ int ConfigAppLoad()
   if (szValue) strcpy(x,szValue); }
 
 		VAR(nIniVersion);
-	//	VAR(nVidSelect); // video mode select
-		VAR(bBurnUseASMCPUEmulation); // if you have a poor mans PC
 
 		// Other
 		STR(szAppRomPaths[0]);
@@ -62,18 +73,16 @@ int ConfigAppLoad()
 	}
 
 	fclose(h);
-#endif
 	return 0;
 }
 
 // Write out the config file for the whole application
 int ConfigAppSave()
 {
-#if 0
 	char szConfig[MAX_PATH];
 	FILE *h;
 
-	CreateConfigName(szConfig);
+	sprintf((char*)szConfig, "%s/%s", szAppHomePath, "fbasdl.ini");
 
 	if ((h = fopen(szConfig, "wt")) == NULL) {
 		return 1;
@@ -88,13 +97,7 @@ int ConfigAppSave()
 	// We can't use the macros for this!
 	fprintf(h, "nIniVersion 0x%06X", nBurnVer);
 
-	fprintf(h,"\n// video mode 0 = standard SDL 1= (very expiermental) opengl\n");
-	//VAR(nVidSelect); // video mode select
-
-	fprintf(h,"\n// use asm cpu cores (i.e. you need to buy a new PC)\n");
-	VAR(bBurnUseASMCPUEmulation);
-
-	fprintf(h,"\n// The paths to search for rom zips. (include trailing backslash)\n");
+	fprintf(h,"\n\n// The paths to search for rom zips. (include trailing backslash)\n");
 	STR(szAppRomPaths[0]);
 	STR(szAppRomPaths[1]);
 	STR(szAppRomPaths[2]);
@@ -111,7 +114,6 @@ int ConfigAppSave()
 #undef VAR
 
 	fclose(h);
-#endif
 	return 0;
 }
 
