@@ -29,40 +29,12 @@
 #include "snd.h"
 #include "sdl_run.h"
 #include "sdl_video.h"
+#include "gui_main.h"
 
 char szAppBurnVer[16] = VERSION;
 
 CFG_OPTIONS config_options;
 CFG_KEYMAP config_keymap;
-
-void SystemInit()
-{
-	if ((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
-		printf("sdl failed to init\n");
-	}
-}
-
-void SystemExit(char *frontend)
-{
-	struct stat info;
-	SDL_Quit();
-#ifndef WIN32
-	if( (lstat(frontend, &info) == 0) && S_ISREG(info.st_mode) )
-	{
-	char path[256];
-	char *p;
-		strcpy(path, frontend);
-		p = strrchr(path, '/');
-		if(p == NULL) p = strrchr(path, '\\');
-		if(p != NULL)
-		{
-			*p = '\0';
-			chdir(path);
-		}
-		execl(frontend, frontend, NULL);
-	}
-#endif
-}
 
 void CreateCapexLists()
 {
@@ -336,13 +308,19 @@ int main(int argc, char **argv )
 	if(drv < 0) goto finish;
 
 	ConfigAppLoad();
-	SystemInit();	// SDL_Init
+	if((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
+		printf("Sdl failed to init\n");
+		goto finish;
+	}
 
 	// Run emu loop
 	RunEmulator(drv);
 
+	GuiExit();
+
 	ConfigAppSave();
-	SystemExit(config_options.option_frontend);
+	SDL_Quit();
+
 finish:
 	return 0;
 }
