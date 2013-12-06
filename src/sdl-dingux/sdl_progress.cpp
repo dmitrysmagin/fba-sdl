@@ -61,6 +61,8 @@ void show_rom_loading_text(char *szText, int nSize, int nTotalSize)
 		DrawRect((uint16 *)load_screen->pixels, doffset+1, 141, size * 278 / nTotalSize, 10, 0x00FFFF00, fwidth);
 	}
 
+	SDL_Event event;
+	while(SDL_PollEvent(&event));
 	blit_loading_screen();
 }
 

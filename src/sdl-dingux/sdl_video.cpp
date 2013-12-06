@@ -502,6 +502,10 @@ int VideoInit()
 	// Initialize SDL
 	int flags = (options.vsync ? SDL_HWSURFACE | SDL_DOUBLEBUF : SDL_SWSURFACE);
 
+	if(!(SDL_WasInit(SDL_INIT_VIDEO) & SDL_INIT_VIDEO)) {
+		SDL_InitSubSystem(SDL_INIT_VIDEO);
+	}
+
 	screen = SDL_SetVideoMode(320, 240, 16, flags);
 	/*{
 		int i = 0; // 0 - 320x240, 1 - 400x240, 2 - 480x272
@@ -581,6 +585,7 @@ void VideoExit()
 	free(BurnVideoBuffer);
 	BurnVideoBuffer = NULL;
 	BurnerVideoTrans = Blit_null;
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 void VideoClear()

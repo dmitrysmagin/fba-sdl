@@ -241,7 +241,7 @@ int main(int argc, char **argv )
 
 	BurnLibInit();		// init Burn core
 	BurnPathsInit();	// init paths or create them if needed
-
+/*
 	if (argc < 2) {
 		int c;
 		printf ("Usage: %s <path to rom><shortname>.zip\n"
@@ -262,64 +262,33 @@ int main(int argc, char **argv )
 		CreateCapexLists(); // generate rominfo.fba and zipname.fba
 		return 0;
 	}
+*/
+	ConfigGameDefault();
 
-	// Initialize configuration options
-	options.sound = 2;
-	options.rescale = 0; // no scaling by default
-	options.rotate = 0;
-	options.samplerate = 3; // 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
-	options.showfps = 0;
-	options.frameskip = -1; // auto frameskip by default
-	options.create_lists = 0;
-	options.m68kcore = 1; // 0 - c68k, 1 - m68k, 2 - a68k
-	options.z80core = 0;
-	options.sense = 100;
-	options.useswap = 0; // use internal swap for legacy dingux
-
-	parse_cmd(argc, argv, path);
-
-	keymap.up = SDLK_UP;
-	keymap.down = SDLK_DOWN;
-	keymap.left = SDLK_LEFT;
-	keymap.right = SDLK_RIGHT;
-	keymap.fire1 = SDLK_LCTRL;		// A
-	keymap.fire2 = SDLK_LALT;		// B
-	keymap.fire3 = SDLK_SPACE;		// X
-	keymap.fire4 = SDLK_LSHIFT;	// Y
-	keymap.fire5 = SDLK_TAB;		// L
-	keymap.fire6 = SDLK_BACKSPACE;	// R
-	keymap.coin1 = SDLK_ESCAPE;	// SELECT
-	keymap.start1 = SDLK_RETURN;	// START
-	keymap.pause = SDLK_p;
-	keymap.quit = SDLK_q;
-	keymap.qsave = SDLK_s;      // quick save
-	keymap.qload = SDLK_l;      // quick load
-
-	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
-	nSekCpuCore = options.m68kcore;
-
-	bForce60Hz = true;
+	// alter cfg if any param is given
+	if (argc >= 2)
+		parse_cmd(argc, argv, path);
 
 	ConfigAppLoad();
 
-	int drv = FindDrvByFileName(path);
-	if(drv < 0) goto finish;
-
 	if((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
 		printf("Sdl failed to init\n");
-		goto finish;
+		exit(0);
 	}
 
-	// Run emu loop
-	RunEmulator(drv);
+	if (argc < 2)
+		GuiRun();
+	else {
+		int drv;
 
-	GuiExit();
+		if((drv = FindDrvByFileName(path)) >= 0)
+			RunEmulator(drv);
+	}
 
 	BurnLibExit();
 
 	ConfigAppSave();
 	SDL_Quit();
 
-finish:
 	return 0;
 }

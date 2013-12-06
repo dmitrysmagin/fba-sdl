@@ -109,7 +109,7 @@ alldir	= burn \
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
-lib = -lstdc++ -lpng -lSDL -lz
+lib = -lstdc++ -lSDL -lSDL_image -lz
 
 ifdef USE_LIBAO
 	lib += -lao
@@ -192,6 +192,8 @@ depobj += \
 		sdl_run.o sdl_video.o snd.o \
 		\
 		ioapi.o unzip.o dat.o state.o zipfn.o \
+		\
+		gui_config.o gui_gfx.o gui_main.o gui_romlist.o gui_setpath.o \
 		\
 		interface.o \
 		\
@@ -447,6 +449,8 @@ $(NAME):	$(allobj)
 	@echo Linking executable $(NAME)...
 	@mkdir -p bin
 	@$(LD) $(CFLAGS) $(LDFLAGS) -o bin/$@ $^ $(lib)
+	@mkdir -p bin/skin
+	@cp src/sdl-dingux/skin/*.png bin/skin/
 endif
 
 #

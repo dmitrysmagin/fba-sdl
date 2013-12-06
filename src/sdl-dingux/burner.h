@@ -126,6 +126,9 @@ extern char szAppHomePath[MAX_PATH];
 extern char szAppSavePath[MAX_PATH];
 extern char szAppConfigPath[MAX_PATH];
 extern char szAppSamplesPath[MAX_PATH]; // for burn/snd/samples.cpp
+extern char szAppPreviewPath[MAX_PATH];
+extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
+
 void BurnPathsInit();
 
 // config.cpp
@@ -173,12 +176,12 @@ extern CFG_KEYMAP keymap;
 
 int ConfigAppLoad();
 int ConfigAppSave();
+void ConfigGameDefault();
 int ConfigGameLoad();
 int ConfigGameSave();
 
 // drv.cpp
 extern int bDrvOkay; // 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
-extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
 int DrvInit(int nDrvNum, bool bRestore);
 int DrvInitCallback(); // Used when Burn library needs to load a game. DrvInit(nBurnSelect, false)
 int DrvExit();

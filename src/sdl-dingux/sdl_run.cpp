@@ -69,6 +69,13 @@ unsigned int GetTicks (void)
 
 void RunEmulator(int drvnum)
 {
+	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
+	nSekCpuCore = options.m68kcore;
+	bForce60Hz = true;
+	if(options.sense < 100) {
+		nAnalogSpeed = 0x100 / 100 * options.sense;
+	}
+
 	gui_Init();
 
 	VideoInit();
@@ -85,11 +92,6 @@ void RunEmulator(int drvnum)
 			"- I/O Error\n"
 			"- Memory error\n\n");
 		goto finish;
-	}
-
-	if (options.sense<100)
-	{
-		nAnalogSpeed=0x100/100*options.sense;
 	}
 
 	RunReset();

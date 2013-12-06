@@ -72,7 +72,6 @@ static void gui_Savestate() { StatedSave(nSavestateSlot); }
 static void call_exit() { extern bool GameLooping; extern int done; GameLooping = false; done = 1; }
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
-static void gui_SoundMenuRun();
 static void gui_reset();
 
 /* data definitions */
@@ -85,7 +84,6 @@ char *gui_SoundSampleRates[] = {"11025", "16000", "22050", "32000", "44100"};
 MENUITEM gui_MainMenuItems[] = {
 	{(char *)"Continue", NULL, 0, NULL, &call_continue},
 	{(char *)"Key config", NULL, 0, NULL, &gui_KeyMenuRun},
-	{(char *)"Sound Settings", NULL, 0, NULL, &gui_SoundMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
 	{(char *)"Reset", NULL, 0, NULL, &gui_reset},
@@ -93,7 +91,7 @@ MENUITEM gui_MainMenuItems[] = {
 	{NULL, NULL, 0, NULL, NULL}
 };
 
-MENU gui_MainMenu = { 7, 0, (MENUITEM *)&gui_MainMenuItems };
+MENU gui_MainMenu = { 6, 0, (MENUITEM *)&gui_MainMenuItems };
 
 MENUITEM gui_KeyMenuItems[] = {
 	{(char *)"Fire 1   - ", &gui_KeyData[0], 5, (char **)&gui_KeyNames, NULL},
@@ -106,13 +104,6 @@ MENUITEM gui_KeyMenuItems[] = {
 };
 
 MENU gui_KeyMenu = { 6, 0, (MENUITEM *)&gui_KeyMenuItems };
-
-MENUITEM gui_SoundMenuItems[] = {
-	{(char *)"Driver      - ", &options.sound, 3, (char **)&gui_SoundDrvNames, NULL},
-	{(char *)"Sample rate - ", &options.samplerate, 4, (char **)&gui_SoundSampleRates, NULL},
-};
-
-MENU gui_SoundMenu = { 2, 0, (MENUITEM *)&gui_SoundMenuItems };
 
 int done = 0; // flag to indicate exit status
 extern unsigned char gui_font[2048];
@@ -262,19 +253,6 @@ static void gui_KeyMenuRun()
 	key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		*key = gui_KeyValue[gui_KeyData[i]];
-}
-
-static void gui_SoundMenuRun()
-{
-	int old_drv = options.sound;
-	int old_rate = options.samplerate;
-
-	gui_MenuRun(&gui_SoundMenu);
-
-	if(old_drv != options.sound ||
-	  old_rate != options.samplerate) {
-		DrvInitCallback();
-	}
 }
 
 static void gui_reset()
