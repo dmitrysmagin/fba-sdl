@@ -33,9 +33,6 @@
 
 char szAppBurnVer[16] = VERSION;
 
-CFG_OPTIONS config_options;
-CFG_KEYMAP config_keymap;
-
 void CreateCapexLists()
 {
 	printf("Create rom lists (%d)\n",nBurnDrvCount);
@@ -137,19 +134,19 @@ void parse_cmd(int argc, char *argv[], char *path)
 	}
 
 	static struct option long_opts[] = {
-		{"sound-sdl-old", 0, &config_options.option_sound_enable, 3},
-		{"sound-sdl", 0, &config_options.option_sound_enable, 2},
-		{"sound-ao", 0, &config_options.option_sound_enable, 1},
-		{"no-sound", 0, &config_options.option_sound_enable, 0},
+		{"sound-sdl-old", 0, &options.sound, 3},
+		{"sound-sdl", 0, &options.sound, 2},
+		{"sound-ao", 0, &options.sound, 1},
+		{"no-sound", 0, &options.sound, 0},
 		{"samplerate", required_argument, 0, 'r'},
 		{"frameskip", required_argument, 0, 'c'},
 		{"scaling", required_argument, 0, 'a'},
 		{"rotate", required_argument, 0, 'o'},
 		{"sense", required_argument, 0, 'd'},
-		{"showfps", 0, &config_options.option_showfps, 1},
-		{"no-showfps", 0, &config_options.option_showfps, 0},
-		{"create-lists", 0, &config_options.option_create_lists, 1},
-		{"use-swap", 0, &config_options.option_useswap, 1},
+		{"showfps", 0, &options.showfps, 1},
+		{"no-showfps", 0, &options.showfps, 0},
+		{"create-lists", 0, &options.create_lists, 1},
+		{"use-swap", 0, &options.useswap, 1},
 		{"68kcore", required_argument, 0, 's'},
 		{"z80core", required_argument, 0, 'z'},
 		{"frontend", required_argument, 0, 'f'}
@@ -163,20 +160,20 @@ void parse_cmd(int argc, char *argv[], char *path)
 		switch(c) {
 			case 'r':
 				if(!optarg) continue;
-				if(strcmp(optarg, "11025") == 0) config_options.option_samplerate = 0;
-				if(strcmp(optarg, "16000") == 0) config_options.option_samplerate = 1;
-				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 2;
-				if(strcmp(optarg, "32000") == 0) config_options.option_samplerate = 3;
-				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 4;
+				if(strcmp(optarg, "11025") == 0) options.samplerate = 0;
+				if(strcmp(optarg, "16000") == 0) options.samplerate = 1;
+				if(strcmp(optarg, "22050") == 0) options.samplerate = 2;
+				if(strcmp(optarg, "32000") == 0) options.samplerate = 3;
+				if(strcmp(optarg, "44100") == 0) options.samplerate = 4;
 				break;
 			case 'c':
 				if(!optarg) continue;
-				if(strcmp(optarg, "auto") == 0) config_options.option_frameskip = -1;
+				if(strcmp(optarg, "auto") == 0) options.frameskip = -1;
 				else {
 					z2=0;
 					sscanf(optarg,"%d",&z2);
 					if ((z2>60) || (z2<0)) z2=0;
-					config_options.option_frameskip = z2;
+					options.frameskip = z2;
 				}
 				break;
 			case 's':
@@ -184,43 +181,43 @@ void parse_cmd(int argc, char *argv[], char *path)
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
-				config_options.option_68kcore = z2;
+				options.m68kcore = z2;
 				break;
 			case 'z':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
-				config_options.option_z80core = z2;
+				options.z80core = z2;
 				break;
 			case 'a':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>3) || (z2<0)) z2=0;
-				config_options.option_rescale = z2;
+				options.rescale = z2;
 				break;
 			case 'o':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
-				config_options.option_rotate = z2;
+				options.rotate = z2;
 				break;
 			case 'd':
 				if(!optarg) continue;
 				z2=0;
 				sscanf(optarg,"%d",&z2);
 				if ((z2>100) || (z2<10)) z2=100;
-				config_options.option_sense = z2;
+				options.sense = z2;
 				break;
 			case 'f':
 				if(!optarg) continue;
 				p = strrchr(optarg, '/');
 				if(p == NULL)
-					sprintf(config_options.option_frontend, "%s%s", "./", optarg);
+					sprintf(options.frontend, "%s%s", "./", optarg);
 				else
-					strcpy(config_options.option_frontend, optarg);
+					strcpy(options.frontend, optarg);
 				break;
 		}
 	}
@@ -263,44 +260,39 @@ int main(int argc, char **argv )
 	}
 
 	// Initialize configuration options
-	config_options.option_sound_enable = 2;
-	config_options.option_rescale = 0; // no scaling by default
-	config_options.option_rotate = 0;
-	config_options.option_samplerate = 3; // 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
-	config_options.option_showfps = 0;
-	config_options.option_frameskip = -1; // auto frameskip by default
-	config_options.option_create_lists=0;
-	config_options.option_68kcore=1; // 0 - c68k, 1 - m68k, 2 - a68k
-	config_options.option_z80core=0;
-	config_options.option_sense=100;
-	config_options.option_useswap=0; // use internal swap for legacy dingux
-	#ifdef WIN32
-	strcpy(config_options.option_frontend, "./fbacapex.exe");
-	#else
-	strcpy(config_options.option_frontend, "./fbacapex.dge");
-	#endif
+	options.sound = 2;
+	options.rescale = 0; // no scaling by default
+	options.rotate = 0;
+	options.samplerate = 3; // 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
+	options.showfps = 0;
+	options.frameskip = -1; // auto frameskip by default
+	options.create_lists = 0;
+	options.m68kcore = 1; // 0 - c68k, 1 - m68k, 2 - a68k
+	options.z80core = 0;
+	options.sense = 100;
+	options.useswap = 0; // use internal swap for legacy dingux
 
 	parse_cmd(argc, argv, path);
 
-	config_keymap.up=SDLK_UP;
-	config_keymap.down=SDLK_DOWN;
-	config_keymap.left=SDLK_LEFT;
-	config_keymap.right=SDLK_RIGHT;
-	config_keymap.fire1=SDLK_LCTRL;		// A
-	config_keymap.fire2=SDLK_LALT;		// B
-	config_keymap.fire3=SDLK_SPACE;		// X
-	config_keymap.fire4=SDLK_LSHIFT;	// Y
-	config_keymap.fire5=SDLK_TAB;		// L
-	config_keymap.fire6=SDLK_BACKSPACE;	// R
-	config_keymap.coin1=SDLK_ESCAPE;	// SELECT
-	config_keymap.start1=SDLK_RETURN;	// START
-	config_keymap.pause=SDLK_p;
-	config_keymap.quit=SDLK_q;
-	config_keymap.qsave=SDLK_s;      // quick save
-	config_keymap.qload=SDLK_l;      // quick load
+	keymap.up = SDLK_UP;
+	keymap.down = SDLK_DOWN;
+	keymap.left = SDLK_LEFT;
+	keymap.right = SDLK_RIGHT;
+	keymap.fire1 = SDLK_LCTRL;		// A
+	keymap.fire2 = SDLK_LALT;		// B
+	keymap.fire3 = SDLK_SPACE;		// X
+	keymap.fire4 = SDLK_LSHIFT;	// Y
+	keymap.fire5 = SDLK_TAB;		// L
+	keymap.fire6 = SDLK_BACKSPACE;	// R
+	keymap.coin1 = SDLK_ESCAPE;	// SELECT
+	keymap.start1 = SDLK_RETURN;	// START
+	keymap.pause = SDLK_p;
+	keymap.quit = SDLK_q;
+	keymap.qsave = SDLK_s;      // quick save
+	keymap.qload = SDLK_l;      // quick load
 
 	extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
-	nSekCpuCore = config_options.option_68kcore;
+	nSekCpuCore = options.m68kcore;
 
 	bForce60Hz = true;
 
@@ -315,8 +307,6 @@ int main(int argc, char **argv )
 
 	// Run emu loop
 	RunEmulator(drv);
-
-	GuiExit();
 
 	ConfigAppSave();
 	SDL_Quit();

@@ -2,6 +2,9 @@
 #include "burner.h"
 int nIniVersion = 0;
 
+CFG_OPTIONS options;
+CFG_KEYMAP keymap;
+
 // ---------------------------------------------------------------------------
 // config file parsing
 
@@ -139,20 +142,20 @@ int ConfigGameLoad()
 
 		if (argd > 0) {
 			if (strcmp(arg1,"#") != 0) {
-				if (strcmp(arg1, "KEY_UP") == 0) config_keymap.up = argd;
-				if (strcmp(arg1, "KEY_DOWN") == 0) config_keymap.down = argd;
-				if (strcmp(arg1, "KEY_LEFT") == 0) config_keymap.left = argd;
-				if (strcmp(arg1, "KEY_COIN1") == 0) config_keymap.coin1 = argd;
-				if (strcmp(arg1, "KEY_START1") == 0) config_keymap.start1 = argd;
-				if (strcmp(arg1, "KEY_RIGHT") == 0) config_keymap.right = argd;
-				if (strcmp(arg1, "KEY_FIRE1") == 0) config_keymap.fire1 = argd;
-				if (strcmp(arg1, "KEY_FIRE2") == 0) config_keymap.fire2 = argd;
-				if (strcmp(arg1, "KEY_FIRE3") == 0) config_keymap.fire3 = argd;
-				if (strcmp(arg1, "KEY_FIRE4") == 0) config_keymap.fire4 = argd;
-				if (strcmp(arg1, "KEY_FIRE5") == 0) config_keymap.fire5 = argd;
-				if (strcmp(arg1, "KEY_FIRE6") == 0) config_keymap.fire6 = argd;
-				if (strcmp(arg1, "KEY_QUIT") == 0) config_keymap.quit = argd;
-				if (strcmp(arg1, "KEY_PAUSE") == 0) config_keymap.pause = argd;
+				if (strcmp(arg1, "KEY_UP") == 0) keymap.up = argd;
+				if (strcmp(arg1, "KEY_DOWN") == 0) keymap.down = argd;
+				if (strcmp(arg1, "KEY_LEFT") == 0) keymap.left = argd;
+				if (strcmp(arg1, "KEY_COIN1") == 0) keymap.coin1 = argd;
+				if (strcmp(arg1, "KEY_START1") == 0) keymap.start1 = argd;
+				if (strcmp(arg1, "KEY_RIGHT") == 0) keymap.right = argd;
+				if (strcmp(arg1, "KEY_FIRE1") == 0) keymap.fire1 = argd;
+				if (strcmp(arg1, "KEY_FIRE2") == 0) keymap.fire2 = argd;
+				if (strcmp(arg1, "KEY_FIRE3") == 0) keymap.fire3 = argd;
+				if (strcmp(arg1, "KEY_FIRE4") == 0) keymap.fire4 = argd;
+				if (strcmp(arg1, "KEY_FIRE5") == 0) keymap.fire5 = argd;
+				if (strcmp(arg1, "KEY_FIRE6") == 0) keymap.fire6 = argd;
+				if (strcmp(arg1, "KEY_QUIT") == 0) keymap.quit = argd;
+				if (strcmp(arg1, "KEY_PAUSE") == 0) keymap.pause = argd;
 			}
 		}
 	}
@@ -171,20 +174,20 @@ int ConfigGameSave()
 	fp = fopen(cfgname, "w");
 	if(!fp) return 0;
 
-	fprintf(fp,"KEY_UP %d\n", config_keymap.up);
-	fprintf(fp,"KEY_DOWN %d\n", config_keymap.down);
-	fprintf(fp,"KEY_LEFT %d\n", config_keymap.left);
-	fprintf(fp,"KEY_RIGHT %d\n", config_keymap.right);
-	fprintf(fp,"KEY_COIN1 %d\n", config_keymap.coin1); 
-	fprintf(fp,"KEY_START1 %d\n", config_keymap.start1);
-	fprintf(fp,"KEY_FIRE1 %d\n", config_keymap.fire1);
-	fprintf(fp,"KEY_FIRE2 %d\n", config_keymap.fire2);
-	fprintf(fp,"KEY_FIRE3 %d\n", config_keymap.fire3);
-	fprintf(fp,"KEY_FIRE4 %d\n", config_keymap.fire4);
-	fprintf(fp,"KEY_FIRE5 %d\n", config_keymap.fire5);
-	fprintf(fp,"KEY_FIRE6 %d\n", config_keymap.fire6);
-	fprintf(fp,"KEY_QUIT %d\n", config_keymap.quit);
-	fprintf(fp,"KEY_PAUSE %d\n", config_keymap.pause);
+	fprintf(fp,"KEY_UP %d\n", keymap.up);
+	fprintf(fp,"KEY_DOWN %d\n", keymap.down);
+	fprintf(fp,"KEY_LEFT %d\n", keymap.left);
+	fprintf(fp,"KEY_RIGHT %d\n", keymap.right);
+	fprintf(fp,"KEY_COIN1 %d\n", keymap.coin1); 
+	fprintf(fp,"KEY_START1 %d\n", keymap.start1);
+	fprintf(fp,"KEY_FIRE1 %d\n", keymap.fire1);
+	fprintf(fp,"KEY_FIRE2 %d\n", keymap.fire2);
+	fprintf(fp,"KEY_FIRE3 %d\n", keymap.fire3);
+	fprintf(fp,"KEY_FIRE4 %d\n", keymap.fire4);
+	fprintf(fp,"KEY_FIRE5 %d\n", keymap.fire5);
+	fprintf(fp,"KEY_FIRE6 %d\n", keymap.fire6);
+	fprintf(fp,"KEY_QUIT %d\n", keymap.quit);
+	fprintf(fp,"KEY_PAUSE %d\n", keymap.pause);
 	fclose(fp);
 	return 1;
 }

@@ -131,18 +131,18 @@ void BurnPathsInit();
 // config.cpp
 typedef struct
 {
-	int option_sound_enable;
-	int option_rescale;
-	int option_rotate;
-	int option_samplerate;
-	int option_showfps;
-	int option_frameskip;
-	int option_68kcore;
-	int option_z80core;
-	int option_sense;
-	int option_useswap;
-	char option_frontend[MAX_PATH];
-	int option_create_lists;
+	int sound;
+	int rescale;
+	int rotate;
+	int samplerate;
+	int showfps;
+	int frameskip;
+	int m68kcore;
+	int z80core;
+	int sense;
+	int useswap;
+	char frontend[MAX_PATH];
+	int create_lists;
 } CFG_OPTIONS;
 
 typedef struct
@@ -167,8 +167,8 @@ typedef struct
 	int qload;
 } CFG_KEYMAP;
 
-extern CFG_OPTIONS config_options;
-extern CFG_KEYMAP config_keymap;
+extern CFG_OPTIONS options;
+extern CFG_KEYMAP keymap;
 
 int ConfigAppLoad();
 int ConfigAppSave();

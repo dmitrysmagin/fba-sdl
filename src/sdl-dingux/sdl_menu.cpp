@@ -108,8 +108,8 @@ MENUITEM gui_KeyMenuItems[] = {
 MENU gui_KeyMenu = { 6, 0, (MENUITEM *)&gui_KeyMenuItems };
 
 MENUITEM gui_SoundMenuItems[] = {
-	{(char *)"Driver      - ", &config_options.option_sound_enable, 3, (char **)&gui_SoundDrvNames, NULL},
-	{(char *)"Sample rate - ", &config_options.option_samplerate, 4, (char **)&gui_SoundSampleRates, NULL},
+	{(char *)"Driver      - ", &options.sound, 3, (char **)&gui_SoundDrvNames, NULL},
+	{(char *)"Sample rate - ", &options.samplerate, 4, (char **)&gui_SoundSampleRates, NULL},
 };
 
 MENU gui_SoundMenu = { 2, 0, (MENUITEM *)&gui_SoundMenuItems };
@@ -252,27 +252,27 @@ void gui_MenuRun(MENU *menu)
 static void gui_KeyMenuRun()
 {
 	// key decode
-	int *key = &config_keymap.fire1;
+	int *key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		for(int j = 0; j < 6; j++) if(gui_KeyValue[j] == *key) gui_KeyData[i] = j;
 
 	gui_MenuRun(&gui_KeyMenu);
 
 	// key encode
-	key = &config_keymap.fire1;
+	key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		*key = gui_KeyValue[gui_KeyData[i]];
 }
 
 static void gui_SoundMenuRun()
 {
-	int old_drv = config_options.option_sound_enable;
-	int old_rate = config_options.option_samplerate;
+	int old_drv = options.sound;
+	int old_rate = options.samplerate;
 
 	gui_MenuRun(&gui_SoundMenu);
 
-	if(old_drv != config_options.option_sound_enable ||
-	  old_rate != config_options.option_samplerate) {
+	if(old_drv != options.sound ||
+	  old_rate != options.samplerate) {
 		DrvInitCallback();
 	}
 }

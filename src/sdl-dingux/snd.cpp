@@ -66,13 +66,13 @@ int SndInit()
 {
 	if(bSndOkay) SndExit();
 
-	if(config_options.option_sound_enable > 3)
-		config_options.option_sound_enable = 0;
+	if(options.sound > 3)
+		options.sound = 0;
 
-	pSndDrv = &SndDrvList[config_options.option_sound_enable];
+	pSndDrv = &SndDrvList[options.sound];
 
-	if (config_options.option_sound_enable) {
-		int i = config_options.option_samplerate;
+	if (options.sound) {
+		int i = options.samplerate;
 
 		if(i > 4) i = 0;
 
@@ -99,7 +99,7 @@ int SndInit()
 		nBurnSoundLen = 0;
 	}
 
-	config_options.option_sound_enable = 0;
+	options.sound = 0;
 	pSndDrv = &SndDrvList[0]; // null sound
 	return 0;
 }

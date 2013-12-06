@@ -87,16 +87,16 @@ void RunEmulator(int drvnum)
 		goto finish;
 	}
 
-	if (config_options.option_sense<100)
+	if (options.sense<100)
 	{
-		nAnalogSpeed=0x100/100*config_options.option_sense;
+		nAnalogSpeed=0x100/100*options.sense;
 	}
 
 	RunReset();
 
 	GameLooping = true;
 
-	bShowFPS = config_options.option_showfps;
+	bShowFPS = options.showfps;
 
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) printf("flipped!\n");
 
@@ -131,14 +131,14 @@ void RunEmulator(int drvnum)
 			}
 
 			lim = (frame_count) * frametime;
-			if(config_options.option_frameskip == -1) { // auto frameskip
+			if(options.frameskip == -1) { // auto frameskip
 				if(now-start > lim) if(++skipped_frames < frame_limit/2) draw_this_frame = false;
 			} else { // manual frameskip 0..10
-				if(config_options.option_frameskip > 0) {
-					if(skipped_frames < config_options.option_frameskip) { 
+				if(options.frameskip > 0) {
+					if(skipped_frames < options.frameskip) { 
 						if(--skip_limit < 0) { 
 							draw_this_frame = false;
-							skip_limit = frame_limit / config_options.option_frameskip;
+							skip_limit = frame_limit / options.frameskip;
 							skipped_frames++; 
 						}
 					}
@@ -146,7 +146,7 @@ void RunEmulator(int drvnum)
 			}
 
 			wait = lim - (now - start);
-			if(config_options.option_sound_enable != 2 && wait > 0) sleep_us(wait);
+			if(options.sound != 2 && wait > 0) sleep_us(wait);
 
 			//printf("%i:, diff: %i, lim: %i, wait: %i\n", frame_count, now-start, lim, wait);
 		}
