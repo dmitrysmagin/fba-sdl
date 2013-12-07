@@ -86,7 +86,10 @@ int FindDrvByFileName(const char *fn)
 	char romname[MAX_PATH];
 	char *p;
 
-	p = strrchr(fn, '/');
+	// FIXME: use p = strrchr(fn, '/');
+	// and add given path to szAppRomPaths list
+	strcpy(szAppRomPaths[0], fn);
+	p = strrchr(szAppRomPaths[0], '/');
 	if(p) {
 		p++;
 		strcpy(romname, p);
@@ -296,10 +299,11 @@ int main(int argc, char **argv )
 
 	bForce60Hz = true;
 
+	ConfigAppLoad();
+
 	int drv = FindDrvByFileName(path);
 	if(drv < 0) goto finish;
 
-	ConfigAppLoad();
 	if((SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE)) < 0) {
 		printf("Sdl failed to init\n");
 		goto finish;
