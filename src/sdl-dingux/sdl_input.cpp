@@ -169,7 +169,10 @@ void do_keypad()
 	if (keypad & KEYPAD_FIRE6) FBA_KEYPAD[0] |= KEYPAD_FIRE6;		// R
 
 	// process non-redefinable keypresses
-	if (keypc & BUTTON_QT) GameLooping=false;
+	if (keypc & BUTTON_QT) {
+		GameLooping = false;
+		keypc = keypad = 0;
+	}
 
 	if (keypc & BUTTON_MENU) {
 		keypc = keypad = 0;
