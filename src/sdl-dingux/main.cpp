@@ -312,6 +312,10 @@ int main(int argc, char **argv )
 	// Run emu loop
 	RunEmulator(drv);
 
+	GuiExit();
+
+	BurnLibExit();
+
 	ConfigAppSave();
 	SDL_Quit();
 

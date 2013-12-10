@@ -190,8 +190,6 @@ finish:
 	printf("---- Shutdown Finalburn Alpha plus ----\n\n");
 	DrvExit();
 
-	BurnLibExit();
-
 	gui_Exit();
 
 	VideoExit();
