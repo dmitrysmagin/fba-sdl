@@ -132,9 +132,10 @@ void BurnPathsInit();
 typedef struct
 {
 	int sound;
+	int samplerate;
+	int vsync;
 	int rescale;
 	int rotate;
-	int samplerate;
 	int showfps;
 	int frameskip;
 	int m68kcore;

@@ -143,6 +143,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"no-sound", 0, &options.sound, 0},
 		{"samplerate", required_argument, 0, 'r'},
 		{"frameskip", required_argument, 0, 'c'},
+		{"vsync", 0, &options.vsync, 1},
 		{"scaling", required_argument, 0, 'a'},
 		{"rotate", required_argument, 0, 'o'},
 		{"sense", required_argument, 0, 'd'},

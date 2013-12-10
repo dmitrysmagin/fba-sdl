@@ -491,13 +491,18 @@ BLIT_TABLE blit_table[] = {
 
 void VideoTrans()
 {
+	VideoBuffer = (unsigned short*)screen->pixels;
+	if(SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
 	BurnerVideoTrans();
+	if(SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 }
 
 int VideoInit()
 {
 	// Initialize SDL
-	screen = SDL_SetVideoMode(320, 240, 16, SDL_SWSURFACE);
+	int flags = (options.vsync ? SDL_HWSURFACE | SDL_DOUBLEBUF : SDL_SWSURFACE);
+
+	screen = SDL_SetVideoMode(320, 240, 16, flags);
 	/*{
 		int i = 0; // 0 - 320x240, 1 - 400x240, 2 - 480x272
 		int surfacewidth, surfaceheight;
@@ -579,6 +584,8 @@ void VideoExit()
 
 void VideoClear()
 {
+	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
+	SDL_Flip(screen);
 	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
 }
 
