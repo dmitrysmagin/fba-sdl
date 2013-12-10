@@ -344,9 +344,9 @@ LD	= $(CXX)
 AS	= nasm
 
 HOSTCFLAGS = $(incdir)
-CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings \
+CFLAGS   = -O2 -fomit-frame-pointer -Wno-write-strings -fpermissive \
 		-DLSB_FIRST
-CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings \
+CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -fpermissive \
 		-DLSB_FIRST
 
 CFLAGS += -U__cdecl -U__fastcall -D__cdecl="" -D__fastcall=""
@@ -430,11 +430,11 @@ ifeq ($(MAKELEVEL),0)
 ifdef DEPEND
 
 all:	init $(autdep) $(autobj)
-	@$(MAKE) -f makefile.dingux-gcc
+	@$(MAKE) -f Makefile.dingux-gcc
 else
 
 all:	init $(autobj)
-	@$(MAKE) -f makefile.dingux-gcc
+	@$(MAKE) -f Makefile.dingux-gcc
 endif
 else
 
