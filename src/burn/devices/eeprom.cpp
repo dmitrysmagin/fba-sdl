@@ -109,18 +109,18 @@ void EEPROMExit()
 #if defined FBA_DEBUG
 	if (!DebugDev_EEPROMInitted) bprintf(PRINT_ERROR, _T("EEPROMExit called without init\n"));
 #endif
-
+#if 0
 	char output[128];
 	sprintf (output, "config/games/%s.nv", BurnDrvGetTextA(DRV_NAME));
-
+#endif
 	neeprom_available = 0;
-
+#if 0
 	INT32 len = ((1 << intf->address_bits) * (intf->data_bits >> 3)) & (MEMORY_SIZE-1);
 
 	FILE *fz = fopen(output, "wb");
 	fwrite (eeprom_data, len, 1, fz);
 	fclose (fz);
-	
+#endif
 	DebugDev_EEPROMInitted = 0;
 }
 
