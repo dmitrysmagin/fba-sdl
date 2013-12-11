@@ -1,4 +1,6 @@
 // Burner Config file module
+#include "SDL/SDL.h"
+
 #include "burner.h"
 int nIniVersion = 0;
 
@@ -118,6 +120,40 @@ int ConfigAppSave()
 
 	fclose(h);
 	return 0;
+}
+
+void ConfigGameDefault()
+{
+	// Initialize configuration options
+	options.sound = 2;
+	options.samplerate = 2;		// 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
+	options.vsync = 0;
+	options.rescale = 0;		// no scaling by default
+	options.rotate = 0;
+	options.showfps = 0;
+	options.frameskip = -1;		// auto frameskip by default
+	options.create_lists = 0;
+	options.m68kcore = 0;		// 0 - c68k, 1 - m68k, 2 - a68k
+	options.z80core = 0;
+	options.sense = 100;
+	options.useswap = 0;		// use internal swap for legacy dingux
+
+	keymap.up = SDLK_UP;
+	keymap.down = SDLK_DOWN;
+	keymap.left = SDLK_LEFT;
+	keymap.right = SDLK_RIGHT;
+	keymap.fire1 = SDLK_LCTRL;	// A
+	keymap.fire2 = SDLK_LALT;	// B
+	keymap.fire3 = SDLK_SPACE;	// X
+	keymap.fire4 = SDLK_LSHIFT;	// Y
+	keymap.fire5 = SDLK_TAB;	// L
+	keymap.fire6 = SDLK_BACKSPACE;	// R
+	keymap.coin1 = SDLK_ESCAPE;	// SELECT
+	keymap.start1 = SDLK_RETURN;	// START
+	keymap.pause = SDLK_p;
+	keymap.quit = SDLK_q;
+	keymap.qsave = SDLK_s;		// quick save
+	keymap.qload = SDLK_l;		// quick load
 }
 
 int ConfigGameLoad()
