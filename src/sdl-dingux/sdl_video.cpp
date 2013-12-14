@@ -548,6 +548,7 @@ int VideoInit()
 	nBurnPitch = VideoBufferWidth * 2;
 	PhysicalBufferWidth = screen->w;
 	BurnVideoBuffer = (unsigned short *)malloc(VideoBufferWidth * VideoBufferHeight * 2);
+	memset(BurnVideoBuffer, 0, VideoBufferWidth * VideoBufferHeight * 2);
 	BurnerVideoTrans = Blit_320x240_to_320x240; // default blit
 
 	// if source buffer < screen buffer then set general blitting routine with centering if needed
