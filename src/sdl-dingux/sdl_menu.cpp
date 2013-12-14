@@ -302,6 +302,7 @@ void gui_Run()
 
 	VideoClear();
 	SDL_EnableKeyRepeat(/*SDL_DEFAULT_REPEAT_DELAY*/ 150, /*SDL_DEFAULT_REPEAT_INTERVAL*/30);
+	gui_MainMenu.itemCur = 0;
 	gui_MenuRun(&gui_MainMenu);
 	SDL_EnableKeyRepeat(0, 0);
 	ConfigGameSave();
