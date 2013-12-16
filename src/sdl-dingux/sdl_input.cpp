@@ -23,6 +23,7 @@
 #include "snd.h"
 #include "sdl_menu.h"
 #include "sdl_input.h"
+#include "sdl_run.h"
 
 #define KEYPAD_UP       0x0001
 #define KEYPAD_DOWN     0x0002
@@ -64,7 +65,6 @@ unsigned char P1P2Start = 0;
 
 // external variables
 extern bool bPauseOn; // run.cpp
-extern bool GameLooping; // sdl_run.cpp
 
 // external functions
 void ChangeFrameskip(); // run.cpp

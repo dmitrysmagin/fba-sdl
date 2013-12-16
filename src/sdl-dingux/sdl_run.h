@@ -20,6 +20,8 @@
 #ifndef _SDL_RUN_H_
 #define _SDL_RUN_H_
 
+extern bool GameLooping;
+
 void RunEmulator(int drvnum);
 
 #endif	// _SDL_RUN_H_

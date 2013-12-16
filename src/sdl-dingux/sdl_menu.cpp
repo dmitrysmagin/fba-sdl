@@ -25,6 +25,7 @@
 #include "version.h"
 #include "burner.h"
 #include "snd.h"
+#include "sdl_run.h"
 #include "sdl_video.h"
 
 #ifdef FBA_DEBUG
@@ -69,7 +70,7 @@ typedef struct {
 static void gui_Stub() { }
 static void gui_LoadState() { extern int done; if(!StatedLoad(nSavestateSlot)) done = 1; }
 static void gui_Savestate() { StatedSave(nSavestateSlot); }
-static void call_exit() { extern bool GameLooping; extern int done; GameLooping = false; done = 1; }
+static void call_exit() { extern int done; GameLooping = false; done = 1; }
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
 static void gui_reset();

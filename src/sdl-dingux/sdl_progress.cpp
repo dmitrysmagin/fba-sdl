@@ -25,6 +25,7 @@
 
 #include "burner.h"
 #include "sdl_progress.h"
+#include "sdl_run.h"
 #include "font.h"
 
 SDL_Surface *load_screen = NULL;
@@ -81,6 +82,7 @@ void show_rom_error_text(char *szText)
 
 	SDL_Event event;
 	while(event.type != SDL_KEYDOWN) SDL_WaitEvent(&event);
+	GameLooping = false;
 }
 
 int ProgressCreate()
