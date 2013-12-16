@@ -196,6 +196,24 @@ static void Blit_384x240_to_320x240()
 		}
 }
 
+static void Blitf_384x240_to_320x240() 
+{
+	// 384x240
+	unsigned short * p = &VideoBuffer[0];
+	unsigned short * q = BurnVideoBuffer + 384 * 240 - 1 - 6;
+	
+	for (int i=0; i<240; i++)
+		for (int j=0; j<64; j++) {
+			p[0] = q[5];
+			p[1] = q[4];
+			p[2] = COLORMIX(q[3],q[2]);
+			p[3] = q[1];
+			p[4] = q[0];
+			p += 5;
+			q -= 6;
+		}
+}
+
 static void Blit_384x224_to_320x240() 
 {
 	// CPS1 & CPS2 384x224
@@ -473,7 +491,7 @@ BLIT_TABLE blit_table[] = {
 	{320, 240, 512, 224, Blit_512x224_to_320x240, Blit_512x224_to_320x240}, // hotpinbl
 	{320, 240, 448, 224, Blit_448x224_to_320x240, Blit_448x224_to_320x240}, // IGS (PGM)
 	{320, 240, 384, 256, Blit_384x256_to_320x240, Blit_384x256_to_320x240}, // Irem
-	{320, 240, 384, 240, Blit_384x240_to_320x240, Blit_384x240_to_320x240}, // Cave
+	{320, 240, 384, 240, Blit_384x240_to_320x240, Blitf_384x240_to_320x240}, // Cave
 	{320, 240, 384, 224, Blit_384x224_to_320x240, Blit_384x224_to_320x240}, // CPS1 & CPS2
 	{320, 240, 380, 224, Blit_380x224_to_320x240, Blit_380x224_to_320x240}, // silkroad
 	{320, 240, 376, 240, Blit_376x240_to_320x240, Blit_376x240_to_320x240}, // myangel2
