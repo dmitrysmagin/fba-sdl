@@ -1,5 +1,5 @@
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 
 #include "driver.h"
 extern "C" {
@@ -43,6 +43,8 @@ static UINT32 *BjPalReal = NULL;
 
 static INT16* pFMBuffer;
 static INT16* pAY8910Buffer[9];
+
+static UINT8 BjIsBombjackt = 0;
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo DrvInputList[] = {
@@ -194,6 +196,34 @@ STD_ROM_PICK(Bombjac2)
 STD_ROM_FN(Bombjac2)
 
 
+// Bomb Jack (Tecfri, Spain)
+static struct BurnRomInfo BombjacktRomDesc[] = {
+	{ "9.1j",           0x4000, 0x4b59a3bb, BRF_ESS | BRF_PRG },		//  0 Z80 code
+	{ "12.1n",          0x4000, 0x0a32506a, BRF_ESS | BRF_PRG },		//  1
+	{ "13.1r",          0x2000, 0x964ac5c5, BRF_ESS | BRF_PRG },		//  2
+
+	// graphics 3 bit planes:
+	{ "3.1e",           0x2000, 0x54e1dac1, BRF_GRA },			 // chars
+	{ "4.1h",           0x2000, 0x05e428ab, BRF_GRA },
+	{ "5.1k",           0x2000, 0xf282f29a, BRF_GRA },
+
+	{ "14.7j",          0x2000, 0x101c858d, BRF_GRA },			 // sprites
+	{ "15.7k",          0x2000, 0x013f58f2, BRF_GRA },
+	{ "16.7m",          0x2000, 0x94694097, BRF_GRA },
+
+	{ "6.1l",           0x2000, 0x51eebd89, BRF_GRA },			 // background tiles
+	{ "7.1n",           0x2000, 0x9dd98e9d, BRF_GRA },
+	{ "8.1r",           0x2000, 0x3155ee7d, BRF_GRA },
+
+	{ "2.5n",           0x2000, 0xde796158, BRF_GRA },			 // background tilemaps
+
+	{ "1.6h",           0x2000, 0x8407917d, BRF_ESS | BRF_SND },		// sound CPU
+};
+
+STD_ROM_PICK(Bombjackt)
+STD_ROM_FN(Bombjackt)
+
+
 static INT32 DrvDoReset()
 {
 	bombjackIRQ = 0;
@@ -328,7 +358,7 @@ void __fastcall SndPortWrite(UINT16 a, UINT8 d)
 	}
 }
 
-INT32 BjZInit()
+static INT32 BjZInit()
 {
 	// Init the z80
 	ZetInit(0);
@@ -366,7 +396,6 @@ INT32 BjZInit()
 
 	ZetSetReadHandler(BjMemRead);
 	ZetSetWriteHandler(BjMemWrite);
-	ZetMemEnd();
 	ZetClose();
 
 	ZetInit(1);
@@ -384,7 +413,6 @@ INT32 BjZInit()
 	//	ZetMapArea    (0x6000,0x6000,1,BjRam+0xb800);
 	ZetSetReadHandler(SndMemRead);
 	ZetSetOutHandler(SndPortWrite);
-	ZetMemEnd();
 	ZetClose();
 
 	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
@@ -400,6 +428,9 @@ INT32 BjZInit()
 	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 	AY8910Init(1, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 	AY8910Init(2, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	AY8910SetAllRoutes(0, 0.13, BURN_SND_ROUTE_BOTH);
+	AY8910SetAllRoutes(1, 0.13, BURN_SND_ROUTE_BOTH);
+	AY8910SetAllRoutes(2, 0.13, BURN_SND_ROUTE_BOTH);
 
 	// remember to do ZetReset() in main driver
 
@@ -409,7 +440,7 @@ INT32 BjZInit()
 
 
 
-void DecodeTiles(UINT8 *TilePointer, INT32 num,INT32 off1,INT32 off2, INT32 off3)
+static void DecodeTiles(UINT8 *TilePointer, INT32 num,INT32 off1,INT32 off2, INT32 off3)
 {
 	INT32 c,y,x,dat1,dat2,dat3,col;
 	for (c=0;c<num;c++)
@@ -440,8 +471,8 @@ static INT32 MemIndex()
 	UINT8 *Next; Next = Mem;
 
 	BjRom		  = Next; Next += 0x10000;
-	BjGfx		  = Next; Next += 0x0f000;
-	BjMap		  = Next; Next += 0x01000;
+	BjGfx		  = Next; Next += 0x0F000;
+	BjMap		  = Next; Next += 0x02000;
 	SndRom	  = Next; Next += 0x02000;
 	RamStart  = Next;
 	BjRam		  = Next; Next += 0x10000;
@@ -462,7 +493,7 @@ static INT32 MemIndex()
 }
 
 
-INT32 BjInit()
+static INT32 BjInit()
 {
 	// Allocate and Blank all required memory
 	Mem = NULL;
@@ -471,27 +502,37 @@ INT32 BjInit()
 	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
+	
+	INT32 RomOffset = 0;
 
-	for (INT32 i =0; i<5 ; i++)
-	{
-		BurnLoadRom(BjRom+(0x2000*i),i,1); // load code roms
+	if (BjIsBombjackt) {
+		for (INT32 i = 0; i < 3; i++) {
+			BurnLoadRom(BjRom + (0x4000 * i), i, 1);
+		}
+		
+		RomOffset = 3;
+	} else {
+		for (INT32 i = 0; i < 5; i++) {
+			BurnLoadRom(BjRom + (0x2000 * i), i, 1);
+		}
+		
+		RomOffset = 5;
 	}
 
-	for (INT32 i=0;i<3;i++)
-	{
-		BurnLoadRom(BjGfx+(0x1000*i),i+5,1);
+	for (INT32 i = 0; i < 3; i++) {
+		BurnLoadRom(BjGfx + (0x1000 * i), i + RomOffset, 1);
 	}
 
-	BurnLoadRom(BjGfx+0x3000,8,1);
-	BurnLoadRom(BjGfx+0x5000,9,1);
-	BurnLoadRom(BjGfx+0x7000,10,1);
+	BurnLoadRom(BjGfx + 0x3000, RomOffset + 3, 1);
+	BurnLoadRom(BjGfx + 0x5000, RomOffset + 4, 1);
+	BurnLoadRom(BjGfx + 0x7000, RomOffset + 5, 1);
 
-	BurnLoadRom(BjGfx+0x9000,11,1);
-	BurnLoadRom(BjGfx+0xB000,12,1);
-	BurnLoadRom(BjGfx+0xD000,13,1);
+	BurnLoadRom(BjGfx + 0x9000, RomOffset + 6, 1);
+	BurnLoadRom(BjGfx + 0xB000, RomOffset + 7, 1);
+	BurnLoadRom(BjGfx + 0xD000, RomOffset + 8, 1);
 
-	BurnLoadRom(BjMap,14,1); // load Background tile maps
-	BurnLoadRom(SndRom,15,1); // load Sound CPU
+	BurnLoadRom(BjMap, RomOffset + 9, 1); // load Background tile maps
+	BurnLoadRom(SndRom, RomOffset + 10, 1); // load Sound CPU
 
 	// Set memory access & Init
 	BjZInit();
@@ -507,7 +548,14 @@ INT32 BjInit()
 	return 0;
 }
 
-INT32 BjExit()
+static INT32 BjtInit()
+{
+	BjIsBombjackt = 1;
+	
+	return BjInit();
+}
+
+static INT32 BjExit()
 {
 	ZetExit();
 
@@ -517,6 +565,9 @@ INT32 BjExit()
 
 	GenericTilesExit();
 	BurnFree(Mem);
+	
+	BjIsBombjackt = 0;
+	
 	return 0;
 }
 
@@ -535,7 +586,7 @@ static UINT32 CalcCol(UINT16 nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-INT32 CalcAll()
+static INT32 CalcAll()
 {
 	for (INT32 i = 0; i < 0x100; i++) {
 		BjPalReal[i / 2] = CalcCol(BjPalSrc[i & ~1] | (BjPalSrc[i | 1] << 8));
@@ -544,7 +595,7 @@ INT32 CalcAll()
 	return 0;
 }
 
-void BjRenderFgLayer()
+static void BjRenderFgLayer()
 {
 	for (INT32 tileCount = 0; tileCount < 1024 ;tileCount++) 
 	{
@@ -568,7 +619,7 @@ void BjRenderFgLayer()
 }
 
 
-void BjRenderBgLayer()
+static void BjRenderBgLayer()
 {
 	for (INT32 tileCount = 0; tileCount < 256;tileCount++) {
 		INT32 FlipX;
@@ -791,7 +842,7 @@ static void BjDrawSprites()
 	}
 }
 
-INT32 BjFrame()
+static INT32 BjFrame()
 {
 	if (DrvReset) {	// Reset machine
 		DrvDoReset();
@@ -833,61 +884,19 @@ INT32 BjFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			INT32 nSample;
 			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
-				nSample += pAY8910Buffer[6][n] >> 2;
-				nSample += pAY8910Buffer[7][n] >> 2;
-				nSample += pAY8910Buffer[8][n] >> 2;
-
-				nSample /= 4;
-
-				nSample = BURN_SND_CLIP(nSample);
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
-			}
+			AY8910Render(&pAY8910Buffer[0], pSoundBuf, nSegmentLength, 0);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		INT32 nSample;
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
-				nSample += pAY8910Buffer[6][n] >> 2;
-				nSample += pAY8910Buffer[7][n] >> 2;
-				nSample += pAY8910Buffer[8][n] >> 2;
-
-				nSample /= 4;
-
-				nSample = BURN_SND_CLIP(nSample);
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
-			}
+			AY8910Render(&pAY8910Buffer[0], pSoundBuf, nSegmentLength, 0);
 		}
 	}
 	/*ZetOpen(0);
@@ -958,5 +967,15 @@ struct BurnDriver BurnDrvBombjac2 = {
 	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, Bombjac2RomInfo,Bombjac2RomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
 	BjInit,BjExit,BjFrame,NULL,BjScan,
+	NULL,0x80,224,256,3,4
+};
+
+struct BurnDriver BurnDrvBombjackt = {
+	"bombjackt", "bombjack", NULL, NULL, "1984",
+	"Bomb Jack (Tecfri, Spain)\0", NULL, "Tehkan (Tecfri License)", "Bomb Jack",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE,2,HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL, BombjacktRomInfo,BombjacktRomName, NULL, NULL,DrvInputInfo,BjDIPInfo,
+	BjtInit,BjExit,BjFrame,NULL,BjScan,
 	NULL,0x80,224,256,3,4
 };

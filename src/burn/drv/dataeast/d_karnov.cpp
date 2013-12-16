@@ -2,7 +2,7 @@
 // Based on MAME driver by Bryan McPhail
 
 #include "tiles_generic.h"
-#include "sek.h"
+#include "m68000_intf.h"
 #include "m6502_intf.h"
 #include "burn_ym2203.h"
 #include "burn_ym3526.h"
@@ -542,7 +542,7 @@ static void karnov_control_w(INT32 offset, INT32 data)
 
 		case 2:
 			*soundlatch = data;
-			M6502SetIRQ(M6502_INPUT_LINE_NMI, M6502_IRQSTATUS_AUTO);			
+			M6502SetIRQLine(M6502_INPUT_LINE_NMI, M6502_IRQSTATUS_AUTO);			
 			break;
 
 		case 4:
@@ -604,7 +604,7 @@ void __fastcall karnov_main_write_word(UINT32 address, UINT16 data)
 		INT32 offset = (address >> 1) & 0x3ff;
 		offset = ((offset & 0x1f) << 5) | ((offset & 0x3e0) >> 5);
 
-		ptr[offset] = data;
+		ptr[offset] = BURN_ENDIAN_SWAP_INT16(data);
 		return;
 	}
 
@@ -679,9 +679,9 @@ UINT8 karnov_sound_read(UINT16 address)
 static void DrvYM3526FMIRQHandler(INT32, INT32 nStatus)
 {	
 	if (nStatus) {
-		M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
+		M6502SetIRQLine(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
 	} else {
-		M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_NONE);
+		M6502SetIRQLine(M6502_IRQ_LINE, M6502_IRQSTATUS_NONE);
 	}
 }
 
@@ -897,15 +897,17 @@ static INT32 DrvInit()
 	M6502Open(0);
 	M6502MapMemory(Drv6502RAM,		0x0000, 0x05ff, M6502_RAM);
 	M6502MapMemory(Drv6502ROM + 0x8000,	0x8000, 0xffff, M6502_ROM);
-	M6502SetReadByteHandler(karnov_sound_read);
-	M6502SetWriteByteHandler(karnov_sound_write);
+	M6502SetReadHandler(karnov_sound_read);
+	M6502SetWriteHandler(karnov_sound_write);
 	M6502Close();
 
 	BurnYM3526Init(3000000, &DrvYM3526FMIRQHandler, &DrvYM3526SynchroniseStream, 0);
 	BurnTimerAttachM6502YM3526(1500000);
+	BurnYM3526SetRoute(BURN_SND_YM3526_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	BurnYM2203Init(1, 1500000, NULL, DrvYM2203SynchroniseStream, DrvYM2203GetTime, 1);
 	BurnTimerAttachSek(10000000);
+	BurnYM2203SetAllRoutes(0, 0.25, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -954,8 +956,8 @@ static void draw_txt_layer(INT32 swap)
 
 		sy -= 8;
 
-		INT32 code  = vram[offs] & 0x0fff;
-		INT32 color = vram[offs] >> 14;
+		INT32 code  = BURN_ENDIAN_SWAP_INT16(vram[offs]) & 0x0fff;
+		INT32 color = BURN_ENDIAN_SWAP_INT16(vram[offs]) >> 14;
 
 		if (code == 0) continue;
 
@@ -986,7 +988,7 @@ static void draw_bg_layer()
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		INT32 attr = vram[offs];
+		INT32 attr = BURN_ENDIAN_SWAP_INT16(vram[offs]);
 		INT32 code = attr & 0x7ff;
 		INT32 color= attr >> 12;	
 
@@ -1021,16 +1023,16 @@ static void draw_sprites()
 
 	for (INT32 offs = 0; offs < 0x800; offs+=4)
 	{
-		INT32 y = ram[offs];
-		INT32 x = ram[offs + 2] & 0x1ff;
+		INT32 y = BURN_ENDIAN_SWAP_INT16(ram[offs]);
+		INT32 x = BURN_ENDIAN_SWAP_INT16(ram[offs + 2]) & 0x1ff;
 		if (~y & 0x8000) continue;
 		y &= 0x1ff;
 
-		INT32 sprite = ram[offs + 3];
+		INT32 sprite = BURN_ENDIAN_SWAP_INT16(ram[offs + 3]);
 		INT32 color = sprite >> 12;
 		sprite &= 0xfff;
 
-		INT32 flipx = ram[offs + 1];
+		INT32 flipx = BURN_ENDIAN_SWAP_INT16(ram[offs + 1]);
 		INT32 flipy = flipx & 0x02;
 		INT32 extra = flipx & 0x10;
 		flipx &= 0x04;
@@ -1202,11 +1204,11 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 }
 
 
-// Karnov (US)
+// Karnov (US, rev 6)
 
 static struct BurnRomInfo karnovRomDesc[] = {
-	{ "dn08-5",		0x10000, 0xdb92c264, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
-	{ "dn11-5",		0x10000, 0x05669b4b, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "dn08-6",		0x10000, 0x4c60837f, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "dn11-6",		0x10000, 0xcd4abb99, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "dn07-",		0x10000, 0xfc14291b, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "dn10-",		0x10000, 0xa4a34e37, 1 | BRF_PRG | BRF_ESS }, //  3
 	{ "dn06-5",		0x10000, 0x29d64e42, 1 | BRF_PRG | BRF_ESS }, //  4
@@ -1249,7 +1251,7 @@ static INT32 KarnovInit()
 
 struct BurnDriver BurnDrvKarnov = {
 	"karnov", NULL, NULL, NULL, "1987",
-	"Karnov (US)\0", NULL, "Data East USA", "Miscellaneous",
+	"Karnov (US, rev 6)\0", NULL, "Data East USA", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_DATAEAST, GBF_PLATFORM | GBF_HORSHOOT, 0,
 	NULL, karnovRomInfo, karnovRomName, NULL, NULL, KarnovInputInfo, KarnovDIPInfo,
@@ -1257,6 +1259,53 @@ struct BurnDriver BurnDrvKarnov = {
 	&DrvRecalc, 0x300, 256, 240, 4, 3
 };
 
+
+// Karnov (US, rev 5)
+
+static struct BurnRomInfo karnovaRomDesc[] = {
+	{ "dn08-5",		0x10000, 0xdb92c264, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "dn11-5",		0x10000, 0x05669b4b, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "dn07-",		0x10000, 0xfc14291b, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "dn10-",		0x10000, 0xa4a34e37, 1 | BRF_PRG | BRF_ESS }, //  3
+	{ "dn06-5",		0x10000, 0x29d64e42, 1 | BRF_PRG | BRF_ESS }, //  4
+	{ "dn09-5",		0x10000, 0x072d7c49, 1 | BRF_PRG | BRF_ESS }, //  5
+
+	{ "dn05-5",		0x08000, 0xfa1a31a8, 2 | BRF_PRG | BRF_ESS }, //  6 m6502 Code
+
+	{ "dn00-",		0x08000, 0x0ed77c6d, 3 | BRF_GRA},            //  7 Characters
+
+	{ "dn04-",		0x10000, 0xa9121653, 4 | BRF_GRA},            //  8 Tiles
+	{ "dn01-",		0x10000, 0x18697c9e, 4 | BRF_GRA},            //  9
+	{ "dn03-",		0x10000, 0x90d9dd9c, 4 | BRF_GRA},            // 10
+	{ "dn02-",		0x10000, 0x1e04d7b9, 4 | BRF_GRA},            // 11
+
+	{ "dn12-",		0x10000, 0x9806772c, 5 | BRF_GRA},            // 12 Sprites
+	{ "dn14-5",		0x08000, 0xac9e6732, 5 | BRF_GRA},            // 13
+	{ "dn13-",		0x10000, 0xa03308f9, 5 | BRF_GRA},            // 14
+	{ "dn15-5",		0x08000, 0x8933fcb8, 5 | BRF_GRA},            // 15
+	{ "dn16-",		0x10000, 0x55e63a11, 5 | BRF_GRA},            // 16
+	{ "dn17-5",		0x08000, 0xb70ae950, 5 | BRF_GRA},            // 17
+	{ "dn18-",		0x10000, 0x2ad53213, 5 | BRF_GRA},            // 18
+	{ "dn19-5",		0x08000, 0x8fd4fa40, 5 | BRF_GRA},            // 19
+
+	{ "karnprom.21",	0x00400, 0xaab0bb93, 6 | BRF_GRA},            // 20 Color Color Proms
+	{ "karnprom.20",	0x00400, 0x02f78ffb, 6 | BRF_GRA},            // 21
+	
+	{ "karnov_i8751",  0x01000, 0x00000000, BRF_OPT | BRF_NODUMP},
+};
+
+STD_ROM_PICK(karnova)
+STD_ROM_FN(karnova)
+
+struct BurnDriver BurnDrvKarnova = {
+	"karnova", "karnov", NULL, NULL, "1987",
+	"Karnov (US, rev 5)\0", NULL, "Data East USA", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_PLATFORM | GBF_HORSHOOT, 0,
+	NULL, karnovaRomInfo, karnovaRomName, NULL, NULL, KarnovInputInfo, KarnovDIPInfo,
+	KarnovInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 
+	&DrvRecalc, 0x300, 256, 240, 4, 3
+};
 
 
 // Karnov (Japan)
@@ -1412,8 +1461,8 @@ static INT32 ChelnovInit()
 	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
-		*((UINT16*)(Drv68KROM + 0x0A26)) = 0x4E71;
-		*((UINT16*)(Drv68KROM + 0x062a)) = 0x4E71;
+		*((UINT16*)(Drv68KROM + 0x0A26)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
+		*((UINT16*)(Drv68KROM + 0x062a)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
 	}
 
 	return nRet;
@@ -1471,8 +1520,8 @@ static INT32 ChelnovuInit()
 	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
-		*((UINT16*)(Drv68KROM + 0x0A26)) = 0x4E71;
-		*((UINT16*)(Drv68KROM + 0x062a)) = 0x4E71;
+		*((UINT16*)(Drv68KROM + 0x0A26)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
+		*((UINT16*)(Drv68KROM + 0x062a)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
 	}
 
 	return nRet;
@@ -1530,8 +1579,8 @@ static INT32 ChelnovjInit()
 	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
-		*((UINT16*)(Drv68KROM + 0x0A2e)) = 0x4E71;
-		*((UINT16*)(Drv68KROM + 0x062a)) = 0x4E71;
+		*((UINT16*)(Drv68KROM + 0x0A2e)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
+		*((UINT16*)(Drv68KROM + 0x062a)) = BURN_ENDIAN_SWAP_INT16(0x4E71);
 	}
 
 	return nRet;

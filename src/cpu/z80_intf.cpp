@@ -1,6 +1,6 @@
 // Z80 (Zed Eight-Ty) Interface
 #include "burnint.h"
-#include "zet.h"
+#include "z80_intf.h"
 
 #define MAX_Z80		8
 static struct ZetExt * ZetCPUContext[MAX_Z80] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -429,16 +429,6 @@ INT32 ZetMemCallback(INT32 nStart, INT32 nEnd, INT32 nMode)
 	return 0;
 }
 
-INT32 ZetMemEnd()
-{
-#if defined FBA_DEBUG
-	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetMemEnd called without init\n"));
-	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("ZetMemEnd called when no CPU open\n"));
-#endif
-
-	return 0;
-}
-
 void ZetExit()
 {
 #if defined FBA_DEBUG
@@ -459,6 +449,45 @@ void ZetExit()
 	DebugCPU_ZetInitted = 0;
 }
 
+
+// This function will make an area callback ZetRead/ZetWrite
+INT32 ZetUnmapMemory(INT32 nStart, INT32 nEnd, INT32 nFlags)
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetUnmapMemory called without init\n"));
+	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("ZetUnmapMemory called when no CPU open\n"));
+#endif
+
+	UINT8 cStart = (nStart >> 8);
+	UINT8 **pMemMap = ZetCPUContext[nOpenedCPU]->pZetMemMap;
+
+	for (UINT16 i = cStart; i <= (nEnd >> 8); i++) {
+		if (nFlags & (1 << 0)) pMemMap[0     + i] = NULL; // READ
+		if (nFlags & (1 << 1)) pMemMap[0x100 + i] = NULL; // WRITE
+		if (nFlags & (1 << 2)) pMemMap[0x200 + i] = NULL; // OP
+		if (nFlags & (1 << 3)) pMemMap[0x300 + i] = NULL; // ARG
+	}
+
+	return 0;
+}
+
+void ZetMapMemory(UINT8 *Mem, INT32 nStart, INT32 nEnd, INT32 nFlags)
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetMapMemory called without init\n"));
+	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("ZetMapMemory called when no CPU open\n"));
+#endif
+
+	UINT8 cStart = (nStart >> 8);
+	UINT8 **pMemMap = ZetCPUContext[nOpenedCPU]->pZetMemMap;
+
+	for (UINT16 i = cStart; i <= (nEnd >> 8); i++) {
+		if (nFlags & (1 << 0)) pMemMap[0     + i] = Mem + ((i - cStart) << 8); // READ
+		if (nFlags & (1 << 1)) pMemMap[0x100 + i] = Mem + ((i - cStart) << 8); // WRITE
+		if (nFlags & (1 << 2)) pMemMap[0x200 + i] = Mem + ((i - cStart) << 8); // OP
+		if (nFlags & (1 << 3)) pMemMap[0x300 + i] = Mem + ((i - cStart) << 8); // ARG
+	}
+}
 
 INT32 ZetMapArea(INT32 nStart, INT32 nEnd, INT32 nMode, UINT8 *Mem)
 {
@@ -525,11 +554,11 @@ void ZetReset()
 	Z80Reset();
 }
 
-INT32 ZetPc(INT32 n)
+INT32 ZetGetPC(INT32 n)
 {
 #if defined FBA_DEBUG
-	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetPc called without init\n"));
-	if (nOpenedCPU == -1 && n < 0) bprintf(PRINT_ERROR, _T("ZetPc called when no CPU open\n"));
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetGetPC called without init\n"));
+	if (nOpenedCPU == -1 && n < 0) bprintf(PRINT_ERROR, _T("ZetGetPC called when no CPU open\n"));
 #endif
 
 	if (n < 0) {
@@ -640,6 +669,15 @@ void ZetSetVector(INT32 vector)
 	Z80Vector = vector;
 }
 
+UINT8 ZetGetVector()
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetGetVector called without init\n"));
+	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("ZetGetVector called when no CPU open\n"));
+#endif
+	return Z80Vector;
+}
+
 INT32 ZetNmi()
 {
 #if defined FBA_DEBUG
@@ -699,6 +737,11 @@ void ZetSetBUSREQLine(INT32 nStatus)
 	if (nOpenedCPU < 0) return;
 	
 	ZetCPUContext[nOpenedCPU]->BusReq = nStatus;
+}
+
+void ZetSetHL(INT32 n, UINT16 value)
+{
+	ZetCPUContext[n]->reg.sp.w.l=value;
 }
 
 #undef MAX_Z80

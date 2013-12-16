@@ -28,6 +28,7 @@ UINT8 DebugSnd_YMF278BInitted;
 UINT8 DebugSnd_DACInitted;
 UINT8 DebugSnd_ES5506Initted;
 UINT8 DebugSnd_ES8712Initted;
+UINT8 DebugSnd_FilterRCInitted;
 UINT8 DebugSnd_ICS2115Initted;
 UINT8 DebugSnd_IremGA20Initted;
 UINT8 DebugSnd_K007232Initted;
@@ -59,7 +60,7 @@ UINT8 DebugCPU_S2650Initted;
 UINT8 DebugCPU_SekInitted;
 UINT8 DebugCPU_VezInitted;
 UINT8 DebugCPU_ZetInitted;
-
+UINT8 DebugCPU_PIC16C5XInitted;
 UINT8 DebugCPU_I8039Initted;
 UINT8 DebugCPU_SH2Initted;
 
@@ -91,6 +92,7 @@ void DebugTrackerExit()
 	if (DebugSnd_DACInitted) 			bprintf(PRINT_ERROR, _T("Sound Module DAC Not Exited\n"));
 	if (DebugSnd_ES5506Initted) 		bprintf(PRINT_ERROR, _T("Sound Module ES5506 Not Exited\n"));
 	if (DebugSnd_ES8712Initted) 		bprintf(PRINT_ERROR, _T("Sound Module ES8712 Not Exited\n"));
+	if (DebugSnd_FilterRCInitted)		bprintf(PRINT_ERROR, _T("Sound Module Filter RC Not Exited\n"));
 	if (DebugSnd_ICS2115Initted) 		bprintf(PRINT_ERROR, _T("Sound Module ICS2115 Not Exited\n"));
 	if (DebugSnd_IremGA20Initted) 		bprintf(PRINT_ERROR, _T("Sound Module IremGA20 Not Exited\n"));
 	if (DebugSnd_K007232Initted) 		bprintf(PRINT_ERROR, _T("Sound Module K007232 Not Exited\n"));
@@ -121,7 +123,7 @@ void DebugTrackerExit()
 	if (DebugCPU_SekInitted) 			bprintf(PRINT_ERROR, _T("CPU Sek Not Exited\n"));
 	if (DebugCPU_VezInitted) 			bprintf(PRINT_ERROR, _T("CPU Vez Not Exited\n"));
 	if (DebugCPU_ZetInitted) 			bprintf(PRINT_ERROR, _T("CPU Zet Not Exited\n"));
-	
+	if (DebugCPU_PIC16C5XInitted)		bprintf(PRINT_ERROR, _T("CPU PIC16C5X Not Exited\n"));
 	if (DebugCPU_I8039Initted) 			bprintf(PRINT_ERROR, _T("CPU I8039 Not Exited\n"));
 	if (DebugCPU_SH2Initted) 			bprintf(PRINT_ERROR, _T("CPU SH2 Not Exited\n"));
 }

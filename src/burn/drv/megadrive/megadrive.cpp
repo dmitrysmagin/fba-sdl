@@ -20,13 +20,13 @@
  ********************************************************************************/
 
 #include "burnint.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "burn_ym2612.h"
 #include "sn76496.h"
 #include "megadrive.h"
 #include "bitswap.h"
-#include "sekdebug.h"
+#include "m68000_debug.h"
 
 #define OSC_NTSC 53693175
 #define OSC_PAL  53203424
@@ -1134,12 +1134,14 @@ static INT32 MegadriveResetDo()
 		BurnYM2612Exit();
 		BurnYM2612Init(1, OSC_PAL / 7, NULL, MegadriveSynchroniseStreamPAL, MegadriveGetTimePAL, 0);
 		BurnTimerAttachSek(OSC_PAL / 7);
+		BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_1, 0.50, BURN_SND_ROUTE_LEFT);
+		BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_2, 0.50, BURN_SND_ROUTE_RIGHT);
 		
 		BurnYM2612Reset();
 		
 		SN76496Exit();
 		SN76496Init(0, OSC_PAL / 15, 1);
-		SN76496SetVolShift(0, 1);
+		SN76496SetRoute(0, 0.25, BURN_SND_ROUTE_BOTH);
 	} else {
 		BurnSetRefreshRate(60.0);
 		Reinitialise();
@@ -1147,12 +1149,14 @@ static INT32 MegadriveResetDo()
 		BurnYM2612Exit();
 		BurnYM2612Init(1, OSC_NTSC / 7, NULL, MegadriveSynchroniseStream, MegadriveGetTime, 0);
 		BurnTimerAttachSek(OSC_NTSC / 7);
+		BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_1, 0.50, BURN_SND_ROUTE_LEFT);
+		BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_2, 0.50, BURN_SND_ROUTE_RIGHT);
 		
 		BurnYM2612Reset();
 		
 		SN76496Exit();
 		SN76496Init(0, OSC_NTSC / 15, 1);
-		SN76496SetVolShift(0, 1);
+		SN76496SetRoute(0, 0.25, BURN_SND_ROUTE_BOTH);
 	}
 
 	// other reset
@@ -1353,15 +1357,14 @@ static INT32 MegadriveLoadRoms(bool bLoad)
 		for (i = 0; i < RomNum; i++) {
 			BurnDrvGetRomInfo(&ri, i);
 			
-			switch (ri.nType & 0x0f) {
-				case SEGA_MD_ROM_OFFS_000000: Offset = 0x000000; break;
-				case SEGA_MD_ROM_OFFS_000001: Offset = 0x000001; break;
-				case SEGA_MD_ROM_OFFS_020000: Offset = 0x020000; break;
-				case SEGA_MD_ROM_OFFS_080000: Offset = 0x080000; break;
-				case SEGA_MD_ROM_OFFS_100000: Offset = 0x100000; break;
-				case SEGA_MD_ROM_OFFS_100001: Offset = 0x100001; break;
-				case SEGA_MD_ROM_OFFS_200000: Offset = 0x200000; break;				
-			}
+			if ((ri.nType & SEGA_MD_ROM_OFFS_000000) == SEGA_MD_ROM_OFFS_000000) Offset = 0x000000;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_000001) == SEGA_MD_ROM_OFFS_000001) Offset = 0x000001;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_020000) == SEGA_MD_ROM_OFFS_020000) Offset = 0x020000;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_080000) == SEGA_MD_ROM_OFFS_080000) Offset = 0x080000;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_100000) == SEGA_MD_ROM_OFFS_100000) Offset = 0x100000;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_100001) == SEGA_MD_ROM_OFFS_100001) Offset = 0x100001;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_200000) == SEGA_MD_ROM_OFFS_200000) Offset = 0x200000;
+			if ((ri.nType & SEGA_MD_ROM_OFFS_300000) == SEGA_MD_ROM_OFFS_300000) Offset = 0x300000;
 			
 			switch (ri.nType & 0xf0) {
 				case SEGA_MD_ROM_LOAD_NORMAL: {
@@ -1386,6 +1389,14 @@ static INT32 MegadriveLoadRoms(bool bLoad)
 					BurnByteswap(RomMain + Offset, 0x140000);
 					break;
 				}
+			}
+			
+			if ((ri.nType & SEGA_MD_ROM_RELOAD_200000_200000) == SEGA_MD_ROM_RELOAD_200000_200000) {
+				memcpy(RomMain + 0x200000, RomMain + 0x000000, 0x200000);
+			}
+			
+			if ((ri.nType & SEGA_MD_ROM_RELOAD_100000_300000) == SEGA_MD_ROM_RELOAD_100000_300000) {
+				memcpy(RomMain + 0x300000, RomMain + 0x000000, 0x100000);
 			}
 		}
 	}
@@ -2397,7 +2408,7 @@ static void SetupCustomCartridgeMappers()
 		SekClose();
 	}
 	
-	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_12IN1) {
+	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_MC_12IN1) {
 		OriginalRom = (UINT8*)BurnMalloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
@@ -2440,7 +2451,7 @@ static void SetupCustomCartridgeMappers()
 		ROM16[0x0dd49c/2] = 0x6002;
 	}
 	
-/*	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_POKEMON2) {
+	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_POKEMON2) {
 		UINT16 *ROM16 = (UINT16 *)RomMain;
 
 		ROM16[0x06036/2] = 0xE000;
@@ -2449,7 +2460,7 @@ static void SetupCustomCartridgeMappers()
 		ROM16[0x02476/2] = 0x6022;
 
 		ROM16[0x7E300/2] = 0x60FE;
-	}*/
+	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_MULAN) {
 		UINT16 *ROM16 = (UINT16 *)RomMain;
@@ -2952,7 +2963,6 @@ INT32 MegadriveInit()
 		ZetMapArea(0x2000, 0x3FFF, 1, RamZ80);
 		ZetMapArea(0x2000, 0x3FFF, 2, RamZ80);
 		
-		ZetMemEnd();
 		
 		ZetSetReadHandler(MegadriveZ80ProgRead);
 		ZetSetWriteHandler(MegadriveZ80ProgWrite);
@@ -2967,9 +2977,11 @@ INT32 MegadriveInit()
 	DrvSECAM = 0;
 	BurnYM2612Init(1, OSC_NTSC / 7, NULL, MegadriveSynchroniseStream, MegadriveGetTime, 0);
 	BurnTimerAttachSek(OSC_NTSC / 7);
+	BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_1, 0.50, BURN_SND_ROUTE_LEFT);
+	BurnYM2612SetRoute(0, BURN_SND_YM2612_YM2612_ROUTE_2, 0.50, BURN_SND_ROUTE_RIGHT);
 	
 	SN76496Init(0, OSC_NTSC / 15, 1);
-	SN76496SetVolShift(0, 1);
+	SN76496SetRoute(0, 0.25, BURN_SND_ROUTE_BOTH);
 	
 	MegadriveSetupSRAM();
 	SetupCustomCartridgeMappers();

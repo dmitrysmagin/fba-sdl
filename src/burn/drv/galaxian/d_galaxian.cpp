@@ -1583,6 +1583,33 @@ static struct BurnInputInfo ScrambleInputList[] =
 
 STDINPUTINFO(Scramble)
 
+static struct BurnInputInfo ScramblerInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 0, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL   , GalInputPort1 + 0, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL   , GalInputPort0 + 1, "p2 coin"   },
+	{"Start 2"           , BIT_DIGITAL   , GalInputPort1 + 1, "p2 start"  },
+
+	{"Up"                , BIT_DIGITAL   , GalInputPort1 + 3, "p1 up"     },
+	{"Down"              , BIT_DIGITAL   , GalInputPort0 + 7, "p1 down"   },
+	{"Left"              , BIT_DIGITAL   , GalInputPort0 + 2, "p1 left"   },
+	{"Right"             , BIT_DIGITAL   , GalInputPort0 + 3, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL   , GalInputPort0 + 4, "p1 fire 1" },
+	{"Fire 2"            , BIT_DIGITAL   , GalInputPort1 + 2, "p1 fire 2" },
+	
+	{"Up (Cocktail)"     , BIT_DIGITAL   , GalInputPort1 + 4, "p2 up"     },
+	{"Down (Cocktail)"   , BIT_DIGITAL   , GalInputPort0 + 6, "p2 down"   },
+	{"Fire 1 (Cocktail)" , BIT_DIGITAL   , GalInputPort1 + 5, "p2 fire 1" },
+	{"Fire 2 (Cocktail)" , BIT_DIGITAL   , GalInputPort0 + 5, "p2 fire 2" },
+
+	{"Reset"             , BIT_DIGITAL   , &GalReset        , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH , GalDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , GalDip + 1       , "dip"       },
+	{"Dip 3"             , BIT_DIPSWITCH , GalDip + 2       , "dip"       },
+};
+
+STDINPUTINFO(Scrambler)
+
 static struct BurnInputInfo SfxInputList[] =
 {
 	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 7, "p1 coin"   },
@@ -1880,6 +1907,26 @@ static struct BurnInputInfo ThepitmInputList[] =
 };
 
 STDINPUTINFO(Thepitm)
+
+static struct BurnInputInfo TimefgtrInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL   , GalInputPort0 + 1, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL   , GalInputPort1 + 0, "p1 start"  },
+	{"Start 2"           , BIT_DIGITAL   , GalInputPort1 + 1, "p2 start"  },
+
+	{"Up"                , BIT_DIGITAL   , GalInputPort0 + 7, "p1 up"     },
+	{"Down"              , BIT_DIGITAL   , GalInputPort1 + 5, "p1 down"   },
+	{"Left"              , BIT_DIGITAL   , GalInputPort0 + 2, "p1 left"   },
+	{"Right"             , BIT_DIGITAL   , GalInputPort0 + 3, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL   , GalInputPort0 + 4, "p1 fire 1" },
+
+	{"Reset"             , BIT_DIGITAL   , &GalReset        , "reset"     },
+	{"Dip 1"             , BIT_DIPSWITCH , GalDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH , GalDip + 1       , "dip"       },
+	{"Dip 3"             , BIT_DIPSWITCH , GalDip + 2       , "dip"       },
+};
+
+STDINPUTINFO(Timefgtr)
 
 static struct BurnInputInfo TurtlesInputList[] =
 {
@@ -3489,6 +3536,119 @@ static struct BurnDIPInfo GalaxianDIPList[]=
 
 STDDIPINFO(Galaxian)
 
+static struct BurnDIPInfo GalaxianblDIPList[]=
+{
+	// Default Values
+	{0x0c, 0xff, 0xff, 0x00, NULL                     },
+	{0x0d, 0xff, 0xff, 0x00, NULL                     },
+	{0x0e, 0xff, 0xff, 0x04, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0c, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0c, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"           },
+	{0x0c, 0x01, 0x40, 0x00, "Off"                    },
+	{0x0c, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x0d, 0x01, 0xc0, 0x40, "2 Coins 1 Play"         },
+	{0x0d, 0x01, 0xc0, 0x00, "1 Coin  1 Play"         },
+	{0x0d, 0x01, 0xc0, 0x80, "1 Coin  2 Plays"        },
+	{0x0d, 0x01, 0xc0, 0xc0, "Freeplay"               },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x0e, 0x01, 0x03, 0x00, "None"                   },
+	{0x0e, 0x01, 0x03, 0x01, "10000"                  },
+	{0x0e, 0x01, 0x03, 0x02, "12000"                  },
+	{0x0e, 0x01, 0x03, 0x03, "20000"                  },
+	
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x0e, 0x01, 0x04, 0x00, "2"                      },
+	{0x0e, 0x01, 0x04, 0x04, "3"                      },
+};
+
+STDDIPINFO(Galaxianbl)
+
+static struct BurnDIPInfo GalaxrfDIPList[]=
+{
+	// Default Values
+	{0x0c, 0xff, 0xff, 0x00, NULL                     },
+	{0x0d, 0xff, 0xff, 0x00, NULL                     },
+	{0x0e, 0xff, 0xff, 0x01, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0c, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0c, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"           },
+	{0x0c, 0x01, 0x40, 0x00, "Off"                    },
+	{0x0c, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x0d, 0x01, 0xc0, 0x40, "2 Coins 1 Play"         },
+	{0x0d, 0x01, 0xc0, 0x00, "1 Coin  1 Play"         },
+	{0x0d, 0x01, 0xc0, 0x80, "1 Coin  2 Plays"        },
+	{0x0d, 0x01, 0xc0, 0xc0, "Freeplay"               },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 4   , "Bonus Life / Enemy Bullet Speed" },
+	{0x0e, 0x01, 0x03, 0x00, "None, Slow"             },
+	{0x0e, 0x01, 0x03, 0x01, "12000, Medium"          },
+	{0x0e, 0x01, 0x03, 0x02, "20000, Fast"            },
+	{0x0e, 0x01, 0x03, 0x03, "30000, Fastest"         },
+	
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x0e, 0x01, 0x04, 0x00, "2"                      },
+	{0x0e, 0x01, 0x04, 0x04, "3"                      },
+	
+	{0   , 0xfe, 0   , 2   , "Player Bullet Speed"    },
+	{0x0e, 0x01, 0x08, 0x00, "Slow"                   },
+	{0x0e, 0x01, 0x08, 0x08, "Fast"                   },
+};
+
+STDDIPINFO(Galaxrf)
+
+static struct BurnDIPInfo GhostmunDIPList[]=
+{
+	// Default Values
+	{0x0c, 0xff, 0xff, 0x00, NULL                     },
+	{0x0d, 0xff, 0xff, 0x40, NULL                     },
+	{0x0e, 0xff, 0xff, 0x06, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0c, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0c, 0x01, 0x20, 0x20, "Cocktail"               },
+		
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x0d, 0x01, 0xc0, 0x40, "10000"                  },
+	{0x0d, 0x01, 0xc0, 0x80, "15000"                  },
+	{0x0d, 0x01, 0xc0, 0xc0, "20000"                  },
+	{0x0d, 0x01, 0xc0, 0x00, "None"                   },
+	
+	// Dip 3
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x0e, 0x01, 0x03, 0x00, "2 Coins 1 Play"         },
+	{0x0e, 0x01, 0x03, 0x02, "1 Coin  1 Play"         },
+	{0x0e, 0x01, 0x03, 0x01, "1 Coin  2 Plays"        },
+	{0x0e, 0x01, 0x03, 0x03, "Freeplay"               },
+
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x0e, 0x01, 0x0c, 0x0c, "1"                      },
+	{0x0e, 0x01, 0x0c, 0x08, "2"                      },
+	{0x0e, 0x01, 0x0c, 0x04, "3"                      },
+	{0x0e, 0x01, 0x0c, 0x00, "4"                      },
+};
+
+STDDIPINFO(Ghostmun)
+
 static struct BurnDIPInfo GmgalaxDIPList[]=
 {
 	// Default Values
@@ -3627,6 +3787,43 @@ static struct BurnDIPInfo Gteikob2DIPList[]=
 };
 
 STDDIPINFO(Gteikob2)
+
+static struct BurnDIPInfo AsideralDIPList[]=
+{
+	// Default Values
+	{0x0c, 0xff, 0xff, 0x00, NULL                     },
+	{0x0d, 0xff, 0xff, 0x40, NULL                     },
+	{0x0e, 0xff, 0xff, 0x01, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0c, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0c, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	{0   , 0xfe, 0   , 2   , "Service Mode"           },
+	{0x0c, 0x01, 0x40, 0x00, "Off"                    },
+	{0x0c, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x0d, 0x01, 0xc0, 0x40, "1 Coin 1 Play"          },
+	{0x0d, 0x01, 0xc0, 0x00, "1C/2C, 1C/1C"           },
+	{0x0d, 0x01, 0xc0, 0x80, "1C/4C, 1C/2C"           },
+	{0x0d, 0x01, 0xc0, 0xc0, "Freeplay"               },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x0e, 0x01, 0x03, 0x00, "None"                   },
+	{0x0e, 0x01, 0x03, 0x01, "4000"                   },
+	{0x0e, 0x01, 0x03, 0x02, "5000"                   },
+	{0x0e, 0x01, 0x03, 0x03, "7000"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x0e, 0x01, 0x04, 0x00, "4"                      },
+	{0x0e, 0x01, 0x04, 0x04, "5"                      },
+};
+
+STDDIPINFO(Asideral)
 
 static struct BurnDIPInfo HotshockDIPList[]=
 {
@@ -4322,6 +4519,83 @@ static struct BurnDIPInfo MooncrstDIPList[]=
 };
 
 STDDIPINFO(Mooncrst)
+
+static struct BurnDIPInfo MooncregDIPList[]=
+{
+	// Default Values
+	{0x0b, 0xff, 0xff, 0x00, NULL                     },
+	{0x0c, 0xff, 0xff, 0xc0, NULL                     },
+	{0x0d, 0xff, 0xff, 0x00, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0b, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0b, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Difficulty"             },
+	{0x0c, 0x01, 0x40, 0x40, "Easy"                   },
+	{0x0c, 0x01, 0x40, 0x00, "Hard"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Player's Bullet Speed"  },
+	{0x0c, 0x01, 0x80, 0x00, "Slow"                   },
+	{0x0c, 0x01, 0x80, 0x80, "Fast"                   },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 13   , "Coinage"               },
+	{0x0d, 0x01, 0x0f, 0x00, "1C 1P, 1C 2P"           },
+	{0x0d, 0x01, 0x0f, 0x01, "2C 1P, 2C 3P"           },
+	{0x0d, 0x01, 0x0f, 0x02, "3C 1P, 3C 4P"           },
+	{0x0d, 0x01, 0x0f, 0x03, "4C 1P, 4C 5P"           },
+	{0x0d, 0x01, 0x0f, 0x04, "1C 1P, 1C 3P"           },
+	{0x0d, 0x01, 0x0f, 0x05, "2C 1P, 2C 5P"           },
+	{0x0d, 0x01, 0x0f, 0x06, "3C 1P, 3C 7P"           },
+	{0x0d, 0x01, 0x0f, 0x07, "4C 1P, 4C 9P"           },
+	{0x0d, 0x01, 0x0f, 0x08, "1C 1P, 1C 4P"           },
+	{0x0d, 0x01, 0x0f, 0x09, "2C 1P, 2C 7P"           },
+	{0x0d, 0x01, 0x0f, 0x0a, "3C 1P, 3C 10P"          },
+	{0x0d, 0x01, 0x0f, 0x0b, "4C 1P, 4C 13P"          },
+	{0x0d, 0x01, 0x0f, 0x0c, "Free Play"              },
+};
+
+STDDIPINFO(Mooncreg)
+
+static struct BurnDIPInfo MooncrslDIPList[]=
+{
+	// Default Values
+	{0x0b, 0xff, 0xff, 0x00, NULL                     },
+	{0x0c, 0xff, 0xff, 0xc0, NULL                     },
+	{0x0d, 0xff, 0xff, 0x00, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x0b, 0x01, 0x20, 0x00, "Upright"                },
+	{0x0b, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Difficulty"             },
+	{0x0c, 0x01, 0x40, 0x40, "Easy"                   },
+	{0x0c, 0x01, 0x40, 0x00, "Hard"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Player's Bullet Speed"  },
+	{0x0c, 0x01, 0x80, 0x00, "Slow"                   },
+	{0x0c, 0x01, 0x80, 0x80, "Fast"                   },
+	
+	// Dip 3
+	{0   , 0xfe, 0   , 4   , "Coin A"                 },
+	{0x0d, 0x01, 0x03, 0x03, "4 Coins 1 Play"         },
+	{0x0d, 0x01, 0x03, 0x02, "3 Coins 1 Play"         },
+	{0x0d, 0x01, 0x03, 0x01, "2 Coins 1 Play"         },
+	{0x0d, 0x01, 0x03, 0x00, "1 Coin  1 Play"         },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                 },
+	{0x0d, 0x01, 0x0c, 0x00, "1 Coin 1 Play"          },
+	{0x0d, 0x01, 0x0c, 0x04, "1 Coin 2 Plays"         },
+	{0x0d, 0x01, 0x0c, 0x08, "1 Coin 3 Plays"         },
+	{0x0d, 0x01, 0x0c, 0x0c, "Freeplay"               },
+};
+
+STDDIPINFO(Mooncrsl)
 
 static struct BurnDIPInfo MoonqsrDIPList[]=
 {
@@ -5206,6 +5480,36 @@ static struct BurnDIPInfo ScrambleDIPList[]=
 
 STDDIPINFO(Scramble)
 
+static struct BurnDIPInfo ScramblerDIPList[]=
+{
+	// Default Values
+	{0x0f, 0xff, 0xff, 0x00, NULL                     },
+	{0x10, 0xff, 0xff, 0x00, NULL                     },
+	{0x11, 0xff, 0xff, 0xf8, NULL                     },
+	
+	// Dip 1
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Coinage"                },
+	{0x10, 0x01, 0xc0, 0x00, "A 1C/1P  B 1C/6P"       },
+	{0x10, 0x01, 0xc0, 0x40, "A 2C/1P  B 1C/3P"       },
+	{0x10, 0x01, 0xc0, 0x80, "A 1C/2P  B 1C/6P"       },
+	{0x10, 0x01, 0xc0, 0xc0, "A 2C/2P  B 1C/3P"       },
+	
+	// Dip 3
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x11, 0x01, 0x03, 0x00, "3"                      },
+	{0x11, 0x01, 0x03, 0x01, "4"                      },
+	{0x11, 0x01, 0x03, 0x02, "5"                      },
+	{0x11, 0x01, 0x03, 0x03, "255"                    },
+	
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x11, 0x01, 0x04, 0x00, "Upright"                },
+	{0x11, 0x01, 0x04, 0x04, "Cocktail"               },
+};
+
+STDDIPINFO(Scrambler)
+
 static struct BurnDIPInfo SfxDIPList[]=
 {
 	// Default Values
@@ -5307,6 +5611,43 @@ static struct BurnDIPInfo SmooncrsDIPList[]=
 };
 
 STDDIPINFO(Smooncrs)
+
+static struct BurnDIPInfo MooncptcDIPList[]=
+{
+	// Default Values
+	{0x08, 0xff, 0xff, 0x00, NULL                     },
+	{0x09, 0xff, 0xff, 0xc0, NULL                     },
+	{0x10, 0xff, 0xff, 0x03, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "Cabinet"                },
+	{0x08, 0x01, 0x20, 0x00, "Upright"                },
+	{0x08, 0x01, 0x20, 0x20, "Cocktail"               },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Difficulty"             },
+	{0x09, 0x01, 0x40, 0x40, "Easy"                   },
+	{0x09, 0x01, 0x40, 0x00, "Hard"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Players Bullet Speed"   },
+	{0x09, 0x01, 0x80, 0x00, "Slow"                   },
+	{0x09, 0x01, 0x80, 0x80, "Fast"                   },
+	
+	// Dip 3
+	{0   , 0xfe, 0   , 4   , "Coin A"                 },
+	{0x10, 0x01, 0x03, 0x00, "1 Coin  2 Plays"        },
+	{0x10, 0x01, 0x03, 0x01, "2 Coins 3 Plays"        },
+	{0x10, 0x01, 0x03, 0x02, "3 Coins 4 Plays"        },
+	{0x10, 0x01, 0x03, 0x03, "4 Coins 5 Plays"        },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                 },
+	{0x10, 0x01, 0x0c, 0x00, "1 Coin 1 Play"          },
+	{0x10, 0x01, 0x0c, 0x04, "1 Coin 2 Plays"         },
+	{0x10, 0x01, 0x0c, 0x08, "1 Coin 3 Plays"         },
+	{0x10, 0x01, 0x0c, 0x0c, "Freeplay"               },
+};
+
+STDDIPINFO(Mooncptc)
 
 static struct BurnDIPInfo SpacbattDIPList[]=
 {
@@ -5646,6 +5987,41 @@ static struct BurnDIPInfo ThepitmDIPList[]=
 
 STDDIPINFO(Thepitm)
 
+static struct BurnDIPInfo TimefgtrDIPList[]=
+{
+	// Default Values
+	{0x09, 0xff, 0xff, 0x40, NULL                     },
+	{0x0a, 0xff, 0xff, 0x00, NULL                     },
+	{0x0b, 0xff, 0xff, 0x03, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 2   , "255 Lives"              },
+	{0x09, 0x01, 0x20, 0x00, "Off"                    },
+	{0x09, 0x01, 0x20, 0x20, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Extended Bonus Life"    },
+	{0x09, 0x01, 0x40, 0x00, "Off"                    },
+	{0x09, 0x01, 0x40, 0x40, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 2   , "Coinage"                },
+	{0x0a, 0x01, 0x40, 0x00, "1 Coin  1 Play"         },
+	{0x0a, 0x01, 0x40, 0x40, "2 Coins 1 Play"         },
+	
+	{0   , 0xfe, 0   , 2   , "Lives"                  },
+	{0x0a, 0x01, 0x80, 0x00, "3"                      },
+	{0x0a, 0x01, 0x80, 0x80, "5"                      },
+	
+	// Dip 3	
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
+	{0x0b, 0x01, 0x0c, 0x00, "10000 50000"            },
+	{0x0b, 0x01, 0x0c, 0x04, "20000 50000"            },
+	{0x0b, 0x01, 0x0c, 0x08, "10000 60000"            },
+	{0x0b, 0x01, 0x0c, 0x0c, "20000 60000"            },
+};
+
+STDDIPINFO(Timefgtr)
+
 static struct BurnDIPInfo TriplepDIPList[]=
 {
 	// Default Values
@@ -5941,8 +6317,8 @@ static struct BurnRomInfo GalaxiantRomDesc[] = {
 	{ "gl-06.8d",      0x00800, 0x097d92a2, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "gl-07.8c",      0x00800, 0x5341d75a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
-	{ "gl-01.1j",      0x00800, 0x968b6016, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "gl-02.1k",      0x00800, 0xd14f7510, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "gl-01.1j",      0x00800, 0x968b6016, BRF_GRA | GAL_ROM_TILES_SHARED },
 	
 	{ "6l.bpr",        0x00020, 0xc3ac9467, BRF_GRA | GAL_ROM_PROM },
 };
@@ -6111,6 +6487,22 @@ static struct BurnRomInfo SwarmRomDesc[] = {
 STD_ROM_PICK(Swarm)
 STD_ROM_FN(Swarm)
 
+static struct BurnRomInfo AstriansRomDesc[] = {
+	{ "astrians.7h",   0x00800, 0x21eba3d0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "astrians.7j",   0x00800, 0xf3a436cd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "astrians.7k",   0x00800, 0x2915e38b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "astrians.7l",   0x00800, 0x2db56b2f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "astrians.7m",   0x00800, 0x41075efb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "astrians.1h",   0x00800, 0x77c074b4, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "astrians.1k",   0x00800, 0xc30fcc46, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom.6l",       0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Astrians)
+STD_ROM_FN(Astrians)
+
 static struct BurnRomInfo ZerotimeRomDesc[] = {
 	{ "zt-p01c.016",   0x00800, 0x90a2bc61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "zt-2.016",      0x00800, 0xa433067e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -6169,6 +6561,27 @@ static struct BurnRomInfo GalaxbsfRomDesc[] = {
 STD_ROM_PICK(Galaxbsf)
 STD_ROM_FN(Galaxbsf)
 
+static struct BurnRomInfo GalaxianblRomDesc[] = {
+	{ "gal00eg.ic4",   0x00400, 0x7c44510c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal01eg.ic5",   0x00400, 0x2a426500, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal02.ic6",     0x00400, 0x30e28016, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal03.ic7",     0x00400, 0xde7e7770, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal04.ic8",     0x00400, 0xa916c919, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal05.ic9",     0x00400, 0x9175882b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal06.ic10",    0x00400, 0x1237b9da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal07eg.ic11",  0x00400, 0x16144658, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal08.ic12",    0x00400, 0x901894cc, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "gal09.ic13",    0x00400, 0x5876f695, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "galaxian.1h",   0x00800, 0x39fb43a4, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "galaxian.1k",   0x00800, 0x7e3f56a2, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "6l.bpr",        0x00020, 0xc3ac9467, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Galaxianbl)
+STD_ROM_FN(Galaxianbl)
+
 static struct BurnRomInfo Kamakazi3RomDesc[] = {
 	{ "f_r_a.bin",     0x00800, 0xe8f3aa67, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "f_a.bin",       0x00800, 0xf58283e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -6217,6 +6630,22 @@ static struct BurnRomInfo TstgalxRomDesc[] = {
 
 STD_ROM_PICK(Tstgalx)
 STD_ROM_FN(Tstgalx)
+
+static struct BurnRomInfo GalaxrfRomDesc[] = {
+	{ "princip1.u",    0x00800, 0x3d5d9bae, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "princip2.v",    0x00800, 0xa433067e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "princip3.w",    0x00800, 0xaaf038d4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "princip4.y",    0x00800, 0xd74bdd2a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "princip5.z",    0x00800, 0x7eeb9e63, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "graphhj.j1",    0x00800, 0x39fb43a4, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "graphkl.l1",    0x00800, 0x7e3f56a2, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "6l.bpr",        0x00020, 0xc3ac9467, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Galaxrf)
+STD_ROM_FN(Galaxrf)
 
 static INT32 SupergxInit()
 {
@@ -6311,6 +6740,16 @@ struct BurnDriver BurnDrvSwarm = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvAstrians = {
+	"astrians", "galaxian", NULL, NULL, "1979",
+	"Astrians (clone of Swarm)\0", NULL, "BGV Ltd", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, AstriansRomInfo, AstriansRomName, NULL, NULL, GalaxianInputInfo, SwarmDIPInfo,
+	GalInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvZerotime = {
 	"zerotime", "galaxian", NULL, NULL, "1979",
 	"Zero Time\0", NULL, "Petaco S.A", "Galaxian",
@@ -6333,10 +6772,20 @@ struct BurnDriver BurnDrvStarfght = {
 
 struct BurnDriver BurnDrvGalaxbsf = {
 	"galaxbsf", "galaxian", NULL, NULL, "1979",
-	"Galaxian (bootleg)\0", NULL, "bootleg", "Galaxian",
+	"Galaxian (bootleg, set 1)\0", NULL, "bootleg", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, GalaxbsfRomInfo, GalaxbsfRomName, NULL, NULL, GalaxianInputInfo, GalaxianDIPInfo,
+	GalInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvGalaxianbl = {
+	"galaxianbl", "galaxian", NULL, NULL, "1979",
+	"Galaxian (bootleg, set 2)\0", NULL, "bootleg", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, GalaxianblRomInfo, GalaxianblRomName, NULL, NULL, GalaxianInputInfo, GalaxianblDIPInfo,
 	GalInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -6367,6 +6816,16 @@ struct BurnDriver BurnDrvTstgalx = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_PROTOTYPE, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, TstgalxRomInfo, TstgalxRomName, NULL, NULL, GalaxianInputInfo, GalaxianDIPInfo,
+	GalInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvGalaxrf = {
+	"galaxrf", "galaxian", NULL, NULL, "1980",
+	"Galaxian (Recreativos Franco S.A. Spanish bootleg)\0", NULL, "bootleg (Recreativos Franco S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, GalaxrfRomInfo, GalaxrfRomName, NULL, NULL, GalaxianInputInfo, GalaxrfDIPInfo,
 	GalInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -6494,6 +6953,22 @@ static struct BurnRomInfo WarofbuggRomDesc[] = {
 
 STD_ROM_PICK(Warofbugg)
 STD_ROM_FN(Warofbugg)
+
+static struct BurnRomInfo WarofbuguRomDesc[] = {
+	{ "wb-prog-1.7d",  0x00800, 0xb8dfb7e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "wb-prog-2.7e",  0x00800, 0xfd8854e0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "wb-prog-3.7j",  0x00800, 0x4495aa14, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "wb-prog-4.7n",  0x00800, 0xe4bd257c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "wb-prog-5.7p",  0x00800, 0x71257bb4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "warofbug.1k",   0x00800, 0x8100fa85, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "warofbug.1j",   0x00800, 0xd1220ae9, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "warofbug.clr",  0x00020, 0x8688e64b, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Warofbugu)
+STD_ROM_FN(Warofbugu)
 
 static struct BurnRomInfo RedufoRomDesc[] = {
 	{ "redufo.1",      0x00800, 0x6a3b873c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -6633,6 +7108,25 @@ static struct BurnRomInfo Scramb2RomDesc[] = {
 
 STD_ROM_PICK(Scramb2)
 STD_ROM_FN(Scramb2)
+
+static struct BurnRomInfo ScramblerRomDesc[] = {
+	{ "principal 1.bin", 0x00800, 0x926958d2, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 2.bin", 0x00800, 0x655c6eca, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 3.bin", 0x00800, 0xcd31749a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 4.bin", 0x00800, 0xf055e1e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 5.bin", 0x00800, 0x15f10df7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 6.bin", 0x00800, 0x4bd1c703, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 7.bin", 0x00800, 0x0bb49470, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "principal 8.bin", 0x00800, 0x6db9f380, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "graph hj.bin",    0x00800, 0x4c017c9c, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "graph kl.bin",    0x00800, 0x28a66399, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "c01s.6e",         0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Scrambler)
+STD_ROM_FN(Scrambler)
 
 UINT8 __fastcall AzurianZ80Read(UINT16 a)
 {
@@ -6775,7 +7269,7 @@ UINT8 __fastcall ScramblbZ80Read(UINT16 a)
 		}
 		
 		case 0x8102: {
-			switch (ZetPc(-1)) {
+			switch (ZetGetPC(-1)) {
 				case 0x1da: return 0x80;
 				case 0x1e4: return 0x00;
 			}
@@ -6783,7 +7277,7 @@ UINT8 __fastcall ScramblbZ80Read(UINT16 a)
 		}
 		
 		case 0x8202: {
-			switch (ZetPc(-1)) {
+			switch (ZetGetPC(-1)) {
 				case 0x1ca: return 0x90;
 			}
 			return 0xff;
@@ -7020,6 +7514,149 @@ void __fastcall Scramb2Z80Write(UINT16 a, UINT8 d)
 	}
 }
 
+UINT8 __fastcall ScramblerZ80Read(UINT16 a)
+{
+	switch (a) {
+		case 0x6000: {
+			return GalInput[0] | GalDip[0];
+		}
+		
+		case 0x6800: {
+			return GalInput[1] | GalDip[1];
+		}
+		
+		case 0x7000: {
+			return GalInput[2] | GalDip[2];
+		}
+		
+		case 0x7800: {
+			// watchdog read
+			return 0xff;
+		}
+		
+		case 0x8202: {
+			// protection
+			return 0xff;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
+		}
+	}
+
+	return 0xff;
+}
+
+void __fastcall ScramblerZ80Write(UINT16 a, UINT8 d)
+{
+	if (a >= 0x5400 && a <= 0x57ff) {
+		// ???
+		return;
+	}
+	
+	if (a >= 0x5800 && a <= 0x58ff) {
+		INT32 Offset = a - 0x5800;
+		
+		GalSpriteRam[Offset] = d;
+		
+		if (Offset >= 0x80 && Offset < 0xc0) {
+			if ((Offset & 0x01) == 0) {
+				GalScrollVals[(Offset - 0x80) >> 1] = d;
+			}
+		}
+		
+		return;
+	}
+	
+	switch (a) {
+		case 0x6000:
+		case 0x6001: {
+			// start_lamp_w
+			return;
+		}
+		
+		case 0x6003: {
+			// coin_lock_w
+			return;
+		}
+		
+		case 0x6004:
+		case 0x6005:
+		case 0x6006:
+		case 0x6007: {
+			GalaxianLfoFreqWrite(a - 0x6004, d);
+			return;
+		}
+		
+		case 0x6800:
+		case 0x6801:
+		case 0x6802:
+		case 0x6803:
+		case 0x6804:
+		case 0x6805:
+		case 0x6806:
+		case 0x6807: {
+			GalaxianSoundWrite(a - 0x6800, d);
+			return;
+		}
+		
+		case 0x7000: {
+			GalIrqFire = d & 1;
+			return;
+		}
+		
+		case 0x7002: {
+			// coin_count_0_w
+			return;
+		}
+		
+		case 0x7003: {
+			GalBackgroundEnable = d & 1;
+			return;
+		}
+		
+		case 0x7004: {
+			GalStarsEnable = d & 0x01;
+			if (!GalStarsEnable) GalStarsScrollPos = -1;
+			return;
+		}
+		
+		case 0x7006: {
+			GalFlipScreenX = d & 1;
+			return;
+		}
+		
+		case 0x7007: {
+			GalFlipScreenY = d & 1;
+			return;
+		}
+		
+		case 0x7800: {
+			GalPitch = d;
+			return;
+		}
+		
+		case 0x8200: {
+			// ???
+			return;
+		}
+		
+		case 0x8201: {
+			// ???
+			return;
+		}
+		
+		case 0x8202: {
+			// ???
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
+		}
+	}
+}
+
 static void OrbitronRearrangeRom()
 {
 	GalTempRom = (UINT8*)BurnMalloc(0x2000);
@@ -7181,7 +7818,7 @@ static void MapScramblb()
 	ZetMapArea(0x4c00, 0x4fff, 1, GalVideoRam);
 	ZetMapArea(0x4c00, 0x4fff, 2, GalVideoRam);
 	ZetMapArea(0x5000, 0x50ff, 0, GalSpriteRam);
-	ZetMapArea(0x5000, 0x50ff, 2, GalSpriteRam);	
+	ZetMapArea(0x5000, 0x50ff, 2, GalSpriteRam);
 	ZetClose();
 }
 
@@ -7219,6 +7856,48 @@ static INT32 Scramb2Init()
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
+	
+	return nRet;
+}
+
+static void MapScrambler()
+{
+	ZetOpen(0);
+	ZetMemCallback(0x0000, 0xffff, 0);
+	ZetMemCallback(0x0000, 0xffff, 1);
+	ZetMemCallback(0x0000, 0xffff, 2);
+	ZetSetReadHandler(ScramblerZ80Read);
+	ZetSetWriteHandler(ScramblerZ80Write);
+	ZetMapArea(0x0000, (GalZ80Rom1Size > 0x4000) ? 0x3fff : GalZ80Rom1Size - 1, 0, GalZ80Rom1);
+	ZetMapArea(0x0000, (GalZ80Rom1Size > 0x4000) ? 0x3fff : GalZ80Rom1Size - 1, 2, GalZ80Rom1);
+	ZetMapArea(0x4000, 0x47ff, 0, GalZ80Ram1);
+	ZetMapArea(0x4000, 0x47ff, 1, GalZ80Ram1);
+	ZetMapArea(0x4000, 0x47ff, 2, GalZ80Ram1);
+//	ZetMapArea(0x4800, 0x4bff, 0, GalZ80Ram1 + 0x800);
+//	ZetMapArea(0x4800, 0x4bff, 1, GalZ80Ram1 + 0x800);
+//	ZetMapArea(0x4800, 0x4bff, 2, GalZ80Ram1 + 0x800);
+	ZetMapArea(0x5000, 0x53ff, 0, GalVideoRam);
+	ZetMapArea(0x5000, 0x53ff, 1, GalVideoRam);
+	ZetMapArea(0x5000, 0x53ff, 2, GalVideoRam);
+	ZetMapArea(0x5400, 0x57ff, 0, GalVideoRam);
+	ZetMapArea(0x5400, 0x57ff, 1, GalVideoRam);
+	ZetMapArea(0x5400, 0x57ff, 2, GalVideoRam);
+	ZetMapArea(0x5800, 0x58ff, 0, GalSpriteRam);
+	ZetMapArea(0x5800, 0x58ff, 2, GalSpriteRam);
+	ZetClose();
+}
+
+static INT32 ScramblerInit()
+{
+	INT32 nRet;
+	
+	GalPostLoadCallbackFunction = MapScrambler;
+	
+	nRet = GalInit();
+	
+	GalRenderBackgroundFunction = ScrambleDrawBackground;
+	GalDrawBulletsFunction = ScrambleDrawBullets;
+	GalRenderFrameFunction = ScramblerRenderFrame;
 	
 	return nRet;
 }
@@ -7297,8 +7976,18 @@ struct BurnDriverD BurnDrvWarofbugg = {
 	"warofbugg", "warofbug", NULL, NULL, "1981",
 	"War of the Bugs or Monsterous Manouvers in a Mushroom Maze (German)\0", NULL, "Armenia", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, WarofbuggRomInfo, WarofbuggRomName, NULL, NULL, WarofbugInputInfo, WarofbugDIPInfo,
+	GalInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvWarofbugu = {
+	"warofbugu", "warofbug", NULL, NULL, "1981",
+	"War of the Bugs or Monsterous Manouvers in a Mushroom Maze (US)\0", NULL, "Armenia", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, WarofbuguRomInfo, WarofbuguRomName, NULL, NULL, WarofbugInputInfo, WarofbugDIPInfo,
 	GalInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -7380,6 +8069,16 @@ struct BurnDriver BurnDrvScramb2 = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
 	NULL, Scramb2RomInfo, Scramb2RomName, NULL, NULL, Scramb2InputInfo, Scramb2DIPInfo,
 	Scramb2Init, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvScrambler = {
+	"scrambler", "scramble", NULL, NULL, "1981",
+	"Scramble (Reben S.A. Spanish bootleg)\0", NULL, "bootleg (Reben S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
+	NULL, ScramblerRomInfo, ScramblerRomName, NULL, NULL, ScramblerInputInfo, ScramblerDIPInfo,
+	ScramblerInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -7627,6 +8326,48 @@ static struct BurnRomInfo GalempRomDesc[] = {
 STD_ROM_PICK(Galemp)
 STD_ROM_FN(Galemp)
 
+static struct BurnRomInfo AsideralRomDesc[] = {
+	{ "1401.7f",       0x00800, 0x82a9da91, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "1302.7h",       0x00800, 0xcc59b49c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "1203.7k",       0x00800, 0x3bc5a165, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "1104.7m",       0x00800, 0xc50149d0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "5.8f",          0x00800, 0x17720c9e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "6.8f",          0x00800, 0xf157a8db, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "7.8f",          0x00800, 0x75085cb6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "8.8f",          0x00800, 0x797d45c7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+		
+	{ "u10.j2",        0x00800, 0x012941e0, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "u12.j2",        0x00800, 0xc26132af, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "u9.l2",         0x00800, 0xfc8b58fd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "u11.l2",        0x00800, 0xdcc2b33b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "uniwars.clr",   0x00020, 0x25c79518, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Asideral)
+STD_ROM_FN(Asideral)
+
+static struct BurnRomInfo PajaroesRomDesc[] = {
+	{ "pea.rom",       0x00800, 0x82a9da91, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "peb.rom",       0x00800, 0xcc59b49c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pec.rom",       0x00800, 0x3bc5a165, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "ped.rom",       0x00800, 0xc50149d0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pe05.rom",      0x00800, 0xcb461871, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pe04.rom",      0x00800, 0xf157a8db, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pe03.rom",      0x00800, 0x75085cb6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pe02.rom",      0x00800, 0x797d45c7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+		
+	{ "pe07.rom",      0x00800, 0x012941e0, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "pe09.rom",      0x00800, 0xc26132af, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "pe06.rom",      0x00800, 0xfc8b58fd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "pe08.rom",      0x00800, 0xdcc2b33b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "uniwars.clr",   0x00020, 0x25c79518, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Pajaroes)
+STD_ROM_FN(Pajaroes)
+
 void __fastcall PiscesZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x5800 && a <= 0x58ff) {
@@ -7848,6 +8589,26 @@ struct BurnDriver BurnDrvGalemp = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvAsideral = {
+	"asideral", "uniwars", NULL, NULL, "1980",
+	"Ataque Sideral (Spanish bootleg of UniWar S)\0", NULL, "bootleg (Electrogame S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, AsideralRomInfo, AsideralRomName, NULL, NULL, GalaxianInputInfo, AsideralDIPInfo,
+	PiscesInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvPajaroes = {
+	"pajaroes", "uniwars", NULL, NULL, "1980",
+	"Pajaro del Espacio (Spanish bootleg of UniWar S)\0", NULL, "bootleg (PSV S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, PajaroesRomInfo, PajaroesRomName, NULL, NULL, GalaxianInputInfo, AsideralDIPInfo,
+	PiscesInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 // Extra chars contolled via different banking at 0x6002
 static struct BurnRomInfo Batman2RomDesc[] = {
 	{ "01.bin",        0x00800, 0x150fbca5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -8019,6 +8780,24 @@ static struct BurnRomInfo PacmanblaRomDesc[] = {
 STD_ROM_PICK(Pacmanbla)
 STD_ROM_FN(Pacmanbla)
 
+static struct BurnRomInfo GhostmunRomDesc[] = {
+	{ "pac1.bin",      0x01000, 0x19338c70, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pac2.bin",      0x01000, 0x18db074d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pac3.bin",      0x01000, 0xabb98b1d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "pac4.bin",      0x01000, 0x2403c78e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "blpac12b",      0x00800, 0xb2ed320b, BRF_GRA | GAL_ROM_TILES_CHARS },
+	{ "blpac11b",      0x00800, 0xab88b2c4, BRF_GRA | GAL_ROM_TILES_CHARS },
+	
+	{ "blpac10b",      0x00800, 0x44a45b72, BRF_GRA | GAL_ROM_TILES_SPRITES },
+	{ "blpac9b",       0x00800, 0xfa84659f, BRF_GRA | GAL_ROM_TILES_SPRITES },
+	
+	{ "ghostmun.clr",  0x00020, 0x759647e3, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Ghostmun)
+STD_ROM_FN(Ghostmun)
+
 static struct BurnRomInfo Phoenxp2RomDesc[] = {
 	{ "1",             0x00800, 0xf6dcfd51, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "2",             0x00800, 0xde951936, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -8057,6 +8836,34 @@ static struct BurnRomInfo AtlantisbRomDesc[] = {
 
 STD_ROM_PICK(Atlantisb)
 STD_ROM_FN(Atlantisb)
+
+UINT8 __fastcall GhostmunZ80Read(UINT16 a)
+{
+	switch (a) {
+		case 0x6000: {
+			return GalInput[0] | GalDip[0];
+		}
+		
+		case 0x6800: {
+			return GalInput[1] | GalDip[1];
+		}
+		
+		case 0x7000: {
+			return GalInput[2] | GalDip[2];
+		}
+		
+		case 0x7800: {
+			// watchdog read
+			return 0xff;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
+		}
+	}
+
+	return 0x00;
+}
 
 static INT32 PacmanblInit()
 {
@@ -8108,6 +8915,25 @@ static INT32 PacmanblaInit()
 	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x1000, GalSprites);
 	BurnFree(GalTempRom);
 	BurnFree(TempRom);
+	
+	return nRet;
+}
+
+static void GhostmunInstallHandler()
+{
+	ZetOpen(0);
+	ZetSetReadHandler(GhostmunZ80Read);
+	ZetClose();
+}
+
+static INT32 GhostmunInit()
+{
+	GalPostLoadCallbackFunction = GhostmunInstallHandler;
+	
+	INT32 nRet = GalInit();
+	
+	GalSpriteClipStart = 7;
+	GalSpriteClipEnd = 246;
 	
 	return nRet;
 }
@@ -8168,6 +8994,16 @@ struct BurnDriver BurnDrvPacmanbla = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, PacmanblaRomInfo, PacmanblaRomName, NULL, NULL, PacmanblInputInfo, PacmanblDIPInfo,
 	PacmanblaInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvGhostmun = {
+	"ghostmun", "puckman", NULL, NULL, "1981",
+	"Ghost Muncher\0", NULL, "Leisure and Allied", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	NULL, GhostmunRomInfo, GhostmunRomName, NULL, NULL, StreakngInputInfo, GhostmunDIPInfo,
+	GhostmunInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -8518,7 +9354,7 @@ static INT32 ZigzagInit()
 	
 	GalDrawBulletsFunction = NULL;
 	
-	GalSoundVolumeShift = 3;
+	AY8910SetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
 	
 	return nRet;
 }
@@ -8545,7 +9381,6 @@ static void Ozon1PostLoad()
 	ZetMapArea(0x4c00, 0x4fff, 2, GalVideoRam);
 	ZetMapArea(0x5000, 0x50ff, 0, GalSpriteRam);
 	ZetMapArea(0x5000, 0x50ff, 2, GalSpriteRam);
-	ZetMemEnd();
 	ZetClose();
 }
 
@@ -8641,7 +9476,7 @@ UINT8 __fastcall GmgalaxZ80Read(UINT16 a)
 		}
 	}
 
-	return 0xff;
+	return 0x00;
 }
 
 static void GmgalaxPostLoad()
@@ -8690,11 +9525,11 @@ static INT32 GmgalaxInit()
 	return nRet;
 }
 
-struct BurnDriverD BurnDrvGmgalax = {
+struct BurnDriver BurnDrvGmgalax = {
 	"gmgalax", NULL, NULL, NULL, "1981",
 	"Ghostmuncher Galaxian (bootleg)\0", NULL, "LAX", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, GmgalaxRomInfo, GmgalaxRomName, NULL, NULL, GmgalaxInputInfo, GmgalaxDIPInfo,
 	GmgalaxInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
@@ -8860,9 +9695,9 @@ static void Fourin1PostLoad()
 {
 	GalTempRom = (UINT8*)BurnMalloc(0x3000);
 	memcpy(GalTempRom, GalZ80Rom1 + 0xd000, 0x3000);
-	memset(GalZ80Rom1 + 0xd000, 0xff, 0x1000);
+	memset(GalZ80Rom1 + 0xd000, 0x00, 0x1000);
 	memcpy(GalZ80Rom1 + 0xe000, GalTempRom, 0x3000);
-	memset(GalZ80Rom1 + 0x11000, 0xff, 0x1000);
+	memset(GalZ80Rom1 + 0x11000, 0x00, 0x1000);
 	BurnFree(GalTempRom);
 	
 	for (UINT32 i = 0; i < GalZ80Rom1Size; i++) {
@@ -8870,10 +9705,21 @@ static void Fourin1PostLoad()
 	}
 
 	ZetOpen(0);
+	ZetMemCallback(0x0000, 0xffff, 0);
+	ZetMemCallback(0x0000, 0xffff, 1);
+	ZetMemCallback(0x0000, 0xffff, 2);
 	ZetSetReadHandler(Fourin1Z80Read);
 	ZetSetWriteHandler(Fourin1Z80Write);
-	ZetMapArea(0x0000, 0x3fff, 0, GalZ80Rom1 + 0x2000 + (Fourin1Bank * 0x4000));
-	ZetMapArea(0x0000, 0x3fff, 2, GalZ80Rom1 + 0x2000 + (Fourin1Bank * 0x4000));
+	ZetMapArea(0x0000, 0x3fff, 0, GalZ80Rom1);
+	ZetMapArea(0x0000, 0x3fff, 2, GalZ80Rom1);
+	ZetMapArea(0x4000, 0x43ff, 0, GalZ80Ram1);
+	ZetMapArea(0x4000, 0x43ff, 1, GalZ80Ram1);
+	ZetMapArea(0x4000, 0x43ff, 2, GalZ80Ram1);
+	ZetMapArea(0x5000, 0x53ff, 0, GalVideoRam);
+	ZetMapArea(0x5000, 0x53ff, 1, GalVideoRam);
+	ZetMapArea(0x5000, 0x53ff, 2, GalVideoRam);
+	ZetMapArea(0x5800, 0x58ff, 0, GalSpriteRam);
+	ZetMapArea(0x5800, 0x58ff, 2, GalSpriteRam);
 	ZetMapArea(0xc000, 0xdfff, 0, GalZ80Rom1);
 	ZetMapArea(0xc000, 0xdfff, 2, GalZ80Rom1);
 	ZetClose();
@@ -8935,11 +9781,11 @@ static INT32 Fourin1Init()
 	return nRet;
 }
 
-struct BurnDriverD BurnDrvFourin1 = {
+struct BurnDriver BurnDrvFourin1 = {
 	"4in1", NULL, NULL, NULL, "1981",
 	"4 Fun in 1\0", NULL, "Armenia / Food and Fun", "Galaxian",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, Fourin1RomInfo, Fourin1RomName, NULL, NULL, Fourin1InputInfo, Fourin1DIPInfo,
 	Fourin1Init, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
@@ -8987,6 +9833,27 @@ static struct BurnRomInfo MooncrstukRomDesc[] = {
 
 STD_ROM_PICK(Mooncrstuk)
 STD_ROM_FN(Mooncrstuk)
+
+static struct BurnRomInfo MooncrstukuRomDesc[] = {
+	{ "smc1f",         0x00800, 0x389ca0d6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc2f",         0x00800, 0x410ab430, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc3f",         0x00800, 0xa6b4144b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc4f",         0x00800, 0x4cc046fe, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc5f",         0x00800, 0x06d378a6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc6f",         0x00800, 0x6e84a927, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc7f",         0x00800, 0xb45af1e8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "smc8f_uk",      0x00800, 0xb968b2ff, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "mcs_b",         0x00800, 0xfb0f1f81, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_d",         0x00800, 0x13932a15, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_a",         0x00800, 0x631ebb5a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_c",         0x00800, 0x24cfd145, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "mmi6331.6l",    0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Mooncrstuku)
+STD_ROM_FN(Mooncrstuku)
 
 static struct BurnRomInfo MooncrstuRomDesc[] = {
 	{ "smc1f",         0x00800, 0x389ca0d6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -9113,6 +9980,16 @@ struct BurnDriver BurnDrvMooncrstuk = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvMooncrstuku = {
+	"mooncrstuku", "mooncrst", NULL, NULL, "1980",
+	"Moon Cresta (Nichibutsu UK, unencrypted)\0", NULL, "Nichibutsu UK", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, MooncrstukuRomInfo, MooncrstukuRomName, NULL, NULL, OmegaInputInfo, MooncrstDIPInfo,
+	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvMooncrstu = {
 	"mooncrstu", "mooncrst", NULL, NULL, "1980",
 	"Moon Cresta (Nichibutsu USA, unencrypted)\0", NULL, "Nichibutsu USA", "Galaxian",
@@ -9202,6 +10079,21 @@ static struct BurnRomInfo Mooncrs3RomDesc[] = {
 
 STD_ROM_PICK(Mooncrs3)
 STD_ROM_FN(Mooncrs3)
+
+static struct BurnRomInfo Mooncrs4RomDesc[] = {
+	{ "mooncrs4.7k",   0x01000, 0x5e201041, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mooncrs4.7j",   0x01000, 0x8de07c8e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mooncrs4.7h",   0x01000, 0x888c6d61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mooncrs4.7f",   0x01000, 0x492f9b01, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "mooncrs4.1h",   0x01000, 0xf508a7a5, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mooncrs4.1k",   0x01000, 0x9b549313, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom.6l",       0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Mooncrs4)
+STD_ROM_FN(Mooncrs4)
 
 static struct BurnRomInfo FantaziaRomDesc[] = {
 	{ "f01.bin",       0x00800, 0xd3e23863, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -9329,6 +10221,27 @@ static struct BurnRomInfo SmooncrsRomDesc[] = {
 STD_ROM_PICK(Smooncrs)
 STD_ROM_FN(Smooncrs)
 
+static struct BurnRomInfo MooncptcRomDesc[] = {
+	{ "mc1.bin",       0x00800, 0x16f17cd5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc2.bin",       0x00800, 0xe2128805, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc3.bin",       0x00800, 0x716eaa10, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc4.bin",       0x00800, 0xbd45cd8f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc5.bin",       0x00800, 0x9a1e0528, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc6.bin",       0x00800, 0xf0230048, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc7.bin",       0x00800, 0xeafd4d02, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "mc8.bin",       0x00800, 0xccee32f8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "mc12.bin",      0x00800, 0x528da705, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mc14.bin",      0x00800, 0x5a4b17ea, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mc11.bin",      0x00800, 0x4e79ff6b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mc13.bin",      0x00800, 0xe0edccbd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "mmi6331.6l",    0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Mooncptc)
+STD_ROM_FN(Mooncptc)
+
 static struct BurnRomInfo SstarcrsRomDesc[] = {
 	{ "ss1",           0x00800, 0x2ff72897, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "ss2",           0x00800, 0x565e7880, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -9368,6 +10281,27 @@ static struct BurnRomInfo MooncmwRomDesc[] = {
 
 STD_ROM_PICK(Mooncmw)
 STD_ROM_FN(Mooncmw)
+
+static struct BurnRomInfo StarfgmcRomDesc[] = {
+	{ "sei-sf-a2.bin",  0x00800, 0x322859e6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-a1.bin",  0x00800, 0x7fed0654, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-b2.bin",  0x00800, 0x935f7435, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-c1.bin",  0x00800, 0x29d54869, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-d1.bin",  0x00800, 0x9126cca6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-e2.bin",  0x00800, 0x9d394261, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-f2.bin",  0x00800, 0x94f161dd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "sei-sf-f1.bin",  0x00800, 0x6ced7f80, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "sei-sf-jh2.bin", 0x00800, 0x8edba3cd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "sei-sf-jh3.bin", 0x00800, 0xf5a871a9, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "sei-sf-lk2.bin", 0x00800, 0x44b0f06a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "sei-sf-lk3.bin", 0x00800, 0x773b1ee6, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom-sn74s288n-71.6l", 0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Starfgmc)
+STD_ROM_FN(Starfgmc)
 
 static struct BurnRomInfo SpcdragRomDesc[] = {
 	{ "a.bin",         0x00800, 0x38cc9839, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -9410,6 +10344,48 @@ static struct BurnRomInfo SpcdragaRomDesc[] = {
 
 STD_ROM_PICK(Spcdraga)
 STD_ROM_FN(Spcdraga)
+
+static struct BurnRomInfo MooncregRomDesc[] = {
+	{ "eg1",           0x00800, 0xa67ca4af, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg2",           0x00800, 0xb57b140e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg3",           0x00800, 0xa1939def, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg4",           0x00800, 0x068f8830, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg5",           0x00800, 0x32cd9adc, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg6",           0x00800, 0x3a4b62d9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg7",           0x00800, 0x22415271, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "eg8",           0x00800, 0x7b9cc105, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "eg_2b",         0x00800, 0xfb0f1f81, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "eg_4b",         0x00800, 0x13932a15, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "eg_1b",         0x00800, 0x631ebb5a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "eg_3b",         0x00800, 0x24cfd145, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom_6331.10f", 0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Mooncreg)
+STD_ROM_FN(Mooncreg)
+
+static struct BurnRomInfo MooncrslRomDesc[] = {
+	{ "01.bin",        0x00800, 0xa67ca4af, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "02.bin",        0x00800, 0x16edce3e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "03.bin",        0x00800, 0xa1939def, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "04.bin",        0x00800, 0x068f8830, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "05.bin",        0x00800, 0x28ae612d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "06.bin",        0x00800, 0x803da987, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "07.bin",        0x00800, 0x8e9ac0fc, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "08.bin",        0x00800, 0x020a8e2f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "mcs_b",         0x00800, 0xfb0f1f81, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_d",         0x00800, 0x13932a15, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_a",         0x00800, 0x631ebb5a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "mcs_c",         0x00800, 0x24cfd145, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "mmi6331.6l",    0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Mooncrsl)
+STD_ROM_FN(Mooncrsl)
 
 static struct BurnRomInfo SteraRomDesc[] = {
 	{ "stera.1",       0x00800, 0xcd04fea8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -9845,6 +10821,39 @@ static INT32 Mooncrs3Init()
 	return nRet;
 }
 
+static INT32 Mooncrs4Init()
+{
+	INT32 nRet;
+	
+	GalPostLoadCallbackFunction = MapMooncrst;
+	
+	nRet = GalInit();
+	
+	UINT8* TempRom = (UINT8*)BurnMalloc(0x1000);
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	BurnLoadRom(TempRom, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
+	memcpy(GalTempRom + 0x0800, TempRom + 0x0000, 0x200);
+	memcpy(GalTempRom + 0x0c00, TempRom + 0x0200, 0x200);
+	memcpy(GalTempRom + 0x0a00, TempRom + 0x0400, 0x200);
+	memcpy(GalTempRom + 0x0e00, TempRom + 0x0600, 0x200);
+	memcpy(GalTempRom + 0x0000, TempRom + 0x0800, 0x800);
+	BurnLoadRom(TempRom, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
+	memcpy(GalTempRom + 0x1800, TempRom + 0x0000, 0x200);
+	memcpy(GalTempRom + 0x1c00, TempRom + 0x0200, 0x200);
+	memcpy(GalTempRom + 0x1a00, TempRom + 0x0400, 0x200);
+	memcpy(GalTempRom + 0x1e00, TempRom + 0x0600, 0x200);
+	memcpy(GalTempRom + 0x1000, TempRom + 0x0800, 0x800);
+	BurnFree(TempRom);
+	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
+	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);	
+	BurnFree(GalTempRom);
+	
+	GalExtendTileInfoFunction = MooncrstExtendTileInfo;
+	GalExtendSpriteInfoFunction = MooncrstExtendSpriteInfo;
+	
+	return nRet;
+}
+
 static void MooncrgxInstallHandler()
 {
 	ZetOpen(0);
@@ -9967,6 +10976,16 @@ struct BurnDriver BurnDrvMooncrs3 = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvMooncrs4 = {
+	"mooncrs4", "mooncrst", NULL, NULL, "1980",
+	"Moon Crest\0", NULL, "SG-Florence", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, Mooncrs4RomInfo, Mooncrs4RomName, NULL, NULL, OmegaInputInfo, MooncrstDIPInfo,
+	Mooncrs4Init, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvFantazia = {
 	"fantazia", "mooncrst", NULL, NULL, "1980",
 	"Fantazia (bootleg?)\0", NULL, "SubElectro", "Galaxian",
@@ -9999,7 +11018,7 @@ struct BurnDriver BurnDrvEagle2 = {
 
 struct BurnDriver BurnDrvEagle3 = {
 	"eagle3", "mooncrst", NULL, NULL, "1980",
-	"Eagle (set 3)\0", NULL, "Centuri", "Galaxian",
+	"Eagle (set 3)\0", NULL, "Nichibutsu (Centuri license)", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, Eagle3RomInfo, Eagle3RomName, NULL, NULL, OmegaInputInfo, MooncrsaDIPInfo,
@@ -10009,7 +11028,7 @@ struct BurnDriver BurnDrvEagle3 = {
 
 struct BurnDriver BurnDrvSpctbird = {
 	"spctbird", "mooncrst", NULL, NULL, "1981?",
-	"Space Thunderbird\0", NULL, "Fortrek", "Galaxian",
+	"Space Thunderbird\0", NULL, "bootleg? (Fortrek)", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, SpctbirdRomInfo, SpctbirdRomName, NULL, NULL, OmegaInputInfo, Eagle2DIPInfo,
@@ -10019,10 +11038,20 @@ struct BurnDriver BurnDrvSpctbird = {
 
 struct BurnDriver BurnDrvSmooncrs = {
 	"smooncrs", "mooncrst", NULL, NULL, "1981?",
-	"Super Moon Cresta\0", NULL, "Gremlin", "Galaxian",
+	"Super Moon Cresta\0", NULL, "Nichibutsu (Gremlin license)", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, SmooncrsRomInfo, SmooncrsRomName, NULL, NULL, SmooncrsInputInfo, SmooncrsDIPInfo,
+	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvMooncptc = {
+	"mooncptc", "mooncrst", NULL, NULL, "1980?",
+	"Moon Cresta (Petaco S.A. Spanish bootleg)\0", NULL, "bootleg (Petaco S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, MooncptcRomInfo, MooncptcRomName, NULL, NULL, SmooncrsInputInfo, MooncptcDIPInfo,
 	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -10047,6 +11076,16 @@ struct BurnDriver BurnDrvMooncmw = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvStarfgmc = {
+	"starfgmc", "mooncrst", NULL, NULL, "198?",
+	"Star Fighter (Moon Cresta bootleg)\0", NULL, "bootleg (Samyra Engineering)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, StarfgmcRomInfo, StarfgmcRomName, NULL, NULL, OmegaInputInfo, MooncrsaDIPInfo,
+	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvSpcdrag = {
 	"spcdrag", "mooncrst", NULL, NULL, "1980",
 	"Space Dragon (Moon Cresta bootleg, set 1)\0", NULL, "bootleg", "Galaxian",
@@ -10063,6 +11102,26 @@ struct BurnDriver BurnDrvSpcdraga = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, SpcdragaRomInfo, SpcdragaRomName, NULL, NULL, SmooncrsInputInfo, SmooncrsDIPInfo,
+	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvMooncreg = {
+	"mooncreg", "mooncrst", NULL, NULL, "1980",
+	"Moon Cresta (Electrogame S.A. Spanish bootleg)\0", NULL, "bootleg (Electrogame S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, MooncregRomInfo, MooncregRomName, NULL, NULL, OmegaInputInfo, MooncregDIPInfo,
+	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvMooncrsl = {
+	"mooncrsl", "mooncrst", NULL, NULL, "1980",
+	"Cresta Mundo (Laguna S.A. Spanish Moon Cresta bootleg)\0", NULL, "bootleg (Laguna S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, MooncrslRomInfo, MooncrslRomName, NULL, NULL, OmegaInputInfo, MooncrslDIPInfo,
 	MooncrstInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -10155,16 +11214,30 @@ static struct BurnRomInfo BagmanmcRomDesc[] = {
 	{ "b5.bin",        0x01000, 0x0fe24b8c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "b6.bin",        0x01000, 0xf50390e7, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
-	{ "g1-u.bin",      0x01000, 0xb63cfae4, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "g2-u.bin",      0x01000, 0xa2790089, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "g1-l.bin",      0x00800, 0x2ae6b5ab, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "g2-u.bin",      0x01000, 0xa2790089, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "g2-l.bin",      0x00800, 0x98b37397, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "g1-u.bin",      0x01000, 0xb63cfae4, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "bagmanmc.clr",  0x00020, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "bagmanmc.clr",  0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
 };
 
 STD_ROM_PICK(Bagmanmc)
 STD_ROM_FN(Bagmanmc)
+
+static struct BurnRomInfo Bagmanm2RomDesc[] = {
+	{ "bagmanm2.1",    0x02000, 0x53769ebe, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "bagmanm2.2",    0x02000, 0x9435bb87, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "bagmanm2.3",    0x02000, 0xf37ba7f6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "bagmanm2.9",    0x02000, 0xf1e70d9e, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "bagmanm2.7",    0x02000, 0x777e48c4, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "bagmanmc.clr",  0x00020, 0x6a0c7d87, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Bagmanm2)
+STD_ROM_FN(Bagmanm2)
 
 static struct BurnRomInfo DkongjrmRomDesc[] = {
 	{ "a1",            0x01000, 0x299486e9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -10289,11 +11362,30 @@ static struct BurnRomInfo FantastcRomDesc[] = {
 	{ "37",            0x01000, 0x3a54f749, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "38",            0x01000, 0x88b71264, BRF_GRA | GAL_ROM_TILES_SHARED },
 	
-	{ "prom-74g138",  0x00020, 0xb7cbbc1f, BRF_GRA | GAL_ROM_PROM },
+	{ "prom-74g138",   0x00020, 0x800f5718, BRF_GRA | GAL_ROM_PROM },
 };
 
 STD_ROM_PICK(Fantastc)
 STD_ROM_FN(Fantastc)
+
+static struct BurnRomInfo TimefgtrRomDesc[] = {
+	{ "tp01",          0x01000, 0xba8b3e70, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tp02",          0x01000, 0x796158c0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tp03",          0x01000, 0xfe6a1c98, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tp04",          0x01000, 0xeff73185, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tp05",          0x01000, 0x85023e4a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tp06",          0x01000, 0xb6b8aaf9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "tp07",          0x01000, 0x5f57342c, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "tp09",          0x01000, 0x636fd772, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "tp08",          0x01000, 0x2dc3c48b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "tp10",          0x01000, 0xb27b450c, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "prom",          0x00020, 0x00000000, BRF_GRA | BRF_NODUMP },
+};
+
+STD_ROM_PICK(Timefgtr)
+STD_ROM_FN(Timefgtr)
 
 UINT8 __fastcall BagmanmcZ80Read(UINT16 a)
 {
@@ -10343,7 +11435,7 @@ void __fastcall BagmanmcZ80Write(UINT16 a, UINT8 d)
 		case 0xa000:
 		case 0xa001:
 		case 0xa002: {
-			GalGfxBank[a - 0xa000] = d;
+			// ???
 			return;
 		}
 		
@@ -10374,6 +11466,11 @@ void __fastcall BagmanmcZ80Write(UINT16 a, UINT8 d)
 		
 		case 0xb001: {
 			GalIrqFire = d & 1;
+			return;
+		}
+		
+		case 0xb002: {
+			GalGfxBank[0] = d;
 			return;
 		}
 		
@@ -10673,7 +11770,7 @@ void __fastcall CkongmcZ80Write(UINT16 a, UINT8 d)
 void __fastcall FantastcZ80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0x9800 && a <= 0x98ff) {
-		int Offset = a - 0x9800;
+		INT32 Offset = a - 0x9800;
 		
 		GalSpriteRam[Offset] = d;
 		
@@ -10719,6 +11816,70 @@ void __fastcall FantastcZ80Write(UINT16 a, UINT8 d)
 		
 		case 0xb000: {
 			GalIrqFire = d & 1;
+			return;
+		}
+		
+		default: {
+			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
+		}
+	}
+}
+
+void __fastcall TimefgtrZ80Write(UINT16 a, UINT8 d)
+{
+	if (a >= 0x9800 && a <= 0x9bff) {
+		INT32 Offset = a - 0x9800;
+		
+		GalSpriteRam[Offset] = d;
+		
+		if (Offset < 0x40) {
+			if ((Offset & 0x01) == 0) {
+				GalScrollVals[Offset >> 1] = d;
+			}
+		}
+		
+		return;
+	}
+	
+	if (a >= 0xfff8) {
+		// ???
+		return;
+	}
+	
+	switch (a) {
+		case 0x8803: {
+			AY8910Write(0, 0, d);
+			return;
+		}
+		
+		case 0x880b: {
+			AY8910Write(0, 1, d);
+			return;
+		}
+		
+		case 0x880c: {
+			AY8910Write(1, 0, d);
+			return;
+		}
+		
+		case 0x880e: {
+			AY8910Write(1, 1, d);
+			return;
+		}
+		
+		case 0xb000: {
+			GalIrqFire = d & 1;
+			return;
+		}
+		
+		case 0xb004: {
+			GalStarsEnable = d & 0x01;
+			if (!GalStarsEnable) GalStarsScrollPos = -1;		
+			return;
+		}
+		
+		case 0xb800: {
+			// ???
 			return;
 		}
 		
@@ -10781,34 +11942,13 @@ static INT32 BagmanmcInit()
 	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = BagmanmcPostLoad;
-	GalPromRomSize = 0x20;
+	GameIsBagmanmc = 1;
 	
 	nRet = GalInit();
 	
-	GalNumChars = 512;
-	GalNumSprites = 64;
-	CharPlaneOffsets[1] = GalNumChars * 8 * 8;
-	SpritePlaneOffsets[1] = GalNumSprites * 16 * 16;
-	
-	UINT8 *TempRom = (UINT8*)BurnMalloc(0x1000);
-	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
-	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1); if (nRet) return 1;
-	memcpy(GalTempRom + 0x0000, TempRom + 0x0000, 0x800);
-	memcpy(GalTempRom + 0x2000, TempRom + 0x0800, 0x800);
-	nRet = BurnLoadRom(TempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 1, 1); if (nRet) return 1;
-	memcpy(GalTempRom + 0x1000, TempRom + 0x0000, 0x800);
-	memcpy(GalTempRom + 0x2800, TempRom + 0x0800, 0x800);
-	nRet = BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 2, 1); if (nRet) return 1;
-	nRet = BurnLoadRom(GalTempRom + 0x1800, GAL_ROM_OFFSET_TILES_SHARED + 3, 1); if (nRet) return 1;
-	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
-	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom + 0x2000, GalSprites);
-	BurnFree(GalTempRom);
-	BurnFree(TempRom);
-	
-	HardCodeMooncrstPROM();
-		
 	GalIrqType = GAL_IRQ_TYPE_IRQ0;
-	GalExtendTileInfoFunction = PiscesExtendTileInfo;
+	GalExtendTileInfoFunction = BagmanmcExtendTileInfo;
+	GalExtendSpriteInfoFunction = BagmanmcExtendSpriteInfo;
 	
 	return nRet;
 }
@@ -11030,8 +12170,8 @@ static INT32 PorterInit()
 	
 	nRet = GalInit();
 	
-	GalExtendTileInfoFunction = MooncrstExtendTileInfo;
-	GalExtendSpriteInfoFunction = MooncrstExtendSpriteInfo;
+	GalExtendTileInfoFunction = SkybaseExtendTileInfo;
+	GalExtendSpriteInfoFunction = SkybaseExtendSpriteInfo;
 
 	return nRet;
 }
@@ -11115,6 +12255,38 @@ static INT32 FantastcInit()
 	GalRenderFrameFunction = FantastcRenderFrame;
 	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
 	
+	return nRet;
+}
+
+static void TimefgtrPostLoad()
+{
+	MapMooncrst();
+	
+	ZetOpen(0);
+	ZetMapArea(0x0000, 0x7fff, 0, GalZ80Rom1);
+	ZetMapArea(0x0000, 0x7fff, 2, GalZ80Rom1);
+	ZetMapArea(0x8000, 0x87ff, 0, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 1, GalZ80Ram1);
+	ZetMapArea(0x8000, 0x87ff, 2, GalZ80Ram1);
+	ZetSetWriteHandler(TimefgtrZ80Write);
+	ZetClose();
+}
+
+static INT32 TimefgtrInit()
+{
+	INT32 nRet;
+	
+	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FANTASTCAY8910;
+	GalPromRomSize = 0x20;
+	
+	GalPostLoadCallbackFunction = TimefgtrPostLoad;
+	GalNumSprites = 0x40;
+	
+	nRet = GalInit();
+	
+	GalRenderFrameFunction = TimefgtrRenderFrame;
+	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
+	
 	HardCodeMooncrstPROM();
 	
 	return nRet;
@@ -11132,10 +12304,20 @@ struct BurnDriver BurnDrvSkybase = {
 
 struct BurnDriverD BurnDrvBagmanmc = {
 	"bagmanmc", "bagman", NULL, NULL, "1982",
-	"Bagman (Moon Cresta hardware)\0", "Bad Colours", "bootleg", "Galaxian",
+	"Bagman (bootleg on Moon Cresta hardware set 1)\0", "Bad Colours", "bootleg", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, BagmanmcRomInfo, BagmanmcRomName, NULL, NULL, BagmanmcInputInfo, BagmanmcDIPInfo,
+	BagmanmcInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvBagmanm2 = {
+	"bagmanm2", "bagman", NULL, NULL, "1982",
+	"Bagman (bootleg on Moon Cresta hardware set 2)\0", "Bad Colours", "Valadon Automation", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	NULL, Bagmanm2RomInfo, Bagmanm2RomName, NULL, NULL, BagmanmcInputInfo, BagmanmcDIPInfo,
 	BagmanmcInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -11192,7 +12374,7 @@ struct BurnDriver BurnDrvPorter = {
 
 struct BurnDriver BurnDrvKong = {
 	"kong", NULL, NULL, NULL, "198?",
-	"Kong (Brazil)\0", "Bad Colours", "Taito do Brasil", "Galaxian",
+	"Kong (Donkey Kong conversion on Galaxian hardware)\0", "Bad Colours", "Taito do Brasil", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_PLATFORM, 0,
 	NULL, KongRomInfo, KongRomName, NULL, NULL, KongInputInfo, KongDIPInfo,
@@ -11202,11 +12384,21 @@ struct BurnDriver BurnDrvKong = {
 
 struct BurnDriver BurnDrvFantastc = {
 	"fantastc", NULL, NULL, NULL, "198?",
-	"Fantastic\0", "Bad Colours", "Taito do Brasil", "Galaxian",
+	"Fantastic (Galaga conversion on Galaxian hardware)\0", NULL, "Taito do Brasil", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
 	NULL, FantastcRomInfo, FantastcRomName, NULL, NULL, FantastcInputInfo, FantastcDIPInfo,
 	FantastcInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvTimefgtr = {
+	"timefgtr", NULL, NULL, NULL, "198?",
+	"Time Fighter (Time Pilot conversion on Galaxian hardware)\0", "Bad Colours", "Taito do Brasil", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_GALAXIAN, GBF_VERSHOOT, 0,
+	NULL, TimefgtrRomInfo, TimefgtrRomName, NULL, NULL, TimefgtrInputInfo, TimefgtrDIPInfo,
+	TimefgtrInit, GalExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -11606,7 +12798,7 @@ static INT32 JumpbugInit()
 	GalExtendTileInfoFunction = JumpbugExtendTileInfo;
 	GalExtendSpriteInfoFunction = JumpbugExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 3;
+	AY8910SetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
 	
 	return nRet;
 }
@@ -11649,7 +12841,7 @@ static INT32 LeversInit()
 	GalExtendTileInfoFunction = JumpbugExtendTileInfo;
 	GalExtendSpriteInfoFunction = JumpbugExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 2;
+	AY8910SetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
 	
 	return nRet;
 }
@@ -11684,8 +12876,6 @@ static INT32 BongoInit()
 	
 	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 3;
-
 	return nRet;
 }
 
@@ -11912,7 +13102,7 @@ UINT8 __fastcall CheckmanjZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x3800: {
-			switch (ZetPc(-1)) {
+			switch (ZetGetPC(-1)) {
 				case 0x0f15:  return 0xf5;
 				case 0x0f8f:  return 0x7c;
 				case 0x10b3:  return 0x7c;
@@ -12083,7 +13273,6 @@ static void CheckmanInitSoundCPU()
 	ZetMapArea(0x2000, 0x23ff, 0, GalZ80Ram2);
 	ZetMapArea(0x2000, 0x23ff, 1, GalZ80Ram2);
 	ZetMapArea(0x2000, 0x23ff, 2, GalZ80Ram2);
-	ZetMemEnd();
 	ZetSetInHandler(CheckmanSoundZ80PortRead);
 	ZetSetOutHandler(CheckmanSoundZ80PortWrite);
 	ZetClose();
@@ -12143,6 +13332,8 @@ static INT32 CheckmanInit()
 	GalExtendTileInfoFunction = MooncrstExtendTileInfo;
 	GalExtendSpriteInfoFunction = MooncrstExtendSpriteInfo;
 	
+	AY8910SetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
+	
 	return nRet;
 }
 
@@ -12154,7 +13345,6 @@ static void CheckmanjInitSoundCPU()
 	ZetMapArea(0x8000, 0x83ff, 0, GalZ80Ram2);
 	ZetMapArea(0x8000, 0x83ff, 1, GalZ80Ram2);
 	ZetMapArea(0x8000, 0x83ff, 2, GalZ80Ram2);
-	ZetMemEnd();
 	ZetSetReadHandler(CheckmanjSoundZ80Read);
 	ZetSetWriteHandler(CheckmanjSoundZ80Write);
 	ZetClose();
@@ -12181,6 +13371,8 @@ static INT32 CheckmanjInit()
 	
 	nRet = GalInit();
 	
+	AY8910SetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
+	
 	return nRet;
 }
 
@@ -12206,7 +13398,7 @@ static INT32 DingoInit()
 	
 	nRet = GalInit();
 	
-	GalSoundVolumeShift = 0;
+	AY8910SetAllRoutes(0, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	return nRet;
 }
@@ -12241,6 +13433,8 @@ static INT32 DingoeInit()
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_CHECKMANAY8910;
 	
 	nRet = GalInit();
+	
+	AY8910SetAllRoutes(0, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	return nRet;
 }
@@ -12856,7 +14050,6 @@ static void KingballPostLoad()
 	ZetSetOutHandler(KingballSoundZ80PortWrite);
 	ZetMapArea(0x0000, 0x1fff, 0, GalZ80Rom2);
 	ZetMapArea(0x0000, 0x1fff, 2, GalZ80Rom2);
-	ZetMemEnd();
 	ZetClose();
 	
 	nGalCyclesTotal[1] = (5000000 / 2) / 60;
@@ -13034,6 +14227,24 @@ static struct BurnRomInfo FroggRomDesc[] = {
 
 STD_ROM_PICK(Frogg)
 STD_ROM_FN(Frogg)
+
+static struct BurnRomInfo FroggrsRomDesc[] = {
+	{ "frog4.bin",     0x01000, 0x4d563992, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "frog5.bin",     0x01000, 0xd8b8c06e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "frog6.bin",     0x01000, 0xb55a1cb5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "frogger.608",   0x00800, 0xe8ab0256, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "frogger.609",   0x00800, 0x7380a48f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "frog3.bin",     0x00800, 0x837c16ab, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	
+	{ "frogger.607",   0x00800, 0x05f7d883, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "frogger.606",   0x00800, 0xf524ee30, BRF_GRA | GAL_ROM_TILES_SHARED },
+	
+	{ "pr-91.6l",      0x00020, 0x413703bf, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Froggrs)
+STD_ROM_FN(Froggrs)
 
 void __fastcall FroggermcZ80Write(UINT16 a, UINT8 d)
 {
@@ -13238,7 +14449,7 @@ static INT32 FroggermcInit()
 	INT32 nRet;
 	
 	GalPostLoadCallbackFunction = FroggermcPostLoad;
-//	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
+	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
 	
 	nRet = GalInit();	
 	FroggerSoundInit();
@@ -13333,6 +14544,39 @@ static INT32 FroggInit()
 	return nRet;
 }
 
+static void FroggrsPostLoad()
+{
+	GalTempRom = (UINT8*)BurnMalloc(GalTilesSharedRomSize);
+	BurnLoadRom(GalTempRom + 0x0000, GAL_ROM_OFFSET_TILES_SHARED + 0, 1);
+	BurnLoadRom(GalTempRom + 0x0800, GAL_ROM_OFFSET_TILES_SHARED + 1, 1);
+	for (UINT32 Offset = 0x0800; Offset < 0x1000; Offset++) GalTempRom[Offset] = BITSWAP08(GalTempRom[Offset], 7, 6, 5, 4, 3, 2, 0, 1);
+	GfxDecode(GalNumChars, 2, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, GalTempRom, GalChars);
+	GfxDecode(GalNumSprites, 2, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, GalTempRom, GalSprites);
+	BurnFree(GalTempRom);
+	
+	MapTheend();
+}
+
+static INT32 FroggrsInit()
+{
+	INT32 nRet;
+	
+	GalPostLoadCallbackFunction = FroggrsPostLoad;
+	GalSoundType = GAL_SOUND_HARDWARE_TYPE_FROGGERAY8910;
+	
+	nRet = GalInit();	
+	FroggerSoundInit();
+	
+	KonamiPPIInit();
+	
+	GalRenderBackgroundFunction = FroggerDrawBackground;
+	GalDrawBulletsFunction = NULL;
+	GalExtendTileInfoFunction = FroggerExtendTileInfo;
+	GalExtendSpriteInfoFunction = FroggerExtendSpriteInfo;
+	
+	return nRet;
+}
+
 struct BurnDriver BurnDrvFrogger = {
 	"frogger", NULL, NULL, NULL, "1981",
 	"Frogger\0", NULL, "Konami", "Galaxian",
@@ -13400,6 +14644,16 @@ struct BurnDriver BurnDrvFrogg = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_GALAXIAN, GBF_MISC, 0,
 	NULL, FroggRomInfo, FroggRomName, NULL, NULL, FroggInputInfo, FroggDIPInfo,
 	FroggInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvFroggrs = {
+	"froggrs", "frogger", NULL, NULL, "1981",
+	"Frogger (Scramble hardware)\0", NULL, "Coin Music", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_MISC, 0,
+	NULL, FroggrsRomInfo, FroggrsRomName, NULL, NULL, FroggerInputInfo, FroggerDIPInfo,
+	FroggrsInit, KonamiExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -13925,23 +15179,23 @@ STD_ROM_PICK(Scramble)
 STD_ROM_FN(Scramble)
 
 static struct BurnRomInfo ScramblesRomDesc[] = {
-	{ "2d",            0x00800, 0xb89207a1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2e",            0x00800, 0xe9b4b9eb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2f",            0x00800, 0xa1f14f4c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2h",            0x00800, 0x591bc0d9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2j",            0x00800, 0x22f11b6b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2l",            0x00800, 0x705ffe49, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2m",            0x00800, 0xea26c35c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2p",            0x00800, 0x94d8f5e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2d(__scrambles)", 0x00800, 0xb89207a1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2e(__scrambles)", 0x00800, 0xe9b4b9eb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2f(__scrambles)", 0x00800, 0xa1f14f4c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2h(__scrambles)", 0x00800, 0x591bc0d9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2j(__scrambles)", 0x00800, 0x22f11b6b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2l(__scrambles)", 0x00800, 0x705ffe49, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2m(__scrambles)", 0x00800, 0xea26c35c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2p(__scrambles)", 0x00800, 0x94d8f5e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
-	{ "ot1.5c",        0x00800, 0xbcd297f0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot2.5d",        0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot3.5e",        0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot1.5c",          0x00800, 0xbcd297f0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot2.5d",          0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot3.5e",          0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "5f",            0x00800, 0x5f30311a, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "5h",            0x00800, 0x516e029e, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5f",              0x00800, 0x5f30311a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5h",              0x00800, 0x516e029e, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+	{ "c01s.6e",         0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 };
 
 STD_ROM_PICK(Scrambles)
@@ -13969,6 +15223,52 @@ static struct BurnRomInfo ScramblebfRomDesc[] = {
 
 STD_ROM_PICK(Scramblebf)
 STD_ROM_FN(Scramblebf)
+
+static struct BurnRomInfo ScrambpRomDesc[] = {
+	{ "b1-2716.cpu",   0x00800, 0x63420017, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b2-2716.cpu",   0x00800, 0x66ebc070, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b3-2716.cpu",   0x00800, 0x317548fd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b4-2716.cpu",   0x00800, 0xdd380a22, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b5-2716.cpu",   0x00800, 0xfa4f1a70, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b6-2716.cpu",   0x00800, 0x9fd96374, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b7-2716.cpu",   0x00800, 0x88ac07a0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "b8-2716.cpu",   0x00800, 0xd20088ee, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "b11-2716.cpu",  0x00800, 0xbe037cf6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "b12-2716.cpu",  0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "b13-2716.cpu",  0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+
+	{ "b9-2716.cpu",   0x00800, 0x4708845b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "b10-2716.cpu",  0x00800, 0x11fd2887, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Scrambp)
+STD_ROM_FN(Scrambp)
+
+static struct BurnRomInfo ScramptRomDesc[] = {
+	{ "cx8-2716.cpu",  0x00800, 0x12b97cc6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx4-2716.cpu",  0x00800, 0x66ebc070, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx9-2716.cpu",  0x00800, 0x317548fd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx5-2716.cpu",  0x00800, 0xdd380a22, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx10-2716.cpu", 0x00800, 0xfa4f1a70, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx6-2716.cpu",  0x00800, 0x9fd96374, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx11-2716.cpu", 0x00800, 0x88ac07a0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "cx7-2716.cpu",  0x00800, 0xc9a6c489, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "cx3-2716.cpu",  0x00800, 0xbe037cf6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "cx2-2716.cpu",  0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "cx1-2716.cpu",  0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+
+	{ "cx12-2716.cpu", 0x00800, 0x4708845b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "cx13-2716.cpu", 0x00800, 0x11fd2887, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Scrampt)
+STD_ROM_FN(Scrampt)
 
 static struct BurnRomInfo ScramblebbRomDesc[] = {
 	{ "1",             0x00800, 0x8ba174c4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -14033,6 +15333,28 @@ static struct BurnRomInfo ExplorerRomDesc[] = {
 
 STD_ROM_PICK(Explorer)
 STD_ROM_FN(Explorer)
+
+static struct BurnRomInfo BomberRomDesc[] = {
+	{ "1.3l",          0x00800, 0x8c30c7c3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2.3k",          0x00800, 0x1fca370c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "3.3h",          0x00800, 0x8a714167, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "4.3f",          0x00800, 0xdd380a22, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "5.3e",          0x00800, 0x92980e72, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "6.3d",          0x00800, 0x9fd96374, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "7.3c",          0x00800, 0x88ac07a0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "8.3a",          0x00800, 0x75232e09, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "11.8k",         0x00800, 0x97ba15e8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "12.8l",         0x00800, 0x6510761d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+
+	{ "c2.5f",         0x00800, 0x4708845b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "c1.5h",         0x00800, 0x11fd2887, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Bomber)
+STD_ROM_FN(Bomber)
 
 static struct BurnRomInfo AtlantisRomDesc[] = {
 	{ "2c",            0x00800, 0x0e485b9a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -15153,9 +16475,14 @@ static INT32 TheendInit()
 	GalRenderBackgroundFunction = GalaxianDrawBackground;
 	GalDrawBulletsFunction = TheendDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.02);
+	filter_rc_set_src_gain(1, 0.02);
+	filter_rc_set_src_gain(2, 0.02);
+	filter_rc_set_src_gain(3, 0.02);
+	filter_rc_set_src_gain(4, 0.02);
+	filter_rc_set_src_gain(5, 0.02);
 	
 	return nRet;
 }
@@ -15258,6 +16585,13 @@ static INT32 AtlantisInit()
 	
 	KonamiPPIInit();
 	
+	filter_rc_set_src_gain(0, 0.25);
+	filter_rc_set_src_gain(1, 0.25);
+	filter_rc_set_src_gain(2, 0.25);
+	filter_rc_set_src_gain(3, 0.25);
+	filter_rc_set_src_gain(4, 0.25);
+	filter_rc_set_src_gain(5, 0.25);
+	
 	return nRet;
 }
 
@@ -15354,8 +16688,6 @@ static INT32 MarsInit()
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 0;
-	
 	KonamiPPIInit();
 	
 	return nRet;
@@ -15386,9 +16718,14 @@ static INT32 DevilfshInit()
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 0;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.75);
+	filter_rc_set_src_gain(1, 0.75);
+	filter_rc_set_src_gain(2, 0.75);
+	filter_rc_set_src_gain(3, 0.75);
+	filter_rc_set_src_gain(4, 0.75);
+	filter_rc_set_src_gain(5, 0.75);
 	
 	return nRet;
 }
@@ -15446,8 +16783,6 @@ static INT32 Newsin7Init()
 	GalColourDepth = 3;
 	GalSpriteClipStart = 0;
 	GalSpriteClipEnd = 246;
-	
-	GalSoundVolumeShift = 0;
 	
 	KonamiPPIInit();
 	
@@ -15565,8 +16900,6 @@ static INT32 HotshockInit()
 	GalSpriteClipStart = 7;
 	GalSpriteClipEnd = 246;
 	
-	GalSoundVolumeShift = 0;
-	
 	return nRet;
 }
 
@@ -15597,8 +16930,6 @@ static INT32 ConquerInit()
 	
 	GalExtendTileInfoFunction = PiscesExtendTileInfo;
 	
-	GalSoundVolumeShift = 0;
-	
 	return nRet;
 }
 
@@ -15626,9 +16957,14 @@ static INT32 CavelonInit()
 	GalDrawBulletsFunction = ScrambleDrawBullets;	
 	GalExtendSpriteInfoFunction = MshuttleExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 2;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -15675,6 +17011,13 @@ static INT32 MimonscrInit()
 	GalExtendSpriteInfoFunction = MimonkeyExtendSpriteInfo;
 
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -15729,6 +17072,26 @@ struct BurnDriver BurnDrvScramblebf = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvScrambp = {
+	"scrambp", "scramble", NULL, NULL, "1981",
+	"Impacto (Billport S.A., Spanish bootleg of Scramble)\0", NULL, "bootleg (Billport S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
+	NULL, ScrambpRomInfo, ScrambpRomName, NULL, NULL, ScrambleInputInfo, ScrambleDIPInfo,
+	ScrambleInit, KonamiExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvScrampt = {
+	"scrampt", "scramble", NULL, NULL, "1981",
+	"Scramble (Petaco S.A., Spanish bootleg)\0", NULL, "bootleg (Petaco S.A.)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
+	NULL, ScramptRomInfo, ScramptRomName, NULL, NULL, ScrambleInputInfo, ScrambleDIPInfo,
+	ScrambleInit, KonamiExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvScramblebb = {
 	"scramblebb", "scramble", NULL, NULL, "1981",
 	"Scramble (bootleg?)\0", NULL, "bootleg?", "Galaxian",
@@ -15756,6 +17119,16 @@ struct BurnDriver BurnDrvExplorer = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
 	NULL, ExplorerRomInfo, ExplorerRomName, NULL, NULL, ExplorerInputInfo, ExplorerDIPInfo,
 	ExplorerInit, KonamiExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvBomber = {
+	"bomber", "scramble", NULL, NULL, "1981",
+	"Bomber (bootleg of Scramble)\0", NULL, "bootleg", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_HORSHOOT, 0,
+	NULL, BomberRomInfo, BomberRomName, NULL, NULL, ScrambleInputInfo, ScrambleDIPInfo,
+	ScrambleInit, KonamiExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
 
@@ -15925,6 +17298,21 @@ static struct BurnRomInfo TriplepRomDesc[] = {
 STD_ROM_PICK(Triplep)
 STD_ROM_FN(Triplep)
 
+static struct BurnRomInfo TriplepaRomDesc[] = {
+	{ "td4.2h",        0x01000, 0x15a6d46a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "tc3.2k",        0x01000, 0xbc26d2c0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "te2.2l",        0x01000, 0x02025c10, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "td1.2m",        0x01000, 0xe9abc42b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	
+	{ "ta6.5f",        0x00800, 0xd51cbd6f, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "ta7.5h",        0x00800, 0xf21c0059, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "ta.6e",         0x00020, 0x624f75df, BRF_GRA | GAL_ROM_PROM },
+};
+
+STD_ROM_PICK(Triplepa)
+STD_ROM_FN(Triplepa)
+
 static struct BurnRomInfo KnockoutRomDesc[] = {
 	{ "knockout.2h",   0x01000, 0xeaaa848e, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "knockout.2k",   0x01000, 0xbc26d2c0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
@@ -15991,13 +17379,13 @@ UINT8 __fastcall TriplepZ80PortRead(UINT16 a)
 		}
 		
 		case 0x02: {
-			if (ZetPc(-1) == 0x015a) return 0xff;
-			if (ZetPc(-1) == 0x0886) return 0x05;
+			if (ZetGetPC(-1) == 0x015a) return 0xff;
+			if (ZetGetPC(-1) == 0x0886) return 0x05;
 			return 0;
 		}
 		
 		case 0x03: {
-			if (ZetPc(-1) == 0x015d) return 0x04;
+			if (ZetGetPC(-1) == 0x015d) return 0x04;
 			return 0;
 		}
 		
@@ -16128,10 +17516,20 @@ static INT32 MarinerInit()
 
 struct BurnDriver BurnDrvTriplep = {
 	"triplep", NULL, NULL, NULL, "1982",
-	"Triple Punch\0", NULL, "KKI", "Galaxian",
+	"Triple Punch (set 1)\0", NULL, "KKI", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
 	NULL, TriplepRomInfo, TriplepRomName, NULL, NULL, AmidarInputInfo, TriplepDIPInfo,
+	TriplepInit, KonamiExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
+struct BurnDriver BurnDrvTriplepa = {
+	"triplepa", "triplep", NULL, NULL, "1982",
+	"Triple Punch (set 2)\0", NULL, "KKK", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_MAZE, 0,
+	NULL, TriplepaRomInfo, TriplepaRomName, NULL, NULL, AmidarInputInfo, TriplepDIPInfo,
 	TriplepInit, KonamiExit, GalFrame, NULL, GalScan,
 	NULL, 392, 224, 256, 3, 4
 };
@@ -16174,41 +17572,41 @@ static struct BurnRomInfo ScorpionRomDesc[] = {
 	{ "4.2h",          0x01000, 0xaba2276a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "5.2k",          0x01000, 0x952f78f2, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 		
-	{ "32_a4.7c",      0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "32_a5.7d",      0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a4.ic12", 0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a5.ic13", 0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "32_f5.5f",      0x01000, 0x1e5da9d6, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "32_h5.5h",      0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_f5.ic72", 0x01000, 0x1e5da9d6, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_h5.ic73", 0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "prom.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+	{ "mmi6331_6e.ic59",         0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 	
-	{ "32_a3.6e",      0x01000, 0x279ae6f9, BRF_OPT | BRF_SND }, // Speech samples?
-	{ "32_a2.6d",      0x01000, 0x90352dd4, BRF_OPT | BRF_SND },
-	{ "32_a1.6c",      0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a3.ic25", 0x01000, 0x04abf178, BRF_OPT | BRF_SND }, // Speech samples?
+	{ "igr_scorpion_32_a2.ic24", 0x01000, 0x90352dd4, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a1.ic23", 0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
 };
 
 STD_ROM_PICK(Scorpion)
 STD_ROM_FN(Scorpion)
 
 static struct BurnRomInfo ScorpionaRomDesc[] = {
-	{ "scor_d2.bin",   0x01000, 0xc5b9daeb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "scor_e2.bin",   0x01000, 0x82308d05, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "scor_g2.bin",   0x01000, 0x756b09cd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "scor_h2.bin",   0x01000, 0xa0457b93, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "scor_l2.bin",   0x00800, 0x6623da33, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "scor_k2.bin",   0x00800, 0x42ec34d8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },	
+	{ "igr_scorpion_32_d2.ic109", 0x01000, 0xc5b9daeb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "igr_scorpion_32_e2.ic110", 0x01000, 0x82308d05, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "igr_scorpion_32_g2.ic111", 0x01000, 0x756b09cd, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "igr_scorpion_32_h2.ic112", 0x01000, 0x667ad8be, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "igr_scorpion_16_l2.ic114", 0x00800, 0x6623da33, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "igr_scorpion_16_k2.ic113", 0x00800, 0x42ec34d8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },	
 		
-	{ "32_a4.7c",      0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "32_a5.7d",      0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a4.ic12",  0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a5.ic13",  0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "scor_f5.bin",   0x01000, 0x60180a38, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "32_h5.5h",      0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_f5.ic72",  0x01000, 0x1e5da9d6, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_h5.ic73",  0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "prom.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+	{ "mmi6331_6e.ic59",          0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 	
-	{ "scor_a3.bin",   0x01000, 0x04abf178, BRF_OPT | BRF_SND }, // Speech samples?
-	{ "scor_a2.bin",   0x01000, 0x452d6354, BRF_OPT | BRF_SND },
-	{ "32_a1.6c",      0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a3.ic25",  0x01000, 0x04abf178, BRF_OPT | BRF_SND }, // Speech samples?
+	{ "igr_scorpion_32_a2.ic24",  0x01000, 0x90352dd4, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a1.ic23",  0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
 };
 
 STD_ROM_PICK(Scorpiona)
@@ -16221,17 +17619,17 @@ static struct BurnRomInfo ScorpionbRomDesc[] = {
 	{ "ic112.2h",      0x01000, 0x53e2a983, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "ic113.2k",      0x01000, 0xe4ad299a, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 		
-	{ "32_a4.7c",      0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ic13.7d",       0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a4.ic12", 0x01000, 0x361b8a36, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "igr_scorpion_32_a5.ic13", 0x01000, 0xaddecdd4, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "ic72.5f",       0x01000, 0x1e5da9d6, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "ic73.5h",       0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_f5.ic72", 0x01000, 0x1e5da9d6, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "igr_scorpion_32_h5.ic73", 0x01000, 0xa57adb0a, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "prom.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+	{ "mmi6331_6e.ic59",         0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 	
-	{ "ic25.6e",       0x01000, 0x04abf178, BRF_OPT | BRF_SND }, // Speech samples?
-	{ "ic24.6d",       0x01000, 0x90352dd4, BRF_OPT | BRF_SND },
-	{ "ic23.6c",       0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a3.ic25", 0x01000, 0x04abf178, BRF_OPT | BRF_SND }, // Speech samples?
+	{ "igr_scorpion_32_a2.ic24", 0x01000, 0x90352dd4, BRF_OPT | BRF_SND },
+	{ "igr_scorpion_32_a1.ic23", 0x01000, 0x3bf2452d, BRF_OPT | BRF_SND },
 };
 
 STD_ROM_PICK(Scorpionb)
@@ -16746,8 +18144,6 @@ static INT32 Ad2083Init()
 	GalExtendTileInfoFunction = Ad2083ExtendTileInfo;
 	GalExtendSpriteInfoFunction = Ad2083ExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 0;
-	
 	return nRet;
 }
 
@@ -17019,8 +18415,6 @@ static INT32 SfxInit()
 	SfxTilemap = 1;
 	GalOrientationFlipX = 1;
 	
-	GalSoundVolumeShift = 3;
-
 	return nRet;
 }
 
@@ -17195,8 +18589,7 @@ static struct BurnRomInfo ScobraRomDesc[] = {
 	{ "epr1274.5h",    0x00800, 0x64d113b4, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "epr1273.5f",    0x00800, 0xa96316d3, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "82s123.6e",     0x00020, 0x9b87f90d, BRF_GRA | GAL_ROM_PROM },
-};
+	{ "82s123.6e",     0x00020, 0x9b87f90d, BRF_GRA | GAL_ROM_PROM },};
 
 STD_ROM_PICK(Scobra)
 STD_ROM_FN(Scobra)
@@ -17485,7 +18878,7 @@ static struct BurnRomInfo SuperbonRomDesc[] = {
 	{ "5f.cpu",        0x00800, 0x5b9d4686, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "5h.cpu",        0x00800, 0x58c29927, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "superbon.clr",  0x00020, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "82s123.6e",     0x00020, 0x9b87f90d, BRF_GRA | GAL_ROM_PROM },
 };
 
 STD_ROM_PICK(Superbon)
@@ -18556,6 +19949,13 @@ static INT32 LosttombInit()
 	
 	KonamiPPIInit();
 	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
+	
 	return nRet;
 }
 
@@ -18577,7 +19977,6 @@ static void MapTazmani2()
 	ZetMapArea(0x9000, 0x93ff, 0, GalVideoRam);
 	ZetMapArea(0x9000, 0x93ff, 1, GalVideoRam);
 	ZetMapArea(0x9000, 0x93ff, 2, GalVideoRam);	
-	ZetMemEnd();
 	ZetClose();
 }
 
@@ -18628,9 +20027,14 @@ static INT32 AnteaterInit()
 	GalRenderBackgroundFunction = AnteaterDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18664,7 +20068,6 @@ static void AnteatergPostLoad()
 	ZetMapArea(0x8300, 0x98ff, 2, GalZ80Rom1 + 0x2500);
 	ZetMapArea(0xa300, 0xa7ff, 0, GalZ80Rom1 + 0x3b00);
 	ZetMapArea(0xa300, 0xa7ff, 2, GalZ80Rom1 + 0x3b00);
-	ZetMemEnd();
 	ZetClose();
 }
 
@@ -18681,9 +20084,14 @@ static INT32 AnteatergInit()
 	GalRenderBackgroundFunction = AnteaterDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18714,7 +20122,6 @@ static void AnteaterukPostLoad()
 	ZetMapArea(0x8300, 0x98ff, 2, GalZ80Rom1 + 0x2500);
 	ZetMapArea(0xa300, 0xa7ff, 0, GalZ80Rom1 + 0x3b00);
 	ZetMapArea(0xa300, 0xa7ff, 2, GalZ80Rom1 + 0x3b00);
-	ZetMemEnd();
 	ZetClose();
 }
 
@@ -18731,9 +20138,14 @@ static INT32 AnteaterukInit()
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18758,7 +20170,6 @@ static INT32 SuperbonInit()
 	
 	GalPostLoadCallbackFunction = SuperbonPostLoad;
 	GalSoundType = GAL_SOUND_HARDWARE_TYPE_KONAMIAY8910;	
-	GalPromRomSize = 0x20;
 	
 	nRet = GalInit();
 	KonamiSoundInit();
@@ -18766,11 +20177,14 @@ static INT32 SuperbonInit()
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
 		
-	HardCodeGalaxianPROM();
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18789,9 +20203,14 @@ static INT32 CalipsoInit()
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	GalExtendSpriteInfoFunction = CalipsoExtendSpriteInfo;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18841,6 +20260,13 @@ static INT32 MoonwarInit()
 	
 	PPI0PortReadA = MoonwarPPIReadIN0;
 	PPI0PortWriteC = MoonwarPortSelectWrite;
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18914,10 +20340,15 @@ static INT32 DarkplntInit()
 	GalCalcPaletteFunction = DarkplntCalcPalette;
 	GalDrawBulletsFunction = DarkplntDrawBullets;
 	
-	GalSoundVolumeShift = 2;
-	
 	KonamiPPIInit();	
 	PPI0PortReadB = DarkplntPPIReadIN1;
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18953,9 +20384,14 @@ static INT32 RescueInit()
 	GalRenderBackgroundFunction = RescueDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 3;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -18991,9 +20427,14 @@ static INT32 MinefldInit()
 	GalRenderBackgroundFunction = MinefldDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
 	
-	GalSoundVolumeShift = 2;
-	
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -19201,6 +20642,13 @@ static INT32 MimonkeyInit()
 
 	KonamiPPIInit();
 	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
+	
 	return nRet;
 }
 
@@ -19220,6 +20668,13 @@ static INT32 MimonscoInit()
 	GalExtendSpriteInfoFunction = MimonkeyExtendSpriteInfo;
 
 	KonamiPPIInit();
+	
+	filter_rc_set_src_gain(0, 0.20);
+	filter_rc_set_src_gain(1, 0.20);
+	filter_rc_set_src_gain(2, 0.20);
+	filter_rc_set_src_gain(3, 0.20);
+	filter_rc_set_src_gain(4, 0.20);
+	filter_rc_set_src_gain(5, 0.20);
 	
 	return nRet;
 }
@@ -19799,7 +21254,6 @@ static void DambustrPostLoad()
 	ZetMapArea(0xd400, 0xd7ff, 2, GalVideoRam);
 	ZetMapArea(0xd800, 0xd8ff, 0, GalSpriteRam);
 	ZetMapArea(0xd800, 0xd8ff, 2, GalSpriteRam);
-	ZetMemEnd();
 	ZetClose();
 }
 
@@ -19915,6 +21369,22 @@ static struct BurnRomInfo DrivfrcgRomDesc[] = {
 
 STD_ROM_PICK(Drivfrcg)
 STD_ROM_FN(Drivfrcg)
+
+static struct BurnRomInfo DrivfrctRomDesc[] = {
+	{ "01.bin",        0x02000, 0x300a6750, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "02.bin",        0x02000, 0xf04e14c4, BRF_GRA | GAL_ROM_TILES_SHARED },
+		
+	{ "tbp18s030.02",  0x00020, 0x3110ddae, BRF_GRA | GAL_ROM_PROM },
+	{ "tbp18s030.01",  0x00020, 0x0f0782af, BRF_GRA | GAL_ROM_PROM },
+				
+	{ "03.bin",        0x04000, 0x9ab604cb, BRF_ESS | BRF_PRG | GAL_ROM_S2650_PROG1 },
+	
+	{ "tbp24s10.bin",  0x00100, 0x8c0d886d, BRF_OPT },
+	{ "tbp28s42.bin",  0x00200, 0x9b8f310a, BRF_OPT },
+};
+
+STD_ROM_PICK(Drivfrct)
+STD_ROM_FN(Drivfrct)
 
 static struct BurnRomInfo DrivfrcbRomDesc[] = {
 	{ "df1.bin",       0x02000, 0x8adc3de0, BRF_GRA | GAL_ROM_TILES_SHARED },
@@ -21035,7 +22505,7 @@ static void HunchbksPostLoad()
 	s2650SetOutHandler(HunchbksS2650PortWrite);
 	s2650Close();
 	
-	ZetInit(1);
+	ZetInit(0);
 }
 
 static INT32 HunchbksInit()
@@ -21050,8 +22520,6 @@ static INT32 HunchbksInit()
 	
 	GalRenderBackgroundFunction = ScrambleDrawBackground;
 	GalDrawBulletsFunction = ScrambleDrawBullets;
-	
-	GalSoundVolumeShift = 3;
 	
 	KonamiPPIInit();
 	PPI1PortWriteB = HunchbksSoundControlWrite;
@@ -21069,7 +22537,7 @@ static void HncholmsPostLoad()
 	s2650SetOutHandler(HunchbksS2650PortWrite);
 	s2650Close();
 	
-	ZetInit(1);
+	ZetInit(0);
 }
 
 static INT32 HncholmsInit()
@@ -21088,8 +22556,6 @@ static INT32 HncholmsInit()
 	GalExtendSpriteInfoFunction = UpperExtendSpriteInfo;
 	
 	nGalCyclesTotal[0] = (18432000 / 6 / 2 / 2) / 60;
-	
-	GalSoundVolumeShift = 3;
 	
 	KonamiPPIInit();
 	PPI1PortWriteB = HunchbksSoundControlWrite;
@@ -21117,9 +22583,19 @@ struct BurnDriver BurnDrvDrivfrcg = {
 	NULL, 392, 224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvDrivfrct = {
+	"drivfrct", "drivfrcp", NULL, NULL, "1985",
+	"Top Racer (bootleg of Driving Force)\0", NULL, "bootleg (EMT Germany)", "Galaxian",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_RACING, 0,
+	NULL, DrivfrctRomInfo, DrivfrctRomName, NULL, NULL, DrivfrcgInputInfo, DrivfrcgDIPInfo,
+	DrivfrcbInit, GalExit, GalFrame, NULL, GalScan,
+	NULL, 392, 224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvDrivfrcb = {
 	"drivfrcb", "drivfrcp", NULL, NULL, "1985",
-	"Driving Force (Galaxian conversion bootleg)\0", NULL, "bootleg", "Galaxian",
+	"Driving Force (Galaxian conversion bootleg)\0", NULL, "bootleg (Elsys Software)", "Galaxian",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG | BDF_HISCORE_SUPPORTED, 2, HARDWARE_GALAXIAN, GBF_RACING, 0,
 	NULL, DrivfrcbRomInfo, DrivfrcbRomName, NULL, NULL, DrivfrcgInputInfo, DrivfrcgDIPInfo,

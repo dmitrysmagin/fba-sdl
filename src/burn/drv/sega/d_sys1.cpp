@@ -1,5 +1,5 @@
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 #include "sn76496.h"
 #include "bitswap.h"
 #include "mc8123.h"
@@ -1572,6 +1572,25 @@ static struct BurnRomInfo FlickyRomDesc[] = {
 STD_ROM_PICK(Flicky)
 STD_ROM_FN(Flicky)
 
+static struct BurnRomInfo FlickygRomDesc[] = {
+	{ "epr5978a.116",      0x004000, 0x296f1492, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr5979a.109",      0x004000, 0x64b03ef9, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	
+	{ "epr-5869.120",      0x002000, 0x6d220d4e, BRF_ESS | BRF_PRG }, //  2	Z80 #2 Program Code
+	
+	{ "66xx.ic62",         0x004000, 0xf1a75200, BRF_GRA },		  //  3 Tiles
+	{ "66x0.ic64",         0x004000, 0x299aefb7, BRF_GRA },		  //  4 Tiles
+	{ "5999.ic66",         0x004000, 0x1ca53157, BRF_GRA },		  //  5 Tiles
+	
+	{ "epr-5855.117",      0x004000, 0xb5f894a1, BRF_GRA },		  //  8 Sprites
+	{ "epr-5856.110",      0x004000, 0x266af78f, BRF_GRA },		  //  9 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  10 Timing PROM
+};
+
+STD_ROM_PICK(Flickyg)
+STD_ROM_FN(Flickyg)
+
 static struct BurnRomInfo Flickys1RomDesc[] = {
 	{ "ic129",             0x002000, 0x7011275c, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "ic130",             0x002000, 0xe7ed012d, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
@@ -1617,6 +1636,25 @@ static struct BurnRomInfo Flickys2RomDesc[] = {
 
 STD_ROM_PICK(Flickys2)
 STD_ROM_FN(Flickys2)
+
+static struct BurnRomInfo Flickys2gRomDesc[] = {
+	{ "epr-6621.bin",      0x004000, 0xb21ff546, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6622.bin",      0x004000, 0x133a8bf1, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	
+	{ "epr-5869.120",      0x002000, 0x6d220d4e, BRF_ESS | BRF_PRG }, //  2	Z80 #2 Program Code
+	
+	{ "66xx.ic62",         0x004000, 0xf1a75200, BRF_GRA },		  //  3 Tiles
+	{ "66x0.ic64",         0x004000, 0x299aefb7, BRF_GRA },		  //  4 Tiles
+	{ "5999.ic66",         0x004000, 0x1ca53157, BRF_GRA },		  //  5 Tiles
+	
+	{ "epr-5855.117",      0x004000, 0xb5f894a1, BRF_GRA },		  //  6 Sprites
+	{ "epr-5856.110",      0x004000, 0x266af78f, BRF_GRA },		  //  7 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  8 Timing PROM
+};
+
+STD_ROM_PICK(Flickys2g)
+STD_ROM_FN(Flickys2g)
 
 static struct BurnRomInfo FlickyoRomDesc[] = {
 	{ "epr-5857.bin",      0x002000, 0xa65ac88e, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -2476,6 +2514,29 @@ static struct BurnRomInfo TeddybboRomDesc[] = {
 STD_ROM_PICK(Teddybbo)
 STD_ROM_FN(Teddybbo)
 
+static struct BurnRomInfo TeddybboblRomDesc[] = {
+	{ "epr-6739.116", 	   0x004000, 0x81a37e69, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "epr-6740.109",	   0x004000, 0x715388a9, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "epr-6741.96",   	   0x004000, 0xe5a74f5f, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+
+//	No sound rom present on the PCB - Instead use epr-6748.120 from Teddybbo set //	
+	{ "epr-6748.120",      0x002000, 0x9325a1cf, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "11.r7",       	   0x004000, 0x55d7aaf7, BRF_GRA },		  //  4 Tiles
+	{ "10.r8",       	   0x004000, 0x52a5083d, BRF_GRA },		  //  5 Tiles
+	{ "9.r10",       	   0x004000, 0x8076d3a3, BRF_GRA },		  //  6 Tiles
+		
+	{ "epr-6735.117",	   0x004000, 0x1be35a97, BRF_GRA },		  //  7 Sprites
+	{ "epr-6737.04",   	   0x004000, 0x6b53aa7a, BRF_GRA },		  //  8 Sprites
+	{ "epr-6736.110",	   0x004000, 0x565c25d0, BRF_GRA },		  //  9 Sprites
+	{ "epr-6738.05",   	   0x004000, 0xe116285f, BRF_GRA },		  //  10 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Teddybbobl)
+STD_ROM_FN(Teddybbobl)
+
 static struct BurnRomInfo UpndownRomDesc[] = {
 	{ "epr5516a.129",      0x002000, 0x038c82da, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "epr5517a.130",      0x002000, 0x6930e1de, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
@@ -2677,6 +2738,31 @@ static struct BurnRomInfo Wboy4RomDesc[] = {
 
 STD_ROM_PICK(Wboy4)
 STD_ROM_FN(Wboy4)
+
+static struct BurnRomInfo Wboy5RomDesc[] = {
+	{ "wb1.ic116",         0x004000, 0x6c67407c, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "wb_2",              0x004000, 0x4081b624, BRF_ESS | BRF_PRG }, //  1	Z80 #1 Program Code
+	{ "wb_3",              0x004000, 0xc48a0e36, BRF_ESS | BRF_PRG }, //  2	Z80 #1 Program Code
+	
+	{ "epr-7498.120",      0x002000, 0x78ae1e7b, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program Code
+	
+	{ "epr-7497.62",       0x002000, 0x08d609ca, BRF_GRA },		  //  4 Tiles
+	{ "epr-7496.61",       0x002000, 0x6f61fdf1, BRF_GRA },		  //  5 Tiles
+	{ "epr-7495.64",       0x002000, 0x6a0d2c2d, BRF_GRA },		  //  6 Tiles
+	{ "epr-7494.63",       0x002000, 0xa8e281c7, BRF_GRA },		  //  7 Tiles
+	{ "epr-7493.66",       0x002000, 0x89305df4, BRF_GRA },		  //  8 Tiles
+	{ "epr-7492.65",       0x002000, 0x60f806b1, BRF_GRA },		  //  9 Tiles
+	
+	{ "epr-7485.117",      0x004000, 0xc2891722, BRF_GRA },		  //  10 Sprites
+	{ "epr-7487.04",       0x004000, 0x2d3a421b, BRF_GRA },		  //  11 Sprites
+	{ "epr-7486.110",      0x004000, 0x8d622c50, BRF_GRA },		  //  12 Sprites
+	{ "epr-7488.05",       0x004000, 0x007c2f1b, BRF_GRA },		  //  13 Sprites
+
+	{ "pr-5317.76",        0x000100, 0x648350b8, BRF_OPT },		  //  14 Timing PROM
+};
+
+STD_ROM_PICK(Wboy5)
+STD_ROM_FN(Wboy5)
 
 static struct BurnRomInfo WboyuRomDesc[] = {
 	{ "ic116_89.bin",      0x004000, 0x73d8cef0, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -4091,7 +4177,6 @@ static INT32 System1Init(INT32 nZ80Rom1Num, INT32 nZ80Rom1Size, INT32 nZ80Rom2Nu
 	ZetMapArea(0xfc00, 0xffff, 0, System1fcRam);
 	ZetMapArea(0xfc00, 0xffff, 1, System1fcRam);
 	ZetMapArea(0xfc00, 0xffff, 2, System1fcRam);	
-	ZetMemEnd();
 	ZetClose();
 
 	ZetInit(1);
@@ -4103,7 +4188,6 @@ static INT32 System1Init(INT32 nZ80Rom1Num, INT32 nZ80Rom1Size, INT32 nZ80Rom2Nu
 	ZetMapArea(0x8000, 0x87ff, 0, System1Ram2);
 	ZetMapArea(0x8000, 0x87ff, 1, System1Ram2);
 	ZetMapArea(0x8000, 0x87ff, 2, System1Ram2);
-	ZetMemEnd();
 	ZetClose();
 	
 	memset(SpriteOnScreenMap, 255, 256 * 256);
@@ -4115,8 +4199,8 @@ static INT32 System1Init(INT32 nZ80Rom1Num, INT32 nZ80Rom1Size, INT32 nZ80Rom2Nu
 
 	SN76489AInit(0, 2000000, 0);
 	SN76489AInit(1, 4000000, 1);
-	SN76496SetVolShift(0, 2);
-	SN76496SetVolShift(1, 2);
+	SN76496SetRoute(0, 0.50, BURN_SND_ROUTE_BOTH);
+	SN76496SetRoute(1, 0.50, BURN_SND_ROUTE_BOTH);
 	
 	GenericTilesInit();
 	
@@ -4195,6 +4279,13 @@ static INT32 FlickyInit()
 	return System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
 }
 
+static INT32 FlickygInit()
+{
+	DecodeFunction = flicky_decode;
+	
+	return System1Init(2, 0x4000, 1, 0x2000, 3, 0x4000, 2, 0x4000, 1);
+}
+
 static INT32 Flicks1Init()
 {
 	DecodeFunction = flicky_decode;
@@ -4205,6 +4296,11 @@ static INT32 Flicks1Init()
 static INT32 Flicks2Init()
 {
 	return System1Init(2, 0x4000, 1, 0x2000, 6, 0x2000, 2, 0x4000, 1);
+}
+
+static INT32 Flicks2gInit()
+{
+	return System1Init(2, 0x4000, 1, 0x2000, 3, 0x4000, 2, 0x4000, 1);
 }
 
 static INT32 GardiaInit()
@@ -4462,6 +4558,13 @@ static INT32 TeddybbInit()
 	DecodeFunction = teddybb_decode;
 
 	return System1Init(3, 0x4000, 1, 0x2000, 6, 0x2000, 4, 0x4000, 1);
+}
+
+static INT32 TeddybboblInit()
+{
+	DecodeFunction = teddybb_decode;
+
+	return System1Init(3, 0x4000, 1, 0x2000, 3, 0x4000, 4, 0x4000, 1);
 }
 
 static INT32 UpndownInit()
@@ -5023,6 +5126,16 @@ struct BurnDriver BurnDrvFlicky = {
 	NULL, 0x600, 256, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvFlickyg = {
+	"flickyg", "flicky", NULL, NULL, "1984",
+	"Flicky (128k Version, System 2, 315-5051, alt graphics)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, FlickygRomInfo, FlickygRomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
+	FlickygInit, System1Exit, System1Frame, NULL, System1Scan,
+	NULL, 0x600, 256, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvFlickys1 = {
 	"flickys1", "flicky", NULL, NULL, "1984",
 	"Flicky (64k Version, System 1, 315-5051, set 2)\0", NULL, "Sega", "System 1",
@@ -5043,6 +5156,16 @@ struct BurnDriver BurnDrvFlickys2 = {
 	NULL, 0x600, 256, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvFlickys2g = {
+	"flickys2g", "flicky", NULL, NULL, "1984",
+	"Flicky (128k Version, System 2, not encrypted, alt graphics)\0", NULL, "Sega", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Flickys2gRomInfo, Flickys2gRomName, NULL, NULL, FlickyInputInfo, FlickyDIPInfo,
+	Flicks2gInit, System1Exit, System1Frame, NULL, System1Scan,
+	NULL, 0x600, 256, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvFlickyo = {
 	"flickyo", "flicky", NULL, NULL, "1984",
 	"Flicky (64k Version, System 1, 315-5051, set 1)\0", NULL, "Sega", "System 1",
@@ -5055,7 +5178,7 @@ struct BurnDriver BurnDrvFlickyo = {
 
 struct BurnDriver BurnDrvGardia = {
 	"gardia", NULL, NULL, NULL, "1986",
-	"Gardia (317-0006)\0", NULL, "Sega / Coreland", "System 1",
+	"Gardia (317-0006)\0", NULL, "Coreland / Sega", "System 1",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SEGA_SYSTEM1, GBF_VERSHOOT, 0,
 	NULL, GardiaRomInfo, GardiaRomName, NULL, NULL, MyheroInputInfo, GardiaDIPInfo,
@@ -5383,6 +5506,16 @@ struct BurnDriver BurnDrvTeddybbo = {
 	NULL, 0x600, 256, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvTeddybbobl = {
+	"teddybbobl", "teddybb", NULL, NULL, "1985",
+	"TeddyBoy Blues (bootleg)\0", NULL, "bootleg", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, TeddybboblRomInfo, TeddybboblRomName, NULL, NULL, MyheroInputInfo, TeddybbDIPInfo,
+	TeddybboblInit, System1Exit, System1Frame, NULL, System1Scan,
+	NULL, 0x600, 256, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvUpndown = {
 	"upndown", NULL, NULL, NULL, "1983",
 	"Up'n Down (315-5030)\0", NULL, "Sega", "System 1",
@@ -5460,6 +5593,16 @@ struct BurnDriver BurnDrvWboy4 = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
 	NULL, Wboy4RomInfo, Wboy4RomName, NULL, NULL, WboyInputInfo, WboyDIPInfo,
 	Wboy4Init, System1Exit, System1Frame, NULL, System1Scan,
+	NULL, 0x600, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvWboy5 = {
+	"wboy5", "wboy", NULL, NULL, "1986",
+	"Wonder Boy (set 5, bootleg)\0", NULL, "bootleg", "System 1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SEGA_SYSTEM1, GBF_PLATFORM, 0,
+	NULL, Wboy5RomInfo, Wboy5RomName, NULL, NULL, WboyInputInfo, Wboy3DIPInfo,
+	WboyoInit, System1Exit, System1Frame, NULL, System1Scan,
 	NULL, 0x600, 256, 224, 4, 3
 };
 

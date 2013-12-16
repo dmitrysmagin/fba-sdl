@@ -19,7 +19,7 @@ export
 UNICODE = 1
 
 # Build A68K ASM 68000 core
-BUILD_A68K = 1
+#BUILD_A68K = 1
 
 # Include x86 Assembly routines
 BUILD_X86_ASM = 1
@@ -27,8 +27,14 @@ BUILD_X86_ASM = 1
 # Build for x64 targets (MinGW64 and MSVC only, this will undefine BUILD_A68K and BUILD_X86_ASM)
 #BUILD_X64_EXE = 1
 
+# Build for Windows XP target (for use with Visual Studio 2012)
+#BUILD_VS2012_XP_TARGET = 1
+
 # Include 7-zip support
 INCLUDE_7Z_SUPPORT = 1
+
+# Include Toaplan sound sample hacks for games without MCU dumps
+TOAPLAN_SOUND_SAMPLES_HACK = 1
 
 # Include symbols and other debug information in the executable
 #SYMBOL = 1
@@ -68,8 +74,8 @@ mingw345: FORCE
 mingw452: FORCE
 	@$(MAKE) -s -f makefile.mingw GCC452=1
 	
-mingw461: FORCE
-	@$(MAKE) -s -f makefile.mingw GCC461=1
+mingw471: FORCE
+	@$(MAKE) -s -f makefile.mingw GCC471=1
 
 sdl: FORCE
 	@$(MAKE) -s -f makefile.sdl

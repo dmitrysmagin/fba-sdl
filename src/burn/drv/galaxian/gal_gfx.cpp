@@ -132,6 +132,11 @@ void RacknrolExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32 x)
 	*Code |= Bank << 8;
 }
 
+void BagmanmcExtendTileInfo(UINT16 *Code, INT32*, INT32, INT32)
+{
+	*Code |= GalGfxBank[0] << 9;
+}
+
 // Sprite extend helpers
 void UpperExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
 {
@@ -210,6 +215,11 @@ void Ad2083ExtendSpriteInfo(const UINT8 *Base, INT32*, INT32*, UINT8 *xFlip, UIN
 {
 	*Code = (Base[1] & 0x7f) | ((Base[2] & 0x30) << 2);
 	*xFlip = 0;
+}
+
+void BagmanmcExtendSpriteInfo(const UINT8*, INT32*, INT32*, UINT8*, UINT8*, UINT16 *Code, UINT8*)
+{
+	*Code |= (GalGfxBank[0] << 7) | 0x40;
 }
 
 // Hardcode a Galaxian PROM for any games that are missing a PROM dump
@@ -1262,5 +1272,30 @@ void FantastcRenderFrame()
 	GalRenderBgLayer(GalVideoRam);
 	GalRenderSprites(&GalSpriteRam[0x40]);
 	if (GalDrawBulletsFunction) GalDrawBullets(&GalSpriteRam[0xc0]);
+	BurnTransferCopy(GalPalette);
+}
+
+void TimefgtrRenderFrame()
+{
+	BurnTransferClear();
+	GalCalcPaletteFunction();
+	if (GalRenderBackgroundFunction) GalRenderBackgroundFunction();
+	GalRenderBgLayer(GalVideoRam);
+	GalRenderSprites(&GalSpriteRam[0x040]); // MAME renders different sprite ram areas depending on screen-area - necessary?
+	GalRenderSprites(&GalSpriteRam[0x140]);
+	GalRenderSprites(&GalSpriteRam[0x240]);
+	GalRenderSprites(&GalSpriteRam[0x340]);
+	if (GalDrawBulletsFunction) GalDrawBullets(&GalSpriteRam[0xc0]);
+	BurnTransferCopy(GalPalette);
+}
+
+void ScramblerRenderFrame()
+{
+	BurnTransferClear();
+	GalCalcPaletteFunction();
+	if (GalRenderBackgroundFunction) GalRenderBackgroundFunction();
+	GalRenderBgLayer(GalVideoRam);
+	GalRenderSprites(&GalSpriteRam[0xc0]);
+	if (GalDrawBulletsFunction) GalDrawBullets(&GalSpriteRam[0xe0]);
 	BurnTransferCopy(GalPalette);
 }

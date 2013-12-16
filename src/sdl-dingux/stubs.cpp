@@ -6,16 +6,9 @@
 bool bDoIpsPatch = 0;
 void IpsApplyPatches(UINT8* base, char* rom_name) {}
 
-// replaces hiscore.cpp
-INT32 EnableHiscores = 0;
-
-void HiscoreInit() {}
-void HiscoreReset() {}
-void HiscoreApply() {}
-void HiscoreExit() {}
-
-// replaces scrn.cpp
+// needed by cps3run.cpp and dataeast/d_backfire.cpp
 void Reinitialise() {}
 
 // needed by neo_run.cpp
 void	wav_exit() {}
+int bRunPause;

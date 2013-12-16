@@ -2289,7 +2289,17 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_ENHANCED_SOFT_HQ2XBOLD:
 				case MENU_ENHANCED_SOFT_HQ3XBOLD:
 				case MENU_ENHANCED_SOFT_EPXB:
-				case MENU_ENHANCED_SOFT_EPXC: {
+				case MENU_ENHANCED_SOFT_EPXC:
+				case MENU_ENHANCED_SOFT_2XBR_A:
+				case MENU_ENHANCED_SOFT_2XBR_B:
+				case MENU_ENHANCED_SOFT_2XBR_C:
+				case MENU_ENHANCED_SOFT_3XBR_A:
+				case MENU_ENHANCED_SOFT_3XBR_B:
+				case MENU_ENHANCED_SOFT_3XBR_C:
+				case MENU_ENHANCED_SOFT_4XBR_A:
+				case MENU_ENHANCED_SOFT_4XBR_B:
+				case MENU_ENHANCED_SOFT_4XBR_C:
+				case MENU_ENHANCED_SOFT_DDT3X: {
 					nVidBlitterOpt[nVidSelect] &= 0x0FFFFFFF;
 					nVidBlitterOpt[nVidSelect] |= 0x03000000 + ((long long)(id - MENU_ENHANCED_SOFT_STRETCH) << 32);
 					POST_INITIALISE_MESSAGE;
@@ -2397,6 +2407,16 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_SOFTFX_SOFT_HQ3XBOLD:
 				case MENU_SOFTFX_SOFT_EPXB:
 				case MENU_SOFTFX_SOFT_EPXC:
+				case MENU_SOFTFX_SOFT_2XBR_A:
+				case MENU_SOFTFX_SOFT_2XBR_B:
+				case MENU_SOFTFX_SOFT_2XBR_C:
+				case MENU_SOFTFX_SOFT_3XBR_A:
+				case MENU_SOFTFX_SOFT_3XBR_B:
+				case MENU_SOFTFX_SOFT_3XBR_C:
+				case MENU_SOFTFX_SOFT_4XBR_A:
+				case MENU_SOFTFX_SOFT_4XBR_B:
+				case MENU_SOFTFX_SOFT_4XBR_C:
+				case MENU_SOFTFX_SOFT_DDT3X:
 					nVidBlitterOpt[nVidSelect] &= ~0xFF;
 					nVidBlitterOpt[nVidSelect] |= id - MENU_SOFTFX_SOFT_STRETCH;
 					POST_INITIALISE_MESSAGE;
@@ -2589,6 +2609,16 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				case MENU_DX9_ALT_SOFT_HQ3XBOLD:
 				case MENU_DX9_ALT_SOFT_EPXB:
 				case MENU_DX9_ALT_SOFT_EPXC:
+				case MENU_DX9_ALT_SOFT_2XBR_A:
+				case MENU_DX9_ALT_SOFT_2XBR_B:
+				case MENU_DX9_ALT_SOFT_2XBR_C:
+				case MENU_DX9_ALT_SOFT_3XBR_A:
+				case MENU_DX9_ALT_SOFT_3XBR_B:
+				case MENU_DX9_ALT_SOFT_3XBR_C:
+				case MENU_DX9_ALT_SOFT_4XBR_A:
+				case MENU_DX9_ALT_SOFT_4XBR_B:
+				case MENU_DX9_ALT_SOFT_4XBR_C:
+				case MENU_DX9_ALT_SOFT_DDT3X:
 					nVidBlitterOpt[nVidSelect] &= ~0xFF;
 					nVidBlitterOpt[nVidSelect] |= id - MENU_DX9_ALT_SOFT_STRETCH;
 					POST_INITIALISE_MESSAGE;
@@ -2761,7 +2791,7 @@ static int ScrnRegister()
 	WndClassEx.hInstance		= hAppInst;
 	WndClassEx.hIcon			= LoadIcon(hAppInst, MAKEINTRESOURCE(IDI_APP));
 	WndClassEx.hCursor			= LoadCursor(NULL, IDC_ARROW);
-	WndClassEx.hbrBackground	= CreateSolidBrush(0);
+	WndClassEx.hbrBackground	= static_cast<HBRUSH>( GetStockObject ( BLACK_BRUSH ));
 	WndClassEx.lpszClassName	= szClass;
 
 	// Register the window class with the above information:
@@ -2852,6 +2882,17 @@ int ScrnSize()
 	// Find out how much space is taken up by the borders
 	ew = GetSystemMetrics(SM_CXSIZEFRAME) << 1;
 	eh = GetSystemMetrics(SM_CYSIZEFRAME) << 1;
+	
+	// Visual Studio 2012 (seems to have an issue with these, other reports on the web about it too
+#if defined _MSC_VER
+	#if _MSC_VER >= 1700
+		// using the old XP supporting SDK we don't need to alter anything
+		#if !defined BUILD_VS2012_XP_TARGET
+			ew <<= 1;
+			eh <<= 1;
+		#endif
+	#endif
+#endif
 
 	if (bMenuEnabled) {
 		eh += GetSystemMetrics(SM_CYCAPTION);

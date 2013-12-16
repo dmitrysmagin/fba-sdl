@@ -1,5 +1,5 @@
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 #include "m6809_intf.h"
 #include "burn_ym2203.h"
 
@@ -436,6 +436,35 @@ static struct BurnRomInfo DrvblRomDesc[] = {
 STD_ROM_PICK(Drvbl)
 STD_ROM_FN(Drvbl)
 
+static struct BurnRomInfo DrvblaRomDesc[] = {
+	{ "3.bin",         0x04000, 0x4859d068, BRF_ESS | BRF_PRG }, //  0	M6809 Program Code
+	{ "4.bin",         0x04000, 0x08322bef, BRF_ESS | BRF_PRG }, //	 1
+	{ "5.bin",         0x04000, 0x888d7764, BRF_ESS | BRF_PRG }, //	 2
+	{ "gng.n13",       0x04000, 0xfd9a8dda, BRF_ESS | BRF_PRG }, //	 3
+	{ "2.bin",         0x04000, 0xf32c2e55, BRF_ESS | BRF_PRG }, //	 4
+	
+	{ "gg2.bin",       0x08000, 0x615f5b6f, BRF_ESS | BRF_PRG }, //  5	Z80 Program 
+	
+	{ "gg1.bin",       0x04000, 0xecfccf07, BRF_GRA },	     //  5	Characters
+	
+	{ "gg11.bin",      0x04000, 0xddd56fa9, BRF_GRA },	     //  7	Tiles
+	{ "gg10.bin",      0x04000, 0x7302529d, BRF_GRA },	     //  8
+	{ "gg9.bin",       0x04000, 0x20035bda, BRF_GRA },	     //  9
+	{ "gg8.bin",       0x04000, 0xf12ba271, BRF_GRA },	     //  10
+	{ "gg7.bin",       0x04000, 0xe525207d, BRF_GRA },	     //  11
+	{ "gg6.bin",       0x04000, 0x2d77e9b2, BRF_GRA },	     //  12
+	
+	{ "19.84472.4n",   0x04000, 0x4613afdc, BRF_GRA },	     //  13	Sprites
+	{ "18.84472.3n",   0x04000, 0x06d7e5ca, BRF_GRA },	     //  14
+	{ "17.84472.1n",   0x04000, 0xbc1fe02d, BRF_GRA },	     //  15
+	{ "16.84472.4l",   0x04000, 0x608d68d5, BRF_GRA },	     //  16
+	{ "15.84490.3l",   0x04000, 0xe80c3fca, BRF_GRA },	     //  17
+	{ "14.84490.1l",   0x04000, 0x7780a925, BRF_GRA },	     //  18
+};
+
+STD_ROM_PICK(Drvbla)
+STD_ROM_FN(Drvbla)
+
 static struct BurnRomInfo DrvblitaRomDesc[] = {
 	{ "3",             0x04000, 0x4859d068, BRF_ESS | BRF_PRG }, //  0	M6809 Program Code
 	{ "4-5",           0x08000, 0x233a4589, BRF_ESS | BRF_PRG }, //	 1
@@ -467,6 +496,35 @@ static struct BurnRomInfo DrvblitaRomDesc[] = {
 
 STD_ROM_PICK(Drvblita)
 STD_ROM_FN(Drvblita)
+
+static struct BurnRomInfo DrvprotRomDesc[] = {
+	{ "gg10n.bin",     0x04000, 0x5d2a2c90, BRF_ESS | BRF_PRG }, //  0	M6809 Program Code
+	{ "gg9n.bin",      0x04000, 0x30eb183d, BRF_ESS | BRF_PRG }, //	 1
+	{ "gg8n.bin",      0x04000, 0x4b5e2145, BRF_ESS | BRF_PRG }, //	 2
+	{ "gg13n.bin",     0x04000, 0x2664aae6, BRF_ESS | BRF_PRG }, //	 3
+	{ "gg12n.bin",     0x04000, 0xc7ef4ae8, BRF_ESS | BRF_PRG }, //	 4
+	
+	{ "gg14h.bin",     0x08000, 0x55cfb196, BRF_ESS | BRF_PRG }, //  5	Z80 Program 
+	
+	{ "1.84490.11e",   0x04000, 0xecfccf07, BRF_GRA },	     //  6	Characters
+	
+	{ "gg3e.bin",      0x04000, 0x68db22c8, BRF_GRA },	     //  7	Tiles
+	{ "gg1e.bin",      0x04000, 0xdad8dd2f, BRF_GRA },	     //  8
+	{ "gg3c.bin",      0x04000, 0x7a158323, BRF_GRA },	     //  9
+	{ "gg1c.bin",      0x04000, 0x7314d095, BRF_GRA },	     //  10
+	{ "gg3b.bin",      0x04000, 0x03a96d9b, BRF_GRA },	     //  11
+	{ "gg1b.bin",      0x04000, 0x7b9899bc, BRF_GRA },	     //  12
+	
+	{ "gg4l.bin",      0x04000, 0x49cf81b4, BRF_GRA },	     //  13	Sprites
+	{ "gg3l.bin",      0x04000, 0xe61437b1, BRF_GRA },	     //  14
+	{ "gg1l.bin",      0x04000, 0xbc1fe02d, BRF_GRA },	     //  15
+	{ "gg4n.bin",      0x04000, 0xd5aff5a7, BRF_GRA },	     //  16
+	{ "gg3n.bin",      0x04000, 0xd589caeb, BRF_GRA },	     //  17
+	{ "gg1n.bin",      0x04000, 0x7780a925, BRF_GRA },	     //  18
+};
+
+STD_ROM_PICK(Drvprot)
+STD_ROM_FN(Drvprot)
 
 static struct BurnRomInfo DrvtRomDesc[] = {
 	{ "mm04",          0x04000, 0x652406f6, BRF_ESS | BRF_PRG }, //  0	M6809 Program Code
@@ -889,8 +947,8 @@ static INT32 DrvInit()
 	M6809MapMemory(DrvPaletteRam1       , 0x3900, 0x39ff, M6809_RAM);
 	M6809MapMemory(DrvM6809Rom          , 0x4000, 0x5fff, M6809_ROM);
 	M6809MapMemory(DrvM6809Rom + 0x2000 , 0x6000, 0xffff, M6809_ROM);
-	M6809SetReadByteHandler(DrvGngM6809ReadByte);
-	M6809SetWriteByteHandler(DrvGngM6809WriteByte);
+	M6809SetReadHandler(DrvGngM6809ReadByte);
+	M6809SetWriteHandler(DrvGngM6809WriteByte);
 	M6809Close();
 	
 	// Setup the Z80 emulation
@@ -903,12 +961,18 @@ static INT32 DrvInit()
 	ZetMapArea(0xc000, 0xc7ff, 0, DrvZ80Ram             );
 	ZetMapArea(0xc000, 0xc7ff, 1, DrvZ80Ram             );
 	ZetMapArea(0xc000, 0xc7ff, 2, DrvZ80Ram             );
-	ZetMemEnd();
 	ZetClose();	
 	
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
-	BurnYM2203SetVolumeShift(4);
 	BurnTimerAttachZet(3000000);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_1, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_2, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_3, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_1, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_2, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_3, 0.40, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -976,8 +1040,8 @@ static INT32 DiamondInit()
 	M6809MapMemory(DrvPaletteRam1       , 0x3900, 0x39ff, M6809_RAM);
 	M6809MapMemory(DrvM6809Rom          , 0x4000, 0x5fff, M6809_ROM);
 	M6809MapMemory(DrvM6809Rom + 0x2000 , 0x6000, 0xffff, M6809_ROM);
-	M6809SetReadByteHandler(DrvGngM6809ReadByte);
-	M6809SetWriteByteHandler(DrvGngM6809WriteByte);
+	M6809SetReadHandler(DrvGngM6809ReadByte);
+	M6809SetWriteHandler(DrvGngM6809WriteByte);
 	M6809Close();
 	
 	// Setup the Z80 emulation
@@ -990,12 +1054,18 @@ static INT32 DiamondInit()
 	ZetMapArea(0xc000, 0xc7ff, 0, DrvZ80Ram             );
 	ZetMapArea(0xc000, 0xc7ff, 1, DrvZ80Ram             );
 	ZetMapArea(0xc000, 0xc7ff, 2, DrvZ80Ram             );
-	ZetMemEnd();
 	ZetClose();	
 	
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
-	BurnYM2203SetVolumeShift(4);
 	BurnTimerAttachZet(3000000);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_1, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_2, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_3, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_1, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_2, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_3, 0.40, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 	
@@ -1300,7 +1370,7 @@ static INT32 DrvFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += M6809Run(nCyclesSegment);
 		if (i == 24) {
-			M6809SetIRQ(0, M6809_IRQSTATUS_AUTO);
+			M6809SetIRQLine(0, M6809_IRQSTATUS_AUTO);
 		}
 		M6809Close();
 		
@@ -1411,6 +1481,16 @@ struct BurnDriver BurnDrvGngbl = {
 	NULL, 0x100, 256, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvGngbla = {
+	"gngbla", "gng", NULL, NULL, "1985",
+	"Ghosts'n Goblins (bootleg, harder)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
+	NULL, DrvblaRomInfo, DrvblaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	GngaInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 0x100, 256, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvGngblita = {
 	"gngblita", "gng", NULL, NULL, "1985",
 	"Ghosts'n Goblins (Italian bootleg, harder)\0", NULL, "bootleg", "Miscellaneous",
@@ -1418,6 +1498,16 @@ struct BurnDriver BurnDrvGngblita = {
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
 	NULL, DrvblitaRomInfo, DrvblitaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 0x100, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvGngprot = {
+	"gngprot", "gng", NULL, NULL, "1985",
+	"Ghosts'n Goblins (prototype)\0", NULL, "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM, 0,
+	NULL, DrvprotRomInfo, DrvprotRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	GngaInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x100, 256, 224, 4, 3
 };
 

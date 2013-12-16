@@ -1,6 +1,6 @@
 #include "tiles_generic.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "timer.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
@@ -1091,6 +1091,24 @@ static struct BurnRomInfo Snowbro3RomDesc[] = {
 STD_ROM_PICK(Snowbro3)
 STD_ROM_FN(Snowbro3)
 
+static struct BurnRomInfo BallboyRomDesc[] = {
+	{ "27c010.ur4",    0x020000, 0x5fb51b99, BRF_ESS | BRF_PRG }, 		 //  0	68000 Program Code
+	{ "27c010.ur3",    0x020000, 0xa9c1fdda, BRF_ESS | BRF_PRG }, 		 //  1	68000 Program Code
+
+	{ "27c040.ua5",    0x080000, 0x0604e385, BRF_GRA },			 //  2	4bpp Sprites
+	
+	{ "27c160.un7",    0x200000, 0x4a79da4c, BRF_GRA },			 //  3	8bpp Sprites
+	{ "27c160.un8",    0x200000, 0xbfef8c44, BRF_GRA },			 //  4	8bpp Sprites
+
+	{ "27c040.us5",    0x080000, 0x7c6368ef, BRF_SND },			 //  5	Samples
+	
+	{ "sound.mcu",     0x010000, 0x00000000, BRF_PRG | BRF_NODUMP },	 //  6	Sound MCU
+};
+
+
+STD_ROM_PICK(Ballboy)
+STD_ROM_FN(Ballboy)
+
 static INT32 HyperpacDoReset()
 {
 	HyperpacSoundLatch = 0;
@@ -1994,17 +2012,18 @@ static INT32 HyperpacMachineInit()
 	ZetMapArea(0xd000, 0xd7ff, 0, HyperpacZ80Ram);
 	ZetMapArea(0xd000, 0xd7ff, 1, HyperpacZ80Ram);
 	ZetMapArea(0xd000, 0xd7ff, 2, HyperpacZ80Ram);
-	ZetMemEnd();
 	ZetSetReadHandler(HyperpacZ80Read);
 	ZetSetWriteHandler(HyperpacZ80Write);
 	ZetClose();
 
 	// Setup the YM2151 emulation
-	BurnYM2151Init(4000000, 25.0);
+	BurnYM2151Init(4000000);
 	BurnYM2151SetIrqHandler(&HyperpacYM2151IrqHandler);
+	BurnYM2151SetAllRoutes(0.10, BURN_SND_ROUTE_BOTH);
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 999900 / 132, 100.0, 1);
+	MSM6295Init(0, 999900 / 132, 1);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -2420,6 +2439,9 @@ static INT32 FinalttrInit()
 	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
+	
+	BurnYM2151SetAllRoutes(0.08, BURN_SND_ROUTE_BOTH);
+	MSM6295SetRoute(0, 0.40, BURN_SND_ROUTE_BOTH);
 
 	return 0;
 }
@@ -2483,13 +2505,13 @@ static INT32 TwinadvInit()
 	ZetMapArea(0x8000, 0x87ff, 0, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 1, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 2, HyperpacZ80Ram);
-	ZetMemEnd();
 	ZetSetInHandler(TwinadvZ80PortRead);
 	ZetSetOutHandler(TwinadvZ80PortWrite);
 	ZetClose();
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, (12000000/12) / 132 , 100.0, 0);
+	MSM6295Init(0, (12000000/12) / 132, 0);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -2564,7 +2586,6 @@ static INT32 HoneydolInit()
 	ZetMapArea(0x8000, 0x87ff, 0, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 1, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 2, HyperpacZ80Ram);
-	ZetMemEnd();
 	ZetSetInHandler(SnowbrosZ80PortRead);
 	ZetSetOutHandler(SnowbrosZ80PortWrite);
 	ZetSetReadHandler(HoneydolZ80Read);
@@ -2573,9 +2594,11 @@ static INT32 HoneydolInit()
 
 	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &HoneydolSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(4000000);
+	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 999900 / 132, 100.0, 1);
+	MSM6295Init(0, 999900 / 132, 1);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -2661,13 +2684,13 @@ static INT32 SnowbrosInit()
 	ZetMapArea(0x8000, 0x87ff, 0, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 1, HyperpacZ80Ram);
 	ZetMapArea(0x8000, 0x87ff, 2, HyperpacZ80Ram);
-	ZetMemEnd();
 	ZetSetInHandler(SnowbrosZ80PortRead);
 	ZetSetOutHandler(SnowbrosZ80PortWrite);
 	ZetClose();
 
 	BurnYM3812Init(3000000, &snowbrosFMIRQHandler, &snowbrosSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(6000000);
+	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -2740,7 +2763,8 @@ static INT32 Snowbro3Init()
 	SekClose();
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 999900 / 132, 100.0, 0);
+	MSM6295Init(0, 999900 / 132, 0);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -3240,7 +3264,7 @@ static INT32 HyperpacCalcPalette()
 	UINT32* pd;
 
 	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x200; i++, ps++, pd++) {
-		*pd = CalcCol(*ps);
+		*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(*((UINT16*)ps)));
 	}
 
 	return 0;
@@ -3253,7 +3277,7 @@ static INT32 HoneydolCalcPalette()
 	UINT32* pd;
 
 	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x800; i++, ps++, pd++) {
-		*pd = CalcCol(*ps);
+		*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(*((UINT16*)ps)));
 	}
 
 	return 0;
@@ -3266,7 +3290,7 @@ static INT32 Snowbro3CalcPalette()
 	UINT32* pd;
 
 	for (i = 0, ps = (UINT16*)HyperpacPaletteRam, pd = HyperpacPalette; i < 0x400; i++, ps++, pd++) {
-		*pd = CalcCol(*ps);
+		*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(*((UINT16*)ps)));
 	}
 
 	return 0;
@@ -4095,11 +4119,21 @@ struct BurnDriver BurnDrvWintbob = {
 };
 
 struct BurnDriver BurnDrvSnowbro3 = {
-	"snowbros3", "snowbros", NULL, NULL, "2002",
+	"snowbro3", NULL, NULL, NULL, "2002",
 	"Snow Brothers 3 - Magical Adventure\0", NULL, "bootleg", "Kaneko Pandora based",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	BDF_GAME_WORKING | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
 	NULL, Snowbro3RomInfo, Snowbro3RomName, NULL, NULL, SnowbrosInputInfo, SnowbrojDIPInfo,
+	Snowbro3Init, SnowbrosExit, Snowbro3Frame, NULL, Snowbro3Scan,
+	NULL, 0x400, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvBallboy = {
+	"ballboy", "snowbro3", NULL, NULL, "2003",
+	"Ball Boy\0", NULL, "bootleg", "Kaneko Pandora based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
+	NULL, BallboyRomInfo, BallboyRomName, NULL, NULL, SnowbrosInputInfo, SnowbrojDIPInfo,
 	Snowbro3Init, SnowbrosExit, Snowbro3Frame, NULL, Snowbro3Scan,
 	NULL, 0x400, 256, 224, 4, 3
 };

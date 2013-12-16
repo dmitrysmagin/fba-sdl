@@ -2,7 +2,7 @@
 // Based on MAME driver by Zsolt Vasvari
 
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 #include "driver.h"
 extern "C" {
 #include "ay8910.h"
@@ -250,14 +250,14 @@ static INT32 MemIndex()
 	flipscreen 	= Next; Next += 0x000001;
 	color_bank	= Next; Next += 0x000001;
 
+	RamEnd		= Next;
+
 	pAY8910Buffer[0] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 	pAY8910Buffer[1] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 	pAY8910Buffer[2] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 	pAY8910Buffer[3] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 	pAY8910Buffer[4] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
 	pAY8910Buffer[5] = (INT16 *)Next; Next += nBurnSoundLen * sizeof(INT16);
-
-	RamEnd		= Next;
 
 	MemEnd		= Next;
 
@@ -311,11 +311,12 @@ static INT32 DrvInit()
 	ZetSetReadHandler(ambush_read_byte);
 	ZetSetOutHandler(ambush_out_port);
 	ZetSetInHandler(ambush_in_port);
-	ZetMemEnd();
 	ZetClose();
 
 	AY8910Init(0, 1500000, nBurnSoundRate, &AY8910_0_port0, NULL, NULL, NULL);
 	AY8910Init(1, 1500000, nBurnSoundRate, &AY8910_1_port0, NULL, NULL, NULL);
+	AY8910SetAllRoutes(0, 0.33, BURN_SND_ROUTE_BOTH);
+	AY8910SetAllRoutes(1, 0.33, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -486,22 +487,7 @@ static INT32 DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		INT32 nSample;
-		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
-		AY8910Update(1, &pAY8910Buffer[3], nBurnSoundLen);
-		for (INT32 n = 0; n < nBurnSoundLen; n++) {
-			nSample  = pAY8910Buffer[0][n] >> 2;
-			nSample += pAY8910Buffer[1][n] >> 2;
-			nSample += pAY8910Buffer[2][n] >> 2;
-			nSample += pAY8910Buffer[3][n] >> 2;
-			nSample += pAY8910Buffer[4][n] >> 2;
-			nSample += pAY8910Buffer[5][n] >> 2;
-
-			nSample = BURN_SND_CLIP(nSample);
-
-			pBurnSoundOut[(n << 1) + 0] = nSample;
-			pBurnSoundOut[(n << 1) + 1] = nSample;
-		}
+		AY8910Render(&pAY8910Buffer[0], pBurnSoundOut, nBurnSoundLen, 0);
 	}
 
 	if (pBurnDraw) {
@@ -537,6 +523,37 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 
 // Ambush
 
+static struct BurnRomInfo ambushRomDesc[] = {
+	{ "a1.i7",        0x2000, 0x31b85d9d, BRF_ESS | BRF_PRG }, //  0 Z80 Code
+	{ "a2.g7",        0x2000, 0x8328d88a, BRF_ESS | BRF_PRG }, //  1
+	{ "a3.f7",        0x2000, 0x8db57ab5, BRF_ESS | BRF_PRG }, //  2
+	{ "a4.e7",        0x2000, 0x4a34d2a4, BRF_ESS | BRF_PRG }, //  3
+
+	{ "fa2.n4",       0x2000, 0xe7f134ba, BRF_GRA },	   //  4 Graphics tiles
+	{ "fa1.m4",       0x2000, 0xad10969e, BRF_GRA },	   //  5
+
+	{ "a.bpr",        0x0100, 0x5f27f511, BRF_GRA },	   //  6 color PROMs
+
+	{ "b.bpr",        0x0100, 0x1b03fd3b, BRF_OPT },	   //  7 Proms - Not used
+	{ "13.bpr",	  0x0100, 0x547e970f, BRF_OPT },	   //  8
+	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_OPT },	   //  9
+};
+
+STD_ROM_PICK(ambush)
+STD_ROM_FN(ambush)
+
+struct BurnDriver BurnDrvAmbush = {
+	"ambush", NULL, NULL, NULL, "1983",
+	"Ambush\0", NULL, "Tecfri", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, ambushRomInfo, ambushRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x100,
+	256, 224, 4, 3
+};
+
+// Ambush
+
 static struct BurnRomInfo ambushjRomDesc[] = {
 	{ "ambush.h7",    0x2000, 0xce306563, BRF_ESS | BRF_PRG }, //  0 Z80 Code
 	{ "ambush.g7",    0x2000, 0x90291409, BRF_ESS | BRF_PRG }, //  1
@@ -567,10 +584,10 @@ struct BurnDriver BurnDrvAmbushj = {
 };
 
 
-// Ambush (Tecfri)
+// Ambush (hack?)
 
-static struct BurnRomInfo ambushRomDesc[] = {
-	{ "a1.i7",        0x2000, 0xa7cd149d, BRF_ESS | BRF_PRG }, //  0 Z80 Code
+static struct BurnRomInfo ambushhRomDesc[] = {
+	{ "a1_hack.i7",   0x2000, 0xa7cd149d, BRF_ESS | BRF_PRG }, //  0 Z80 Code
 	{ "a2.g7",        0x2000, 0x8328d88a, BRF_ESS | BRF_PRG }, //  1
 	{ "a3.f7",        0x2000, 0x8db57ab5, BRF_ESS | BRF_PRG }, //  2
 	{ "a4.e7",        0x2000, 0x4a34d2a4, BRF_ESS | BRF_PRG }, //  3
@@ -585,15 +602,15 @@ static struct BurnRomInfo ambushRomDesc[] = {
 	{ "14.bpr",	  0x0100, 0x622a8ce7, BRF_OPT },	   //  9
 };
 
-STD_ROM_PICK(ambush)
-STD_ROM_FN(ambush)
+STD_ROM_PICK(ambushh)
+STD_ROM_FN(ambushh)
 
-struct BurnDriver BurnDrvAmbush = {
-	"ambush", NULL, NULL, NULL, "1983",
-	"Ambush\0", NULL, "Tecfri", "Miscellaneous",
+struct BurnDriver BurnDrvAmbushh = {
+	"ambushh", "ambush", NULL, NULL, "1983",
+	"Ambush (hack?)\0", NULL, "Tecfri", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
-	NULL, ambushRomInfo, ambushRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, ambushhRomInfo, ambushhRomName, NULL, NULL, AmbushInputInfo, AmbushDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x100,
 	256, 224, 4, 3
 };

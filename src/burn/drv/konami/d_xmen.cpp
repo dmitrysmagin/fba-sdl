@@ -2,8 +2,8 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "konamiic.h"
 #include "burn_ym2151.h"
 #include "k054539.h"
@@ -464,7 +464,6 @@ static INT32 DrvInit()
 	ZetMapArea(0xc000, 0xdfff, 2, DrvZ80RAM);
 	ZetSetWriteHandler(xmen_sound_write);
 	ZetSetReadHandler(xmen_sound_read);
-	ZetMemEnd();
 	ZetClose();
 
 	EEPROMInit(&xmen_eeprom_intf);
@@ -476,9 +475,13 @@ static INT32 DrvInit()
 	K053247Init(DrvGfxROM1, 0x3fffff, K053247Callback, 1);
 	K053247SetSpriteOffset(-510, 158);
 
-	BurnYM2151Init(4000000, 80.0);
+	BurnYM2151Init(4000000);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_1, 0.20, BURN_SND_ROUTE_LEFT);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_2, 0.20, BURN_SND_ROUTE_RIGHT);
 
 	K054539Init(0, 48000, DrvSndROM, 0x200000);
+	K054539SetRoute(0, BURN_SND_K054539_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
+	K054539SetRoute(0, BURN_SND_K054539_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
 
 	GenericTilesInit();
 
@@ -748,11 +751,48 @@ struct BurnDriver BurnDrvXmen = {
 };
 
 
-// X-Men (4 Players ver ADA)
+// X-Men (4 Players ver AEA)
 
 static struct BurnRomInfo xmenaRomDesc[] = {
-	{ "065-ada.10d",	0x020000, 0xb8276624, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
-	{ "065-ada.10f",	0x020000, 0xc68582ad, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "065-aea04.10d",	0x020000, 0x0e8d2e98, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "065-aea05.10f",	0x020000, 0x0b742a4e, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "065-a02.9d",		0x040000, 0xb31dc44c, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "065-a03.9f",		0x040000, 0x13842fe6, 1 | BRF_PRG | BRF_ESS }, //  3
+
+	{ "065-a01.6f",		0x020000, 0x147d3a4d, 2 | BRF_PRG | BRF_ESS }, //  4 Z80 Code
+
+	{ "065-a08.15l",	0x100000, 0x6b649aca, 3 | BRF_GRA },           //  5 Background Tiles
+	{ "065-a07.16l",	0x100000, 0xc5dc8fc4, 3 | BRF_GRA },           //  6
+
+	{ "065-a09.2h",		0x100000, 0xea05d52f, 4 | BRF_GRA },           //  7 Sprites
+	{ "065-a10.2l",		0x100000, 0x96b91802, 4 | BRF_GRA },           //  8
+	{ "065-a12.1h",		0x100000, 0x321ed07a, 4 | BRF_GRA },           //  9
+	{ "065-a11.1l",		0x100000, 0x46da948e, 4 | BRF_GRA },           // 10
+
+	{ "065-a06.1f",		0x200000, 0x5adbcee0, 5 | BRF_SND },           // 11 K054539 Samples
+
+	{ "xmen_aea.nv",  0x000080, 0xd73d4f20, BRF_OPT },
+};
+
+STD_ROM_PICK(xmena)
+STD_ROM_FN(xmena)
+
+struct BurnDriver BurnDrvXmena = {
+	"xmena", "xmen", NULL, NULL, "1992",
+	"X-Men (4 Players ver AEA)\0", NULL, "Konami", "GX065",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_PREFIX_KONAMI, GBF_SCRFIGHT, 0,
+	NULL, xmenaRomInfo, xmenaRomName, NULL, NULL, XmenInputInfo, NULL,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
+	288, 224, 4, 3
+};
+
+
+// X-Men (4 Players ver ADA)
+
+static struct BurnRomInfo xmenaaRomDesc[] = {
+	{ "065-ada04.10d",	0x020000, 0xb8276624, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "065-ada05.10f",	0x020000, 0xc68582ad, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "065-a02.9d",		0x040000, 0xb31dc44c, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "065-a03.9f",		0x040000, 0x13842fe6, 1 | BRF_PRG | BRF_ESS }, //  3
 
@@ -771,15 +811,15 @@ static struct BurnRomInfo xmenaRomDesc[] = {
 	{ "xmen_ada.nv",  0x000080, 0xa77a3891, BRF_OPT },
 };
 
-STD_ROM_PICK(xmena)
-STD_ROM_FN(xmena)
+STD_ROM_PICK(xmenaa)
+STD_ROM_FN(xmenaa)
 
-struct BurnDriver BurnDrvXmena = {
-	"xmena", "xmen", NULL, NULL, "1992",
+struct BurnDriver BurnDrvXmenaa = {
+	"xmenaa", "xmen", NULL, NULL, "1992",
 	"X-Men (4 Players ver ADA)\0", NULL, "Konami", "GX065",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_PREFIX_KONAMI, GBF_SCRFIGHT, 0,
-	NULL, xmenaRomInfo, xmenaRomName, NULL, NULL, XmenInputInfo, NULL,
+	NULL, xmenaaRomInfo, xmenaaRomName, NULL, NULL, XmenInputInfo, NULL,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	288, 224, 4, 3
 };

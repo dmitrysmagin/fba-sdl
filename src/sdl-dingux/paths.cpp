@@ -9,6 +9,7 @@
 char szAppHomePath[MAX_PATH] = "./.fba";			// ~/.fba
 char szAppSavePath[MAX_PATH] = "./.fba/saves";		// ~/.fba/saves
 char szAppConfigPath[MAX_PATH] = "./.fba/configs";	// ~/.fba/configs
+char szAppHiscorePath[MAX_PATH] = "./.fba/hiscore";	// ~/.fba/highscore // for burn/hiscore.cpp
 char szAppSamplesPath[MAX_PATH] = "./.fba/samples";	// ~/.fba/samples // for burn/snd/samples.cpp
 char szAppPreviewPath[MAX_PATH] = "./.fba/previews";	// ~/.fba/previews
 char szAppRomPaths[DIRS_MAX][MAX_PATH] = {{"./"}, {"/usr/local/share/roms/"}, {"roms/"}, };
@@ -33,6 +34,9 @@ void BurnPathsInit()
 
 	sprintf(szAppPreviewPath, "%s/previews", szAppHomePath);
 	mkdir(szAppPreviewPath, 0777);
+
+	sprintf(szAppSamplesPath, "%s/samples", szAppHomePath);
+	mkdir(szAppSamplesPath, 0777);
 #else
 	getcwd(szAppHomePath, MAX_PATH);
 	strcat(szAppHomePath, "/.fba");
@@ -46,5 +50,8 @@ void BurnPathsInit()
 
 	sprintf(szAppPreviewPath, "%s/previews", szAppHomePath);
 	mkdir(szAppPreviewPath);
+
+	sprintf(szAppSamplesPath, "%s/samples", szAppHomePath);
+	mkdir(szAppSamplesPath);
 #endif
 }

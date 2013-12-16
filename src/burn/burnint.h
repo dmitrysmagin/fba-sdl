@@ -8,7 +8,15 @@
 #include <assert.h>
 #include <stdint.h>
 
+#if defined(__LIBRETRO__) && defined(_MSC_VER)
+#include <tchar.h>
+#else
 #include "tchar.h"
+#endif
+
+#ifdef __LIBRETRO_OPTIMIZATIONS__
+#include "burn_libretro_opts.h"
+#endif
 
 #include "burn.h"
 
@@ -26,7 +34,7 @@ typedef union
 #define BURN_ENDIAN_SWAP_INT64(x)				x
 #else
 // define the above union and BURN_ENDIAN_SWAP macros in the following platform specific header
-#include "endian.h"
+#include "burn_endian.h"
 #endif
 
 // ---------------------------------------------------------------------------
@@ -141,6 +149,11 @@ void BurnExitMemoryManager();
 // Sound clipping macro
 #define BURN_SND_CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))
 
+// sound routes
+#define BURN_SND_ROUTE_LEFT			1
+#define BURN_SND_ROUTE_RIGHT		2
+#define BURN_SND_ROUTE_BOTH			(BURN_SND_ROUTE_LEFT | BURN_SND_ROUTE_RIGHT)
+
 // ---------------------------------------------------------------------------
 // Debug Tracker
 
@@ -170,6 +183,7 @@ extern UINT8 DebugSnd_YMF278BInitted;
 extern UINT8 DebugSnd_DACInitted;
 extern UINT8 DebugSnd_ES5506Initted;
 extern UINT8 DebugSnd_ES8712Initted;
+extern UINT8 DebugSnd_FilterRCInitted;
 extern UINT8 DebugSnd_ICS2115Initted;
 extern UINT8 DebugSnd_IremGA20Initted;
 extern UINT8 DebugSnd_K007232Initted;
@@ -201,7 +215,7 @@ extern UINT8 DebugCPU_S2650Initted;
 extern UINT8 DebugCPU_SekInitted;
 extern UINT8 DebugCPU_VezInitted;
 extern UINT8 DebugCPU_ZetInitted;
-
+extern UINT8 DebugCPU_PIC16C5XInitted;
 extern UINT8 DebugCPU_I8039Initted;
 extern UINT8 DebugCPU_SH2Initted;
 

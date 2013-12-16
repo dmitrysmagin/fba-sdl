@@ -376,8 +376,10 @@ static INT32 DrvInit()
 	K053245Init(0, DrvGfxROM1, 0x7ffff, K053245Callback);
 	K053245SetSpriteOffset(0, -112, 16);
 
-	BurnYM2151Init(3579545, 100.0);
+	BurnYM2151Init(3579545);
 	YM2151SetIrqHandler(0, &DrvYM2151IRQHandler);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
 
 	GenericTilesInit();
 
@@ -407,7 +409,7 @@ static void DrvRecalcPal()
 	UINT8 r,g,b;
 	UINT16 *p = (UINT16*)DrvPalRAM;
 	for (INT32 i = 0; i < 0x1000 / 2; i++) {
-		UINT16 d = (p[i] << 8) | (p[i] >> 8);
+		UINT16 d = BURN_ENDIAN_SWAP_INT16((p[i] << 8) | (p[i] >> 8));
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;

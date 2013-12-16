@@ -1,6 +1,6 @@
 #include "tiles_generic.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "msm6295.h"
 
 // define this to enable basic unmapped memory reads and writes
@@ -498,7 +498,8 @@ INT32 OhmygodInit()
 	SekClose();
 
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 14000000/8/132, 100, 0);
+	MSM6295Init(0, 14000000/8/132, 0);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -600,7 +601,7 @@ INT32 OhmygodCalcPalette()
 	UINT32* pd;
 
 	for (i = 0, ps = (UINT16*)OhmygodPaletteRam, pd = OhmygodPalette; i < 0x800; i++, ps++, pd++) {
-		*pd = CalcCol(*ps);
+		*pd = CalcCol(BURN_ENDIAN_SWAP_INT16(*((UINT16*)ps)));
 	}
 
 	return 0;

@@ -1,7 +1,7 @@
 // 680x0 (Sixty Eight K) Interface
 #include "burnint.h"
-#include "sek.h"
-#include "sekdebug.h"
+#include "m68000_intf.h"
+#include "m68000_debug.h"
 
 int nSekCpuCore = SEK_CORE_C68K;  // 0 - c68k, 1 - m68k, 2 - a68k
 int DebugStep = 0; // 0 - off, 1 - on

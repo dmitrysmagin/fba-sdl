@@ -126,9 +126,8 @@ void SetNeoCDTitle(TCHAR* pszTitle)
 {
 	TCHAR szText[1024] = _T("");
 	_stprintf(szText, _T(APP_TITLE) _T( " v%.20s") _T(SEPERATOR_1) _T("%s") _T(SEPERATOR_1) _T("%s"), szAppBurnVer, BurnDrvGetText(DRV_FULLNAME), pszTitle);
-#ifdef BUILD_WIN32
+	
 	SetWindowText(hScrnWnd, szText);
-#endif
 }
 
 NGCDGAME* game;
@@ -139,8 +138,7 @@ int GetNeoCDTitle(unsigned int nGameID)
 	game = (NGCDGAME*)malloc(sizeof(NGCDGAME));
 	memset(game, 0, sizeof(NGCDGAME));
 	
-	if(GetNeoGeoCDInfo(nGameID))
-	{		
+	if(GetNeoGeoCDInfo(nGameID)) {		
 		memcpy(game, GetNeoGeoCDInfo(nGameID), sizeof(NGCDGAME));
 
 		bprintf(PRINT_NORMAL, _T("    Title: %s \n")		, game->pszTitle);
@@ -152,6 +150,8 @@ int GetNeoCDTitle(unsigned int nGameID)
 		SetNeoCDTitle(game->pszTitle);
 
 		return 1;
+	} else {
+		SetNeoCDTitle(FBALoadStringEx(hAppInst, IDS_UNIDENTIFIED_CD, true));		
 	}
 
 	game = NULL;

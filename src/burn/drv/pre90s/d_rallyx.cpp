@@ -1,5 +1,5 @@
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 #include "namco_snd.h"
 #include "samples.h"
 
@@ -268,6 +268,33 @@ static struct BurnRomInfo RallyxmRomDesc[] = {
 
 STD_ROM_PICK(Rallyxm)
 STD_ROM_FN(Rallyxm)
+
+static struct BurnRomInfo RallyxmrRomDesc[] = {
+	{ "166.bin",  	   0x00800, 0xef9238db, BRF_ESS | BRF_PRG }, //  0	Z80 Program Code
+	{ "167.bin",  	   0x00800, 0x7cbeb656, BRF_ESS | BRF_PRG }, //	 1
+	{ "168.bin",  	   0x00800, 0x334b1042, BRF_ESS | BRF_PRG }, //	 2
+	{ "169.bin",  	   0x00800, 0xb4852b52, BRF_ESS | BRF_PRG }, //	 3
+	{ "170.bin", 	   0x00800, 0x3d69f24e, BRF_ESS | BRF_PRG }, //	 4
+	{ "171.bin", 	   0x00800, 0xe9740f16, BRF_ESS | BRF_PRG }, //	 5
+	{ "172.bin",  	   0x00800, 0x843109f2, BRF_ESS | BRF_PRG }, //	 6
+	{ "173.bin",  	   0x00800, 0x3b5b1a81, BRF_ESS | BRF_PRG }, //	 7
+	
+	{ "175.bin",  	   0x00800, 0x50a224e2, BRF_GRA },	     //  8	Characters & Sprites
+	{ "174.bin",  	   0x00800, 0x68dff552, BRF_GRA },	     //  9
+	
+	{ "rx1-6.8m",      0x00100, 0x3c16f62c, BRF_GRA },	     //  10	Dots
+	
+	{ "rx1-1.11n",     0x00020, 0xc7865434, BRF_GRA },	     //  11	Palette PROM
+	{ "rx1-7.8p",      0x00100, 0x834d4fda, BRF_GRA },	     //  12	Lookup PROM
+	{ "rx1-2.4n",      0x00020, 0x8f574815, BRF_GRA },	     //  13	Video Layout PROM
+	{ "rx1-3.7k",      0x00020, 0xb8861096, BRF_GRA },	     //  14	Video Timing PROM
+	
+	{ "rx1-5.3p",      0x00100, 0x4bad7017, BRF_SND },	     //  15	Sound PROMs
+	{ "rx1-4.2m",      0x00100, 0x77245b66, BRF_SND },	     //  16
+};
+
+STD_ROM_PICK(Rallyxmr)
+STD_ROM_FN(Rallyxmr)
 
 static struct BurnRomInfo NrallyxRomDesc[] = {
 	{ "nrx_prg1.1d",   0x01000, 0xba7de9fc, BRF_ESS | BRF_PRG }, //  0	Z80 Program Code
@@ -702,11 +729,12 @@ static void MachineInit()
 	ZetMapArea(0x9800, 0x9fff, 1, DrvZ80Ram1);
 	ZetMapArea(0x9800, 0x9fff, 2, DrvZ80Ram1);
 	ZetMapArea(0xa000, 0xa00f, 1, DrvRadarAttrRam);	
-	ZetMemEnd();
 	ZetClose();
 	
-	NamcoSoundInit(18432000 / 6 / 32);
-	BurnSampleInit(80, 0);
+	NamcoSoundInit(18432000 / 6 / 32, 3);
+	NacmoSoundSetAllRoutes(1.00, BURN_SND_ROUTE_BOTH);
+	BurnSampleInit(0);
+	BurnSampleSetAllRoutesAllSamples(0.80, BURN_SND_ROUTE_BOTH);
 	
 	GenericTilesInit();
 
@@ -731,7 +759,6 @@ static void JunglerMachineInit()
 	ZetMapArea(0x9800, 0x9fff, 2, DrvZ80Ram1);
 	ZetMapArea(0xa000, 0xa00f, 1, DrvRadarAttrRam);	
 	ZetMapArea(0xa030, 0xa03f, 1, DrvRadarAttrRam);	
-	ZetMemEnd();
 	ZetClose();
 
 	ZetInit(1);
@@ -1516,6 +1543,16 @@ struct BurnDriver BurnDrvRallyxm = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, RallyxmRomInfo, RallyxmRomName, RallyxSampleInfo, RallyxSampleName, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 260, 288, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvRallyxmr = {
+	"rallyxmr", "rallyx", NULL, "rallyx", "1980",
+	"Rally X (Model Racing)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	NULL, RallyxmrRomInfo, RallyxmrRomName, RallyxSampleInfo, RallyxSampleName, DrvInputInfo, DrvDIPInfo,
+	DrvaInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 260, 288, 224, 4, 3
 };
 

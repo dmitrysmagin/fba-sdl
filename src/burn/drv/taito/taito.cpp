@@ -1,8 +1,8 @@
 #include "tiles_generic.h"
 #include "taito.h"
 #include "taito_ic.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "burn_ym2151.h"
 #include "burn_ym2610.h"
 #include "burn_ym2203.h"
@@ -16,7 +16,8 @@ UINT8 TaitoInputPort1[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
 UINT8 TaitoInputPort2[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
 UINT8 TaitoInputPort3[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
 UINT8 TaitoInputPort4[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
-UINT8 TaitoInputPort5[8]       = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+UINT8 TaitoInputPort5[16]      = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 UINT8 TaitoDip[2]              = { 0, 0 };
 UINT8 TaitoInput[6]            = { 0, 0, 0, 0, 0, 0 };
 UINT8 TaitoReset               = 0;

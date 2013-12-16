@@ -100,7 +100,7 @@ BEGIN
 	IDS_ROMINFO_GRAPHICS		"%s, Graphics"
 	IDS_ROMINFO_SOUND			"%s, Sound"
 	IDS_ROMINFO_BIOS			"%s, BIOS"
-	IDS_ROMINFO_NODUMP			"%s, No Dump"
+	IDS_ROMINFO_NODUMP			"No Dump"
 	
 	IDS_SPATH_PREVIEW			"Previews"
 	IDS_SPATH_TITLES			"Titles"
@@ -181,6 +181,7 @@ BEGIN
 	IDS_SEL_SETA				"Seta"
 	IDS_SEL_TECHNOS				"Technos"
 	IDS_SEL_PCE					"PC-Engine"
+	IDS_SEL_SMS					"Master System"
 	
 	IDS_GENRE					"Genre"
 	IDS_GENRE_HORSHOOT			"Shooter - Horizontal"
@@ -266,6 +267,7 @@ BEGIN
 	IDS_CARTRIDGE				"cartridge"
 	IDS_HARDWARE				"hardware"
 	IDS_EMPTY					"Empty"
+	IDS_UNIDENTIFIED_CD			"Unidentified CD"
 
 	IDS_ERR_ERROR				"Error"
     IDS_ERR_WARNING				"Warning"

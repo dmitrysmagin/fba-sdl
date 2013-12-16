@@ -158,7 +158,7 @@ void mystston_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0x2010:
-			M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_NONE);
+			M6502SetIRQLine(M6502_IRQ_LINE, M6502_IRQSTATUS_NONE);
 		break;
 
 		case 0x2020:
@@ -331,12 +331,14 @@ static INT32 DrvInit()
 	M6502MapMemory(DrvFgRAM,		0x1000, 0x17ff, M6502_RAM);
 	M6502MapMemory(DrvBgRAM,		0x1800, 0x1fff, M6502_RAM);
 	M6502MapMemory(Drv6502ROM + 0x4000,	0x4000, 0xffff, M6502_ROM);
-	M6502SetWriteByteHandler(mystston_write);
-	M6502SetReadByteHandler(mystston_read);
+	M6502SetWriteHandler(mystston_write);
+	M6502SetReadHandler(mystston_read);
 	M6502Close();
 
 	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 	AY8910Init(1, 1500000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	AY8910SetAllRoutes(0, 0.30, BURN_SND_ROUTE_BOTH);
+	AY8910SetAllRoutes(1, 0.30, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -494,7 +496,7 @@ static void mystston_interrupt_handler(INT32 scanline)
 		if (coin == 0)
 		{
 			coin = 1;
-			M6502SetIRQ(M6502_INPUT_LINE_NMI, M6502_IRQSTATUS_AUTO);
+			M6502SetIRQLine(M6502_INPUT_LINE_NMI, M6502_IRQSTATUS_AUTO);
 			return;
 		}
 	}
@@ -502,7 +504,7 @@ static void mystston_interrupt_handler(INT32 scanline)
 
 	if (scanline == 8) vblank = 0;
 	if (scanline == 248) vblank = 0x80;
-	if ((scanline & 0x0f) == 0) M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
+	if ((scanline & 0x0f) == 0) M6502SetIRQLine(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
 }
 
 static INT32 DrvFrame()
@@ -539,26 +541,7 @@ static INT32 DrvFrame()
 	M6502Close();
 
 	if (pBurnSoundOut) {
-		INT32 nSample;
-		INT32 nSegmentLength = nBurnSoundLen;
-		INT16* pSoundBuf = pBurnSoundOut;
-		if (nSegmentLength) {
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
-
-				nSample = BURN_SND_CLIP(nSample);
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
- 			}
-		}
+		AY8910Render(&pAY8910Buffer[0], pBurnSoundOut, nBurnSoundLen, 0);
 	}
 
 	if (pBurnDraw) {
@@ -670,6 +653,50 @@ struct BurnDriver BurnDrvmyststno = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TECHNOS, GBF_MAZE, 0,
 	NULL, myststnoRomInfo, myststnoRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 64,
+	240, 256, 3, 4
+};
+
+// Mysterious Stones - Dr. Kick in Adventure (Itisa PCB)
+
+static struct BurnRomInfo myststniRomDesc[] = {
+	{ "14.bin",       0x2000, 0x78bf2a58, 1 | BRF_PRG | BRF_ESS }, //  0 M6205 Code
+	{ "13.bin",       0x2000, 0xa3546df7, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "12.bin",       0x2000, 0x43bc6182, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "11.bin",       0x2000, 0x9322222b, 1 | BRF_PRG | BRF_ESS }, //  3
+	{ "8.bin",        0x2000, 0x47cefe9b, 1 | BRF_PRG | BRF_ESS }, //  4
+	{ "7.bin",        0x2000, 0xb37ae12b, 1 | BRF_PRG | BRF_ESS }, //  5
+
+	{ "18.bin",       0x2000, 0x85c83806, 2 | BRF_GRA }, 	       //  6 Character + Sprite Tiles
+	{ "15.bin",       0x2000, 0xb146c6ab, 2 | BRF_GRA },  	       //  7
+	{ "19.bin",       0x2000, 0xd025f84d, 2 | BRF_GRA },  	       //  8
+	{ "16.bin",       0x2000, 0xd85015b5, 2 | BRF_GRA },  	       //  9
+	{ "20.bin",       0x2000, 0x53765d89, 2 | BRF_GRA },  	       // 10
+	{ "17.bin",       0x2000, 0x919ee527, 2 | BRF_GRA },  	       // 11
+
+	{ "1.bin",        0x2000, 0x72d8331d, 3 | BRF_GRA },  	       // 12 Background Tiles
+	{ "2.bin",        0x2000, 0x845a1f9b, 3 | BRF_GRA },  	       // 13
+	{ "3.bin",        0x2000, 0x822874b0, 3 | BRF_GRA },  	       // 14 
+	{ "4.bin",        0x2000, 0x4594e53c, 3 | BRF_GRA },  	       // 15 
+	{ "5.bin",        0x2000, 0x2f470b0f, 3 | BRF_GRA },  	       // 16
+	{ "6.bin",        0x2000, 0x38966d1b, 3 | BRF_GRA },  	       // 17
+
+	{ "82s123.bin",   0x0020, 0xe802d6cf, 4 | BRF_GRA },  	       // 18 Color Prom
+	
+	{ "pal10l8.bin",  0x002c, 0x2d4d034c, 0 | BRF_OPT },  	       // 19
+	{ "pal16r4-1.bin",0x0104, 0xc57555d0, 0 | BRF_OPT },  	       // 20
+	{ "pal16r4-2.bin",0x0104, 0xc57555d0, 0 | BRF_OPT },  	       // 21
+};
+
+STD_ROM_PICK(myststni)
+STD_ROM_FN(myststni)
+
+struct BurnDriver BurnDrvmyststni = {
+	"myststonoi", "mystston", NULL, NULL, "1984",
+	"Mysterious Stones - Dr. Kick in Adventure (Itisa PCB)\0", NULL, "Technos", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TECHNOS, GBF_MAZE, 0,
+	NULL, myststniRomInfo, myststniRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 64,
 	240, 256, 3, 4
 };

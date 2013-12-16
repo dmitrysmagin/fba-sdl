@@ -1,6 +1,6 @@
 #include "tiles_generic.h"
-#include "sek.h"
-#include "zet.h"
+#include "m68000_intf.h"
+#include "z80_intf.h"
 #include "msm6295.h"
 #include "burn_ym2151.h"
 #include "eeprom.h"
@@ -801,6 +801,9 @@ static struct BurnRomInfo BlazeonRomDesc[] = {
 	{ "bz_bg.u2",          0x100000, 0xfc67f19f, BRF_GRA },		  //  4 Tiles
 	
 	{ "3.u45",             0x020000, 0x52fe4c94, BRF_ESS | BRF_PRG }, //  5 Z80 Program Code
+	
+	{ "bz_sp1.u68",        0x100000, 0x0d5809a1, BRF_OPT },
+	{ "bz_sp2.u86",        0x100000, 0x56ead2bd, BRF_OPT },
 };
 
 
@@ -975,22 +978,22 @@ STD_ROM_PICK(Gtmre)
 STD_ROM_FN(Gtmre)
 
 static struct BurnRomInfo GtmrusaRomDesc[] = {
-	{ "gtmrusa.u2",        0x080000, 0x5be615c4, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "gtmrusa.u1",        0x080000, 0xae853e4e, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "mmp0x3.u2",          0x080000, 0x5be615c4, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "mmp1x3.u1",          0x080000, 0xae853e4e, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	
-	{ "gtmrusa.u12",       0x020000, 0x2e1a06ff, BRF_PRG | BRF_OPT }, //  2	MCU Code
+	{ "mmd0x3.u12",         0x020000, 0x2e1a06ff, BRF_PRG | BRF_OPT }, //  2	MCU Code
 
-	{ "gmmu27.bin",        0x200000, 0xc0ab3efc, BRF_GRA },		  //  3	Sprites
-	{ "gmmu28.bin",        0x200000, 0xcf6b23dc, BRF_GRA },	 	  //  4	Sprites
-	{ "gmmu29.bin",        0x200000, 0x8f27f5d3, BRF_GRA },		  //  5	Sprites
-	{ "gmmu30.bin",        0x080000, 0xe9747c8c, BRF_GRA },		  //  6	Sprites
-	{ "gmmu64.bin",        0x100000, 0x57d77b33, BRF_GRA },		  //  7	Sprites
-	{ "gmmu65.bin",        0x100000, 0x05b8bdca, BRF_GRA },		  //  8	Sprites
+	{ "mm-200-402-s0.bin",  0x200000, 0xc0ab3efc, BRF_GRA },		  //  3	Sprites
+	{ "mm-201-403-s1.bin",  0x200000, 0xcf6b23dc, BRF_GRA },	 	  //  4	Sprites
+	{ "mm-202-404-s2.bin",  0x200000, 0x8f27f5d3, BRF_GRA },		  //  5	Sprites
+	{ "mm-203-405-s3.bin",  0x080000, 0xe9747c8c, BRF_GRA },		  //  6	Sprites
+	{ "mm-204-564.bin",     0x100000, 0x57d77b33, BRF_GRA },		  //  7	Sprites
+	{ "mm-204-406-565.bin", 0x100000, 0x05b8bdca, BRF_GRA },		  //  8	Sprites
 	
-	{ "gmmu52.bin",        0x200000, 0xb15f6b7f, BRF_GRA },		  //  9	Tiles
+	{ "mm-300-406-a0.bin",  0x200000, 0xb15f6b7f, BRF_GRA },		  //  9	Tiles
 
-	{ "gmmu23.bin",        0x100000, 0xb9cbfbee, BRF_SND },		  //  10 Samples
-	{ "gmmu24.bin",        0x100000, 0x380cdc7c, BRF_SND },		  //  11 Samples
+	{ "mm-100-401-a0.bin",  0x100000, 0xb9cbfbee, BRF_SND },		  //  10 Samples
+	{ "mm-101-402-e24.bin", 0x100000, 0x380cdc7c, BRF_SND },		  //  11 Samples
 };
 
 
@@ -2823,8 +2826,10 @@ static INT32 GtmrMachineInit()
 	SekClose();
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, 1980000 / 165, 100.0, 0);
-	MSM6295Init(1, 1980000 / 165, 100.0, 0);
+	MSM6295Init(0, 1980000 / 165, 0);
+	MSM6295Init(1, 1980000 / 165, 0);
+	MSM6295SetRoute(0, 0.50, BURN_SND_ROUTE_BOTH);
+	MSM6295SetRoute(1, 0.50, BURN_SND_ROUTE_BOTH);
 
 	return 0;
 }
@@ -2919,9 +2924,12 @@ static INT32 BerlwallInit()
 
 	AY8910Init(0, 2000000, nBurnSoundRate, &Kaneko16Dip0Read, &Kaneko16Dip1Read, NULL, NULL);
 	AY8910Init(1, 2000000, nBurnSoundRate, NULL, NULL, NULL, NULL);
+	AY8910SetAllRoutes(0, 1.00, BURN_SND_ROUTE_BOTH);
+	AY8910SetAllRoutes(1, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, (12000000 / 6) / 132, 100.0, 1);
+	MSM6295Init(0, (12000000 / 6) / 132, 1);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	Kaneko16FrameRender = BerlwallFrameRender;
 
@@ -2999,13 +3007,14 @@ static INT32 BlazeonInit()
 	ZetMapArea(0xc000, 0xdfff, 0, Kaneko16Z80Ram         );
 	ZetMapArea(0xc000, 0xdfff, 1, Kaneko16Z80Ram         );
 	ZetMapArea(0xc000, 0xdfff, 2, Kaneko16Z80Ram         );
-	ZetMemEnd();
 	ZetSetInHandler(Kaneko16Z80PortRead);
 	ZetSetOutHandler(Kaneko16Z80PortWrite);
 	ZetClose();
 	
 	// Setup the YM2151 emulation
-	BurnYM2151Init(4000000, 25.0);
+	BurnYM2151Init(4000000);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
+	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
 	
 	Kaneko16FrameRender = BlazeonFrameRender;
 	
@@ -3255,7 +3264,8 @@ static INT32 ExplbrkrInit()
 	AY8910Init(1, 2000000, nBurnSoundRate, &Kaneko16EepromRead, NULL, NULL, &Kaneko16EepromReset);
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, (12000000 / 6) / 132, 100.0, 1);
+	MSM6295Init(0, (12000000 / 6) / 132, 1);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	Kaneko16FrameRender = ExplbrkrFrameRender;
 	
@@ -3596,7 +3606,8 @@ static INT32 MgcrystlInit()
 	AY8910Init(1, 2000000, nBurnSoundRate, &Kaneko16EepromRead, NULL, NULL, &Kaneko16EepromReset);
 	
 	// Setup the OKIM6295 emulation
-	MSM6295Init(0, (12000000 / 4) / 165, 100.0, 1);
+	MSM6295Init(0, (12000000 / 4) / 165, 1);
+	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	Kaneko16FrameRender = MgcrystlFrameRender;
 
@@ -4624,24 +4635,9 @@ static INT32 ExplbrkrFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			INT32 nSample;
 			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
-
-				nSample = BURN_SND_CLIP(nSample);
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
-    		}
+			AY8910Render(&pAY8910Buffer[0], pSoundBuf, nSegmentLength, 0);
 			
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -4649,25 +4645,10 @@ static INT32 ExplbrkrFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		INT32 nSample;
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n] >> 2;
-				nSample += pAY8910Buffer[1][n] >> 2;
-				nSample += pAY8910Buffer[2][n] >> 2;
-				nSample += pAY8910Buffer[3][n] >> 2;
-				nSample += pAY8910Buffer[4][n] >> 2;
-				nSample += pAY8910Buffer[5][n] >> 2;
-
-				nSample = BURN_SND_CLIP(nSample);
-
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
- 			}
+			AY8910Render(&pAY8910Buffer[0], pSoundBuf, nSegmentLength, 0);
 		}
 		
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);

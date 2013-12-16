@@ -2,7 +2,7 @@
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
-#include "zet.h"
+#include "z80_intf.h"
 #include "burn_ym3812.h"
 #include "konami_intf.h"
 #include "konamiic.h"
@@ -405,7 +405,6 @@ static INT32 DrvInit()
 	ZetMapArea(0x8000, 0x87ff, 2, DrvZ80RAM);
 	ZetSetWriteHandler(rollerg_sound_write);
 	ZetSetReadHandler(rollerg_sound_read);
-	ZetMemEnd();
 	ZetClose();
 
 	K053245Init(0, DrvGfxROM0, 0x1fffff, K053245Callback);
@@ -416,8 +415,10 @@ static INT32 DrvInit()
 
 	BurnYM3812Init(3579545, NULL, DrvSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(3579545);
+	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	K053260Init(0, 3579545, DrvSndROM, 0x80000);
+	K053260PCMSetAllRoutes(0, 0.70, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -448,7 +449,7 @@ static void DrvRecalcPal()
 	UINT8 r,g,b;
 	UINT16 *p = (UINT16*)DrvPalRAM;
 	for (INT32 i = 0; i < 0x800 / 2; i++) {
-		UINT16 d = (p[i] << 8) | (p[i] >> 8);
+		UINT16 d = BURN_ENDIAN_SWAP_INT16((p[i] << 8) | (p[i] >> 8));
 
 		b = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;

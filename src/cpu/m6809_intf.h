@@ -1,4 +1,4 @@
-#include "m6809.h"
+#include "m6809/m6809.h"
 
 typedef UINT8 (*pReadByteHandler)(UINT16 a);
 typedef void (*pWriteByteHandler)(UINT16 a, UINT8 d);
@@ -43,12 +43,12 @@ void M6809Exit();
 void M6809Open(INT32 num);
 void M6809Close();
 INT32 M6809GetActive();
-void M6809SetIRQ(INT32 vector, INT32 status);
+void M6809SetIRQLine(INT32 vector, INT32 status);
 INT32 M6809Run(INT32 cycles);
 void M6809RunEnd();
 INT32 M6809MapMemory(UINT8* pMemory, UINT16 nStart, UINT16 nEnd, INT32 nType);
-void M6809SetReadByteHandler(UINT8 (*pHandler)(UINT16));
-void M6809SetWriteByteHandler(void (*pHandler)(UINT16, UINT8));
+void M6809SetReadHandler(UINT8 (*pHandler)(UINT16));
+void M6809SetWriteHandler(void (*pHandler)(UINT16, UINT8));
 void M6809SetReadOpHandler(UINT8 (*pHandler)(UINT16));
 void M6809SetReadOpArgHandler(UINT8 (*pHandler)(UINT16));
 INT32 M6809Scan(INT32 nAction);

@@ -1,9 +1,6 @@
 // FB Alpha - Emulator for MC68000/Z80 based arcade games
 //            Refer to the "license.txt" file for more info
 
-#ifndef _BURNER_H_
-#define _BURNER_H_
-
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -24,7 +21,6 @@
 
 #include "title.h"
 #include "burn.h"
-#include "png.h"
 
 // ---------------------------------------------------------------------------
 // OS dependent functionality
@@ -42,18 +38,22 @@ typedef struct tagIMAGE {
  #include "burner_win32.h"
 #elif defined (BUILD_SDL)
  #include "burner_sdl.h"
-#elif defined (_XBOX)
+#elif defined (_XBOX) && !defined(__LIBRETRO__)
  #include "burner_xbox.h"
+#elif defined(__LIBRETRO__)
+#include "burner_libretro.h"
 #endif
 
-#include "png.h"
+#if defined (INCLUDE_LIB_PNGH)
+ #include "png.h"
+#endif
 
 // ---------------------------------------------------------------------------
 // OS independent functionality
 
+#ifndef __LIBRETRO__
 #include "interface.h"
-
-
+#endif
 
 #define IMG_FREE		(1 << 0)
 
@@ -87,8 +87,10 @@ INT32 GameInpExit();
 TCHAR* InputCodeDesc(INT32 c);
 TCHAR* InpToDesc(struct GameInp* pgi);
 TCHAR* InpMacroToDesc(struct GameInp* pgi);
+#ifndef __LIBRETRO__
 void GameInpCheckLeftAlt();
 void GameInpCheckMouse();
+#endif
 INT32 GameInpBlank(INT32 bDipSwitch);
 INT32 GameInputAutoIni(INT32 nPlayer, TCHAR* lpszFile, bool bOverWrite);
 INT32 ConfigGameLoadHardwareDefaults();
@@ -185,5 +187,3 @@ extern TCHAR szAppTitlesPath[MAX_PATH];
 extern TCHAR szAppCheatsPath[MAX_PATH];
 extern TCHAR szAppIpsPath[MAX_PATH];
 extern TCHAR szAppIconsPath[MAX_PATH];
-
-#endif // _BURNER_H_

@@ -181,6 +181,7 @@
 #define IDS_SEL_SETA					(IDS_STRING +  622)
 #define IDS_SEL_TECHNOS					(IDS_STRING +  624)
 #define IDS_SEL_PCE						(IDS_STRING +  626)
+#define IDS_SEL_SMS						(IDS_STRING +  628)
 
 #define IDS_GENRE						(IDS_STRING +  650)
 #define IDS_GENRE_HORSHOOT				(IDS_STRING +  652)
@@ -266,6 +267,7 @@
 #define IDS_CARTRIDGE					(IDS_STRING + 1420)
 #define IDS_HARDWARE					(IDS_STRING + 1422)
 #define IDS_EMPTY						(IDS_STRING + 1424)
+#define IDS_UNIDENTIFIED_CD				(IDS_STRING + 1426)
 
 #define IDS_ERR_ERROR					(IDS_ERROR  +    0)
 #define IDS_ERR_WARNING					(IDS_ERROR  +    2)

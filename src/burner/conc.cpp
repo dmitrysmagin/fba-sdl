@@ -35,24 +35,6 @@ static void CheatError(TCHAR* pszFilename, INT32 nLineNumber, CheatInfo* pCheat,
 	}
 
 	FBAPopupDisplay(PUF_TYPE_ERROR);
-#elif defined(BUILD_SDL)
-	TCHAR szText[1024] = _T("");
-
-	_stprintf(szText, _T("Cheat file %s is malformed.\nPlease remove or repair the file.\n\n"), pszFilename);
-	if (pCheat) {
-		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i, in cheat \"%s\".\n"), nLineNumber, pCheat->szCheatName);
-	} else {
-		_stprintf(szText + _tcslen(szText), _T("Parse error at line %i.\n"), nLineNumber);
-	}
-
-	if (pszInfo) {
-		_stprintf(szText + _tcslen(szText), _T("Problem:\t%s.\n"), pszInfo);
-	}
-	if (pszLine) {
-		_stprintf(szText + _tcslen(szText), _T("Text:\t%s\n"), pszLine);
-	}
-
-	AppError(szText, 1);
 #endif
 }
 

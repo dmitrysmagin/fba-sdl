@@ -4,7 +4,7 @@
 // Heavily modified by iq_132 (Nov, 2011)
 
 #include "burnint.h"
-#include "vez.h"
+#include "nec_intf.h"
 
 #define MAX_VEZ		4
 
@@ -505,11 +505,11 @@ INT32 VezRun(INT32 nCycles)
 	return VezCurrentCPU->cpu_execute(nCycles);
 }
 
-INT32 VezPc(INT32 n)
+INT32 VezGetPc(INT32 n)
 {
 #if defined FBA_DEBUG
-	if (!DebugCPU_VezInitted) bprintf(PRINT_ERROR, _T("VezPc called without init\n"));
-	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("VezPc called when no CPU open\n"));
+	if (!DebugCPU_VezInitted) bprintf(PRINT_ERROR, _T("VezGetPc called without init\n"));
+	if (nOpenedCPU == -1) bprintf(PRINT_ERROR, _T("VezGetPc called when no CPU open\n"));
 #endif
 
 	if (n == -1) {
