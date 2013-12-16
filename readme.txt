@@ -4,15 +4,25 @@ Final Burn Alpha SDL for OpenDingux
 
 FB Alpha is an arcade emulator supporting the following hardware platforms;
 
- - Capcom CPS-1
- - Capcom CPS-2
- - Cave
- - Neo Geo
- - Sega System 16 (and similar), System 18, X-Board, Y-Board
- - Toaplan
- - Taito Rainbow Islands/Operation Wolf/Rastan
- - Psikyo 68EC020 based hardware
- - misc stuff we like
+ - Capcom CPS-1 
+ - Capcom CPS-2 
+ - Capcom CPS-3 
+ - Cave 
+ - Data East DEC-0, DEC-8 and DECO IC16 based games 
+ - Galaxian based hardware 
+ - Irem M62, M63, M72, M90 and M92 hardware 
+ - Kaneko 16 
+ - Konami 
+ - Neo-Geo 
+ - Pacman based hardware 
+ - PGM 
+ - Psikyo 68EC020 and SH-2 based hardware 
+ - Sega System 1, System 16 (and similar), System 18, X-Board and Y-Board 
+ - Toaplan 1 
+ - Toaplan 2 
+ - Taito F2, X, Z and others 
+ - Miscellaneous drivers for lots of other hardware 
+
 
 Supported games
 ---------------
@@ -25,26 +35,21 @@ Versions
 
 FB Alpha SDL comes in two versions.
 
- - Legacy based on FBA 0.2.96.71 is intended for both Dingux/OpenDingux and
-   can be run on Dingoo a320, Dingoo a380 and Ritmix rzx50. Screen size is
-   detected automatically.
- - Current version based on FBA 0.2.97.24 is intended for GCW-Zero.
+ - FBA 0.2.96.71 for Legacy Dingux and OpenDingux (Dingoo a320, Dingoo a380 and
+   Ritmix rzx50) Screen size is detected automatically.
+   Romset version is MAME 0.114u1
+ - FBA 0.2.97.29 for GCW-Zero.
+   Romset version is MAME 0.149
 
 
 How to use FB Alpha
 -------------------
 
-FBA SDL is better be used in conjuction with fba-capex but it's not
-obligatory. If you are using fba-capex make sure these files are present
-in the same directory:
+FBA SDL is now merged with the frontend based on Capex in one application. Just
+run it, press START and choose Rom Show mode: all, available or non-available.
+If needed, supplementary rom paths could be set.
 
- ./roms       - put your roms here
- fbacapex.dge - frontend executable
- fbasdl.dge
- rominfo.fba
- zipname.fba
-
-If you are using FBA SDL as standalone application then invoke it with
+FBA SDL could be used as a standalone application when invoked with
 rom zip with full path as a parameter:
 
 ./fbasdl.dge ./roms/dino.zip
@@ -61,13 +66,16 @@ The options are as follows;
 ./fbasdl.dge <game> [<parameters>]
 
 <game>                  - The game's romname with full path and extension.
---sound-sdl             - Use SDL for sound
 --no-sound              - Just be silent
---samplerate=<Hz>       - Valid values are: 11025, 22050 and 44100
+--sound-sdl             - Use SDL for sound (mutex syncro)
+--sound-sdl-old         - Use SDL for sound
+--sound-ao              - (except Legacy) Use libao for sound
+--samplerate=<Hz>       - Valid values are: 11025, 16000, 22050, 32000 and 44100
 --sense=<value>         - (GCW-Zero) analog sensitivity: 0..100
 --showfps               - Show frames per second while play
+--vsync                 - (except Legacy) Syncronize video refresh on 60Hz
 --68kcore=<value>       - (GCW-Zero) Choose Motorola 68000 emulation core.
-                          0 - C68k, 1 - Musashi M68k
+                          0 - C68k, 1 - Musashi M68k, 2 - A68k
 --z80core=<value>       - (Legacy) Choose Z80 emulation core.
                           0 - cz80, 1 - mame_z80
 --use-swap              - (Legacy) Swap memory to file. Use only on legacy
@@ -110,7 +118,7 @@ Usage/optimisation tips
 If you are running on OpenDingux on Dingoo a320 you should do the following:
 
  - Overclock fba-capex/fbasdl to 408MHz (link properties)
- - Enable swap support:
+ - Enable swap support in OpenDingux itself:
    Create or edit the config file local/etc/swap.conf and add a line containing 
    SWAP_SD_SIZE_MB=megabytes. The path can be changed by adding a line
    containing SWAP_SD_FILE=path.
