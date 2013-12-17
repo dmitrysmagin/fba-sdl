@@ -42,7 +42,7 @@
 #define SEK_PAGEM		(SEK_PAGE_SIZE - 1)
 #define SEK_WADD		(SEK_PAGE_COUNT)		// Value to add for write section = Number of pages
 #define SEK_MASK		(SEK_WADD - 1)
-#define SEK_MAXHANDLER	(8)						// Max. number of handlers for memory access
+#define SEK_MAXHANDLER	(10)						// Max. number of handlers for memory access
 
 #if SEK_MAXHANDLER < 1
  #error At least one set of handlers for memory access must be used.
