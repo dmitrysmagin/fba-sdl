@@ -29,8 +29,8 @@
 #include "sdl_video.h"
 
 #ifdef FBA_DEBUG
-#include "sek.h"
-#include "sekdebug.h"
+#include "m68000_intf.h"
+#include "m68000_debug.h"
 #include "m68k.h"
 #endif
 
