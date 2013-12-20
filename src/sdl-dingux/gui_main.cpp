@@ -227,30 +227,47 @@ void put_stringM(char *string, unsigned int pos_x, unsigned int pos_y, unsigned 
 
 void load_preview(unsigned int numero)
 {
+	char *ext[2] = {"png", "bmp"};
 	FILE *fp;
 
-	//preview
-	if(strcmp(ROMLIST(parent, numero), "fba") == 0)
-		sprintf((char*)g_string, "%s/%s.bmp", szAppPreviewPath, ROMLIST(zip, numero));
-	else sprintf((char*)g_string, "%s/%s.bmp", szAppPreviewPath, ROMLIST(parent, numero));
+	for(int i = 0; i < 2; i++) {
+		sprintf((char*)g_string, "%s/%s.%s", szAppPreviewPath, ROMLIST(zip, numero), ext[i]);
 
-	if ((fp = fopen(g_string, "r")) != NULL){
-		Tmp = SDL_LoadBMP(g_string);
-		preview = SDL_DisplayFormat(Tmp);
-		SDL_FreeSurface(Tmp);
-		fclose(fp);
-		flag_preview = 1;
-		drawSprite( bg , bg_temp , 124 , 3 , 124 , 3 , 192 , 112 );
-		drawSprite(preview, bg_temp, 0, 0, 220-Tmp->w/2, 3, 192, 112 );
-	}else{
-		drawSprite( bg , bg_temp , 124 , 3 , 124 , 3 , 192 , 112 );
+		// check first current rom
+		if((fp = fopen(g_string, "r")) != NULL) {
+			fclose(fp);
+			preview = IMG_Load(g_string);
+			drawSprite(bg, bg_temp, 124, 3, 124, 3, 192, 112);
+			drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
 
-		sprintf((char*)g_string, "PREVIEW %s.bmp" , ROMLIST(zip, numero));
-		put_string(g_string , 160 , 49 , ROUGE , bg_temp );
-		put_string( "NOT AVAILABLE" , 181 , 59 , ROUGE , bg_temp );
-		
-		flag_preview = 0;
+			flag_preview = 1;
+			return;
+		} 
+
+		// then check parent rom
+		if(strcmp(ROMLIST(parent, numero), "fba") != 0) {
+			sprintf((char*)g_string, "%s/%s.%s", szAppPreviewPath, ROMLIST(parent, numero), ext[i]);
+
+			if((fp = fopen(g_string, "r")) != NULL) {
+				fclose(fp);
+				preview = IMG_Load(g_string);
+				drawSprite(bg, bg_temp, 124, 3, 124, 3, 192, 112);
+				drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
+
+				flag_preview = 1;
+				return;
+			} 
+		}
 	}
+
+	// nothing is found
+	drawSprite(bg, bg_temp, 124, 3, 124, 3, 192, 112);
+
+	sprintf((char*)g_string, "PREVIEW %s.bmp", ROMLIST(zip, numero));
+	put_string(g_string, 160, 49, ROUGE, bg_temp);
+	put_string("NOT AVAILABLE", 181, 59, ROUGE, bg_temp);
+
+	flag_preview = 0;
 }
 
 char ss_prg_credit(void)
