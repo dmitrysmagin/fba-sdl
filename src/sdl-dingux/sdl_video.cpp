@@ -446,6 +446,20 @@ static void Blit_256x256_to_320x240()
 	}
 }
 
+static void Blitf_256x256_to_320x240() 
+{
+	// 256x256
+	unsigned short *p = &VideoBuffer[(320-256)/2];
+	unsigned short *q = &BurnVideoBuffer[256 * 256 - 1];
+	for (int i = 0; i < 240; i++) {
+		for(int j = 0; j < 256; j++) {
+			*p++ = *q--;
+		}
+		p += 64;
+		if(i % 16 == 0) q -= 256;
+	}
+}
+
 static void Blit_224x256_to_320x240() 
 {
 	// 224x256
@@ -555,7 +569,7 @@ BLIT_TABLE blit_table[] = {
 	{320, 240, 352, 240, Blit_352x240_to_320x240, Blit_352x240_to_320x240}, // V-System
 	{320, 240, 336, 240, Blit_336x240_to_320x240, Blit_336x240_to_320x240}, // Atari
 	{320, 240, 320, 240, Blit_320x240_to_320x240, Blit_320x240_to_320x240}, // Cave & Toaplan
-	{320, 240, 256, 256, Blit_256x256_to_320x240, Blit_256x256_to_320x240},
+	{320, 240, 256, 256, Blit_256x256_to_320x240, Blitf_256x256_to_320x240},
 	{320, 240, 224, 256, Blit_224x256_to_320x240, Blit_224x256_to_320x240},
 	{400, 240, 256, 256, Blit_256x256_to_400x240, Blit_256x256_to_400x240},
 	{400, 240, 224, 256, Blit_224x256_to_400x240, Blit_224x256_to_400x240},
