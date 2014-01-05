@@ -122,7 +122,7 @@ static inline int sdl_calc_samples(int rate)
 	int s;
 
 	// Find the value which is slighly bigger than nBurnSoundLen*2
-	for(s = 512; s < (nBurnSoundLen * 2); s += 256); 
+	for(s = 512; s < (nBurnSoundLen * 2); s <<= 1); 
 
 	return s;
 }
