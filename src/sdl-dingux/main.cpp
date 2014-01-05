@@ -287,7 +287,8 @@ int main(int argc, char **argv )
 
 	BurnLibExit();
 
-	ConfigAppSave();
+	if (argc < 2)
+		ConfigAppSave();
 	SDL_Quit();
 
 	return 0;
