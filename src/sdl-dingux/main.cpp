@@ -150,10 +150,8 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"showfps", 0, &options.showfps, 1},
 		{"no-showfps", 0, &options.showfps, 0},
 		{"create-lists", 0, &options.create_lists, 1},
-		{"use-swap", 0, &options.useswap, 1},
 		{"68kcore", required_argument, 0, 's'},
 		{"z80core", required_argument, 0, 'z'},
-		{"frontend", required_argument, 0, 'f'}
 	};
 
 	option_index=optind=0;
@@ -214,14 +212,6 @@ void parse_cmd(int argc, char *argv[], char *path)
 				sscanf(optarg,"%d",&z2);
 				if ((z2>100) || (z2<10)) z2=100;
 				options.sense = z2;
-				break;
-			case 'f':
-				if(!optarg) continue;
-				p = strrchr(optarg, '/');
-				if(p == NULL)
-					sprintf(options.frontend, "%s%s", "./", optarg);
-				else
-					strcpy(options.frontend, optarg);
 				break;
 		}
 	}

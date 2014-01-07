@@ -144,8 +144,6 @@ typedef struct
 	int m68kcore;
 	int z80core;
 	int sense;
-	int useswap;
-	char frontend[MAX_PATH];
 	int create_lists;
 } CFG_OPTIONS;
 

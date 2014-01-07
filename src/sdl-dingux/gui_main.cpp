@@ -36,8 +36,6 @@
 
 #define ROMLIST(A,B) romlist.A[romsort[cfg.list][B]]
 
-extern char **environ;
-
 SDL_Event event;
 
 SDL_Surface *screen2 = NULL;
@@ -709,8 +707,6 @@ void ss_prg_options(void)
 	gui_write_cfg();
 }
 
-#define OPENDINGUX_GCW0
-
 static int run_options[] = {
 	OPTION_FBA_RUN,
 	OPTION_FBA_SOUND,
@@ -718,14 +714,11 @@ static int run_options[] = {
 	OPTION_FBA_VSYNC,
 	OPTION_FBA_SHOWFPS,
 	OPTION_FBA_68K,
-#ifdef OPENDINGUX_A320
+#ifdef OPTIONS_FOR_A320
 	OPTION_FBA_Z80,
 #endif
-#ifdef OPENDINGUX_GCW0
+#ifdef OPTIONS_FOR_GCW0
 	OPTION_FBA_ANALOG,
-#endif
-#ifdef LEGACY_DINGUX
-	OPTION_FBA_SWAP,
 #endif
 	0
 };
@@ -768,10 +761,6 @@ void put_run_option_line(unsigned char num, unsigned char y)
 		put_string("Analogue Sensitivity", OPTIONS_START_X, y, BLANC, gui_screen);
 		sprintf((char*)g_string, "%d%%" , options.sense);
 		put_string(g_string, CONF_START_X, y, VERT, gui_screen);
-		break;
-	case OPTION_FBA_SWAP:
-		put_string( "Use memory swap to file" , OPTIONS_START_X , y , BLANC , gui_screen );
-		put_string(abreviation_cf[5][options.useswap], CONF_START_X, y, VERT, gui_screen);
 		break;
 	}
 }
@@ -869,9 +858,6 @@ void ss_prog_run(void)
 							options.sense--;
 							if(options.sense < 0) options.sense = 100;
 							break;
-						case OPTION_FBA_SWAP:
-							options.useswap ^= 1;
-							break;
 					}
 				} else if (event.key.keysym.sym == SDLK_RIGHT) {
 					switch(run_options[run_num]) {
@@ -899,9 +885,6 @@ void ss_prog_run(void)
 						case OPTION_FBA_ANALOG:
 							options.sense++;
 							if(options.sense > 100) options.sense = 0;
-							break;
-						case OPTION_FBA_SWAP:
-							options.useswap ^= 1;
 							break;
 					}
 				} else if (event.key.keysym.sym == SDLK_LCTRL) {

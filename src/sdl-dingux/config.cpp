@@ -136,7 +136,6 @@ void ConfigGameDefault()
 	options.m68kcore = 0;		// 0 - c68k, 1 - m68k, 2 - a68k
 	options.z80core = 0;
 	options.sense = 100;
-	options.useswap = 0;		// use internal swap for legacy dingux
 
 	keymap.up = SDLK_UP;
 	keymap.down = SDLK_DOWN;
@@ -186,7 +185,6 @@ int ConfigGameLoad()
 			if(strcmp(arg1, "FBA_M68KCORE") == 0) options.m68kcore = argd;
 			if(strcmp(arg1, "FBA_Z80CORE") == 0) options.z80core = argd;
 			if(strcmp(arg1, "FBA_SENSE") == 0) options.sense = argd;
-			if(strcmp(arg1, "FBA_USESWAP") == 0) options.useswap = argd;
 
 			if(strcmp(arg1, "KEY_UP") == 0) keymap.up = argd;
 			if(strcmp(arg1, "KEY_DOWN") == 0) keymap.down = argd;
@@ -232,7 +230,6 @@ int ConfigGameSave()
 	fprintf(fp, "FBA_M68KCORE %d\n", options.m68kcore);
 	fprintf(fp, "FBA_Z80CORE %d\n", options.z80core);
 	fprintf(fp, "FBA_SENSE %d\n", options.sense);
-	fprintf(fp, "FBA_USESWAP %d\n", options.useswap);
 
 	fprintf(fp, "\n# Keys layout\n\n");
 	fprintf(fp, "KEY_UP %d\n", keymap.up);
