@@ -52,7 +52,7 @@ typedef unsigned long long UINT64;*/
 
 #define BUSY_LOOP_HACKS 	1
 #define FAST_OP_FETCH		1
-#define USE_JUMPTABLE		0
+#define USE_JUMPTABLE		1
 
 #define SH2_INT_15			15
 
@@ -492,14 +492,13 @@ int Sh2Init(int nCount)
 	DebugCPU_SH2Initted = 1;
 
 	has_sh2 = 1;
-
 	Sh2Ext = (SH2EXT *)malloc(sizeof(SH2EXT) * nCount);
 	if (Sh2Ext == NULL) {
 		Sh2Exit();
 		return 1;
 	}
 	memset(Sh2Ext, 0, sizeof(SH2EXT) * nCount);
-
+	
 	// init default memory handler
 	for (int i=0; i<nCount; i++) {
 		pSh2Ext = Sh2Ext + i;
@@ -524,8 +523,8 @@ int Sh2Init(int nCount)
 		Sh2SetWriteLongHandler(SH2_MAXHANDLER - 2, Sh2EmptyWriteLong);
 
 		CpuCheatRegister(i, &Sh2CheatCpuConfig);
+		
 	}
-
 	return 0;
 }
 
@@ -803,7 +802,7 @@ SH2_INLINE void sh2_exception(/*const char *message,*/ int irqline)
 
 	/* fetch PC */
 	sh2->pc = RL( sh2->vbr + vector * 4 );
-	change_pc(sh2->pc & AM);
+	//change_pc(sh2->pc & AM);
 }
 
 #define CHECK_PENDING_IRQ(/*message*/)			\
@@ -833,7 +832,6 @@ do {											\
 
 #if USE_JUMPTABLE
 
-	#include "sh2op.c"
 	
 #else
 
@@ -982,8 +980,8 @@ SH2_INLINE void BRA(UINT32 d)
 #if BUSY_LOOP_HACKS
 	if (disp == -2)
 	{
-		UINT32 next_opcode = RW(sh2->ppc & AM);
-		//UINT32 next_opcode = OPRW(sh2->ppc & AM);
+		//UINT32 next_opcode = RW(sh2->ppc & AM);
+		UINT32 next_opcode = OPRW(sh2->ppc & AM);
 		
 		/* BRA  $
          * NOP
@@ -1417,8 +1415,8 @@ SH2_INLINE void DT(UINT32 n)
 		sh2->sr &= ~T;
 #if BUSY_LOOP_HACKS
 	{
-		UINT32 next_opcode = RW(sh2->ppc & AM);
-		//UINT32 next_opcode = OPRW(sh2->ppc & AM);
+		//UINT32 next_opcode = RW(sh2->ppc & AM);
+		UINT32 next_opcode = OPRW(sh2->ppc & AM);
 		/* DT   Rn
          * BF   $-2
          */
@@ -3199,7 +3197,7 @@ static void sh2_internal_w(UINT32 offset, UINT32 data, UINT32 mem_mask)
 	}
 }
 
-static UINT32 sh2_internal_r(UINT32 offset, UINT32 /*mem_mask*/)
+static UINT32 sh2_internal_r(UINT32 offset, UINT32 mem_mask)
 {
 	//  logerror("sh2_internal_r:  Read %08x (%x) @ %08x\n", 0xfffffe00+offset*4, offset, mem_mask);
 	//bprintf(0, _T("sh2_internal_r:  Read %08x (%x) @ %08x\n"), 0xfffffe00+offset*4, offset, mem_mask);
@@ -3238,20 +3236,25 @@ static UINT32 sh2_internal_r(UINT32 offset, UINT32 /*mem_mask*/)
 // -------------------------------------------------------
 
 #if USE_JUMPTABLE
-
+static bool jumpTableNotInited=true;
 int Sh2Run(int cycles)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2Run called without init\n"));
 #endif
 
+	#include "sh2_jumptable.c"
+	if(jumpTableNotInited)
+	{
+		jumpTableNotInited=false;
+		#include "sh2_ini.c"
+	}
 	sh2->sh2_icount = cycles;
 	sh2->sh2_cycles_to_run = cycles;
 
 	do
 	{
 		if ( pSh2Ext->suspend ) {
-			sh2->sh2_total_cycles += cycles;
 			sh2->sh2_icount = 0;
 			break;
 		}
@@ -3259,20 +3262,21 @@ int Sh2Run(int cycles)
 		UINT16 opcode;
 
 		if (sh2->delay) {
-			//opcode = cpu_readop16(WORD_XOR_BE((UINT32)(sh2->delay & AM)));
-			opcode = cpu_readop16(sh2->delay & AM);
+			//opcode = OPRW(WORD_XOR_BE((UINT32)(sh2->delay & AM)));
+			opcode = OPRW(sh2->delay & AM);
 			change_pc(sh2->pc & AM);
 			sh2->delay = 0;
 		} else {
-			//opcode = cpu_readop16(WORD_XOR_BE((UINT32)(sh2->pc & AM)));
-			opcode = cpu_readop16(sh2->pc & AM);
+			//opcode = OPRW(WORD_XOR_BE((UINT32)(sh2->pc & AM)));
+			opcode = OPRW(sh2->pc & AM);
 			sh2->pc += 2;
 		}
 
 		sh2->ppc = sh2->pc;
 
-		opcode_jumptable[opcode](opcode);
-
+		goto *sh2JumpTable[opcode];
+		#include "sh2op.c"
+	SH2_RUN_CONTINUE:
 		if(sh2->test_irq && !sh2->delay)
 		{
 			CHECK_PENDING_IRQ(/*"mame_sh2_execute"*/);
@@ -3322,7 +3326,6 @@ int Sh2Run(int cycles)
 	{
 
 		if ( pSh2Ext->suspend ) {
-			sh2->sh2_total_cycles += cycles;
 			sh2->sh2_icount = 0;
 			break;
 		}			
@@ -3330,13 +3333,13 @@ int Sh2Run(int cycles)
 		UINT16 opcode;
 
 		if (sh2->delay) {
-			//opcode = cpu_readop16(WORD_XOR_BE((UINT32)(sh2->delay & AM)));
-			opcode = cpu_readop16(sh2->delay & AM);
+			//opcode = OPRW(WORD_XOR_BE((UINT32)(sh2->delay & AM)));
+			opcode = OPRW(sh2->delay & AM);
 			change_pc(sh2->pc & AM);
 			sh2->delay = 0;
 		} else {
-			//opcode = cpu_readop16(WORD_XOR_BE((UINT32)(sh2->pc & AM)));
-			opcode = cpu_readop16(sh2->pc & AM);
+			//opcode = OPRW(WORD_XOR_BE((UINT32)(sh2->pc & AM)));
+			opcode = OPRW(sh2->pc & AM);
 			sh2->pc += 2;
 		}
 
@@ -3361,8 +3364,6 @@ int Sh2Run(int cycles)
 		case 14<<12: op1110(opcode); break;
 		default: op1111(opcode); break;
 		}
-
-#endif
 
 		if(sh2->test_irq && !sh2->delay)
 		{
@@ -3402,12 +3403,11 @@ int Sh2Run(int cycles)
 	return cycles - sh2->sh2_icount;
 }
 
+#endif // USE_JUMPTABLE
+
+
 void Sh2SetIRQLine(const int line, const int state)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2SetIRQLine called without init\n"));
-#endif
-
 	if (sh2->irq_line_state[line] == state) return;
 	sh2->irq_line_state[line] = state;
 
@@ -3421,7 +3421,7 @@ void Sh2SetIRQLine(const int line, const int state)
 			sh2->test_irq = 1;
 		else
 			CHECK_PENDING_IRQ(/*"sh2_set_irq_line"*/);
-
+		
 		pSh2Ext->suspend = 0;
 	}
 
@@ -3438,28 +3438,16 @@ unsigned int Sh2GetPC(int)
 
 void Sh2SetVBR(unsigned int i)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2SetVBR called without init\n"));
-#endif
-
 	sh2->vbr = i;
 }
 
 void Sh2BurnUntilInt(int)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2BurnUntilInt called without init\n"));
-#endif
-
 	pSh2Ext->suspend = 1;
 }
 
 void Sh2StopRun()
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2StopRun called without init\n"));
-#endif
-
 	sh2->sh2_total_cycles += sh2->sh2_icount;
 	sh2->sh2_icount = 0;
 	sh2->sh2_cycles_to_run = 0;
@@ -3495,20 +3483,12 @@ void Sh2BurnCycles(int cycles)
 
 void __fastcall Sh2WriteByte(unsigned int a, unsigned char d)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2WriteByte called without init\n"));
-#endif
-
 	WB(a, d);
 }
 
 
 unsigned char __fastcall Sh2ReadByte(unsigned int a)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2ReadByte called without init\n"));
-#endif
-
 	return RB(a);
 }
 
@@ -3521,10 +3501,6 @@ void Sh2Reset()
 
 int Sh2Scan(int nAction)
 {
-#if defined FBA_DEBUG
-	if (!DebugCPU_SH2Initted) bprintf(PRINT_ERROR, _T("Sh2Scan called without init\n"));
-#endif
-
 	if (nAction & ACB_DRIVER_DATA) {
 	
 		char szText[] = "SH2 #0";
@@ -3548,3 +3524,4 @@ int Sh2Scan(int nAction)
 	
 	return 0;
 }
+
