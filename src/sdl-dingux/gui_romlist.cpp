@@ -30,11 +30,79 @@
 #include "gui_main.h"
 #include "gui_romlist.h"
 
+FILTER_DESC hardwares[] =
+{
+	{ (0xffffffff), "All" },
+	{ HARDWARE_PREFIX_SNK, "Neo Geo" },
+	{ HARDWARE_PREFIX_CAPCOM, "CPS-1" },
+	{ HARDWARE_PREFIX_CPS2, "CPS-2" },
+	{ HARDWARE_PREFIX_CAVE, "Cave" },
+	{ HARDWARE_PREFIX_IGS_PGM, "PGM" },
+	{ HARDWARE_PREFIX_PSIKYO, "Psikyo" },
+	{ HARDWARE_PREFIX_SEGA, "Sega" },
+	{ HARDWARE_PREFIX_CAPCOM_MISC, "Capcom (Other)" },
+	{ HARDWARE_PREFIX_KONAMI, "Konami" },
+	{ HARDWARE_PREFIX_TAITO, "Taito" },
+	{ HARDWARE_PREFIX_TOAPLAN, "Toaplan" },
+	{ HARDWARE_PREFIX_MISC_PRE90S, "Misc (pre 90s)" },
+	{ HARDWARE_PREFIX_MISC_POST90S, "Misc (post 90s)" },
+	{ HARDWARE_PREFIX_KANEKO, "Kaneko" },
+	{ HARDWARE_PREFIX_PACMAN, "Pacman" },
+	{ HARDWARE_PREFIX_GALAXIAN, "Galaxian" },
+	{ HARDWARE_PREFIX_IREM, "Irem" },
+	{ HARDWARE_PREFIX_DATAEAST, "Data East" },
+	{ HARDWARE_PREFIX_SETA, "Seta" },
+	{ HARDWARE_PREFIX_TECHNOS, "Technos" },
+	{ HARDWARE_PREFIX_CPS3, "CPS-3" }
+	//{ HARDWARE_PREFIX_NINTENDO_SNES, "SNES" },
+	//{ HARDWARE_PREFIX_SEGA_MEGADRIVE, "Megadrive" },
+	//{ HARDWARE_PREFIX_PCENGINE, "PC-Engine" },
+	//{ HARDWARE_PREFIX_SEGA_MASTER_SYSTEM, "Master System" }
+};
+
+FILTER_DESC genres[] =
+{
+	{ (0xffffffff), "All" },
+	{ GBF_HORSHOOT, "Shooter - Horizontal" },
+	{ GBF_VERSHOOT, "Shooter - Vertical" },
+	{ GBF_SCRFIGHT, "Fighter - Scrolling" },
+	{ GBF_VSFIGHT, "Fighter - Versus" },
+	{ GBF_PLATFORM, "Platform" },
+	{ GBF_RACING, "Racing" },
+	{ GBF_BREAKOUT, "Breakout" },
+	{ GBF_CASINO, "Casino" },
+	{ GBF_BALLPADDLE, "Ball & Paddle" },
+	{ GBF_MAZE, "Maze" },
+	{ GBF_MINIGAMES, "Mini-Games" },
+	{ GBF_PINBALL, "Pinball" },
+	{ GBF_PUZZLE, "Puzzle" },
+	{ GBF_QUIZ, "Quiz" },
+	{ GBF_SPORTSMISC, "Sports - Misc" },
+	{ GBF_SPORTSFOOTBALL, "Sports - Football" },
+	{ GBF_MISC, "Misc" },
+	{ GBF_MAHJONG, "Mahjong" },
+	{ GBF_SHOOT, "Shooter - Other" },
+	{ GBF_BIOS, "BIOS" }
+};
+
+FILTER_DESC clones[] =
+{
+	{ (0x00000000), "yes" },
+	{ (0x00000001), "no" }
+};
+
 ROMLIST romlist;
 
-unsigned int romsort[NB_FILTERS][NB_MAX_GAMES];
+unsigned int * romsort;
+int current_filter;
+int current_hardware;
+int current_genre;
+int current_clone;
 
-static void sort_alphabet(unsigned int minimun, unsigned int maximum)
+unsigned int unfiltered_nb_list[NB_FILTERS];
+unsigned int * unfiltered_romsort[NB_FILTERS];
+
+static void sort_alphabet(unsigned int romsort[], unsigned int minimun, unsigned int maximum)
 {
 	unsigned int tampon, ligne1, ligne2;
 	unsigned int min;
@@ -44,21 +112,26 @@ static void sort_alphabet(unsigned int minimun, unsigned int maximum)
 		min = ligne1;
 
 		for(ligne2 = ligne1 + 1; ligne2 < maximum; ++ligne2) {
-			if(strcmp(romlist.name[romsort[0][ligne2]], romlist.name[romsort[0][min]]) < 0) {
+			if(strcmp(romlist.name[romsort[ligne2]], romlist.name[romsort[min]]) < 0) {
 				min = ligne2;
 			}
 		}
 
 		if (min != ligne1){
-			tampon = romsort[0][ligne1];
-			romsort[0][ligne1] = romsort[0][min];
-			romsort[0][min] = tampon;
+			tampon = romsort[ligne1];
+			romsort[ligne1] = romsort[min];
+			romsort[min] = tampon;
 		}
 	}
 }
 
 void gui_sort_romlist()
 {
+	for (int i = 0; i < NB_FILTERS; i++)
+	{
+		unfiltered_romsort[i] = (unsigned int *)malloc(NB_MAX_GAMES * sizeof(unsigned int));
+	}
+
 	char g_string[2048];
 	FILE *fp;
 
@@ -76,13 +149,15 @@ void gui_sort_romlist()
 		romlist.name[i] = BurnDrvGetTextA(DRV_FULLNAME);
 		romlist.year[i] = BurnDrvGetTextA(DRV_DATE);
 		romlist.manufacturer[i] = BurnDrvGetTextA(DRV_MANUFACTURER);
+		romlist.hardware[i] = BurnDrvGetHardwareCode();
+		romlist.genre[i] = BurnDrvGetGenreFlags();
 		romlist.longueur[i] = strlen(romlist.name[i]);
 		if(romlist.long_max < romlist.longueur[i] ) romlist.long_max = romlist.longueur[i];
 
 		romlist.etat[i] = ROUGE;
 		for(int j = 0; j < DIRS_MAX; j++) {
 			if(strlen(szAppRomPaths[j]) > 0) {
-				sprintf(g_string, "%s%hs.zip", szAppRomPaths[j], romlist.zip[i] );
+				sprintf(g_string, "%s%s.zip", szAppRomPaths[j], romlist.zip[i] );
 				if((fp = fopen(g_string, "r")) != NULL) {
 					fclose(fp);
 					romlist.etat[i] = (BurnDrvGetTextA(DRV_PARENT) ? ORANGE : JAUNE);
@@ -91,29 +166,28 @@ void gui_sort_romlist()
 				}
 			}
 		}
-
-		romsort[0][i] = i;
+		unfiltered_romsort[0][i] = i;
 	}
 
 	romlist.nb_list[0] = nBurnDrvCount;
 
 	// sort alpha
-	sort_alphabet(0, romlist.nb_list[0]);
+	sort_alphabet(unfiltered_romsort[0], 0, romlist.nb_list[0]);
 
 	romlist.nb_list[1] = 0;
 	romlist.nb_list[2] = 0;
 	romlist.nb_list[3] = 0;
 
 	for (int i = 0; i < romlist.nb_list[0]; ++i) {
-		if(romlist.etat[romsort[0][i]] == ROUGE) {
-			romsort[1][romlist.nb_list[1]] = romsort[0][i];
+		if(romlist.etat[unfiltered_romsort[0][i]] == ROUGE) {
+			unfiltered_romsort[1][romlist.nb_list[1]] = unfiltered_romsort[0][i];
 			++romlist.nb_list[1];
 		} else {
-			romsort[2][romlist.nb_list[2]] = romsort[0][i];
+			unfiltered_romsort[2][romlist.nb_list[2]] = unfiltered_romsort[0][i];
 			++romlist.nb_list[2];
 
-			if(romlist.etat[romsort[0][i]] == VERT || romlist.etat[romsort[0][i]] == BLEU ) {
-				romsort[3][romlist.nb_list[3]] = romsort[0][i];
+			if(romlist.etat[unfiltered_romsort[0][i]] == VERT || romlist.etat[unfiltered_romsort[0][i]] == BLEU ) {
+				unfiltered_romsort[3][romlist.nb_list[3]] = unfiltered_romsort[0][i];
 				++romlist.nb_list[3];
 			}
 		}
@@ -124,4 +198,85 @@ void gui_sort_romlist()
 	printf("romlist.nb_list[1]=%i\n", romlist.nb_list[1]);
 	printf("romlist.nb_list[2]=%i\n", romlist.nb_list[2]);
 	printf("romlist.nb_list[3]=%i\n", romlist.nb_list[3]);
+
+	for (int i = 0; i < NB_FILTERS; i++)
+	{
+		unfiltered_nb_list[i] = romlist.nb_list[i];
+	}
 }
+
+unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int clone)
+{
+	if (filter < 0 || filter >= NB_FILTERS) filter = 0;
+	if (hardware < 0 || filter >= NB_HARDWARES) hardware = 0;
+	if (genre < 0 || filter >= NB_GENRES) genre = 0;
+	if (clone < 0 || clone >= NB_CLONES) clone = 0;
+
+	if (romsort == NULL ||
+		current_filter != filter || current_hardware != hardware || current_genre != genre || current_clone != clone)
+	{
+		current_filter = filter;
+		current_hardware = hardware;
+		current_genre = genre;
+		current_clone = clone;
+		
+		if (romsort != NULL)
+		{
+			free(romsort);
+			romsort = NULL;
+		}
+		romsort = (unsigned int *)malloc(NB_MAX_GAMES * sizeof(unsigned int));
+		memcpy(romsort, unfiltered_romsort[filter], NB_MAX_GAMES * sizeof(unsigned int));
+		romlist.nb_list[filter] = unfiltered_nb_list[filter];
+
+		if (current_clone == 1)
+		{
+			int counter = 0;
+			char fba[] = "fba";
+			size_t fba_size = sizeof(fba);
+			for (int i = 0; i < romlist.nb_list[filter]; i++)
+			{
+				if (memcmp(romlist.parent[romsort[i]], fba, fba_size) == 0)
+				{
+					romsort[counter] = romsort[i];
+					counter++;
+				}
+			}
+
+			romlist.nb_list[filter] = counter;
+		}
+		if (current_hardware != 0)
+		{
+			int counter = 0;
+			for (int i = 0; i < romlist.nb_list[filter]; i++)
+			{
+				if ((((romlist.hardware[romsort[i]] | HARDWARE_PREFIX_CARTRIDGE) ^ HARDWARE_PREFIX_CARTRIDGE)
+					& 0xff000000) == hardwares[current_hardware].code)
+				{
+					romsort[counter] = romsort[i];
+					counter++;
+				}
+			}
+
+			romlist.nb_list[filter] = counter;
+		}
+
+		if (current_genre != 0)
+		{
+			int counter = 0;
+			for (int i = 0; i < romlist.nb_list[filter]; i++)
+			{
+				if ((romlist.genre[romsort[i]] & genres[current_genre].code) == genres[current_genre].code)
+				{
+					romsort[counter] = romsort[i];
+					counter++;
+				}
+			}
+
+			romlist.nb_list[filter] = counter;
+		}
+	}
+	
+	return romsort;
+}
+

@@ -65,6 +65,9 @@ void gui_load_cfg()
 				if (strcmp(arg1,"delay_speed") == 0) cfg.delayspeed = argd;
 				else if (strcmp(arg1,"repeat_speed") == 0) cfg.repeatspeed = argd;
 				else if (strcmp(arg1,"list") == 0) cfg.list = argd;
+				else if (strcmp(arg1,"hardware") == 0) cfg.hardware = argd;
+				else if (strcmp(arg1,"genre") == 0) cfg.genre = argd;
+				else if (strcmp(arg1,"clone") == 0) cfg.clone = argd;
 				else if (strcmp(arg1,"shadow") == 0) cfg.FXshadow = argd;
 				else if (strcmp(arg1,"skin") == 0) cfg.skin = argd;
 			}
@@ -92,6 +95,12 @@ void gui_write_cfg()
 	sprintf((char*)g_string, "repeat_speed %d\n", cfg.repeatspeed);
 	fputs(g_string,fp);
 	sprintf((char*)g_string, "list %d\n",cfg.list);
+	fputs(g_string,fp);
+	sprintf((char*)g_string, "hardware %d\n",cfg.hardware);
+	fputs(g_string,fp);
+	sprintf((char*)g_string, "genre %d\n",cfg.genre);
+	fputs(g_string,fp);
+	sprintf((char*)g_string, "clone %d\n",cfg.clone);
 	fputs(g_string,fp);
 	sprintf((char*)g_string, "shadow %d\n", cfg.FXshadow);
 	fputs(g_string,fp);

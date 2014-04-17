@@ -34,7 +34,7 @@
 #include "gui_config.h"
 #include "gui_setpath.h"
 
-#define ROMLIST(A,B) romlist.A[romsort[cfg.list][B]]
+#define ROMLIST(A,B) romlist.A[gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[B]]
 
 SDL_Event event;
 
@@ -225,6 +225,11 @@ void put_stringM(char *string, unsigned int pos_x, unsigned int pos_y, unsigned 
 
 void load_preview(unsigned int numero)
 {
+	if (romlist.nb_list[cfg.list] == 0) {
+		flag_preview = 0;
+		return;
+	}
+
 	char *ext[2] = {"png", "bmp"};
 	FILE *fp;
 
@@ -451,81 +456,94 @@ void prep_bg()
 {
 	drawSprite(bg, bg_temp, 0, 0, 0, 0, 320, 240);
 	preparation_fenetre(bgs, bg_temp, 4, 119, 312, 118);
-	if(flag_preview) drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
+	if(flag_preview && romlist.nb_list[cfg.list] != 0) {
+		drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
+	}
 
 	switch(cfg.list) {
 	case 0:
-		sprintf((char*)g_string, "Database: %d roms", romlist.nb_list[0]);
+		sprintf((char*)g_string, "All: %d roms", unfiltered_nb_list[0]);
 		break;
 	case 1:
-		sprintf((char*)g_string, "Missing: %d roms", romlist.nb_list[1]);
+		sprintf((char*)g_string, "Missing: %d roms", unfiltered_nb_list[1]);
 		break;
 	case 2:
-		sprintf((char*)g_string, "Available: %d roms", romlist.nb_list[2]);
+		sprintf((char*)g_string, "Available: %d roms", unfiltered_nb_list[2]);
 		break;
 	case 3:
-		sprintf((char*)g_string, "Playable: %d roms", romlist.nb_list[3]);
+		sprintf((char*)g_string, "Playable: %d roms", unfiltered_nb_list[3]);
 		break;
 	}
 
+	put_string( g_string , 6 , 95 , BLANC , bg_temp );
+	
+	sprintf((char*)g_string, "Show: %d roms", romlist.nb_list[cfg.list]);
 	put_string( g_string , 6 , 105 , BLANC , bg_temp );
+}
+
+void prep_bg_main(void)
+{
+	gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone); // update romlist counters
+	prep_bg();
+	sprintf((char*)g_string, "Hardware %s; Genre: %s", hardwares[cfg.hardware].label, genres[cfg.genre].label);
+	put_string( g_string , 6 , 120 , BLEU , bg_temp );
+}
+
+void prep_bg_opt(int first)
+{
+	if (first == OPTION_MAIN_FIRST) {
+		prep_bg();
+		sprintf((char*)g_string, "Main settings:");
+		put_string( g_string , 6 , 120 , BLEU , bg_temp );
+	} else if (first == OPTION_FILTER_FIRST) {
+		prep_bg_main();
+	} else if (first == OPTION_PATHS_FIRST) {
+		prep_bg();
+		sprintf((char*)g_string, "ROMs Paths:");
+		put_string( g_string , 6 , 120 , BLEU , bg_temp );
+	}
 }
 
 void prep_bg_run(void)
 {
-	drawSprite(bg, bg_temp, 0, 0, 0, 0, 320, 240);
+	prep_bg();
 	preparation_fenetre(bgs, bg_temp, 4, 119, 260, 118);
 	preparation_fenetre(bgs, bg_temp, 269, 119, 47, 118);
-	if(flag_preview) drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
-
-	switch(cfg.list) {
-	case 0:
-		sprintf((char*)g_string, "Database: %d roms", romlist.nb_list[0]);
-		break;
-	case 1:
-		sprintf((char*)g_string, "Missing: %d roms", romlist.nb_list[1]);
-		break;
-	case 2:
-		sprintf((char*)g_string, "Available: %d roms", romlist.nb_list[2]);
-		break;
-	case 3:
-		sprintf((char*)g_string, "Playable: %d roms", romlist.nb_list[3]);
-		break;
-	}
-
-	put_string( g_string , 6 , 105 , BLANC , bg_temp );
 }
 
 void affiche_BG(void)
 {
 	drawSprite(bg_temp, gui_screen, 0, 0, 0, 0, 320, 240);
 
+	if (romlist.nb_list[cfg.list] == 0)
+	{
+		return;
+	}
+
 	sprintf((char*)g_string, "Rom: %s", ROMLIST(zip, sel.rom));
-	put_string(g_string, 6, 65, BLANC, gui_screen);
+	put_string(g_string, 6, 55, BLANC, gui_screen);
 
 	if(strcmp(ROMLIST(parent, sel.rom), "fba") == 0) {
-		//put_string("Parent rom", 6, 75, BLANC, gui_screen);
+		//put_string("Parent rom", 6, 65, BLANC, gui_screen);
 	} else {
 		sprintf((char*)g_string, "Clone of %s", ROMLIST(parent, sel.rom));
-		put_string(g_string, 6, 75, BLANC, gui_screen);
+		put_string(g_string, 6, 65, BLANC, gui_screen);
 	}
 
 	if(ROMLIST(year, sel.rom) != NULL) {
-		put_string(ROMLIST(year, sel.rom), 6, 86, BLANC, gui_screen);
+		put_string(ROMLIST(year, sel.rom), 6, 75, BLANC, gui_screen);
 	}
 
 	if(ROMLIST(manufacturer, sel.rom) != NULL) {
-		put_string(ROMLIST(manufacturer, sel.rom), 6, 95, BLANC, gui_screen);
+		put_string(ROMLIST(manufacturer, sel.rom), 6, 85, BLANC, gui_screen);
 	}
 
 }
 
-void put_option_line(unsigned char num, unsigned char y)
+void put_option_line(int first, unsigned char num, unsigned char y)
 {
-	#define OPTIONS_START_X	8
-	#define CONF_START_X	272
-
-	switch(num) {
+	switch(first + num) {
+	// MAIN OPTIONS
 	case OPTION_GUI_DELAYSPEED:
 		sprintf((char*)g_string, "Keyrepeat delay: %d" , cfg.delayspeed );
 		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
@@ -534,11 +552,13 @@ void put_option_line(unsigned char num, unsigned char y)
 		sprintf((char*)g_string, "Keyrepeat speed: %d" , cfg.repeatspeed );
 		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
-	case OPTION_GUI_LIST:
-		if (cfg.list == 3) put_string( "Show roms: Playable only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else if (cfg.list == 2) put_string( "Show roms: Available only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else if (cfg.list == 1) put_string( "Show roms: Missing only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else put_string( "Show roms: All" , OPTIONS_START_X , y , BLANC , gui_screen );
+	case OPTION_GUI_FILTER:
+		sprintf((char*)g_string, "Filter settings -->");
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	case OPTION_GUI_ROM_PATHS:
+		sprintf((char*)g_string, "ROMs Paths -->");
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
 	case OPTION_GUI_SHADOW:
 		sprintf((char*)g_string, "Background shadow: %d%c" , cfg.FXshadow, 37 );
@@ -548,6 +568,32 @@ void put_option_line(unsigned char num, unsigned char y)
 		if (cfg.skin) put_string( "External skin: Enable" , OPTIONS_START_X , y , BLANC , gui_screen );
 		else put_string( "External skin: Disable" , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
+	case OPTION_GUI_RETURN:
+		put_string( "Return to the rom list" , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	// FILTER OPTIONS
+	case OPTION_GUI_FILTER_LIST:
+		if (cfg.list == 3) put_string( "Show roms: Playable only" , OPTIONS_START_X , y , BLANC , gui_screen );
+		else if (cfg.list == 2) put_string( "Show roms: Available only" , OPTIONS_START_X , y , BLANC , gui_screen );
+		else if (cfg.list == 1) put_string( "Show roms: Missing only" , OPTIONS_START_X , y , BLANC , gui_screen );
+		else put_string( "Show roms: All" , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	case OPTION_GUI_FILTER_HARDWARE:
+		sprintf((char*)g_string, "Hardware: %s",  hardwares[cfg.hardware].label);
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	case OPTION_GUI_FILTER_GENRE:
+		sprintf((char*)g_string, "Genre: %s", genres[cfg.genre].label);
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	case OPTION_GUI_FILTER_CLONE:
+		sprintf((char*)g_string, "Show clones: %s", clones[cfg.clone].label);
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	case OPTION_GUI_FILTER_RETURN:
+		put_string( "Return to the main settings" , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
+	// PATHS OPTIONS
 	case OPTION_GUI_PATH0:
 	case OPTION_GUI_PATH1:
 	case OPTION_GUI_PATH2:
@@ -555,41 +601,77 @@ void put_option_line(unsigned char num, unsigned char y)
 	case OPTION_GUI_PATH4:
 	case OPTION_GUI_PATH5:
 	case OPTION_GUI_PATH6:
-		sprintf((char*)g_string, "Rom path %d: %s" , num - OPTION_GUI_PATH0 + 1,szAppRomPaths[num - OPTION_GUI_PATH0]);
+	case OPTION_GUI_PATH7:
+	case OPTION_GUI_PATH8:
+	case OPTION_GUI_PATH9:
+	case OPTION_GUI_PATH10:
+	case OPTION_GUI_PATH11:
+	case OPTION_GUI_PATH12:
+	case OPTION_GUI_PATH13:
+	case OPTION_GUI_PATH14:
+	case OPTION_GUI_PATH15:
+	case OPTION_GUI_PATH16:
+	case OPTION_GUI_PATH17:
+	case OPTION_GUI_PATH18:
+	case OPTION_GUI_PATH19:
+		sprintf((char*)g_string, "Rom path %d: %s" , first + num - OPTION_GUI_PATH0 + 1,szAppRomPaths[first + num - OPTION_GUI_PATH0]);
 		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
-	case OPTION_GUI_RETURN:
-		put_string( "Return to the rom list" , OPTIONS_START_X , y , BLANC , gui_screen );
+	case OPTION_GUI_PATH_RETURN:
+		put_string( "Return to the main settings" , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
 	}
 }
 
-void ss_prg_options(void)
+void gui_reset_selection()
 {
-	int options_y, options_num, options_off;
+	sel.y = START_Y - 1;
+	sel.x = 0;
+	sel.rom = 0;
+	sel.ofs = 0;
+}
+
+void gui_validate_selection()
+{
+	gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone); // apply filters
+	if (sel.rom < 0 || sel.ofs < 0 ||
+		sel.y < START_Y - 1 || sel.y > START_Y + (LINES_COUNT - 1) * LINE_HEIGHT ||
+		sel.rom > romlist.nb_list[cfg.list] - 1 ||
+		sel.ofs > romlist.nb_list[cfg.list] - 1)
+	{
+		gui_reset_selection();	
+	}
+}
+
+void ss_prg_options(int first, int last)
+{
+	int options_y, options_num, options_off, options_start_y, options_last_line;
 	int Quit;
 	unsigned int compteur = 1;
 
-	options_y = START_Y - 1;
+	options_last_line = OPTIONS_LINE_COUNT - 1;
+	options_start_y = START_Y + LINE_HEIGHT;
+	options_y = options_start_y - 1;
 	options_num = 0;
 	options_off = 0;
+
+	last = last - first;
 
 	unsigned option_start;
 
 	gui_load_cfg();
 
-	prep_bg();
-
+	prep_bg_opt(first);
 	Quit=0;
 	while(!Quit) {
 		affiche_BG();
 
 		drawSprite(barre, gui_screen, 0, 0, 4, options_y, 312, 10);
 
-		option_start = START_Y;
-		for(int y = options_off; y < (options_off + 13); y++) {
-			put_option_line(y, option_start);
-			option_start += 9;
+		option_start = options_start_y;
+		for(int y = options_off; y < (options_off + OPTIONS_LINE_COUNT); y++) {
+			put_option_line(first, y, option_start);
+			option_start += LINE_HEIGHT;
 		}
 		redraw_screen();
 		//SDL_Flip(gui_screen);
@@ -598,14 +680,14 @@ void ss_prg_options(void)
 		if(event.type == SDL_KEYDOWN) {
 			if(compteur == 0 || (compteur > cfg.delayspeed && ((compteur & joy_speed[cfg.repeatspeed]) == 0))) {
 				if(event.key.keysym.sym == SDLK_DOWN) {
-					if(options_num == OPTION_GUI_LAST && compteur == 0) {
-						options_y = START_Y - 1;
+					if(options_num == last && compteur == 0) {
+						options_y = options_start_y - 1;
 						options_num = 0;
 						options_off = 0;
 					} else {
-						if(options_num < 12 || options_off == ( OPTION_GUI_LAST - 12)) {
-							if(options_num < OPTION_GUI_LAST) {
-								options_y += 9;
+						if(options_num < options_last_line || options_off == ( last - options_last_line)) {
+							if(options_num < last) {
+								options_y += LINE_HEIGHT;
 								++options_num;
 							}
 						} else {
@@ -615,13 +697,13 @@ void ss_prg_options(void)
 					}
 				} else if(event.key.keysym.sym == SDLK_UP) {
 					if(options_num == 0 && compteur == 0) {
-						options_y = START_Y - 1 + ((OPTION_GUI_LAST < 12 ? OPTION_GUI_LAST : 12) * 9);
-						options_num = OPTION_GUI_LAST;
-						options_off = OPTION_GUI_LAST < 12 ? 0 : OPTION_GUI_LAST - 12;
+						options_y = options_start_y - 1 + ((last < options_last_line ? last : options_last_line) * LINE_HEIGHT);
+						options_num = last;
+						options_off = last < options_last_line ? 0 : last - options_last_line;
 					} else {
-						if(options_num > (OPTION_GUI_LAST - 7) || options_off == 0) {
+						if(options_num > (last - options_last_line / 2) || options_off == 0) {
 							if(options_num > 0) {
-								options_y -= 9;
+								options_y -= LINE_HEIGHT;
 								--options_num;
 							}
 						} else {
@@ -629,8 +711,9 @@ void ss_prg_options(void)
 							--options_num;
 						}
 					}
-				} else if(event.key.keysym.sym == SDLK_LEFT) {
-					switch(options_num) {
+				// PROCESS OPTIONS
+				} else if (event.key.keysym.sym == SDLK_LEFT) {
+					switch(first + options_num) {
 						case OPTION_GUI_DELAYSPEED:
 							--cfg.delayspeed;
 							if(cfg.delayspeed == 9) cfg.delayspeed = 50;
@@ -643,20 +726,36 @@ void ss_prg_options(void)
 							--cfg.FXshadow;
 							if(cfg.FXshadow == -1) cfg.FXshadow = 100;
 							break;
-						case OPTION_GUI_LIST:
-							cfg.list--;
-							if(cfg.list < 0) cfg.list = NB_FILTERS - 1;
-							sel.y = START_Y - 1;
-							sel.x = 0;
-							sel.rom = 0;
-							sel.ofs = 0;
-							break;
 						case OPTION_GUI_SKIN:
 							cfg.skin ^= 1;
 							break;
+						case OPTION_GUI_FILTER_LIST:
+							// prev filter
+							cfg.list--;
+							if (cfg.list < 0) cfg.list = NB_FILTERS - 1;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_HARDWARE:
+							// prev hardware
+							cfg.hardware--;
+							if (cfg.hardware < 0) cfg.hardware = NB_HARDWARES - 1;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_GENRE:
+							// prev genre
+							cfg.genre--;
+							if (cfg.genre < 0) cfg.genre = NB_GENRES - 1;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_CLONE:
+							// prev clone option
+							cfg.clone--;
+							if (cfg.clone < 0) cfg.clone = NB_CLONES - 1;
+							gui_reset_selection();
+							break;
 					}
 				} else if(event.key.keysym.sym == SDLK_RIGHT) {
-					switch(options_num) {
+					switch(first + options_num) {
 						case OPTION_GUI_DELAYSPEED:
 							++cfg.delayspeed;
 							if(cfg.delayspeed == 51) cfg.delayspeed = 10;
@@ -669,38 +768,67 @@ void ss_prg_options(void)
 							++cfg.FXshadow;
 							if(cfg.FXshadow == 101) cfg.FXshadow = 0;
 							break;
-						case OPTION_GUI_LIST:
-							cfg.list++;
-							if(cfg.list == NB_FILTERS) cfg.list = 0;
-							sel.y = START_Y-1;
-							sel.x = 0;
-							sel.rom = 0;
-							sel.ofs = 0;
-							break;
 						case OPTION_GUI_SKIN:
 							cfg.skin ^= 1;
 							break;
+						case OPTION_GUI_FILTER_LIST:
+							// next filter
+							cfg.list = (cfg.list + 1) % NB_FILTERS;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_HARDWARE:
+							// next hardware
+							cfg.hardware = (cfg.hardware + 1) % NB_HARDWARES;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_GENRE:
+							// next hardware
+							cfg.genre = (cfg.genre + 1) % NB_GENRES;
+							gui_reset_selection();
+							break;
+						case OPTION_GUI_FILTER_CLONE:
+							// next clone option
+							cfg.clone = (cfg.clone + 1) % NB_CLONES;
+							gui_reset_selection();
+							break;
 					}
 				} else if(event.key.keysym.sym == SDLK_LCTRL) {
-					if(options_num >= OPTION_GUI_PATH0 && options_num <= OPTION_GUI_PATH6) {
+					int option = first + options_num;		
+					if(option >= OPTION_GUI_PATH0 && option <= OPTION_GUI_PATH19) {
 						// call set path menu
-						gui_setpath(szAppRomPaths[options_num - OPTION_GUI_PATH0]);
-					} else if(options_num == OPTION_GUI_RETURN) {
-						prep_bg();
+						gui_setpath(szAppRomPaths[option - OPTION_GUI_PATH0]);
+						prep_bg_opt(first);
+					} else if(option == OPTION_GUI_RETURN) {
+						prep_bg_main();
 						Quit = 1;
+					} else if(option == OPTION_GUI_FILTER_RETURN || option == OPTION_GUI_PATH_RETURN) {
+						Quit = 1;
+					} else if (option == OPTION_GUI_FILTER) {
+						ss_prg_options(OPTION_FILTER_FIRST, OPTION_FILTER_LAST);
+						gui_write_cfg();
+						prep_bg_opt(first);
+					} else if (option == OPTION_GUI_ROM_PATHS) {
+						ss_prg_options(OPTION_PATHS_FIRST, OPTION_PATHS_LAST);
+						gui_write_cfg();
+						prep_bg_opt(first);
 					}
 				} else if(event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_SPACE) {
-					if(options_num >= OPTION_GUI_PATH0 && options_num <= OPTION_GUI_PATH6) {
-						strcpy(szAppRomPaths[options_num - OPTION_GUI_PATH0], "");
+					if(first + options_num >= OPTION_GUI_PATH0 && first + options_num <= OPTION_GUI_PATH19) {
+						strcpy(szAppRomPaths[first + options_num - OPTION_GUI_PATH0], "");
 					}
 				} else if(event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_LALT) {
-					prep_bg();
+					prep_bg_main();
 					Quit = 1;
 				}
 			}
 			++compteur;
 		}else if(event.type == SDL_KEYUP){
 			compteur = 0;// reinitialisation joystick
+		}
+
+		if (!Quit && first == OPTION_FILTER_FIRST)
+		{
+			prep_bg_opt(first);
 		}
 
 	}
@@ -780,7 +908,7 @@ void ss_prog_run(void)
 	int Quit;
 	unsigned int compteur = 1;
 
-	nBurnDrvActive = romsort[cfg.list][sel.rom];
+	nBurnDrvActive = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
 	if(!ConfigGameLoad()) ConfigGameSave();
 
 	run_y = START_Y-1;
@@ -890,7 +1018,7 @@ void ss_prog_run(void)
 				} else if (event.key.keysym.sym == SDLK_LCTRL) {
 					save_lastsel();
 
-					nBurnDrvActive = nBurnDrvSelect[0] = romsort[cfg.list][sel.rom];
+					nBurnDrvActive = nBurnDrvSelect[0] = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
 					ConfigGameSave();
 
 					SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -918,7 +1046,7 @@ void ss_prog_run(void)
 		}
 	}
 
-	nBurnDrvActive = romsort[cfg.list][sel.rom];
+	nBurnDrvActive = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
 	ConfigGameSave();
 }
 
@@ -968,6 +1096,7 @@ void load_lastsel()
 		fread(&sel.y, 1, sizeof(int), fp);
 		fclose(fp);
 	}
+	gui_validate_selection();
 }
 
 void gui_menu_main()
@@ -984,38 +1113,39 @@ void gui_menu_main()
 
 	load_lastsel();
 
+	prep_bg_main();
 	flag_preview = 0;
 	load_preview(sel.rom);
 
 	//load_cf();
 
-	prep_bg();
-
 	Quit = 0;
 	while(!Quit) {
 		affiche_BG();
 
-		drawSprite(barre, gui_screen, 0, 0, 4, sel.y, 312, 10);
+		if (romlist.nb_list[cfg.list] != 0) {
+			drawSprite(barre, gui_screen, 0, 0, 4, sel.y, 312, 10);
+		}
 
 		// show rom list
 		zipnum = START_Y;
-		if(romlist.nb_list[cfg.list] < 14) {
+		if(romlist.nb_list[cfg.list] <= LINES_COUNT) {
 			for(y = 0; y < romlist.nb_list[cfg.list]; ++y) {
 				put_stringM(ROMLIST(name, y), // string
-						8, // x
+						START_X, // x
 						zipnum, // y
 						ROMLIST(longueur, y), // length
 						ROMLIST(etat, y)); // color
-				zipnum += 9;
+				zipnum += LINE_HEIGHT;
 			}
 		} else {
-			for(y = sel.ofs; y < sel.ofs + 13; ++y) {
+			for(y = sel.ofs; y < sel.ofs + LINES_COUNT; ++y) {
 				put_stringM(ROMLIST(name, y), 
-						8, 
+						START_X, 
 						zipnum, 
 						ROMLIST(longueur, y), 
 						ROMLIST(etat, y));
-				zipnum += 9;
+				zipnum += LINE_HEIGHT;
 			}
 		}
 
@@ -1025,48 +1155,86 @@ void gui_menu_main()
 		SDL_PollEvent(&event);
 		if(event.type == SDL_KEYDOWN) {
 			if(compteur == 0 || (compteur > cfg.delayspeed && ((compteur & joy_speed[cfg.repeatspeed]) == 0))) {
-				if((event.key.keysym.sym >= SDLK_a) && (event.key.keysym.sym <= SDLK_z)) {
+				if((event.key.keysym.sym >= SDLK_a) && (event.key.keysym.sym <= SDLK_z) &&
+					(romlist.nb_list[cfg.list] != 0)) {
 					sel.rom = findfirst(event.key.keysym.sym,sel.rom);
 					sel.ofs = sel.rom;
 					sel.y = START_Y - 1;
+				} else if(event.key.keysym.sym == SDLK_LSHIFT) { // X button
+					// no need to increment compteur
+					continue;
 				} else if(event.key.keysym.sym == SDLK_TAB) { // page up
-					sel.rom -= 13;
-					if(sel.rom > 7) {
-						sel.ofs = sel.rom - 7;
-						sel.y = START_Y - 1 + 7 * 9;
-					} else {
-						sel.ofs = sel.rom = 0;
-						sel.y = START_Y - 1;
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// prev genre
+							cfg.genre--;
+							if (cfg.genre < 0) cfg.genre = NB_GENRES - 1;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] > LINES_COUNT) {
+						sel.rom -= LINES_COUNT;
+						if(sel.rom > LINES_COUNT_HALF) {
+							sel.ofs = sel.rom - LINES_COUNT_HALF;
+							sel.y = START_Y - 1 + LINES_COUNT_HALF * LINE_HEIGHT;
+						} else {
+							sel.ofs = sel.rom = 0;
+							sel.y = START_Y - 1;
+						}
 					}
 				} else if(event.key.keysym.sym == SDLK_BACKSPACE) { // page down
-					sel.rom += 13;
-					if(sel.rom < romlist.nb_list[cfg.list] - 7) {
-						sel.ofs = sel.rom - 7;
-						sel.y = START_Y - 1 + 7 * 9;
-					} else {
-						sel.rom = romlist.nb_list[cfg.list] - 1;
-						sel.ofs = sel.rom - 12;
-						sel.y = START_Y - 1 + 12 * 9;
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// next genre
+							cfg.genre = (cfg.genre + 1) % NB_GENRES;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] > LINES_COUNT) {
+						sel.rom += LINES_COUNT;
+						if(sel.rom < romlist.nb_list[cfg.list] - LINES_COUNT_HALF) {
+							sel.ofs = sel.rom - LINES_COUNT_HALF;
+							sel.y = START_Y - 1 + LINES_COUNT_HALF * LINE_HEIGHT;
+						} else {
+							sel.rom = romlist.nb_list[cfg.list] - 1;
+							sel.ofs = sel.rom - (LINES_COUNT - 1);
+							sel.y = START_Y - 1 + (LINES_COUNT - 1) * LINE_HEIGHT;
+						}
 					}
 				} else if(event.key.keysym.sym == SDLK_DOWN) {
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// next filter
+							cfg.list = (cfg.list + 1) % NB_FILTERS;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] == 0) {
+					}
 					// if in the end of list, reset to the beginning
-					if (sel.rom == romlist.nb_list[cfg.list] - 1 && compteur == 0) {
-						sel.y = START_Y-1;
+					else if (sel.rom == romlist.nb_list[cfg.list] - 1 && compteur == 0) {
+						sel.y = START_Y - 1;
 						sel.rom = 0;
 						sel.ofs = 0;
 					} else {
 						if (romlist.nb_list[cfg.list] < 14) { // if rom number in list < 14
 								if (sel.rom < romlist.nb_list[cfg.list] - 1) {
-									sel.y += 9;
+									sel.y += LINE_HEIGHT;
 									++sel.rom;
 									if(compteur == 0) {
 										load_preview(sel.rom);
 									}
 								}
 						}else{
-							if (sel.rom < 7 || sel.ofs == (romlist.nb_list[cfg.list]-13)) {
-								if (sel.rom < (romlist.nb_list[cfg.list]-1)) {
-									sel.y+=9;
+							if (sel.rom < LINES_COUNT_HALF || sel.ofs == (romlist.nb_list[cfg.list] - LINES_COUNT)) {
+								if (sel.rom < (romlist.nb_list[cfg.list] - 1)) {
+									sel.y += LINE_HEIGHT;
 									++sel.rom;
 									if(compteur == 0) {
 										load_preview(sel.rom);
@@ -1082,19 +1250,30 @@ void gui_menu_main()
 						}
 					}
 				} else if(event.key.keysym.sym == SDLK_UP) {
-					if (sel.rom == 0 && compteur == 0) {
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// prev filter
+							cfg.list--;
+							if (cfg.list < 0) cfg.list = NB_FILTERS - 1;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] == 0) {
+					} else if (sel.rom == 0 && compteur == 0) {
 						sel.rom = romlist.nb_list[cfg.list] - 1;
-						if (romlist.nb_list[cfg.list] < 14) {
-							sel.y = START_Y - 1 + ((romlist.nb_list[cfg.list] - 1) * 9);
+						if (romlist.nb_list[cfg.list] < LINES_COUNT) {
+							sel.y = START_Y - 1 + ((romlist.nb_list[cfg.list] - 1) * LINE_HEIGHT);
 							//sel.ofs = 0;
 						} else {
-							sel.y = START_Y - 1 + (12 * 9);
-							sel.ofs = romlist.nb_list[cfg.list] - 13;
+							sel.y = START_Y - 1 + ((LINES_COUNT - 1) * LINE_HEIGHT);
+							sel.ofs = romlist.nb_list[cfg.list] - LINES_COUNT;
 						}
 					} else {
-						if(sel.rom > romlist.nb_list[cfg.list] - 7 || sel.ofs == 0) {
+						if(sel.rom > romlist.nb_list[cfg.list] - LINES_COUNT_HALF || sel.ofs == 0) {
 							if(sel.rom > 0) {
-								sel.y -= 9;
+								sel.y -= LINE_HEIGHT;
 								--sel.rom;
 								if(compteur == 0) {
 									load_preview(sel.rom);
@@ -1108,16 +1287,43 @@ void gui_menu_main()
 							}
 						}
 					}
-				} else if(event.key.keysym.sym == SDLK_LEFT && sel.x > 0) {
-					--sel.x;
-				} else if(event.key.keysym.sym == SDLK_RIGHT && sel.x < romlist.long_max - 53) {
-					++sel.x;
+				} else if(event.key.keysym.sym == SDLK_LEFT) {
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// prev hardware
+							cfg.hardware--;
+							if (cfg.hardware < 0) cfg.hardware = NB_HARDWARES - 1;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] == 0) {
+					} else if (sel.x > 0) {
+						--sel.x;
+					}
+				} else if(event.key.keysym.sym == SDLK_RIGHT) {
+					Uint8* keystate = SDL_GetKeyState(NULL);
+					if (keystate[SDLK_LSHIFT]) {
+						if (compteur == 0) {
+							// next hardware
+							cfg.hardware = (cfg.hardware + 1) % NB_HARDWARES;
+							gui_reset_selection();
+							prep_bg_main();
+							gui_write_cfg();
+						}
+					} else if (romlist.nb_list[cfg.list] == 0) {
+					} else if (sel.x < romlist.long_max - 53) {
+						++sel.x;
+					}
+
 				} else if(event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_LALT) {
 					if(ss_prg_credit()) Quit = 1;
 				} else if(event.key.keysym.sym == SDLK_LCTRL){
 					// executer l'emu
-					if(ROMLIST(etat, sel.rom) != ROUGE) {
+					if(romlist.nb_list[cfg.list] != 0 && ROMLIST(etat, sel.rom) != ROUGE) {
 						ss_prog_run();
+						prep_bg_main();
 
 						// flush event queue
 						while(SDL_PollEvent(&event));
@@ -1132,7 +1338,7 @@ void gui_menu_main()
 				} else if(event.key.keysym.sym == SDLK_SPACE ){
 					if(compteur == 0) ss_prg_help();
 				} else if(event.key.keysym.sym == SDLK_RETURN ){
-					ss_prg_options();
+					ss_prg_options(OPTION_MAIN_FIRST, OPTION_MAIN_LAST);
 				}
 			}
 			++compteur;

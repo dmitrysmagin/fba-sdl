@@ -25,6 +25,9 @@ typedef struct config
 	int delayspeed;
 	int repeatspeed;
 	int list;
+	int hardware;
+	int genre;
+	int clone;
 	int FXshadow;
 	int skin;
 } CONFIG;

@@ -20,7 +20,20 @@
 #define _GUI_ROMLIST_H_
 
 #define NB_FILTERS	4
+#define NB_HARDWARES	21
+#define NB_GENRES	20
+#define NB_CLONES	2
 #define NB_MAX_GAMES	6000
+
+typedef struct
+{
+	unsigned int code;
+	const char * label;
+} FILTER_DESC;
+
+extern FILTER_DESC hardwares[];
+extern FILTER_DESC genres[];
+extern FILTER_DESC clones[];
 
 typedef struct
 {
@@ -32,13 +45,16 @@ typedef struct
 	char *manufacturer[NB_MAX_GAMES];
 	char *parent[NB_MAX_GAMES];
 	unsigned char etat[NB_MAX_GAMES];
+	unsigned int hardware[NB_MAX_GAMES];
+	unsigned int genre[NB_MAX_GAMES];
 	unsigned int longueur[NB_MAX_GAMES];
 	unsigned int long_max;
 } ROMLIST;
 
 extern ROMLIST romlist;
-extern unsigned int romsort[NB_FILTERS][NB_MAX_GAMES];
+extern unsigned int unfiltered_nb_list[NB_FILTERS];
 
 void gui_sort_romlist();
+unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int clone);
 
 #endif // _GUI_ROMLIST_H_
