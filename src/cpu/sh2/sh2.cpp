@@ -52,7 +52,7 @@ typedef unsigned long long UINT64;*/
 
 #define BUSY_LOOP_HACKS 	1
 #define FAST_OP_FETCH		1
-#define USE_JUMPTABLE		1
+#define USE_JUMPTABLE		0
 
 #define SH2_INT_15			15
 
