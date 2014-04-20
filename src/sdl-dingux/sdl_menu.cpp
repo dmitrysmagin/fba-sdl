@@ -27,6 +27,7 @@
 #include "snd.h"
 #include "sdl_run.h"
 #include "sdl_video.h"
+#include "sdl_input.h"
 
 #ifdef FBA_DEBUG
 #include "m68000_intf.h"
@@ -73,6 +74,7 @@ static void gui_Savestate() { StatedSave(nSavestateSlot); }
 static void call_exit() { extern int done; GameLooping = false; done = 1; }
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
+static void gui_AutofireMenuRun();
 static void gui_reset();
 
 /* data definitions */
@@ -81,10 +83,14 @@ int gui_KeyData[] = {0, 1, 2, 3, 4, 5};
 int gui_KeyValue[] = {SDLK_LCTRL, SDLK_LALT, SDLK_SPACE, SDLK_LSHIFT, SDLK_TAB, SDLK_BACKSPACE};
 char *gui_SoundDrvNames[] = {"No sound", "LIBAO", "SDL mutex", "SDL"};
 char *gui_SoundSampleRates[] = {"11025", "16000", "22050", "32000", "44100"};
+char *gui_AutofireFpsNames[] = {"off", "6 fps", "10 fps", "16 fps", "30 fps"};
+int gui_AutofireFpsData[] = {0, 0, 0, 0, 0, 0};
+int gui_AutofireFpsValue[] = {0, 6, 10, 16, 30};
 
 MENUITEM gui_MainMenuItems[] = {
 	{(char *)"Continue", NULL, 0, NULL, &call_continue},
 	{(char *)"Key config", NULL, 0, NULL, &gui_KeyMenuRun},
+	{(char *)"Autofire config", NULL, 0, NULL, &gui_AutofireMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
 	{(char *)"Reset", NULL, 0, NULL, &gui_reset},
@@ -92,7 +98,7 @@ MENUITEM gui_MainMenuItems[] = {
 	{NULL, NULL, 0, NULL, NULL}
 };
 
-MENU gui_MainMenu = { 6, 0, (MENUITEM *)&gui_MainMenuItems };
+MENU gui_MainMenu = { 7, 0, (MENUITEM *)&gui_MainMenuItems };
 
 MENUITEM gui_KeyMenuItems[] = {
 	{(char *)"Fire 1   - ", &gui_KeyData[0], 5, (char **)&gui_KeyNames, NULL},
@@ -105,6 +111,24 @@ MENUITEM gui_KeyMenuItems[] = {
 };
 
 MENU gui_KeyMenu = { 6, 0, (MENUITEM *)&gui_KeyMenuItems };
+
+MENUITEM gui_AutofireMenuItems[] = {
+	{(char *)"Autofire 1 fps - ", &gui_AutofireFpsData[0], 4, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 1 key - ", &gui_KeyData[0], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Autofire 2 fps - ", &gui_AutofireFpsData[1], 5, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 2 key - ", &gui_KeyData[1], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Autofire 3 fps - ", &gui_AutofireFpsData[2], 4, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 3 key - ", &gui_KeyData[2], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Autofire 4 fps - ", &gui_AutofireFpsData[3], 4, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 4 key - ", &gui_KeyData[3], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Autofire 5 fps - ", &gui_AutofireFpsData[4], 4, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 5 key - ", &gui_KeyData[4], 5, (char **)&gui_KeyNames, NULL},
+	{(char *)"Autofire 6 fps - ", &gui_AutofireFpsData[5], 4, (char **)&gui_AutofireFpsNames, NULL},
+	{(char *)"Autofire 6 key - ", &gui_KeyData[5], 5, (char **)&gui_KeyNames, NULL},
+	{NULL, NULL, 0, NULL, NULL}
+};
+
+MENU gui_AutofireMenu = { 12, 0, (MENUITEM *)&gui_AutofireMenuItems };
 
 int done = 0; // flag to indicate exit status
 extern unsigned char gui_font[2048];
@@ -186,11 +210,12 @@ void ShowMenu(MENU *menu)
 	SDL_FillRect(menuSurface, NULL, COLOR_BG);
 
 	// show menu lines
+	int startline = menu == &gui_AutofireMenu ? 12 : 18;
 	for(i = 0; i < menu->itemNum; i++, mi++) {
 		int fg_color;
 
 		if(menu->itemCur == i) fg_color = COLOR_ACTIVE_ITEM; else fg_color = COLOR_INACTIVE_ITEM;
-		ShowMenuItem(80, (18 + i) * 8, mi, fg_color);
+		ShowMenuItem(80, (startline + i) * 8, mi, fg_color);
 	}
 
 	// show preview screen
@@ -254,6 +279,26 @@ static void gui_KeyMenuRun()
 	key = &keymap.fire1;
 	for(int i = 0; i < 6; key++, i++)
 		*key = gui_KeyValue[gui_KeyData[i]];
+}
+
+static void gui_AutofireMenuRun()
+{
+	// key decode
+	CFG_AUTOFIRE_KEY *af = &autofire.fire1;
+	for(int i = 0; i < 6; af++, i++) {
+		for(int j = 0; j < 5; j++) if(gui_AutofireFpsValue[j] == af->fps) gui_AutofireFpsData[i] = j;
+		for(int j = 0; j < 6; j++) if(gui_KeyValue[j] == af->key) gui_KeyData[i] = j;
+	}
+
+	gui_MenuRun(&gui_AutofireMenu);
+
+	// key encode
+	af = &autofire.fire1;
+	for(int i = 0; i < 6; af++, i++) {
+		af->fps = gui_AutofireFpsValue[gui_AutofireFpsData[i]];
+		af->key = gui_KeyValue[gui_KeyData[i]];
+	}
+	sdl_autofire_init();
 }
 
 static void gui_reset()

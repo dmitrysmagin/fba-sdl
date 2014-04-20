@@ -72,11 +72,47 @@ void ChangeFrameskip(); // run.cpp
 static int keypad = 0; // redefinable keys
 static int keypc = 0;  // non-redefinabe keys
 
-void sdl_input_read() // called from do_keypad()
+// Autofire state:
+// 0 key up
+// 1 first action or last action is auto up
+// 2 last action is auto down
+typedef struct
+{
+	int keymap;
+	int keypc;
+	int state;
+	int interval;
+} AUTOFIRE_STATE;
+
+AUTOFIRE_STATE autofire_state[6];
+int autofire_count;
+
+void sdl_input_read(bool process_autofire) // called from do_keypad()
 {
 	SDL_Event event;
 
-	while(SDL_PollEvent(&event)) {
+	int auto_it = process_autofire ? autofire_count : 0;
+	while(auto_it > 0 || SDL_PollEvent(&event)) {
+		// process autofire
+		if (auto_it > 0) {
+			bool handle = false;
+			for (int it = auto_it - 1; it >= 0; it--) {
+				auto_it--;
+				if (autofire_state[it].state != 0) {
+					if (nCurrentFrame % autofire_state[it].interval != 0) {
+						continue;
+					}
+					event.type = (autofire_state[it].state == 1) ? SDL_KEYDOWN : SDL_KEYUP;
+					autofire_state[it].state = autofire_state[it].state % 2 + 1;
+					event.key.keysym.sym = (SDLKey)autofire_state[it].keymap;
+					handle = true;
+					break;
+				}
+			}
+			if (!handle) {
+				break;
+			}
+		}
 		if (event.type == SDL_KEYUP) {
 			// FBA keypresses
 			if (event.key.keysym.sym == keymap.up) keypad &= ~KEYPAD_UP;
@@ -93,19 +129,21 @@ void sdl_input_read() // called from do_keypad()
 			else if (event.key.keysym.sym == keymap.start1) keypad &= ~KEYPAD_START;
 
 			// handheld keypresses
-			if (event.key.keysym.sym == SDLK_LCTRL) keypc &= ~BUTTON_A;
-			else if (event.key.keysym.sym == SDLK_LALT) keypc &= ~BUTTON_B;
-			else if (event.key.keysym.sym == SDLK_SPACE) keypc &= ~BUTTON_X;
-			else if (event.key.keysym.sym == SDLK_LSHIFT) keypc &= ~BUTTON_Y;
-			else if (event.key.keysym.sym == SDLK_TAB) keypc &= ~BUTTON_SL;
-			else if (event.key.keysym.sym == SDLK_BACKSPACE) keypc &= ~BUTTON_SR;
-			else if (event.key.keysym.sym == SDLK_ESCAPE) keypc &= ~BUTTON_SELECT;
-			else if (event.key.keysym.sym == SDLK_RETURN) keypc &= ~BUTTON_START;
-			else if (event.key.keysym.sym == SDLK_q) keypc &= ~BUTTON_QT;
-			else if (event.key.keysym.sym == SDLK_p) keypc &= ~BUTTON_PAUSE;
-			else if (event.key.keysym.sym == SDLK_s) keypc &= ~BUTTON_QSAVE;
-			else if (event.key.keysym.sym == SDLK_l) keypc &= ~BUTTON_QLOAD;
-			else if (event.key.keysym.sym == SDLK_m) keypc &= ~BUTTON_MENU;
+			if (!process_autofire) {
+				if (event.key.keysym.sym == SDLK_LCTRL) keypc &= ~BUTTON_A;
+				else if (event.key.keysym.sym == SDLK_LALT) keypc &= ~BUTTON_B;
+				else if (event.key.keysym.sym == SDLK_SPACE) keypc &= ~BUTTON_X;
+				else if (event.key.keysym.sym == SDLK_LSHIFT) keypc &= ~BUTTON_Y;
+				else if (event.key.keysym.sym == SDLK_TAB) keypc &= ~BUTTON_SL;
+				else if (event.key.keysym.sym == SDLK_BACKSPACE) keypc &= ~BUTTON_SR;
+				else if (event.key.keysym.sym == SDLK_ESCAPE) keypc &= ~BUTTON_SELECT;
+				else if (event.key.keysym.sym == SDLK_RETURN) keypc &= ~BUTTON_START;
+				else if (event.key.keysym.sym == SDLK_q) keypc &= ~BUTTON_QT;
+				else if (event.key.keysym.sym == SDLK_p) keypc &= ~BUTTON_PAUSE;
+				else if (event.key.keysym.sym == SDLK_s) keypc &= ~BUTTON_QSAVE;
+				else if (event.key.keysym.sym == SDLK_l) keypc &= ~BUTTON_QLOAD;
+				else if (event.key.keysym.sym == SDLK_m) keypc &= ~BUTTON_MENU;
+			}
 		} else if (event.type == SDL_KEYDOWN) {
 			// FBA keypresses
 			if (event.key.keysym.sym == keymap.up) keypad |= KEYPAD_UP;
@@ -122,19 +160,24 @@ void sdl_input_read() // called from do_keypad()
 			else if (event.key.keysym.sym == keymap.start1) keypad |= KEYPAD_START;
 
 			// handheld keypresses
-			if (event.key.keysym.sym == SDLK_LCTRL) keypc |= BUTTON_A;
-			else if (event.key.keysym.sym == SDLK_LALT) keypc |= BUTTON_B;
-			else if (event.key.keysym.sym == SDLK_SPACE) keypc |= BUTTON_X;
-			else if (event.key.keysym.sym == SDLK_LSHIFT) keypc |= BUTTON_Y;
-			else if (event.key.keysym.sym == SDLK_TAB) keypc |= BUTTON_SL;
-			else if (event.key.keysym.sym == SDLK_BACKSPACE) keypc |= BUTTON_SR;
-			else if (event.key.keysym.sym == SDLK_ESCAPE) keypc |= BUTTON_SELECT;
-			else if (event.key.keysym.sym == SDLK_RETURN) keypc |= BUTTON_START;
-			else if (event.key.keysym.sym == SDLK_q) keypc |= BUTTON_QT;
-			else if (event.key.keysym.sym == SDLK_p) keypc |= BUTTON_PAUSE;
-			else if (event.key.keysym.sym == SDLK_s) keypc |= BUTTON_QSAVE;
-			else if (event.key.keysym.sym == SDLK_l) keypc |= BUTTON_QLOAD;
-			else if (event.key.keysym.sym == SDLK_m) keypc |= BUTTON_MENU;
+			if (!process_autofire) {
+				if (event.key.keysym.sym == SDLK_LCTRL) keypc |= BUTTON_A;
+				else if (event.key.keysym.sym == SDLK_LALT) keypc |= BUTTON_B;
+				else if (event.key.keysym.sym == SDLK_SPACE) keypc |= BUTTON_X;
+				else if (event.key.keysym.sym == SDLK_LSHIFT) keypc |= BUTTON_Y;
+				else if (event.key.keysym.sym == SDLK_TAB) keypc |= BUTTON_SL;
+				else if (event.key.keysym.sym == SDLK_BACKSPACE) keypc |= BUTTON_SR;
+				else if (event.key.keysym.sym == SDLK_ESCAPE) keypc |= BUTTON_SELECT;
+				else if (event.key.keysym.sym == SDLK_RETURN) keypc |= BUTTON_START;
+				else if (event.key.keysym.sym == SDLK_q) keypc |= BUTTON_QT;
+				else if (event.key.keysym.sym == SDLK_p) keypc |= BUTTON_PAUSE;
+				else if (event.key.keysym.sym == SDLK_s) keypc |= BUTTON_QSAVE;
+				else if (event.key.keysym.sym == SDLK_l) keypc |= BUTTON_QLOAD;
+				else if (event.key.keysym.sym == SDLK_m) keypc |= BUTTON_MENU;
+			}
+		}
+		if (process_autofire && auto_it <= 0) {
+			break;
 		}
 	}
 }
@@ -150,7 +193,16 @@ void do_keypad()
 	ServiceRequest = 0;
 	P1P2Start = 0;
 
-	sdl_input_read();
+	sdl_input_read(false);
+	for (int it = 0; it < autofire_count; it++) {
+		if (autofire_state[it].state == 0 && (keypc & autofire_state[it].keypc)) {
+			autofire_state[it].state = 1;
+		}
+		if (autofire_state[it].state != 0 && !(keypc & autofire_state[it].keypc)) {
+			autofire_state[it].state = 0;
+		}
+	}
+	sdl_input_read(true);
 
 	// process redefinable keypresses
 	if (keypad & KEYPAD_UP) FBA_KEYPAD[0] |= bVert ? KEYPAD_LEFT : KEYPAD_UP;
@@ -199,7 +251,6 @@ void do_keypad()
 			bPauseOn = 0;
 		}
 	}
-
 	if ((keypc & BUTTON_SL) && (keypc & BUTTON_SR)) {
 		if (keypc & BUTTON_Y) { 
 			ChangeFrameskip();
@@ -234,6 +285,32 @@ void sdl_input_init()
 			printf("Hats %d\t",SDL_JoystickNumHats(joys[i]));
 			printf("Buttons %d\t",SDL_JoystickNumButtons(joys[i]));
 			printf("Axis %d\n",SDL_JoystickNumAxes(joys[i]));
+		}
+	}
+	sdl_autofire_init();
+}
+
+void sdl_autofire_init() {
+	autofire_count = 0;
+	CFG_AUTOFIRE_KEY *af = &autofire.fire1;
+	int *key = &keymap.fire1;
+	for(int i = 0; i < 6; af++, key++, i++) {
+		if (af->fps != 0) {
+			autofire_state[autofire_count].keymap = *key;
+			autofire_state[autofire_count].state = 0;
+			autofire_state[autofire_count].interval = af->fps / 2;
+			
+			int keydef = 0;
+			if (af->key == SDLK_LCTRL) keydef = BUTTON_A;
+			else if (af->key == SDLK_LALT) keydef = BUTTON_B;
+			else if (af->key == SDLK_SPACE) keydef = BUTTON_X;
+			else if (af->key == SDLK_LSHIFT) keydef = BUTTON_Y;
+			else if (af->key == SDLK_TAB) keydef = BUTTON_SL;
+			else if (af->key == SDLK_BACKSPACE) keydef = BUTTON_SR;
+
+			if (key != 0) {
+				autofire_state[autofire_count++].keypc = keydef;
+			}
 		}
 	}
 }

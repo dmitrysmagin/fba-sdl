@@ -6,6 +6,7 @@ int nIniVersion = 0;
 
 CFG_OPTIONS options;
 CFG_KEYMAP keymap;
+CFG_AUTOFIRE autofire;
 
 // ---------------------------------------------------------------------------
 // config file parsing
@@ -177,6 +178,19 @@ void ConfigGameDefault()
 	keymap.quit = SDLK_q;
 	keymap.qsave = SDLK_s;		// quick save
 	keymap.qload = SDLK_l;		// quick load
+
+	autofire.fire1.fps = 0;
+	autofire.fire1.key = keymap.fire1;
+	autofire.fire2.fps = 0;
+	autofire.fire2.key = keymap.fire2;
+	autofire.fire3.fps = 0;
+	autofire.fire3.key = keymap.fire3;
+	autofire.fire4.fps = 0;
+	autofire.fire4.key = keymap.fire4;
+	autofire.fire5.fps = 0;
+	autofire.fire5.key = keymap.fire5;
+	autofire.fire6.fps = 0;
+	autofire.fire6.key = keymap.fire6;
 }
 
 int ConfigGameLoad()
@@ -224,6 +238,19 @@ int ConfigGameLoad()
 			if(strcmp(arg1, "KEY_FIRE6") == 0) keymap.fire6 = argd;
 			if(strcmp(arg1, "KEY_QUIT") == 0) keymap.quit = argd;
 			if(strcmp(arg1, "KEY_PAUSE") == 0) keymap.pause = argd;
+
+			if(strcmp(arg1, "AUTO_FIRE1_FPS") == 0) autofire.fire1.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE1_KEY") == 0) autofire.fire1.key = argd;
+			if(strcmp(arg1, "AUTO_FIRE2_FPS") == 0) autofire.fire2.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE2_KEY") == 0) autofire.fire2.key = argd;
+			if(strcmp(arg1, "AUTO_FIRE3_FPS") == 0) autofire.fire3.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE3_KEY") == 0) autofire.fire3.key = argd;
+			if(strcmp(arg1, "AUTO_FIRE4_FPS") == 0) autofire.fire4.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE4_KEY") == 0) autofire.fire4.key = argd;
+			if(strcmp(arg1, "AUTO_FIRE5_FPS") == 0) autofire.fire5.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE5_KEY") == 0) autofire.fire5.key = argd;
+			if(strcmp(arg1, "AUTO_FIRE6_FPS") == 0) autofire.fire6.fps = argd;
+			if(strcmp(arg1, "AUTO_FIRE6_KEY") == 0) autofire.fire6.key = argd;
 		}
 	}
 
@@ -270,6 +297,20 @@ int ConfigGameSave()
 	fprintf(fp, "KEY_FIRE6 %d\n", keymap.fire6);
 	fprintf(fp, "KEY_QUIT %d\n", keymap.quit);
 	fprintf(fp, "KEY_PAUSE %d\n", keymap.pause);
+
+	fprintf(fp, "AUTO_FIRE1_FPS %d\n", autofire.fire1.fps);
+	fprintf(fp, "AUTO_FIRE1_KEY %d\n", autofire.fire1.key);
+	fprintf(fp, "AUTO_FIRE2_FPS %d\n", autofire.fire2.fps);
+	fprintf(fp, "AUTO_FIRE2_KEY %d\n", autofire.fire2.key);
+	fprintf(fp, "AUTO_FIRE3_FPS %d\n", autofire.fire3.fps);
+	fprintf(fp, "AUTO_FIRE3_KEY %d\n", autofire.fire3.key);
+	fprintf(fp, "AUTO_FIRE4_FPS %d\n", autofire.fire4.fps);
+	fprintf(fp, "AUTO_FIRE4_KEY %d\n", autofire.fire4.key);
+	fprintf(fp, "AUTO_FIRE5_FPS %d\n", autofire.fire5.fps);
+	fprintf(fp, "AUTO_FIRE5_KEY %d\n", autofire.fire5.key);
+	fprintf(fp, "AUTO_FIRE6_FPS %d\n", autofire.fire6.fps);
+	fprintf(fp, "AUTO_FIRE6_KEY %d\n", autofire.fire6.key);
+
 	fclose(fp);
 	return 1;
 }

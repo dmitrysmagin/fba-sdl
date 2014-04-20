@@ -169,8 +169,25 @@ typedef struct
 	int qload;
 } CFG_KEYMAP;
 
+typedef struct
+{
+	int fps;
+	int key;
+} CFG_AUTOFIRE_KEY;
+
+typedef struct
+{
+	CFG_AUTOFIRE_KEY fire1;
+	CFG_AUTOFIRE_KEY fire2;
+	CFG_AUTOFIRE_KEY fire3;
+	CFG_AUTOFIRE_KEY fire4;
+	CFG_AUTOFIRE_KEY fire5;
+	CFG_AUTOFIRE_KEY fire6;
+} CFG_AUTOFIRE;
+
 extern CFG_OPTIONS options;
 extern CFG_KEYMAP keymap;
+extern CFG_AUTOFIRE autofire;
 
 int ConfigAppLoad();
 int ConfigAppSave();
