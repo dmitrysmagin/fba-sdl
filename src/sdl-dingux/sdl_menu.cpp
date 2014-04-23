@@ -78,7 +78,12 @@ static void gui_AutofireMenuRun();
 static void gui_reset();
 
 /* data definitions */
+#define GCW0_KEY_ORDER
+#ifdef GCW0_KEY_ORDER
+char *gui_KeyNames[] = {"A", "B", "Y", "X", "L", "R"};
+#else
 char *gui_KeyNames[] = {"A", "B", "X", "Y", "L", "R"};
+#endif
 int gui_KeyData[] = {0, 1, 2, 3, 4, 5};
 int gui_KeyValue[] = {SDLK_LCTRL, SDLK_LALT, SDLK_SPACE, SDLK_LSHIFT, SDLK_TAB, SDLK_BACKSPACE};
 char *gui_SoundDrvNames[] = {"No sound", "LIBAO", "SDL mutex", "SDL"};
