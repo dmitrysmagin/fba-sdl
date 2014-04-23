@@ -460,21 +460,7 @@ void prep_bg()
 		drawSprite(preview, bg_temp, 0, 0, 220 - preview->w / 2, 3, 192, 112);
 	}
 
-	switch(cfg.list) {
-	case 0:
-		sprintf((char*)g_string, "All: %d roms", unfiltered_nb_list[0]);
-		break;
-	case 1:
-		sprintf((char*)g_string, "Missing: %d roms", unfiltered_nb_list[1]);
-		break;
-	case 2:
-		sprintf((char*)g_string, "Available: %d roms", unfiltered_nb_list[2]);
-		break;
-	case 3:
-		sprintf((char*)g_string, "Playable: %d roms", unfiltered_nb_list[3]);
-		break;
-	}
-
+	sprintf((char*)g_string, "%s: %d roms", filter[cfg.list].label, unfiltered_nb_list[cfg.list]);
 	put_string( g_string , 6 , 95 , BLANC , bg_temp );
 	
 	sprintf((char*)g_string, "Show: %d roms", romlist.nb_list[cfg.list]);
@@ -492,6 +478,7 @@ void prep_bg_main(void)
 void prep_bg_opt(int first)
 {
 	if (first == OPTION_MAIN_FIRST) {
+		gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone); // update romlist counters
 		prep_bg();
 		sprintf((char*)g_string, "Main settings:");
 		put_string( g_string , 6 , 120 , BLEU , bg_temp );
@@ -511,31 +498,34 @@ void prep_bg_run(void)
 	preparation_fenetre(bgs, bg_temp, 269, 119, 47, 118);
 }
 
-void affiche_BG(void)
+void affiche_BG(int rom = -1)
 {
 	drawSprite(bg_temp, gui_screen, 0, 0, 0, 0, 320, 240);
 
-	if (romlist.nb_list[cfg.list] == 0)
-	{
+	if (romlist.nb_list[cfg.list] == 0) {
 		return;
 	}
 
-	sprintf((char*)g_string, "Rom: %s", ROMLIST(zip, sel.rom));
+	if (rom == -1) {
+		rom = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
+	}
+
+	sprintf((char*)g_string, "Rom: %s", romlist.zip[rom]);
 	put_string(g_string, 6, 55, BLANC, gui_screen);
 
-	if(strcmp(ROMLIST(parent, sel.rom), "fba") == 0) {
+	if(strcmp(romlist.parent[rom], "fba") == 0) {
 		//put_string("Parent rom", 6, 65, BLANC, gui_screen);
 	} else {
-		sprintf((char*)g_string, "Clone of %s", ROMLIST(parent, sel.rom));
+		sprintf((char*)g_string, "Clone of %s", romlist.parent[rom]);
 		put_string(g_string, 6, 65, BLANC, gui_screen);
 	}
 
-	if(ROMLIST(year, sel.rom) != NULL) {
-		put_string(ROMLIST(year, sel.rom), 6, 75, BLANC, gui_screen);
+	if(romlist.year[rom] != NULL) {
+		put_string(romlist.year[rom], 6, 75, BLANC, gui_screen);
 	}
 
-	if(ROMLIST(manufacturer, sel.rom) != NULL) {
-		put_string(ROMLIST(manufacturer, sel.rom), 6, 85, BLANC, gui_screen);
+	if(romlist.manufacturer[rom] != NULL) {
+		put_string(romlist.manufacturer[rom], 6, 85, BLANC, gui_screen);
 	}
 
 }
@@ -568,15 +558,16 @@ void put_option_line(int first, unsigned char num, unsigned char y)
 		if (cfg.skin) put_string( "External skin: Enable" , OPTIONS_START_X , y , BLANC , gui_screen );
 		else put_string( "External skin: Disable" , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
+	case OPTION_GUI_FAV_CLEAR:
+		put_string( "Clear missing roms in favorites list" , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
 	case OPTION_GUI_RETURN:
 		put_string( "Return to the rom list" , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
 	// FILTER OPTIONS
 	case OPTION_GUI_FILTER_LIST:
-		if (cfg.list == 3) put_string( "Show roms: Playable only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else if (cfg.list == 2) put_string( "Show roms: Available only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else if (cfg.list == 1) put_string( "Show roms: Missing only" , OPTIONS_START_X , y , BLANC , gui_screen );
-		else put_string( "Show roms: All" , OPTIONS_START_X , y , BLANC , gui_screen );
+		sprintf((char*)g_string, "Show roms: %s only",  filter[cfg.list].label );
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
 	case OPTION_GUI_FILTER_HARDWARE:
 		sprintf((char*)g_string, "Hardware: %s",  hardwares[cfg.hardware].label);
@@ -811,10 +802,19 @@ void ss_prg_options(int first, int last)
 						ss_prg_options(OPTION_PATHS_FIRST, OPTION_PATHS_LAST);
 						gui_write_cfg();
 						prep_bg_opt(first);
+					} else if (option == OPTION_GUI_FAV_CLEAR) {
+						gui_clear_favorite(true);
+						gui_reset_selection();
+						prep_bg_opt(first);
 					}
 				} else if(event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_SPACE) {
-					if(first + options_num >= OPTION_GUI_PATH0 && first + options_num <= OPTION_GUI_PATH19) {
-						strcpy(szAppRomPaths[first + options_num - OPTION_GUI_PATH0], "");
+					int option = first + options_num;
+					if(option >= OPTION_GUI_PATH0 && option <= OPTION_GUI_PATH19) {
+						strcpy(szAppRomPaths[option - OPTION_GUI_PATH0], "");
+					} else if (option == OPTION_GUI_FAV_CLEAR) {
+						gui_clear_favorite(true);
+						gui_reset_selection();
+						prep_bg_opt(first);
 					}
 				} else if(event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_LALT) {
 					prep_bg_main();
@@ -848,6 +848,7 @@ static int run_options[] = {
 #ifdef OPTIONS_FOR_GCW0
 	OPTION_FBA_ANALOG,
 #endif
+	OPTION_FBA_FAVORITE,
 	0
 };
 
@@ -890,6 +891,10 @@ void put_run_option_line(unsigned char num, unsigned char y)
 		sprintf((char*)g_string, "%d%%" , options.sense);
 		put_string(g_string, CONF_START_X, y, VERT, gui_screen);
 		break;
+	case OPTION_FBA_FAVORITE:
+		put_string("Rom in the favorites list", OPTIONS_START_X, y, BLANC, gui_screen);
+		put_string((char *)(gui_in_favorite(nBurnDrvActive) ? "yes" : "no"), CONF_START_X, y, VERT, gui_screen);
+		break;
 	}
 }
 
@@ -908,7 +913,7 @@ void ss_prog_run(void)
 	int Quit;
 	unsigned int compteur = 1;
 
-	nBurnDrvActive = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
+	int nb_rom = nBurnDrvActive = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
 	if(!ConfigGameLoad()) ConfigGameSave();
 
 	run_y = START_Y-1;
@@ -920,7 +925,7 @@ void ss_prog_run(void)
 	Quit=0;
 
 	while(!Quit) {
-		affiche_BG();
+		affiche_BG(nb_rom);
 
 		drawSprite(barre, gui_screen, 0, 0, 4, run_y, 260, 10);
 		drawSprite(barre, gui_screen, 0, 0, 269, run_y, 47, 10);
@@ -986,6 +991,12 @@ void ss_prog_run(void)
 							options.sense--;
 							if(options.sense < 0) options.sense = 100;
 							break;
+						case OPTION_FBA_FAVORITE:
+							gui_favorite_change(nBurnDrvActive);
+							if (cfg.list == 4) {
+								gui_reset_selection();
+							}
+							break;
 					}
 				} else if (event.key.keysym.sym == SDLK_RIGHT) {
 					switch(run_options[run_num]) {
@@ -1014,11 +1025,17 @@ void ss_prog_run(void)
 							options.sense++;
 							if(options.sense > 100) options.sense = 0;
 							break;
+						case OPTION_FBA_FAVORITE:
+							gui_favorite_change(nBurnDrvActive);
+							if (cfg.list == 4) {
+								gui_reset_selection();
+							}
+							break;
 					}
 				} else if (event.key.keysym.sym == SDLK_LCTRL) {
 					save_lastsel();
 
-					nBurnDrvActive = nBurnDrvSelect[0] = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
+					nBurnDrvActive = nBurnDrvSelect[0] = nb_rom;
 					ConfigGameSave();
 
 					SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -1046,7 +1063,7 @@ void ss_prog_run(void)
 		}
 	}
 
-	nBurnDrvActive = gui_get_filtered_romsort(cfg.list, cfg.hardware, cfg.genre, cfg.clone)[sel.rom];
+	nBurnDrvActive = nb_rom;
 	ConfigGameSave();
 }
 

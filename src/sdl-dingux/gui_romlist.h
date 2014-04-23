@@ -19,7 +19,7 @@
 #ifndef _GUI_ROMLIST_H_
 #define _GUI_ROMLIST_H_
 
-#define NB_FILTERS	4
+#define NB_FILTERS	5
 #define NB_HARDWARES	21
 #define NB_GENRES	20
 #define NB_CLONES	2
@@ -31,6 +31,7 @@ typedef struct
 	const char * label;
 } FILTER_DESC;
 
+extern FILTER_DESC filter[];
 extern FILTER_DESC hardwares[];
 extern FILTER_DESC genres[];
 extern FILTER_DESC clones[];
@@ -56,5 +57,11 @@ extern unsigned int unfiltered_nb_list[NB_FILTERS];
 
 void gui_sort_romlist();
 unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int clone);
+
+void gui_add_to_favorite(unsigned int rom);
+void gui_remove_from_favorite(unsigned int rom);
+void gui_clear_favorite(bool missing);
+void gui_favorite_change(unsigned int rom);
+bool gui_in_favorite(unsigned int rom);
 
 #endif // _GUI_ROMLIST_H_

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <set>
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
@@ -29,6 +30,15 @@
 #include "burner.h"
 #include "gui_main.h"
 #include "gui_romlist.h"
+
+FILTER_DESC filter[] =
+{
+	{ 0, "All" },
+	{ 1, "Missing" },
+	{ 2, "Available" },
+	{ 3, "Playable" },
+	{ 4, "Favorites" }
+};
 
 FILTER_DESC hardwares[] =
 {
@@ -101,6 +111,48 @@ int current_clone;
 
 unsigned int unfiltered_nb_list[NB_FILTERS];
 unsigned int * unfiltered_romsort[NB_FILTERS];
+
+std::set<unsigned int> favorite;
+int favorite_changed = 1;
+
+void load_favorite()
+{
+	FILE *fp;
+	char filename[512];
+	char ligne[256];
+	unsigned int romnum;
+
+	sprintf(filename, "%s/favorite.cfg", szAppHomePath);
+	
+	if((fp = fopen(filename, "r")) != NULL) {
+		favorite.clear();
+		while(fgets(ligne, sizeof(ligne), fp) != NULL) {
+			sscanf(ligne, "%u", &romnum);
+			favorite.insert(romnum);
+		}
+		fclose(fp);
+		favorite_changed = 1;
+	}
+}
+
+void save_favorite()
+{
+	FILE *fp;
+	char filename[512];
+	char g_string[255];
+
+	sprintf(filename, "%s/favorite.cfg", szAppHomePath);
+	
+	fp = fopen(filename, "w");
+	if (fp != NULL) {
+		for (std::set<unsigned int>::iterator it = favorite.begin();
+			it != favorite.end(); it++) {
+			sprintf((char*)g_string, "%u\n", *it);
+			fputs(g_string, fp);
+		}
+		fclose(fp);
+	}
+}
 
 static void sort_alphabet(unsigned int romsort[], unsigned int minimun, unsigned int maximum)
 {
@@ -177,6 +229,7 @@ void gui_sort_romlist()
 	romlist.nb_list[1] = 0;
 	romlist.nb_list[2] = 0;
 	romlist.nb_list[3] = 0;
+	romlist.nb_list[4] = 0;
 
 	for (int i = 0; i < romlist.nb_list[0]; ++i) {
 		if(romlist.etat[unfiltered_romsort[0][i]] == ROUGE) {
@@ -198,11 +251,14 @@ void gui_sort_romlist()
 	printf("romlist.nb_list[1]=%i\n", romlist.nb_list[1]);
 	printf("romlist.nb_list[2]=%i\n", romlist.nb_list[2]);
 	printf("romlist.nb_list[3]=%i\n", romlist.nb_list[3]);
+	printf("romlist.nb_list[4]=%i\n", romlist.nb_list[4]);
 
 	for (int i = 0; i < NB_FILTERS; i++)
 	{
 		unfiltered_nb_list[i] = romlist.nb_list[i];
 	}
+
+	load_favorite();
 }
 
 unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int clone)
@@ -213,7 +269,8 @@ unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int
 	if (clone < 0 || clone >= NB_CLONES) clone = 0;
 
 	if (romsort == NULL ||
-		current_filter != filter || current_hardware != hardware || current_genre != genre || current_clone != clone)
+		current_filter != filter || current_hardware != hardware || current_genre != genre || current_clone != clone ||
+		(filter == 4 && favorite_changed == 1))
 	{
 		current_filter = filter;
 		current_hardware = hardware;
@@ -225,10 +282,33 @@ unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int
 			free(romsort);
 			romsort = NULL;
 		}
+		
 		romsort = (unsigned int *)malloc(NB_MAX_GAMES * sizeof(unsigned int));
-		memcpy(romsort, unfiltered_romsort[filter], NB_MAX_GAMES * sizeof(unsigned int));
-		romlist.nb_list[filter] = unfiltered_nb_list[filter];
-
+		if (filter != 4)
+		{
+			memcpy(romsort, unfiltered_romsort[filter], NB_MAX_GAMES * sizeof(unsigned int));
+			romlist.nb_list[filter] = unfiltered_nb_list[filter];
+		}
+		else
+		{
+			// favorite
+			memcpy(romsort, unfiltered_romsort[0], NB_MAX_GAMES * sizeof(unsigned int));
+			romlist.nb_list[filter] = unfiltered_nb_list[0];
+			
+			int counter = 0;
+			for (int i = 0; i < romlist.nb_list[filter]; i++)
+			{
+				if (favorite.find(romsort[i]) != favorite.end())
+				{
+					romsort[counter] = romsort[i];
+					counter++;
+				}
+			}
+			romlist.nb_list[filter] = counter;
+			unfiltered_nb_list[filter] = counter;
+		}
+		
+		// clone
 		if (current_clone == 1)
 		{
 			int counter = 0;
@@ -245,6 +325,8 @@ unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int
 
 			romlist.nb_list[filter] = counter;
 		}
+
+		// hardware
 		if (current_hardware != 0)
 		{
 			int counter = 0;
@@ -261,6 +343,7 @@ unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int
 			romlist.nb_list[filter] = counter;
 		}
 
+		// genrer
 		if (current_genre != 0)
 		{
 			int counter = 0;
@@ -280,3 +363,52 @@ unsigned int * gui_get_filtered_romsort(int filter, int hardware, int genre, int
 	return romsort;
 }
 
+void gui_add_to_favorite(unsigned int rom)
+{
+	favorite.insert(rom);
+	favorite_changed = 1;
+	save_favorite();
+}
+
+void gui_remove_from_favorite(unsigned int rom)
+{
+	favorite.erase(rom);
+	favorite_changed = 1;
+	save_favorite();
+}
+
+void gui_clear_favorite(bool missing)
+{
+	if (!missing) {
+		favorite.clear();
+	}
+	else {
+		for (std::set<unsigned int>::iterator it = favorite.begin(); it != favorite.end(); ) {
+			if (romlist.etat[*it] == ROUGE) {
+				favorite.erase(it++);
+			}
+			else {
+				++it;
+			}
+		}
+	}
+	favorite_changed = 1;
+	save_favorite();
+}
+
+bool gui_in_favorite(unsigned int rom)
+{
+	return favorite.find(rom) != favorite.end();
+}
+
+void gui_favorite_change(unsigned int rom)
+{
+	if (gui_in_favorite(rom))
+	{
+		gui_remove_from_favorite(rom);
+	}
+	else
+	{
+		gui_add_to_favorite(rom);
+	}
+}

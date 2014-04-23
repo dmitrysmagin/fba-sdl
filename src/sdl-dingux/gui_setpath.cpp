@@ -59,7 +59,7 @@ extern SDL_Surface *barre;
 void redraw_screen(void);
 void put_string(char *string, unsigned int pos_x, unsigned int pos_y, unsigned char couleur, SDL_Surface *s);
 void prep_bg();
-void affiche_BG();
+void affiche_BG(int rom = -1);
 
 void print_string(char *s, u16 fg_color, u16 bg_color, int x, int y)
 {
