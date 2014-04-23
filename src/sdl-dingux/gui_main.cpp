@@ -324,10 +324,10 @@ char ss_prg_credit(void)
 
 void ss_prg_help(void)
 {
-	#define HELP_X	53
-	#define HELP_Y	62
-	#define HELP_L	214
-	#define HELP_H	116
+	#define HELP_X  20
+	#define HELP_Y	52
+	#define HELP_L	280
+	#define HELP_H	136
 
 	unsigned int compteur = 1;
 	Uint32 Pnoir = SDL_MapRGB(help->format, 0, 0, 0);
@@ -344,14 +344,21 @@ void ss_prg_help(void)
 	carre_plein(help, HELP_X + 1, HELP_Y + 1, HELP_L - 2, HELP_H - 2, Pnoir);
 
 	put_string("COLOR HELP", 130, HELP_Y + 8, BLANC, help);
-	put_string("RED      missing", HELP_X + 48, HELP_Y + 24, ROUGE, help);
-	put_string("YELLOW   parent rom", HELP_X + 48, HELP_Y + 34, JAUNE, help);
-	put_string("ORANGE   clone rom", HELP_X + 48, HELP_Y + 44, ORANGE, help);
+	put_string("RED      missing", HELP_X + 82, HELP_Y + 22, ROUGE, help);
+	put_string("YELLOW   parent rom", HELP_X + 82, HELP_Y + 32, JAUNE, help);
+	put_string("ORANGE   clone rom", HELP_X + 82, HELP_Y + 42, ORANGE, help);
 	//put_string("         & parent detected", HELP_X + 8, HELP_Y + 54, JAUNE, help);
 	//put_string("GREEN    clone & parent & cache", HELP_X + 8, HELP_Y + 64, VERT, help);
 	//put_string("         detected", HELP_X + 8, HELP_Y + 74, VERT, help);
 	//put_string("BLUE     parent & cache detected", HELP_X + 8, HELP_Y + 84, BLEU, help);
-	put_string("Any button to return", 100, HELP_Y + 100, BLANC, help);
+	
+	put_string("HOTKEY HELP", 130, HELP_Y + 62, BLANC, help);
+	put_string("X+LEFT and X+RIGHT   filter by hardware", HELP_X + 10, HELP_Y + 76, BLEU, help);
+	put_string("X+UP and X+DOWN      filter by availability", HELP_X + 10, HELP_Y + 86, BLEU, help);
+	put_string("X+L and X+R          filter by genre", HELP_X + 10, HELP_Y + 96, BLEU, help);
+
+	put_string("Any button to return", 100, HELP_Y + 116, BLANC, help);
+
 
 	int Hquit = 0;
 	while(!Hquit) {

@@ -75,6 +75,7 @@ static void call_exit() { extern int done; GameLooping = false; done = 1; }
 static void call_continue() { extern int done; done = 1; }
 static void gui_KeyMenuRun();
 static void gui_AutofireMenuRun();
+static void gui_help();
 static void gui_reset();
 
 /* data definitions */
@@ -98,12 +99,13 @@ MENUITEM gui_MainMenuItems[] = {
 	{(char *)"Autofire config", NULL, 0, NULL, &gui_AutofireMenuRun},
 	{(char *)"Load state: ", &nSavestateSlot, 9, NULL, &gui_LoadState},
 	{(char *)"Save state: ", &nSavestateSlot, 9, NULL, &gui_Savestate},
+	{(char *)"Help", NULL, 0, NULL, &gui_help},
 	{(char *)"Reset", NULL, 0, NULL, &gui_reset},
 	{(char *)"Exit", NULL, 0, NULL, &call_exit},
 	{NULL, NULL, 0, NULL, NULL}
 };
 
-MENU gui_MainMenu = { 7, 0, (MENUITEM *)&gui_MainMenuItems };
+MENU gui_MainMenu = { 8, 0, (MENUITEM *)&gui_MainMenuItems };
 
 MENUITEM gui_KeyMenuItems[] = {
 	{(char *)"Fire 1   - ", &gui_KeyData[0], 5, (char **)&gui_KeyNames, NULL},
@@ -203,6 +205,13 @@ void ShowMenuItem(int x, int y, MENUITEM *m, int fg_color)
 	}
 }
 
+void ShowHeader()
+{
+	DrawString("Press B to return to game", COLOR_HELP_TEXT, COLOR_BG, 56, 220);
+	DrawString("FinalBurn Alpha for OpenDingux", COLOR_HELP_TEXT, COLOR_BG, 44, 2);
+	DrawString("Based on FBA " VERSION " (c) Team FB Alpha", COLOR_HELP_TEXT, COLOR_BG, 0, 12);
+}
+
 /*
 	Shows menu items and pointing arrow
 */
@@ -215,7 +224,7 @@ void ShowMenu(MENU *menu)
 	SDL_FillRect(menuSurface, NULL, COLOR_BG);
 
 	// show menu lines
-	int startline = menu == &gui_AutofireMenu ? 12 : 18;
+	int startline = menu == &gui_AutofireMenu ? 12 : 16;
 	for(i = 0; i < menu->itemNum; i++, mi++) {
 		int fg_color;
 
@@ -227,9 +236,7 @@ void ShowMenu(MENU *menu)
 	//ShowPreview(menu);
 
 	// print info string
-	DrawString("Press B to return to game", COLOR_HELP_TEXT, COLOR_BG, 56, 220);
-	DrawString("FinalBurn Alpha for OpenDingux", COLOR_HELP_TEXT, COLOR_BG, 44, 2);
-	DrawString("Based on FBA " VERSION " (c) Team FB Alpha", COLOR_HELP_TEXT, COLOR_BG, 0, 12);
+	ShowHeader();
 }
 
 /*
@@ -304,6 +311,42 @@ static void gui_AutofireMenuRun()
 		af->key = gui_KeyValue[gui_KeyData[i]];
 	}
 	sdl_autofire_init();
+}
+
+static void gui_help()
+{
+	int x = 60;
+	int row = 12;
+	int row_size = 8;
+	SDL_FillRect(menuSurface, NULL, COLOR_BG);
+
+	DrawString("D-PAD        Movement", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("SELECT       Coin", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("START        Start1", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("SELECT+START Start2", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("A,B,X,Y,L,R  Fire buttons", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("L+R+X        Show/hide fps", COLOR_INACTIVE_ITEM, COLOR_BG, x, (++row)++ * row_size);
+	DrawString("L+R+A        Quick load", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("L+R+B        Quick save", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("L+R+SELECT   Service menu", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+	DrawString("L+R+START    FBA SDL menu", COLOR_INACTIVE_ITEM, COLOR_BG, x, row++ * row_size);
+
+	ShowHeader();
+	gui_Flip();
+
+	SDL_Event gui_event;
+	done = 0;
+
+	while(!done) {
+		while(SDL_PollEvent(&gui_event)) {
+			if(gui_event.type == SDL_KEYDOWN) {
+				// DINGOO B - exit or back to previous menu
+				if(gui_event.key.keysym.sym == SDLK_LALT) return;
+			}
+		}
+		SDL_Delay(16);
+	}
+
 }
 
 static void gui_reset()
