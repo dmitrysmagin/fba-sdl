@@ -2,6 +2,9 @@
 #include "SDL/SDL.h"
 
 #include "burner.h"
+
+#include <dirent.h>
+
 int nIniVersion = 0;
 
 CFG_OPTIONS options;
@@ -149,6 +152,10 @@ int ConfigAppSave()
 
 void ConfigGameDefault()
 {
+	if (ConfigGameLoadDefault()) {
+		return;
+	}
+
 	// Initialize configuration options
 	options.sound = 2;
 	options.samplerate = 2;		// 0 - 11025, 1 - 16000, 2 - 22050, 3 - 32000
@@ -193,21 +200,11 @@ void ConfigGameDefault()
 	autofire.fire6.key = keymap.fire6;
 }
 
-int ConfigGameLoad()
+int ConfigGameLoad(FILE * f)
 {
-	FILE *f;
 	char arg1[128];
 	signed long argd;
 	char line[256];
-	char cfgname[MAX_PATH];
-
-	sprintf((char*)cfgname, "%s/%s.cfg", szAppConfigPath, BurnDrvGetTextA(DRV_NAME));
-
-	if(!(f = fopen(cfgname,"r"))) {
-		// set default values and exit
-		ConfigGameDefault();
-		return 0;
-	}
 
 	while(fgets(line,sizeof(line),f) != NULL) {
 		sscanf(line, "%s %d", &arg1, &argd);
@@ -254,20 +251,48 @@ int ConfigGameLoad()
 		}
 	}
 
-	fclose(f);
-
 	return 1;
 }
 
-int ConfigGameSave()
+int ConfigGameLoad()
 {
-	FILE *fp;
+	FILE *f;
 	char cfgname[MAX_PATH];
 
 	sprintf((char*)cfgname, "%s/%s.cfg", szAppConfigPath, BurnDrvGetTextA(DRV_NAME));
-	fp = fopen(cfgname, "w");
-	if(!fp) return 0;
+	
+	if(!(f = fopen(cfgname,"r"))) {
+		// set default values and exit
+		ConfigGameDefault();
+		return 0;
+	}
 
+	int ret = ConfigGameLoad(f);
+
+	fclose(f);
+
+	return ret;
+}
+
+int ConfigGameLoadDefault()
+{
+	FILE *f;
+	char cfgname[MAX_PATH];
+
+	sprintf((char*)cfgname, "%s/default.cfg", szAppHomePath);
+	if(!(f = fopen(cfgname,"r"))) {
+		return 0;
+	}
+
+	int ret = ConfigGameLoad(f);
+
+	fclose(f);
+	
+	return ret;
+}
+
+int ConfigGameSave(FILE * fp)
+{
 	fprintf(fp, "# FBA config file\n");
 	fprintf(fp, "# %s\n\n", BurnDrvGetTextA(DRV_NAME));
 
@@ -311,6 +336,58 @@ int ConfigGameSave()
 	fprintf(fp, "AUTO_FIRE6_FPS %d\n", autofire.fire6.fps);
 	fprintf(fp, "AUTO_FIRE6_KEY %d\n", autofire.fire6.key);
 
-	fclose(fp);
 	return 1;
+}
+
+int ConfigGameSave()
+{
+	FILE *fp;
+	char cfgname[MAX_PATH];
+
+	sprintf((char*)cfgname, "%s/%s.cfg", szAppConfigPath, BurnDrvGetTextA(DRV_NAME));
+	fp = fopen(cfgname, "w");
+
+	int ret = ConfigGameSave(fp);
+
+	fclose(fp);
+	return ret;
+}
+
+int ConfigGameSaveDefault()
+{
+	FILE *fp;
+	char cfgname[MAX_PATH];
+
+	sprintf((char*)cfgname, "%s/default.cfg", szAppHomePath);
+	fp = fopen(cfgname, "w");
+	
+	int ret = ConfigGameSave(fp);
+	
+	fclose(fp);
+	return ret;
+}
+
+void ConfigGameDelete()
+{
+	dirent *file;
+	DIR *dir;
+	char cfgname[MAX_PATH];
+
+	sprintf((char*)cfgname, "%s/", szAppConfigPath);
+
+	dir = opendir(cfgname);
+	while (file = readdir(dir)) {
+		if (strlen(file->d_name) > 4 && strncmp(".cfg", file->d_name + strlen(file->d_name) - 4, 4) == 0) {
+			sprintf((char*)cfgname, "%s/%s", szAppConfigPath, file->d_name);
+			remove(cfgname);
+		}
+	}
+
+}
+
+void ConfigGameDefaultDelete() {
+	char cfgname[MAX_PATH];
+	sprintf((char*)cfgname, "%s/default.cfg", szAppHomePath);
+
+	remove(cfgname);
 }

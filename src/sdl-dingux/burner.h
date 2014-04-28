@@ -192,8 +192,12 @@ extern CFG_AUTOFIRE autofire;
 int ConfigAppLoad();
 int ConfigAppSave();
 void ConfigGameDefault();
+int ConfigGameLoadDefault();
+int ConfigGameSaveDefault();
+void ConfigGameDefaultDelete();
 int ConfigGameLoad();
 int ConfigGameSave();
+void ConfigGameDelete();
 
 // drv.cpp
 extern int bDrvOkay; // 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
