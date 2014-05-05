@@ -51,7 +51,7 @@ int RunOneFrame(bool bDraw, int fps)
 			VideoTrans();
 			if (bShowFPS)
 			{
-				char buf[10];
+				char buf[11];
 				int x;
 				sprintf(buf, "FPS: %2d/%2d", fps,(nBurnFPS/100));
 				DrawRect((uint16 *) (unsigned short *) &VideoBuffer[0],0, 0, 60, 9, 0,PhysicalBufferWidth);

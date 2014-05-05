@@ -184,7 +184,7 @@ void sdl_input_read(bool process_autofire) // called from do_keypad()
 
 void do_keypad()
 {
-	int bVert = BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL;
+	int bVert = !options.rotate && (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL);
 
 	FBA_KEYPAD[0] = 0;
 	FBA_KEYPAD[1] = 0;

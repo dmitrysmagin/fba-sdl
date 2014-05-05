@@ -20,8 +20,8 @@
 #define _GUI_ROMLIST_H_
 
 #define NB_FILTERS	5
-#define NB_HARDWARES	21
-#define NB_GENRES	20
+#define NB_HARDWARES	22
+#define NB_GENRES	21
 #define NB_CLONES	2
 #define NB_MAX_GAMES	6000
 
