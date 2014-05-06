@@ -119,12 +119,16 @@ int DrvExit()
 				bSaveRAM = false;
 			}
 
-			ConfigGameSave();
+//			ConfigGameSave();
 
 //			GameInpExit();				// Exit game input
 			BurnDrvExit();				// Exit the driver
 		}
 	}
+
+	// Make sure config is saved when command-line setting override config file
+	if (nBurnDrvSelect[0] != ~0U)
+		ConfigGameSave();
 
 	BurnExtLoadRom = NULL;
 
