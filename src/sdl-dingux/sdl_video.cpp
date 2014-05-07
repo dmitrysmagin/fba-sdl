@@ -1819,7 +1819,13 @@ void VideoTrans()
 int VideoInit()
 {
 	// Initialize SDL
-	int flags = (options.vsync ? SDL_HWSURFACE | SDL_DOUBLEBUF : SDL_SWSURFACE);
+	int flags = (options.vsync ? (SDL_HWSURFACE |
+#ifdef SDL_TRIPLEBUF
+		SDL_TRIPLEBUF
+#else
+		SDL_DOUBLEBUF
+#endif
+		) : SDL_SWSURFACE);
 
 	if(!(SDL_WasInit(SDL_INIT_VIDEO) & SDL_INIT_VIDEO)) {
 		SDL_InitSubSystem(SDL_INIT_VIDEO);
