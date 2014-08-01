@@ -1,4 +1,6 @@
 
+#include <stdint.h>
+
 #ifndef FASTCALL
  #undef __fastcall
  #define __fastcall

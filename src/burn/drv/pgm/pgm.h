@@ -51,6 +51,7 @@ extern void (*pPgmProtCallback)();
 
 extern INT32 nPGMDisableIRQ4;
 extern INT32 nPGMArm7Type;
+extern UINT32 nPgmAsicRegionHackAddress;
 
 INT32 pgmInit();
 INT32 pgmExit();
@@ -66,6 +67,7 @@ INT32 pgmDraw();
 void install_protection_asic3_orlegend();
 void install_protection_asic25_asic12_dw2();
 void install_protection_asic25_asic22_killbld();
+void install_protection_asic25_asic22_drgw3();
 void install_protection_asic25_asic28_olds();
 void install_protection_asic27_kov();
 void install_protection_asic27a_kovsh();
@@ -99,7 +101,7 @@ void pgm_decrypt_killbldp();
 void pgm_decrypt_oldsplus();
 void pgm_decrypt_svg();
 void pgm_decrypt_svgpcb();
-void pgm_decrypt_happy6in1();
+void pgm_decrypt_happy6();
 void pgm_decrypt_dw2001();
 void pgm_decrypt_py2k2();
 void pgm_decrypt_espgaluda();
@@ -111,3 +113,5 @@ void pgm_decode_kovqhsgs_tile_data(UINT8 *source);
 void pgm_decrypt_kovqhsgs();
 void pgm_decrypt_kovlsqh2();
 void pgm_decrypt_kovassg();
+
+void pgm_descramble_happy6_data(UINT8 *src, INT32 len);

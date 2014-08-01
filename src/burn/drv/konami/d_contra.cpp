@@ -49,12 +49,8 @@ static INT32 K007121_flipscreen[2];
 
 static struct BurnInputInfo DrvInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvJoy1 + 0, "p1 coin"   },
-	{"Coin 2"            , BIT_DIGITAL  , DrvJoy1 + 1, "p2 coin"   },
-
-	{"Start 1"           , BIT_DIGITAL  , DrvJoy1 + 3, "p1 start"  },
-	{"Start 2"           , BIT_DIGITAL  , DrvJoy1 + 4, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvJoy1 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvJoy1 + 3, "p1 start"  },
 	{"P1 Left"           , BIT_DIGITAL  , DrvJoy2 + 0, "p1 left"   },
 	{"P1 Right"          , BIT_DIGITAL  , DrvJoy2 + 1, "p1 right"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvJoy2 + 2, "p1 up"     },
@@ -62,6 +58,8 @@ static struct BurnInputInfo DrvInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvJoy2 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvJoy2 + 5, "p1 fire 2" },
 
+	{"P2 Coin"           , BIT_DIGITAL  , DrvJoy1 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvJoy1 + 4, "p2 start"  },
 	{"P2 Left"           , BIT_DIGITAL  , DrvJoy3 + 0, "p2 left"   },
 	{"P2 Right"          , BIT_DIGITAL  , DrvJoy3 + 1, "p2 right"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvJoy3 + 2, "p2 up"     },
@@ -551,8 +549,8 @@ static void draw_bg()
 	INT32 bit2 = (K007121_ctrlram[1][0x05] >> 4) & 0x03;
 	INT32 bit3 = (K007121_ctrlram[1][0x05] >> 6) & 0x03;
 	INT32 mask = (K007121_ctrlram[1][0x04] & 0xf0) >> 4;
-	INT32 scrollx = K007121_ctrlram[1][0x00] - 40;
-	INT32 scrolly = K007121_ctrlram[1][0x02];
+	INT32 scrollx = K007121_ctrlram[1][0x00] & 0xff;
+	INT32 scrolly = K007121_ctrlram[1][0x02] & 0xff;
 	INT32 flipscreen = K007121_flipscreen[1];
 
 	for (INT32 offs = 0; offs < 0x400; offs++)
@@ -562,8 +560,9 @@ static void draw_bg()
 
 		sx -= scrollx;
 		sy -= scrolly;
-		if (sx < -7) sx += 296;
+		if (sx < -7) sx += 256;
 		if (sy < -7) sy += 256;
+		sx += 40;
 		sy -= 16;
 
 		INT32 attr = DrvBgCRAM[offs];
@@ -596,8 +595,8 @@ static void draw_fg()
 	INT32 bit2 = (K007121_ctrlram[0][0x05] >> 4) & 0x03;
 	INT32 bit3 = (K007121_ctrlram[0][0x05] >> 6) & 0x03;
 	INT32 mask = (K007121_ctrlram[0][0x04] & 0xf0) >> 4;
-	INT32 scrollx = K007121_ctrlram[0][0x00] - 40;
-	INT32 scrolly = K007121_ctrlram[0][0x02];
+	INT32 scrollx = K007121_ctrlram[0][0x00] & 0xff;
+	INT32 scrolly = K007121_ctrlram[0][0x02] & 0xff;
 	INT32 flipscreen = K007121_flipscreen[0];
 
 	for (INT32 offs = 0; offs < 0x400; offs++)
@@ -607,9 +606,9 @@ static void draw_fg()
 
 		sx -= scrollx;
 		sy -= scrolly;
-		if (sx < -7) sx += 296;
+		if (sx < -7) sx += 256;
 		if (sy < -7) sy += 256;
-
+		sx += 40;
 		sy -= 16;
 
 		INT32 attr = DrvFgCRAM[offs];
@@ -816,6 +815,7 @@ static INT32 DrvDraw()
 			INT32 rgb = Palette[DrvColTable[i]];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
+		DrvRecalc = 0;
 	}
 
 	draw_bg();
@@ -834,7 +834,7 @@ static INT32 DrvDraw()
 
 static INT32 DrvFrame()
 {
-	INT32 nInterleave = 10;
+	INT32 nInterleave = 20;
 	
 	if (DrvReset) {
 		DrvDoReset();
@@ -858,7 +858,8 @@ static INT32 DrvFrame()
 
 	INT32 nCyclesSegment = 0;
 	INT32 nSoundBufferPos = 0;
-	INT32 nCyclesTotal[2] =  { 1500000 / 60, 2000000 / 60 };
+//	INT32 nCyclesTotal[2] =  { 1500000 / 60, 2000000 / 60 };
+	INT32 nCyclesTotal[2] =  { 12000000 / 60, 3000000 / 60 };
 	INT32 nCyclesDone[2] =  { 0, 0 };
 
 	for (INT32 i = 0; i < nInterleave; i++) {
@@ -947,7 +948,8 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		if (nAction & ACB_WRITE) {
 			M6809Open(0);
 			contra_bankswitch_w(nBankData);
-			M6809Close();
+                        M6809Close();
+                        DrvRecalc = 1;
 		}
 	}
 
@@ -984,7 +986,7 @@ struct BurnDriver BurnDrvContra = {
 	"contra", NULL, NULL, NULL, "1987",
 	"Contra (US, Set 1)\0", NULL, "Konami", "GX633",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, contraRomInfo, contraRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
@@ -1020,7 +1022,7 @@ struct BurnDriver BurnDrvContra1 = {
 	"contra1", "contra", NULL, NULL, "1987",
 	"Contra (US, Set 2)\0", NULL, "Konami", "GX633",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, contra1RomInfo, contra1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
@@ -1067,7 +1069,7 @@ struct BurnDriver BurnDrvContrab = {
 	"contrab", "contra", NULL, NULL, "1987",
 	"Contra (bootleg)\0", NULL, "Konami", "GX633",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, contrabRomInfo, contrabRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
@@ -1103,7 +1105,7 @@ struct BurnDriver BurnDrvContraj = {
 	"contraj", "contra", NULL, NULL, "1987",
 	"Contra (Japan)\0", NULL, "Konami", "GX633",
 	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan)\0Contra\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, contrajRomInfo, contrajRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
@@ -1184,7 +1186,7 @@ struct BurnDriver BurnDrvGryzor = {
 	"gryzor", "contra", NULL, NULL, "1987",
 	"Gryzor (Set 1)\0", NULL, "Konami", "GX633",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, gryzorRomInfo, gryzorRomName, NULL, NULL, DrvInputInfo, GryzorDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
@@ -1220,7 +1222,7 @@ struct BurnDriver BurnDrvGryzor1 = {
 	"gryzor1", "contra", NULL, NULL, "1987",
 	"Gryzor (Set 2)\0", NULL, "Konami", "GX633",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, gryzor1RomInfo, gryzor1RomName, NULL, NULL, DrvInputInfo, GryzorDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4

@@ -205,8 +205,10 @@ void MSM5205Render(INT32 chip, INT16 *buffer, INT32 len)
 		nRightSample = BURN_SND_CLIP(nRightSample);
 		
 		if (voice->bAdd) {
-			buffer[0] += nLeftSample;
-			buffer[1] += nRightSample;
+			//buffer[0] += nLeftSample;
+			//buffer[1] += nRightSample;
+			buffer[0] = BURN_SND_CLIP(buffer[0] + nLeftSample);
+			buffer[1] = BURN_SND_CLIP(buffer[1] + nRightSample);
 		} else {
 			buffer[0] = nLeftSample;
 			buffer[1] = nRightSample;
@@ -441,7 +443,7 @@ void MSM5205Scan(INT32 nAction, INT32 *pnMin)
 	}
 
 	if (nAction & ACB_DRIVER_DATA) {
-		for (INT32 chip = 0; chip < MAX_MSM5205; chip++) {
+               for (INT32 chip = 0; chip < MAX_MSM5205; chip++) {
 			voice = &chips[chip];
 
 			SCAN_VAR(voice->data);
@@ -453,6 +455,9 @@ void MSM5205Scan(INT32 nAction, INT32 *pnMin)
 			SCAN_VAR(voice->signal);
 			SCAN_VAR(voice->step);
 			SCAN_VAR(voice->volume);
+			SCAN_VAR(voice->clock); // added by dink
+			SCAN_VAR(voice->select);
+			SCAN_VAR(voice->streampos);
 		}
 	}
 }

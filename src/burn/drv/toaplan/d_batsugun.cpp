@@ -26,6 +26,9 @@ static struct BurnRomInfo batsugunRomDesc[] = {
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
 	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
+	
+	{ "tp030_u19_gal16v8b-15.bin", 0x000117, 0xf71669e8, BRF_OPT }, // 8 Logic for mixing output of both GP9001 GFX controllers
+// 	{ "tp030_u19_gal16v8b-15.jed", 0x000991, 0x31be54a2, BRF_OPT },
 };
 
 STD_ROM_PICK(batsugun)
@@ -43,6 +46,8 @@ static struct BurnRomInfo batsugnaRomDesc[] = {
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
 	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
+	
+	{ "tp030_u19_gal16v8b-15.bin", 0x000117, 0xf71669e8, BRF_OPT }, // 8 Logic for mixing output of both GP9001 GFX controllers
 };
 
 STD_ROM_PICK(batsugna)
@@ -60,6 +65,8 @@ static struct BurnRomInfo batugnspRomDesc[] = {
 	{ "tp030_6.bin",  0x100000, 0x0666FECD, BRF_GRA },			 //  6
 
 	{ "tp030_2.bin",  0x040000, 0x276146F5, BRF_SND },			 //  7 ADPCM data
+	
+	{ "tp030_u19_gal16v8b-15.bin", 0x000117, 0xf71669e8, BRF_OPT }, // 8 Logic for mixing output of both GP9001 GFX controllers
 };
 
 STD_ROM_PICK(batugnsp)
@@ -104,13 +111,13 @@ static struct BurnDIPInfo batsugunDIPList[] = {
 	{0x16,	0xFF, 0x0F,	0x00, NULL},
 
 	// DIP 1
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Continue mode"},
 	{0x14,	0x01, 0x01,	0x00, "Normal continue"},
 	{0x14,	0x01, 0x01,	0x01, "Discount continue"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Screen type"},
 	{0x14,	0x01, 0x02,	0x00, "Normal screen"},
 	{0x14,	0x01, 0x02,	0x02, "Invert screen"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Service"},
 	{0x14,	0x01, 0x04,	0x00, "Normal mode"},
 	{0x14,	0x01, 0x04,	0x04, "Test mode"},
 	{0,		0xFE, 0,	2,	  "Advertise sound"},
@@ -173,9 +180,9 @@ static struct BurnDIPInfo batsugunDIPList[] = {
 	{0x15,	0x01, 0x30,	0x01, "5"},
 	{0x15,	0x01, 0x30,	0x02, "2"},
 	{0x15,	0x01, 0x30,	0x03, "1"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Cheating"},
     {0x15,	0x01, 0x40,	0x00, "Normal game"},
-    {0x15,	0x01, 0x40,	0x40, "Debug mode"},
+    {0x15,	0x01, 0x40,	0x40, "No-death & stop mode"},
 	{0,		0xFE, 0,	2,	  "Continue"},
     {0x15,	0x01, 0x80,	0x00, "On"},
 	{0x15,	0x01, 0x80,	0x80, "Off"},

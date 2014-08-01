@@ -928,14 +928,14 @@ static void lwings_sound_init()
 
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(3000000);
-	BurnYM2203SetRoute(0, BURN_SND_YM2203_YM2203_ROUTE, 0.10, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_1, 0.20, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_2, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_3, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(1, BURN_SND_YM2203_YM2203_ROUTE, 0.10, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_3, 0.10, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_1, 0.20, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_2, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_3, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_3, 0.10, BURN_SND_ROUTE_BOTH);
 }
 
 static INT32 DrvInit()
@@ -2007,6 +2007,60 @@ struct BurnDriver BurnDrvTrojanr = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
 	NULL, trojanrRomInfo, trojanrRomName, NULL, NULL, DrvInputInfo, TrojanDIPInfo,
+	TrojanInit, TrojanExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
+	256, 240, 4, 3
+};
+
+
+// Trojan (bootleg)
+
+static struct BurnRomInfo trojanbRomDesc[] = {
+	{ "4.11l",			0x8000, 0xaad03bc7, 1 | BRF_PRG | BRF_ESS }, //  0 Z80 #0 Code
+	{ "6.11p",			0x8000, 0x8ad19c83, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "5.11m",			0x8000, 0x9273b264, 1 | BRF_PRG | BRF_ESS }, //  2
+
+	{ "2.6q",			0x8000, 0x21154797, 2 | BRF_PRG | BRF_ESS }, //  3 Z80 #1 Code
+
+	{ "1.3f",			0x8000, 0x83c715b2, 3 | BRF_PRG | BRF_ESS }, //  4 Z80 #2 Code
+
+	{ "3.8h",			0x4000, 0x581a2b4c, 4 | BRF_GRA },           //  5 Characters
+
+	{ "13.3e",			0x8000, 0x285a052b, 5 | BRF_GRA },           //  6 Background Layer 1 Tiles
+	{ "9.1e",			0x8000, 0xaeb693f7, 5 | BRF_GRA },           //  7
+	{ "12.3d",			0x8000, 0xdfb0fe5c, 5 | BRF_GRA },           //  8
+	{ "8.1d",			0x8000, 0xd3a4c9d1, 5 | BRF_GRA },           //  9
+	{ "11.3b",			0x8000, 0x00f0f4fd, 5 | BRF_GRA },           // 10
+	{ "7.1b",			0x8000, 0xdff2ee02, 5 | BRF_GRA },           // 11
+	{ "14.3g",			0x8000, 0x14bfac18, 5 | BRF_GRA },           // 12
+	{ "10.1g",			0x8000, 0x71ba8a6d, 5 | BRF_GRA },           // 13
+
+	{ "18.10f",			0x8000, 0x862c4713, 6 | BRF_GRA },           // 14 Sprites
+	{ "16.10c",			0x8000, 0xd86f8cbd, 6 | BRF_GRA },           // 15
+	{ "17.10e",			0x8000, 0x12a73b3f, 6 | BRF_GRA },           // 16
+	{ "15.10b",			0x8000, 0xbb1a2769, 6 | BRF_GRA },           // 17
+	{ "22.12f",			0x8000, 0x39daafd4, 6 | BRF_GRA },           // 18
+	{ "20.12c",			0x8000, 0x94615d2a, 6 | BRF_GRA },           // 19
+	{ "21.12e",			0x8000, 0x66c642bd, 6 | BRF_GRA },           // 20
+	{ "19.12b",			0x8000, 0x81d5ab36, 6 | BRF_GRA },           // 21
+
+	{ "25.12q",			0x8000, 0x6e38c6fa, 7 | BRF_GRA },           // 22 Background Layer 2 Tiles
+	{ "24.12o",			0x8000, 0x14fc6cf2, 7 | BRF_GRA },           // 23
+
+	{ "23.12h",			0x8000, 0xeda13c0e, 8 | BRF_GRA },           // 24 Background Layer 2 Tile Map
+
+	{ "82s129.8g",		0x0100, 0xd96bcc98, 0 | BRF_OPT },           // 25 Proms (not used)
+	{ "82s129.4a",		0x0100, 0x5052fa9d, 0 | BRF_OPT },           // 26
+};
+
+STD_ROM_PICK(trojanb)
+STD_ROM_FN(trojanb)
+
+struct BurnDriver BurnDrvTrojanb = {
+	"trojanb", "trojan", NULL, NULL, "1986",
+	"Trojan (bootleg)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_PLATFORM | GBF_SCRFIGHT, 0,
+	NULL, trojanbRomInfo, trojanbRomName, NULL, NULL, DrvInputInfo, TrojanlsDIPInfo,
 	TrojanInit, TrojanExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	256, 240, 4, 3
 };

@@ -75,6 +75,7 @@ static INT32 usclssic_port_select = 0;
 static INT32 tndrcade_init_sim = 0;
 static INT32 gun_input_bit = 0;
 static INT32 gun_input_src = 0;
+static INT32 flipflop = 0;
 
 static INT32 watchdog_enable = 0;
 static INT32 watchdog = 0;
@@ -3914,16 +3915,17 @@ static void set_pcm_bank(INT32 data)
 	if (new_bank != seta_samples_bank)
 	{
 		INT32 samples_len = DrvROMLen[3];
-
+//		bprintf(0, _T("seta_samples_bank[%X] new_bank[%X]\n"), seta_samples_bank, new_bank);
 		seta_samples_bank = new_bank;
 
-		if (samples_len == 0x200000 || samples_len == 0x180000) // eightfrc, blandia
+		if (samples_len == 0x240000 || samples_len == 0x1c0000) // eightfrc, blandia
 		{
 			INT32 addr = 0x40000 * new_bank;
 			if (new_bank >= 3) addr += 0x40000;
 
-			if ((samples_len > 0x100000) && ((addr + 0x40000) <= samples_len))
+			if ((samples_len > 0x100000) && ((addr + 0x40000) <= samples_len)) {
 				memcpy(DrvSndROM + 0xc0000, DrvSndROM + addr, 0x40000);
+			}
 		}
 		else if (samples_len == 0x400000) // zombraid
 		{
@@ -6592,7 +6594,7 @@ static INT32 MemIndex()
 
 	MSM6295ROM		= Next;
 	X1010SNDROM		= Next;
-	DrvSndROM		= Next; Next += DrvROMLen[3] + 0x100000; // for banking
+	DrvSndROM		= Next; Next += DrvROMLen[3] + 0x200000; // for banking
 
 	Palette			= (UINT32*)Next; Next += BurnDrvGetPaletteEntries() * sizeof(UINT32);
 	DrvPalette		= (UINT32*)Next; Next += BurnDrvGetPaletteEntries() * sizeof(UINT32);
@@ -6738,8 +6740,14 @@ static INT32 DrvInit(void (*p68kInit)(), INT32 cpu_speed, INT32 irq_type, INT32 
 	buffer_sprites = spr_buffer;
 
 	x1010_sound_init(16000000, 0x0000);
-	x1010_set_route(BURN_SND_X1010_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
 	x1010_set_route(BURN_SND_X1010_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
+	x1010_set_route(BURN_SND_X1010_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
+
+	if (strstr(BurnDrvGetTextA(DRV_NAME), "madshark") || strstr(BurnDrvGetTextA(DRV_NAME), "gundhara"))
+		x1010_set_route(BURN_SND_X1010_ROUTE_1, 1.00, BURN_SND_ROUTE_BOTH);
+	
+	if (strstr(BurnDrvGetTextA(DRV_NAME), "kamenrid") || strstr(BurnDrvGetTextA(DRV_NAME), "wrofaero"))
+		x1010_set_route(BURN_SND_X1010_ROUTE_2, 1.00, BURN_SND_ROUTE_BOTH);
 
 	BurnYM3812Init(4000000, NULL, DrvYM3812SynchroniseStream, 0);
 	BurnTimerAttachSekYM3812(16000000);
@@ -6755,6 +6763,8 @@ static INT32 DrvInit(void (*p68kInit)(), INT32 cpu_speed, INT32 irq_type, INT32 
 	DrvSetDefaultColorTable();
 
 	bprintf (0, _T("%d\n"), nScreenHeight);
+
+	flipflop = 0;
 
 	VideoOffsets[2][0] = ((256 - nScreenHeight) / 2); // adjust for screen height
 	VideoOffsets[2][1] = VideoOffsets[2][0];
@@ -7359,6 +7369,40 @@ static void Drv68k_5IRQ_FrameCallback()
 	}
 }
 
+static void Drv68k_KM_FrameCallback() // kamenrid & madshark
+{
+	INT32 nInterleave = 10;
+	INT32 nCyclesTotal[1] = { (cpuspeed * 100) / refresh_rate };
+	INT32 nCyclesDone[1]  = { 0 };
+
+	SekOpen(0);
+
+	for (INT32 i = 0; i < nInterleave; i++)
+	{
+		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
+
+		if (i & 1 && i == 1) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	}
+
+	if (flipflop==0) { // IRQ4 is fired every other frame
+		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		flipflop=1;
+	} else {
+		flipflop=0;
+	}
+
+	SekClose();
+
+	if (pBurnSoundOut) {
+		x1010_sound_update();
+	}
+}
+
+static INT32 DrvKMFrame()
+{
+	return DrvCommonFrame(Drv68k_KM_FrameCallback);
+}
+
 static INT32 Drv5IRQFrame()
 {
 	return DrvCommonFrame(Drv68k_5IRQ_FrameCallback);
@@ -7582,7 +7626,7 @@ struct BurnDriverD BurnDrvSetaroul = {
 	"setaroul", NULL, NULL, NULL, "198?",
 	"Seta / Visco Roulette?\0", NULL, "Seta / Visco", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_CASINO, 0,
 	NULL, setaroulRomInfo, setaroulRomName, NULL, NULL, DrgnunitInputInfo, NULL,
 	NotWorkingInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0,
 	240, 384, 3, 4
@@ -7659,7 +7703,7 @@ struct BurnDriverD BurnDrvInttoote = {
 	"inttoote", "jockeyc", NULL, NULL, "1998",
 	"International Toote (Germany)\0", NULL, "Coinmaster", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_CLONE, 2, HARDWARE_SETA1, GBF_CASINO, 0,
 	NULL, inttooteRomInfo, inttooteRomName, NULL, NULL, DrgnunitInputInfo, NULL,
 	NotWorkingInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0,
 	384, 240, 4, 3
@@ -7701,7 +7745,7 @@ struct BurnDriverD BurnDrvInttootea = {
 	"inttootea", "jockeyc", NULL, NULL, "1993",
 	"International Toote II (World?)\0", NULL, "Coinmaster", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_CLONE, 2, HARDWARE_SETA1, GBF_CASINO, 0,
 	NULL, inttooteaRomInfo, inttooteaRomName, NULL, NULL, DrgnunitInputInfo, NULL,
 	NotWorkingInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0,
 	384, 240, 4, 3
@@ -7761,7 +7805,7 @@ struct BurnDriver BurnDrvDrgnunit = {
 	"drgnunit", NULL, NULL, NULL, "1989",
 	"Dragon Unit / Castle of Dragon\0", NULL, "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_SCRFIGHT, 0,
 	NULL, drgnunitRomInfo, drgnunitRomName, NULL, NULL, DrgnunitInputInfo, DrgnunitDIPInfo,
 	drgnunitInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -7801,7 +7845,7 @@ struct BurnDriver BurnDrvQzkklogy = {
 	"qzkklogy", NULL, NULL, NULL, "1992",
 	"Quiz Kokology\0", NULL, "Tecmo", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_QUIZ, 0,
 	NULL, qzkklogyRomInfo, qzkklogyRomName, NULL, NULL, QzkklogyInputInfo, QzkklogyDIPInfo,
 	qzkklogyInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -7841,7 +7885,7 @@ struct BurnDriver BurnDrvStg = {
 	"stg", NULL, NULL, NULL, "1991",
 	"Strike Gunner S.T.G\0", NULL, "Athena / Tecmo", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, stgRomInfo, stgRomName, NULL, NULL, StgInputInfo, StgDIPInfo,
 	stgInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -7876,7 +7920,7 @@ struct BurnDriver BurnDrvQzkklgy2 = {
 	"qzkklgy2", NULL, NULL, NULL, "1993",
 	"Quiz Kokology 2\0", NULL, "Tecmo", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_QUIZ, 0,
 	NULL, qzkklgy2RomInfo, qzkklgy2RomName, NULL, NULL, Qzkklgy2InputInfo, Qzkklgy2DIPInfo,
 	qzkklgy2Init, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -7914,7 +7958,7 @@ struct BurnDriver BurnDrvDaioh = {
 	"daioh", NULL, NULL, NULL, "1993",
 	"Daioh (set 1)\0", NULL, "Athena", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, daiohRomInfo, daiohRomName, NULL, NULL, DaiohInputInfo, DaiohDIPInfo,
 	daiohInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	240, 384, 3, 4
@@ -7944,7 +7988,7 @@ struct BurnDriver BurnDrvDaioha = {
 	"daioha", "daioh", NULL, NULL, "1993",
 	"Daioh (set 2)\0", NULL, "Athena", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, daiohaRomInfo, daiohaRomName, NULL, NULL, DaiohInputInfo, DaiohDIPInfo,
 	daiohInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	240, 384, 3, 4
@@ -7992,7 +8036,7 @@ struct BurnDriver BurnDrvRezon = {
 	"rezon", NULL, NULL, NULL, "1991",
 	"Rezon\0", NULL, "Allumer", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_HORSHOOT, 0,
 	NULL, rezonRomInfo, rezonRomName, NULL, NULL, RezonInputInfo, RezonDIPInfo,
 	rezonInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 240, 4, 3
@@ -8024,7 +8068,7 @@ struct BurnDriver BurnDrvRezont = {
 	"rezont", "rezon", NULL, NULL, "1992",
 	"Rezon (Taito)\0", NULL, "Allumer (Taito license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_HORSHOOT, 0,
 	NULL, rezontRomInfo, rezontRomName, NULL, NULL, RezonInputInfo, RezonDIPInfo,
 	rezonInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 240, 4, 3
@@ -8059,7 +8103,9 @@ static INT32 eightfrcInit()
 	INT32 nRet = DrvInit(wrofaero68kInit, 16000000, SET_IRQLINES(1, 2), NO_SPRITE_BUFFER, SET_GFX_DECODE(0, 2, 2));
 
 	if (nRet == 0) {
-		memcpy (DrvSndROM + 0x100000, DrvSndROM + 0x0c0000, 0x140000); // sound banks
+		// Update sample length to include the banked section that was skipped (0xc0000 - 0xfffff)
+		DrvROMLen[3] = 0x240000;
+		memmove(DrvSndROM + 0x100000, DrvSndROM + 0x0c0000, 0x140000); // sound banks (memcpy fails because of overlap!)
 	}
 
 	return nRet;
@@ -8069,7 +8115,7 @@ struct BurnDriver BurnDrvEightfrc = {
 	"eightfrc", NULL, NULL, NULL, "1994",
 	"Eight Forces\0", NULL, "Tecmo", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, eightfrcRomInfo, eightfrcRomName, NULL, NULL, EightfrcInputInfo, EightfrcDIPInfo,
 	eightfrcInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	224, 384, 3, 4
@@ -8108,9 +8154,9 @@ struct BurnDriver BurnDrvWrofaero = {
 	"wrofaero", NULL, NULL, NULL, "1993",
 	"War of Aero - Project MEIOU\0", NULL, "Yang Cheng", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, wrofaeroRomInfo, wrofaeroRomName, NULL, NULL, WrofaeroInputInfo, WrofaeroDIPInfo,
-	wrofaeroInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
+	wrofaeroInit, DrvExit, DrvKMFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	240, 384, 3, 4
 };
 
@@ -8153,7 +8199,7 @@ struct BurnDriver BurnDrvZingzip = {
 	"zingzip", NULL, NULL, NULL, "1992",
 	"Zing Zing Zip\0", NULL, "Allumer + Tecmo", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, zingzipRomInfo, zingzipRomName, NULL, NULL, ZingzipInputInfo, ZingzipDIPInfo,
 	zingzipInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0xc00,
 	240, 384, 3, 4
@@ -8199,7 +8245,7 @@ struct BurnDriver BurnDrvMsgundam = {
 	"msgundam", NULL, NULL, NULL, "1993",
 	"Mobile Suit Gundam\0", NULL, "Banpresto", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_VSFIGHT, 0,
 	NULL, msgundamRomInfo, msgundamRomName, NULL, NULL, MsgundamInputInfo, MsgundamDIPInfo,
 	msgundamInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 240, 4, 3
@@ -8229,7 +8275,7 @@ struct BurnDriver BurnDrvMsgundam1 = {
 	"msgundam1", "msgundam", NULL, NULL, "1993",
 	"Mobile Suit Gundam (Japan)\0", NULL, "Banpresto", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_VSFIGHT, 0,
 	NULL, msgundam1RomInfo, msgundam1RomName, NULL, NULL, MsgundamInputInfo, Msgunda1DIPInfo,
 	msgundamInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 240, 4, 3
@@ -8263,7 +8309,7 @@ struct BurnDriver BurnDrvNeobattl = {
 	"neobattl", NULL, NULL, NULL, "1992",
 	"SD Gundam Neo Battling (Japan)\0", NULL, "Banpresto / Sotsu Agency. Sunrise", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, neobattlRomInfo, neobattlRomName, NULL, NULL, NeobattlInputInfo, NeobattlDIPInfo,
 	umanclubInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -8289,7 +8335,7 @@ struct BurnDriver BurnDrvUmanclub = {
 	"umanclub", NULL, NULL, NULL, "1992",
 	"Ultraman Club - Tatakae! Ultraman Kyoudai!!\0", NULL, "Tsuburaya Prod. / Banpresto", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_SHOOT, 0,
 	NULL, umanclubRomInfo, umanclubRomName, NULL, NULL, UmanclubInputInfo, UmanclubDIPInfo,
 	umanclubInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -8317,16 +8363,16 @@ static INT32 kamenridInit()
 	DrvSetVideoOffsets(0, 0, -2, -2);
 	DrvSetColorOffsets(0, 0x400, 0x200);
 
-	return DrvInit(kamenrid68kInit, 16000000, SET_IRQLINES(2, NOIRQ2), NO_SPRITE_BUFFER, SET_GFX_DECODE(0, 2, 2));
+	return DrvInit(kamenrid68kInit, 16000000, SET_IRQLINES(2, 4/*2, NOIRQ2*/), NO_SPRITE_BUFFER, SET_GFX_DECODE(0, 2, 2));
 }
 
 struct BurnDriver BurnDrvKamenrid = {
 	"kamenrid", NULL, NULL, NULL, "1993",
 	"Masked Riders Club Battle Race\0", NULL, "Toei / Banpresto", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_RACING, 0,
 	NULL, kamenridRomInfo, kamenridRomName, NULL, NULL, KamenridInputInfo, KamenridDIPInfo,
-	kamenridInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
+	kamenridInit, DrvExit, DrvKMFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 240, 4, 3
 };
 
@@ -8353,7 +8399,7 @@ static INT32 madsharkInit()
 	DrvSetVideoOffsets(0, 0, 0, 0);
 	DrvSetColorOffsets(0, 0x200, 0xa00);
 
-	INT32 nRet = DrvInit(madshark68kInit, 16000000, SET_IRQLINES(2, NOIRQ2), NO_SPRITE_BUFFER, SET_GFX_DECODE(0, 3, 3));
+	INT32 nRet = DrvInit(madshark68kInit, 16000000, SET_IRQLINES(4, 2/*2, NOIRQ2*/), NO_SPRITE_BUFFER, SET_GFX_DECODE(0, 3, 3));
 
 	if (nRet == 0) {
 		jjsquawkSetColorTable();
@@ -8373,9 +8419,9 @@ struct BurnDriver BurnDrvMadshark = {
 	"madshark", NULL, NULL, NULL, "1993",
 	"Mad Shark\0", NULL, "Allumer", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, madsharkRomInfo, madsharkRomName, NULL, NULL, MadsharkInputInfo, MadsharkDIPInfo,
-	madsharkInit, madsharkExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
+	madsharkInit, madsharkExit, DrvKMFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	224, 384, 3, 4
 };
 
@@ -8410,7 +8456,7 @@ struct BurnDriver BurnDrvWits = {
 	"wits", NULL, NULL, NULL, "1989",
 	"Wit's (Japan)\0", NULL, "Athena (Visco license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 4, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 4, HARDWARE_SETA1, GBF_MAZE, 0,
 	NULL, witsRomInfo, witsRomName, NULL, NULL, WitsInputInfo, WitsDIPInfo,
 	witsInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -8439,7 +8485,7 @@ struct BurnDriver BurnDrvThunderl = {
 	"thunderl", NULL, NULL, NULL, "1990",
 	"Thunder & Lightning\0", NULL, "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_BREAKOUT, 0,
 	NULL, thunderlRomInfo, thunderlRomName, NULL, NULL, ThunderlInputInfo, ThunderlDIPInfo,
 	witsInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -8472,7 +8518,7 @@ struct BurnDriver BurnDrvAtehate = {
 	"atehate", NULL, NULL, NULL, "1993",
 	"Athena no Hatena ?\0", NULL, "Athena", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_QUIZ, 0,
 	NULL, atehateRomInfo, atehateRomName, NULL, NULL, AtehateInputInfo, AtehateDIPInfo,
 	atehateInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3
@@ -8506,7 +8552,7 @@ struct BurnDriver BurnDrvBlockcar = {
 	"blockcar", NULL, NULL, NULL, "1992",
 	"Block Carnival / Thunder & Lightning 2\0", NULL, "Visco", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_SETA1, GBF_BREAKOUT, 0,
 	NULL, blockcarRomInfo, blockcarRomName, NULL, NULL, BlockcarInputInfo, BlockcarDIPInfo,
 	blockcarInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -8554,7 +8600,7 @@ struct BurnDriver BurnDrvZombraid = {
 	"zombraid", NULL, NULL, NULL, "1995",
 	"Zombie Raid (US)\0", NULL, "American Sammy", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_SHOOT, 0,
 	NULL, zombraidRomInfo, zombraidRomName, NULL, NULL, ZombraidInputInfo, ZombraidDIPInfo,
 	zombraidInit, DrvExit, DrvFrame, zombraidDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -8590,8 +8636,11 @@ static void gundhara68kInit()
 {
 	wrofaero68kInit();
 
-	memmove (DrvSndROM + 0x100000, DrvSndROM + 0x080000, 0x080000);
-	memmove (DrvSndROM + 0x000000, DrvSndROM + 0x080000, 0x100000);
+	//memmove (DrvSndROM + 0x100000, DrvSndROM + 0x080000, 0x080000);
+	//memmove (DrvSndROM + 0x000000, DrvSndROM + 0x080000, 0x100000);
+	// swap halves of sound rom
+	memcpy (DrvSndROM + 0x100000, DrvSndROM + 0x000000, 0x080000);
+	memcpy (DrvSndROM + 0x000000, DrvSndROM + 0x080000, 0x100000);
 }
 
 static INT32 gundharaInit()
@@ -8612,7 +8661,7 @@ struct BurnDriver BurnDrvGundhara = {
 	"gundhara", NULL, NULL, NULL, "1995",
 	"Gundhara\0", NULL, "Banpresto", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SHOOT, 0,
 	NULL, gundharaRomInfo, gundharaRomName, NULL, NULL, GundharaInputInfo, GundharaDIPInfo,
 	gundharaInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	240, 384, 3, 4
@@ -8652,6 +8701,8 @@ static INT32 blandiaInit()
 	INT32 nRet = DrvInit(blandia68kInit, 16000000, SET_IRQLINES(2, 4), SPRITE_BUFFER, SET_GFX_DECODE(0, 4, 4));
 
 	if (nRet == 0) {
+		// Update sample length to include the banked section that was skipped (0xc0000 - 0xfffff)
+		DrvROMLen[3] = 0x1c0000;
 		blandiaSetColorTable();
 	}
 
@@ -8662,7 +8713,7 @@ struct BurnDriver BurnDrvBlandia = {
 	"blandia", NULL, NULL, NULL, "1992",
 	"Blandia\0", NULL, "Allumer", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_VSFIGHT, 0,
 	NULL, blandiaRomInfo, blandiaRomName, NULL, NULL, BlandiaInputInfo, BlandiaDIPInfo,
 	blandiaInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -8731,7 +8782,7 @@ struct BurnDriver BurnDrvBlandiap = {
 	"blandiap", "blandia", NULL, NULL, "1992",
 	"Blandia (prototype)\0", NULL, "Allumer", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_VSFIGHT, 0,
 	NULL, blandiapRomInfo, blandiapRomName, NULL, NULL, BlandiaInputInfo, BlandiaDIPInfo,
 	blandiapInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -8788,7 +8839,7 @@ struct BurnDriver BurnDrvOisipuzl = {
 	"oisipuzl", NULL, NULL, NULL, "1993",
 	"Oishii Puzzle Ha Irimasenka\0", NULL, "Sunsoft + Atlus", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MINIGAMES, 0,
 	NULL, oisipuzlRomInfo, oisipuzlRomName, NULL, NULL, OisipuzlInputInfo, OisipuzlDIPInfo,
 	oisipuzlInit, DrvExit, DrvFrame, seta2layerFlippedDraw, DrvScan, &DrvRecalc, 0x600,
 	320, 224, 4, 3
@@ -8831,7 +8882,7 @@ struct BurnDriver BurnDrvTriplfun = {
 	"triplfun", "oisipuzl", NULL, NULL, "1993",
 	"Triple Fun\0", NULL, "bootleg", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MINIGAMES, 0,
 	NULL, triplfunRomInfo, triplfunRomName, NULL, NULL, OisipuzlInputInfo, OisipuzlDIPInfo,
 	triplfunInit, DrvExit, DrvM6295Frame, seta2layerFlippedDraw, DrvScan, &DrvRecalc, 0x600,
 	320, 224, 4, 3
@@ -8871,7 +8922,7 @@ struct BurnDriver BurnDrvPairlove = {
 	"pairlove", NULL, NULL, NULL, "1991",
 	"Pairs Love\0", NULL, "Athena", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_PUZZLE, 0,
 	NULL, pairloveRomInfo, pairloveRomName, NULL, NULL, PairloveInputInfo, PairloveDIPInfo,
 	pairloveInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -8908,16 +8959,42 @@ struct BurnDriver BurnDrvOrbs = {
 	"orbs", NULL, NULL, NULL, "1994",
 	"Orbs (10/7/94 prototype?)\0", NULL, "American Sammy", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_PUZZLE, 0,
 	NULL, orbsRomInfo, orbsRomName, NULL, NULL, OrbsInputInfo, OrbsDIPInfo,
 	orbsInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	320, 240, 4, 3
 };
 
 
-// Kero Kero Keroppi no Issyoni Asobou (Japan)
+// Kero Kero Keroppi's Let's Play Together (USA, Version 2.0)
 
 static struct BurnRomInfo keroppiRomDesc[] = {
+	{ "keroppi jr. code (u10) v1.0.u10", 0x40000, 0x1fc2e895, 0x01 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "keroppi jr. code (u9) v1.0.u9",   0x40000, 0xe0599e7b, 0x01 | BRF_PRG | BRF_ESS }, //  1
+
+	{ "keroppi jr. chr(u12) v1.0.u12", 	0x80000, 0x6f4dae98, 0x03 | BRF_GRA },            //  2
+	{ "keroppi jr. chr(u11) v1.0.u11", 	0x80000, 0x74148c23, 0x03 | BRF_GRA },            //  3
+
+	{ "keroppi jr. snd (u15) v1.0.u15",	0x80000, 0xc98dacf0, 0x06 | BRF_SND },            //  4 x1-010 Samples
+	{ "keroppi jr. snd (u16) v1.0.u16",	0x80000, 0xd61e5a32, 0x06 | BRF_SND },            //  5
+};
+
+STD_ROM_PICK(keroppi)
+STD_ROM_FN(keroppi)
+
+struct BurnDriver BurnDrvKeroppi = {
+	"keroppi", NULL, NULL, NULL, "1995",
+	"Kero Kero Keroppi's Let's Play Together (USA, Version 2.0)\0", NULL, "American Sammy", "Seta",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 1, HARDWARE_SETA1, GBF_MINIGAMES, 0,
+	NULL, keroppiRomInfo, keroppiRomName, NULL, NULL, KeroppiInputInfo, KeroppiDIPInfo,
+	orbsInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
+	320, 240, 4, 3
+};
+
+// Kero Kero Keroppi no Issyoni Asobou (Japan)
+
+static struct BurnRomInfo keroppijRomDesc[] = {
 	{ "ft-001-001.u10",	0x80000, 0x37861e7d, 0x01 | BRF_PRG | BRF_ESS }, //  0 68k Code
 	{ "ft-001-002.u9",	0x80000, 0xf531d4ef, 0x01 | BRF_PRG | BRF_ESS }, //  1
 
@@ -8930,15 +9007,15 @@ static struct BurnRomInfo keroppiRomDesc[] = {
 	{ "ft-001-008.u16",	0x80000, 0xb9c4b637, 0x06 | BRF_SND },           //  7
 };
 
-STD_ROM_PICK(keroppi)
-STD_ROM_FN(keroppi)
+STD_ROM_PICK(keroppij)
+STD_ROM_FN(keroppij)
 
-struct BurnDriver BurnDrvKeroppi = {
-	"keroppi", NULL, NULL, NULL, "1993",
+struct BurnDriver BurnDrvKeroppij = {
+	"keroppij", "keroppi", NULL, NULL, "1993",
 	"Kero Kero Keroppi no Issyoni Asobou (Japan)\0", NULL, "Sammy Industries", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 1, HARDWARE_SETA1, GBF_MISC, 0,
-	NULL, keroppiRomInfo, keroppiRomName, NULL, NULL, KeroppiInputInfo, KeroppiDIPInfo,
+	BDF_GAME_WORKING | BDF_CLONE, 1, HARDWARE_SETA1, GBF_MINIGAMES, 0,
+	NULL, keroppijRomInfo, keroppijRomName, NULL, NULL, KeroppiInputInfo, KeroppiDIPInfo,
 	orbsInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	320, 240, 4, 3
 };
@@ -8991,7 +9068,7 @@ struct BurnDriver BurnDrvJjsquawk = {
 	"jjsquawk", NULL, NULL, NULL, "1993",
 	"J. J. Squawkers\0", NULL, "Athena / Able", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_PLATFORM, 0,
 	NULL, jjsquawkRomInfo, jjsquawkRomName, NULL, NULL, JjsquawkInputInfo, JjsquawkDIPInfo,
 	jjsquawkInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -9023,7 +9100,7 @@ struct BurnDriver BurnDrvJjsquawkb2 = {
 	"jjsquawkb2", "jjsquawk", NULL, NULL, "1993",
 	"J. J. Squawkers (bootleg, Blandia conversion)\0", NULL, "Athena / Able", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_SETA1, GBF_PLATFORM, 0,
 	NULL, jjsquawkb2RomInfo, jjsquawkb2RomName, NULL, NULL, JjsquawkInputInfo, JjsquawkDIPInfo,
 	jjsquawkInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -9066,7 +9143,7 @@ struct BurnDriver BurnDrvJjsquawkb = {
 	"jjsquawkb", "jjsquawk", NULL, NULL, "1993",
 	"J. J. Squawkers (bootleg)\0", NULL, "bootleg", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_SETA1, GBF_PLATFORM, 0,
 	NULL, jjsquawkbRomInfo, jjsquawkbRomName, NULL, NULL, JjsquawkInputInfo, JjsquawkDIPInfo,
 	jjsquawkbInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 240, 4, 3
@@ -9116,7 +9193,7 @@ struct BurnDriver BurnDrvExtdwnhl = {
 	"extdwnhl", NULL, NULL, NULL, "1995",
 	"Extreme Downhill (v1.5)\0", NULL, "Sammy Industries Japan", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_RACING, 0,
 	NULL, extdwnhlRomInfo, extdwnhlRomName, NULL, NULL, ExtdwnhlInputInfo, ExtdwnhlDIPInfo,
 	extdwnhlInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	320, 240, 4, 3
@@ -9144,7 +9221,7 @@ struct BurnDriver BurnDrvSokonuke = {
 	"sokonuke", NULL, NULL, NULL, "1995",
 	"Sokonuke Taisen Game (Japan)\0", NULL, "Sammy Industries", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_PLATFORM, 0,
 	NULL, sokonukeRomInfo, sokonukeRomName, NULL, NULL, SokonukeInputInfo, SokonukeDIPInfo,
 	extdwnhlInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	320, 240, 4, 3
@@ -9179,7 +9256,7 @@ struct BurnDriverD BurnDrvKrzybowl = {
 	"krzybowl", NULL, NULL, NULL, "1994",
 	"Krazy Bowl\0", NULL, "American Sammy", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SPORTSMISC, 0,
 	NULL, krzybowlRomInfo, krzybowlRomName, NULL, NULL, KrzybowlInputInfo, KrzybowlDIPInfo,
 	krzybowlInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 320, 3, 4
@@ -9217,7 +9294,7 @@ struct BurnDriver BurnDrvWiggie = {
 	"wiggie", NULL, NULL, NULL, "1994",
 	"Wiggie Waggie\0", NULL, "Promat", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_BREAKOUT, 0,
 	NULL, wiggieRomInfo, wiggieRomName, NULL, NULL, ThunderlInputInfo, ThunderlDIPInfo,
 	wiggieInit, DrvExit, DrvZ80M6295Frame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -9255,7 +9332,7 @@ struct BurnDriver BurnDrvSuperbar = {
 	"superbar", "wiggie", NULL, NULL, "1994",
 	"Super Bar\0", NULL, "Promat", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_BREAKOUT, 0,
 	NULL, superbarRomInfo, superbarRomName, NULL, NULL, ThunderlInputInfo, ThunderlDIPInfo,
 	superbarInit, DrvExit, DrvZ80M6295Frame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -9298,7 +9375,7 @@ struct BurnDriver BurnDrvUtoukond = {
 	"utoukond", NULL, NULL, NULL, "1993",
 	"Ultra Toukon Densetsu (Japan)\0", "No sound", "Banpresto + Tsuburaya Prod.", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_VSFIGHT, 0,
 	NULL, utoukondRomInfo, utoukondRomName, NULL, NULL, UtoukondInputInfo, UtoukondDIPInfo,
 	utoukondInit, DrvExit, Drv68kZ80YM3438Frame, seta2layerDraw, DrvScan, &DrvRecalc, 0x600,
 	384, 224, 4, 3
@@ -9346,7 +9423,7 @@ struct BurnDriver BurnDrvDowntown = {
 	"downtown", NULL, NULL, NULL, "1989",
 	"DownTown / Mokugeki (Set 1)\0", "No sound, imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SCRFIGHT, 0,
 	NULL, downtownRomInfo, downtownRomName, NULL, NULL, DowntownInputInfo, DowntownDIPInfo,
 	downtownInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9381,7 +9458,7 @@ struct BurnDriverD BurnDrvDowntown2 = {
 	"downtown2", "downtown", NULL, NULL, "1989",
 	"DownTown / Mokugeki (Set 2)\0", "No sound, imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SCRFIGHT, 0,
 	NULL, downtown2RomInfo, downtown2RomName, NULL, NULL, DowntownInputInfo, DowntownDIPInfo,
 	downtownInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9416,7 +9493,7 @@ struct BurnDriver BurnDrvDowntownj = {
 	"downtownj", "downtown", NULL, NULL, "1989",
 	"DownTown / Mokugeki (Joystick Hack)\0", "No sound, imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SCRFIGHT, 0,
 	NULL, downtownjRomInfo, downtownjRomName, NULL, NULL, DowntownInputInfo, DowntownDIPInfo,
 	downtownInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9451,7 +9528,7 @@ struct BurnDriverD BurnDrvDowntownp = {
 	"downtownp", "downtown", NULL, NULL, "1989",
 	"DownTown / Mokugeki (prototype)\0", "No sound, imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SCRFIGHT, 0,
 	NULL, downtownpRomInfo, downtownpRomName, NULL, NULL, DowntownInputInfo, DowntownDIPInfo,
 	downtownInit, DrvExit, DrvFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9493,7 +9570,7 @@ struct BurnDriverD BurnDrvTndrcade = {
 	"tndrcade", NULL, NULL, NULL, "1987",
 	"Thundercade / Twin Formation\0", "No sound, imperfect inputs", "[Seta] (Taito license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, tndrcadeRomInfo, tndrcadeRomName, NULL, NULL, TndrcadeInputInfo, TndrcadeDIPInfo,
 	tndrcadeInit, DrvExit, DrvFrame /*DrvM65c02Frame*/, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9527,7 +9604,7 @@ struct BurnDriverD BurnDrvTndrcadej = {
 	"tndrcadej", "tndrcade", NULL, NULL, "1987",
 	"Tokusyu Butai U.A.G. (Japan)\0", "No sound, imperfect inputs", "[Seta] (Taito license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, tndrcadejRomInfo, tndrcadejRomName, NULL, NULL, TndrcadeInputInfo, TndrcadjDIPInfo,
 	tndrcadeInit, DrvExit, DrvFrame /*DrvM65c02Frame*/, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9571,7 +9648,7 @@ struct BurnDriver BurnDrvArbalest = {
 	"arbalest", NULL, NULL, NULL, "1989",
 	"Arbalester\0", "Imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, arbalestRomInfo, arbalestRomName, NULL, NULL, MetafoxInputInfo, ArbalestDIPInfo,
 	arbalestInit, DrvExit, DrvFrame /*DrvM65c02Frame*/, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9625,7 +9702,7 @@ struct BurnDriver BurnDrvMetafox = {
 	"metafox", NULL, NULL, NULL, "1989",
 	"Meta Fox\0", "Imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, metafoxRomInfo, metafoxRomName, NULL, NULL, MetafoxInputInfo, MetafoxDIPInfo,
 	metafoxInit, DrvExit, DrvFrame /*DrvM65c02Frame*/, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9659,7 +9736,7 @@ struct BurnDriverD BurnDrvKiwame = {
 	"kiwame", NULL, NULL, NULL, "1994",
 	"Pro Mahjong Kiwame\0", NULL, "Athena", "Seta",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	0, 2, HARDWARE_SETA1, GBF_MAHJONG, 0,
 	NULL, kiwameRomInfo, kiwameRomName, NULL, NULL, KiwameInputInfo, KiwameDIPInfo,
 	kiwameInit, DrvExit, DrvFrame, setaNoLayersDraw, DrvScan, &DrvRecalc, 0x200,
 	448, 240, 4, 3
@@ -9704,7 +9781,7 @@ struct BurnDriver BurnDrvTwineagl = {
 	"twineagl", NULL, NULL, NULL, "1988",
 	"Twin Eagle - Revenge Joe's Brother\0", "Imperfect inputs", "Seta (Taito license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_VERSHOOT, 0,
 	NULL, twineaglRomInfo, twineaglRomName, NULL, NULL, TwineaglInputInfo, TwineaglDIPInfo,
 	twineaglInit, DrvExit, DrvFrame /*DrvM65c02Frame*/, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	224, 384, 3, 4
@@ -9767,7 +9844,7 @@ struct BurnDriverD BurnDrvUsclssic = {
 	"usclssic", NULL, NULL, NULL, "1989",
 	"U.S. Classic\0", "No sound, imperfect inputs", "Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SPORTSMISC, 0,
 	NULL, usclssicRomInfo, usclssicRomName, NULL, NULL, UsclssicInputInfo, UsclssicDIPInfo,
 	usclssicInit, DrvExit, Drv5IRQFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0xa00,
 	240, 384, 3, 4
@@ -9817,7 +9894,7 @@ struct BurnDriver BurnDrvCalibr50 = {
 	"calibr50", NULL, NULL, NULL, "1989",
 	"Caliber 50\0", "No sound, imperfect inputs", "Athena / Seta", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_SETA1, GBF_SHOOT, 0,
 	NULL, calibr50RomInfo, calibr50RomName, NULL, NULL, Calibr50InputInfo, Calibr50DIPInfo,
 	calibr50Init, DrvExit, Drv5IRQFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	240, 384, 3, 4
@@ -9865,7 +9942,7 @@ struct BurnDriver BurnDrvCrazyfgt = {
 	"crazyfgt", NULL, NULL, NULL, "1996",
 	"Crazy Fight\0", NULL, "Subsino", "Seta",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_SETA1, GBF_SHOOT, 0,
 	NULL, crazyfgtRomInfo, crazyfgtRomName, NULL, NULL, CrazyfgtInputInfo, CrazyfgtDIPInfo,
 	crazyfgtInit, DrvExit, CrazyfgtFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
 	384, 224, 4, 3
@@ -10203,7 +10280,7 @@ struct BurnDriverD BurnDrvJockeyc = {
 	"jockeyc", NULL, NULL, NULL, "1990",
 	"Jockey Club\0", NULL, "[Seta] (Visco license)", "Seta",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_SETA1, GBF_MISC, 0,
+	0, 2, HARDWARE_SETA1, GBF_SPORTSMISC, 0,
 	NULL, jockeycRomInfo, jockeycRomName, NULL, NULL, JockeycInputInfo, JockeycDIPInfo,
 	jockeycInit, DrvExit, jockeycFrame, seta1layerDraw, DrvScan, &DrvRecalc, 0x200,
 	384, 240, 4, 3

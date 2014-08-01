@@ -626,6 +626,7 @@ static INT32 LoadRoms()
 	}
 	
 	if (!strcmp("kof2k4se", BurnDrvGetTextA(DRV_NAME))) nYM2610ADPCMASize[nNeoActiveSlot] += 0x800000;
+	if (!strcmp("cphd", BurnDrvGetTextA(DRV_NAME))) nYM2610ADPCMASize[nNeoActiveSlot] = 0x4000000;
 	if (!strcmp("kf2k4pls", BurnDrvGetTextA(DRV_NAME))) nYM2610ADPCMASize[nNeoActiveSlot] += 0x800000;
 	if (!strcmp("svcboot", BurnDrvGetTextA(DRV_NAME))) nYM2610ADPCMASize[nNeoActiveSlot] += 0x400000;
 	if (!strcmp("svcplus", BurnDrvGetTextA(DRV_NAME))) nYM2610ADPCMASize[nNeoActiveSlot] += 0x400000;
@@ -1435,8 +1436,11 @@ INT32 NeoScan(INT32 nAction, INT32* pnMin)
 			SCAN_VAR(nNeo68KROMBank);
 		}
 
+		// -- June 17-19, 2014; savestate crash fix - dink
 		SCAN_OFF(NeoGraphicsRAMBank, NeoGraphicsRAM, nAction);
-
+		SCAN_VAR(NeoGraphicsRAMPointer);
+		SCAN_VAR(nNeoGraphicsModulo);
+		// -- end
 		SCAN_VAR(nNeoSpriteFrame); SCAN_VAR(nSpriteFrameSpeed); SCAN_VAR(nSpriteFrameTimer);
 
 		SCAN_VAR(nNeoPaletteBank);
@@ -2139,6 +2143,7 @@ void __fastcall neogeoWriteWordVideo(UINT32 sekAddress, UINT16 wordValue)
 		case 0x00: {
 			NeoGraphicsRAMPointer = wordValue << 1;
 			NeoGraphicsRAMBank = NeoGraphicsRAM;
+
 			if (wordValue & 0x8000) {
 				NeoGraphicsRAMBank += 0x00010000;
 			}
@@ -4085,21 +4090,21 @@ INT32 NeoInit()
 	}
 
 	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_MVS) {
-		BurnLoadRom(NeoZ80BIOS,		0x00000 + 28, 1);
-		BurnLoadRom(NeoTextROMBIOS,	0x00000 + 29, 1);
-		BurnLoadRom(NeoZoomROM,		0x00000 + 30, 1);
+		BurnLoadRom(NeoZ80BIOS,		0x00000 + 29, 1);
+		BurnLoadRom(NeoTextROMBIOS,	0x00000 + 30, 1);
+		BurnLoadRom(NeoZoomROM,		0x00000 + 31, 1);
 	} else {
 
 		// Still load the Z80 BIOS & text layer data for AES systems, since it might be switched to MVS later
 
 		if (nNeoSystemType & NEO_SYS_PCB) {
 			bZ80BIOS = false;
-			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 29, 1);
-			BurnLoadRom(NeoZoomROM,		0x00080 + 30, 1);
+			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 30, 1);
+			BurnLoadRom(NeoZoomROM,		0x00080 + 31, 1);
 		} else {
-			BurnLoadRom(NeoZ80BIOS,		0x00080 + 28, 1);
-			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 29, 1);
-			BurnLoadRom(NeoZoomROM,		0x00080 + 30, 1);
+			BurnLoadRom(NeoZ80BIOS,		0x00080 + 29, 1);
+			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 30, 1);
+			BurnLoadRom(NeoZoomROM,		0x00080 + 31, 1);
 		}
 	}
 	BurnUpdateProgress(0.0, _T("Preprocessing text layer graphics...")/*, BST_PROCESS_TXT*/, 0);
@@ -4837,7 +4842,9 @@ INT32 NeoFrame()
 	
 	nCycles68KSync = SekTotalCycles();
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	}
 	
 	// Update the uPD4990 until the end of the frame
 	uPD4990AUpdate(SekTotalCycles() - nuPD4990ATicks);
@@ -4864,7 +4871,9 @@ INT32 NeoFrame()
 		}
 	}
 
-	CDEmuGetSoundBuffer(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		CDEmuGetSoundBuffer(pBurnSoundOut, nBurnSoundLen);
+	}
 
 	return 0;
 }

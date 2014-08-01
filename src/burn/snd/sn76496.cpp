@@ -28,7 +28,7 @@ struct SN76496
 	INT32 nOutputDir;
 };
 
-static INT32 NumChips;
+static INT32 NumChips = 0;
 static struct SN76496 *Chip0 = NULL;
 static struct SN76496 *Chip1 = NULL;
 static struct SN76496 *Chip2 = NULL;
@@ -299,7 +299,7 @@ static void GenericStart(INT32 Num, INT32 Clock, INT32 FeedbackMask, INT32 Noise
 	
 	if (Num >= MAX_SN76496_CHIPS) return;
 	
-	NumChips = Num;
+	NumChips = Num + 1;
 	
 	if (Num == 0) {
 		Chip0 = (struct SN76496*)BurnMalloc(sizeof(*Chip0));

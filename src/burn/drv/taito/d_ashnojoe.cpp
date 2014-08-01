@@ -220,6 +220,8 @@ void DrvYM2203WritePortA(UINT32, UINT32 d)
 
 void DrvYM2203WritePortB(UINT32, UINT32 d)
 {
+	if (ZetGetActive() == -1) return; // fix crash on init
+
 	INT32 bank = (d & 0x0f) * 0x8000;
 
 	ZetMapArea(0x8000, 0xffff, 0, DrvZ80Banks + bank);
@@ -237,11 +239,15 @@ inline static void DrvIRQHandler(INT32, INT32 nStatus)
 
 static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
+	if (ZetGetActive() == -1) return 0;
+
 	return (INT64)(double)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double DrvGetTime()
 {
+	if (ZetGetActive() == -1) return 0;
+
 	return (double)ZetTotalCycles() / 4000000.0;
 }
 
@@ -664,7 +670,7 @@ struct BurnDriver BurnDrvScessjoe = {
 	"scessjoe", NULL, NULL, NULL, "1990",
 	"Success Joe (World)\0", "Incomplete sound", "Taito Corporation / Wave", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_VSFIGHT, 0,
 	NULL, scessjoeRomInfo, scessjoeRomName, NULL, NULL, AshnojoeInputInfo, AshnojoeDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x800,
 	288, 208, 4, 3
@@ -709,7 +715,7 @@ struct BurnDriver BurnDrvAshnojoe = {
 	"ashnojoe", "scessjoe", NULL, NULL, "1990",
 	"Ashita no Joe (Japan)\0", "Incomplete sound", "Taito Corporation / Wave", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_VSFIGHT, 0,
 	NULL, ashnojoeRomInfo, ashnojoeRomName, NULL, NULL, AshnojoeInputInfo, AshnojoeDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x800,
 	288, 208, 4, 3

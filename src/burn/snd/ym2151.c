@@ -5,6 +5,7 @@
 ******************************************************************************/
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -508,6 +509,30 @@ static FILE *sample[9];
 #endif
 #define PI 3.14159265358979323846
 
+/* // save for later debugging
+void dinklogerror(char* szFormat, ...)
+{
+	static char szLogMessage[1024];
+
+	va_list vaFormat;
+	va_start(vaFormat, szFormat);
+
+	_vsnprintf(szLogMessage, 1024, szFormat, vaFormat);
+
+	va_end(vaFormat);
+
+        //bprintf(PRINT_ERROR, _T("[%hs]!!!"), szLogMessage);
+        {
+            FILE *fp;
+            fp = fopen("damage.txt", "a");
+            if (fp) {
+                fputs(szLogMessage, fp);
+                fclose(fp);
+            }
+        }
+
+	return;
+} */
 
 
 static void init_tables(void)
@@ -1355,7 +1380,7 @@ static void ym2151_postload_refresh(void)
 	{
 		for (j=0; j<8; j++)
 		{
-			set_connect(&YMPSG[i].oper[j*4], YMPSG[i].connect[j], j);
+			set_connect(&YMPSG[i].oper[j*4], j, YMPSG[i].connect[j]);
 		}
 	}
 }
@@ -1465,6 +1490,138 @@ static void ym2151_state_save_register( int numchips )
 {
 }
 #endif
+
+static void ym2151_postload_refresh(void)
+{
+	int i,j;
+
+	for (i=0; i<YMNumChips; i++)
+	{
+		for (j=0; j<8; j++)
+		{
+			set_connect(&YMPSG[i].oper[j*4], j, YMPSG[i].connect[j]);
+		}
+	}
+}
+
+void BurnYM2151Scan_int(INT32 nAction)
+{
+	int i,j;
+
+	if ((nAction & ACB_DRIVER_DATA) == 0) {
+		return;
+	}
+
+	for (i=0; i<YMNumChips; i++)
+	{
+		/* save all 32 operators of chip #i */
+		for (j=0; j<32; j++)
+		{
+			YM2151Operator *op;
+
+			//sprintf(buf1,"YM2151.op%02i",j);
+			op = &YMPSG[i].oper[(j&7)*4+(j>>3)];
+
+			SCAN_VAR(op->phase);
+			SCAN_VAR(op->freq);
+			SCAN_VAR(op->dt1);
+			SCAN_VAR(op->mul);
+			SCAN_VAR(op->dt1_i);
+			SCAN_VAR(op->dt2);
+			SCAN_VAR(op->mem_value);
+
+			SCAN_VAR(op->fb_shift);
+			SCAN_VAR(op->fb_out_curr);
+			SCAN_VAR(op->fb_out_prev);
+			SCAN_VAR(op->kc);
+			SCAN_VAR(op->kc_i);
+			SCAN_VAR(op->pms);
+			SCAN_VAR(op->ams);
+			SCAN_VAR(op->AMmask);
+
+			SCAN_VAR(op->state);
+			SCAN_VAR(op->eg_sh_ar);
+			SCAN_VAR(op->eg_sel_ar);
+			SCAN_VAR(op->tl);
+			SCAN_VAR(op->volume);
+			SCAN_VAR(op->eg_sh_d1r);
+			SCAN_VAR(op->eg_sel_d1r);
+			SCAN_VAR(op->d1l);
+			SCAN_VAR(op->eg_sh_d2r);
+			SCAN_VAR(op->eg_sel_d2r);
+			SCAN_VAR(op->eg_sh_rr);
+			SCAN_VAR(op->eg_sel_rr);
+
+			SCAN_VAR(op->key);
+			SCAN_VAR(op->ks);
+			SCAN_VAR(op->ar);
+			SCAN_VAR(op->d1r);
+			SCAN_VAR(op->d2r);
+			SCAN_VAR(op->rr);
+
+			SCAN_VAR(op->reserved0);
+			SCAN_VAR(op->reserved1);
+		}
+
+		//sprintf(buf1,"YM2151.registers");
+		SCAN_VAR(YMPSG[i].pan);
+
+		SCAN_VAR(YMPSG[i].eg_cnt);
+		SCAN_VAR(YMPSG[i].eg_timer);
+		SCAN_VAR(YMPSG[i].eg_timer_add);
+		SCAN_VAR(YMPSG[i].eg_timer_overflow);
+
+		SCAN_VAR(YMPSG[i].lfo_phase);
+		SCAN_VAR(YMPSG[i].lfo_timer);
+		SCAN_VAR(YMPSG[i].lfo_timer_add);
+		SCAN_VAR(YMPSG[i].lfo_overflow);
+		SCAN_VAR(YMPSG[i].lfo_counter);
+		SCAN_VAR(YMPSG[i].lfo_counter_add);
+		SCAN_VAR(YMPSG[i].lfo_wsel);
+		SCAN_VAR(YMPSG[i].amd);
+		SCAN_VAR(YMPSG[i].pmd);
+		SCAN_VAR(YMPSG[i].lfa);
+		SCAN_VAR(YMPSG[i].lfp);
+
+		SCAN_VAR(YMPSG[i].test);
+		SCAN_VAR(YMPSG[i].ct);
+
+		SCAN_VAR(YMPSG[i].noise);
+		SCAN_VAR(YMPSG[i].noise_rng);
+		SCAN_VAR(YMPSG[i].noise_p);
+		SCAN_VAR(YMPSG[i].noise_f);
+
+		SCAN_VAR(YMPSG[i].csm_req);
+		SCAN_VAR(YMPSG[i].irq_enable);
+		SCAN_VAR(YMPSG[i].status);
+
+		SCAN_VAR(YMPSG[i].timer_A_index);
+		SCAN_VAR(YMPSG[i].timer_B_index);
+		SCAN_VAR(YMPSG[i].timer_A_index_old);
+		SCAN_VAR(YMPSG[i].timer_B_index_old);
+
+		SCAN_VAR(YMPSG[i].connect);
+		SCAN_VAR(YMPSG[i].tim_A);
+		SCAN_VAR(YMPSG[i].tim_B);
+		SCAN_VAR(YMPSG[i].tim_A_val);
+		SCAN_VAR(YMPSG[i].tim_B_val);
+		SCAN_VAR(YMPSG[i].tim_A_tab);
+		SCAN_VAR(YMPSG[i].tim_B_tab);
+		SCAN_VAR(YMPSG[i].freq);
+		SCAN_VAR(YMPSG[i].dt1_freq);
+		SCAN_VAR(YMPSG[i].noise_tab);
+	}
+	SCAN_VAR(chanout);
+	SCAN_VAR(m2);
+	SCAN_VAR(c1);
+	SCAN_VAR(c2); /* Phase Modulation input for operators 2,3,4 */
+	SCAN_VAR(mem);		/* one sample delay memory */
+
+	if (nAction & ACB_WRITE) {
+		// state_save_register_func_postload(ym2151_postload_refresh);
+		ym2151_postload_refresh();
+	}
+}
 
 
 /*

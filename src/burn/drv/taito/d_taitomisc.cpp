@@ -1939,8 +1939,8 @@ STD_ROM_PICK(Rastsagaa)
 STD_ROM_FN(Rastsagaa)
 
 static struct BurnRomInfo TopspeedRomDesc[] = {
-	{ "b14-67-1.11",   0x10000, 0x23f17616, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
-	{ "b14-68-1.9",    0x10000, 0x835659d9, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b14-67-1.9",    0x10000, 0x23f17616, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
+	{ "b14-68-1.11",   0x10000, 0x835659d9, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b14-54.24",     0x20000, 0x172924d5, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b14-52.26",     0x20000, 0xe1b5b2a1, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
 	{ "b14-55.23",     0x20000, 0xa1f15499, BRF_ESS | BRF_PRG | TAITO_68KROM1_BYTESWAP },
@@ -4202,7 +4202,7 @@ static INT32 DariusInit()
 	}
 	
 	PC080SNInit(0, TaitoNumChar, -16, 0, 0, 1);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4326,7 +4326,7 @@ static INT32 OpwolfInit()
 	
 	PC080SNInit(0, TaitoNumChar, 0, 8, 0, 0);
 	PC090OJInit(TaitoNumSpriteA, 0, 8, 0);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4433,7 +4433,7 @@ static INT32 OpwolfbInit()
 	
 	PC080SNInit(0, TaitoNumChar, 0, 8, 0, 0);
 	PC090OJInit(TaitoNumSpriteA, 0, 8, 0);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4548,7 +4548,7 @@ static INT32 RbislandInit()
 	
 	PC080SNInit(0, TaitoNumChar, 0, 16, 0, 0);
 	PC090OJInit(TaitoNumSpriteA, 0, 16, 0);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4738,7 +4738,7 @@ static INT32 RastanInit()
 	
 	PC080SNInit(0, TaitoNumChar, 0, 8, 0, 0);
 	PC090OJInit(TaitoNumSpriteA, 0, 8, 0);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -4832,7 +4832,7 @@ static INT32 TopspeedInit()
 	
 	PC080SNInit(0, TaitoNumChar, 0, 8, 0, 0);
 	PC080SNInit(1, TaitoNumChar, 0, 8, 0, 0);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	TC0220IOCInit();
 	
 	// Setup the 68000 emulation
@@ -4934,7 +4934,7 @@ static INT32 VolfiedInit()
 	
 	PC090OJInit(TaitoNumSpriteA, 0, 8, 0);
 	PC090OJSetPaletteOffset(256);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);

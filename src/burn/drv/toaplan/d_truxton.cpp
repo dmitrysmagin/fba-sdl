@@ -31,7 +31,7 @@ static struct BurnRomInfo truxtonRomDesc[] = {
 	{ "b65_02.bin",   0x020000, 0x1dd55161, BRF_GRA },			 //  8
 	{ "b65_01.bin",   0x020000, 0xe974937f, BRF_GRA },			 //  9
 
-	{ "b65_09.bin",   0x008000, 0xf1c0f410, BRF_ESS | BRF_PRG }, //  10 Z80 program
+	{ "b65_09.bin",   0x004000, 0x1bdd4ddc, BRF_ESS | BRF_PRG }, //  10 Z80 program
 
 	{ "b65_12.bpr",   0x000020, 0xbc88cced, BRF_SND },			 // 11 Sprite attribute PROM
 	{ "b65_13.bpr",   0x000020, 0xa1e17492, BRF_SND },			 // 12 ???
@@ -77,13 +77,13 @@ static struct BurnDIPInfo truxtonDIPList[] = {
 	{0x14,	0xFF, 0xFF,	0x02, NULL},
 
 	// DIP 1
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Cabinet"},
 	{0x12,	0x01, 0x01,	0x01, "Upright"},
 	{0x12,	0x01, 0x01,	0x00, "Cocktail"},	
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Screen type"},
 	{0x12,	0x01, 0x02,	0x00, "Normal screen"},
 	{0x12,	0x01, 0x02,	0x02, "Invert screen"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Service"},
 	{0x12,	0x01, 0x04,	0x00, "Normal mode"},
 	{0x12,	0x01, 0x04,	0x04, "Screen test mode"},
 	{0,		0xFE, 0,	2,	  "Advertise sound"},
@@ -207,6 +207,7 @@ static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 		ZetScan(nAction);				// Scan Z80
 
 		BurnYM3812Scan(nAction, pnMin);
+		ToaScanBCU2(nAction, pnMin);
 
 		SCAN_VAR(DrvInput);
 		SCAN_VAR(nCyclesDone);

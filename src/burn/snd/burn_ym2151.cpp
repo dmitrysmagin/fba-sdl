@@ -147,6 +147,7 @@ void BurnYM2151Reset()
 	if (!DebugSnd_YM2151Initted) bprintf(PRINT_ERROR, _T("BurnYM2151Reset called without init\n"));
 #endif
 
+	memset(&BurnYM2151Registers, 0, sizeof(BurnYM2151Registers));
 	YM2151ResetChip(0);
 }
 
@@ -201,6 +202,7 @@ INT32 BurnYM2151Init(INT32 nClockFrequency)
 	nFractionalPosition = 4 << 16;
 	nSamplesRendered = 0;
 	nBurnPosition = 0;
+	memset(&BurnYM2151Registers, 0, sizeof(BurnYM2151Registers));
 	
 	// default routes
 	YM2151Volumes[BURN_SND_YM2151_YM2151_ROUTE_1] = 1.00;
@@ -231,12 +233,22 @@ void BurnYM2151Scan(INT32 nAction)
 	if ((nAction & ACB_DRIVER_DATA) == 0) {
 		return;
 	}
+
 	SCAN_VAR(nBurnCurrentYM2151Register);
 	SCAN_VAR(BurnYM2151Registers);
+	SCAN_VAR(YM2151Volumes);
+	SCAN_VAR(YM2151RouteDirs);
+	SCAN_VAR(nBurnYM2151SoundRate);
+	SCAN_VAR(nBurnPosition);
+	SCAN_VAR(nSampleSize);
+	SCAN_VAR(nFractionalPosition);
+	SCAN_VAR(nSamplesRendered);
 
-	if (nAction & ACB_WRITE) {
+	BurnYM2151Scan_int(nAction); // Properly scan the YM2151's internal registers
+
+        /*if (nAction & ACB_WRITE) { // Restore the operator connections, see burn_ym2151.h BurnYM2151WriteRegister() for more info.
 		for (INT32 i = 0; i < 0x0100; i++) {
 			YM2151WriteReg(0, i, BurnYM2151Registers[i]);
 		}
-	}
+	}*/
 }

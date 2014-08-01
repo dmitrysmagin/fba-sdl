@@ -49,6 +49,7 @@ INT32 (*pPgmScanCallback)(INT32, INT32*) = NULL;
 static INT32 nEnableArm7 = 0;
 INT32 nPGMDisableIRQ4 = 0;
 INT32 nPGMArm7Type = 0;
+UINT32 nPgmAsicRegionHackAddress = 0;
 
 #define M68K_CYCS_PER_FRAME	((20000000 * 100) / nBurnFPS)
 #define ARM7_CYCS_PER_FRAME	((20000000 * 100) / nBurnFPS)
@@ -80,8 +81,8 @@ static INT32 pgmMemIndex()
 	RamZ80		= Next; Next += 0x0010000;
 
 	if (BurnDrvGetHardwareCode() & HARDWARE_IGS_USE_ARM_CPU) {
-		PGMARMShareRAM	= Next; Next += 0x0020000;
-		PGMARMShareRAM2	= Next; Next += 0x0020000;
+		PGMARMShareRAM	= Next; Next += 0x0010000;
+		PGMARMShareRAM2	= Next; Next += 0x0010000;
 		PGMARMRAM0	= Next; Next += 0x0001000; // minimum map is 0x1000 - should be 0x400
 		PGMARMRAM1	= Next; Next += 0x0040000;
 		PGMARMRAM2	= Next; Next += 0x0001000; // minimum map is 0x1000 - should be 0x400
@@ -117,6 +118,7 @@ static INT32 pgmGetRoms(bool bLoad)
 	UINT8 *PGMTileROMLoad = PGMTileROM + 0x180000;
 	UINT8 *PGMSPRMaskROMLoad = PGMSPRMaskROM;
 	UINT8 *PGMSNDROMLoad = ICSSNDROM + 0x400000;
+	UINT8 *PGMARMROMLoad = PGMARMROM;
 
 	if (kov2 && bLoad) {
 		PGMSNDROMLoad += 0x400000;
@@ -199,7 +201,8 @@ static INT32 pgmGetRoms(bool bLoad)
 		{
 			if (bLoad) {
 				if (BurnDrvGetHardwareCode() & HARDWARE_IGS_USE_ARM_CPU) {
-					BurnLoadRom(PGMARMROM, i, 1);
+					if (ri.nLen == 0x3e78) PGMARMROMLoad += 0x188;
+					BurnLoadRom(PGMARMROMLoad, i, 1);
 				}
 			}
 			continue;
@@ -209,7 +212,7 @@ static INT32 pgmGetRoms(bool bLoad)
 		{
 			if (BurnDrvGetHardwareCode() & HARDWARE_IGS_USE_ARM_CPU) {
 				if (bLoad) {
-					BurnLoadRom(PGMUSER0, i, 1);
+					BurnLoadRom(PGMUSER0Load, i, 1);
 					PGMUSER0Load += ri.nLen;
 				} else {
 					nPGMExternalARMLen += ri.nLen;
@@ -228,7 +231,7 @@ static INT32 pgmGetRoms(bool bLoad)
 		if (kov2) nPGMSNDROMLen += 0x400000;
 
 		nPGMSNDROMLen = ((nPGMSNDROMLen-1) | 0xfffff) + 1;
-		nICSSNDROMLen = (nPGMSNDROMLen-1) & 0xf00000;
+		nICSSNDROMLen = nPGMSNDROMLen;
 
 		if (nPGMExternalARMLen == 0) nPGMExternalARMLen = 0x200000;
 	}
@@ -485,11 +488,16 @@ static void expand_tile_gfx()
 	UINT8 *dst = PGMTileROMExp;
 
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "kovqhsgs") == 0 ||
+	    strcmp(BurnDrvGetTextA(DRV_NAME), "kovqhsgsa") == 0 ||
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsqh2") == 0 || 
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsjb") == 0 || 
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsjba") == 0 ||
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovassg") == 0) {
 			pgm_decode_kovqhsgs_tile_data(PGMTileROM + 0x180000);
+	}
+
+	if (strncmp(BurnDrvGetTextA(DRV_NAME), "happy6", 6) == 0) {
+		pgm_descramble_happy6_data(PGMTileROM + 0x180000, 0x800000);
 	}
 
 	for (INT32 i = nPGMTileROMLen/5-1; i >= 0 ; i --) {
@@ -563,6 +571,7 @@ static void expand_colourdata()
 	}
 
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "kovqhsgs") == 0 ||
+		strcmp(BurnDrvGetTextA(DRV_NAME), "kovqhsgsa") == 0 ||
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsqh2") == 0 || 
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsjb") == 0 || 
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsjba") == 0 ||
@@ -573,6 +582,10 @@ static void expand_colourdata()
 		pgm_decode_kovqhsgs_gfx_block(tmp + 0x1800000);
 		pgm_decode_kovqhsgs_gfx_block(tmp + 0x2000000);
 		pgm_decode_kovqhsgs_gfx_block(tmp + 0x2800000);
+	}
+
+	if (strncmp(BurnDrvGetTextA(DRV_NAME), "happy6", 6) == 0) {
+		pgm_descramble_happy6_data(tmp, 0x800000 * 2);
 	}
 
 	// convert from 3bpp packed
@@ -685,6 +698,7 @@ INT32 pgmInit()
 
 	pgmInitDraw();
 
+	v3021Init();
 	ics2115_init();
 	
 	pBurnDrvPalette = (UINT32*)PGMPalRAM;
@@ -715,6 +729,7 @@ INT32 pgmExit()
 
 	BurnFree(Mem);
 
+	v3021Exit();
 	ics2115_exit(); // frees ICSSNDROM
 
 	BurnFree (PGMTileROM);
@@ -737,6 +752,7 @@ INT32 pgmExit()
 	nEnableArm7 = 0;
 	nPGMDisableIRQ4 = 0;
 	nPGMArm7Type = 0;
+	nPgmAsicRegionHackAddress = 0;
 
 	nPgmCurrentBios = -1;
 
@@ -784,27 +800,15 @@ INT32 pgmFrame()
 	{
 		Arm7NewFrame();
 
-		switch (nPGMArm7Type) // region hacks
+		// region hacks
 		{
-			case 1: // kov/kovsh/kovshp/photoy2k/puzlstar/puzzli2/oldsplus/py2k2
-				PGMARMShareRAM[0x008] = PgmInput[7];
-			break;
-
-			case 2: // martmast/kov2/dw2001/ddp2
-				if (strncmp(BurnDrvGetTextA(DRV_NAME), "ddp2", 4) == 0) {
-					PGMARMShareRAM[0x002] = PgmInput[7];
-				} else {
-					PGMARMShareRAM[0x138] = PgmInput[7];
+			if (strncmp(BurnDrvGetTextA(DRV_NAME), "dmnfrnt", 7) == 0) {
+				PGMARMShareRAM[0x158] = PgmInput[7];
+			} else {
+				if (nPgmAsicRegionHackAddress) {
+					PGMARMROM[nPgmAsicRegionHackAddress] = PgmInput[7];
 				}
-			break;
-
-			case 3: // svg/killbldp/dmnfrnt/theglad/happy6in1
-				if (strncmp(BurnDrvGetTextA(DRV_NAME), "dmnfrnt", 7) == 0) {
-					PGMARMShareRAM[0x158] = PgmInput[7];
-				} else {
-					// unknown
-				}
-			break;
+			}
 		}
 	}
 
@@ -847,11 +851,11 @@ INT32 pgmFrame()
 
 	ics2115_frame();
 
+	ics2115_update(nBurnSoundLen);
+
 	if (nEnableArm7) Arm7Close();
 	ZetClose();
 	SekClose();
-
-	ics2115_update(nBurnSoundLen);
 
 	if (pBurnDraw) {
 		pgmDraw();

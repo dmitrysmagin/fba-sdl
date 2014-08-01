@@ -1802,7 +1802,7 @@ static void common_ym2610_init()
 	ZetSetReadHandler(taitob_sound_read_ym2610);
 	ZetClose();
 
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 
 	INT32 len0 = TaitoYM2610ARomSize;
 	INT32 len1 = TaitoYM2610BRomSize;
@@ -1829,7 +1829,7 @@ static void common_ym2203_init()
 	ZetSetReadHandler(taitob_sound_read_ym2203);
 	ZetClose();
 
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 
 	BurnYM2203Init(1, 3000000, DrvFMIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnYM2203SetPorts(0, NULL, NULL, &bankswitch, NULL);
@@ -2982,7 +2982,7 @@ static struct BurnRomInfo masterwRomDesc[] = {
 
 	{ "b72_07.30",			0x010000, 0x2b1a946f, TAITO_Z80ROM1 },		//  4 Z80 code
 
-	{ "b72-02.rom",			0x080000, 0xc519f65a, TAITO_CHARS },		//  5 Graphics Tiles
+	{ "b72-02.6",			0x080000, 0x843444eb, TAITO_CHARS },		//  5 Graphics Tiles
 	{ "b72-01.5",			0x080000, 0xa24ac26e, TAITO_CHARS },		//  6
 };
 
@@ -3015,7 +3015,7 @@ static struct BurnRomInfo masterwuRomDesc[] = {
 
 	{ "b72_07.30",			0x010000, 0x2b1a946f, TAITO_Z80ROM1 },		//  4 Z80 code
 
-	{ "b72-02.rom",			0x080000, 0xc519f65a, TAITO_CHARS },		//  5 Graphics Tiles
+	{ "b72-02.6",			0x080000, 0x843444eb, TAITO_CHARS },		//  5 Graphics Tiles
 	{ "b72-01.5",			0x080000, 0xa24ac26e, TAITO_CHARS },		//  6
 };
 
@@ -3056,6 +3056,41 @@ struct BurnDriver BurnDrvMasterwj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_TAITO_TAITOB, GBF_VERSHOOT, 0,
 	NULL, masterwjRomInfo, masterwjRomName, NULL, NULL, CommonInputInfo, MasterwDIPInfo,
+	MasterwInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
+	224, 320, 3, 4
+};
+
+
+// Yukiwo (World, prototype)
+
+static struct BurnRomInfo yukiwoRomDesc[] = {
+	{ "ic33-rom0e.bin",		0x020000, 0xa0dd51d9, TAITO_68KROM1_BYTESWAP }, //  0 68k Code
+	{ "ic24-e882.bin",		0x020000, 0xd66f29d4, TAITO_68KROM1_BYTESWAP }, //  1
+	{ "ic34-rom1e.bin",		0x010000, 0x5ab7bc95, TAITO_68KROM1_BYTESWAP }, //  2
+	{ "ic25-rom10.bin",		0x010000, 0x0571b986, TAITO_68KROM1_BYTESWAP }, //  3
+
+	{ "ic30-snd.bin",		0x008000, 0x8632adb7, TAITO_Z80ROM1 },		//  4 Z80 Code
+	{ "ic30-snd.bin",		0x008000, 0x8632adb7, TAITO_Z80ROM1 },		//
+
+	{ "ic5-9df1.bin",		0x020000, 0x0507b908, TAITO_CHARS_BYTESWAP },	//  5 Graphics Tiles
+	{ "ic1-a010.bin",		0x020000, 0x0030dce2, TAITO_CHARS_BYTESWAP },	//  6
+	{ "ic6-6f3f.bin",		0x020000, 0x77afcf80, TAITO_CHARS_BYTESWAP },	//  7
+	{ "ic2-6588.bin",		0x020000, 0x25e79bc2, TAITO_CHARS_BYTESWAP },	//  8
+	{ "ic7-7c16.bin",		0x020000, 0xa366bffd, TAITO_CHARS_BYTESWAP },	//  9
+	{ "ic3-1305.bin",		0x020000, 0x8772b1a6, TAITO_CHARS_BYTESWAP },	// 10
+	{ "ic8-e28a.bin",		0x020000, 0x1b3db354, TAITO_CHARS_BYTESWAP },	// 11
+	{ "ic4-9e5e.bin",		0x020000, 0x3b30166b, TAITO_CHARS_BYTESWAP },	// 12
+};
+
+STD_ROM_PICK(yukiwo)
+STD_ROM_FN(yukiwo)
+
+struct BurnDriver BurnDrvYukiwo = {
+	"yukiwo", "masterw", NULL, NULL, "1989",
+	"Yukiwo (World, prototype)\0", "Imperfect graphics", "Taito Corporation Japan", "Taito B System",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_PROTOTYPE, 2, HARDWARE_TAITO_TAITOB, GBF_VERSHOOT, 0,
+	NULL, yukiwoRomInfo, yukiwoRomName, NULL, NULL, CommonInputInfo, MasterwDIPInfo,
 	MasterwInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	224, 320, 3, 4
 };
@@ -3198,7 +3233,7 @@ struct BurnDriver BurnDrvRambo3 = {
 	"rambo3", NULL, NULL, NULL, "1989",
 	"Rambo III (Europe)\0", NULL, "Taito Europe Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_SHOOT, 0,
 	NULL, rambo3RomInfo, rambo3RomName, NULL, NULL, Rambo3uInputInfo, Rambo3uDIPInfo,
 	Rambo3Init, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
@@ -3230,7 +3265,7 @@ struct BurnDriver BurnDrvRambo3u = {
 	"rambo3u", "rambo3", NULL, NULL, "1989",
 	"Rambo III (US)\0", NULL, "Taito Europe Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_SHOOT, 0,
 	NULL, rambo3uRomInfo, rambo3uRomName, NULL, NULL, Rambo3uInputInfo, Rambo3uDIPInfo,
 	Rambo3Init, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
@@ -3394,12 +3429,19 @@ struct BurnDriver BurnDrvCrimecj = {
 // Tetris (Japan, B-System, YM2610)
 
 static struct BurnRomInfo tetristRomDesc[] = {
-	{ "c12-03.bin",			0x020000, 0x38f1ed41, TAITO_68KROM1_BYTESWAP }, //  0 68k Code
-	{ "c12-02.bin",			0x020000, 0xed9530bc, TAITO_68KROM1_BYTESWAP }, //  1
-	{ "c12-05.bin",			0x020000, 0x128e9927, TAITO_68KROM1_BYTESWAP }, //  2
-	{ "c12-04.bin",			0x020000, 0x5da7a319, TAITO_68KROM1_BYTESWAP }, //  3
+	{ "c12-03.50",			0x020000, 0x38f1ed41, TAITO_68KROM1_BYTESWAP }, //  0 68k Code
+	{ "c12-02.31",			0x020000, 0xed9530bc, TAITO_68KROM1_BYTESWAP }, //  1
+	{ "c12-05.49",			0x020000, 0x128e9927, TAITO_68KROM1_BYTESWAP }, //  2
+	{ "c12-04.30",			0x020000, 0x5da7a319, TAITO_68KROM1_BYTESWAP }, //  3
 
-	{ "c12-06.bin",			0x010000, 0xf2814b38, TAITO_Z80ROM1 },		//  4 Z80 Code
+	{ "c12-06.37",			0x010000, 0xf2814b38, TAITO_Z80ROM1 },		//  4 Z80 Code
+	
+	{ "b81-03.14",			0x080000, 0x551b75e6, BRF_OPT },
+	{ "b81-04.15",			0x080000, 0xcf734e12, BRF_OPT },
+
+	{ "b81-02.2",			0x080000, 0x20ec3b86, BRF_OPT },
+
+	{ "b81-01.1",			0x080000, 0xb33f796b, BRF_OPT },
 };
 
 STD_ROM_PICK(tetrist)
@@ -3424,15 +3466,15 @@ struct BurnDriver BurnDrvTetrist = {
 // Tetris (Japan, B-System, YM2203)
 
 static struct BurnRomInfo tetristaRomDesc[] = {
-	{ "c35-04.bin",			0x020000, 0xfa6e42ff, TAITO_68KROM1_BYTESWAP }, //  0 68k Code
-	{ "c35-03.bin",			0x020000, 0xaebd8539, TAITO_68KROM1_BYTESWAP }, //  1
-	{ "c35-02.bin",			0x020000, 0x128e9927, TAITO_68KROM1_BYTESWAP }, //  2
-	{ "c35-01.bin",			0x020000, 0x5da7a319, TAITO_68KROM1_BYTESWAP }, //  3
+	{ "c35-04.33",			0x020000, 0xfa6e42ff, TAITO_68KROM1_BYTESWAP }, //  0 68k Code
+	{ "c35-03.24",			0x020000, 0xaebd8539, TAITO_68KROM1_BYTESWAP }, //  1
+	{ "c35-02.34",			0x020000, 0x128e9927, TAITO_68KROM1_BYTESWAP }, //  2
+	{ "c35-01.25",			0x020000, 0x5da7a319, TAITO_68KROM1_BYTESWAP }, //  3
 
-	{ "c35-05.bin",			0x010000, 0x785c63fb, TAITO_Z80ROM1 },		//  4 Z80 Code
+	{ "c35-05.30",			0x010000, 0x785c63fb, TAITO_Z80ROM1 },		//  4 Z80 Code
 
-	{ "b72-02.rom",			0x080000, 0x843444eb, BRF_OPT },		//  5 Graphics Tiles (not used)
-	{ "b72-01.rom",			0x080000, 0xa24ac26e, BRF_OPT },		//  6
+	{ "b72-02.6",			0x080000, 0x843444eb, BRF_OPT },		//  5 Graphics Tiles (not used)
+	{ "b72-01.5",			0x080000, 0xa24ac26e, BRF_OPT },		//  6
 };
 
 STD_ROM_PICK(tetrista)
@@ -3971,7 +4013,7 @@ struct BurnDriver BurnDrvPbobble = {
 	"pbobble", NULL, NULL, NULL, "1994",
 	"Puzzle Bobble (Japan, B-System)\0", NULL, "Taito Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_BREAKOUT, 0,
 	NULL, pbobbleRomInfo, pbobbleRomName, NULL, NULL, PbobbleInputInfo, PbobbleDIPInfo,
 	PbobbleInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
@@ -4006,7 +4048,7 @@ struct BurnDriver BurnDrvSpacedx = {
 	"spacedx", NULL, NULL, NULL, "1994",
 	"Space Invaders DX (US, v2.1)\0", NULL, "Taito Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_TAITOB, GBF_SHOOT, 0,
 	NULL, spacedxRomInfo, spacedxRomName, NULL, NULL, PbobbleInputInfo, PbobbleDIPInfo,
 	PbobbleInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
@@ -4041,7 +4083,7 @@ struct BurnDriver BurnDrvSpacedxj = {
 	"spacedxj", "spacedx", NULL, NULL, "1994",
 	"Space Invaders DX (Japan, v2.1)\0", NULL, "Taito Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_SHOOT, 0,
 	NULL, spacedxjRomInfo, spacedxjRomName, NULL, NULL, PbobbleInputInfo, PbobbleDIPInfo,
 	PbobbleInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
@@ -4074,7 +4116,7 @@ struct BurnDriver BurnDrvSpacedxo = {
 	"spacedxo", "spacedx", NULL, NULL, "1994",
 	"Space Invaders DX (Japan, v2.0)\0", NULL, "Taito Corporation", "Taito B System",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_TAITOB, GBF_SHOOT, 0,
 	NULL, spacedxoRomInfo, spacedxoRomName, NULL, NULL, SpacedxoInputInfo, SpacedxoDIPInfo,
 	SpacedxoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x1000,
 	320, 224, 4, 3
