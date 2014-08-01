@@ -804,7 +804,7 @@ static INT32 OthunderInit()
 	
 	TC0100SCNInit(0, TaitoNumChar, 4, 8, 1, NULL);
 	TC0110PCRInit(1, 0x1000);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	TC0220IOCInit();
 	
 	if (TaitoLoadRoms(1)) return 1;
@@ -1096,7 +1096,9 @@ static INT32 OthunderFrame()
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	}
 	ZetClose();
 	
 	if (pBurnDraw) TaitoDrawFunction();

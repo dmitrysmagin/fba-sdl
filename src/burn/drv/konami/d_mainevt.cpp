@@ -922,15 +922,13 @@ static INT32 DrvFrame()
 
 static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
-	return 1; // hd6309 isn't hooked up...
-
 	struct BurnArea ba;
 
 	if (pnMin) {
 		*pnMin = 0x029704;
 	}
 
-	if (nAction & ACB_VOLATILE) {		
+	if (nAction & ACB_VOLATILE) {
 		memset(&ba, 0, sizeof(ba));
 
 		ba.Data	  = AllRam;
@@ -1186,7 +1184,7 @@ struct BurnDriver BurnDrvDevstors2 = {
 // Devastators (ver. V)
 
 static struct BurnRomInfo devstors3RomDesc[] = {
-	{ "890k02.k11",		0x10000, 0x52f4ccdd, 1 | BRF_PRG | BRF_ESS }, //  0 HD6309 Code
+	{ "890v02.k11",		0x10000, 0x52f4ccdd, 1 | BRF_PRG | BRF_ESS }, //  0 HD6309 Code
 
 	{ "890k01.f7",		0x08000, 0xd44b3eb0, 2 | BRF_PRG | BRF_ESS }, //  1 Z80 Code
 

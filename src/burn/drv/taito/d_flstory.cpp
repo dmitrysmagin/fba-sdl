@@ -3,6 +3,7 @@
 #include "z80_intf.h"
 #include "driver.h"
 #include "dac.h"
+#include "msm5232.h"
 extern "C" {
 #include "ay8910.h"
 }
@@ -632,7 +633,7 @@ void __fastcall flstory_sound_write(UINT16 address, UINT8 data)
 		case 0xca0b:
 		case 0xca0c:
 		case 0xca0d:
-			// msm5232
+			MSM5232Write(address, data);
 		return;
 
 		case 0xd800:
@@ -689,6 +690,8 @@ static INT32 DrvDoReset()
 	m67805_taito_reset();
 
 	AY8910Reset(0);
+	MSM5232Reset();
+
 	DACReset();
 
 	snd_data = 0;
@@ -876,12 +879,58 @@ static INT32 DrvInit()
 	AY8910Init(0, 2000000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 	AY8910SetAllRoutes(0, 0.10, BURN_SND_ROUTE_BOTH);
 
+	MSM5232Init(2000000, 1);
+	MSM5232SetCapacitors(1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_0);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_1);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_2);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_3);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_4);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_5);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_6);
+	MSM5232SetRoute(1.00, BURN_SND_MSM5232_ROUTE_7);
+
 	DACInit(0, 0, 1, flstoryDACSync);
 	DACSetRoute(0, 0.20, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
 	DrvDoReset();
+
+	return 0;
+}
+
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
+{
+	struct BurnArea ba;
+
+	if (pnMin) {
+		*pnMin = 0x029707;
+	}
+
+	if (nAction & ACB_VOLATILE) {		
+		memset(&ba, 0, sizeof(ba));
+
+		ba.Data	  = AllRam;
+		ba.nLen	  = RamEnd - AllRam;
+		ba.szName = "All Ram";
+		BurnAcb(&ba);
+
+		ZetScan(nAction);
+		m68705_taito_scan(nAction);
+		AY8910Scan(nAction, pnMin);
+		MSM5232Scan(nAction, pnMin);
+		DACScan(nAction, pnMin);
+
+		SCAN_VAR(snd_data);
+		SCAN_VAR(snd_flag);
+		SCAN_VAR(nmi_enable);
+		SCAN_VAR(pending_nmi);
+		SCAN_VAR(char_bank);
+		SCAN_VAR(mcu_select);
+
+		DrvRecalc = 1;
+	}
 
 	return 0;
 }
@@ -894,6 +943,7 @@ static INT32 DrvExit()
 	m67805_taito_exit();
 
 	AY8910Exit(0);
+	MSM5232Exit();
 	DACExit();
 
 	BurnFree (AllMem);
@@ -1178,7 +1228,8 @@ static INT32 DrvFrame()
 	ZetOpen(1);
 
 	if (pBurnSoundOut) {
-		AY8910Render(&pAY8910Buffer[0], pBurnSoundOut, nBurnSoundLen, 0);			
+		AY8910Render(&pAY8910Buffer[0], pBurnSoundOut, nBurnSoundLen, 0);
+		MSM5232Update(pBurnSoundOut, nBurnSoundLen);			
 		DACUpdate(pBurnSoundOut, nBurnSoundLen);
 	}
 
@@ -1228,9 +1279,9 @@ struct BurnDriver BurnDrvFlstory = {
 	"flstory", NULL, NULL, NULL, "1985",
 	"The FairyLand Story\0", NULL, "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, flstoryRomInfo, flstoryRomName, NULL, NULL, FlstoryInputInfo, FlstoryDIPInfo,
-	flstoryInit, DrvExit, DrvFrame, DrvDraw, NULL, &DrvRecalc, 0x200,
+	flstoryInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 224, 4, 3
 };
 
@@ -1264,9 +1315,9 @@ struct BurnDriver BurnDrvFlstoryj = {
 	"flstoryj", "flstory", NULL, NULL, "1985",
 	"The FairyLand Story (Japan)\0", NULL, "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, flstoryjRomInfo, flstoryjRomName, NULL, NULL, FlstoryInputInfo, FlstoryDIPInfo,
-	flstoryInit, DrvExit, DrvFrame, DrvDraw, NULL, &DrvRecalc, 0x200,
+	flstoryInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 224, 4, 3
 };
 
@@ -1310,9 +1361,9 @@ struct BurnDriver BurnDrvOnna34ro = {
 	"onna34ro", NULL, NULL, NULL, "1985",
 	"Onna Sansirou - Typhoon Gal (set 1)\0", NULL, "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_SCRFIGHT, 0,
 	NULL, onna34roRomInfo, onna34roRomName, NULL, NULL, Onna34roInputInfo, Onna34roDIPInfo,
-	onna34roInit, DrvExit, DrvFrame, DrvDraw, NULL, &DrvRecalc, 0x200,
+	onna34roInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 224, 4, 3
 };
 
@@ -1349,9 +1400,9 @@ struct BurnDriver BurnDrvOnna34ra = {
 	"onna34roa", "onna34ro", NULL, NULL, "1985",
 	"Onna Sansirou - Typhoon Gal (set 2)\0", NULL, "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_SCRFIGHT, 0,
 	NULL, onna34raRomInfo, onna34raRomName, NULL, NULL, Onna34roInputInfo, Onna34roDIPInfo,
-	onna34roInit, DrvExit, DrvFrame, DrvDraw, NULL, &DrvRecalc, 0x200,
+	onna34roInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 224, 4, 3
 };
 
@@ -1403,9 +1454,9 @@ struct BurnDriverD BurnDrvVictnine = {
 	"victnine", NULL, NULL, NULL, "1984",
 	"Victorious Nine\0", NULL, "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_TAITO_MISC, GBF_MISC, 0,
+	0, 2, HARDWARE_TAITO_MISC, GBF_SPORTSMISC, 0,
 	NULL, victnineRomInfo, victnineRomName, NULL, NULL, VictnineInputInfo, VictnineDIPInfo,
-	victnineInit, DrvExit, DrvFrame, victnineDraw, NULL, &DrvRecalc, 0x200,
+	victnineInit, DrvExit, DrvFrame, victnineDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 224, 4, 3
 };
 

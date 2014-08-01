@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <stdint.h>
 
 #if defined(__LIBRETRO__) && defined(_MSC_VER)
 #include <tchar.h>
@@ -88,16 +87,6 @@ INT32 BurnXorRom(UINT8* Dest, INT32 i, INT32 nGap);
 INT32 BurnLoadBitField(UINT8* pDest, UINT8* pSrc, INT32 nField, INT32 nSrcLen);
 
 // ---------------------------------------------------------------------------
-// Colour-depth independant image transfer
-
-extern UINT16* pTransDraw;
-
-void BurnTransferClear();
-INT32 BurnTransferCopy(UINT32* pPalette);
-void BurnTransferExit();
-INT32 BurnTransferInit();
-
-// ---------------------------------------------------------------------------
 // Plotting pixels
 
 inline static void PutPix(UINT8* pPix, UINT32 c)
@@ -164,10 +153,17 @@ extern UINT8 Debug_HiscoreInitted;
 extern UINT8 Debug_GenericTilesInitted;
 
 extern UINT8 DebugDev_8255PPIInitted;
+extern UINT8 DebugDev_8257DMAInitted;
 extern UINT8 DebugDev_EEPROMInitted;
 extern UINT8 DebugDev_PandoraInitted;
 extern UINT8 DebugDev_SeibuSndInitted;
+extern UINT8 DebugDev_SknsSprInitted;
+extern UINT8 DebugDev_SlapsticInitted;
+extern UINT8 DebugDev_T5182Initted;
 extern UINT8 DebugDev_TimeKprInitted;
+extern UINT8 DebugDev_Tms34061Initted;
+extern UINT8 DebugDev_V3021Initted;
+extern UINT8 DebugDev_VDCInitted;
 
 extern UINT8 DebugSnd_AY8910Initted;
 extern UINT8 DebugSnd_Y8950Initted;
@@ -180,25 +176,30 @@ extern UINT8 DebugSnd_YM2612Initted;
 extern UINT8 DebugSnd_YM3526Initted;
 extern UINT8 DebugSnd_YM3812Initted;
 extern UINT8 DebugSnd_YMF278BInitted;
+extern UINT8 DebugSnd_C6280Initted;
 extern UINT8 DebugSnd_DACInitted;
 extern UINT8 DebugSnd_ES5506Initted;
 extern UINT8 DebugSnd_ES8712Initted;
 extern UINT8 DebugSnd_FilterRCInitted;
 extern UINT8 DebugSnd_ICS2115Initted;
 extern UINT8 DebugSnd_IremGA20Initted;
+extern UINT8 DebugSnd_K005289Initted;
 extern UINT8 DebugSnd_K007232Initted;
 extern UINT8 DebugSnd_K051649Initted;
 extern UINT8 DebugSnd_K053260Initted;
 extern UINT8 DebugSnd_K054539Initted;
 extern UINT8 DebugSnd_MSM5205Initted;
+extern UINT8 DebugSnd_MSM5232Initted;
 extern UINT8 DebugSnd_MSM6295Initted;
 extern UINT8 DebugSnd_NamcoSndInitted;
+extern UINT8 DebugSnd_NESAPUSndInitted;
 extern UINT8 DebugSnd_RF5C68Initted;
 extern UINT8 DebugSnd_SAA1099Initted;
 extern UINT8 DebugSnd_SamplesInitted;
 extern UINT8 DebugSnd_SegaPCMInitted;
 extern UINT8 DebugSnd_SN76496Initted;
 extern UINT8 DebugSnd_UPD7759Initted;
+extern UINT8 DebugSnd_VLM5030Initted;
 extern UINT8 DebugSnd_X1010Initted;
 extern UINT8 DebugSnd_YMZ280BInitted;
 

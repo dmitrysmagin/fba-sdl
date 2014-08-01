@@ -85,7 +85,10 @@ static INT32 DrvCharPalOffset = 0;
 static INT32 DrvSpritePalOffset = 256;
 
 static UINT8 DrvMidresFakeInput[4]  = {0, 0, 0, 0};
-static UINT8 DrvMidresAnalogInput[2];
+//static UINT8 DrvMidresAnalogInput[2];
+static int HbarrelRotate[2]         = {0, 0};
+static UINT32 HbarrelRotateTime[2]  = {0, 0};
+static INT32 HbarrelI8751_Level=0, HbarrelI8751_State=0;
 
 static INT32 nCyclesDone[3], nCyclesTotal[3];
 
@@ -161,6 +164,47 @@ static struct BurnInputInfo Dec1InputList[] =
 
 STDINPUTINFO(Dec1)
 
+static struct BurnInputInfo HbarrelInputList[] =
+{
+	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort2 + 4, "p1 coin"   },
+	{"Start 1"           , BIT_DIGITAL  , DrvInputPort2 + 2, "p1 start"  },
+	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort2 + 5, "p2 coin"   },
+	{"Start 2"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 start"  },
+
+	{"Up"                , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 up"     },
+	{"Down"              , BIT_DIGITAL  , DrvInputPort0 + 1, "p1 down"   },
+	{"Left"              , BIT_DIGITAL  , DrvInputPort0 + 2, "p1 left"   },
+	{"Right"             , BIT_DIGITAL  , DrvInputPort0 + 3, "p1 right"  },
+	{"Fire 1"            , BIT_DIGITAL  , DrvInputPort0 + 4, "p1 fire 1" },
+	{"Fire 2"            , BIT_DIGITAL  , DrvInputPort0 + 5, "p1 fire 2" },
+//	{"Fire 3"            , BIT_DIGITAL  , DrvInputPort0 + 6, "p1 fire 3" },
+//	{"Fire 4"            , BIT_DIGITAL  , DrvInputPort0 + 7, "p1 fire 4" },
+	{"Rotate Left"       , BIT_DIGITAL  , DrvInputPort0 + 6, "p1 rotate left" },
+	{"Rotate Right"      , BIT_DIGITAL  , DrvInputPort0 + 7, "p1 rotate right" },
+	{"Fire 5"            , BIT_DIGITAL  , DrvInputPort2 + 0, "p1 fire 5" },
+	
+	{"Up (Cocktail)"     , BIT_DIGITAL  , DrvInputPort1 + 0, "p2 up"     },
+	{"Down (Cocktail)"   , BIT_DIGITAL  , DrvInputPort1 + 1, "p2 down"   },
+	{"Left (Cocktail)"   , BIT_DIGITAL  , DrvInputPort1 + 2, "p2 left"   },
+	{"Right (Cocktail)"  , BIT_DIGITAL  , DrvInputPort1 + 3, "p2 right"  },
+	{"Fire 1 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 4, "p2 fire 1" },
+	{"Fire 2 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 5, "p2 fire 2" },
+//	{"Fire 3 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 6, "p2 fire 3" },
+//	{"Fire 4 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 7, "p2 fire 4" },
+//	{"Fire 5 (Cocktail)" , BIT_DIGITAL  , DrvInputPort2 + 1, "p2 fire 5" },
+	{"Rotate Left (Cocktail)", BIT_DIGITAL  , DrvInputPort1 + 6, "p2 rotate left" },
+	{"Rotate Right (Cocktail)", BIT_DIGITAL  , DrvInputPort1 + 7, "p2 rotate right" },
+	{"Fire 5 (Cocktail)" , BIT_DIGITAL  , DrvInputPort2 + 1, "p2 fire 5" },
+
+	{"Reset"             , BIT_DIGITAL  , &DrvReset        , "reset"     },
+	{"Service"           , BIT_DIGITAL  , DrvInputPort2 + 6, "service"   },
+	{"Dip 1"             , BIT_DIPSWITCH, DrvDip + 0       , "dip"       },
+	{"Dip 2"             , BIT_DIPSWITCH, DrvDip + 1       , "dip"       },
+};
+
+STDINPUTINFO(Hbarrel)
+
+
 static struct BurnInputInfo MidresInputList[] =
 {
 	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort2 + 0, "p1 coin"   },
@@ -175,8 +219,8 @@ static struct BurnInputInfo MidresInputList[] =
 	{"Fire 1"            , BIT_DIGITAL  , DrvInputPort0 + 4, "p1 fire 1" },
 	{"Fire 2"            , BIT_DIGITAL  , DrvInputPort0 + 5, "p1 fire 2" },
 	{"Fire 3"            , BIT_DIGITAL  , DrvInputPort0 + 6, "p1 fire 3" },
-	{"Analog Left"       , BIT_DIGITAL  , DrvMidresFakeInput + 0, "p1 fire 4" },
-	{"Analog Right"      , BIT_DIGITAL  , DrvMidresFakeInput + 1, "p1 fire 5" },	
+	{"Rotate Left"       , BIT_DIGITAL  , DrvMidresFakeInput + 0, "p1 rotate left" },
+	{"Rotate Right"      , BIT_DIGITAL  , DrvMidresFakeInput + 1, "p1 rotate right" },
 	
 	{"Up (Cocktail)"     , BIT_DIGITAL  , DrvInputPort1 + 0, "p2 up"     },
 	{"Down (Cocktail)"   , BIT_DIGITAL  , DrvInputPort1 + 1, "p2 down"   },
@@ -185,8 +229,8 @@ static struct BurnInputInfo MidresInputList[] =
 	{"Fire 1 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 4, "p2 fire 1" },
 	{"Fire 2 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 5, "p2 fire 2" },
 	{"Fire 3 (Cocktail)" , BIT_DIGITAL  , DrvInputPort1 + 6, "p2 fire 3" },
-	{"Analog Left (Cocktail)"  , BIT_DIGITAL  , DrvMidresFakeInput + 2, "p2 fire 4" },
-	{"Analog Right (Cocktail)" , BIT_DIGITAL  , DrvMidresFakeInput + 3, "p2 fire 5" },
+	{"Rotate Left (Cocktail)"  , BIT_DIGITAL  , DrvMidresFakeInput + 2, "p2 rotate left" },
+	{"Rotate Right (Cocktail)" , BIT_DIGITAL  , DrvMidresFakeInput + 3, "p2 rotate right" },
 
 	{"Reset"             , BIT_DIGITAL  , &DrvReset        , "reset"     },
 	{"Service"           , BIT_DIGITAL  , DrvInputPort2 + 2, "service"   },
@@ -1476,6 +1520,42 @@ static struct BurnRomInfo RobocopbRomDesc[] = {
 STD_ROM_PICK(Robocopb)
 STD_ROM_FN(Robocopb)
 
+static struct BurnRomInfo Robocopb2RomDesc[] = {
+	{ "s-9.e3",       		0x10000, 0xbcef3e9b, BRF_ESS | BRF_PRG },	//  0	68000 Program Code
+	{ "s-11.c3",       		0x10000, 0xc9803685, BRF_ESS | BRF_PRG },	//  1
+	{ "s-10.e2",       		0x10000, 0x9d7b79e0, BRF_ESS | BRF_PRG },	//  2
+	{ "s-12.c2",       		0x10000, 0x631301c1, BRF_ESS | BRF_PRG },	//  3
+	
+	{ "ep03-3",             0x08000, 0x5b164b24, BRF_ESS | BRF_PRG },	//  4	6502 Program 
+		
+	{ "ep23",               0x10000, 0xa77e4ab1, BRF_GRA },			//  5	Characters
+	{ "ep22",               0x10000, 0x9fbd6903, BRF_GRA },			//  6
+
+	{ "ep20",               0x10000, 0x1d8d38b8, BRF_GRA },			//  7	Tiles 1
+	{ "ep21",               0x10000, 0x187929b2, BRF_GRA },			//  8
+	{ "ep18",               0x10000, 0xb6580b5e, BRF_GRA },			//  9
+	{ "ep19",               0x10000, 0x9bad01c7, BRF_GRA },			// 10
+	
+	{ "ep14",               0x08000, 0xca56ceda, BRF_GRA },			// 11	Tiles 2
+	{ "ep15",               0x08000, 0xa945269c, BRF_GRA },			// 12
+	{ "ep16",               0x08000, 0xe7fa4d58, BRF_GRA },			// 13
+	{ "ep17",               0x08000, 0x84aae89d, BRF_GRA },			// 14
+	
+	{ "ep07",               0x10000, 0x495d75cf, BRF_GRA },			// 15	Sprites
+	{ "ep06",               0x08000, 0xa2ae32e2, BRF_GRA },			// 16
+	{ "ep11",               0x10000, 0x62fa425a, BRF_GRA },			// 17
+	{ "ep10",               0x08000, 0xcce3bd95, BRF_GRA },			// 18
+	{ "ep09",               0x10000, 0x11bed656, BRF_GRA },			// 19
+	{ "ep08",               0x08000, 0xc45c7b4c, BRF_GRA },			// 20
+	{ "ep13",               0x10000, 0x8fca9f28, BRF_GRA },			// 21
+	{ "ep12",               0x08000, 0x3cd1d0c3, BRF_GRA },			// 22
+	
+	{ "ep02",               0x10000, 0x711ce46f, BRF_SND },			// 23	Samples
+};
+
+STD_ROM_PICK(Robocopb2)
+STD_ROM_FN(Robocopb2)
+
 static struct BurnRomInfo SlyspyRomDesc[] = {
 	{ "fa14-3.17l",         0x10000, 0x54353a84, BRF_ESS | BRF_PRG },	//  0	68000 Program Code
 	{ "fa12-2.9l",          0x10000, 0x1b534294, BRF_ESS | BRF_PRG },	//  1
@@ -1618,7 +1698,7 @@ static INT32 MemIndex()
 	DrvTiles2              = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
 	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
-	
+
 	pCharLayerDraw         = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
 	pTile1LayerDraw        = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
 	pTile2LayerDraw        = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
@@ -1637,14 +1717,20 @@ static INT32 DrvDoReset()
 	BurnYM3812Reset();
 	BurnYM2203Reset();
 	MSM6295Reset(0);
-	
+
+	HbarrelRotate[0] = HbarrelRotate[1] = 0; // start out pointing straight in Heavy Barrel (0=up)
+	if (strstr(BurnDrvGetTextA(DRV_NAME), "midres"))
+		HbarrelRotate[0] = HbarrelRotate[1] = 2; // start out pointing straight in Midnight Resistance (2=right)
+	HbarrelRotateTime[0] = HbarrelRotateTime[1] = 0;
+	HbarrelI8751_State=0; HbarrelI8751_Level=0;
+
 	i8751RetVal = 0;
 	DrvVBlank = 0;
 	DrvSoundLatch = 0;
 	DrvFlipScreen = 0;
 	DrvPriority = 0;
 	memset(DrvTileRamBank, 0, 3);
-	DrvMidresAnalogInput[0] = DrvMidresAnalogInput[1] = 0x0b;
+//	DrvMidresAnalogInput[0] = DrvMidresAnalogInput[1] = 0x0b;
 	
 	return 0;
 }
@@ -1708,9 +1794,9 @@ static void BaddudesI8751Write(UINT16 Data)
 	}
 }
 
+
 static void HbarrelI8751Write(UINT16 Data)
 {
-	static INT32 Level, State;
 
 	static const INT32 Title[]={  1, 2, 5, 6, 9,10,13,14,17,18,21,22,25,26,29,30,33,34,37,38,41,42,0,
                  3, 4, 7, 8,11,12,15,16,19,20,23,24,27,28,31,32,35,36,39,40,43,44,0,
@@ -1735,24 +1821,28 @@ static void HbarrelI8751Write(UINT16 Data)
 
 	switch (Data >> 8) {
 		case 0x02: {
-			i8751RetVal = Level;
-			break;
+			i8751RetVal = HbarrelI8751_Level;
+                        bprintf(PRINT_NORMAL, _T("I8751: 0x02 Level %d\n"), HbarrelI8751_Level);
+                        break;
 		}
 		
 		case 0x03: {
-			Level++;
+			HbarrelI8751_Level++;
+                        bprintf(PRINT_NORMAL, _T("I8751: 0x03 Level++ %d\n"), HbarrelI8751_Level);
 			i8751RetVal = 0x301;
 			break;
 		}
 		
 		case 0x05: {
 			i8751RetVal = 0xb3b;
-			Level = 0;
+			HbarrelI8751_Level = 0;
+                        bprintf(PRINT_NORMAL, _T("I8751: 0x05 Level %d\n"), HbarrelI8751_Level);
 			break;
 		}
 		
 		case 0x06: {
-			i8751RetVal = WeaponsTable[Level][Data & 0x1f];
+                        i8751RetVal = WeaponsTable[HbarrelI8751_Level][Data & 0x1f];
+                        //bprintf(PRINT_NORMAL, _T("I8751: 0x06 Weaponstable Level %d\n"), HbarrelI8751_Level);
 			break;
 		}
 		
@@ -1770,20 +1860,20 @@ static void HbarrelI8751Write(UINT16 Data)
 	if (Data == 0x175) i8751RetVal = 0x68b;
 	if (Data == 0x174) i8751RetVal = 0x68c;
 
-	if (Data == 0x4ff) State=0;
+	if (Data == 0x4ff) HbarrelI8751_State=0;
 	if (Data > 0x3ff && Data < 0x4ff) {
-		State++;
+		HbarrelI8751_State++;
 
-		if (Title[State - 1] == 0) {
+		if (Title[HbarrelI8751_State - 1] == 0) {
 			i8751RetVal = 0xfffe;
 		} else {
-			if (Title[State - 1] == -1) {
+			if (Title[HbarrelI8751_State - 1] == -1) {
 				i8751RetVal = 0xffff; 
 			} else {
-				if (Title[State - 1] > 0x1000) {
-					i8751RetVal = (Title[State - 1] & 0xfff) + 128 + 15;
+				if (Title[HbarrelI8751_State - 1] > 0x1000) {
+					i8751RetVal = (Title[HbarrelI8751_State - 1] & 0xfff) + 128 + 15;
 				} else {
-					i8751RetVal = Title[State - 1] + 128 + 15 + 0x2000;
+					i8751RetVal = Title[HbarrelI8751_State - 1] + 128 + 15 + 0x2000;
 				}
 			}
 		}
@@ -1827,6 +1917,82 @@ static void deco_bac06_pf_data_w(INT32 Layer, UINT16 *RAM, INT32 Offset, UINT16 
 	RAM[Offset] += Data;
 }
 
+static UINT32 RotationTimer(void) {
+    return nCurrentFrame;
+}
+
+static void RotateRight(int *v) {
+    (*v)--;
+    if (*v < 0) *v = 11;
+}
+
+static void RotateLeft(int *v) {
+    (*v)++;
+    if (*v > 11) *v = 0;
+}
+
+static int HbarrelRotation(int addy) { // 0 - 11 (12 rotation points)
+    UINT8 player[2] = { 0, 0 };
+                                       // addy == 0 player 1 addy == 8 player 2
+    if ((addy != 0) && (addy != 8)) {
+        bprintf(PRINT_NORMAL, _T("Strange Rotation address => %06X\n"), addy);
+        return 0;
+    }
+    if (addy == 0) {
+        player[0] = DrvInputPort0[6]; player[1] = DrvInputPort0[7];
+    }
+    if (addy == 8) {
+        player[0] = DrvInputPort1[6]; player[1] = DrvInputPort1[7];
+        addy=1;
+    }
+
+    if (player[0] && (RotationTimer() > HbarrelRotateTime[addy]+5)) {
+        RotateLeft(&HbarrelRotate[addy]);
+        //bprintf(PRINT_NORMAL, _T("Player %d Rotate Left => %06X\n"), addy+1, HbarrelRotate[addy]);
+        HbarrelRotateTime[addy] = RotationTimer();
+
+    }
+    if (player[1] && (RotationTimer() > HbarrelRotateTime[addy]+5)) {
+        RotateRight(&HbarrelRotate[addy]);
+        //bprintf(PRINT_NORMAL, _T("Player %d Rotate Right => %06X\n"), addy+1, HbarrelRotate[addy]);
+        HbarrelRotateTime[addy] = RotationTimer();
+
+    }
+    return ~(1 << HbarrelRotate[addy]);
+}
+
+static int MidresRotation(int addy) {
+    // p1 == 4 p2 == 6
+    UINT8 player[2] = { 0, 0 };
+                                       // addy == 0 player 1 addy == 8 player 2
+    if ((addy != 4) && (addy != 6)) {
+        bprintf(PRINT_NORMAL, _T("Strange Rotation address => %06X\n"), addy);
+        return 0;
+    }
+    if (addy == 4) {
+        addy=0;
+        player[0] = DrvMidresFakeInput[0]; player[1] = DrvMidresFakeInput[1];
+    }
+    if (addy == 6) {
+        player[0] = DrvMidresFakeInput[2]; player[1] = DrvMidresFakeInput[3];
+        addy=1;
+    }
+
+    if (player[0] && (RotationTimer() > HbarrelRotateTime[addy]+5)) {
+        RotateLeft(&HbarrelRotate[addy]);
+        //bprintf(PRINT_NORMAL, _T("Player %d Rotate Left => %06X\n"), addy+1, HbarrelRotate[addy]);
+        HbarrelRotateTime[addy] = RotationTimer();
+
+    }
+    if (player[1] && (RotationTimer() > HbarrelRotateTime[addy]+5)) {
+        RotateRight(&HbarrelRotate[addy]);
+        //bprintf(PRINT_NORMAL, _T("Player %d Rotate Right => %06X\n"), addy+1, HbarrelRotate[addy]);
+        HbarrelRotateTime[addy] = RotationTimer();
+
+    }
+    return ~(1 << HbarrelRotate[addy]);
+}
+
 // Normal hardware cpu memory handlers
 
 UINT8 __fastcall Dec068KReadByte(UINT32 a)
@@ -1850,8 +2016,9 @@ UINT8 __fastcall Dec068KReadByte(UINT32 a)
 	}
 	
 	if (a >= 0x300000 && a <= 0x30001f) {
-		// rotary_r
-		return 0;
+			return HbarrelRotation(a - 0x300000);
+			// rotary_r
+			//return 0;
 	}
 	
 	switch (a) {
@@ -1953,8 +2120,9 @@ UINT16 __fastcall Dec068KReadWord(UINT32 a)
 	}
 	
 	if (a >= 0x300000 && a <= 0x30001f) {
+		return HbarrelRotation(a - 0x300000);
 		// rotary_r
-		return 0;
+		//return 0;
 	}
 	
 	switch (a) {
@@ -2878,13 +3046,15 @@ UINT16 __fastcall Midres68KReadWord(UINT32 a)
 		}
 		
 		case 0x180004: {
-			UINT8 Temp = DrvMidresAnalogInput[0] >> 4;
-			return ~(1 << Temp);
+			return MidresRotation(a - 0x180000);
+			//UINT8 Temp = DrvMidresAnalogInput[0] >> 4;
+			//return ~(1 << Temp);
 		}
 		
 		case 0x180006: {
-			UINT8 Temp = DrvMidresAnalogInput[1] >> 4;
-			return ~(1 << Temp);
+			return MidresRotation(a - 0x180000);
+			//UINT8 Temp = DrvMidresAnalogInput[1] >> 4;
+			//return ~(1 << Temp);
 		}
 		
 		case 0x180008: {
@@ -3878,7 +4048,7 @@ static INT32 DrvExit()
 	DrvCharPalOffset = 0;
 	DrvSpritePalOffset = 256;
 	
-	DrvMidresAnalogInput[0] = DrvMidresAnalogInput[1] = 0;
+//	DrvMidresAnalogInput[0] = DrvMidresAnalogInput[1] = 0;
 	
 	BurnFree(Mem);
 
@@ -4491,8 +4661,8 @@ static void HippodrmDraw()
 	DrvCalcPalette();
 	
 	if (DrvPriority & 0x01) {
-		DrvRenderTile1Layer(0, TILEMAP_BOTH_LAYERS);
-		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);		
+		DrvRenderTile1Layer(1, TILEMAP_BOTH_LAYERS);
+		DrvRenderTile2Layer(0, TILEMAP_BOTH_LAYERS);
 	} else {
 		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);
 		DrvRenderTile1Layer(0, TILEMAP_BOTH_LAYERS);
@@ -4519,9 +4689,9 @@ static void MidresDraw()
 	Dec1CalcPalette();
 	
 	if (DrvPriority & 0x01) {
-		DrvRenderTile1Layer(0, TILEMAP_BOTH_LAYERS);
+		DrvRenderTile1Layer(1, TILEMAP_BOTH_LAYERS);
 		if (DrvPriority & 0x02) DrvRenderSprites(0x08, Trans);
-		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);		
+		DrvRenderTile2Layer(0, TILEMAP_BOTH_LAYERS);
 	} else {
 		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);
 		if (DrvPriority & 0x02) DrvRenderSprites(0x08, Trans);
@@ -4554,9 +4724,9 @@ static void RobocopDraw()
 	DrvCalcPalette();
 	
 	if (DrvPriority & 0x01) {
-		DrvRenderTile1Layer(0, TILEMAP_LAYER1);
+		DrvRenderTile1Layer(1, TILEMAP_LAYER1);
 		if (DrvPriority & 0x02) DrvRenderSprites(0x08, Trans);
-		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);		
+		DrvRenderTile2Layer(0, TILEMAP_BOTH_LAYERS);
 	} else {
 		DrvRenderTile2Layer(1, TILEMAP_BOTH_LAYERS);
 		if (DrvPriority & 0x02) DrvRenderSprites(0x08, Trans);
@@ -4710,14 +4880,14 @@ static INT32 Dec1Frame()
 
 	DrvMakeInputs();
 	
-	for (INT32 i = 0; i < 2; i++) {
+	/*for (INT32 i = 0; i < 2; i++) {
 		if (DrvMidresFakeInput[(i * 2) + 0]) {
 			DrvMidresAnalogInput[i] += 0x02;
 		}
 		if (DrvMidresFakeInput[(i * 2) + 1]) {
 			DrvMidresAnalogInput[i] -= 0x02;
 		}
-	}
+	} */
 
 	nCyclesTotal[0] = (INT32)((double)10000000 / 57.392103);
 	nCyclesTotal[1] = (INT32)((double)2000000 / 57.392103);
@@ -4777,12 +4947,12 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		BurnAcb(&ba);
 	}
 	
-	if (nAction & ACB_DRIVER_DATA) {	
+	if (nAction & ACB_DRIVER_DATA) {
 		SekScan(nAction);
 		BurnYM2203Scan(nAction, pnMin);
 		BurnYM3812Scan(nAction, pnMin);
-		MSM6295Scan(0, nAction);	
-	
+		MSM6295Scan(0, nAction);
+
 		SCAN_VAR(i8751RetVal);
 		SCAN_VAR(DrvVBlank);
 		SCAN_VAR(DrvSoundLatch);
@@ -4790,7 +4960,11 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		SCAN_VAR(DrvPriority);
 		SCAN_VAR(DrvTileRamBank);
 		SCAN_VAR(DrvSlyspyProtValue);
-		SCAN_VAR(DrvMidresAnalogInput);
+//                SCAN_VAR(DrvMidresAnalogInput);
+		SCAN_VAR(HbarrelRotateTime);
+		SCAN_VAR(HbarrelRotate);
+		SCAN_VAR(HbarrelI8751_State);
+		SCAN_VAR(HbarrelI8751_Level);
 	}
 
 	return 0;
@@ -4888,7 +5062,7 @@ struct BurnDriver BurnDrvHbarrel = {
 	"Heavy Barrel (US)\0", NULL, "Data East USA", "DEC0",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_PREFIX_DATAEAST, GBF_VERSHOOT, 0,
-	NULL, HbarrelRomInfo, HbarrelRomName, NULL, NULL, Dec0InputInfo, HbarrelDIPInfo,
+	NULL, HbarrelRomInfo, HbarrelRomName, NULL, NULL, HbarrelInputInfo, HbarrelDIPInfo,
 	HbarrelInit, BaddudesExit, DrvFrame, NULL, BaddudesScan,
 	NULL, 0x400, 240, 256, 3, 4
 };
@@ -5023,11 +5197,21 @@ struct BurnDriver BurnDrvRobocopb = {
 	NULL, 0x400, 256, 240, 4, 3
 };
 
+struct BurnDriver BurnDrvRobocopb2 = {
+	"robocopb2", "robocop", NULL, NULL, "1989",
+	"Robocop (Red Corporation World bootleg)\0", NULL, "bootleg", "DEC0",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_PREFIX_DATAEAST, GBF_HORSHOOT, 0,
+	NULL, Robocopb2RomInfo, Robocopb2RomName, NULL, NULL, Dec0InputInfo, RobocopDIPInfo,
+	RobocopbInit, BaddudesExit, DrvFrame, NULL, BaddudesScan,
+	NULL, 0x400, 256, 240, 4, 3
+};
+
 struct BurnDriver BurnDrvSlyspy = {
 	"slyspy", NULL, NULL, NULL, "1989",
 	"Sly Spy (US revision 3)\0", NULL, "Data East USA", "DEC0",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_DATAEAST, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, SlyspyRomInfo, SlyspyRomName, NULL, NULL, Dec1InputInfo, SlyspyDIPInfo,
 	SlyspyInit, SlyspyExit, Dec1Frame, NULL, SlyspyScan,
 	NULL, 0x400, 256, 240, 4, 3
@@ -5037,7 +5221,7 @@ struct BurnDriver BurnDrvSlyspy2 = {
 	"slyspy2", "slyspy", NULL, NULL, "1989",
 	"Sly Spy (US revision 2)\0", NULL, "Data East USA", "DEC0",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, Slyspy2RomInfo, Slyspy2RomName, NULL, NULL, Dec1InputInfo, SlyspyDIPInfo,
 	SlyspyInit, SlyspyExit, Dec1Frame, NULL, SlyspyScan,
 	NULL, 0x400, 256, 240, 4, 3
@@ -5047,7 +5231,7 @@ struct BurnDriver BurnDrvSecretag = {
 	"secretag", "slyspy", NULL, NULL, "1989",
 	"Secret Agent (World)\0", NULL, "Data East Corporation", "DEC0",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, SecretagRomInfo, SecretagRomName, NULL, NULL, Dec1InputInfo, SlyspyDIPInfo,
 	SlyspyInit, SlyspyExit, Dec1Frame, NULL, SlyspyScan,
 	NULL, 0x400, 256, 240, 4, 3

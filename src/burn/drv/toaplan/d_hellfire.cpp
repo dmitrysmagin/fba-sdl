@@ -146,10 +146,10 @@ static struct BurnDIPInfo hellfireDIPList[] = {
 	{0x14,	0xFF, 0xFF,	0x02, NULL},
 
 	// DIP 1
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Screen type"},
 	{0x12,	0x01, 0x02,	0x00, "Normal screen"},
 	{0x12,	0x01, 0x02,	0x02, "Invert screen"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Service"},
 	{0x12,	0x01, 0x04,	0x00, "Normal mode"},
 	{0x12,	0x01, 0x04,	0x04, "Screen test mode"},
 	{0,		0xFE, 0,	2,	  "Advertise sound"},
@@ -182,7 +182,7 @@ static struct BurnDIPInfo hellfireDIPList[] = {
 	{0x13,	0x01, 0x30,	0x00, "3"},
 	{0x13,	0x01, 0x30,	0x20, "4"},
 	{0x13,	0x01, 0x30,	0x10, "5"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Cheating"},
     	{0x13,	0x01, 0x40,	0x00, "Normal Game"},
     	{0x13,	0x01, 0x40,	0x40, "No death & stop mode"},
 
@@ -202,13 +202,13 @@ static struct BurnDIPInfo hellfir1DIPList[] = {
 	{0x14,	0xFF, 0xFF,	0x02, NULL},
 
 	// DIP 1
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Cabinet"},
 	{0x12,	0x01, 0x01,	0x01, "Upright"},
 	{0x12,	0x01, 0x01,	0x00, "Cocktail"},	
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Screen type"},
 	{0x12,	0x01, 0x02,	0x00, "Normal screen"},
 	{0x12,	0x01, 0x02,	0x02, "Invert screen"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Service"},
 	{0x12,	0x01, 0x04,	0x00, "Normal mode"},
 	{0x12,	0x01, 0x04,	0x04, "Screen test mode"},
 	{0,		0xFE, 0,	2,	  "Advertise sound"},
@@ -241,7 +241,7 @@ static struct BurnDIPInfo hellfir1DIPList[] = {
 	{0x13,	0x01, 0x30,	0x00, "3"},
 	{0x13,	0x01, 0x30,	0x20, "4"},
 	{0x13,	0x01, 0x30,	0x10, "5"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Cheating"},
     	{0x13,	0x01, 0x40,	0x00, "Normal Game"},
     	{0x13,	0x01, 0x40,	0x40, "No death & stop mode"},
         {0,		0xFE, 0,	2,	  "Allow Continue"},
@@ -317,6 +317,7 @@ static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 		ZetScan(nAction);				// Scan Z80
 
 		BurnYM3812Scan(nAction, pnMin);
+		ToaScanBCU2(nAction, pnMin);
 
 		SCAN_VAR(DrvInput);
 		SCAN_VAR(nCyclesDone);
@@ -796,8 +797,8 @@ struct BurnDriver BurnDrvHellfire = {
 };
 
 struct BurnDriver BurnDrvHellfir1 = {
-	"hellfire1", "hellfire", NULL, NULL, "1989",
-	"Hellfire (1P Ver.)\0", NULL, "Toaplan (Taito License)", "Toaplan BCU-2 / FCU-2 based",
+	"hellfire1a", "hellfire", NULL, NULL, "1989",
+	"Hellfire (1P Ver., older)\0", NULL, "Toaplan (Taito License)", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING, GBF_HORSHOOT, 0,
 	NULL, hellfir1RomInfo, hellfir1RomName, NULL, NULL, hellfireInputInfo, hellfir1DIPInfo,
@@ -816,8 +817,8 @@ struct BurnDriver BurnDrvHellfir2 = {
 };
 
 struct BurnDriver BurnDrvHellfir3 = {
-	"hellfire3", "hellfire", NULL, NULL, "1989",
-	"Hellfire (1P Ver., alt)\0", NULL, "Toaplan (Taito License)", "Toaplan BCU-2 / FCU-2 based",
+	"hellfire1", "hellfire", NULL, NULL, "1989",
+	"Hellfire (1P Ver.)\0", NULL, "Toaplan (Taito License)", "Toaplan BCU-2 / FCU-2 based",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TOAPLAN_RAIZING, GBF_HORSHOOT, 0,
 	NULL, hellfir3RomInfo, hellfir3RomName, NULL, NULL, hellfireInputInfo, hellfireDIPInfo,

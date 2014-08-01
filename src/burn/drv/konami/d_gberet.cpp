@@ -16,15 +16,13 @@ static UINT16 gberetb_scroll;
 static UINT8 flipscreen;
 static UINT8 gberet_spritebank;
 static INT32 mrgoemon_bank;
+static UINT8 soundlatch;
 
 static INT32 game_type = 0; // 0 gberet / rushatck, 1 gberetb, 2 mrgoemon
 
 static struct BurnInputInfo DrvInputList[] = {
-	{"Coin 1"       , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"   },
-	{"Coin 2"       , BIT_DIGITAL  , DrvJoy3 + 1,	"p2 coin"   },
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"   },
 	{"P1 Start"     , BIT_DIGITAL  , DrvJoy3 + 3,	"p1 start"  },
-	{"P2 Start"     , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 start"  },
-
 	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 0, "p1 left"   },
 	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 1, "p1 right"  },
 	{"P1 Up"        , BIT_DIGITAL  , DrvJoy1 + 2, "p1 up"     },
@@ -32,6 +30,8 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 fire 1" },
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 fire 2" },
 
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy3 + 1,	"p2 coin"   },
+	{"P2 Start"     , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 start"  },
 	{"P2 Left"      , BIT_DIGITAL  , DrvJoy2 + 0, "p2 left"   },
 	{"P2 Right"     , BIT_DIGITAL  , DrvJoy2 + 1, "p2 right"  },
 	{"P2 Up"        , BIT_DIGITAL  , DrvJoy2 + 2, "p2 up"     },
@@ -51,11 +51,8 @@ static struct BurnInputInfo DrvInputList[] = {
 STDINPUTINFO(Drv)
 
 static struct BurnInputInfo gberetbInputList[] = {
-	{"Coin 1"       , BIT_DIGITAL  , DrvJoy3 + 7,	"p1 coin"   },
-	{"Coin 2"       , BIT_DIGITAL  , DrvJoy3 + 6,	"p2 coin"   },
+	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy3 + 7,	"p1 coin"   },
 	{"P1 Start"     , BIT_DIGITAL  , DrvJoy3 + 5,	"p1 start"  },
-	{"P2 Start"     , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 start"  },
-
 	{"P1 Left"      , BIT_DIGITAL  , DrvJoy1 + 0, "p1 left"   },
 	{"P1 Right"     , BIT_DIGITAL  , DrvJoy1 + 1, "p1 right"  },
 	{"P1 Up"        , BIT_DIGITAL  , DrvJoy1 + 2, "p1 up"     },
@@ -63,6 +60,8 @@ static struct BurnInputInfo gberetbInputList[] = {
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 fire 1" },
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 fire 2" },
 
+	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy3 + 6,	"p2 coin"   },
+	{"P2 Start"     , BIT_DIGITAL  , DrvJoy3 + 4,	"p2 start"  },
 	{"Reset"        , BIT_DIGITAL  , &DrvReset  ,	"reset"     },
 	{"Dip 1"        , BIT_DIPSWITCH, DrvDips + 3, "dip"       },
 	{"Dip 2"        , BIT_DIPSWITCH, DrvDips + 2, "dip"       },
@@ -387,11 +386,14 @@ void __fastcall gberet_write(UINT16 address, UINT8 data)
 			}
 		}
 		return;
-
-		case 0xf400:
-			SN76496Write(0, data);
+		case 0xf200:
+			SN76496Write(0, soundlatch);
 		return;
-
+		case 0xf400:
+			soundlatch = data;
+			if (game_type == 1) // gberetb
+				SN76496Write(0, data);
+		return;
 		case 0xf600:	// watchdog
 		return;
 
@@ -892,6 +894,7 @@ static INT32 DrvDraw()
 static INT32 DrvFrame()
 {
 	INT32 nInterleave = game_type ? 16 : 32;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -917,12 +920,24 @@ static INT32 DrvFrame()
 		if (nmi_enable && (i & 1)) {
 			ZetNmi();
 		}
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			SN76496Update(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 
 	ZetClose();
 
+// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			SN76496Update(0, pSoundBuf, nSegmentLength);
+		}
 	}
 
 	if (pBurnDraw) {
@@ -956,6 +971,8 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		SCAN_VAR(mrgoemon_bank);
 		SCAN_VAR(gberetb_scroll);
 		SCAN_VAR(gberet_spritebank);
+		SCAN_VAR(soundlatch);
+		SN76496Scan(nAction, pnMin);
 
 		ZetOpen(0);
 		mrgoemon_bankswitch(mrgoemon_bank);
@@ -964,7 +981,6 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 
 	return 0;
 }
-
 
 // Green Beret
 

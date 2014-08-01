@@ -134,6 +134,23 @@ static struct
 #define COMMAND_TABLE		0xeff0
 #define PSG_NOTE_TABLE		0xeff2
 
+INT32 NMK004Scan(INT32 nAction, INT32* pnMin)
+{
+	if (nAction & ACB_VOLATILE) {		// Scan volatile data
+
+		if (pnMin) {
+			*pnMin = 0x029496;
+		}
+                const UINT8 *rtemp = NMK004_state.rom;
+
+                SCAN_VAR(NMK004_state);
+                NMK004_state.rom = rtemp;
+	}
+
+	return 0;
+}
+
+
 static UINT8 read8(INT32 address)
 {
 	return NMK004_state.rom[address];
@@ -1005,4 +1022,3 @@ UINT8 NMK004Read()
 {
 	return NMK004_state.to_main;
 }
-

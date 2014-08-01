@@ -49,11 +49,12 @@ INT32 CpsLoadTilesSf2mdt(INT32 nStart);
 INT32 CpsLoadTilesSf2mdta(INT32 nStart);
 INT32 CpsLoadTilesSf2ceuab3(INT32 nStart);
 INT32 CpsLoadTilesSf2ceeabl(INT32 nStart);
-INT32 CpsLoadTilesSf2any(INT32 nStart);
+INT32 CpsLoadTilesSf2ceuab7(INT32 nStart);
 INT32 CpsLoadTilesFcrash(INT32 nStart);
 INT32 CpsLoadTilesCawingbl(INT32 nStart);
 INT32 CpsLoadTilesCaptcommb(INT32 nStart);
 INT32 CpsLoadTilesDinopic(INT32 nStart);
+INT32 CpsLoadTilesDinopic4(INT32 nStart);
 INT32 CpsLoadTilesSlampic(INT32 nStart);
 INT32 CpsLoadTilesKodb(INT32 nStart);
 INT32 CpsLoadTilesWonder3b(INT32 nStart);
@@ -480,6 +481,7 @@ INT32 Sf2mdtScanSound(INT32 nAction, INT32 *pnMin);
 #define CPS2_GFX_SIMM						6
 #define CPS2_GFX_SPLIT4						7
 #define CPS2_GFX_SPLIT8						8
+#define CPS2_GFX_19XXJ						9
 #define CPS2_PRG_Z80						10
 #define CPS2_QSND							12
 #define CPS2_QSND_SIMM						13

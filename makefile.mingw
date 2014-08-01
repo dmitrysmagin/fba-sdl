@@ -246,7 +246,7 @@ ASFLAGS	=  -O1 -f coff -w-orphan-labels
 #       D3DUtils & D3DMath need these
 #       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
 
-	DEF	:= -DBUILD_M68K -DBUILD_WIN32 -DUSE_SPEEDHACKS -DFILENAME=$(NAME) -DMMX=$(MMX)
+	DEF	:= -DBUILD_WIN32 -DUSE_SPEEDHACKS -DFILENAME=$(NAME) -DMMX=$(MMX)
 
 ifdef UNICODE
 	DEF	:= $(DEF) -D_UNICODE

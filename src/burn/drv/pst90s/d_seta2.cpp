@@ -1441,9 +1441,9 @@ void __fastcall grdiansWriteWord(UINT32 sekAddress, UINT16 wordValue)
 	}
 }
 
-UINT8 __fastcall setaSoundRegReadByte(UINT32 sekAddress)
+UINT8 __fastcall setaSoundRegReadByte(UINT32 /*sekAddress*/)
 {
-	bprintf(PRINT_NORMAL, _T("x1-010 to read byte value of location %x\n"), sekAddress);
+	//bprintf(PRINT_NORMAL, _T("x1-010 to read byte value of location %x\n"), sekAddress);
 	return 0;
 }
 
@@ -2295,8 +2295,8 @@ static INT32 pzlbowlInit()
 	gfx_code_mask = 0x0400000 * 4 / 64;
 
 	x1010_sound_init(50000000 / 3, 0x0000);
-	x1010_set_route(BURN_SND_X1010_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
-	x1010_set_route(BURN_SND_X1010_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
+	x1010_set_route(BURN_SND_X1010_ROUTE_1, 1.00, BURN_SND_ROUTE_BOTH);
+	x1010_set_route(BURN_SND_X1010_ROUTE_2, 1.00, BURN_SND_ROUTE_BOTH);
 
 	DrvDoReset();
 

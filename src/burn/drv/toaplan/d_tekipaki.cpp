@@ -81,10 +81,10 @@ static struct BurnDIPInfo tekipakiDIPList[] = {
 	{0x16,	0xFF, 0x0F,	0x00,	  NULL},
 
 	// DIP 1
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Screen type"},
 	{0x14,	0x01, 0x02,	0x00, "Normal screen"},
 	{0x14,	0x01, 0x02,	0x02, "Invert screen"},
-	{0,		0xFE, 0,	2,	  NULL},
+	{0,		0xFE, 0,	2,	  "Service"},
 	{0x14,	0x01, 0x04,	0x00, "Normal mode"},
 	{0x14,	0x01, 0x04,	0x04, "Test mode"},
 	{0,		0xFE, 0,	2,	  "Advertise sound"},
@@ -313,7 +313,13 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		SekScan(nAction);				// scan 68000 states
 
 		ToaScanGP9001(nAction, pnMin);
-	}
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+		BurnSampleScan(nAction, pnMin);
+#endif
+                ToaRecalcPalette = 1;
+                bDrawScreen = true; // get background back ?
+
+        }
 
 	return 0;
 }
@@ -600,8 +606,12 @@ static INT32 DrvInit()
 	ToaPalSrc = RamPal;
 	ToaPalInit();
 	
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+        BurnUpdateProgress(0.0, _T("Loading samples..."), 0);
+
 	BurnSampleInit(0);
 	BurnSampleSetAllRoutesAllSamples(1.00, BURN_SND_ROUTE_BOTH);
+#endif
 
 	bDrawScreen = true;
 
@@ -706,7 +716,9 @@ static INT32 DrvFrame()
 
 	}
 	
-	BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
+	}
 
 	SekClose();
 

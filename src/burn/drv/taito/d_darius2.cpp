@@ -5,7 +5,7 @@
 #include "taito_ic.h"
 #include "burn_ym2610.h"
 
-static INT32 Ninjaw;
+static INT32 Ninjaw = 0, Warriorb = 0;
 
 static double Darius2YM2610Route1MasterVol;
 static double Darius2YM2610Route2MasterVol;
@@ -16,11 +16,8 @@ static void WarriorbDraw();
 
 static struct BurnInputInfo Darius2InputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 2, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort2 + 3, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL   , TC0220IOCInputPort2 + 2, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 0, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 1, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 3, "p1 left"   },
@@ -28,6 +25,8 @@ static struct BurnInputInfo Darius2InputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL   , TC0220IOCInputPort2 + 3, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 5, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 7, "p2 left"   },
@@ -47,11 +46,8 @@ STDINPUTINFO(Darius2)
 
 static struct BurnInputInfo Darius2dInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 2, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL   , TC0220IOCInputPort0 + 4, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 0, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 1, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 2, "p1 left"   },
@@ -59,6 +55,8 @@ static struct BurnInputInfo Darius2dInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL   , TC0220IOCInputPort2 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL   , TC0220IOCInputPort0 + 3, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL   , TC0220IOCInputPort0 + 5, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL   , TC0220IOCInputPort1 + 4, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 5, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL   , TC0220IOCInputPort1 + 6, "p2 left"   },
@@ -78,11 +76,8 @@ STDINPUTINFO(Darius2d)
 
 static struct BurnInputInfo WarriorbInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL   , TC0510NIOInputPort0 + 2, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 4, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL   , TC0510NIOInputPort0 + 3, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 5, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 2, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL   , TC0510NIOInputPort0 + 4, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL   , TC0510NIOInputPort1 + 0, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL   , TC0510NIOInputPort1 + 1, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL   , TC0510NIOInputPort1 + 2, "p1 left"   },
@@ -91,6 +86,8 @@ static struct BurnInputInfo WarriorbInputList[] =
 	{"P1 Fire 2"         , BIT_DIGITAL   , TC0510NIOInputPort2 + 5, "p1 fire 2" },
 	{"P1 Fire 3"         , BIT_DIGITAL   , TC0510NIOInputPort0 + 6, "p1 fire 3" },
 	
+	{"P2 Coin"           , BIT_DIGITAL   , TC0510NIOInputPort0 + 3, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL   , TC0510NIOInputPort0 + 5, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL   , TC0510NIOInputPort1 + 4, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL   , TC0510NIOInputPort1 + 5, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL   , TC0510NIOInputPort1 + 6, "p2 left"   },
@@ -1378,7 +1375,7 @@ static INT32 Darius2Init()
 	TC0100SCNSetClipArea(2, 288, nScreenHeight, 576);
 	TC0100SCNSetPaletteOffset(2, 0x2000);
 	TC0110PCRInit(3, 0x3000);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	TC0220IOCInit();
 	
 	if (TaitoLoadRoms(1)) return 1;
@@ -1490,7 +1487,7 @@ static INT32 Darius2dInit()
 	TC0100SCNSetClipArea(1, 320, nScreenHeight, 320);
 	TC0100SCNSetPaletteOffset(1, 0x1000);
 	TC0110PCRInit(2, 0x2000);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	TC0220IOCInit();
 	
 	if (TaitoLoadRoms(1)) return 1;
@@ -1551,7 +1548,8 @@ static INT32 NinjawInit()
 static INT32 WarriorbInit()
 {
 	INT32 nLen;
-	
+
+	Warriorb = 1;
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
 	TaitoCharWidth = 8;
@@ -1601,7 +1599,7 @@ static INT32 WarriorbInit()
 	TC0100SCNSetClipArea(1, 320, nScreenHeight, 320);
 	TC0100SCNSetPaletteOffset(1, 0x1000);
 	TC0110PCRInit(2, 0x2000);
-	TC0140SYTInit();
+	TC0140SYTInit(0);
 	TC0510NIOInit();
 	
 	if (TaitoLoadRoms(1)) return 1;
@@ -1656,7 +1654,7 @@ static INT32 WarriorbInit()
 static INT32 Darius2Exit()
 {
 	Ninjaw = 0;
-	
+	Warriorb = 0;
 	return TaitoExit();
 }
 
@@ -1854,9 +1852,9 @@ static void WarriorbDraw()
 {
 	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	INT32 Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
-	
+
 	BurnTransferClear();
-	
+
 	if (TC0100SCNBottomLayer(0)) {
 		if (!(Disable & 0x02)) TC0100SCNRenderFgLayer(0, 0, TaitoChars);
 		if (!(Disable2 & 0x02)) TC0100SCNRenderFgLayer(1, 0, TaitoCharsB);
@@ -1921,7 +1919,9 @@ static INT32 Darius2Frame()
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[2]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	}
 	ZetClose();
 	
 	if (pBurnDraw) TaitoDrawFunction();
@@ -1961,7 +1961,9 @@ static INT32 Darius2dFrame()
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	}
 	ZetClose();
 	
 	if (pBurnDraw) TaitoDrawFunction();

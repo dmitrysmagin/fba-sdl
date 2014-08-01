@@ -270,6 +270,34 @@ static INT32 CpsLoadOneBootleg(UINT8* Tile, INT32 nNum, INT32 nWord, INT32 nShif
 	return 0;
 }
 
+static INT32 CpsLoadOneBootlegSmallSingle(UINT8* Tile, INT32 nNum, INT32 nWord, INT32 nShift)
+{
+	UINT8 *Rom = NULL; INT32 nRomLen=0;
+	UINT8 *pt = NULL, *pr = NULL;
+	INT32 i;
+
+	LoadUp(&Rom, &nRomLen, nNum);
+	if (Rom == NULL) {
+		return 1;
+	}
+	nRomLen &= ~1;								// make sure even
+
+	for (i = 0, pt = Tile, pr = Rom; i < 0x40000; pt += 8) {
+		UINT32 Pix;						// Eight pixels
+		UINT8 b;
+		b = *pr++; i++; Pix = SepTable[b];
+		if (nWord) {
+			b = *pr++; i++; Pix |= SepTable[b] << 1;
+		}
+
+		Pix <<= nShift;
+		*((UINT32 *)pt) |= Pix;
+	}
+
+	BurnFree(Rom);
+	return 0;
+}
+
 static INT32 CpsLoadOneBootlegType2(UINT8* Tile, INT32 nNum, INT32 nWord, INT32 nShift)
 {
 	UINT8 *Rom = NULL; INT32 nRomLen=0;
@@ -831,7 +859,7 @@ static INT32 CpsLoadSf2ceeablTiles(UINT8* Tile, INT32 nNum)
 	return 0;
 }
 
-static INT32 CpsLoadSf2anyTiles(UINT8* Tile, INT32 nNum)
+static INT32 CpsLoadSf2ceuab7Tiles(UINT8* Tile, INT32 nNum)
 {
 	UINT8 *Rom = (UINT8*)BurnMalloc(0x200000 * sizeof(UINT8));
 	UINT8 *Temp = (UINT8*)BurnMalloc(0x200000 * sizeof(UINT8));
@@ -1153,7 +1181,7 @@ INT32 CpsLoadTilesSf2ceeabl(INT32 nStart)
 	return 0;
 }
 
-INT32 CpsLoadTilesSf2any(INT32 nStart)
+INT32 CpsLoadTilesSf2ceuab7(INT32 nStart)
 {
 	CpsLoadOneBootlegType2SmallSingle(CpsGfx + 0x000000, nStart +  0, 0, 0);
 	CpsLoadOneBootlegType2SmallSingle(CpsGfx + 0x000004, nStart +  1, 0, 0);
@@ -1173,7 +1201,7 @@ INT32 CpsLoadTilesSf2any(INT32 nStart)
 	CpsLoadOneBootlegType2SmallSingle(CpsGfx + 0x200004, nStart + 15, 0, 3);
 	
 	// The last eight roms are a complete pain, handled by this custom function
-	CpsLoadSf2anyTiles(CpsGfx + 0x400000, nStart + 16);
+	CpsLoadSf2ceuab7Tiles(CpsGfx + 0x400000, nStart + 16);
 	
 	return 0;
 }
@@ -1209,6 +1237,28 @@ INT32 CpsLoadTilesDinopic(INT32 nStart)
 {
 	CpsLoadTilesBootleg(CpsGfx + 0x000000, nStart + 0);
 	CpsLoadTilesBootleg(CpsGfx + 0x200000, nStart + 4);
+	
+	return 0;
+}
+
+INT32 CpsLoadTilesDinopic4(INT32 nStart)
+{
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000000, nStart +  0, 0, 0);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000004, nStart +  1, 0, 0);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000000, nStart +  2, 0, 1);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000004, nStart +  3, 0, 1);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000000, nStart +  4, 0, 2);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000004, nStart +  5, 0, 2);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000000, nStart +  6, 0, 3);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x000004, nStart +  7, 0, 3);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200000, nStart +  8, 0, 0);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200004, nStart +  9, 0, 0);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200000, nStart + 10, 0, 1);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200004, nStart + 11, 0, 1);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200000, nStart + 12, 0, 2);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200004, nStart + 13, 0, 2);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200000, nStart + 14, 0, 3);
+	CpsLoadOneBootlegSmallSingle(CpsGfx + 0x200004, nStart + 15, 0, 3);
 	
 	return 0;
 }
@@ -1472,6 +1522,39 @@ INT32 Cps2LoadTilesSIM(UINT8* Tile, INT32 nStart)
 	return 0;
 }
 
+INT32 Cps2LoadTiles19xxj(UINT8* Tile, INT32 nStart)
+{
+	// left
+	Cps2LoadOne(Tile + 0x000000, nStart +  0, 1, 0);
+	Cps2LoadOne(Tile + 0x000000, nStart +  1, 1, 2);
+	
+	// right
+	Cps2LoadOne(Tile + 0x000004, nStart +  2, 1, 0);
+	Cps2LoadOne(Tile + 0x000004, nStart +  3, 1, 2);
+	
+	// left
+	Cps2LoadOne(Tile + 0x800000, nStart +  4, 1, 0);
+	Cps2LoadOne(Tile + 0xa00000, nStart +  5, 1, 0);
+	Cps2LoadOne(Tile + 0xc00000, nStart +  6, 1, 0);
+	Cps2LoadOne(Tile + 0xe00000, nStart +  7, 1, 0);
+	Cps2LoadOne(Tile + 0x800000, nStart +  8, 1, 2);
+	Cps2LoadOne(Tile + 0xa00000, nStart +  9, 1, 2);
+	Cps2LoadOne(Tile + 0xc00000, nStart + 10, 1, 2);
+	Cps2LoadOne(Tile + 0xe00000, nStart + 11, 1, 2);
+	
+	// right
+	Cps2LoadOne(Tile + 0x800004, nStart + 12, 1, 0);
+	Cps2LoadOne(Tile + 0xa00004, nStart + 13, 1, 0);
+	Cps2LoadOne(Tile + 0xc00004, nStart + 14, 1, 0);
+	Cps2LoadOne(Tile + 0xe00004, nStart + 15, 1, 0);
+	Cps2LoadOne(Tile + 0x800004, nStart + 16, 1, 2);
+	Cps2LoadOne(Tile + 0xa00004, nStart + 17, 1, 2);
+	Cps2LoadOne(Tile + 0xc00004, nStart + 18, 1, 2);
+	Cps2LoadOne(Tile + 0xe00004, nStart + 19, 1, 2);
+	
+	return 0;
+}
+
 INT32 Cps2LoadTilesGigaman2(UINT8 *Tile, UINT8 *pSrc)
 {
 	UINT8 *pt = Tile;
@@ -1649,6 +1732,19 @@ static INT32 CpsGetROMs(bool bLoad)
 				i++;
 			}
 		}
+		
+		if ((ri.nType & 0x0f) == CPS2_GFX_19XXJ) {
+			if (bLoad) {
+				Cps2LoadTiles19xxj(CpsGfxLoad, i);
+				CpsGfxLoad += (nGfxMaxSize == ~0U ? ri.nLen : nGfxMaxSize) * 20;
+				i += 20;
+			} else {
+				nGfxMaxSize = 0xcd000;
+				nCpsGfxLen += ri.nLen;
+				nGfxNum++;
+				i++;
+			}
+		}
 				
 		if ((ri.nType & 0x0f) == CPS2_PRG_Z80) {
 			if (bLoad) {
@@ -1708,7 +1804,7 @@ static INT32 CpsGetROMs(bool bLoad)
 		if (nGfxMaxSize != ~0U) {
 			nCpsGfxLen = nGfxNum * nGfxMaxSize;
 		}
-
+		
 #if 1 && defined FBA_DEBUG
 		if (!nCpsCodeLen) {
 			bprintf(PRINT_IMPORTANT, _T("  - 68K ROM size:\t0x%08X (Decrypted with key)\n"), nCpsRomLen);

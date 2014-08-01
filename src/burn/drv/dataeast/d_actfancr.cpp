@@ -437,7 +437,7 @@ static INT32 MemIndex()
 
 	MSM6295ROM	= Next; Next += 0x040000;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(INT32);
+        DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(INT32);
 
 	AllRam		= Next;
 
@@ -958,9 +958,10 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 
 		BurnYM2203Scan(nAction, pnMin);
 		BurnYM3812Scan(nAction, pnMin);
-		MSM6295Scan(0, nAction);	
+		MSM6295Scan(0, nAction);
 
-		SCAN_VAR(control_select);
+                SCAN_VAR(control_select);
+                DrvRecalc = 1; // April 3, 2014 - Fix palette problem on state load - dink & iq_132
 	}
 
 	return 0;

@@ -75,10 +75,8 @@ static INT32 DrvGameType;
 
 static struct BurnInputInfo DrvInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort1 + 6, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort0 + 6, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort1 + 7, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort0 + 7, "p2 start"  },
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort1 + 6, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort0 + 6, "p1 start"  },
 
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort0 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort0 + 3, "p1 down"   },
@@ -88,6 +86,8 @@ static struct BurnInputInfo DrvInputList[] =
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort0 + 5, "p1 fire 2" },
 	{"P1 Fire 3"         , BIT_DIGITAL  , DrvInputPort2 + 1, "p1 fire 3" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort1 + 7, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort0 + 7, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort1 + 1, "p2 left"   },
@@ -404,8 +404,8 @@ static struct BurnRomInfo DrvwRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvw)
@@ -440,8 +440,8 @@ static struct BurnRomInfo Drvw1RomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvw1)
@@ -476,8 +476,8 @@ static struct BurnRomInfo DrvuRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvu)
@@ -512,8 +512,8 @@ static struct BurnRomInfo DrvuaRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvua)
@@ -548,8 +548,8 @@ static struct BurnRomInfo DrvubRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvub)
@@ -584,8 +584,8 @@ static struct BurnRomInfo Drvb2RomDesc[] = {
 	{ "b2_1.bin",      0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "2.bin",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvb2)
@@ -620,8 +620,8 @@ static struct BurnRomInfo DrvbRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Drvb)
@@ -655,8 +655,8 @@ static struct BurnRomInfo DrvbaRomDesc[] = {
 	{ "8.bin",         0x10000, 0x34755de3, BRF_GRA },	     //  18	Samples
 	{ "7.bin",         0x10000, 0xf9311f72, BRF_GRA },	     //  19
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  20	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  21
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  20	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  21
 };
 
 STD_ROM_PICK(Drvba)
@@ -724,6 +724,46 @@ static struct BurnRomInfo Drv2uRomDesc[] = {
 STD_ROM_PICK(Drv2u)
 STD_ROM_FN(Drv2u)
 
+static struct BurnRomInfo Drv2bRomDesc[] = {
+	{ "dd2ub-3.3g",    0x08000, 0xf5bd19d2, BRF_ESS | BRF_PRG }, //  0	HD6309 Program Code
+	{ "dd2ub-4.4g",    0x08000, 0x78750947, BRF_ESS | BRF_PRG }, //  1
+	{ "26ab-0.bin",    0x08000, 0x49ddddcd, BRF_ESS | BRF_PRG }, //  2
+	{ "dd2ub-6.5g",    0x08000, 0x097eaf26, BRF_ESS | BRF_PRG }, //  3
+	
+	{ "26ae-0.bin",    0x10000, 0xea437867, BRF_ESS | BRF_PRG }, //  4	Z80 #1 Program Code
+	
+	{ "26ad-0.bin",    0x08000, 0x75e36cd6, BRF_ESS | BRF_PRG }, //  5	Z80 #2 Program Code
+	
+	//{ "dd2ub-1.2r",    0x10000, 0xadd7ffc6, BRF_GRA },	     //  6	Characters - BAD DUMP?
+	{ "26a8-0.bin",    0x10000, 0x3ad1049c, BRF_GRA },	     //  6	Characters - using US one due to Winners Don't Use Drugs screen
+	
+	{ "dd2ub-27.8n",   0x10000, 0xfe42df5d, BRF_GRA },	     //  7  Sprites
+	{ "dd2ub-26.7n",   0x10000, 0xd2d9a400, BRF_GRA },	     //  8
+	{ "dd2ub-23.8k",   0x10000, 0xe157319f, BRF_GRA },	     //  9
+	{ "dd2ub-22.7k",   0x10000, 0x9f10018c, BRF_GRA },	     //  10
+	{ "dd2ub-25.6n",   0x10000, 0x4a4a085d, BRF_GRA },	     //  11
+	{ "dd2ub-24.5n",   0x10000, 0xc9d52536, BRF_GRA },	     //  12
+	{ "dd2ub-21.8g",   0x10000, 0x32ab0897, BRF_GRA },	     //  13
+	{ "dd2ub-20.7g",   0x10000, 0xf564bd18, BRF_GRA },	     //  14
+	{ "dd2ub-17.8d",   0x10000, 0x882f99b1, BRF_GRA },	     //  15	
+	{ "dd2ub-16.7d",   0x10000, 0xcf3c34d5, BRF_GRA },	     //  16
+	{ "dd2ub-18.9d",   0x10000, 0x0e1c6c63, BRF_GRA },	     //  17
+	{ "dd2ub-19.10d",  0x10000, 0x0e21eae0, BRF_GRA },	     //  18
+	
+	{ "dd2ub-15.5d",   0x10000, 0x3c3f16f6, BRF_GRA },	     //  19  Tiles
+	{ "dd2ub-13.4d",   0x10000, 0x7c21be72, BRF_GRA },	     //  20
+	{ "dd2ub-14.5b",   0x10000, 0xe92f91f4, BRF_GRA },	     //  21
+	{ "dd2ub-12.4b",   0x10000, 0x6896e2f7, BRF_GRA },	     //  22
+	
+	{ "dd2ub-7.3f",    0x10000, 0x6d9e3f0f, BRF_GRA },	     //  23  Samples
+	{ "dd2ub-9.5c",    0x10000, 0x0c15dec9, BRF_GRA },	     //  24
+	{ "dd2ub-8.3d",    0x10000, 0x151b22b4, BRF_GRA },	     //  25
+	{ "dd2ub-10.5b",   0x10000, 0x95885e12, BRF_GRA },	     //  26
+};
+
+STD_ROM_PICK(Drv2b)
+STD_ROM_FN(Drv2b)
+
 static struct BurnRomInfo DdungeonRomDesc[] = {
 	{ "dd26.26",       0x08000, 0xa6e7f608, BRF_ESS | BRF_PRG }, //  0	HD6309 Program Code
 	{ "dd25.25",       0x08000, 0x922e719c, BRF_ESS | BRF_PRG }, //  1
@@ -745,8 +785,8 @@ static struct BurnRomInfo DdungeonRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  10	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  11
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  12	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  13
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  12	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  13
 };
 
 STD_ROM_PICK(Ddungeon)
@@ -782,8 +822,8 @@ static struct BurnRomInfo DarktowrRomDesc[] = {
 	{ "21j-6",         0x10000, 0x34755de3, BRF_GRA },	     //  19	Samples
 	{ "21j-7",         0x10000, 0x904de6f8, BRF_GRA },	     //  20
 	
-	{ "21j-k-0",       0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
-	{ "21j-l-0",       0x00200, 0x46339529, BRF_GRA },	     //  22
+	{ "21j-k-0.101",   0x00100, 0xfdb130a9, BRF_GRA },	     //  21	PROMs
+	{ "21j-l-0.16",    0x00200, 0x46339529, BRF_GRA },	     //  22
 };
 
 STD_ROM_PICK(Darktowr)
@@ -1110,7 +1150,7 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 		}
 	}	
 	
-	bprintf(PRINT_NORMAL, _T("HD6309 Write Byte -> %04X, %02X\n"), Address, Data);
+//	bprintf(PRINT_NORMAL, _T("HD6309 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
 UINT8 DrvDdragonHD63701ReadByte(UINT16 Address)
@@ -1697,6 +1737,63 @@ static INT32 Drv2LoadRoms()
 	return 0;
 }
 
+static INT32 Drv2bLoadRoms()
+{
+	INT32 nRet = 0;
+
+	DrvTempRom = (UINT8 *)BurnMalloc(0xc0000);
+
+	// Load HD6309 Program Roms
+	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvHD6309Rom + 0x08000, 1, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvHD6309Rom + 0x10000, 2, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvHD6309Rom + 0x18000, 3, 1); if (nRet != 0) return 1;
+	
+	// Load HD63701 Program Roms
+	nRet = BurnLoadRom(DrvSubCPURom + 0x00000, 4, 1); if (nRet != 0) return 1;
+	
+	// Load M6809 Program Roms
+	nRet = BurnLoadRom(DrvSoundCPURom + 0x00000, 5, 1); if (nRet != 0) return 1;
+	
+	// Load and decode the chars
+	nRet = BurnLoadRom(DrvTempRom, 6, 1); if (nRet != 0) return 1;
+	GfxDecode(0x800, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, DrvTempRom, DrvChars);
+	
+	// Load and decode the sprites
+	memset(DrvTempRom, 0, 0xc0000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000,  7, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000,  8, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x20000,  9, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x30000, 10, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x40000, 11, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x50000, 12, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x60000, 13, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x70000, 14, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x80000, 15, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x90000, 16, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0xa0000, 17, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0xb0000, 18, 1); if (nRet != 0) return 1;
+	GfxDecode(0x1800, 4, 16, 16, Dd2SpritePlaneOffsets, TileXOffsets, TileYOffsets, 0x200, DrvTempRom, DrvSprites);
+	
+	// Load and decode the tiles
+	memset(DrvTempRom, 0, 0xc0000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 19, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000, 20, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x20000, 21, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x30000, 22, 1); if (nRet != 0) return 1;
+	GfxDecode(0x800, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x200, DrvTempRom, DrvTiles);
+	
+	// Load samples
+	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 23, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(MSM6295ROM + 0x10000, 24, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 25, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(MSM6295ROM + 0x30000, 26, 1); if (nRet != 0) return 1;
+
+	BurnFree(DrvTempRom);
+	
+	return 0;
+}
+
 static INT32 DdungeonLoadRoms()
 {
 	INT32 nRet = 0;
@@ -1984,6 +2081,19 @@ static INT32 Drv2Init()
 	
 	if (Drv2MemInit()) return 1;
 	if (Drv2LoadRoms()) return 1;
+	if (Drv2MachineInit()) return 1;
+
+	return 0;
+}
+
+static INT32 Drv2bInit()
+{
+	DrvSubCPUType = DD_CPU_TYPE_Z80;
+	DrvSoundCPUType = DD_CPU_TYPE_Z80;
+	DrvVidHardwareType = DD_VID_TYPE_DD2;
+	
+	if (Drv2MemInit()) return 1;
+	if (Drv2bLoadRoms()) return 1;
 	if (Drv2MachineInit()) return 1;
 
 	return 0;
@@ -2498,7 +2608,7 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		SCAN_VAR(DrvADPCMData);
 		SCAN_VAR(nCyclesDone);
 		SCAN_VAR(nCyclesSegment);
-		
+
 		if (nAction & ACB_WRITE) {
 			HD6309Open(0);
 			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, M6809_ROM);
@@ -2626,6 +2736,16 @@ struct BurnDriver BurnDrvDdragon2u = {
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TECHNOS, GBF_SCRFIGHT, 0,
 	NULL, Drv2uRomInfo, Drv2uRomName, NULL, NULL, DrvInputInfo, Drv2DIPInfo,
 	Drv2Init, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 0x180, 256, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvDdragon2b = {
+	"ddragon2b", "ddragon2", NULL, NULL, "1988",
+	"Double Dragon II - The Revenge (bootleg)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TECHNOS, GBF_SCRFIGHT, 0,
+	NULL, Drv2bRomInfo, Drv2bRomName, NULL, NULL, DrvInputInfo, Drv2DIPInfo,
+	Drv2bInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x180, 256, 240, 4, 3
 };
 

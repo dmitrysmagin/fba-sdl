@@ -94,11 +94,7 @@ static const eeprom_interface thndrx2_eeprom_interface =
 
 static struct BurnInputInfo TmntInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Coin 3"            , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
-	{"Coin 4"            , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -106,6 +102,7 @@ static struct BurnInputInfo TmntInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -113,6 +110,7 @@ static struct BurnInputInfo TmntInputList[] =
 	{"P2 Fire 1"         , BIT_DIGITAL  , DrvInputPort2 + 4, "p2 fire 1" },
 	{"P2 Fire 2"         , BIT_DIGITAL  , DrvInputPort2 + 5, "p2 fire 2" },
 	
+	{"P3 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
 	{"P3 Up"             , BIT_DIGITAL  , DrvInputPort3 + 2, "p3 up"     },
 	{"P3 Down"           , BIT_DIGITAL  , DrvInputPort3 + 3, "p3 down"   },
 	{"P3 Left"           , BIT_DIGITAL  , DrvInputPort3 + 0, "p3 left"   },
@@ -120,6 +118,7 @@ static struct BurnInputInfo TmntInputList[] =
 	{"P3 Fire 1"         , BIT_DIGITAL  , DrvInputPort3 + 4, "p3 fire 1" },
 	{"P3 Fire 2"         , BIT_DIGITAL  , DrvInputPort3 + 5, "p3 fire 2" },
 	
+	{"P4 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
 	{"P4 Up"             , BIT_DIGITAL  , DrvInputPort4 + 2, "p4 up"     },
 	{"P4 Down"           , BIT_DIGITAL  , DrvInputPort4 + 3, "p4 down"   },
 	{"P4 Left"           , BIT_DIGITAL  , DrvInputPort4 + 0, "p4 left"   },
@@ -141,11 +140,8 @@ STDINPUTINFO(Tmnt)
 
 static struct BurnInputInfo Tmnt2pInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -153,6 +149,8 @@ static struct BurnInputInfo Tmnt2pInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -172,11 +170,8 @@ STDINPUTINFO(Tmnt2p)
 
 static struct BurnInputInfo MiaInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort0 + 3, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort0 + 4, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort0 + 3, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -185,6 +180,8 @@ static struct BurnInputInfo MiaInputList[] =
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	{"P1 Fire 3"         , BIT_DIGITAL  , DrvInputPort1 + 6, "p1 fire 3" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort0 + 4, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -204,11 +201,8 @@ STDINPUTINFO(Mia)
 
 static struct BurnInputInfo BlswhstlInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort0 + 4, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort0 + 5, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort0 + 4, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -216,6 +210,8 @@ static struct BurnInputInfo BlswhstlInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort0 + 5, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -232,11 +228,7 @@ STDINPUTINFO(Blswhstl)
 
 static struct BurnInputInfo Ssriders4pInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Coin 3"            , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
-	{"Coin 4"            , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -244,6 +236,7 @@ static struct BurnInputInfo Ssriders4pInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -251,6 +244,7 @@ static struct BurnInputInfo Ssriders4pInputList[] =
 	{"P2 Fire 1"         , BIT_DIGITAL  , DrvInputPort2 + 4, "p2 fire 1" },
 	{"P2 Fire 2"         , BIT_DIGITAL  , DrvInputPort2 + 5, "p2 fire 2" },
 	
+	{"P3 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
 	{"P3 Up"             , BIT_DIGITAL  , DrvInputPort3 + 2, "p3 up"     },
 	{"P3 Down"           , BIT_DIGITAL  , DrvInputPort3 + 3, "p3 down"   },
 	{"P3 Left"           , BIT_DIGITAL  , DrvInputPort3 + 0, "p3 left"   },
@@ -258,6 +252,7 @@ static struct BurnInputInfo Ssriders4pInputList[] =
 	{"P3 Fire 1"         , BIT_DIGITAL  , DrvInputPort3 + 4, "p3 fire 1" },
 	{"P3 Fire 2"         , BIT_DIGITAL  , DrvInputPort3 + 5, "p3 fire 2" },
 	
+	{"P4 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
 	{"P4 Up"             , BIT_DIGITAL  , DrvInputPort4 + 2, "p4 up"     },
 	{"P4 Down"           , BIT_DIGITAL  , DrvInputPort4 + 3, "p4 down"   },
 	{"P4 Left"           , BIT_DIGITAL  , DrvInputPort4 + 0, "p4 left"   },
@@ -277,11 +272,8 @@ STDINPUTINFO(Ssriders4p)
 
 static struct BurnInputInfo SsridersInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -289,6 +281,8 @@ static struct BurnInputInfo SsridersInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -306,15 +300,8 @@ STDINPUTINFO(Ssriders)
 
 static struct BurnInputInfo Ssriders4psInputList[] =
 {
-	{"Coin 1"            , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
-	{"Start 1"           , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
-	{"Coin 2"            , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
-	{"Start 2"           , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
-	{"Coin 3"            , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
-	{"Start 3"           , BIT_DIGITAL  , DrvInputPort3 + 7, "p3 start"  },
-	{"Coin 4"            , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
-	{"Start 4"           , BIT_DIGITAL  , DrvInputPort4 + 7, "p4 start"  },
-
+	{"P1 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 0, "p1 coin"   },
+	{"P1 Start"          , BIT_DIGITAL  , DrvInputPort1 + 7, "p1 start"  },
 	{"P1 Up"             , BIT_DIGITAL  , DrvInputPort1 + 2, "p1 up"     },
 	{"P1 Down"           , BIT_DIGITAL  , DrvInputPort1 + 3, "p1 down"   },
 	{"P1 Left"           , BIT_DIGITAL  , DrvInputPort1 + 0, "p1 left"   },
@@ -322,6 +309,8 @@ static struct BurnInputInfo Ssriders4psInputList[] =
 	{"P1 Fire 1"         , BIT_DIGITAL  , DrvInputPort1 + 4, "p1 fire 1" },
 	{"P1 Fire 2"         , BIT_DIGITAL  , DrvInputPort1 + 5, "p1 fire 2" },
 	
+	{"P2 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 1, "p2 coin"   },
+	{"P2 Start"          , BIT_DIGITAL  , DrvInputPort2 + 7, "p2 start"  },
 	{"P2 Up"             , BIT_DIGITAL  , DrvInputPort2 + 2, "p2 up"     },
 	{"P2 Down"           , BIT_DIGITAL  , DrvInputPort2 + 3, "p2 down"   },
 	{"P2 Left"           , BIT_DIGITAL  , DrvInputPort2 + 0, "p2 left"   },
@@ -329,6 +318,8 @@ static struct BurnInputInfo Ssriders4psInputList[] =
 	{"P2 Fire 1"         , BIT_DIGITAL  , DrvInputPort2 + 4, "p2 fire 1" },
 	{"P2 Fire 2"         , BIT_DIGITAL  , DrvInputPort2 + 5, "p2 fire 2" },
 	
+	{"P3 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 2, "p3 coin"   },
+	{"P3 Start"          , BIT_DIGITAL  , DrvInputPort3 + 7, "p3 start"  },
 	{"P3 Up"             , BIT_DIGITAL  , DrvInputPort3 + 2, "p3 up"     },
 	{"P3 Down"           , BIT_DIGITAL  , DrvInputPort3 + 3, "p3 down"   },
 	{"P3 Left"           , BIT_DIGITAL  , DrvInputPort3 + 0, "p3 left"   },
@@ -336,6 +327,8 @@ static struct BurnInputInfo Ssriders4psInputList[] =
 	{"P3 Fire 1"         , BIT_DIGITAL  , DrvInputPort3 + 4, "p3 fire 1" },
 	{"P3 Fire 2"         , BIT_DIGITAL  , DrvInputPort3 + 5, "p3 fire 2" },
 	
+	{"P4 Coin"           , BIT_DIGITAL  , DrvInputPort0 + 3, "p4 coin"   },
+	{"P4 Start"          , BIT_DIGITAL  , DrvInputPort4 + 7, "p4 start"  },
 	{"P4 Up"             , BIT_DIGITAL  , DrvInputPort4 + 2, "p4 up"     },
 	{"P4 Down"           , BIT_DIGITAL  , DrvInputPort4 + 3, "p4 down"   },
 	{"P4 Left"           , BIT_DIGITAL  , DrvInputPort4 + 0, "p4 left"   },
@@ -1852,22 +1845,22 @@ STD_ROM_PICK(trigon)
 STD_ROM_FN(trigon)
 
 static struct BurnRomInfo tmnt2RomDesc[] = {
-	{ "063uaa02.e8",	0x020000, 0x58d5c93d, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
-	{ "063uaa03.g8",	0x020000, 0x0541fec9, BRF_ESS | BRF_PRG }, //  1
-	{ "063uaa04.e10",	0x020000, 0x1d441a7d, BRF_ESS | BRF_PRG }, //  2
-	{ "063uaa05.g10",	0x020000, 0x9c428273, BRF_ESS | BRF_PRG }, //  3
+	{ "063uaa02.8e",	0x020000, 0x58d5c93d, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
+	{ "063uaa03.8g",	0x020000, 0x0541fec9, BRF_ESS | BRF_PRG }, //  1
+	{ "063uaa04.10e",	0x020000, 0x1d441a7d, BRF_ESS | BRF_PRG }, //  2
+	{ "063uaa05.10g",	0x020000, 0x9c428273, BRF_ESS | BRF_PRG }, //  3
 
-	{ "063b01",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
+	{ "063b01.2f",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
 
-	{ "063b12",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
-	{ "063b11",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
+	{ "063b12.16k",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
+	{ "063b11.12k",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
 
-	{ "063b09",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
-	{ "063b10",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
-	{ "063b07",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
-	{ "063b08",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
+	{ "063b09.7l",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
+	{ "063b10.7k",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
+	{ "063b07.3l",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
+	{ "063b08.3k",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
 
-	{ "063b06",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
+	{ "063b06.1d",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
 
 	{ "tmnt2_uaa.nv",  0x000080, 0x284357bd, BRF_OPT },
 };
@@ -1876,22 +1869,22 @@ STD_ROM_PICK(tmnt2)
 STD_ROM_FN(tmnt2)
 
 static struct BurnRomInfo tmnt22puRomDesc[] = {
-	{ "063uda02.e8",	0x020000, 0xaadffe3a, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
-	{ "063uda03.g8",	0x020000, 0x125687a8, BRF_ESS | BRF_PRG }, //  1
-	{ "063uda04.e10",	0x020000, 0xfb5c7ded, BRF_ESS | BRF_PRG }, //  2
-	{ "063uda05.g10",	0x020000, 0x3c40fe66, BRF_ESS | BRF_PRG }, //  3
+	{ "063uda02.8e",	0x020000, 0xaadffe3a, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
+	{ "063uda03.8g",	0x020000, 0x125687a8, BRF_ESS | BRF_PRG }, //  1
+	{ "063uda04.10e",	0x020000, 0xfb5c7ded, BRF_ESS | BRF_PRG }, //  2
+	{ "063uda05.10g",	0x020000, 0x3c40fe66, BRF_ESS | BRF_PRG }, //  3
 
-	{ "063b01",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
+	{ "063b01.2f",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
 
-	{ "063b12",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
-	{ "063b11",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
+	{ "063b12.16k",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
+	{ "063b11.12k",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
 
-	{ "063b09",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
-	{ "063b10",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
-	{ "063b07",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
-	{ "063b08",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
+	{ "063b09.7l",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
+	{ "063b10.7k",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
+	{ "063b07.3l",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
+	{ "063b08.3k",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
 
-	{ "063b06",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
+	{ "063b06.1d",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
 
 	{ "tmnt2_uda.nv",  0x000080, 0x44928d33, BRF_OPT },
 };
@@ -1900,22 +1893,22 @@ STD_ROM_PICK(tmnt22pu)
 STD_ROM_FN(tmnt22pu)
 
 static struct BurnRomInfo tmht22peRomDesc[] = {
-	{ "063eba02.e8",	0x020000, 0x99409094, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
-	{ "063eba03.g8",	0x020000, 0x4d65650f, BRF_ESS | BRF_PRG }, //  1
-	{ "063eba04.e10",	0x020000, 0xf6e3b9c7, BRF_ESS | BRF_PRG }, //  2
-	{ "063eba05.g10",	0x020000, 0x1bad6696, BRF_ESS | BRF_PRG }, //  3
+	{ "063eba02.8e",	0x020000, 0x99409094, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
+	{ "063eba03.8g",	0x020000, 0x4d65650f, BRF_ESS | BRF_PRG }, //  1
+	{ "063eba04.10e",	0x020000, 0xf6e3b9c7, BRF_ESS | BRF_PRG }, //  2
+	{ "063eba05.10g",	0x020000, 0x1bad6696, BRF_ESS | BRF_PRG }, //  3
 
-	{ "063b01",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
+	{ "063b01.2f",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
 
-	{ "063b12",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
-	{ "063b11",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
+	{ "063b12.16k",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
+	{ "063b11.12k",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
 
-	{ "063b09",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
-	{ "063b10",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
-	{ "063b07",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
-	{ "063b08",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
+	{ "063b09.7l",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
+	{ "063b10.7k",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
+	{ "063b07.3l",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
+	{ "063b08.3k",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
 
-	{ "063b06",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
+	{ "063b06.1d",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
 
 	{ "tmnt2_eba.nv",  0x000080, 0xc0a3ed50, BRF_OPT },
 };
@@ -1924,22 +1917,22 @@ STD_ROM_PICK(tmht22pe)
 STD_ROM_FN(tmht22pe)
 
 static struct BurnRomInfo tmnt2aRomDesc[] = {
-	{ "063ada02.e8",	0x020000, 0x4f11b587, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
-	{ "063ada03.g8",	0x020000, 0x82a1b9ac, BRF_ESS | BRF_PRG }, //  1
-	{ "063ada04.e10",	0x020000, 0x05ad187a, BRF_ESS | BRF_PRG }, //  2
-	{ "063ada05.g10",	0x020000, 0xd4826547, BRF_ESS | BRF_PRG }, //  3
+	{ "063ada02.8e",	0x020000, 0x4f11b587, BRF_ESS | BRF_PRG }, //  0 	68000 Program Code
+	{ "063ada03.8g",	0x020000, 0x82a1b9ac, BRF_ESS | BRF_PRG }, //  1
+	{ "063ada04.10e",	0x020000, 0x05ad187a, BRF_ESS | BRF_PRG }, //  2
+	{ "063ada05.10g",	0x020000, 0xd4826547, BRF_ESS | BRF_PRG }, //  3
 
-	{ "063b01",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
+	{ "063b01.2f",		0x010000, 0x364f548a, BRF_ESS | BRF_PRG }, //  4 	Z80 Code
 
-	{ "063b12",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
-	{ "063b11",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
+	{ "063b12.16k",		0x080000, 0xd3283d19, BRF_GRA },           //  5	Tiles
+	{ "063b11.12k",		0x080000, 0x6ebc0c15, BRF_GRA },           //  6
 
-	{ "063b09",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
-	{ "063b10",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
-	{ "063b07",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
-	{ "063b08",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
+	{ "063b09.7l",		0x100000, 0x2d7a9d2a, BRF_GRA },           //  7	Sprites
+	{ "063b10.7k",		0x080000, 0xf2dd296e, BRF_GRA },           //  8
+	{ "063b07.3l",		0x100000, 0xd9bee7bf, BRF_GRA },           //  9
+	{ "063b08.3k",		0x080000, 0x3b1ae36f, BRF_GRA },           // 10
 
-	{ "063b06",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
+	{ "063b06.1d",		0x200000, 0x1e510aa5, BRF_SND },           // 11	K053260 Samples
 
 	{ "tmnt2_ada.nv",  0x000080, 0x063068a0, BRF_OPT },
 };
@@ -2365,6 +2358,17 @@ static INT32 BlswhstlDoReset()
 
 static INT32 SsridersDoReset()
 {
+	static const UINT8 thndrx2_eeprom_data[128] = { // Enable stereo sound (Dink)
+		0x00, 0x00, 0x40, 0xC0, 0x80, 0x20, 0x00, 0x0E, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+	};
+
 	SekOpen(0);
 	SekReset();
 	SekClose();
@@ -2383,9 +2387,13 @@ static INT32 SsridersDoReset()
 	if (EEPROMAvailable()) {
 		InitEEPROMCount = 0;
 	} else {
-		InitEEPROMCount = 10;
+		if (strncmp(BurnDrvGetTextA(DRV_NAME), "thndrx2", 7) == 0) {
+			EEPROMFill(thndrx2_eeprom_data, 0, 128);
+		} else {
+			InitEEPROMCount = 10;
+		}
 	}
-	
+
 	K052109_irq_enabled = 0;
 	DrvVBlank = 0;
 

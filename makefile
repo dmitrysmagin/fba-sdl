@@ -49,7 +49,7 @@ TOAPLAN_SOUND_SAMPLES_HACK = 1
 FORCE_UPDATE = 1
 
 # Use the __fastcall calling convention when interfacing with A68K/Musashi/Doze
-FASTCALL = 1
+#FASTCALL = 1
 
 # Compress executable with upx (the DEBUG option ignores this)
 # COMPRESS = 1

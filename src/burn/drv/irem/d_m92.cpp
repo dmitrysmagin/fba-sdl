@@ -1235,6 +1235,7 @@ inline static UINT32 CalcCol(INT32 offs)
 
 static void m92YM2151IRQHandler(INT32 nStatus)
 {
+	if (VezGetActive() == -1) return;
 	VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP0, 0xff/*default*/, nStatus ? VEZ_IRQSTATUS_ACK : VEZ_IRQSTATUS_NONE);
 	VezRun(100);
 }
@@ -1928,6 +1929,7 @@ static void draw_layer_byline(INT32 start, INT32 finish, INT32 layer, INT32 forc
 static void DrawLayers(INT32 start, INT32 finish)
 {
 	if(!pBurnDraw) return;
+
 	memset (RamPrioBitmap + (start * nScreenWidth), 0, nScreenWidth * (finish - start)); // clear priority
 
 	if (~nBurnLayer & 1) memset (pTransDraw + (start * nScreenWidth), 0, nScreenWidth * (finish - start) * sizeof(INT16));
@@ -2168,6 +2170,7 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		VezScan(nAction);
 
 		iremga20_scan(0, nAction, pnMin);
+		BurnYM2151Scan(nAction);
 
 		SCAN_VAR(PalBank);
 
@@ -2176,6 +2179,12 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		SCAN_VAR(m92_sprite_list);
 		SCAN_VAR(m92_sprite_buffer_busy);
 		SCAN_VAR(m92_sprite_buffer_timer);
+
+		if (nAction & ACB_WRITE) {
+			VezOpen(1);
+			m92YM2151IRQHandler(0); // get fm sound going again on state load
+			VezClose();
+		}
 
 		if (m92_kludge == 3) { // ppan
 			MSM6295Scan(0, nAction);
@@ -3408,49 +3417,6 @@ struct BurnDriver BurnDrvThndblst = {
 	NULL, thndblstRomInfo, thndblstRomName, NULL, NULL, p2CommonInputInfo, LethalthDIPInfo,
 	lethalthInit, DrvExit, DrvFrame, DrvReDraw, DrvScan, &bRecalcPalette, 0x800,
 	240, 320, 3, 4
-};
-
-
-// Dream Soccer '94
-
-static struct BurnRomInfo dsoccr94RomDesc[] = {
-	{ "a3-4p_h0-c-0.ic59",	0x040000, 0xd01d3fd7, 1 | BRF_PRG | BRF_ESS }, //  0 V33 Code
-	{ "a3-4p_l0-c-0.ic61",	0x040000, 0x8af0afe2, 1 | BRF_PRG | BRF_ESS }, //  1
-	{ "a3_h1-c-0.ic60",		0x040000, 0x6109041b, 1 | BRF_PRG | BRF_ESS }, //  2
-	{ "a3_l1-c-0.ic62",		0x040000, 0x97a01f6b, 1 | BRF_PRG | BRF_ESS }, //  3
-
-	{ "a3-sh0-c-0.ic31",	0x010000, 0x23fe6ffc, 2 | BRF_PRG | BRF_ESS }, //  4 V30 Code
-	{ "a3-sl0-c-0.ic37",	0x010000, 0x768132e5, 2 | BRF_PRG | BRF_ESS }, //  5
-
-	{ "ds_c00.ic29",		0x100000, 0x2d31d418, 3 | BRF_GRA },           //  6 Background Tiles
-	{ "ds_c10.ic28",		0x100000, 0x57f7bcd3, 3 | BRF_GRA },           //  7
-	{ "ds_c01.ic21",		0x100000, 0x9d31a464, 3 | BRF_GRA },           //  8
-	{ "ds_c11.ic20",		0x100000, 0xa372e79f, 3 | BRF_GRA },           //  9
-
-	{ "ds_000.ic11",		0x100000, 0x366b3e29, 4 | BRF_GRA },           // 10 Sprites
-	{ "ds_010.ic12",		0x100000, 0x28a4cc40, 4 | BRF_GRA },           // 11
-	{ "ds_020.ic13",		0x100000, 0x5a310f7f, 4 | BRF_GRA },           // 12
-	{ "ds_030.ic14",		0x100000, 0x328b1f45, 4 | BRF_GRA },           // 13
-
-	{ "ds_da0.ic24",		0x100000, 0x67fc52fd, 5 | BRF_SND },           // 14 Irem GA20 Samples
-};
-
-STD_ROM_PICK(dsoccr94)
-STD_ROM_FN(dsoccr94)
-
-static INT32 NullInit()
-{
-	return 1;
-}
-
-struct BurnDriver BurnDrvDsoccr94 = {
-	"dsoccr94", NULL, NULL, NULL, "1994",
-	"Dream Soccer '94\0", "Imperfect sound and graphics", "Irem (Data East Corporation license)", "M107",
-	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_IREM_M92, GBF_SPORTSFOOTBALL, 0,
-	NULL, dsoccr94RomInfo, dsoccr94RomName, NULL, NULL, p4CommonInputInfo, NULL,
-	NullInit, DrvExit, DrvFrame, DrvReDraw, NULL, NULL, 0,
-	256, 256, 4, 3
 };
 
 

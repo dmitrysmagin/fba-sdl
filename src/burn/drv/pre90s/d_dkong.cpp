@@ -1357,6 +1357,7 @@ static INT32 DrvExit()
 
 	ZetExit();
 	I8039Exit();
+	i8257Exit();
 
 	BurnSampleExit();
 	DACExit();
@@ -1480,6 +1481,7 @@ static INT32 s2650DkongExit()
 
 	s2650Exit();
 	I8039Exit();
+	i8257Exit();
 
 	BurnSampleExit();
 	DACExit();
@@ -1800,13 +1802,59 @@ static INT32 radarscpInit()
 	return ret;
 }
 
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
+{
+	struct BurnArea ba;
+	
+	if (pnMin != NULL) {			// Return minimum compatible version
+		*pnMin = 0x029719;
+	}
+
+	if (nAction & ACB_MEMORY_RAM) {
+		memset(&ba, 0, sizeof(ba));
+		ba.Data	  = AllRam;
+		ba.nLen	  = RamEnd-AllRam;
+		ba.szName = "All Ram";
+		BurnAcb(&ba);
+	}
+	
+	if (nAction & ACB_DRIVER_DATA) {
+
+            if (s2650_protection) {
+                s2650Scan(nAction, pnMin);
+            } else {
+                ZetScan(nAction);
+            }
+            i8257Scan();
+            I8039Scan(nAction, pnMin);
+            BurnSampleScan(nAction, pnMin);
+            DACScan(nAction, pnMin);
+
+            SCAN_VAR(vblank);
+            SCAN_VAR(s2650_protection);
+            SCAN_VAR(dkongjr_walk);
+            SCAN_VAR(page);
+            SCAN_VAR(mcustatus);
+            SCAN_VAR(p);
+            SCAN_VAR(t);
+
+            DrvRecalc = 1;
+
+            if (nAction & ACB_WRITE) {
+            }
+	}
+
+	return 0;
+}
+
+
 struct BurnDriver BurnDrvRadarscp = {
 	"radarscp", NULL, NULL, NULL, "1980",
 	"Radar Scope\0", NULL, "Nintendo", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, radarscpRomInfo, radarscpRomName, NULL, NULL, RadarscpInputInfo, RadarscpDIPInfo,
-	radarscpInit, DrvExit, DrvFrame, radarscpDraw, NULL, &DrvRecalc, 0x100,
+	radarscpInit, DrvExit, DrvFrame, radarscpDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1875,7 +1923,7 @@ struct BurnDriver BurnDrvRadarscp1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, radarscp1RomInfo, radarscp1RomName, NULL, NULL, RadarscpInputInfo, RadarscpDIPInfo,
-	radarscp1Init, DrvExit, DrvFrame, radarscpDraw, NULL, &DrvRecalc, 0x100,
+	radarscp1Init, DrvExit, DrvFrame, radarscpDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1958,7 +2006,45 @@ struct BurnDriver BurnDrvDkong = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongRomInfo, dkongRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
+	224, 256, 3, 4
+};
+
+
+// Donkey Kong (US set 1) with Hard Kit
+
+static struct BurnRomInfo dkonghrdRomDesc[] = {
+	{ "dk5ehard.bin",	0x1000, 0xa9445215, 1 }, //  0 maincpu
+	{ "c_5ct_g.bin",	0x1000, 0x5ec461ec, 1 }, //  1
+	{ "c_5bt_g.bin",	0x1000, 0x1c97d324, 1 }, //  2
+	{ "dk5ahard.bin",	0x1000, 0xa990729b, 1 }, //  3
+
+	{ "s_3i_b.bin",		0x0800, 0x45a4ed06, 2 }, //  4 soundcpu
+	{ "s_3j_b.bin",		0x0800, 0x4743fe92, 2 }, //  5
+
+	{ "v_5h_b.bin",		0x0800, 0x12c8c95d, 3 }, //  6 gfx1
+	{ "v_3pt.bin",		0x0800, 0x15e9c5e9, 3 }, //  7
+
+	{ "l_4m_b.bin",		0x0800, 0x59f8054d, 4 }, //  8 gfx2
+	{ "l_4n_b.bin",		0x0800, 0x672e4714, 4 }, //  9
+	{ "l_4r_b.bin",		0x0800, 0xfeaa59ee, 4 }, // 10
+	{ "l_4s_b.bin",		0x0800, 0x20f2ef7e, 4 }, // 11
+
+	{ "c-2k.bpr",		0x0100, 0xe273ede5, 5 }, // 12 proms
+	{ "c-2j.bpr",		0x0100, 0xd6412358, 5 }, // 13
+	{ "v-5e.bpr",		0x0100, 0xb869b8f5, 5 }, // 14
+};
+
+STD_ROM_PICK(dkonghrd)
+STD_ROM_FN(dkonghrd)
+
+struct BurnDriver BurnDrvDkonghrd = {
+	"dkonghrd", "dkong", NULL, "dkong", "1981",
+	"Donkey Kong (US set 1) with Hard kit\0", NULL, "Nintendo", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL, dkonghrdRomInfo, dkonghrdRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -1996,7 +2082,7 @@ struct BurnDriver BurnDrvDkongo = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongoRomInfo, dkongoRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2034,7 +2120,7 @@ struct BurnDriver BurnDrvDkongj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjRomInfo, dkongjRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2072,7 +2158,7 @@ struct BurnDriver BurnDrvDkongjo = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjoRomInfo, dkongjoRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2110,7 +2196,7 @@ struct BurnDriver BurnDrvDkongjo1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjo1RomInfo, dkongjo1RomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2148,7 +2234,7 @@ struct BurnDriver BurnDrvDkongf = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongfRomInfo, dkongfRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongfDIPInfo,
-	dkongInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2229,7 +2315,7 @@ struct BurnDriver BurnDrvDkongx = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongxRomInfo, dkongxRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, NULL,
-	dkongxInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongxInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2269,31 +2355,31 @@ struct BurnDriver BurnDrvDkongx11 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongx11RomInfo, dkongx11RomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, NULL,
-	dkongxInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongxInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
 
-// Donkey Kong Junior (US)
+// Donkey Kong Junior (US set F-2)
 
 static struct BurnRomInfo dkongjrRomDesc[] = {
-	{ "dkj.5b",	0x2000, 0xdea28158, 1 }, //  0 maincpu
-	{ "dkj.5c",	0x2000, 0x6fb5faf6, 1 }, //  1
-	{ "dkj.5e",	0x2000, 0xd042b6a8, 1 }, //  2
+	{ "djr1-c_5b_f-2.5b",	0x2000, 0xdea28158, 1 }, //  0 maincpu
+	{ "djr1-c_5c_f-2.5c",	0x2000, 0x6fb5faf6, 1 }, //  1
+	{ "djr1-c_5e_f-2.5e",	0x2000, 0xd042b6a8, 1 }, //  2
 
-	{ "c_3h.bin",	0x1000, 0x715da5f8, 2 }, //  3 soundcpu
+	{ "djr1-c_3h.3h",		0x1000, 0x715da5f8, 2 }, //  3 soundcpu
 
-	{ "dkj.3n",	0x1000, 0x8d51aca9, 3 }, //  4 gfx1
-	{ "dkj.3p",	0x1000, 0x4ef64ba5, 3 }, //  5
+	{ "djr1-v.3n",			0x1000, 0x8d51aca9, 3 }, //  4 gfx1
+	{ "djr1-v.3p",			0x1000, 0x4ef64ba5, 3 }, //  5
 
-	{ "v_7c.bin",	0x0800, 0xdc7f4164, 4 }, //  6 gfx2
-	{ "v_7d.bin",	0x0800, 0x0ce7dcf6, 4 }, //  7
-	{ "v_7e.bin",	0x0800, 0x24d1ff17, 4 }, //  8
-	{ "v_7f.bin",	0x0800, 0x0f8c083f, 4 }, //  9
+	{ "djr1-v_7c.7c",		0x0800, 0xdc7f4164, 4 }, //  6 gfx2
+	{ "djr1-v_7d.7d",		0x0800, 0x0ce7dcf6, 4 }, //  7
+	{ "djr1-v_7e.7e",		0x0800, 0x24d1ff17, 4 }, //  8
+	{ "djr1-v_7f.7f",		0x0800, 0x0f8c083f, 4 }, //  9
 
-	{ "c-2e.bpr",	0x0100, 0x463dc7ad, 5 }, // 10 proms
-	{ "c-2f.bpr",	0x0100, 0x47ba0042, 5 }, // 11
-	{ "v-2n.bpr",	0x0100, 0xdbf185bf, 5 }, // 12
+	{ "djr1-c-2e.2e",		0x0100, 0x463dc7ad, 5 }, // 10 proms
+	{ "djr1-c-2f.2f",		0x0100, 0x47ba0042, 5 }, // 11
+	{ "djr1-v-2n.2n",		0x0100, 0xdbf185bf, 5 }, // 12
 };
 
 STD_ROM_PICK(dkongjr)
@@ -2373,11 +2459,11 @@ static INT32 dkongjrInit()
 
 struct BurnDriver BurnDrvDkongjr = {
 	"dkongjr", NULL, NULL, "dkongjr", "1982",
-	"Donkey Kong Junior (US)\0", NULL, "Nintendo of America", "Miscellaneous",
+	"Donkey Kong Junior (US set F-2)\0", NULL, "Nintendo of America", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjrRomInfo, dkongjrRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2413,7 +2499,7 @@ struct BurnDriver BurnDrvDkongjrj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjrjRomInfo, dkongjrjRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2449,7 +2535,7 @@ struct BurnDriver BurnDrvDkongjnrj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjnrjRomInfo, dkongjnrjRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2457,14 +2543,14 @@ struct BurnDriver BurnDrvDkongjnrj = {
 // Donkey Kong Jr. (bootleg)
 
 static struct BurnRomInfo dkongjrbRomDesc[] = {
-	{ "dkjr1",	0x2000, 0xec7e097f, 1 }, //  0 maincpu
+	{ "dkjr1",		0x2000, 0xec7e097f, 1 }, //  0 maincpu
 	{ "c_5ca.bin",	0x2000, 0xc0a18f0d, 1 }, //  1
 	{ "c_5ea.bin",	0x2000, 0xa81dd00c, 1 }, //  2
 
 	{ "c_3h.bin",	0x1000, 0x715da5f8, 2 }, //  3 soundcpu
 
 	{ "v_3na.bin",	0x1000, 0xa95c4c63, 3 }, //  4 gfx1
-	{ "dkjr10",	0x1000, 0xadc11322, 3 }, //  5
+	{ "dkjr10",		0x1000, 0xadc11322, 3 }, //  5
 
 	{ "v_7c.bin",	0x0800, 0xdc7f4164, 4 }, //  6 gfx2
 	{ "v_7d.bin",	0x0800, 0x0ce7dcf6, 4 }, //  7
@@ -2485,7 +2571,7 @@ struct BurnDriver BurnDrvDkongjrb = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjrbRomInfo, dkongjrbRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2521,7 +2607,7 @@ struct BurnDriver BurnDrvJrking = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, jrkingRomInfo, jrkingRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2575,12 +2661,12 @@ struct BurnDriver BurnDrvDkingjr = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkingjrRomInfo, dkingjrRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkingjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkingjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
 
-// Donkey Kong Junior (Easy)
+// Donkey Kong Junior (E Kit)
 
 static struct BurnRomInfo dkongjreRomDesc[] = {
 	{ "djr1-c.5b",	0x2000, 0xffe9e1a5, 1 }, //  0 maincpu
@@ -2589,8 +2675,8 @@ static struct BurnRomInfo dkongjreRomDesc[] = {
 
 	{ "c_3h.bin",	0x1000, 0x715da5f8, 2 }, //  3 soundcpu
 
-	{ "dkj.3n",	0x1000, 0x8d51aca9, 3 }, //  4 gfx1
-	{ "dkj.3p",	0x1000, 0x4ef64ba5, 3 }, //  5
+	{ "dkj.3n",		0x1000, 0x8d51aca9, 3 }, //  4 gfx1
+	{ "dkj.3p",		0x1000, 0x4ef64ba5, 3 }, //  5
 
 	{ "v_7c.bin",	0x0800, 0xdc7f4164, 4 }, //  6 gfx2
 	{ "v_7d.bin",	0x0800, 0x0ce7dcf6, 4 }, //  7
@@ -2623,11 +2709,47 @@ static INT32 dkongjreInit()
 
 struct BurnDriverD BurnDrvDkongjre = {
 	"dkongjre", "dkongjr", NULL, "dkongjr", "1982",
-	"Donkey Kong Junior (Easy)\0", NULL, "Nintendo of America", "Miscellaneous",
+	"Donkey Kong Junior (E Kit)\0", NULL, "Nintendo of America", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongjreRomInfo, dkongjreRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
-	dkongjreInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkongjreInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
+	224, 256, 3, 4
+};
+
+
+// Donkey Kong Junior (P Kit, bootleg)
+
+static struct BurnRomInfo dkongjrpbRomDesc[] = {
+	{ "dkjr1-c.5b-p",	0x2000, 0x8d99b3e0, 1 }, //  0 maincpu
+	{ "dkjr1-c.5c-p",	0x2000, 0xb92d258c, 1 }, //  1
+	{ "dkjr1-c.5e",		0x2000, 0xd042b6a8, 1 }, //  2
+
+	{ "c_3h.bin",	0x1000, 0x715da5f8, 2 }, //  3 soundcpu
+
+	{ "dkj.3n",		0x1000, 0x8d51aca9, 3 }, //  4 gfx1
+	{ "dkj.3p",		0x1000, 0x4ef64ba5, 3 }, //  5
+
+	{ "v_7c.bin",	0x0800, 0xdc7f4164, 4 }, //  6 gfx2
+	{ "v_7d.bin",	0x0800, 0x0ce7dcf6, 4 }, //  7
+	{ "v_7e.bin",	0x0800, 0x24d1ff17, 4 }, //  8
+	{ "v_7f.bin",	0x0800, 0x0f8c083f, 4 }, //  9
+
+	{ "c-2e.bpr",	0x0100, 0x463dc7ad, 5 }, // 10 proms
+	{ "c-2f.bpr",	0x0100, 0x47ba0042, 5 }, // 11
+	{ "v-2n.bpr",	0x0100, 0xdbf185bf, 5 }, // 12
+};
+
+STD_ROM_PICK(dkongjrpb)
+STD_ROM_FN(dkongjrpb)
+
+struct BurnDriverD BurnDrvDkongjrpb = {
+	"dkongjrpb", "dkongjr", NULL, "dkongjr", "1982",
+	"Donkey Kong Junior (P kit, bootleg)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL, dkongjrpbRomInfo, dkongjrpbRomName, DkongjrSampleInfo, DkongjrSampleName, DkongInputInfo, DkongDIPInfo,
+	dkongjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2683,7 +2805,7 @@ struct BurnDriver BurnDrvPestplce = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, pestplceRomInfo, pestplceRomName, NULL, NULL, PestplceInputInfo, PestplceDIPInfo,
-	pestplceInit, DrvExit, DrvFrame, pestplceDraw, NULL, &DrvRecalc, 0x100,
+	pestplceInit, DrvExit, DrvFrame, pestplceDraw, DrvScan, &DrvRecalc, 0x100,
 	256, 224, 4, 3
 };
 
@@ -2769,7 +2891,7 @@ struct BurnDriver BurnDrvDkong3 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkong3RomInfo, dkong3RomName, NULL, NULL, Dkong3InputInfo, Dkong3DIPInfo,
-	dkong3Init, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkong3Init, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2810,7 +2932,7 @@ struct BurnDriver BurnDrvDkong3j = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkong3jRomInfo, dkong3jRomName, NULL, NULL, Dkong3InputInfo, Dkong3DIPInfo,
-	dkong3Init, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkong3Init, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2869,7 +2991,7 @@ struct BurnDriver BurnDrvDkong3b = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkong3bRomInfo, dkong3bRomName, NULL, NULL, DkongInputInfo, Dkong3bDIPInfo,
-	dkong3bInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	dkong3bInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2946,7 +3068,7 @@ struct BurnDriver BurnDrvHerbiedk = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, herbiedkRomInfo, herbiedkRomName, NULL, NULL, DkongInputInfo, HerbiedkDIPInfo,
-	herbiedkInit, s2650DkongExit, s2650DkongFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	herbiedkInit, s2650DkongExit, s2650DkongFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2993,7 +3115,7 @@ struct BurnDriverD BurnDrvHunchbkd = {
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, hunchbkdRomInfo, hunchbkdRomName, NULL, NULL, DkongInputInfo, HunchbkdDIPInfo,
-	hunchbkdInit, s2650DkongExit, s2650DkongFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	hunchbkdInit, s2650DkongExit, s2650DkongFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -3139,7 +3261,7 @@ struct BurnDriver BurnDrvHerodk = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, herodkRomInfo, herodkRomName, NULL, NULL, HerodkInputInfo, HerodkDIPInfo,
-	herodkInit, s2650DkongExit, s2650DkongFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	herodkInit, s2650DkongExit, s2650DkongFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -3206,7 +3328,7 @@ struct BurnDriver BurnDrvHerodku = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, herodkuRomInfo, herodkuRomName, NULL, NULL, HerodkInputInfo, HerodkDIPInfo,
-	herodkuInit, s2650DkongExit, s2650DkongFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	herodkuInit, s2650DkongExit, s2650DkongFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -3355,7 +3477,7 @@ struct BurnDriver BurnDrvDrakton = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, draktonRomInfo, draktonRomName, NULL, NULL, DkongInputInfo, DraktonDIPInfo,
-	draktonInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	draktonInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -3409,7 +3531,7 @@ struct BurnDriver BurnDrvDrktnjr = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, drktnjrRomInfo, drktnjrRomName, NULL, NULL, DkongInputInfo, DraktonDIPInfo,
-	drktnjrInit, DrvExit, DrvFrame, dkongDraw, NULL, &DrvRecalc, 0x100,
+	drktnjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 

@@ -217,15 +217,17 @@ static void YM2203UpdateResample(INT16* pSoundBuf, INT32 nSegmentEnd)
 			}
 		}
 		
-		nTotalLeftSample = INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0fff, nLeftSample[0], nLeftSample[1], nLeftSample[2], nLeftSample[3]);
-		nTotalRightSample = INTERPOLATE4PS_16BIT((nFractionalPosition >> 4) & 0x0fff, nRightSample[0], nRightSample[1], nRightSample[2], nRightSample[3]);
+		nTotalLeftSample = INTERPOLATE4PS_CUSTOM((nFractionalPosition >> 4) & 0x0fff, nLeftSample[0], nLeftSample[1], nLeftSample[2], nLeftSample[3], 16384.0);
+		nTotalRightSample = INTERPOLATE4PS_CUSTOM((nFractionalPosition >> 4) & 0x0fff, nRightSample[0], nRightSample[1], nRightSample[2], nRightSample[3], 16384.0);
 		
 		nTotalLeftSample = BURN_SND_CLIP(nTotalLeftSample);
 		nTotalRightSample = BURN_SND_CLIP(nTotalRightSample);
 			
 		if (bYM2203AddSignal) {
-			pSoundBuf[i + 0] += nTotalLeftSample;
-			pSoundBuf[i + 1] += nTotalRightSample;
+			//pSoundBuf[i + 0] += nTotalLeftSample;
+			//pSoundBuf[i + 1] += nTotalRightSample;
+			pSoundBuf[i + 0] = BURN_SND_CLIP(pSoundBuf[i + 0] + nTotalLeftSample);
+			pSoundBuf[i + 1] = BURN_SND_CLIP(pSoundBuf[i + 1] + nTotalRightSample);
 		} else {
 			pSoundBuf[i + 0] = nTotalLeftSample;
 			pSoundBuf[i + 1] = nTotalRightSample;
@@ -382,8 +384,10 @@ static void YM2203UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 		nRightSample = BURN_SND_CLIP(nRightSample);
 			
 		if (bYM2203AddSignal) {
-			pSoundBuf[(n << 1) + 0] += nLeftSample;
-			pSoundBuf[(n << 1) + 1] += nRightSample;
+			//pSoundBuf[(n << 1) + 0] += nLeftSample;
+			//pSoundBuf[(n << 1) + 1] += nRightSample;
+			pSoundBuf[(n << 1) + 0] = BURN_SND_CLIP(pSoundBuf[(n << 1) + 0] + nLeftSample);
+			pSoundBuf[(n << 1) + 1] = BURN_SND_CLIP(pSoundBuf[(n << 1) + 1] + nRightSample);
 		} else {
 			pSoundBuf[(n << 1) + 0] = nLeftSample;
 			pSoundBuf[(n << 1) + 1] = nRightSample;
@@ -488,7 +492,6 @@ INT32 BurnYM2203Init(INT32 num, INT32 nClockFrequency, FM_IRQHANDLER IRQCallback
 	if (num > MAX_YM2203) num = MAX_YM2203;
 	
 	BurnTimerInit(&YM2203TimerOver, GetTimeCallback);
-
 	if (nBurnSoundRate <= 0) {
 		BurnYM2203StreamCallback = YM2203StreamCallbackDummy;
 
@@ -505,18 +508,17 @@ INT32 BurnYM2203Init(INT32 num, INT32 nClockFrequency, FM_IRQHANDLER IRQCallback
 
 	if (nFMInterpolation == 3) {
 		// Set YM2203 core samplerate to match the hardware
-		nBurnYM2203SoundRate = nClockFrequency / (144 * num);
+		nBurnYM2203SoundRate = nClockFrequency >> 6;
 		// Bring YM2203 core samplerate within usable range
 		while (nBurnYM2203SoundRate > nBurnSoundRate * 3) {
 			nBurnYM2203SoundRate >>= 1;
 		}
 
 		BurnYM2203Update = YM2203UpdateResample;
-
 		nSampleSize = (UINT32)nBurnYM2203SoundRate * (1 << 16) / nBurnSoundRate;
-	} else {
-		nBurnYM2203SoundRate = nBurnSoundRate;
 
+    } else {
+		nBurnYM2203SoundRate = nBurnSoundRate;
 		BurnYM2203Update = YM2203UpdateNormal;
 	}
 

@@ -190,6 +190,7 @@ void BurnYMF278BReset()
 #endif
 
 	BurnTimerReset();
+	ymf278b_reset();
 }
 
 void BurnYMF278BExit()
@@ -258,4 +259,5 @@ void BurnYMF278BScan(INT32 nAction, INT32* pnMin)
 #endif
 
 	BurnTimerScan(nAction, pnMin);
+	ymf278b_scan(nAction, pnMin);
 }

@@ -232,6 +232,70 @@ static struct BurnDIPInfo FireshrkDIPList[]=
 
 STDDIPINFO(Fireshrk)
 
+static struct BurnDIPInfo FireshrkaDIPList[]=
+{
+	{0x13, 0xff, 0xff, 0x01, NULL			},
+	{0x14, 0xff, 0xff, 0x00, NULL			},
+	{0x15, 0xff, 0xff, 0x03, NULL			},
+
+	{0   , 0xfe, 0   ,    2, "Cabinet"		},
+	{0x13, 0x01, 0x01, 0x01, "Upright"		},
+	{0x13, 0x01, 0x01, 0x00, "Cocktail"		},
+
+	{0   , 0xfe, 0   ,    2, "Flip Screen"		},
+	{0x13, 0x01, 0x02, 0x00, "Off"			},
+	{0x13, 0x01, 0x02, 0x02, "On"			},
+
+	{0   , 0xfe, 0   ,    2, "Demo Sounds"		},
+	{0x13, 0x01, 0x08, 0x08, "Off"			},
+	{0x13, 0x01, 0x08, 0x00, "On"			},
+
+	{0   , 0xfe, 0   ,    4, "Coin A"		},
+	{0x13, 0x01, 0x30, 0x30, "4 Coins 1 Credits"	},
+	{0x13, 0x01, 0x30, 0x20, "3 Coins 1 Credits"	},
+	{0x13, 0x01, 0x30, 0x10, "2 Coins 1 Credits"	},
+	{0x13, 0x01, 0x30, 0x00, "1 Coin  1 Credits"	},
+
+	{0   , 0xfe, 0   ,    4, "Coin B"		},
+	{0x13, 0x01, 0xc0, 0x00, "1 Coin  2 Credits"	},
+	{0x13, 0x01, 0xc0, 0x40, "1 Coin  3 Credits"	},
+	{0x13, 0x01, 0xc0, 0x80, "1 Coin  4 Credits"	},
+	{0x13, 0x01, 0xc0, 0xc0, "1 Coin  6 Credits"	},
+
+	{0   , 0xfe, 0   ,    4, "Difficulty"		},
+	{0x14, 0x01, 0x03, 0x01, "Easy"			},
+	{0x14, 0x01, 0x03, 0x00, "Medium"		},
+	{0x14, 0x01, 0x03, 0x02, "Hard"			},
+	{0x14, 0x01, 0x03, 0x03, "Hardest"		},
+
+	{0   , 0xfe, 0   ,    4, "Bonus Life"		},
+	{0x14, 0x01, 0x0c, 0x04, "50K, every 150K"	},
+	{0x14, 0x01, 0x0c, 0x00, "70K, every 200K"	},
+	{0x14, 0x01, 0x0c, 0x08, "100K"			},
+	{0x14, 0x01, 0x0c, 0x0c, "None"			},
+
+	{0   , 0xfe, 0   ,    4, "Lives"		},
+	{0x14, 0x01, 0x30, 0x30, "2"			},
+	{0x14, 0x01, 0x30, 0x00, "3"			},
+	{0x14, 0x01, 0x30, 0x20, "4"			},
+	{0x14, 0x01, 0x30, 0x10, "5"			},
+
+	{0   , 0xfe, 0   ,    2, "Invulnerability"	},
+	{0x14, 0x01, 0x40, 0x00, "Off"			},
+	{0x14, 0x01, 0x40, 0x40, "On"			},
+
+	{0   , 0xfe, 0   ,    2, "Allow Continue"	},
+	{0x14, 0x01, 0x80, 0x80, "No"			},
+	{0x14, 0x01, 0x80, 0x00, "Yes"			},
+
+
+	{0   , 0xfe, 0   ,    2, "Territory"		},
+	{0x15, 0x01, 0x03, 0x03, "Europe"		},
+	{0x15, 0x01, 0x03, 0x00, "USA"			},
+};
+
+STDDIPINFO(Fireshrka)
+
 #ifdef TOAPLAN_SOUND_SAMPLES_HACK
 static void StopAllSamples()
 {
@@ -744,8 +808,12 @@ static INT32 DrvInit()
 //	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 //	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+        BurnUpdateProgress(0.0, _T("Loading samples..."), 0);
+
 	BurnSampleInit(0);
 	BurnSampleSetAllRoutesAllSamples(0.60, BURN_SND_ROUTE_BOTH);
+#endif
 
 	bDrawScreen = true;
 
@@ -868,22 +936,23 @@ static INT32 DrvFrame()
 //	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 //	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 
-	BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
 #ifdef TOAPLAN_SOUND_SAMPLES_HACK
-	if (Start > 0) Wait++;
+		if (Start > 0) Wait++;
 	
-	if (Wait >= (108 + Start2)) {
-		StopSamplesChannel0();
-		SetVolumeSamplesChannel0(1.00);
-		BurnSamplePlay(0x07);
-		Start = 0;
-		Start2 = 1;
-		Wait = 0;
-	}
+		if (Wait >= (108 + Start2)) {
+			StopSamplesChannel0();
+			SetVolumeSamplesChannel0(1.00);
+			BurnSamplePlay(0x07);
+			Start = 0;
+			Start2 = 1;
+			Wait = 0;
+		}
 	
-	if (Start2 == 0) ESEFadeout2();
+		if (Start2 == 0) ESEFadeout2();
 #endif
-
+	}
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 
 //	bprintf(PRINT_NORMAL, _T("    %i\n"), nCyclesDone[0]);
@@ -913,9 +982,25 @@ static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 
 		SekScan(nAction);
 
-	//	BurnYM3812Scan(nAction, pnMin);
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+		BurnSampleScan(nAction, pnMin);
+		SCAN_VAR(FadeoutReady);
+		SCAN_VAR(FadeoutStop);
+		SCAN_VAR(Playing1);
+		SCAN_VAR(Playing2);
+		SCAN_VAR(Play1);
+		SCAN_VAR(Counter1);
+		SCAN_VAR(Vol1);
+		SCAN_VAR(Wait);
+		SCAN_VAR(Start);
+		SCAN_VAR(Start2);
+#endif
 
-		SCAN_VAR(nCyclesDone);
+                SCAN_VAR(nCyclesDone);
+		ToaScanBCU2(nAction, pnMin);
+
+                ToaRecalcPalette = 1;
+                bDrawScreen = true; // get background back ?
 	}
 
 	return 0;
@@ -975,11 +1060,11 @@ static struct BurnSampleInfo samesameSampleDesc[] = {
 STD_SAMPLE_PICK(samesame)
 STD_SAMPLE_FN(samesame)
 
-// Fire Shark
+// Fire Shark 
 
 static struct BurnRomInfo fireshrkRomDesc[] = {
-	{ "09.bin",		0x08000, 0xf0c70e6f, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
-	{ "10.bin",		0x08000, 0x9d253d77, BRF_PRG | BRF_ESS },    //  1
+	{ "09.8j",			0x08000, 0xf0c70e6f, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
+	{ "10.8l",			0x08000, 0x9d253d77, BRF_PRG | BRF_ESS },    //  1
 	{ "o17_11ii.7j",	0x20000, 0x6beac378, BRF_PRG | BRF_ESS },    //  2
 	{ "o17_12ii.7l",	0x20000, 0x6adb6eb5, BRF_PRG | BRF_ESS },    //  3
 
@@ -1008,6 +1093,44 @@ struct BurnDriver BurnDrvFireshrk = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
 	NULL, fireshrkRomInfo, fireshrkRomName, samesameSampleInfo, samesameSampleName, SamesameInputInfo, FireshrkDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette, 0x800,
+	240, 320, 3, 4
+};
+
+
+// Fire Shark (Earlier)
+
+static struct BurnRomInfo fireshrkaRomDesc[] = {
+	{ "o17_09ii.8j",	0x08000, 0xb60541ee, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
+	{ "o17_10ii.8l",	0x08000, 0x96f5045e, BRF_PRG | BRF_ESS },    //  1
+	{ "o17_11ii.7j",	0x20000, 0x6beac378, BRF_PRG | BRF_ESS },    //  2
+	{ "o17_12ii.7l",	0x20000, 0x6adb6eb5, BRF_PRG | BRF_ESS },    //  3
+
+	{ "o17_05.12j",		0x20000, 0x565315f8, BRF_GRA },              //  4 Tile data
+	{ "o17_06.13j",		0x20000, 0x95262d4c, BRF_GRA },              //  5
+	{ "o17_07.12l",		0x20000, 0x4c4b735c, BRF_GRA },              //  6
+	{ "o17_08.13l",		0x20000, 0x95c6586c, BRF_GRA },              //  7
+
+	{ "o17_01.1d",		0x20000, 0xea12e491, BRF_GRA },              //  8
+	{ "o17_02.3d",		0x20000, 0x32a13a9f, BRF_GRA },              //  9
+	{ "o17_03.5d",		0x20000, 0x68723dc9, BRF_GRA },              // 10
+	{ "o17_04.7d",		0x20000, 0xfe0ecb13, BRF_GRA },              // 12
+
+	{ "prom14.25b",		0x00020, 0xbc88cced, BRF_GRA },              // 12 Sprite attribute PROM
+	{ "prom15.20c",		0x00020, 0xa1e17492, BRF_GRA },              // 13
+
+	{ "hd647180.017",	0x08000, 0x00000000, BRF_OPT | BRF_NODUMP }, // 14 Sound HD647180 code
+};
+
+STD_ROM_PICK(fireshrka)
+STD_ROM_FN(fireshrka)
+
+struct BurnDriver BurnDrvFireshrka = {
+	"fireshrka", "fireshrk", NULL, "fireshrk", "1989",
+	"Fire Shark (Earlier)\0", "No sound", "Toaplan", "Toaplan BCU-2 / FCU-2 based",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
+	NULL, fireshrkaRomInfo, fireshrkaRomName, samesameSampleInfo, samesameSampleName, SamesameInputInfo, FireshrkaDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette, 0x800,
 	240, 320, 3, 4
 };
@@ -1056,8 +1179,8 @@ struct BurnDriver BurnDrvFireshrkd = {
 static struct BurnRomInfo fireshrkdhRomDesc[] = {
 	{ "o17_09dyh.8j",	0x10000, 0x7b4c14dd, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
 	{ "o17_10dyh.8l",	0x10000, 0xa3f159f9, BRF_PRG | BRF_ESS },    //  1
-	{ "o17_11x.bin",	0x20000, 0x6beac378, BRF_PRG | BRF_ESS },    //  2
-	{ "o17_12x.bin",	0x20000, 0x6adb6eb5, BRF_PRG | BRF_ESS },    //  3
+	{ "o17_11ii.7j",	0x20000, 0x6beac378, BRF_PRG | BRF_ESS },    //  2
+	{ "o17_12ii.7l",	0x20000, 0x6adb6eb5, BRF_PRG | BRF_ESS },    //  3
 
 	{ "o17_05.12j",		0x20000, 0x565315f8, BRF_GRA },              //  4 Tile data
 	{ "o17_06.13j",		0x20000, 0x95262d4c, BRF_GRA },              //  5
@@ -1092,10 +1215,10 @@ struct BurnDriver BurnDrvFireshrkdh = {
 // Same! Same! Same! (2 player alternating ver.)
 
 static struct BurnRomInfo samesameRomDesc[] = {
-	{ "o17_09.bin",		0x08000, 0x3f69e437, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
-	{ "o17_10.bin",		0x08000, 0x4e723e0a, BRF_PRG | BRF_ESS },    //  1
-	{ "o17_11.bin",		0x20000, 0xbe07d101, BRF_PRG | BRF_ESS },    //  2
-	{ "o17_12.bin",		0x20000, 0xef698811, BRF_PRG | BRF_ESS },    //  3
+	{ "o17_09.8j",		0x08000, 0x3f69e437, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
+	{ "o17_10.8l",		0x08000, 0x4e723e0a, BRF_PRG | BRF_ESS },    //  1
+	{ "o17_11.7j",		0x20000, 0xbe07d101, BRF_PRG | BRF_ESS },    //  2
+	{ "o17_12.7l",		0x20000, 0xef698811, BRF_PRG | BRF_ESS },    //  3
 
 	{ "o17_05.12j",		0x20000, 0x565315f8, BRF_GRA },              //  4 Tile data
 	{ "o17_06.13j",		0x20000, 0x95262d4c, BRF_GRA },              //  5
@@ -1130,8 +1253,8 @@ struct BurnDriver BurnDrvSamesame = {
 // Same! Same! Same!
 
 static struct BurnRomInfo samesame2RomDesc[] = {
-	{ "o17_09x.bin",	0x08000, 0x3472e03e, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
-	{ "o17_10x.bin",	0x08000, 0xa3ac49b5, BRF_PRG | BRF_ESS },    //  1
+	{ "o17_09x.8j",		0x08000, 0x3472e03e, BRF_PRG | BRF_ESS },    //  0 CPU #0 code
+	{ "o17_10x.8l",		0x08000, 0xa3ac49b5, BRF_PRG | BRF_ESS },    //  1
 	{ "o17_11ii.7j",	0x20000, 0x6beac378, BRF_PRG | BRF_ESS },    //  2
 	{ "o17_12ii.7l",	0x20000, 0x6adb6eb5, BRF_PRG | BRF_ESS },    //  3
 

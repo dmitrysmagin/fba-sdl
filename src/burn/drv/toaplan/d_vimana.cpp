@@ -693,8 +693,12 @@ static INT32 DrvInit()
 //	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 //	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+        BurnUpdateProgress(0.0, _T("Loading samples..."), 0);
+
 	BurnSampleInit(0);
 	BurnSampleSetAllRoutesAllSamples(0.60, BURN_SND_ROUTE_BOTH);
+#endif
 
 	bDrawScreen = true;
 
@@ -814,10 +818,12 @@ static INT32 DrvFrame()
 //	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 //	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 	
-	BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnSampleRender(pBurnSoundOut, nBurnSoundLen);
 #ifdef TOAPLAN_SOUND_SAMPLES_HACK
-	ESEFadeout();
+		ESEFadeout();
 #endif
+	}
 
 	nCyclesDone[0] = SekTotalCycles() - nCyclesTotal[0];
 
@@ -839,19 +845,31 @@ static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 	}
 	if (nAction & ACB_VOLATILE) {
 		memset(&ba, 0, sizeof(ba));
-    		ba.Data		= AllRam;
+		ba.Data		= AllRam;
 		ba.nLen		= RamEnd - AllRam;
 		ba.szName	= "RAM";
 		BurnAcb(&ba);
 
 		SekScan(nAction);
 
-	//	BurnYM3812Scan(nAction, pnMin);
+#ifdef TOAPLAN_SOUND_SAMPLES_HACK
+		BurnSampleScan(nAction, pnMin);
+		SCAN_VAR(FadeoutReady);
+		SCAN_VAR(FadeoutStop);
+		SCAN_VAR(Playing1);
+		SCAN_VAR(Playing2);
+		SCAN_VAR(Play1);
+		SCAN_VAR(Counter1);
+		SCAN_VAR(Vol1);
+#endif
 
 		SCAN_VAR(nCyclesDone);
+		ToaScanBCU2(nAction, pnMin);
 
 		SCAN_VAR(vimana_credits);
 		SCAN_VAR(vimana_latch);
+		ToaRecalcPalette = 1;
+		bDrawScreen = true; // get background back ?
 	}
 
 	return 0;

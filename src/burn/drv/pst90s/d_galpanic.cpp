@@ -431,6 +431,33 @@ STD_ROM_PICK(Fantasiaa)
 STD_ROM_FN(Fantasiaa)
 
 // Rom information
+static struct BurnRomInfo FantasiabRomDesc[] = {
+	{ "fantasia_16",   		0x080000, 0xc5d93077, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "fantasia_13",   		0x080000, 0xd88529bd, BRF_ESS | BRF_PRG },
+	{ "9.bg7",  			0x080000, 0x2a588393, BRF_ESS | BRF_PRG },
+	{ "5.bg3",	 			0x080000, 0x6160e0f0, BRF_ESS | BRF_PRG },
+	{ "8.bg6",  			0x080000, 0xf776b743, BRF_ESS | BRF_PRG },
+	{ "4.bg2",	  			0x080000, 0x5df0dff2, BRF_ESS | BRF_PRG },
+	{ "7.bg5", 				0x080000, 0x5707d861, BRF_ESS | BRF_PRG },
+	{ "3.bg1",	  			0x080000, 0x36cb811a, BRF_ESS | BRF_PRG },
+	{ "10.imag2", 			0x080000, 0x1f14a395, BRF_ESS | BRF_PRG },
+	{ "6.imag1",	  		0x080000, 0xfaf870e4, BRF_ESS | BRF_PRG },
+
+	{ "17.scr3",    		0x080000, 0xaadb6eb7, BRF_GRA },			  // graphics
+
+	{ "2.music1",   		0x080000, 0x22955efb, BRF_SND },			  // PCM
+	{ "1.music2",   		0x080000, 0x4cd4d6c3, BRF_SND },
+
+	{ "15.obj3",   			0x080000, 0x46666768, BRF_OPT },			  // unknown
+	{ "12.obj1",   			0x080000, 0x4bd25be6, BRF_OPT },
+	{ "14.obj4",   			0x080000, 0x4e7e6ed4, BRF_OPT },
+	{ "11.obj2",   			0x080000, 0x6d00a4c5, BRF_OPT },
+};
+
+STD_ROM_PICK(Fantasiab)
+STD_ROM_FN(Fantasiab)
+
+// Rom information
 static struct BurnRomInfo SupmodelRomDesc[] = {
 	{ "prog2.12",   		0x080000, 0x714b7e74, BRF_ESS | BRF_PRG }, // 68000 code
 	{ "prog1.7",    		0x080000, 0x0bb858de, BRF_ESS | BRF_PRG },
@@ -443,7 +470,7 @@ static struct BurnRomInfo SupmodelRomDesc[] = {
 	{ "i-scr8.11", 			0x080000, 0x7c1813c8, BRF_ESS | BRF_PRG },
 	{ "i-scr7.6",	  		0x080000, 0x19c73268, BRF_ESS | BRF_PRG },
 
-	{ "obj1.13",    		0x080000, 0x832cd451, BRF_GRA },			  // graphics
+	{ "(__1994)obj1.13",    0x080000, 0x832cd451, BRF_GRA },			  // graphics
 
 	{ "music1.1",   		0x080000, 0x2b1f6655, BRF_SND },			  // PCM
 	{ "music2.2",   		0x080000, 0xcccae65a, BRF_SND },
@@ -454,29 +481,51 @@ STD_ROM_FN(Supmodel)
 
 // Rom information
 static struct BurnRomInfo NewfantRomDesc[] = {
-	{ "prog2_12.rom",   	0x080000, 0xde43a457, BRF_ESS | BRF_PRG }, // 68000 code
-	{ "prog1_07.rom",   	0x080000, 0x370b45be, BRF_ESS | BRF_PRG },
-	{ "iscr2_10.rom",  		0x080000, 0x4f2da2eb, BRF_ESS | BRF_PRG },
-	{ "iscr1_05.rom",		0x080000, 0x63c6894f, BRF_ESS | BRF_PRG },
-	{ "iscr4_09.rom",  		0x080000, 0x725741ec, BRF_ESS | BRF_PRG },
-	{ "iscr3_04.rom",		0x080000, 0x51d6b362, BRF_ESS | BRF_PRG },
-	{ "iscr6_08.rom", 		0x080000, 0x178b2ef3, BRF_ESS | BRF_PRG },
-	{ "iscr5_03.rom",		0x080000, 0xd2b5c5fa, BRF_ESS | BRF_PRG },
-	{ "iscr8_11.rom", 		0x080000, 0xf4148528, BRF_ESS | BRF_PRG },
-	{ "iscr7_06.rom",		0x080000, 0x2dee0c31, BRF_ESS | BRF_PRG },
+	{ "prog2.12",   		0x080000, 0xde43a457, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "prog1.07",   		0x080000, 0x370b45be, BRF_ESS | BRF_PRG },
+	{ "iscr2.10",  			0x080000, 0x4f2da2eb, BRF_ESS | BRF_PRG },
+	{ "iscr1.05",			0x080000, 0x63c6894f, BRF_ESS | BRF_PRG },
+	{ "iscr4.09",  			0x080000, 0x725741ec, BRF_ESS | BRF_PRG },
+	{ "iscr3.04",			0x080000, 0x51d6b362, BRF_ESS | BRF_PRG },
+	{ "iscr6.08", 			0x080000, 0x178b2ef3, BRF_ESS | BRF_PRG },
+	{ "iscr5.03",			0x080000, 0xd2b5c5fa, BRF_ESS | BRF_PRG },
+	{ "iscr8.11", 			0x080000, 0xf4148528, BRF_ESS | BRF_PRG },
+	{ "iscr7.06",			0x080000, 0x2dee0c31, BRF_ESS | BRF_PRG },
 
-	{ "obj1_13.rom",    	0x080000, 0xe6d1bc71, BRF_GRA },			  // graphics
+	{ "(__1995)nf95obj1.13",    	0x080000, 0xe6d1bc71, BRF_GRA },			  // graphics
 
-	{ "musc1_01.rom",   	0x080000, 0x10347fce, BRF_SND },			  // PCM
-	{ "musc2_02.rom",   	0x080000, 0xb9646a8c, BRF_SND },
+	{ "musc1.01",   		0x080000, 0x10347fce, BRF_SND },			  // PCM
+	{ "musc2.02",   		0x080000, 0xb9646a8c, BRF_SND },
 };
 
 STD_ROM_PICK(Newfant)
 STD_ROM_FN(Newfant)
 
 // Rom information
+static struct BurnRomInfo NewfantaRomDesc[] = {
+	{ "prog2.12",   		0x080000, 0xde43a457, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "prog1.07",   		0x080000, 0x370b45be, BRF_ESS | BRF_PRG },
+	{ "iscr2.10",  			0x080000, 0x4f2da2eb, BRF_ESS | BRF_PRG },
+	{ "iscr1.05",			0x080000, 0x63c6894f, BRF_ESS | BRF_PRG },
+	{ "iscr4.09",  			0x080000, 0x725741ec, BRF_ESS | BRF_PRG },
+	{ "iscr3.04",			0x080000, 0x51d6b362, BRF_ESS | BRF_PRG },
+	{ "iscr6.08", 			0x080000, 0x178b2ef3, BRF_ESS | BRF_PRG },
+	{ "iscr5.03",			0x080000, 0xd2b5c5fa, BRF_ESS | BRF_PRG },
+	{ "iscr8.11", 			0x080000, 0xf4148528, BRF_ESS | BRF_PRG },
+	{ "iscr7.06",			0x080000, 0x2dee0c31, BRF_ESS | BRF_PRG },
+
+	{ "(__1994)obj1.13",    0x080000, 0x832cd451, BRF_GRA },			  // graphics
+
+	{ "musc1.01",   		0x080000, 0x10347fce, BRF_SND },			  // PCM
+	{ "musc2.02",   		0x080000, 0xb9646a8c, BRF_SND },
+};
+
+STD_ROM_PICK(Newfanta)
+STD_ROM_FN(Newfanta)
+
+// Rom information
 static struct BurnRomInfo Fantsy95RomDesc[] = {
-	{ "prog2.12",   		0x080000, 0x1e684da7, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "prog2(__fantsy95).12", 0x080000, 0x1e684da7, BRF_ESS | BRF_PRG }, // 68000 code
 	{ "prog1.7",    		0x080000, 0xdc4e4f6b, BRF_ESS | BRF_PRG },
 	{ "i-scr2.10",  		0x080000, 0xab8756ff, BRF_ESS | BRF_PRG },
 	{ "i-scr1.5",	  		0x080000, 0xd8e2ef77, BRF_ESS | BRF_PRG },
@@ -487,7 +536,7 @@ static struct BurnRomInfo Fantsy95RomDesc[] = {
 	{ "i-scr8.11", 			0x080000, 0x33db8177, BRF_ESS | BRF_PRG },
 	{ "i-scr7.6",	  		0x080000, 0x8662dd01, BRF_ESS | BRF_PRG },
 
-	{ "obj1.13",    		0x080000, 0x832cd451, BRF_GRA },			  // graphics
+	{ "(__1994)obj1.13",    0x080000, 0x832cd451, BRF_GRA },			  // graphics
 
 	{ "music1.1",   		0x080000, 0x3117e2ef, BRF_SND },			  // PCM
 	{ "music2.2",   		0x080000, 0x0c1109f9, BRF_SND },
@@ -515,6 +564,46 @@ static struct BurnRomInfo Missw96RomDesc[] = {
 
 STD_ROM_PICK(Missw96)
 STD_ROM_FN(Missw96)
+
+// Rom information
+static struct BurnRomInfo Missw96aRomDesc[] = {
+	{ "mw96n2_10.prog2",   	0x080000, 0x563ce811, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "mw96n2_6.prog1",   	0x080000, 0x98e91a3b, BRF_ESS | BRF_PRG },
+	{ "mw96_09.bin",   		0x080000, 0x7032dfdf, BRF_ESS | BRF_PRG },
+	{ "mw96_05.bin",		0x080000, 0x91de5ab5, BRF_ESS | BRF_PRG },
+	{ "mw96_08.bin",   		0x080000, 0xb8e66fb5, BRF_ESS | BRF_PRG },
+	{ "mw96_04.bin",		0x080000, 0xe77a04f8, BRF_ESS | BRF_PRG },
+	{ "mw96_07.bin", 		0x080000, 0x26112ed3, BRF_ESS | BRF_PRG },
+	{ "mw96_03.bin",		0x080000, 0xe9374a46, BRF_ESS | BRF_PRG },
+
+	{ "mw96_11.bin",   		0x080000, 0x3983152f, BRF_GRA },			  // graphics
+
+	{ "mw96_01.bin",   		0x080000, 0xe78a659e, BRF_SND },			  // PCM
+	{ "mw96_02.bin",   		0x080000, 0x60fa0c00, BRF_SND },
+};
+
+STD_ROM_PICK(Missw96a)
+STD_ROM_FN(Missw96a)
+
+// Rom information
+static struct BurnRomInfo Missw96bRomDesc[] = {
+	{ "mw96n3_10.prog2",   	0x080000, 0x67bde86b, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "mw96n3_6.prog1",   	0x080000, 0xde99cc48, BRF_ESS | BRF_PRG },
+	{ "mw96_09.bin",   		0x080000, 0x7032dfdf, BRF_ESS | BRF_PRG },
+	{ "mw96_05.bin",		0x080000, 0x91de5ab5, BRF_ESS | BRF_PRG },
+	{ "mw96_08.bin",   		0x080000, 0xb8e66fb5, BRF_ESS | BRF_PRG },
+	{ "mw96_04.bin",		0x080000, 0xe77a04f8, BRF_ESS | BRF_PRG },
+	{ "mw96_07.bin", 		0x080000, 0x26112ed3, BRF_ESS | BRF_PRG },
+	{ "mw96_03.bin",		0x080000, 0xe9374a46, BRF_ESS | BRF_PRG },
+
+	{ "mw96_11.bin",   		0x080000, 0x3983152f, BRF_GRA },			  // graphics
+
+	{ "mw96_01.bin",   		0x080000, 0xe78a659e, BRF_SND },			  // PCM
+	{ "mw96_02.bin",   		0x080000, 0x60fa0c00, BRF_SND },
+};
+
+STD_ROM_PICK(Missw96b)
+STD_ROM_FN(Missw96b)
 
 // Rom information
 static struct BurnRomInfo Missmw96RomDesc[] = {
@@ -613,6 +702,38 @@ static struct BurnRomInfo GalhustlRomDesc[] = {
 STD_ROM_PICK(Galhustl)
 STD_ROM_FN(Galhustl)
 
+
+// Rom information
+static struct BurnRomInfo PgalvipRomDesc[] = {
+	{ "afega_15.ue17", 		0x20000, 0x050060ca, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "afega_16.ud17",		0x20000, 0xd32e4052, BRF_ESS | BRF_PRG },
+
+	{ "afega_17.u5",		0x80000, 0xa8a50745, BRF_GRA },			  // graphics
+
+	{ "afega_12.ub6",		0x20000, 0xd32a6c0c, BRF_SND },			  // PCM
+	{ "afega_11.uc6",		0x80000, 0x2168e54a, BRF_SND },
+
+	{ "afega_13.rob1", 		0x80000, 0xac51ef72, BRF_ESS | BRF_PRG }, // more 68000 code
+	{ "afega_14.roa1", 		0x80000, 0x0877c00f, BRF_ESS | BRF_PRG },
+};
+
+STD_ROM_PICK(Pgalvip)
+STD_ROM_FN(Pgalvip)
+
+// Rom information
+static struct BurnRomInfo PgalvipaRomDesc[] = {
+	{ "pgalvip_3.ue17", 	0x80000, 0xa48e8255, BRF_ESS | BRF_PRG }, // 68000 code
+	{ "pgalvip_4.ud17",		0x80000, 0x829a2085, BRF_ESS | BRF_PRG },
+
+	{ "pgalvip_5.u5",		0x80000, 0x2d6e5a90, BRF_GRA },			  // graphics
+
+	{ "pgalvip_1.ub6",		0x20000, 0xd32a6c0c, BRF_SND },			  // PCM
+	{ "pgalvip_2.uc6",		0x80000, 0x2168e54a, BRF_SND },
+};
+
+STD_ROM_PICK(Pgalvipa)
+STD_ROM_FN(Pgalvipa)
+
 // Rom information
 static struct BurnRomInfo ZipzapRomDesc[] = {
 	{ "ue17.bin",  			0x040000, 0xda6c3fc8, BRF_ESS | BRF_PRG }, // 68000 code
@@ -663,7 +784,7 @@ static INT32 MemIndex2()
 {
 	UINT8 *Next; Next = Mem;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "galhustl")) {
-	Rom68K 		= Next; Next += 0x100000;			// 68000 ROM
+	Rom68K 		= Next; Next += 0x200000;			// 68000 ROM
 		} else {
 	Rom68K 		= Next; Next += 0x500000;			// 68000 ROM
 		}
@@ -1268,12 +1389,18 @@ static INT32 GalhustlInit()
 	BurnLoadRom(RomSnd + 0x0C0000, 4, 1);
 	memcpy(RomSnd, RomSnd + 0x040000, 0x040000);
 
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "pgalvip")) {
+		nRet = BurnLoadRom(Rom68K + 0x100001, 5, 2); if (nRet != 0) return 1;
+		nRet = BurnLoadRom(Rom68K + 0x100000, 6, 2); if (nRet != 0) return 1;
+	}
+
 	{
 		SekInit(0, 0x68000);										// Allocate 68000
-	    SekOpen(0);
+		SekOpen(0);
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x0FFFFF, SM_ROM);	// CPU 0 ROM
+		SekMapMemory(Rom68K + 0x100000,	0x200000, 0x2fffff, SM_ROM); // pgalvip
 		SekMapMemory((UINT8 *)RamFg,
 									0x500000, 0x51FFFF, SM_RAM);	// f ground
 		SekMapMemory((UINT8 *)RamBg,
@@ -1948,7 +2075,7 @@ struct BurnDriver BurnDrvGalpanic = {
 
 struct BurnDriver BurnDrvFantasia = {
 	"fantasia", NULL, NULL, NULL, "1994",
-	"Fantasia (940429 PCB)\0", NULL, "Comad / New Japan System", "Miscellaneous",
+	"Fantasia (940429 PCB, set 1)\0", NULL, "Comad / New Japan System", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, FantasiaRomInfo, FantasiaRomName, NULL, NULL, GalpanicInputInfo, FantasiaDIPInfo,
@@ -1966,6 +2093,16 @@ struct BurnDriver BurnDrvFantasiaa = {
 	224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvFantasiab = {
+	"fantasiab", "fantasia", NULL, NULL, "1994",
+	"Fantasia (940429 PCB, set 2)\0", NULL, "Comad / New Japan System", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, FantasiabRomInfo, FantasiabRomName, NULL, NULL, GalpanicInputInfo, FantasiaDIPInfo,
+	FantasiaInit, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvSupmodel = {
 	"supmodel", NULL, NULL, NULL, "1994",
 	"Super Model\0", NULL, "Comad / New Japan System", "Miscellaneous",
@@ -1978,7 +2115,7 @@ struct BurnDriver BurnDrvSupmodel = {
 
 struct BurnDriver BurnDrvNewfant = {
 	"newfant", NULL, NULL, NULL, "1995",
-	"New Fantasia\0", NULL, "Comad / New Japan System", "Miscellaneous",
+	"New Fantasia (1995 copyright)\0", NULL, "Comad / New Japan System", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, NewfantRomInfo, NewfantRomName, NULL, NULL, GalpanicInputInfo, FantasiaDIPInfo,
@@ -1986,11 +2123,21 @@ struct BurnDriver BurnDrvNewfant = {
 	224, 256, 3, 4
 };
 
+struct BurnDriver BurnDrvNewfanta = {
+	"newfanta", "newfant", NULL, NULL, "1995",
+	"New Fantasia (1994 copyright)\0", NULL, "Comad / New Japan System", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, NewfantaRomInfo, NewfantaRomName, NULL, NULL, GalpanicInputInfo, FantasiaDIPInfo,
+	FantasiaInit, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	224, 256, 3, 4
+};
+
 struct BurnDriver BurnDrvFantsy95 = {
-	"fantsy95", NULL, NULL, NULL, "1995",
+	"fantsy95", "newfant", NULL, NULL, "1995",
 	"Fantasy '95\0", NULL, "Hi-max Technology Inc.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_16BIT_ONLY, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, Fantsy95RomInfo, Fantsy95RomName, NULL, NULL, GalpanicInputInfo, FantasiaDIPInfo,
 	FantasiaInit, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
 	224, 256, 3, 4
@@ -1998,10 +2145,30 @@ struct BurnDriver BurnDrvFantsy95 = {
 
 struct BurnDriver BurnDrvMissw96 = {
 	"missw96", NULL, NULL, NULL, "1996",
-	"Miss World '96 (Nude)\0", NULL, "Comad", "Miscellaneous",
+	"Miss World '96 (Nude) (set1)\0", NULL, "Comad", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, Missw96RomInfo, Missw96RomName, NULL, NULL, GalpanicInputInfo, Missw96DIPInfo,
+	Missw96Init, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvMissw96a = {
+	"missw96a", "missw96", NULL, NULL, "1996",
+	"Miss World '96 (Nude) (set 2)\0", NULL, "Comad", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, Missw96aRomInfo, Missw96aRomName, NULL, NULL, GalpanicInputInfo, Missw96DIPInfo,
+	Missw96Init, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvMissw96b = {
+	"missw96b", "missw96", NULL, NULL, "1996",
+	"Miss World '96 (Nude) (set 3)\0", NULL, "Comad", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
+	NULL, Missw96bRomInfo, Missw96bRomName, NULL, NULL, GalpanicInputInfo, Missw96DIPInfo,
 	Missw96Init, GalpanicExit, ComadFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
 	256, 224, 4, 3
 };
@@ -2046,12 +2213,32 @@ struct BurnDriver BurnDrvWownfant = {
 	256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvGalhustl = {
-	"galhustl", NULL, NULL, NULL, "1997",
-	"Gals Hustler\0", NULL, "ACE International", "Miscellaneous",
+struct BurnDriver BurnDrvPgalvip = {
+	"pgalvip", NULL, NULL, NULL, "1996",
+	"Pocket Gals V.I.P (set 1)\0", NULL, "ACE International / Afega", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, PgalvipRomInfo, PgalvipRomName, NULL, NULL, GalhustlInputInfo, GalhustlDIPInfo,
+	GalhustlInit, GalpanicExit, GalhustlFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvGalhustl = {
+	"galhustl", "pgalvip", NULL, NULL, "1997",
+	"Gals Hustler\0", NULL, "ACE International", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
 	NULL, GalhustlRomInfo, GalhustlRomName, NULL, NULL, GalhustlInputInfo, GalhustlDIPInfo,
+	GalhustlInit, GalpanicExit, GalhustlFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
+	256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvPgalvipa = {
+	"pgalvipa", "pgalvip", NULL, NULL, "1996",
+	"Pocket Gals V.I.P (set 2)\0", NULL, "unknown", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_16BIT_ONLY | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
+	NULL, PgalvipaRomInfo, PgalvipaRomName, NULL, NULL, GalhustlInputInfo, GalhustlDIPInfo,
 	GalhustlInit, GalpanicExit, GalhustlFrame, ComadDraw, GalpanicScan, &RecalcBgPalette, 0x400,
 	256, 224, 4, 3
 };

@@ -225,7 +225,9 @@ void deco16_sprite_decode(UINT8 *gfx, INT32 len)
 
 	BurnFree (tmp);
 }
- 
+
+#define BIT(x,n) (((x)>>(n))&1)
+
 void deco16_draw_layer(INT32 tmap, UINT16 *dest, INT32 flags)
 {
 	INT32 size		= deco16_layer_size_select[tmap];
@@ -234,8 +236,8 @@ void deco16_draw_layer(INT32 tmap, UINT16 *dest, INT32 flags)
 	INT32 control		= deco16_pf_control[tmap / 2][6];
 	if (tmap & 1) control >>= 8; 
 
-//	INT32 control0		= deco16_pf_control[tmap / 2][5];
-//	if (tmap & 1) control0 >>= 8; 
+//     INT32 control0          = deco16_pf_control[tmap / 2][5];
+//     if (tmap & 1) control0 >>= 8;
 //	if ((control0 & 0x80) == 0) return; // layer disable bit
 
 	INT32 select = (tmap & 2) + ((tmap < 2) ? size : 0);
@@ -266,11 +268,19 @@ void deco16_draw_layer(INT32 tmap, UINT16 *dest, INT32 flags)
 
 	for (INT32 y = 0; y < nScreenHeight; y++)
 	{
+
 		INT32 xoff = deco16_scroll_x[tmap][y] & wmask;
 
 		for (INT32 x = 0; x < nScreenWidth + size; x+=size)
 		{
-			INT32 yoff = deco16_scroll_y[tmap][x] & hmask;
+			INT32 yoff;
+			if (BIT(control, 5))
+				yoff = deco16_scroll_y[tmap][x + deco16_scroll_x[tmap][y]] & hmask;
+			else
+				yoff = deco16_scroll_y[tmap][x] & hmask;
+			
+			//if (y==100 && yoff!=8 && tmap==2) // for debugging col scrolling
+			//	bprintf(PRINT_NORMAL, _T("(%d)[%d]"), x + deco16_scroll_x[tmap][y], yoff);
 
 			INT32 yy = (y + yoff) & hmask;
 			INT32 xx = (x + xoff) & wmask;
