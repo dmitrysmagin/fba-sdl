@@ -1938,6 +1938,8 @@ void VideoClear()
 	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
 	SDL_Flip(screen);
 	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
+	SDL_Flip(screen);
+	SDL_FillRect(screen,NULL,SDL_MapRGBA(screen->format, 0, 0, 0, 255));
 }
 
 void VideoFlip()
