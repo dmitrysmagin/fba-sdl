@@ -45,6 +45,15 @@ static void CreateStateName(int nSlot)
 	_stprintf(szChoice, _T("./savestates/%s slot %02x.fs"), BurnDrvGetText(DRV_NAME), nSlot);
 }
 
+int StatedUNDO(int nSlot)
+{
+	if (nSlot) {
+		CreateStateName(nSlot);
+		return BurnStateUNDO(szChoice);
+	}
+	return 1;
+}
+
 int StatedLoad(int nSlot)
 {
 	TCHAR szFilter[1024];

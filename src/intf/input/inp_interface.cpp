@@ -1,6 +1,8 @@
 // Burner Input module
 #include "burner.h"
 
+INT32 nAutoFireRate = 12;
+
 UINT32 nInputSelect = 0;
 bool bInputOkay = false;
 

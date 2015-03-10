@@ -972,7 +972,9 @@ void MenuUpdate()
 	CheckMenuItem(hMenu, MENU_DISPLAYINDICATOR, nVidSDisplayStatus ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hMenu, MENU_MODELESS, bModelessMenu ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hMenu, MENU_NOCHANGENUMLOCK, bNoChangeNumLock ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hMenu, MENU_CREATEDIRS, bAlwaysCreateSupportFolders ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(hMenu, MENU_SAVEHISCORES, EnableHiscores ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hMenu, MENU_USEBLEND, bBurnUseBlend ? MF_CHECKED : MF_UNCHECKED);
 
 	if (nAppThreadPriority == THREAD_PRIORITY_TIME_CRITICAL) {
 		var = MENU_PRIORITY_REALTIME;
@@ -997,6 +999,13 @@ void MenuUpdate()
 	}
 	CheckMenuRadioItem(hMenu, MENU_PRIORITY_REALTIME, MENU_PRIORITY_LOW, var, MF_BYCOMMAND);
 	CheckMenuItem(hMenu, MENU_SAVEGAMEINPUT, bSaveInputs ? MF_CHECKED : MF_UNCHECKED);
+
+	// Auto-Fire
+	if (nAutoFireRate == 4)  var = MENU_INPUT_AUTOFIRE_RATE_4;
+	if (nAutoFireRate == 8)  var = MENU_INPUT_AUTOFIRE_RATE_3;
+	if (nAutoFireRate == 12) var = MENU_INPUT_AUTOFIRE_RATE_2;
+	if (nAutoFireRate == 22) var = MENU_INPUT_AUTOFIRE_RATE_1;
+	CheckMenuRadioItem(hMenu, MENU_INPUT_AUTOFIRE_RATE_1, MENU_INPUT_AUTOFIRE_RATE_4, var, MF_BYCOMMAND);
 
 #if defined BUILD_A68K
 	CheckMenuItem(hMenu, MENU_ASSEMBLYCORE, bBurnUseASMCPUEmulation ? MF_CHECKED : MF_UNCHECKED);
@@ -1229,6 +1238,7 @@ void MenuEnableItems()
 		EnableMenuItem(hMenu, MENU_SAVEGAMEINPUTNOW,	MF_ENABLED | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_ASSEMBLYCORE,		MF_GRAYED  | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_SAVEHISCORES,		MF_GRAYED  | MF_BYCOMMAND);
+		EnableMenuItem(hMenu, MENU_USEBLEND,			MF_GRAYED  | MF_BYCOMMAND);
 		
 		EnableMenuItem(hMenu, MENU_CDIMAGE,				MF_GRAYED | MF_BYCOMMAND);
 		
@@ -1364,6 +1374,7 @@ void MenuEnableItems()
 		EnableMenuItem(hMenu, MENU_DEBUG,				MF_GRAYED  | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_ASSEMBLYCORE,		MF_ENABLED | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_SAVEHISCORES,		MF_ENABLED  | MF_BYCOMMAND);
+		EnableMenuItem(hMenu, MENU_USEBLEND,			MF_ENABLED  | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_STATE_LOAD_SLOT,		MF_GRAYED  | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_STATE_LOAD_DIALOG,	MF_ENABLED | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_STATE_SAVE_SLOT,		MF_GRAYED  | MF_BYCOMMAND);

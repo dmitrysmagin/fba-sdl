@@ -39,6 +39,7 @@ TCHAR szAppExeName[EXE_NAME_SIZE + 1];
 
 bool bCmdOptUsed = 0;
 bool bAlwaysProcessKeyboardInput = false;
+bool bAlwaysCreateSupportFolders = true;
 
 bool bNoChangeNumLock = 1;
 static bool bNumlockStatus;
@@ -186,6 +187,39 @@ char *utf8_from_wstring(const WCHAR *wstring)
  static bool bEchoLog = true; // false;
 #endif
 
+void tcharstrreplace(TCHAR *pszSRBuffer, const TCHAR *pszFind, const TCHAR *pszReplace)
+{
+	if (pszSRBuffer == NULL || pszFind == NULL || pszReplace == NULL)
+		return;
+
+	int lenFind = _tcslen(pszFind);
+	int lenReplace = _tcslen(pszReplace);
+	int lenSRBuffer = _tcslen(pszSRBuffer)+1;
+
+	for(int i = 0; (lenSRBuffer > lenFind) && (i < lenSRBuffer - lenFind); i++) {
+		if (!memcmp(pszFind, &pszSRBuffer[i], lenFind * sizeof(TCHAR))) {
+			if (lenFind == lenReplace) {
+				memcpy(&pszSRBuffer[i], pszReplace, lenReplace * sizeof(TCHAR));
+				i += lenReplace - 1;
+			} else if (lenFind > lenReplace) {
+				memcpy(&pszSRBuffer[i], pszReplace, lenReplace * sizeof(TCHAR));
+				i += lenReplace;
+				int delta = lenFind - lenReplace;
+				lenSRBuffer -= delta;
+				memmove(&pszSRBuffer[i], &pszSRBuffer[i + delta], (lenSRBuffer - i) * sizeof(TCHAR));
+				i--;
+			} else { /* this part only works on dynamic buffers - the replacement string length must be smaller or equal to the find string length if this is commented out!
+				int delta = lenReplace - lenFind;
+				pszSRBuffer = (TCHAR *)realloc(pszSRBuffer, (lenSRBuffer + delta) * sizeof(TCHAR));
+				memmove(&pszSRBuffer[i + lenReplace], &pszSRBuffer[i + lenFind], (lenSRBuffer - i - lenFind) * sizeof(TCHAR));
+				lenSRBuffer += delta;
+				memcpy(&pszSRBuffer[i], pszReplace, lenReplace * sizeof(TCHAR));
+				i += lenReplace - 1; */
+			}
+		}
+	}
+}
+
 #if defined (FBA_DEBUG)
 // Debug printf to a file
 static int __cdecl AppDebugPrintf(int nStatus, TCHAR* pszFormat, ...)
@@ -231,6 +265,7 @@ static int __cdecl AppDebugPrintf(int nStatus, TCHAR* pszFormat, ...)
 			}
 		}
 
+		tcharstrreplace(szConsoleBuffer, _T(SEPERATOR_1), _T(" * "));
 		WriteConsole(DebugBuffer, szConsoleBuffer, _tcslen(szConsoleBuffer), NULL, NULL);
 	}
 
@@ -262,6 +297,8 @@ int dprintf(TCHAR* pszFormat, ...)
 		_ftprintf(DebugLog, szConsoleBuffer);
 		fflush(DebugLog);
 	}
+
+	tcharstrreplace(szConsoleBuffer, _T(SEPERATOR_1), _T(" * "));
 	WriteConsole(DebugBuffer, szConsoleBuffer, _tcslen(szConsoleBuffer), NULL, NULL);
 	va_end(vaFormat);
 #else
@@ -679,6 +716,26 @@ int ProcessCmdLine()
 			write_datfile(DAT_SGX_ONLY, stdout);
 			return 1;
 		}
+
+		if (_tcscmp(szName, _T("-listinfosg1000only")) == 0) {
+			write_datfile(DAT_SG1000_ONLY, stdout);
+			return 1;
+		}
+
+		if (_tcscmp(szName, _T("-listinfocolecoonly")) == 0) {
+			write_datfile(DAT_COLECO_ONLY, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listinfosmsonly")) == 0) {
+			write_datfile(DAT_MASTERSYSTEM_ONLY, stdout);
+			return 1;
+		}
+		
+		if (_tcscmp(szName, _T("-listinfoggonly")) == 0) {
+			write_datfile(DAT_GAMEGEAR_ONLY, stdout);
+			return 1;
+		}
 		
 		if (_tcscmp(szName, _T("-listextrainfo")) == 0) {
 			int nWidth;
@@ -762,6 +819,48 @@ int ProcessCmdLine()
 	return 0;
 }
 
+static void CreateSupportFolders()
+{
+	TCHAR szSupportDirs[31][MAX_PATH] = {
+		{_T("support/")},
+		{_T("support/previews/")},
+		{_T("support/titles/")},
+		{_T("support/icons/")},
+		{_T("support/cheats/")},
+		{_T("support/hiscores/")},
+		{_T("support/samples/")},
+		{_T("support/ips/")},
+		{_T("support/neocdz/")},
+		{_T("support/blend/")},
+		{_T("support/select/")},
+		{_T("support/versus/")},
+		{_T("support/howto/")},
+		{_T("support/scores/")},
+		{_T("support/bosses/")},
+		{_T("support/gameover/")},
+		{_T("support/flyers/")},
+		{_T("support/marquees/")},
+		{_T("support/cpanel/")},
+		{_T("support/cabinets/")},
+		{_T("support/pcbs/")},
+		{_T("support/history/")},
+		{_T("neocdiso/")},
+		// the below are named after the MESS software lists
+		{_T("megadriv/")},
+		{_T("pce/")},
+		{_T("sgx/")},
+		{_T("tg16/")},
+		{_T("sg1000/")},
+		{_T("coleco/")},
+		{_T("sms/")},
+		{_T("gamegear/")},
+	};
+	
+	for(int x = 0; x < 31; x++) {
+		CreateDirectory(szSupportDirs[x], NULL);
+	}
+}
+
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -798,29 +897,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	AppDirectory();								// Set current directory to be the applications directory
 
 	// Make sure there are roms and cfg subdirectories
-	TCHAR szDirs[19][MAX_PATH] = {
+	TCHAR szDirs[9][MAX_PATH] = {
 		{_T("config")},
 		{_T("config/games")},
 		{_T("config/ips")},
 		{_T("config/localisation")},
 		{_T("config/presets")},
 		{_T("recordings")},
-		{_T("ROMs")},
+		{_T("roms")},
 		{_T("savestates")},
 		{_T("screenshots")},
-		{_T("support/")},
-		{_T("support/previews/")},
-		{_T("support/titles/")},
-		{_T("support/icons/")},
-		{_T("support/cheats/")},
-		{_T("support/hiscores/")},
-		{_T("support/samples/")},
-		{_T("support/ips/")},
-		{_T("support/neocdz/")},
-		{_T("neocdiso/")},
 	};
 
-	for(int x = 0; x < 19; x++) {
+	for(int x = 0; x < 9; x++) {
 		CreateDirectory(szDirs[x], NULL);
 	}
 
@@ -839,6 +928,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	}
 
 	if (!(AppInit())) {							// Init the application
+		if (bAlwaysCreateSupportFolders) CreateSupportFolders();
 		if (!(ProcessCmdLine())) {
 			MediaInit();
 

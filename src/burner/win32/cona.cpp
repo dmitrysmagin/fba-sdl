@@ -219,10 +219,26 @@ int ConfigAppLoad()
 		STR(szAppIpsPath);
 		STR(szAppIconsPath);
 		STR(szNeoCDCoverDir);
-
+		STR(szAppBlendPath);
+		STR(szAppSelectPath);
+		STR(szAppVersusPath);
+		STR(szAppScoresPath);
+		STR(szAppBossesPath);
+		STR(szAppGameoverPath);
+		STR(szAppFlyersPath);
+		STR(szAppMarqueesPath);
+		STR(szAppControlsPath);
+		STR(szAppCabinetsPath);
+		STR(szAppPCBsPath);
+		STR(szAppHistoryPath);
+		
 		VAR(bNoChangeNumLock);
+		VAR(bAlwaysCreateSupportFolders);
+		
+		VAR(nAutoFireRate);
 		
 		VAR(EnableHiscores);
+		VAR(bBurnUseBlend);
 		
 		VAR(nIpsSelectedLanguage);
 		
@@ -557,6 +573,18 @@ int ConfigAppSave()
 	STR(szAppIpsPath);
 	STR(szAppIconsPath);
 	STR(szNeoCDCoverDir);
+	STR(szAppBlendPath);
+	STR(szAppSelectPath);
+	STR(szAppVersusPath);
+	STR(szAppScoresPath);
+	STR(szAppBossesPath);
+	STR(szAppGameoverPath);
+	STR(szAppFlyersPath);
+	STR(szAppMarqueesPath);
+	STR(szAppControlsPath);
+	STR(szAppCabinetsPath);
+	STR(szAppPCBsPath);
+	STR(szAppHistoryPath);
 	
 	_ftprintf(h, _T("\n// The cartridges to use for emulation of an MVS system\n"));
 	DRV(nBurnDrvSelect[0]);
@@ -576,8 +604,17 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// If non-zero, don't change the status of the Num Lock key.\n"));
 	VAR(bNoChangeNumLock);
 	
+	_ftprintf(h, _T("\n// If non-zero, create support folders at program start.\n"));
+	VAR(bAlwaysCreateSupportFolders);
+	
+	_ftprintf(h, _T("\n// Auto-Fire Rate, non-linear - use the GUI to change this setting!\n"));
+	VAR(nAutoFireRate);
+	
 	_ftprintf(h, _T("\n// If non-zero, enable high score saving support.\n"));
 	VAR(EnableHiscores);
+	
+	_ftprintf(h, _T("\n// If non-zero, enable alpha blending support.\n"));
+	VAR(bBurnUseBlend);
 	
 	_ftprintf(h, _T("\n// The language index to use for the IPS Patch Manager dialog.\n"));
 	VAR(nIpsSelectedLanguage);

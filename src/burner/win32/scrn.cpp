@@ -20,6 +20,7 @@ int nWindowPosX = -1, nWindowPosY = -1;					// Window position
 int bAutoPause = 1;
 
 bool bMenuEnabled = true;
+bool bHasFocus = false;
 
 int nSavestateSlot = 1;
 
@@ -29,6 +30,8 @@ HWND hRebar = NULL;										// Handle to the Rebar control containing the menu
 
 static bool bMaximised;
 static int nPrevWidth, nPrevHeight;
+
+static int bBackFromHibernation = 0;
 
 #define ID_NETCHAT 999
 HWND hwndChat = NULL;
@@ -293,7 +296,11 @@ int CreateDatfileWindows(int bType)
 	if (bType == DAT_PCENGINE_ONLY) _sntprintf(szConsoleString, 64, _T(", PC-Engine only"));
 	if (bType == DAT_TG16_ONLY) _sntprintf(szConsoleString, 64, _T(", TurboGrafx16 only"));
 	if (bType == DAT_SGX_ONLY) _sntprintf(szConsoleString, 64, _T(", SuprGrafx only"));
-	
+	if (bType == DAT_SG1000_ONLY) _sntprintf(szConsoleString, 64, _T(", Sega SG-1000 only"));
+	if (bType == DAT_COLECO_ONLY) _sntprintf(szConsoleString, 64, _T(", ColecoVision only"));
+	if (bType == DAT_MASTERSYSTEM_ONLY) _sntprintf(szConsoleString, 64, _T(", Master System only"));
+	if (bType == DAT_GAMEGEAR_ONLY) _sntprintf(szConsoleString, 64, _T(", Game Gear only"));
+
 	TCHAR szProgramString[25];	
 	_sntprintf(szProgramString, 25, _T("ClrMame Pro XML"));
 	
@@ -368,7 +375,14 @@ static LRESULT CALLBACK ScrnProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 			}
 			break;
 		}
-
+		// - dink - handle return from Hibernation
+		case WM_POWERBROADCAST: {
+			if (wParam == PBT_APMRESUMESUSPEND || wParam == PBT_APMSUSPEND) {
+				bBackFromHibernation = 1;
+			}
+			break;
+		}
+		// - dink - end
 		HANDLE_MSG(hWnd, WM_SIZE,			OnSize);
 		HANDLE_MSG(hWnd, WM_ENTERSIZEMOVE,	OnEnterSizeMove);
 		HANDLE_MSG(hWnd, WM_EXITSIZEMOVE,	OnExitSizeMove);
@@ -546,6 +560,7 @@ static int OnCreate(HWND hWnd, LPCREATESTRUCT /*lpCreateStruct*/)	// HWND hwnd, 
 
 static void OnActivateApp(HWND hwnd, BOOL fActivate, DWORD /* dwThreadId */)
 {
+	bHasFocus = fActivate;
 	if (!kNetGame && bAutoPause && !bAltPause && hInpdDlg == NULL && hInpCheatDlg == NULL && hInpDIPSWDlg == NULL) {
 		bRunPause = fActivate? 0 : 1;
 	}
@@ -565,11 +580,31 @@ static void OnActivateApp(HWND hwnd, BOOL fActivate, DWORD /* dwThreadId */)
 	}
 }
 
+extern HWND hSelDlg;
+
+static void PausedRedraw(void)
+{
+    if (bVidOkay && bRunPause && bDrvOkay && (hSelDlg == NULL)) { // Redraw the screen to show certain messages while paused. - dink
+        INT16 *pBtemp = pBurnSoundOut;
+        pBurnSoundOut = NULL; // Mute the sound as VidRedraw() draws the frame
+
+        VidRedraw();
+        VidPaint(0);
+
+        pBurnSoundOut = pBtemp;
+    }
+}
+
 static void OnPaint(HWND hWnd)
 {
 	if (hWnd == hScrnWnd) 
 	{
 		VidPaint(1);
+
+		if (bBackFromHibernation) {
+			PausedRedraw(); // redraw game screen if paused and returning from hibernation - dink
+			bBackFromHibernation = 0;
+		}
 
 		// draw menu
 		if (!nVidFullscreen) {
@@ -741,6 +776,19 @@ int BurnerLoadDriver(TCHAR *szDriverName)
 	return 0;
 }
 
+void scrnSSUndo() // called from the menu (shift+F8) and CheckSystemMacros() in run.cpp
+{
+	if (bDrvOkay) {
+		TCHAR szString[256] = _T("state undo");
+		TCHAR szStringFailed[256] = _T("state: nothing to undo");
+		if (!StatedUNDO(nSavestateSlot)) {
+			VidSNewShortMsg(szString);
+		} else {
+			VidSNewShortMsg(szStringFailed);
+		}
+		PausedRedraw();
+	}
+}
 
 static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 {
@@ -861,6 +909,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_STARTNET:
 			if (Init_Network()) {
 				MessageBox(hScrnWnd, FBALoadStringEx(hAppInst, IDS_ERR_NO_NETPLAYDLL, true), FBALoadStringEx(hAppInst, IDS_ERR_ERROR, true), MB_OK);
+				break;
+			}
+			if (bBurnUseASMCPUEmulation) {
+				FBAPopupAddText(PUF_TEXT_DEFAULT, _T("Please uncheck \"Misc -> Options -> Use Assembly MC68000 Core\" before starting a netgame!"));
+				FBAPopupDisplay(PUF_TYPE_ERROR);
 				break;
 			}
 			if (!kNetGame) {
@@ -1037,6 +1090,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			_sntprintf(szString, 256, FBALoadStringEx(hAppInst, IDS_STATE_ACTIVESLOT, true), nSavestateSlot);
 			VidSNewShortMsg(szString);
+			PausedRedraw();
 			break;
 		}
 		case MENU_STATE_NEXTSLOT: {
@@ -1048,8 +1102,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			_sntprintf(szString, 256, FBALoadStringEx(hAppInst, IDS_STATE_ACTIVESLOT, true), nSavestateSlot);
 			VidSNewShortMsg(szString);
+			PausedRedraw();
 			break;
 		}
+		case MENU_STATE_UNDO:
+			scrnSSUndo();
+			break;
 		case MENU_STATE_LOAD_SLOT:
 			if (bDrvOkay && !kNetGame) {
 				if (StatedLoad(nSavestateSlot) == 0) {
@@ -1057,6 +1115,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 				} else {
 					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_LOAD_ERROR, true), 0xFF3F3F);
 				}
+				PausedRedraw();
 			}
 			break;
 		case MENU_STATE_SAVE_SLOT:
@@ -1067,6 +1126,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_SAVE_ERROR, true), 0xFF3F3F);
 					SetPauseMode(1);
 				}
+				PausedRedraw();
 			}
 			break;
 
@@ -1740,8 +1800,16 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			bNoChangeNumLock = !bNoChangeNumLock;
 			break;
 			
+		case MENU_CREATEDIRS:
+			bAlwaysCreateSupportFolders = !bAlwaysCreateSupportFolders;
+			break;
+			
 		case MENU_SAVEHISCORES:
 			EnableHiscores = !EnableHiscores;
+			break;
+			
+		case MENU_USEBLEND:
+			bBurnUseBlend = !bBurnUseBlend;
 			break;
 			
 		case MENU_ROMDIRS:
@@ -1852,7 +1920,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 		}
-			
+
+		case MENU_INPUT_AUTOFIRE_RATE_1: nAutoFireRate = 22; break;
+		case MENU_INPUT_AUTOFIRE_RATE_2: nAutoFireRate = 12; break;
+		case MENU_INPUT_AUTOFIRE_RATE_3: nAutoFireRate =  8; break;
+		case MENU_INPUT_AUTOFIRE_RATE_4: nAutoFireRate =  4; break;
+
 		case MENU_PRIORITY_REALTIME:
 			nAppThreadPriority = THREAD_PRIORITY_TIME_CRITICAL;
 			SetThreadPriority(GetCurrentThread(), nAppThreadPriority);
@@ -1905,6 +1978,30 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_CLRMAME_PRO_XML_SGX_ONLY:
 			if (UseDialogs()) {
 				CreateDatfileWindows(DAT_SGX_ONLY);
+			}
+                        break;
+
+		case MENU_CLRMAME_PRO_XML_SG1000_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_SG1000_ONLY);
+			}
+                        break;
+
+		case MENU_CLRMAME_PRO_XML_COLECO_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_COLECO_ONLY);
+			}
+			break;
+			
+		case MENU_CLRMAME_PRO_XML_SMS_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_MASTERSYSTEM_ONLY);
+			}
+			break;
+			
+		case MENU_CLRMAME_PRO_XML_GG_ONLY:
+			if (UseDialogs()) {
+				CreateDatfileWindows(DAT_GAMEGEAR_ONLY);
 			}
 			break;
 
@@ -2122,7 +2219,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_WWW_HOME:
 			if (!nVidFullscreen) {
-				ShellExecute(NULL, _T("open"), _T("http://www.barryharris.me.uk/"), NULL, NULL, SW_SHOWNORMAL);
+				ShellExecute(NULL, _T("open"), _T("http://www.fbalpha.com/"), NULL, NULL, SW_SHOWNORMAL);
 			}
 			break;
 
@@ -2887,7 +2984,7 @@ int ScrnSize()
 #if defined _MSC_VER
 	#if _MSC_VER >= 1700
 		// using the old XP supporting SDK we don't need to alter anything
-		#if !defined BUILD_VS2012_XP_TARGET
+		#if !defined BUILD_VS_XP_TARGET
 			ew <<= 1;
 			eh <<= 1;
 		#endif

@@ -183,7 +183,11 @@ INT32 BurnStateLoad(TCHAR* szName, INT32 bAll, INT32 (*pLoadGame)())
 	if (memcmp(szReadHeader, szHeader, 4) == 0) {		// Check filetype
 		nRet = BurnStateLoadEmbed(fp, -1, bAll, pLoadGame);
 	}
-    fclose(fp);
+	fclose(fp);
+
+	if (nRet == 0) { // Force the palette to recalculate on state load
+		BurnRecalcPal();
+	}
 
 	if (nRet < 0) {
 		return -nRet;
@@ -284,12 +288,65 @@ INT32 BurnStateSaveEmbed(FILE* fp, INT32 nOffset, INT32 bAll)
 	return nDefLen;
 }
 
+#ifdef BUILD_WIN32
+int FileExists(const TCHAR *fileName)
+{
+    DWORD dwAttrib = GetFileAttributes(fileName);
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+            !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+#endif
+
+#define MAX_STATEBACKUPS 10
+// SaveState Undo - restores the last savestate backup file. Windows-only at the moment.
+INT32 BurnStateUNDO(TCHAR* szName)
+{
+#ifdef BUILD_WIN32
+         /*
+         Savestate Undo
+         derp.fs.backup0 -> derp.fs
+         derp.fs.backup1 -> derp.fs.backup0
+         derp.fs.backup2 -> derpfs.backup1
+         derp.fs.backup3 -> derpfs.backup2
+         */
+    INT32 cantundo = 0;
+
+    for (INT32 i = 0; i <= MAX_STATEBACKUPS; i++) {
+            TCHAR szBackupNameTo[1024] = _T("");
+            TCHAR szBackupNameFrom[1024] = _T("");
+            TCHAR szBackupNamePrev[1024] = _T("");
+
+            if (i == 0) {
+                _stprintf(szBackupNameTo, _T("%s.UNDO"), szName);// game.fs -> game.fs.UNDO
+                _stprintf(szBackupNamePrev, _T("%s.backup0"), szName);
+                if (FileExists(szName) && FileExists(szBackupNamePrev)) {
+                    DeleteFileW(szBackupNameTo);
+                    MoveFileW(szName, szBackupNameTo);
+                } else {
+                    cantundo = 1;
+                }
+
+                _stprintf(szBackupNameTo, _T("%s"), szName);// game.fs
+            } else {
+                _stprintf(szBackupNameTo, _T("%s.backup%d"), szName, i - 1); //game.fs.backup0
+            }
+            _stprintf(szBackupNameFrom, _T("%s.backup%d"), szName, i); //game.fs.backup1
+            //bprintf(0, _T("%d: %s -> %s\n"), i, szBackupNameFrom, szBackupNameTo);
+            MoveFileW(szBackupNameFrom, szBackupNameTo);
+    }
+    return cantundo;
+#else
+    return 0;
+#endif
+
+}
+
 // State save
 INT32 BurnStateSave(TCHAR* szName, INT32 bAll)
 {
 	const char szHeader[] = "FB1 ";						// File identifier
 	INT32 nLen = 0, nVer = 0;
-	INT32 nRet = 0;
+        INT32 nRet = 0;
 
 	if (bAll) {											// Get amount of data
 		StateInfo(&nLen, &nVer, 1);
@@ -298,7 +355,40 @@ INT32 BurnStateSave(TCHAR* szName, INT32 bAll)
 	}
 	if (nLen <= 0) {									// No data, so exit without creating a savestate
 		return 0;										// Don't return an error code
-	}
+        }
+        /*
+         Save State backups - used in conjunction with BurnStateUNDO();
+         derp.fs -> derp.fs.backup
+         derp.fs.backup -> derp.fs.backup1
+         derp.fs.backup1 -> derpfs.backup2
+         derp.fs.backup3 -> derpfs.backup4
+         */
+#ifdef BUILD_WIN32
+        if (_tcsstr(szName, _T(" slot "))) {
+            for (INT32 i=MAX_STATEBACKUPS;i>=0;i--) {
+                TCHAR szBackupNameTo[1024] = _T("");
+                TCHAR szBackupNameFrom[1024] = _T("");
+
+                _stprintf(szBackupNameTo, _T("%s.backup%d"), szName, i + 1);
+                _stprintf(szBackupNameFrom, _T("%s.backup%d"), szName, i);
+                if (i == MAX_STATEBACKUPS) {
+                    DeleteFileW(szBackupNameFrom); // make sure there is only MAX_STATEBACKUPS :)
+                } else {
+                    MoveFileW(szBackupNameFrom, szBackupNameTo); //derp.fs.backup0 -> derp.fs.backup1
+                    if (i == 0) {
+                        MoveFileW(szName, szBackupNameFrom); //derp.fs -> derp.fs.backup0
+                    }
+                }
+            }
+        }
+/* - old method, only 1 savestate backup -
+        TCHAR szBackupName[1024] = _T("");
+        // backup last savestate just incase - dink
+        _stprintf(szBackupName, _T("%s.backup"), szName);
+        DeleteFileW(szBackupName);
+        MoveFileW(szName, szBackupName);
+*/
+#endif
 
 	FILE* fp = _tfopen(szName, _T("wb"));
 	if (fp == NULL) {

@@ -28,10 +28,51 @@ static bool bAppDoStep = 0;
 static bool bAppDoFast = 0;
 static int nFastSpeed = 6;
 
+// For System Macros (below)
+static int prevPause = 0, prevFFWD = 0, prevSState = 0, prevLState = 0, prevUState = 0;
+UINT32 prevPause_debounce = 0;
+
+static void CheckSystemMacros() // These are the Pause / FFWD macros added to the input dialog
+{
+	// Pause
+	if (macroSystemPause && macroSystemPause != prevPause && timeGetTime() > prevPause_debounce+90) {
+		if (bHasFocus) {
+			PostMessage(hScrnWnd, WM_KEYDOWN, VK_PAUSE, 0);
+			prevPause_debounce = timeGetTime();
+		}
+	}
+	prevPause = macroSystemPause;
+	// FFWD
+	if (!kNetGame) {
+		if (macroSystemFFWD) {
+			bAppDoFast = 1; prevFFWD = 1;
+		} else if (prevFFWD) {
+			bAppDoFast = 0; prevFFWD = 0;
+		}
+	}
+	// Load State
+	if (macroSystemLoadState && macroSystemLoadState != prevLState) {
+		PostMessage(hScrnWnd, WM_KEYDOWN, VK_F9, 0);
+	}
+	prevLState = macroSystemLoadState;
+	// Save State
+	if (macroSystemSaveState && macroSystemSaveState != prevSState) {
+		PostMessage(hScrnWnd, WM_KEYDOWN, VK_F10, 0);
+	}
+	prevSState = macroSystemSaveState;
+	// UNDO State
+	if (macroSystemUNDOState && macroSystemUNDOState != prevUState) {
+		scrnSSUndo();
+	}
+	prevUState = macroSystemUNDOState;
+}
+
 static int GetInput(bool bCopy)
 {
 	static int i = 0;
 	InputMake(bCopy); 						// get input
+
+        CheckSystemMacros();
 
 	// Update Input dialog ever 3 frames
 	if (i == 0) {
@@ -58,7 +99,8 @@ static void DisplayFPS()
 	time_t temptime = clock();
 	double fps = (double)(nFramesRendered - nPreviousFrames) * CLOCKS_PER_SEC / (temptime - fpstimer);
 	_sntprintf(fpsstring, 7, _T("%2.2lf"), fps);
-	VidSNewShortMsg(fpsstring, 0xDFDFFF, 480, 0);
+	if (temptime - fpstimer>0) // to avoid strange fps value from division by zero at start -dink
+		VidSNewShortMsg(fpsstring, 0xDFDFFF, 480, 0);
 
 	fpstimer = temptime;
 	nPreviousFrames = nFramesRendered;
@@ -483,7 +525,6 @@ int RunMessageLoop()
 								}
 								break;
 							}
-
 							case VK_BACK: {
 								bShowFPS = !bShowFPS;
 								if (bShowFPS) {

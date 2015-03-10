@@ -42,11 +42,11 @@
 #define IDD_POPUP							73
 #define IDD_SUPPORTDIR						74
 #define IDD_PALETTEVIEWER					75
-#define IDD_ROMINFO							76
 #define IDD_IPS_MANAGER						77
 #define IDD_MVS_SELECT_CARTS            	78
 #define IDD_NCD_DLG							79
 #define IDD_NCD_COVER_DLG					80
+#define IDD_GAMEINFO						81
 
 #define IDR_MENU                        	100
 #define IDR_MENU_BLITTER_1					110
@@ -73,6 +73,7 @@
 #define IDC_INPD_USE						20005
 #define IDC_INPD_DEFAULT                	20006
 #define IDC_INPS_GRABMOUSE              	20007
+#define IDC_INPS_CLEARLOCK                	20021
 #define IDC_INPS_CONTROL                	20008
 #define IDC_INPS_CONTROL_NAME           	20009
 #define IDC_INPC_VALUE                  	20010
@@ -86,6 +87,7 @@
 #define IDC_WAIT_LABEL_B2              		20018
 #define ID_VALUE_CLOSE                  	20019
 #define IDC_VALUE_EDIT                  	20020
+                                       // 	20021 is used by IDC_INPS_CLEARLOCK.
 
 #define IDC_FBA_VER                     	20050
 #define IDC_SPECIALSTRING               	20051
@@ -175,26 +177,7 @@
 #define IDC_SEL_SEARCHGROUP					20135
 #define IDC_RESOLUTION						20136
 #define IDC_CHECKUNAVAILABLE              	20137
-
-#define IDC_SUPPORTDIR_EDIT1				20150
-#define IDC_SUPPORTDIR_EDIT2				20151
-#define IDC_SUPPORTDIR_EDIT3				20152
-#define IDC_SUPPORTDIR_EDIT4				20153
-#define IDC_SUPPORTDIR_EDIT5				20154
-#define IDC_SUPPORTDIR_EDIT6				20155
-#define IDC_SUPPORTDIR_EDIT7				20156
-#define IDC_SUPPORTDIR_EDIT8				20157
-#define IDC_SUPPORTDIR_EDIT9				20158
-
-#define IDC_SUPPORTDIR_BR1					20170
-#define IDC_SUPPORTDIR_BR2					20171
-#define IDC_SUPPORTDIR_BR3					20172
-#define IDC_SUPPORTDIR_BR4					20173
-#define IDC_SUPPORTDIR_BR5					20174
-#define IDC_SUPPORTDIR_BR6					20175
-#define IDC_SUPPORTDIR_BR7					20176
-#define IDC_SUPPORTDIR_BR8					20177
-#define IDC_SUPPORTDIR_BR9					20178
+#define IDC_SYSINFO_LOG_SAVE                20138
 
 #define IDC_DRVCOUNT						20200
 #define IDC_TREE2							20201
@@ -250,6 +233,7 @@
 #define IDC_GFX_VIEWER_VERT_16				20431
 #define IDC_GFX_VIEWER_PREV					20432
 #define IDC_GFX_VIEWER_NEXT					20433
+#define IDC_GFX_VIEWER_SEL_COL              20434
 
 #define IDC_TAB1							20500
 #define IDC_SPATH_TAB						20501
@@ -257,7 +241,8 @@
 
 #define IDROM                           	20600
 #define IDRESCAN                        	20601
-#define IDROMINFO                       	20602
+#define IDGAMEINFO                       	20602
+#define IDRESCANSET                        	20603
 
 #define IDC_MVS_CART1                 		20700
 #define IDC_MVS_CART2                   	20701
@@ -322,6 +307,52 @@
 #define IDC_NCD_LABELPUBLISHER				20817
 #define IDC_NCD_LABELIMAGE					20818
 #define IDC_NCD_LABELAUDIO					20819
+
+#define IDC_SUPPORTDIR_EDIT1				20900
+#define IDC_SUPPORTDIR_EDIT2				20901
+#define IDC_SUPPORTDIR_EDIT3				20902
+#define IDC_SUPPORTDIR_EDIT4				20903
+#define IDC_SUPPORTDIR_EDIT5				20904
+#define IDC_SUPPORTDIR_EDIT6				20905
+#define IDC_SUPPORTDIR_EDIT7				20906
+#define IDC_SUPPORTDIR_EDIT8				20907
+#define IDC_SUPPORTDIR_EDIT9				20908
+#define IDC_SUPPORTDIR_EDIT10				20909
+#define IDC_SUPPORTDIR_EDIT11				20910
+#define IDC_SUPPORTDIR_EDIT12				20911
+#define IDC_SUPPORTDIR_EDIT13				20912
+#define IDC_SUPPORTDIR_EDIT14				20913
+#define IDC_SUPPORTDIR_EDIT15				20914
+#define IDC_SUPPORTDIR_EDIT16				20915
+#define IDC_SUPPORTDIR_EDIT17				20916
+#define IDC_SUPPORTDIR_EDIT18				20917
+#define IDC_SUPPORTDIR_EDIT19				20918
+#define IDC_SUPPORTDIR_EDIT20				20919
+#define IDC_SUPPORTDIR_EDIT21				20920
+#define IDC_SUPPORTDIR_EDIT22				20921
+
+#define IDC_SUPPORTDIR_BR1					20950
+#define IDC_SUPPORTDIR_BR2					20951
+#define IDC_SUPPORTDIR_BR3					20952
+#define IDC_SUPPORTDIR_BR4					20953
+#define IDC_SUPPORTDIR_BR5					20954
+#define IDC_SUPPORTDIR_BR6					20955
+#define IDC_SUPPORTDIR_BR7					20956
+#define IDC_SUPPORTDIR_BR8					20957
+#define IDC_SUPPORTDIR_BR9					20958
+#define IDC_SUPPORTDIR_BR10					20959
+#define IDC_SUPPORTDIR_BR11					20960
+#define IDC_SUPPORTDIR_BR12					20961
+#define IDC_SUPPORTDIR_BR13					20962
+#define IDC_SUPPORTDIR_BR14					20963
+#define IDC_SUPPORTDIR_BR15					20964
+#define IDC_SUPPORTDIR_BR16					20965
+#define IDC_SUPPORTDIR_BR17					20966
+#define IDC_SUPPORTDIR_BR18					20967
+#define IDC_SUPPORTDIR_BR19					20968
+#define IDC_SUPPORTDIR_BR20					20969
+#define IDC_SUPPORTDIR_BR21					20970
+#define IDC_SUPPORTDIR_BR22					20971
 
 #define ID_LICENSE                      	21000
 #define ID_DX9EFFECT                    	21001
@@ -392,6 +423,7 @@
 #define MENU_STATE_PREVSLOT             	10034
 #define MENU_STATE_NEXTSLOT             	10035
 #define MENU_ALLRAM                     	10036
+#define MENU_STATE_UNDO                         10037
 #define MENU_TRIPLE                     	10100
 #define MENU_FULL                       	10102
 #define MENU_DWMFIX							10103
@@ -468,6 +500,12 @@
 #define MENU_INTERPOLATE_FM_1				10241
 #define MENU_INTERPOLATE_FM_3				10243
 #define MENU_INTERPOLATE_FM_5				10245
+
+#define MENU_INPUT_AUTOFIRE_RATE_1			10260
+#define MENU_INPUT_AUTOFIRE_RATE_2			10261
+#define MENU_INPUT_AUTOFIRE_RATE_3			10262
+#define MENU_INPUT_AUTOFIRE_RATE_4			10263
+
 #define MENU_AUTOPAUSE                 	 	10300
 #define MENU_PROCESSINPUT					10301
 #define MENU_DISPLAYINDICATOR				10302
@@ -572,6 +610,12 @@
 #define MENU_CLRMAME_PRO_XML_PCE_ONLY		10714
 #define MENU_CLRMAME_PRO_XML_TG16_ONLY		10715
 #define MENU_CLRMAME_PRO_XML_SGX_ONLY		10716
+#define MENU_CLRMAME_PRO_XML_SG1000_ONLY	10717
+#define MENU_CLRMAME_PRO_XML_COLECO_ONLY	10718
+#define MENU_CREATEDIRS						10719
+#define MENU_USEBLEND						10720
+#define MENU_CLRMAME_PRO_XML_SMS_ONLY		10721
+#define MENU_CLRMAME_PRO_XML_GG_ONLY		10722
 
 #define MENU_BASIC_NORMAL          	    	11001
 #define MENU_BASIC_SCAN                	    11002

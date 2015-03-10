@@ -101,6 +101,7 @@ extern TCHAR szAppBurnVer[16];
 
 extern bool bCmdOptUsed;
 extern bool bAlwaysProcessKeyboardInput;
+extern bool bAlwaysCreateSupportFolders;
 
 extern bool bNoChangeNumLock;
 extern bool bMonitorAutoCheck;
@@ -305,6 +306,7 @@ void UnloadDrvIcons();
 extern bool bEnableIcons;
 extern bool bIconsLoaded;
 extern int nIconsSize, nIconsSizeXY, nIconsYDiff;
+extern bool bGameInfoOpen;
 
 // neocdsel.cpp
 extern int NeoCDList_Init();
@@ -373,6 +375,7 @@ int InpcCreate();
 extern int bDrvSaveAll;
 int StatedAuto(int bSave);
 int StatedLoad(int nSlot);
+int StatedUNDO(int nSlot);
 int StatedSave(int nSlot);
 
 // numdial.cpp
@@ -392,6 +395,7 @@ extern bool avOk;
 int RomsDirCreate(HWND hParentWND);
 int CreateROMInfo(HWND hParentWND);
 void FreeROMInfo();
+int WriteGameAvb();
 
 // support_paths.cpp
 int SupportDirCreate(HWND hParentWND);
@@ -425,6 +429,9 @@ int	MemCardToggle();
 int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs);
 int ProgressCreate();
 int ProgressDestroy();
+
+// gameinfo.cpp
+int GameInfoDialogCreate(HWND hParentWND, int nDrvSel);
 
 // ---------------------------------------------------------------------------
 // Debugger
