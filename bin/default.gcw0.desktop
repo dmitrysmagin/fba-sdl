@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FBA
+Comment=Arcade machine emulator
+Exec=fbasdl.dge
+Terminal=false
+Type=Application
+StartupNotify=true
+Icon=skin/fba_icon
+Categories=emulators;
