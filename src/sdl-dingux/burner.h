@@ -128,6 +128,7 @@ extern char szAppConfigPath[MAX_PATH];
 extern char szAppSamplesPath[MAX_PATH]; // for burn/snd/samples.cpp
 extern char szAppPreviewPath[MAX_PATH];
 extern char szAppRomPaths[DIRS_MAX][MAX_PATH];
+extern char szAppBlendPath[MAX_PATH];
 
 void BurnPathsInit();
 
