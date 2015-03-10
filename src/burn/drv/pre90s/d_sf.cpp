@@ -22,7 +22,7 @@ static UINT8 *Gfx3;
 static UINT8 *Gfx4;
 static UINT8 *Gfx1Trans;
 static UINT8 *Gfx3Trans;
-static UINT32 *Palette;
+
 static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
@@ -206,27 +206,27 @@ static struct BurnDIPInfo SfDIPList[]=
 	{0x1b, 0x01, 0x38, 0x20, "1 Coin  4 Credits"		},
 	{0x1b, 0x01, 0x38, 0x18, "1 Coin  6 Credits"		},
 
-	{0   , 0xfe, 0   , 6   , "Buy-in max stage"		},
-	{0x1c, 0x01, 0x38, 0x38, "5th"				},
-	{0x1c, 0x01, 0x38, 0x30, "4th"				},
-	{0x1c, 0x01, 0x38, 0x28, "3rd"				},
-	{0x1c, 0x01, 0x38, 0x20, "2nd"				},
-	{0x1c, 0x01, 0x38, 0x18, "1st"				},
-	{0x1c, 0x01, 0x38, 0x08, "No buy-in"			},
+	{0   , 0xfe, 0   , 6   , "Buy-In Feature"		},
+	{0x1c, 0x01, 0x38, 0x38, "5th Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x30, "4th Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x28, "3rd Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x20, "2nd Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x18, "1st Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x08, "None"				},
 
-	{0   , 0xfe, 0   , 2   , "Number of start countries"	},
+	{0   , 0xfe, 0   , 2   , "Number of Countries Selected"		},
 	{0x1c, 0x01, 0x40, 0x40, "4"				},
 	{0x1c, 0x01, 0x40, 0x00, "2"				},
 
-	{0   , 0xfe, 0   , 6   , "Continuation max stage"	},
-	{0x1d, 0x01, 0x07, 0x07, "5th"				},
-	{0x1d, 0x01, 0x07, 0x06, "4th"				},
-	{0x1d, 0x01, 0x07, 0x05, "3rd"				},
-	{0x1d, 0x01, 0x07, 0x04, "2nd"				},
-	{0x1d, 0x01, 0x07, 0x03, "1st"				},
-	{0x1d, 0x01, 0x07, 0x02, "No continuation"		},
+	{0   , 0xfe, 0   , 6   , "Game Continuation"	},
+	{0x1d, 0x01, 0x07, 0x07, "5th Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x06, "4th Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x05, "3rd Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x04, "2nd Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x03, "1st Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x02, "None"				},
 
-	{0   , 0xfe, 0   , 4   , "Round time"			},
+	{0   , 0xfe, 0   , 4   , "Round Time Count"		},
 	{0x1d, 0x01, 0x18, 0x18, "100"				},
 	{0x1d, 0x01, 0x18, 0x10, "150"				},
 	{0x1d, 0x01, 0x18, 0x08, "200"				},
@@ -288,27 +288,27 @@ static struct BurnDIPInfo SfusDIPList[]=
 	{0x1b, 0x01, 0x38, 0x20, "1 Coin  4 Credits"		},
 	{0x1b, 0x01, 0x38, 0x18, "1 Coin  6 Credits"		},
 
-	{0   , 0xfe, 0   , 6   , "Buy-in max stage"		},
-	{0x1c, 0x01, 0x38, 0x38, "5th"				},
-	{0x1c, 0x01, 0x38, 0x30, "4th"				},
-	{0x1c, 0x01, 0x38, 0x28, "3rd"				},
-	{0x1c, 0x01, 0x38, 0x20, "2nd"				},
-	{0x1c, 0x01, 0x38, 0x18, "1st"				},
-	{0x1c, 0x01, 0x38, 0x08, "No buy-in"			},
+	{0   , 0xfe, 0   , 6   , "Buy-In Feature"		},
+	{0x1c, 0x01, 0x38, 0x38, "5th Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x30, "4th Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x28, "3rd Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x20, "2nd Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x18, "1st Stage Maximum"	},
+	{0x1c, 0x01, 0x38, 0x08, "None"				},
 
-	{0   , 0xfe, 0   , 2   , "Number of start countries"	},
+	{0   , 0xfe, 0   , 2   , "Number of Countries Selected"		},
 	{0x1c, 0x01, 0x40, 0x00, "4"				},
 	{0x1c, 0x01, 0x40, 0x40, "2"				},
 
-	{0   , 0xfe, 0   , 6   , "Continuation max stage"	},
-	{0x1d, 0x01, 0x07, 0x07, "5th"				},
-	{0x1d, 0x01, 0x07, 0x06, "4th"				},
-	{0x1d, 0x01, 0x07, 0x05, "3rd"				},
-	{0x1d, 0x01, 0x07, 0x04, "2nd"				},
-	{0x1d, 0x01, 0x07, 0x03, "1st"				},
-	{0x1d, 0x01, 0x07, 0x02, "No continuation"		},
+	{0   , 0xfe, 0   , 6   , "Game Continuation"	},
+	{0x1d, 0x01, 0x07, 0x07, "5th Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x06, "4th Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x05, "3rd Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x04, "2nd Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x03, "1st Stage Maximum"	},
+	{0x1d, 0x01, 0x07, 0x02, "None"				},
 
-	{0   , 0xfe, 0   , 4   , "Round time"			},
+	{0   , 0xfe, 0   , 4   , "Round Time Count"			},
 	{0x1d, 0x01, 0x18, 0x18, "100"				},
 	{0x1d, 0x01, 0x18, 0x10, "150"				},
 	{0x1d, 0x01, 0x18, 0x08, "200"				},
@@ -410,18 +410,15 @@ static void protection_w()
 	}
 }
 
-static inline void write_palette(UINT16 data, INT32 offset)
+static inline void palette_update(INT32 offset)
 {
+	UINT16 data = *((UINT16*)(Drv68kPalRam + (offset & 0x7fe)));
+
 	INT32 r = (data >> 8) & 0x0f;
 	INT32 g = (data >> 4) & 0x0f;
 	INT32 b = (data >> 0) & 0x0f;
 
-	r |= r << 4;
-	g |= g << 4;
-	b |= b << 4;
-
-	Palette[offset] = (r << 16) | (g << 8) | b;
-	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
+	DrvPalette[(offset & 0x7fe)/2] = BurnHighCol((r*16)+r, (g*16)+g, (b*16)+b, 0);
 }
 
 void __fastcall sf_write_word(UINT32 address, UINT16 data)
@@ -431,7 +428,7 @@ void __fastcall sf_write_word(UINT32 address, UINT16 data)
 
 		*pal = data;
 
-		write_palette(*pal, (address >> 1) & 0x3ff);
+		palette_update(address);
 
 		return;
 	}
@@ -617,7 +614,7 @@ UINT8 __fastcall sf_sound2_in(UINT16 port)
 	switch (port & 0xff)
 	{
 		case 0x01:
-			ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 			return soundlatch;
 	}
 
@@ -736,8 +733,6 @@ static INT32 MemIndex()
 
 	DrvZ80Ram0	= Next; Next += 0x000800;
 
-	Palette		= (UINT32*)Next; Next += 0x00401 * sizeof(UINT32);
-
 	RamEnd          = Next;
 
 	MemEnd		= Next;
@@ -748,9 +743,9 @@ static INT32 MemIndex()
 void sfYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -825,9 +820,9 @@ static INT32 DrvInit(INT32 initver)
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68kRom,		0x000000, 0x04ffff, SM_ROM);
-	SekMapMemory(Drv68kVidRam,	0x800000, 0x800fff, SM_RAM);
-	SekMapMemory(Drv68kRam,		0xff8000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68kRom,		0x000000, 0x04ffff, MAP_ROM);
+	SekMapMemory(Drv68kVidRam,	0x800000, 0x800fff, MAP_RAM);
+	SekMapMemory(Drv68kRam,		0xff8000, 0xffffff, MAP_RAM);
 	SekSetWriteByteHandler(0, sf_write_byte);
 	SekSetWriteWordHandler(0, sf_write_word);
 	SekSetReadByteHandler(0, sf_read_byte);
@@ -868,8 +863,6 @@ static INT32 DrvInit(INT32 initver)
 	DrvDoReset();
 
 	version = initver;
-
-	Palette[0x400] = 0xff00ff;
 
 	return 0;
 }
@@ -1147,14 +1140,14 @@ static void draw_sprites()
 	}
 }
 
-
 static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (INT32 i = 0; i < 0x401; i++) {
-			INT32 rgb = Palette[i];
-			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
+		for (INT32 i = 0; i < 0x800; i+=2) {
+			palette_update(i);
 		}
+		DrvPalette[0x400] = BurnHighCol(0xff,0,0xff,0);
+		DrvRecalc = 0;
 	}
 
 	if (nBurnLayer & 8) {
@@ -1269,11 +1262,11 @@ static INT32 DrvFrame()
 		ZetOpen(1);
 		nNext[2] += nCyclesTotal[2] / nInterleave;
 		nCyclesDone[2] += ZetRun(nNext[2] - nCyclesDone[2]);
-		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 		ZetClose();
 	}
 
-	SekSetIRQLine((version == 4) ? 6 : 1, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine((version == 4) ? 6 : 1, CPU_IRQSTATUS_AUTO);
 
 	SekClose();
 
@@ -1346,86 +1339,9 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 }
 
 
-// Street Fighter (World)
-
-static struct BurnRomInfo sfRomDesc[] = {
-	{ "sfe-19",     0x10000, 0x8346c3ca, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
-	{ "sfe-22",     0x10000, 0x3a4bfaa8, 1 | BRF_PRG | BRF_ESS }, //  1
-	{ "sfe-20",     0x10000, 0xb40e67ee, 1 | BRF_PRG | BRF_ESS }, //  2
-	{ "sfe-23",     0x10000, 0x477c3d5b, 1 | BRF_PRG | BRF_ESS }, //  3
-	{ "sfe-21",     0x10000, 0x2547192b, 1 | BRF_PRG | BRF_ESS }, //  4
-	{ "sfe-24",     0x10000, 0x79680f4e, 1 | BRF_PRG | BRF_ESS }, //  5
-
-	{ "sf-02.bin",  0x08000, 0x4a9ac534, 2 | BRF_PRG | BRF_ESS }, //  6 Z80 #0 Code
-
-	{ "sfu-00",     0x20000, 0xa7cce903, 3 | BRF_PRG | BRF_ESS }, //  7 Z80 #1 Code
-	{ "sf-01.bin",  0x20000, 0x86e0f0d5, 3 | BRF_PRG | BRF_ESS }, //  8
-
-	{ "sf-39.bin",  0x20000, 0xcee3d292, 4 | BRF_GRA },           //  9 Background Tiles
-	{ "sf-38.bin",  0x20000, 0x2ea99676, 4 | BRF_GRA },           // 10
-	{ "sf-41.bin",  0x20000, 0xe0280495, 4 | BRF_GRA },           // 11
-	{ "sf-40.bin",  0x20000, 0xc70b30de, 4 | BRF_GRA },           // 12
-
-	{ "sf-25.bin",  0x20000, 0x7f23042e, 5 | BRF_GRA },           // 13 More tiles?
-	{ "sf-28.bin",  0x20000, 0x92f8b91c, 5 | BRF_GRA },           // 14
-	{ "sf-30.bin",  0x20000, 0xb1399856, 5 | BRF_GRA },           // 15
-	{ "sf-34.bin",  0x20000, 0x96b6ae2e, 5 | BRF_GRA },           // 16
-	{ "sf-26.bin",  0x20000, 0x54ede9f5, 5 | BRF_GRA },           // 17
-	{ "sf-29.bin",  0x20000, 0xf0649a67, 5 | BRF_GRA },           // 18
-	{ "sf-31.bin",  0x20000, 0x8f4dd71a, 5 | BRF_GRA },           // 19
-	{ "sf-35.bin",  0x20000, 0x70c00fb4, 5 | BRF_GRA },           // 20
-
-	{ "sf-15.bin",  0x20000, 0xfc0113db, 6 | BRF_GRA },           // 21 Sprites
-	{ "sf-16.bin",  0x20000, 0x82e4a6d3, 6 | BRF_GRA },           // 22
-	{ "sf-11.bin",  0x20000, 0xe112df1b, 6 | BRF_GRA },           // 23
-	{ "sf-12.bin",  0x20000, 0x42d52299, 6 | BRF_GRA },           // 24
-	{ "sf-07.bin",  0x20000, 0x49f340d9, 6 | BRF_GRA },           // 25
-	{ "sf-08.bin",  0x20000, 0x95ece9b1, 6 | BRF_GRA },           // 26
-	{ "sf-03.bin",  0x20000, 0x5ca05781, 6 | BRF_GRA },           // 27
-	{ "sf-17.bin",  0x20000, 0x69fac48e, 6 | BRF_GRA },           // 28
-	{ "sf-18.bin",  0x20000, 0x71cfd18d, 6 | BRF_GRA },           // 29
-	{ "sf-13.bin",  0x20000, 0xfa2eb24b, 6 | BRF_GRA },           // 30
-	{ "sf-14.bin",  0x20000, 0xad955c95, 6 | BRF_GRA },           // 31
-	{ "sf-09.bin",  0x20000, 0x41b73a31, 6 | BRF_GRA },           // 32
-	{ "sf-10.bin",  0x20000, 0x91c41c50, 6 | BRF_GRA },           // 33
-	{ "sf-05.bin",  0x20000, 0x538c7cbe, 6 | BRF_GRA },           // 34
-
-	{ "sf-27.bin",  0x04000, 0x2b09b36d, 7 | BRF_GRA },           // 35 Characters
-
-	{ "sf-37.bin",  0x10000, 0x23d09d3d, 8 | BRF_GRA },           // 36 Tilemaps
-	{ "sf-36.bin",  0x10000, 0xea16df6c, 8 | BRF_GRA },           // 37
-	{ "sf-32.bin",  0x10000, 0x72df2bd9, 8 | BRF_GRA },           // 38
-	{ "sf-33.bin",  0x10000, 0x3e99d3d5, 8 | BRF_GRA },           // 39
-
-	{ "sfb05(__sf).mb7114h.12k", 0x0100, 0x75af3553, 0 | BRF_OPT },           // 40 Proms
-	{ "sfb10(__sf).mb7114h.11h", 0x0100, 0xc0e56586, 0 | BRF_OPT },           // 41
-	{ "sfb04(__sf).mb7114h.12j", 0x0100, 0x4c734b64, 0 | BRF_OPT },           // 42
-	{ "sfb00(__sf).mb7051.13h",0x0020, 0x06bcda53, 0 | BRF_OPT },           // 43
-};
-
-STD_ROM_PICK(sf)
-STD_ROM_FN(sf)
-
-static INT32 SfInit()
-{
-	return DrvInit(1);
-}
-
-struct BurnDriver BurnDrvsf = {
-	"sf", NULL, NULL, NULL, "1987",
-	"Street Fighter (World)\0", NULL, "Capcom", "Miscellaneous",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARWARE_CAPCOM_MISC, GBF_VSFIGHT, FBF_SF,
-	NULL, sfRomInfo, sfRomName, NULL, NULL, SfInputInfo, SfDIPInfo,
-	SfInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 
-	&DrvRecalc, 0x401, 384, 224, 4, 3
-};
-
-
-
 // Street Fighter (US set 1)
 
-static struct BurnRomInfo sfuRomDesc[] = {
+static struct BurnRomInfo sfRomDesc[] = {
 	{ "sfd-19",     0x10000, 0xfaaf6255, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
 	{ "sfd-22",     0x10000, 0xe1fe3519, 1 | BRF_PRG | BRF_ESS }, //  1
 	{ "sfd-20",     0x10000, 0x44b915bd, 1 | BRF_PRG | BRF_ESS }, //  2
@@ -1480,21 +1396,97 @@ static struct BurnRomInfo sfuRomDesc[] = {
 	{ "mmi-7603.13h",0x0020, 0x06bcda53, 0 | BRF_OPT },           // 43
 };
 
-STD_ROM_PICK(sfu)
-STD_ROM_FN(sfu)
+STD_ROM_PICK(sf)
+STD_ROM_FN(sf)
 
 static INT32 SfusInit()
 {
 	return DrvInit(2);
 }
 
-struct BurnDriver BurnDrvsfu = {
-	"sfu", "sf", NULL, NULL, "1987",
+struct BurnDriver BurnDrvsf = {
+	"sf", NULL, NULL, NULL, "1987",
 	"Street Fighter (US set 1)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_VSFIGHT, FBF_SF,
-	NULL, sfuRomInfo, sfuRomName, NULL, NULL, SfusInputInfo, SfusDIPInfo,
+	BDF_GAME_WORKING, 2, HARWARE_CAPCOM_MISC, GBF_VSFIGHT, FBF_SF,
+	NULL, sfRomInfo, sfRomName, NULL, NULL, SfusInputInfo, SfusDIPInfo,
 	SfusInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 
+	&DrvRecalc, 0x401, 384, 224, 4, 3
+};
+
+
+// Street Fighter (World, pneumatic buttons)
+
+static struct BurnRomInfo sfanRomDesc[] = {
+	{ "sfe-19",     0x10000, 0x8346c3ca, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "sfe-22",     0x10000, 0x3a4bfaa8, 1 | BRF_PRG | BRF_ESS }, //  1
+	{ "sfe-20",     0x10000, 0xb40e67ee, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "sfe-23",     0x10000, 0x477c3d5b, 1 | BRF_PRG | BRF_ESS }, //  3
+	{ "sfe-21",     0x10000, 0x2547192b, 1 | BRF_PRG | BRF_ESS }, //  4
+	{ "sfe-24",     0x10000, 0x79680f4e, 1 | BRF_PRG | BRF_ESS }, //  5
+
+	{ "sf-02.bin",  0x08000, 0x4a9ac534, 2 | BRF_PRG | BRF_ESS }, //  6 Z80 #0 Code
+
+	{ "sfu-00",     0x20000, 0xa7cce903, 3 | BRF_PRG | BRF_ESS }, //  7 Z80 #1 Code
+	{ "sf-01.bin",  0x20000, 0x86e0f0d5, 3 | BRF_PRG | BRF_ESS }, //  8
+
+	{ "sf-39.bin",  0x20000, 0xcee3d292, 4 | BRF_GRA },           //  9 Background Tiles
+	{ "sf-38.bin",  0x20000, 0x2ea99676, 4 | BRF_GRA },           // 10
+	{ "sf-41.bin",  0x20000, 0xe0280495, 4 | BRF_GRA },           // 11
+	{ "sf-40.bin",  0x20000, 0xc70b30de, 4 | BRF_GRA },           // 12
+
+	{ "sf-25.bin",  0x20000, 0x7f23042e, 5 | BRF_GRA },           // 13 More tiles?
+	{ "sf-28.bin",  0x20000, 0x92f8b91c, 5 | BRF_GRA },           // 14
+	{ "sf-30.bin",  0x20000, 0xb1399856, 5 | BRF_GRA },           // 15
+	{ "sf-34.bin",  0x20000, 0x96b6ae2e, 5 | BRF_GRA },           // 16
+	{ "sf-26.bin",  0x20000, 0x54ede9f5, 5 | BRF_GRA },           // 17
+	{ "sf-29.bin",  0x20000, 0xf0649a67, 5 | BRF_GRA },           // 18
+	{ "sf-31.bin",  0x20000, 0x8f4dd71a, 5 | BRF_GRA },           // 19
+	{ "sf-35.bin",  0x20000, 0x70c00fb4, 5 | BRF_GRA },           // 20
+
+	{ "sf-15.bin",  0x20000, 0xfc0113db, 6 | BRF_GRA },           // 21 Sprites
+	{ "sf-16.bin",  0x20000, 0x82e4a6d3, 6 | BRF_GRA },           // 22
+	{ "sf-11.bin",  0x20000, 0xe112df1b, 6 | BRF_GRA },           // 23
+	{ "sf-12.bin",  0x20000, 0x42d52299, 6 | BRF_GRA },           // 24
+	{ "sf-07.bin",  0x20000, 0x49f340d9, 6 | BRF_GRA },           // 25
+	{ "sf-08.bin",  0x20000, 0x95ece9b1, 6 | BRF_GRA },           // 26
+	{ "sf-03.bin",  0x20000, 0x5ca05781, 6 | BRF_GRA },           // 27
+	{ "sf-17.bin",  0x20000, 0x69fac48e, 6 | BRF_GRA },           // 28
+	{ "sf-18.bin",  0x20000, 0x71cfd18d, 6 | BRF_GRA },           // 29
+	{ "sf-13.bin",  0x20000, 0xfa2eb24b, 6 | BRF_GRA },           // 30
+	{ "sf-14.bin",  0x20000, 0xad955c95, 6 | BRF_GRA },           // 31
+	{ "sf-09.bin",  0x20000, 0x41b73a31, 6 | BRF_GRA },           // 32
+	{ "sf-10.bin",  0x20000, 0x91c41c50, 6 | BRF_GRA },           // 33
+	{ "sf-05.bin",  0x20000, 0x538c7cbe, 6 | BRF_GRA },           // 34
+
+	{ "sf-27.bin",  0x04000, 0x2b09b36d, 7 | BRF_GRA },           // 35 Characters
+
+	{ "sf-37.bin",  0x10000, 0x23d09d3d, 8 | BRF_GRA },           // 36 Tilemaps
+	{ "sf-36.bin",  0x10000, 0xea16df6c, 8 | BRF_GRA },           // 37
+	{ "sf-32.bin",  0x10000, 0x72df2bd9, 8 | BRF_GRA },           // 38
+	{ "sf-33.bin",  0x10000, 0x3e99d3d5, 8 | BRF_GRA },           // 39
+
+	{ "sfb05.mb7114h.12k", 0x0100, 0x75af3553, 0 | BRF_OPT },           // 40 Proms
+	{ "sfb10.mb7114h.11h", 0x0100, 0xc0e56586, 0 | BRF_OPT },           // 41
+	{ "sfb04.mb7114h.12j", 0x0100, 0x4c734b64, 0 | BRF_OPT },           // 42
+	{ "sfb00.mb7051.13h",0x0020, 0x06bcda53, 0 | BRF_OPT },           // 43
+};
+
+STD_ROM_PICK(sfan)
+STD_ROM_FN(sfan)
+
+static INT32 SfanInit()
+{
+	return DrvInit(1);
+}
+
+struct BurnDriver BurnDrvsfan = {
+	"sfan", "sf", NULL, NULL, "1987",
+	"Street Fighter (World, pneumatic buttons)\0", NULL, "Capcom", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARWARE_CAPCOM_MISC, GBF_VSFIGHT, FBF_SF,
+	NULL, sfanRomInfo, sfanRomName, NULL, NULL, SfInputInfo, SfDIPInfo,
+	SfanInit, DrvExit, DrvFrame, DrvDraw, DrvScan, 
 	&DrvRecalc, 0x401, 384, 224, 4, 3
 };
 

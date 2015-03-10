@@ -207,11 +207,11 @@ void __fastcall deniam16_write_byte(UINT32 address, UINT8 data)
 		return;
 
 		case 0xc40008:
-			BurnYM3812Write(0, data); // logicpr2
+			BurnYM3812Write(0, 0, data); // logicpr2
 		return;
 
 		case 0xc4000a:
-			BurnYM3812Write(1, data); // logicpr2
+			BurnYM3812Write(0, 1, data); // logicpr2
 		return;
 	}
 }
@@ -221,11 +221,11 @@ void __fastcall deniam16_sound_out(UINT16 port, UINT8 data)
 	switch (port & 0xff)
 	{
 		case 0x02:
-			BurnYM3812Write(0, data);
+			BurnYM3812Write(0, 0, data);
 		return;
 
 		case 0x03:
-			BurnYM3812Write(1, data);
+			BurnYM3812Write(0, 1, data);
 		return;
 
 		case 0x05:
@@ -265,9 +265,9 @@ inline static INT32 deniam16SekSynchroniseStream(INT32 nSoundRate)
 void deniam16YM3812IrqHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -440,12 +440,12 @@ static INT32 DrvInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvVidRAM,		0x400000, 0x40ffff, SM_RAM);
-	SekMapMemory(DrvTxtRAM,		0x410000, 0x410fff, SM_RAM);
-	SekMapMemory(DrvSprRAM,		0x440000, 0x4407ff, SM_WRITE);
-	SekMapMemory(DrvPalRAM,		0x840000, 0x840fff, SM_RAM);
-	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvVidRAM,		0x400000, 0x40ffff, MAP_RAM);
+	SekMapMemory(DrvTxtRAM,		0x410000, 0x410fff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,		0x440000, 0x4407ff, MAP_WRITE);
+	SekMapMemory(DrvPalRAM,		0x840000, 0x840fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, MAP_RAM);
 	SekSetWriteByteHandler(0,	deniam16_write_byte);
 	SekSetReadByteHandler(0,	deniam16_read_byte);
 	SekClose();
@@ -462,13 +462,13 @@ static INT32 DrvInit()
 	ZetClose();
 
 	if (nGame != 2) {
-		BurnYM3812Init(3125000, &deniam16YM3812IrqHandler, deniam16ZetSynchroniseStream, 0);
+		BurnYM3812Init(1, 3125000, &deniam16YM3812IrqHandler, deniam16ZetSynchroniseStream, 0);
 		BurnTimerAttachZetYM3812(6250000);
-		BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 0.60, BURN_SND_ROUTE_BOTH);
+		BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 0.60, BURN_SND_ROUTE_BOTH);
 	} else {
-		BurnYM3812Init(3125000, NULL, deniam16SekSynchroniseStream, 0);
+		BurnYM3812Init(1, 3125000, NULL, deniam16SekSynchroniseStream, 0);
 		BurnTimerAttachSekYM3812(12500000);
-		BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 0.60, BURN_SND_ROUTE_BOTH);
+		BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 0.60, BURN_SND_ROUTE_BOTH);
 	}
 
 	MSM6295Init(0, 1056000 / 132, 1);
@@ -776,7 +776,7 @@ static INT32 DrvFrame()
 		BurnTimerUpdateYM3812(i * nCyclesSegment);
 	}
 
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
 		if (nGame != 2) BurnTimerEndFrameYM3812(nCyclesTotal[1]);

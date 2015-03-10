@@ -19,8 +19,6 @@ static UINT8 *DrvGfxROM2;
 static UINT8 *DrvGfxROM3;
 static UINT8 *DrvTileMap;
 static UINT8 *DrvGfxMask;
-static UINT32 *DrvPalette;
-static UINT32 *Palette;
 static UINT8 *DrvZ80RAM0;
 static UINT8 *DrvZ80RAM1;
 static UINT8 *DrvPalRAM;
@@ -30,6 +28,8 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvSprBuf;
 static UINT8 *ScrollX;
 static UINT8 *ScrollY;
+
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 DrvReset;
@@ -425,8 +425,6 @@ static struct BurnDIPInfo AvengersDIPList[]=
 
 STDDIPINFO(Avengers)
 
-
-
 static INT32 MemIndex()
 {
 	UINT8 *Next; Next = AllMem;
@@ -455,8 +453,6 @@ static INT32 MemIndex()
 	DrvBgRAM	= Next; Next += 0x000800;
 	DrvSprRAM	= Next; Next += 0x000200;
 	DrvSprBuf	= Next; Next += 0x000200;
-
-	Palette		= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	ScrollX		= Next; Next += 0x000002;
 	ScrollY		= Next; Next += 0x000002;
@@ -646,25 +642,22 @@ static void lwings_bankswitch_w(UINT8 data)
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM0 + bankaddress);
 }
 
+static inline void palette_update(INT32 entry)
+{
+	UINT16 p = DrvPalRAM[entry | 0x400] | (DrvPalRAM[entry] << 8);
+
+	UINT8 r = (p >> 12) & 0xf;
+	UINT8 g = (p >>  8) & 0xf;
+	UINT8 b = (p >>  4) & 0xf;
+
+	DrvPalette[entry] = BurnHighCol((r*16)+r, (g*16)+g, (b*16)+b, 0);
+}
+
 void __fastcall lwings_main_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf800) == 0xf000) {
 		DrvPalRAM[address & 0x7ff] = data;
-
-		UINT8 r, g, b;
-		UINT16 coldata = DrvPalRAM[(address & 0x3ff) | 0x400] | (DrvPalRAM[address & 0x3ff] << 8);
-
-		r = (coldata >> 8) & 0xf0;
-		g = (coldata >> 4) & 0xf0;
-		b = (coldata >> 0) & 0xf0;
-
-		r |= r >> 4;
-		g |= g >> 4;
-		b |= b >> 4;
-
-		Palette[address & 0x3ff] = (r << 16) | (g << 8) | b;
-		DrvPalette[address & 0x3ff] = BurnHighCol(r, g, b, 0);
-
+		palette_update(address & 0x3ff);
 		return;
 	}
 
@@ -876,6 +869,11 @@ inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 
 inline static INT32 DrvMSM5205SynchroniseStream(INT32 nSoundRate)
 {
+	return (INT64)((double)ZetTotalCycles() * nSoundRate / (nCyclesTotal[0] * 130));
+}
+
+inline static INT32 DrvMSM5205SynchroniseStreamAvengers(INT32 nSoundRate)
+{
 	return (INT64)((double)ZetTotalCycles() * nSoundRate / (nCyclesTotal[0] * 60));
 }
 
@@ -929,12 +927,12 @@ static void lwings_sound_init()
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(3000000);
 	BurnYM2203SetRoute(0, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_1, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_2, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_1, 0.10, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_2, 0.10, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(0, BURN_SND_YM2203_AY8910_ROUTE_3, 0.10, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(1, BURN_SND_YM2203_YM2203_ROUTE, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_1, 0.20, BURN_SND_ROUTE_BOTH);
-	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_2, 0.20, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_1, 0.10, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_2, 0.10, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetRoute(1, BURN_SND_YM2203_AY8910_ROUTE_3, 0.10, BURN_SND_ROUTE_BOTH);
 }
 
@@ -1040,7 +1038,7 @@ static INT32 TrojanInit()
 	ZetSetOutHandler(trojan_adpcm_out);
 	ZetClose();
 	
-	MSM5205Init(0, DrvMSM5205SynchroniseStream, 455000, NULL, MSM5205_SEX_4B, 1);
+	MSM5205Init(0, (avengers) ? DrvMSM5205SynchroniseStreamAvengers : DrvMSM5205SynchroniseStream, /*455000*/384000, NULL, MSM5205_SEX_4B, 1);
 	MSM5205SetRoute(0, 0.50, BURN_SND_ROUTE_BOTH);
 	MSM5205InUse = 1;
 
@@ -1423,9 +1421,9 @@ static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		for (INT32 i = 0; i < 0x400; i++) {
-			INT32 rgb = Palette[i];
-			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
+			palette_update(i);
 		}
+		DrvRecalc = 0;
 	}
 
 	if (DrvTileMap == NULL) {
@@ -1479,13 +1477,13 @@ static INT32 DrvFrame()
 	}
 
 	INT32 nInterleave;
-	INT32 MSMIRQSlice[67];
+	INT32 MSMIRQSlice[134];
 	
 	if (MSM5205InUse) {
 		nInterleave = MSM5205CalcInterleave(0, 6000000);
 	
-		for (INT32 i = 0; i < 67; i++) {
-			MSMIRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 68));
+		for (INT32 i = 0; i < 133; i++) {
+			MSMIRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 134));
 		}
 	} else {
 		nInterleave = 16;
@@ -1504,12 +1502,12 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (interrupt_enable && i == (nInterleave - 1)) {
+		if (interrupt_enable && i == (nInterleave-1 /* * 242 / 256*/)) {
 			if (avengers & 1) {
 				ZetNmi();
 			} else {
 				ZetSetVector(0xd7);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 			}
 		}
 		if (MSM5205InUse) MSM5205Update();
@@ -1517,8 +1515,12 @@ static INT32 DrvFrame()
 		
 		nCurrentCPU = 1;
 		ZetOpen(nCurrentCPU);
-		BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
-		if ((i % (nInterleave / 4)) == ((nInterleave / 4) - 1)) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		BurnTimerUpdate((i + 1) * (nCyclesTotal[nCurrentCPU] / nInterleave));
+		if ((i % (nInterleave / 4)) == ((nInterleave / 4) - 1)) {
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+			ZetRun(500);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
+		}
 		ZetClose();
 
 		if (MSM5205InUse) {
@@ -1527,9 +1529,9 @@ static INT32 DrvFrame()
 			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 			nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-			for (INT32 j = 0; j < 67; j++) {
+			for (INT32 j = 0; j < 133; j++) {
 				if (i == MSMIRQSlice[j]) {
-					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 					nCyclesDone[nCurrentCPU] += ZetRun(1000);
 				}
 			}

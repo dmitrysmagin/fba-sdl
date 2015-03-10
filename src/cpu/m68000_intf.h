@@ -95,6 +95,7 @@ typedef int (__fastcall *pSekResetCallback)();
 typedef int (__fastcall *pSekRTECallback)();
 typedef int (__fastcall *pSekIrqCallback)(int irq);
 typedef int (__fastcall *pSekCmpCallback)(unsigned int val, int reg);
+typedef int (__fastcall *pSekTASCallback)();
 
 extern int nSekCycles[SEK_MAX], nSekCPUType[SEK_MAX];
 
@@ -116,6 +117,7 @@ struct SekExt {
 	pSekRTECallback RTECallback;
 	pSekIrqCallback IrqCallback;
 	pSekCmpCallback CmpCallback;
+	pSekTASCallback TASCallback;
 };
 
 #define SEK_DEF_READ_WORD(i, a) { unsigned short d; d = (unsigned short)(pSekExt->ReadByte[i](a) << 8); d |= (unsigned short)(pSekExt->ReadByte[i]((a) + 1)); return d; }
@@ -204,6 +206,7 @@ int SekSetResetCallback(pSekResetCallback pCallback);
 int SekSetRTECallback(pSekRTECallback pCallback);
 int SekSetIrqCallback(pSekIrqCallback pCallback);
 int SekSetCmpCallback(pSekCmpCallback pCallback);
+int SekSetTASCallback(pSekTASCallback pCallback);
 
 // Get a CPU's PC
 int SekGetPC(int n);

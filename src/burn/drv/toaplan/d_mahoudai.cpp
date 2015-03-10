@@ -482,13 +482,13 @@ static INT32 DrvInit()
 	    SekOpen(0);
 
 		// Map 68000 memory:
-		SekMapMemory(Rom01,			0x000000, 0x07FFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory(Ram01,			0x100000, 0x10FFFF, SM_RAM);
-		SekMapMemory(RamPal,		0x400000, 0x400FFF, SM_RAM);	// Palette RAM
-		SekMapMemory(Ram02,			0x401000, 0x4017FF, SM_RAM);	// Unused
-		SekMapMemory(ExtraTRAM,		0x500000, 0x502FFF, SM_RAM);
-		SekMapMemory(ExtraTSelect,	0x502000, 0x502FFF, SM_RAM);	// 0x502000 - Scroll; 0x502200 - RAM
-		SekMapMemory(ExtraTScroll,	0x503000, 0x503FFF, SM_RAM);	// 0x203000 - Offset; 0x503200 - RAM
+		SekMapMemory(Rom01,			0x000000, 0x07FFFF, MAP_ROM);	// CPU 0 ROM
+		SekMapMemory(Ram01,			0x100000, 0x10FFFF, MAP_RAM);
+		SekMapMemory(RamPal,		0x400000, 0x400FFF, MAP_RAM);	// Palette RAM
+		SekMapMemory(Ram02,			0x401000, 0x4017FF, MAP_RAM);	// Unused
+		SekMapMemory(ExtraTRAM,		0x500000, 0x502FFF, MAP_RAM);
+		SekMapMemory(ExtraTSelect,	0x502000, 0x502FFF, MAP_RAM);	// 0x502000 - Scroll; 0x502200 - RAM
+		SekMapMemory(ExtraTScroll,	0x503000, 0x503FFF, MAP_RAM);	// 0x203000 - Offset; 0x503200 - RAM
 
 		SekSetReadWordHandler(0, mahoudaiReadWord);
 		SekSetReadByteHandler(0, mahoudaiReadByte);
@@ -612,7 +612,7 @@ static INT32 DrvFrame()
 			ToaBufferGP9001Sprites();
 
 			bVBlank = true;
-			SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+			SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 		}
 
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
@@ -665,7 +665,7 @@ static INT32 DrvFrame()
 struct BurnDriver BurnDrvMahouDai = {
 	"mahoudai", "sstriker", NULL, NULL, "1993",
 	"Mahou Daisakusen (Japan)\0", NULL, "Raizing", "Toaplan GP9001 based",
-	L"\u9B54\u6CD5\u5927\u4F5C\u6226\0Mahou Daisakusen (Japan)\0", NULL, NULL, NULL,
+	L"\u9B54\u6CD5\u5927\u4F5C\u6226 (Mahou Daisakusen Japan)\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | TOA_ROTATE_GRAPHICS_CCW, 2, HARDWARE_TOAPLAN_RAIZING, GBF_VERSHOOT, 0,
 	NULL, mahoudaiRomInfo, mahoudaiRomName, NULL, NULL, mahoudaiInputInfo, mahoudaiDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &ToaRecalcPalette, 0x800,

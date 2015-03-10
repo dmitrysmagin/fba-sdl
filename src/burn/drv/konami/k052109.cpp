@@ -16,6 +16,9 @@ INT32 K052109RMRDLine;
 static UINT8 K052109RomSubBank;
 static UINT32 K052109RomMask;
 static UINT8 *K052109Rom;
+static UINT32 K052109RomExpMask;
+static UINT8 *K052109RomExp;
+
 static INT32 K052109FlipEnable;
 INT32 K052109_irq_enabled;
 
@@ -141,12 +144,13 @@ void K052109AdjustScroll(INT32 x, INT32 y)
 	}
 }
 
-void K052109RenderLayerLineScroll(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
+void K052109RenderLayerLineScroll(INT32 nLayer, INT32 Flags, INT32 Priority)
 {
-	UINT16 *dst = pTransDraw;
+	UINT32 *dst = konami_bitmap32;
+	UINT8 *pdst = konami_priority_bitmap;
 
-	INT32 Priority = nLayer >> 4;
-	nLayer &= 0x03;
+	INT32 Category = Flags & 0xff;
+	INT32 Opaque = (Flags >> 16) & 1;
 
 	for (INT32 my = 0; my < 256; my++) {
 
@@ -182,7 +186,7 @@ void K052109RenderLayerLineScroll(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
 
 			K052109Callback(nLayer, Bank, &Code, &Colour, &xFlip, &Prio);
 
-			if (Prio != Priority) continue;
+			if (Prio != Category && Category) continue;
 
 			if (xFlip && !(K052109FlipEnable & 1)) xFlip = 0;
 			if (yFlip && !(K052109FlipEnable & 2)) yFlip = 0;
@@ -198,12 +202,12 @@ void K052109RenderLayerLineScroll(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
 
 			if (x >= nScreenWidth) continue;
 
-			UINT8 *src = pSrc + (Code * 0x40);
-			src += (yFlip ? (~y & 7) : (y & 7)) << 3;
+			UINT8 *src = K052109RomExp + ((Code & K052109RomExpMask) * 0x40);
+			src += (yFlip ? (~my & 7) : (my & 7)) * 8;
 
 			if (xFlip) xFlip = 0x07;
 
-			INT32 col = Colour << 4;
+			UINT32 *pal = konami_palette32 + (Colour * 16);
 
 			for (INT32 xx = 0; xx < 8; xx++, x++) {
 				if (x < 0 || x >= nScreenWidth) continue;
@@ -211,25 +215,30 @@ void K052109RenderLayerLineScroll(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
 				INT32 pxl = src[xx ^ xFlip];
 				if (!Opaque && !pxl) continue;
 
-				dst[x] = col | pxl;
+				dst[x] = pal[pxl];
+				pdst[x] = Priority;
 			}
 		}
 
+		pdst += nScreenWidth;
 		dst += nScreenWidth;
 	}
 }
 
-void K052109RenderLayer(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
+void K052109RenderLayer(INT32 nLayer, INT32 Flags, INT32 Priority)
 {
+	nLayer &= 0x03;
+
 	if (K052109EnableLine[nLayer]) {
-		K052109RenderLayerLineScroll(nLayer, Opaque, pSrc);
+		K052109RenderLayerLineScroll(nLayer, Flags, Priority);
 		return;
 	}
 
-	INT32 mx, my, Bank, Code, Colour, x, y, xFlip = 0, yFlip, Priority, TileIndex = 0;
+	INT32 EnableCategory = Flags & 0x100;
+	INT32 Category = Flags & 0xff;
+	INT32 Opaque = (Flags >> 16) & 1;
 
-	Priority = nLayer >> 4;
-	nLayer &= 0x03;
+	INT32 mx, my, Bank, Code, Colour, x, y, xFlip = 0, yFlip, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -260,7 +269,7 @@ void K052109RenderLayer(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
 
 			K052109Callback(nLayer, Bank, &Code, &Colour, &xFlip, &Prio);
 
-			if (Prio != Priority) continue;
+			if (Prio != Category && EnableCategory) continue;
 
 			if (xFlip && !(K052109FlipEnable & 1)) xFlip = 0;
 			if (yFlip && !(K052109FlipEnable & 2)) yFlip = 0;
@@ -282,65 +291,39 @@ void K052109RenderLayer(INT32 nLayer, INT32 Opaque, UINT8 *pSrc)
 
 			if (x >= nScreenWidth || y >= nScreenHeight) continue;
 
-			if (Opaque) {
-				if (x >= 0 && x <= (nScreenWidth - 8) && y >= 0 && y <= (nScreenHeight - 8)) {
-					if (xFlip) {
-						if (yFlip) {
-							Render8x8Tile_FlipXY(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						} else {
-							Render8x8Tile_FlipX(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						}
-					} else {
-						if (yFlip) {
-							Render8x8Tile_FlipY(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						} else {
-							Render8x8Tile(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						}
-					}
-				} else {
-					if (xFlip) {
-						if (yFlip) {
-							Render8x8Tile_FlipXY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						} else {
-							Render8x8Tile_FlipX_Clip(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						}
-					} else {
-						if (yFlip) {
-							Render8x8Tile_FlipY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						} else {
-							Render8x8Tile_Clip(pTransDraw, Code, x, y, Colour, 4, 0, pSrc);
-						}
-					}
-				}
-			} else {
-				if (x >= 0 && x <= (nScreenWidth - 8) && y >= 0 && y <= (nScreenHeight - 8)) {
-					if (xFlip) {
-						if (yFlip) {
-							Render8x8Tile_Mask_FlipXY(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						} else {
-							Render8x8Tile_Mask_FlipX(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						}
-					} else {
-						if (yFlip) {
-							Render8x8Tile_Mask_FlipY(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						} else {
-							Render8x8Tile_Mask(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
+			{
+				UINT32 *dst = konami_bitmap32 + y * nScreenWidth + x;
+				UINT8 *pri = konami_priority_bitmap + y * nScreenWidth + x;
+				UINT8 *gfx = K052109RomExp + (Code & K052109RomExpMask) * 0x40;
+
+				INT32 flip = 0;
+				if (xFlip) flip |= 0x07;
+				if (yFlip) flip |= 0x38;
+
+				UINT32 *pal = konami_palette32 + (Colour * 16);
+				INT32 trans = (Opaque) ? 0xffff : 0;
+
+				for (INT32 yy = 0; yy < 8; yy++, y++)
+				{
+					if (y >= 0 && y < nScreenHeight)
+					{
+						for (INT32 xx = 0; xx < 8; xx++)
+						{
+							if ((x+xx) >= 0 && (x+xx) < nScreenWidth)
+							{
+								INT32 pxl = gfx[((yy*8)+xx)^flip];
+	
+								if (pxl != trans)
+								{
+									dst[xx] = pal[pxl];
+									pri[xx] = Priority;
+								}
+							}
 						}
 					}
-				} else {
-					if (xFlip) {
-						if (yFlip) {
-							Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						} else {
-							Render8x8Tile_Mask_FlipX_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						}
-					} else {
-						if (yFlip) {
-							Render8x8Tile_Mask_FlipY_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						} else {
-							Render8x8Tile_Mask_Clip(pTransDraw, Code, x, y, Colour, 4, 0, 0, pSrc);
-						}
-					}
+
+					dst += nScreenWidth;
+					pri += nScreenWidth;
 				}
 			}
 		}
@@ -475,13 +458,24 @@ void K052109Reset()
 	memset (K052109ScrollCols, 0, 64 * 3 * sizeof(INT32));
 }
 
-void K052109Init(UINT8 *pRomSrc, UINT32 RomMask)
+void K052109GfxDecode(UINT8 *src, UINT8 *dst, INT32 nLen)
+{
+	INT32 Plane[4] = { STEP4(24, -8) };
+	INT32 XOffs[8] = { STEP8(0, 1) };
+	INT32 YOffs[8] = { STEP8(0, 32) };
+
+	GfxDecode((nLen * 2) / (8 * 8), 4, 8, 8, Plane, XOffs, YOffs, 0x100, src, dst);
+}
+
+void K052109Init(UINT8 *pRomSrc, UINT8 *pRomSrcExp, UINT32 RomMask)
 {
 	K052109Ram = (UINT8*)BurnMalloc(0x6000);
 	
 	K052109RomMask = RomMask;
+	K052109RomExpMask = (RomMask * 2) / (8 * 8);
 	
 	K052109Rom = pRomSrc;
+	K052109RomExp = pRomSrcExp;
 	
 	KonamiIC_K052109InUse = 1;
 
@@ -489,6 +483,8 @@ void K052109Init(UINT8 *pRomSrc, UINT32 RomMask)
 		K052109ScrollXOff[i]=0;
 		K052109ScrollYOff[i]=0;
 	}
+
+	KonamiAllocateBitmaps();
 
 	has_extra_video_ram = 0;
 }

@@ -421,9 +421,9 @@ UINT8 __fastcall mcatadv_sound_in(UINT16 port)
 static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -577,12 +577,12 @@ static INT32 DrvInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(Drv68KRAM,			0x100000, 0x10ffff, SM_RAM);
-	SekMapMemory(DrvVidRAM0,		0x400000, 0x401fff, SM_RAM);
-	SekMapMemory(DrvVidRAM1,		0x500000, 0x501fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x600000, 0x602fff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x700000, 0x70ffff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(Drv68KRAM,			0x100000, 0x10ffff, MAP_RAM);
+	SekMapMemory(DrvVidRAM0,		0x400000, 0x401fff, MAP_RAM);
+	SekMapMemory(DrvVidRAM1,		0x500000, 0x501fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x600000, 0x602fff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x700000, 0x70ffff, MAP_RAM);
 	SekSetWriteByteHandler(0,		mcatadv_write_byte);
 	SekSetWriteWordHandler(0,		mcatadv_write_word);
 	SekSetReadByteHandler(0,		mcatadv_read_byte);
@@ -607,7 +607,7 @@ static INT32 DrvInit()
 	BurnTimerAttachZet(4000000);
 	BurnYM2610SetRoute(BURN_SND_YM2610_YM2610_ROUTE_1, 2.00, BURN_SND_ROUTE_LEFT);
 	BurnYM2610SetRoute(BURN_SND_YM2610_YM2610_ROUTE_2, 2.00, BURN_SND_ROUTE_RIGHT);
-	BurnYM2610SetRoute(BURN_SND_YM2610_AY8910_ROUTE, 1.28, BURN_SND_ROUTE_BOTH);
+	BurnYM2610SetRoute(BURN_SND_YM2610_AY8910_ROUTE, 0.28, BURN_SND_ROUTE_BOTH);
 
 	GenericTilesInit();
 
@@ -863,8 +863,11 @@ static INT32 DrvFrame()
 		DrvInputs[0] ^= (nGame << 11); // nostradamus wants bit 11 off
 	}
 
-
-	nCyclesTotal[0] = 16000000 / 60;
+	if (nGame == 1) { // Nostradamus 4mhz boost -dink
+		nCyclesTotal[0] = 20000000 / 60;
+	} else {
+		nCyclesTotal[0] = 16000000 / 60;
+	}
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[1 ] = 0;
 
@@ -882,7 +885,7 @@ static INT32 DrvFrame()
 	}
 
 	SekRun(nCyclesTotal[0]);
-	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(1, CPU_IRQSTATUS_AUTO);
 
 	BurnTimerEndFrame(nCyclesTotal[1]);
 

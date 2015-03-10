@@ -23,6 +23,8 @@ void Sf2mdtSoundCommand(UINT16 d)
 	INT32 nCyclesToDo = ((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles) - ZetTotalCycles();
 	INT32 nEnd = Sf2mdtSoundPos + (INT64)Sf2mdtMSM5205Interleave * nCyclesToDo / nCpsZ80Cycles;
 	
+	if (nEnd == Sf2mdtSoundPos) nEnd += 1;
+	
 	for (INT32 i = Sf2mdtSoundPos; i < nEnd; i++) {
 		ZetRun(Sf2mdtCyclesPerSegment);
 		MSM5205Update();
@@ -30,7 +32,7 @@ void Sf2mdtSoundCommand(UINT16 d)
 	}
 	
 	Sf2mdtSoundLatch = d & 0xff;
-	ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+	ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 }
 
 UINT8 __fastcall Sf2mdtZ80Read(UINT16 a)
@@ -41,7 +43,7 @@ UINT8 __fastcall Sf2mdtZ80Read(UINT16 a)
 		}
 		
 		case 0xdc00: {
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return Sf2mdtSoundLatch;
 		}
 		

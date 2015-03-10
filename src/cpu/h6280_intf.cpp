@@ -31,6 +31,8 @@ static struct h6280_handler *sPointer;
 INT32 nh6280CpuCount = 0;
 INT32 nh6280CpuActive = -1;
 
+void h6280_set_irq_line(INT32 irqline, INT32 state);
+
 void h6280MapMemory(UINT8 *src, UINT32 start, UINT32 finish, INT32 type)
 {
 #if defined FBA_DEBUG
@@ -94,7 +96,7 @@ void h6280SetReadHandler(UINT8 (*read)(UINT32))
 	sPointer->h6280Read = read;
 }
 
-void h6280_write_rom(UINT32 address, UINT8 data)
+static void h6280_write_rom(UINT32 address, UINT8 data)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_write_rom called without init\n"));
@@ -120,7 +122,7 @@ void h6280_write_rom(UINT32 address, UINT8 data)
 	}
 }
 
-void h6280_write_port(UINT8 port, UINT8 data)
+void h6280WritePort(UINT8 port, UINT8 data)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_write_port called without init\n"));
@@ -137,7 +139,7 @@ void h6280_write_port(UINT8 port, UINT8 data)
 	return;
 }
 
-void h6280_write(UINT32 address, UINT8 data)
+void h6280Write(UINT32 address, UINT8 data)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_write called without init\n"));
@@ -161,7 +163,7 @@ void h6280_write(UINT32 address, UINT8 data)
 	return;
 }
 
-UINT8 h6280_read(UINT32 address)
+UINT8 h6280Read(UINT32 address)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_read called without init\n"));
@@ -183,7 +185,7 @@ UINT8 h6280_read(UINT32 address)
 	return 0;
 }
 
-UINT8 h6280_fetch1(UINT32 address)
+UINT8 h6280Fetch(UINT32 address)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_fetch1 called without init\n"));
@@ -203,19 +205,6 @@ UINT8 h6280_fetch1(UINT32 address)
 	return 0;
 }
 
-UINT8 h6280_fetch(UINT32 address)
-{
-#if defined FBA_DEBUG
-	if (!DebugCPU_H6280Initted) bprintf(PRINT_ERROR, _T("h6280_fetch called without init\n"));
-	if (nh6280CpuActive == -1) bprintf(PRINT_ERROR, _T("h6280_fetch called with no CPU open\n"));
-#endif
-
-	address &= 0x1fffff;
-
-//	bprintf (0, _T("%5.5x %5.5x, %2.2x fetch\n"), address, address&0xffff, h6280_fetch1(address));
-	return h6280_fetch1(address);
-}
-
 void h6280SetIRQLine(INT32 line, INT32 state)
 {
 #if defined FBA_DEBUG
@@ -223,7 +212,7 @@ void h6280SetIRQLine(INT32 line, INT32 state)
 	if (nh6280CpuActive == -1) bprintf(PRINT_ERROR, _T("h6280SetIRQLine called with no CPU open\n"));
 #endif
 
-	if (state == H6280_IRQSTATUS_AUTO) {
+	if (state == CPU_IRQSTATUS_AUTO) {
 		h6280_set_irq_line(line, 1);
 		h6280Run(10);
 		h6280_set_irq_line(line, 0);
@@ -236,7 +225,7 @@ static cpu_core_config H6280CheatCpuConfig =
 {
 	h6280Open,
 	h6280Close,
-	h6280_read,
+	h6280Read,
 	h6280_write_rom,
 	h6280GetActive,
 	h6280TotalCycles,
@@ -252,7 +241,11 @@ void h6280Init(INT32 nCpu)
 {
 	DebugCPU_H6280Initted = 1;
 
-	sPointer = &sHandler[nCpu % MAX_H6280];
+#if defined FBA_DEBUG
+	if (nCpu >= MAX_H6280) bprintf(PRINT_ERROR, _T("h6280Init nCpu is more than MAX_CPU %d (MAX is %d)\n"), nCpu, MAX_H6280);
+#endif
+
+	sPointer = &sHandler[nCpu];
 
 	sPointer->h6280 = (h6280_Regs*)BurnMalloc(sizeof(h6280_Regs));
 

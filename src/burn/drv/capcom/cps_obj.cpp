@@ -32,8 +32,73 @@ struct ObjFrame {
 static INT32 nFrameCount = 0;
 static struct ObjFrame of[3];
 
+static UINT8 *blendtable;
+
+static void CpsBlendInit()
+{
+	blendtable = NULL;
+
+	TCHAR filename[MAX_PATH];
+
+	_stprintf(filename, _T("%s%s.bld"), szAppBlendPath, BurnDrvGetText(DRV_NAME));
+	
+	FILE *fa = _tfopen(filename, _T("rt"));
+
+	if (fa == NULL) {
+		_stprintf(filename, _T("%s%s.bld"), szAppBlendPath, BurnDrvGetText(DRV_PARENT));
+
+		fa = _tfopen(filename, _T("rt"));
+
+		if (fa == NULL) {
+			return;
+		}
+	}
+
+	bprintf (PRINT_IMPORTANT, _T("Using sprite blending (.bld) table!\n"));
+
+	blendtable = (UINT8*)BurnMalloc(0x40000); // maximum number of sprites
+	memset (blendtable, 0, 0x40000); // no blend
+
+	char szLine[64];
+
+	INT32 table[4] = { 0, 0xff-0x3f, 0xff-0x7f, 0xff-0x7f }; // last one 7f?
+
+	while (1)
+	{
+		if (fgets (szLine, 64, fa) == NULL) break;
+
+		if (strncmp ("Game", szLine, 4) == 0) continue; 	// don't care
+		if (strncmp ("Name", szLine, 4) == 0) continue; 	// don't care
+		if (szLine[0] == ';') continue;				// comment (also don't care)
+
+		INT32 type, single_entry = -1;
+		UINT32 min,max,k;
+
+		for (k = 0; k < strlen(szLine); k++) {
+			if (szLine[k] == '-') { single_entry = k+1; break; }
+		}
+
+		if (single_entry < 0) {
+			sscanf(szLine,"%x %d",&max,&type);
+			min = max;
+		} else {
+			sscanf(szLine,"%x",&min);
+			sscanf(szLine+single_entry,"%x %d",&max,&type);
+		}
+
+		for (k = min; k <= max; k++) {
+			if (k < 0x40000)
+				blendtable[k] = table[type&3];
+		}
+	}
+
+	fclose (fa);
+}
+
 INT32 CpsObjInit()
 {
+	if (bBurnUseBlend) CpsBlendInit();
+
 	nMax = 0x100;				// CPS1 has 256 sprites
 
 	if (Cps == 2) {				// CPS2 has 1024 sprites
@@ -67,6 +132,9 @@ INT32 CpsObjInit()
 
 INT32 CpsObjExit()
 {
+	if (blendtable)
+		BurnFree(blendtable);
+
 	for (INT32 i = 0; i < nFrameCount; i++) {
 		of[i].Obj = NULL;
 		of[i].nCount = 0;
@@ -248,8 +316,10 @@ INT32 Cps1ObjDraw(INT32 nLevelFrom,INT32 nLevelTo)
 				nCpstX=x+(ex<<4);
 				nCpstY=y+(ey<<4);
 				nCpstTile = (n & ~0x0F) + (dy << 4) + ((n + dx) & 0x0F);
+				nCpsBlend = (blendtable) ? blendtable[nCpstTile] : 0;
 				nCpstTile <<= 7;
 				CpstOneObjDoX[0]();
+				nCpsBlend = 0;
 			}
 		}
 
@@ -387,9 +457,11 @@ INT32 Cps2ObjDraw(INT32 nLevelFrom, INT32 nLevelTo)
 
 //				nCpstTile = n + (dy << 4) + dx;								// normal version
 				nCpstTile = (n & ~0x0F) + (dy << 4) + ((n + dx) & 0x0F);	// pgear fix
+				nCpsBlend = (blendtable) ? blendtable[nCpstTile] : 0;
 				nCpstTile <<= 7;						// Find real tile address					
 
 				pCpstOne();
+				nCpsBlend = 0;
 			}
 		}
 	}

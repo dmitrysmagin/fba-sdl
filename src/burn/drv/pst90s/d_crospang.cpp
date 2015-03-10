@@ -232,11 +232,11 @@ void __fastcall crospang_sound_out(UINT16 port, UINT8 data)
 	switch (port & 0xff)
 	{
 		case 0x00:
-			BurnYM3812Write(0, data);
+			BurnYM3812Write(0, 0, data);
 		return;
 
 		case 0x01:
-			BurnYM3812Write(1, data);
+			BurnYM3812Write(0, 1, data);
 		return;
 
 		case 0x02:
@@ -250,7 +250,7 @@ UINT8 __fastcall crospang_sound_in(UINT16 port)
 	switch (port & 0xff)
 	{
 		case 0x00:
-			return BurnYM3812Read(0);
+			return BurnYM3812Read(0, 0);
 
 		case 0x02:
 			return MSM6295ReadStatus(0);
@@ -270,9 +270,9 @@ inline static INT32 crospangSynchroniseStream(INT32 nSoundRate)
 void crospangYM3812IrqHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -433,13 +433,13 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)())
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvFgRAM,		0x120000, 0x1207ff, SM_RAM);
-	SekMapMemory(DrvBgRAM,		0x122000, 0x1227ff, SM_RAM);
-	SekMapMemory(DrvPalRAM,		0x200000, 0x2005ff, SM_RAM);
-	SekMapMemory(DrvSprRAM,		0x210000, 0x2107ff, SM_RAM);
-	SekMapMemory(Drv68KRAM,		0x320000, 0x32ffff, SM_RAM); // crospang, heuksun
-	SekMapMemory(Drv68KRAM,		0x3a0000, 0x3affff, SM_RAM); // bestri
+	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvFgRAM,		0x120000, 0x1207ff, MAP_RAM);
+	SekMapMemory(DrvBgRAM,		0x122000, 0x1227ff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,		0x200000, 0x2005ff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,		0x210000, 0x2107ff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,		0x320000, 0x32ffff, MAP_RAM); // crospang, heuksun
+	SekMapMemory(Drv68KRAM,		0x3a0000, 0x3affff, MAP_RAM); // bestri
 	SekSetWriteByteHandler(0,	crospang_write_byte);
 	SekSetWriteWordHandler(0,	crospang_write_word);
 	SekSetReadByteHandler(0,	crospang_read_byte);
@@ -457,9 +457,9 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)())
 	ZetSetInHandler(crospang_sound_in);
 	ZetClose();
 
-	BurnYM3812Init(3579545, &crospangYM3812IrqHandler, crospangSynchroniseStream, 0);
+	BurnYM3812Init(1, 3579545, &crospangYM3812IrqHandler, crospangSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(3579545);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	MSM6295Init(0, 1056000 / 132, 1);
 	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
@@ -628,7 +628,7 @@ static INT32 DrvFrame()
 	ZetOpen(0);
 
 	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(6, CPU_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
 		BurnTimerEndFrameYM3812(nTotalCycles[1]);

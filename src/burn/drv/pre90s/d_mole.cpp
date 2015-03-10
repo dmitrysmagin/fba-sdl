@@ -94,7 +94,7 @@ static UINT8 mole_protection_r(UINT8 offset)
 			return 0xb0;
 
 		case 0x26:
-			if (M6502GetPC() == 0x53d7)
+			if (M6502GetPC(0) == 0x53d7)
 			{
 				return 0x06;	// bonus round
 			}
@@ -313,9 +313,9 @@ static INT32 DrvInit()
 
 	M6502Init(0, TYPE_M6502);
 	M6502Open(0);
-	M6502MapMemory(Rom + 0x0000, 0x0000, 0x03ff, M6502_RAM); // Rom
-	M6502MapMemory(Rom + 0x5000, 0x5000, 0x7fff, M6502_ROM); // Rom
-	M6502MapMemory(Rom + 0x5000, 0xd000, 0xffff, M6502_ROM); // Rom Mirror
+	M6502MapMemory(Rom + 0x0000, 0x0000, 0x03ff, MAP_RAM); // Rom
+	M6502MapMemory(Rom + 0x5000, 0x5000, 0x7fff, MAP_ROM); // Rom
+	M6502MapMemory(Rom + 0x5000, 0xd000, 0xffff, MAP_ROM); // Rom Mirror
 	M6502SetReadHandler(mole_read_byte);
 	M6502SetWriteHandler(mole_write_byte);
 	M6502SetReadMemIndexHandler(mole_read_byte);
@@ -376,7 +376,7 @@ static INT32 DrvDraw()
 				else
 					pos = y * 320 + x;
 
-				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 			}
 		}
 	}
@@ -393,7 +393,7 @@ static INT32 DrvFrame()
 
 	M6502Open(0);
 	M6502Run(4000000 / 60);
-	M6502SetIRQLine(M6502_IRQ_LINE, M6502_IRQSTATUS_AUTO);
+	M6502SetIRQLine(M6502_IRQ_LINE, CPU_IRQSTATUS_AUTO);
 	M6502Close();
 
 	if (pBurnSoundOut) {

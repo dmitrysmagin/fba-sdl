@@ -38,7 +38,6 @@ static UINT8 *DrvGfx0Trans;
 static UINT8 *DrvGfx1;
 static UINT8 *DrvSnd0;
 
-static UINT32 *Palette;
 static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
@@ -507,7 +506,6 @@ void pow_paletteram16_word_w(UINT32 address)
 	g = (g << 3) | (g >> 2);
 	b = (b << 3) | (b >> 2);
 
-	Palette[(address >> 1) & 0x7ff] = (r << 16) | (g << 8) | b;
 	DrvPalette[(address >> 1) & 0x7ff] = BurnHighCol(r, g, b, 0);
 }
 
@@ -669,7 +667,7 @@ void __fastcall pow_sound_out(UINT16 address, UINT8 data)
 	{
 		case 0x00:
 		case 0x20:
-			BurnYM3812Write((address >> 5) & 1, data);
+			BurnYM3812Write(0, (address >> 5) & 1, data);
 		return;
 
 		case 0x40:
@@ -696,7 +694,7 @@ UINT8 __fastcall pow_sound_in(UINT16 address)
 {
 	address &= 0xff;
 
-	if (address == 0x0000) return BurnYM3812Read(0);
+	if (address == 0x0000) return BurnYM3812Read(0, 0);
 
 	return 0;
 }
@@ -704,9 +702,9 @@ UINT8 __fastcall pow_sound_in(UINT16 address)
 static void powFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -804,8 +802,6 @@ static INT32 MemIndex()
 
 	DrvZ80Ram	= Next; Next += 0x000800;
 
-	Palette		= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
-
 	RamEnd		= Next;
 
 	DrvPalette	= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
@@ -820,11 +816,11 @@ static void pow_map_68k()
 {
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom,		0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRam,		0x040000, 0x043fff, SM_RAM);
-	SekMapMemory(DrvVidRam,		0x100000, 0x100fff, SM_RAM); // video ram
-	SekMapMemory(DrvSprRam,		0x200000, 0x207fff, SM_RAM); // sprite ram
-	SekMapMemory(DrvPalRam,		0x400000, 0x400fff, SM_ROM); // palette ram
+	SekMapMemory(Drv68KRom,		0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam,		0x040000, 0x043fff, MAP_RAM);
+	SekMapMemory(DrvVidRam,		0x100000, 0x100fff, MAP_RAM); // video ram
+	SekMapMemory(DrvSprRam,		0x200000, 0x207fff, MAP_RAM); // sprite ram
+	SekMapMemory(DrvPalRam,		0x400000, 0x400fff, MAP_ROM); // palette ram
 	SekSetWriteByteHandler(0,	pow_write_byte);
 	SekSetWriteWordHandler(0,	pow_write_word);
 	SekSetReadByteHandler(0,	pow_read_byte);
@@ -836,13 +832,13 @@ static void sar_map_68k()
 {
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom,		0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRam,		0x040000, 0x043fff, SM_RAM);
-	SekMapMemory(DrvSprRam,		0x100000, 0x107fff, SM_ROM); // sprite ram
-	SekMapMemory(DrvVidRam,		0x200000, 0x200fff, SM_RAM); // video ram
-	SekMapMemory(DrvVidRam,		0x201000, 0x201fff, SM_WRITE); // video ram mirror
-	SekMapMemory(Drv68KRomBank,	0x300000, 0x33ffff, SM_ROM); // extra rom
-	SekMapMemory(DrvPalRam,		0x400000, 0x400fff, SM_ROM); // palette ram
+	SekMapMemory(Drv68KRom,		0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam,		0x040000, 0x043fff, MAP_RAM);
+	SekMapMemory(DrvSprRam,		0x100000, 0x107fff, MAP_ROM); // sprite ram
+	SekMapMemory(DrvVidRam,		0x200000, 0x200fff, MAP_RAM); // video ram
+	SekMapMemory(DrvVidRam,		0x201000, 0x201fff, MAP_WRITE); // video ram mirror
+	SekMapMemory(Drv68KRomBank,	0x300000, 0x33ffff, MAP_ROM); // extra rom
+	SekMapMemory(DrvPalRam,		0x400000, 0x400fff, MAP_ROM); // palette ram
 	SekSetWriteByteHandler(0,	pow_write_byte);
 	SekSetWriteWordHandler(0,	pow_write_word);
 	SekSetReadByteHandler(0,	sar_read_byte);
@@ -949,9 +945,9 @@ static INT32 DrvInit(INT32 game)
 	ZetSetOutHandler(pow_sound_out);
 	ZetClose();
 
-	BurnYM3812Init(4000000, &powFMIRQHandler, &powSynchroniseStream, 0);
+	BurnYM3812Init(1, 4000000, &powFMIRQHandler, &powSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(4000000);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 	
 	UPD7759Init(0, UPD7759_STANDARD_CLOCK, DrvSnd0);
 	UPD7759SetRoute(0, 0.50, BURN_SND_ROUTE_BOTH);
@@ -1204,10 +1200,10 @@ static void sar_foreground()
 static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (INT32 i = 0; i < 0x800; i++) {
-			INT32 rgb = Palette[i];
-			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
+		for (INT32 i = 0; i < 0x1000; i+=2) {
+			pow_paletteram16_word_w(i);
 		}
+		DrvRecalc = 0;
 	}
 
 	for (INT32 offs = 0; offs < nScreenHeight * nScreenWidth; offs++) {
@@ -1297,7 +1293,7 @@ static INT32 DrvFrame()
 	ZetNewFrame();
 
 	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(1, CPU_IRQSTATUS_AUTO);
 
 	BurnTimerEndFrameYM3812(nTotalCycles[1]);
 	if (pBurnSoundOut) {

@@ -109,7 +109,7 @@ static Z80WriteProgHandler Z80ProgramWrite;
 static Z80ReadOpHandler Z80CPUReadOp;
 static Z80ReadOpArgHandler Z80CPUReadOpArg;
 
-unsigned char Z80Vector = 0;
+unsigned char Z80Vector = 0xff;
 
 #define VERBOSE 0
 
@@ -3306,7 +3306,6 @@ OP(op,ff) { RST(0x38);											} /* RST  7           */
 static void take_interrupt(void)
 {
 	int irq_vector = Z80Vector;
-	Z80Vector = 0;
 
 	/* there isn't a valid previous program counter */
 	PRVPC = (UINT32)-1;
@@ -3496,6 +3495,8 @@ void Z80Reset()
 	Z80.irq_state = Z80_CLEAR_LINE;
 	Z80.after_ei = FALSE;
 
+	Z80Vector = 0xff;
+
 	if (Z80.daisy)
 		z80daisy_reset(Z80.daisy);
 
@@ -3661,6 +3662,16 @@ int ActiveZ80GetHL()
 	return Z80.hl.w.l;
 }
 
+int ActiveZ80GetI()
+{
+	return Z80.i;
+}
+
+int ActiveZ80GetPrevPC()
+{
+	return Z80.prvpc.d;
+}
+
 #if 0
 /****************************************************************************
  * Processor initialization
@@ -3791,8 +3802,6 @@ static void z80_init(int index, int clock, const void *config, int (*irqcallback
 	Z80.irq_callback = irqcallback;
 	IX = IY = 0xffff; /* IX and IY are FFFF after a reset! */
 	F = ZF;			/* Zero flag is set */
-	
-	Z80Vector = 0;
 }
 
 /****************************************************************************
@@ -3808,6 +3817,8 @@ static void z80_reset(void)
 	Z80.nmi_pending = FALSE;
 	Z80.irq_state = Z80_CLEAR_LINE;
 	Z80.after_ei = FALSE;
+
+	Z80Vector = 0xff; // Correct to reset this to 0xff?
 
 	if (Z80.daisy)
 		z80daisy_reset(Z80.daisy);

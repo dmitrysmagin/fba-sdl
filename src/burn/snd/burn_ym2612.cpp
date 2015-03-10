@@ -138,8 +138,8 @@ static void YM2612UpdateResample(INT16* pSoundBuf, INT32 nSegmentEnd)
 		nTotalRightSample = BURN_SND_CLIP(nTotalRightSample);
 			
 		if (bYM2612AddSignal) {
-			pSoundBuf[i + 0] += nTotalLeftSample;
-			pSoundBuf[i + 1] += nTotalRightSample;
+			pSoundBuf[i + 0] = BURN_SND_CLIP(pSoundBuf[i + 0] + nTotalLeftSample);
+			pSoundBuf[i + 1] = BURN_SND_CLIP(pSoundBuf[i + 1] + nTotalRightSample);
 		} else {
 			pSoundBuf[i + 0] = nTotalLeftSample;
 			pSoundBuf[i + 1] = nTotalRightSample;
@@ -229,8 +229,8 @@ static void YM2612UpdateNormal(INT16* pSoundBuf, INT32 nSegmentEnd)
 		nRightSample = BURN_SND_CLIP(nRightSample);
 			
 		if (bYM2612AddSignal) {
-			pSoundBuf[(n << 1) + 0] += nLeftSample;
-			pSoundBuf[(n << 1) + 1] += nRightSample;
+			pSoundBuf[(n << 1) + 0] = BURN_SND_CLIP(pSoundBuf[(n << 1) + 0] + nLeftSample);
+			pSoundBuf[(n << 1) + 1] = BURN_SND_CLIP(pSoundBuf[(n << 1) + 1] + nRightSample);
 		} else {
 			pSoundBuf[(n << 1) + 0] = nLeftSample;
 			pSoundBuf[(n << 1) + 1] = nRightSample;
@@ -308,9 +308,13 @@ void BurnYM2612Exit()
 	DebugSnd_YM2612Initted = 0;
 }
 
+void BurnStateExit();
+
 INT32 BurnYM2612Init(INT32 num, INT32 nClockFrequency, FM_IRQHANDLER IRQCallback, INT32 (*StreamCallback)(INT32), double (*GetTimeCallback)(), INT32 bAddSignal)
 {
 	DebugSnd_YM2612Initted = 1;
+
+	BurnStateExit(); // prevent crash (in fm.c, bottom of YM2612Init()) if the postload function is double-called (e.g.after a reset) Aug 4, 2014 - dink
 	
 	if (num > MAX_YM2612) num = MAX_YM2612;
 
@@ -396,9 +400,8 @@ void BurnYM2612Scan(INT32 nAction, INT32* pnMin)
 	if (!DebugSnd_YM2612Initted) bprintf(PRINT_ERROR, _T("BurnYM2612Scan called without init\n"));
 #endif
 
-	BurnTimerScan(nAction, pnMin);
-
 	if (nAction & ACB_DRIVER_DATA) {
+		BurnTimerScan(nAction, pnMin);
 		SCAN_VAR(nYM2612Position);
 	}
 }

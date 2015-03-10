@@ -8,7 +8,7 @@
 static UINT8 *Mem, *MemEnd, *Rom0, *Rom1, *Ram;
 static UINT8 *Gfx0, *Gfx1, *Gfx2, *Gfx3, *Prom;
 static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[2], DrvReset;
-static UINT32 *Palette, *DrvPal;
+static UINT32 *DrvPalette;
 static UINT8 DrvCalcPal;
 static UINT8 *SprTrnsp;
 
@@ -19,7 +19,6 @@ static INT32 nGunsmokeBank;
 static UINT8 sprite3bank;
 static UINT8 chon, bgon, objon;
 static UINT8 gunsmoke_scrollx[2], gunsmoke_scrolly;
-
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -293,35 +292,24 @@ static INT32 DrvDoReset()
 	return 0;
 }
 
-static INT32 gunsmoke_palette_init()
+static INT32 DrvPaletteInit()
 {
-	INT32 i, ctabentry;
 	UINT32 tmp[0x100];
 
-	for (i = 0; i < 0x100; i++)
+	for (INT32 i = 0; i < 0x100; i++)
 	{
-		UINT8 r, g, b;
+		UINT8 r  = Prom[i + 0x000] & 0x0f;
+		UINT8 g  = Prom[i + 0x100] & 0x0f;
+		UINT8 b  = Prom[i + 0x200] & 0x0f;
 
-		r  = Prom[i + 0x000] & 0x0f;
-		r |= r << 4;
-		g  = Prom[i + 0x100] & 0x0f;
-		g |= g << 4;
-		b  = Prom[i + 0x200] & 0x0f;
- 		b |= b << 4;
-
-		tmp[i] = (r << 16) | (g << 8) | b;
+		tmp[i] = BurnHighCol((r*16)+r,(g*16)+g,(b*16)+b,0);
 	}
 
-	for (i = 0; i < 0x100; i++)
+	for (INT32 i = 0; i < 0x100; i++)
 	{
-		ctabentry = Prom[0x300 + i] | 0x40;
-		Palette[0x000 + i] = tmp[ctabentry];
-
-		ctabentry = Prom[0x400 + i] | ((Prom[0x500 + i] & 0x03) << 4);
-		Palette[0x100 + i] = tmp[ctabentry];
-
-		ctabentry = Prom[0x600 + i] | ((Prom[0x700 + i] & 0x07) << 4) | 0x80;
-		Palette[0x200 + i] = tmp[ctabentry];
+		DrvPalette[0x000 + i] = tmp[Prom[0x300 + i] | 0x40];
+		DrvPalette[0x100 + i] = tmp[Prom[0x400 + i] | ((Prom[0x500 + i] & 0x03) << 4)];
+		DrvPalette[0x200 + i] = tmp[Prom[0x600 + i] | ((Prom[0x700 + i] & 0x07) << 4) | 0x80];
 	}
 
 	return 0;
@@ -381,7 +369,6 @@ static double gunsmokeGetTime()
 	return (double)ZetTotalCycles() / 3000000;
 }
 
-
 static INT32 MemIndex()
 {
 	UINT8 *Next; Next = Mem;
@@ -397,10 +384,9 @@ static INT32 MemIndex()
 
 	SprTrnsp       = Next; Next += 0x00800;
 
-	Palette	       = (UINT32*)Next; Next += 0x00300 * sizeof(UINT32);
-	DrvPal	       = (UINT32*)Next; Next += 0x00300 * sizeof(UINT32);
+	DrvPalette     = (UINT32*)Next; Next += 0x00300 * sizeof(UINT32);
 
-	MemEnd                 = Next;
+	MemEnd         = Next;
 
 	return 0;
 }
@@ -434,7 +420,7 @@ static INT32 DrvInit()
 		}
 
 		gunsmoke_gfx_decode();
-		gunsmoke_palette_init();
+		DrvPaletteInit();
 	}
 
 	ZetInit(0);
@@ -495,7 +481,7 @@ static INT32 DrvExit()
 	Mem = MemEnd = Rom0 = Rom1 = Ram = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Gfx3 = Prom = NULL;
 	SprTrnsp = NULL;
-	Palette = DrvPal = NULL;
+	DrvPalette = NULL;
 
 	soundlatch = flipscreen = nGunsmokeBank = 0;
 
@@ -581,7 +567,7 @@ static void draw_fg_layer()
 				for (INT32 x = sx + 7; x >= sx; x--, src++)
 				{
 					if (y < 0 || x < 0 || y > 223 || x > 255) continue;
-					if (!Palette[color|*src]) continue;
+					if (!DrvPalette[color|*src]) continue;
 
 					pTransDraw[(y << 8) | x] = color | *src;
 				}
@@ -594,7 +580,7 @@ static void draw_fg_layer()
 				for (INT32 x = sx; x < sx + 8; x++, src++)
 				{
 					if (y < 0 || x < 0 || y > 223 || x > 255) continue;
-					if (!Palette[color|*src]) continue;
+					if (!DrvPalette[color|*src]) continue;
 
 					pTransDraw[(y << 8) | x] = color | *src;
 				}
@@ -651,12 +637,8 @@ static void draw_sprites()
 
 static INT32 DrvDraw()
 {
-	// Recalculate palette
 	if (DrvCalcPal) {
-		for (INT32 i = 0; i < 0x300; i++) {
-			UINT32 col = Palette[i];
-			DrvPal[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
-		}
+		DrvPaletteInit();
 		DrvCalcPal = 0;
 	}
 
@@ -666,7 +648,7 @@ static INT32 DrvDraw()
 	if (objon) draw_sprites();
 	if (chon)  draw_fg_layer();
 
-	BurnTransferCopy(DrvPal);
+	BurnTransferCopy(DrvPalette);
 
 	return 0;
 }
@@ -681,7 +663,6 @@ static INT32 DrvFrame()
 	ZetNewFrame();
 
 	INT32 nInterleave = 278;
-	INT32 nSoundBufferPos = 0;
 
 	INT32 nCyclesSegment;
 	INT32 nCyclesDone[2], nCyclesTotal[2];
@@ -700,8 +681,8 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i == 274) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		if (i == 276) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i == 274) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		if (i == 276) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
 
 		// Run Z80 #1
@@ -712,36 +693,20 @@ static INT32 DrvFrame()
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		// execute IRQ quarterly 68.5 (or 69) is 25% of 278 (nInterleave)
-		if (i%69 == 0 && i>0) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		// execute ZET_IRQSTATUS_NONE 1 interleave past the last one
-		if ((i-1)%69 == 0 && i>1) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i%69 == 0 && i>0) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		// execute CPU_IRQSTATUS_NONE 1 interleave past the last one
+		if ((i-1)%69 == 0 && i>1) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
-		
-		// Render Sound Segment
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
-
 	}
 	
 	ZetOpen(1);
 	BurnTimerEndFrame(nCyclesTotal[1]);
 	ZetClose();
 
-	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
+		ZetOpen(1);
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		ZetClose();
 	}
 	
 	if (pBurnDraw) {
@@ -793,7 +758,7 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 }
 
 
-// Gun.Smoke (World)
+// Gun.Smoke (World, 851115)
 
 static struct BurnRomInfo gunsmokeRomDesc[] = {
 	{ "09n_gs03.bin", 0x8000, 0x40a06cef, 1 | BRF_PRG | BRF_ESS }, //  0 Z80 #0 Code
@@ -842,7 +807,7 @@ STD_ROM_FN(gunsmoke)
 
 struct BurnDriver BurnDrvGunsmoke = {
 	"gunsmoke", NULL, NULL, NULL, "1985",
-	"Gun.Smoke (World)\0", NULL, "Capcom", "Miscellaneous",
+	"Gun.Smoke (World, 851115)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokeRomInfo, gunsmokeRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
@@ -851,7 +816,7 @@ struct BurnDriver BurnDrvGunsmoke = {
 };
 
 
-// Gun.Smoke (bootleg)
+// Gun.Smoke (World, 851115)(bootleg)
 // based on world version, warning message patched out
 
 static struct BurnRomInfo gunsmokebRomDesc[] = {
@@ -901,7 +866,7 @@ STD_ROM_FN(gunsmokeb)
 
 struct BurnDriver BurnDrvGunsmokeb = {
 	"gunsmokeb", "gunsmoke", NULL, NULL, "1985",
-	"Gun.Smoke (bootleg)\0", NULL, "bootleg", "Miscellaneous",
+	"Gun.Smoke (World, 851115) (bootleg)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokebRomInfo, gunsmokebRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
@@ -910,7 +875,7 @@ struct BurnDriver BurnDrvGunsmokeb = {
 };
 
 
-// Gun.Smoke (Japan)
+// Gun.Smoke (Japan, 851115)
 
 static struct BurnRomInfo gunsmokejRomDesc[] = {
 	{ "gs03_9n.rom",  0x8000, 0xb56b5df6, 1 | BRF_PRG | BRF_ESS }, //  0 Z80 #0 Code
@@ -959,7 +924,7 @@ STD_ROM_FN(gunsmokej)
 
 struct BurnDriver BurnDrvGunsmokej = {
 	"gunsmokej", "gunsmoke", NULL, NULL, "1985",
-	"Gun.Smoke (Japan)\0", NULL, "Capcom", "Miscellaneous",
+	"Gun.Smoke (Japan, 851115)\0", NULL, "Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokejRomInfo, gunsmokejRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
@@ -968,7 +933,7 @@ struct BurnDriver BurnDrvGunsmokej = {
 };
 
 
-// Gun.Smoke (US set 1)
+// Gun.Smoke (US, 851115)
 
 static struct BurnRomInfo gunsmokeuRomDesc[] = {
 	{ "9n_gs03.bin",  0x8000, 0x592f211b, 1 | BRF_PRG | BRF_ESS }, //  0 Z80 #0 Code
@@ -1017,7 +982,7 @@ STD_ROM_FN(gunsmokeu)
 
 struct BurnDriver BurnDrvGunsmokeu = {
 	"gunsmokeu", "gunsmoke", NULL, NULL, "1985",
-	"Gun.Smoke (US set 1)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
+	"Gun.Smoke (US, 851115)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokeuRomInfo, gunsmokeuRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
@@ -1026,7 +991,7 @@ struct BurnDriver BurnDrvGunsmokeu = {
 };
 
 
-// Gun.Smoke (US set 2)
+// Gun.Smoke (US, 860408)
 
 static struct BurnRomInfo gunsmokeuaRomDesc[] = {
 	{ "gs03.9n",      0x8000, 0x51dc3f76, 1 | BRF_PRG | BRF_ESS }, //  0 Z80 #0 Code
@@ -1075,7 +1040,7 @@ STD_ROM_FN(gunsmokeua)
 
 struct BurnDriver BurnDrvGunsmokeua = {
 	"gunsmokeua", "gunsmoke", NULL, NULL, "1986",
-	"Gun.Smoke (US set 2)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
+	"Gun.Smoke (US, 860408)\0", NULL, "Capcom (Romstar License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARWARE_CAPCOM_MISC, GBF_VERSHOOT, 0,
 	NULL, gunsmokeuaRomInfo, gunsmokeuaRomName, NULL, NULL, DrvInputInfo, gunsmokeuaDIPInfo,

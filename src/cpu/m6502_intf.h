@@ -34,17 +34,6 @@ struct M6502Ext {
 	INT32 nCyclesLeft;
 };
 
-#define M6502_IRQSTATUS_NONE	0
-#define M6502_IRQSTATUS_ACK	1
-#define M6502_IRQSTATUS_AUTO	2
-
-#define M6502_READ		1
-#define M6502_WRITE	2
-#define M6502_FETCH	4
-
-#define M6502_RAM	(M6502_READ | M6502_WRITE | M6502_FETCH)
-#define M6502_ROM	(M6502_READ | M6502_FETCH)
-
 extern INT32 nM6502Count;
 
 extern INT32 nM6502CyclesTotal;
@@ -69,6 +58,7 @@ void M6502Exit();
 void M6502Open(INT32 num);
 void M6502Close();
 INT32 M6502GetActive();
+void M6502Idle(INT32 nCycles);
 void M6502SetIRQLine(INT32 vector, INT32 status);
 INT32 M6502Run(INT32 cycles);
 void M6502RunEnd();
@@ -83,7 +73,7 @@ void M6502SetReadOpHandler(UINT8 (*pHandler)(UINT16));
 void M6502SetReadOpArgHandler(UINT8 (*pHandler)(UINT16));
 INT32 M6502Scan(INT32 nAction);
 
-UINT32 M6502GetPC();
+UINT32 M6502GetPC(INT32);
 
 void M6502WriteRom(UINT32 Address, UINT8 Data);
 

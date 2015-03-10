@@ -187,7 +187,7 @@ void __fastcall galspnbl_sound_write(UINT16 address, UINT8 data)
 
 		case 0xf810:
 		case 0xf811:
-			BurnYM3812Write(address & 1, data);
+			BurnYM3812Write(0, address & 1, data);
 		return;
 	}
 }
@@ -201,7 +201,7 @@ UINT8 __fastcall galspnbl_sound_read(UINT16 address)
 
 		case 0xf810:
 		case 0xf811:
-			return BurnYM3812Read(address & 1);
+			return BurnYM3812Read(0, address & 1);
 
 		case 0xfc20:
 			return *soundlatch;
@@ -218,9 +218,9 @@ static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 static void DrvYM3812IrqHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -338,17 +338,17 @@ static INT32 DrvInit(INT32 select)
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x3fffff, SM_ROM);
-	SekMapMemory(Drv68KRAM0,	0x700000, 0x703fff, SM_RAM);
-	SekMapMemory(Drv68KRAM1,	0x708000, 0x70ffff, SM_RAM);
-	SekMapMemory(Drv68KRAM0,	0x800000, 0x803fff, SM_RAM);
-	SekMapMemory(Drv68KRAM1,	0x808000, 0x80ffff, SM_RAM);
-	SekMapMemory(DrvSprRAM,		0x880000, 0x880fff, SM_RAM);
-	SekMapMemory(DrvColRAM,		0x900000, 0x900fff, SM_RAM);
-	SekMapMemory(DrvVidRAM0,	0x904000, 0x904fff, SM_RAM);
-	SekMapMemory(DrvVidRAM1,	0x980000, 0x9bffff, SM_RAM);
-	SekMapMemory(DrvPalRAM,		0xa01000, 0xa017ff, SM_ROM);
-	SekMapHandler(1,		0xa01000, 0xa017ff, SM_WRITE);
+	SekMapMemory(Drv68KROM,		0x000000, 0x3fffff, MAP_ROM);
+	SekMapMemory(Drv68KRAM0,	0x700000, 0x703fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM1,	0x708000, 0x70ffff, MAP_RAM);
+	SekMapMemory(Drv68KRAM0,	0x800000, 0x803fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM1,	0x808000, 0x80ffff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,		0x880000, 0x880fff, MAP_RAM);
+	SekMapMemory(DrvColRAM,		0x900000, 0x900fff, MAP_RAM);
+	SekMapMemory(DrvVidRAM0,	0x904000, 0x904fff, MAP_RAM);
+	SekMapMemory(DrvVidRAM1,	0x980000, 0x9bffff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,		0xa01000, 0xa017ff, MAP_ROM);
+	SekMapHandler(1,		0xa01000, 0xa017ff, MAP_WRITE);
 //	SekSetWriteWordHandler(0,	galspnbl_main_write_word);
 	SekSetWriteByteHandler(0,	galspnbl_main_write_byte);
 //	SekSetReadWordHandler(0,	galspnbl_main_read_word);
@@ -368,9 +368,9 @@ static INT32 DrvInit(INT32 select)
 	ZetSetReadHandler(galspnbl_sound_read);
 	ZetClose();
 
-	BurnYM3812Init(3579545, &DrvYM3812IrqHandler, &DrvSynchroniseStream, 0);
+	BurnYM3812Init(1, 3579545, &DrvYM3812IrqHandler, &DrvSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(4000000);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	MSM6295Init(0, 1056000 / 132, 1);
 	MSM6295SetRoute(0, 0.50, BURN_SND_ROUTE_BOTH);
@@ -542,7 +542,7 @@ static INT32 DrvFrame()
 	for (INT32 i = 0; i < nInterleave; i++) {
 		INT32 nSegment = nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += SekRun(nSegment);
-		if (i == (nInterleave - 1)) SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
+		if (i == (nInterleave - 1)) SekSetIRQLine(3, CPU_IRQSTATUS_AUTO);
 
 		nSegment = nCyclesTotal[1] / nInterleave;
 		BurnTimerUpdateYM3812((1 + i) * nSegment);

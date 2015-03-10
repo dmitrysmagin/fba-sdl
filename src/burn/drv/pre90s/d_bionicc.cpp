@@ -31,7 +31,6 @@ static UINT8 *DrvZ80RAM;
 static UINT8 *DrvSprBuf;
 
 static UINT32 *DrvPalette;
-static UINT32 *Palette;
 static UINT8 DrvRecalc;
 
 
@@ -156,7 +155,6 @@ static void bionicc_palette_write(INT32 offset)
 		b = b * (0x07 + bright) / 0x0e;
 	}
 
-	Palette[offset] = (r << 16) | (g << 8) | b;
 	DrvPalette[offset] = BurnHighCol(r, g, b, 0);
 }
 
@@ -164,11 +162,8 @@ void __fastcall bionicc_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfffff800) == 0xff8000) {
 		address &= 0x7ff;
-
 		DrvPalRAM[address ^ 1] = data;
-
 		bionicc_palette_write(address);
-
 		return;
 	}
 
@@ -311,8 +306,6 @@ static INT32 MemIndex()
 
 	DrvZ80RAM	= Next; Next += 0x0000800;
 
-	Palette		= (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
-
 	RamEnd		= Next;
 
 	MemEnd		= Next;
@@ -424,13 +417,13 @@ static INT32 DrvInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRAM0,	0xfe0000, 0xfe3fff, SM_RAM);
-	SekMapMemory(DrvTextRAM,	0xfec000, 0xfecfff, SM_RAM);
-	SekMapMemory(DrvVidRAM0,	0xff0000, 0xff3fff, SM_RAM);
-	SekMapMemory(DrvVidRAM1,	0xff4000, 0xff7fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,		0xff8000, 0xff87ff, SM_ROM);
-	SekMapMemory(Drv68KRAM1,	0xffc000, 0xffffff, SM_RAM); 
+	SekMapMemory(Drv68KROM,		0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRAM0,	0xfe0000, 0xfe3fff, MAP_RAM);
+	SekMapMemory(DrvTextRAM,	0xfec000, 0xfecfff, MAP_RAM);
+	SekMapMemory(DrvVidRAM0,	0xff0000, 0xff3fff, MAP_RAM);
+	SekMapMemory(DrvVidRAM1,	0xff4000, 0xff7fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,		0xff8000, 0xff87ff, MAP_ROM);
+	SekMapMemory(Drv68KRAM1,	0xffc000, 0xffffff, MAP_RAM); 
 	SekSetReadByteHandler(0,	bionicc_read_byte);
 	SekSetReadWordHandler(0,	bionicc_read_word);
 	SekSetWriteByteHandler(0,	bionicc_write_byte);
@@ -522,10 +515,10 @@ static void draw_foreground(INT32 priority)
 static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (INT32 i = 0; i < 0x400; i++) {
-			INT32 rgb = Palette[i];
-			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
+		for (INT32 i = 0; i < 0x800; i+=2) {
+			bionicc_palette_write(i);
 		}
+		DrvRecalc = 0;
 	}
 
 	memset (pTransDraw, 0, nScreenHeight * nScreenWidth * 2);
@@ -670,7 +663,7 @@ static INT32 DrvFrame()
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nTotalCycles[0] -= SekRun(nTotalCycles[0] / (nInterleave - i));
-		if (i != (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i != (nInterleave - 1)) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 
 		nTotalCycles[1] -= ZetRun(nTotalCycles[1] / (nInterleave - i));
 		if ((i & 1) == 1) ZetNmi();
@@ -683,7 +676,7 @@ static INT32 DrvFrame()
 		}
 	}
 
-	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(2, CPU_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -930,7 +923,8 @@ static struct BurnRomInfo topsecrtRomDesc[] = {
 
 	{ "63s141.18f",		0x00100, 0xb58d0023, 0 | BRF_OPT },		// 24 Priority (not used)
 	
-	{ "c8751h-88",          0x01000, 0x00000000, 0 | BRF_OPT | BRF_NODUMP },
+//	{ "c8751h-88",          0x01000, 0x00000000, 0 | BRF_OPT | BRF_NODUMP },
+	{ "d8751h.bin",         0x01000, 0x3ed7f0be, 0 | BRF_OPT },
 };
 
 STD_ROM_PICK(topsecrt)

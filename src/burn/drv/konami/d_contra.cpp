@@ -210,7 +210,7 @@ void contra_bankswitch_w(INT32 data)
 	INT32 bankaddress = 0x10000 + nBankData * 0x2000;
 
 	if (bankaddress < 0x28000)
-		M6809MapMemory(DrvM6809ROM0 + bankaddress, 0x6000, 0x7fff, M6809_ROM);
+		M6809MapMemory(DrvM6809ROM0 + bankaddress, 0x6000, 0x7fff, MAP_ROM);
 }
 
 UINT8 DrvContraM6809ReadByte(UINT16 address)
@@ -371,22 +371,12 @@ static INT32 MemIndex()
 	return 0;
 }
 
-static INT32 DrvGfxDecode(UINT8 *src)
+static INT32 DrvGfxExpand(UINT8 *src)
 {
-	INT32 Plane[4] = { 0,  1,  2,  3 };
-	INT32 XOffs[8] = { 0,  4,  8, 12, 16, 20, 24, 28 };
-	INT32 YOffs[8] = { 0, 32, 64, 96, 128, 160, 192, 224 };
-
-	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
-	if (tmp == NULL) {
-		return 1;
+	for (INT32 i = 0x80000-1; i>=0; i--) {
+		src[i*2+1] = src[i] & 0xf;
+		src[i*2+0] = src[i] >> 4;
 	}
-
-	memcpy (tmp, src, 0x80000);
-
-	GfxDecode(0x4000, 4, 8, 8, Plane, XOffs, YOffs, 0x100, tmp, src);
-
-	BurnFree (tmp);
 
 	return 0;
 }
@@ -443,9 +433,9 @@ static INT32 DrvDoReset()
 static void DrvYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		M6809SetIRQLine(M6809_FIRQ_LINE, M6809_IRQSTATUS_ACK);
+		M6809SetIRQLine(M6809_FIRQ_LINE, CPU_IRQSTATUS_ACK);
 	} else {
-		M6809SetIRQLine(M6809_FIRQ_LINE, M6809_IRQSTATUS_NONE);
+		M6809SetIRQLine(M6809_FIRQ_LINE, CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -487,33 +477,33 @@ static INT32 DrvInit()
 			}
 		}
 
-		DrvGfxDecode(DrvGfxROM0);
-		DrvGfxDecode(DrvGfxROM1);
+		DrvGfxExpand(DrvGfxROM0);
+		DrvGfxExpand(DrvGfxROM1);
 
 		DrvColorTableInit();
 	}
 
 	M6809Init(2);
 	M6809Open(0);
-	M6809MapMemory(DrvPalRAM,		0x0c00, 0x0cff, M6809_ROM);
-	M6809MapMemory(DrvM6809RAM0,		0x1000, 0x1fff, M6809_RAM);
-	M6809MapMemory(DrvFgCRAM,		0x2000, 0x23ff, M6809_RAM);
-	M6809MapMemory(DrvFgVRAM,		0x2400, 0x27ff, M6809_RAM);
-	M6809MapMemory(DrvTxCRAM,		0x2800, 0x2bff, M6809_RAM);
-	M6809MapMemory(DrvTxVRAM,		0x2c00, 0x2fff, M6809_RAM);
-	M6809MapMemory(DrvSprRAM,		0x3000, 0x3fff, M6809_RAM);
-	M6809MapMemory(DrvBgCRAM,		0x4000, 0x43ff, M6809_RAM);
-	M6809MapMemory(DrvBgVRAM,		0x4400, 0x47ff, M6809_RAM);
-	M6809MapMemory(DrvM6809RAM1,		0x4800, 0x5fff, M6809_RAM);
-//	M6809MapMemory(DrvM6809ROM0 + 0x10000, 	0x6000, 0x7fff, M6809_ROM);
-	M6809MapMemory(DrvM6809ROM0 + 0x08000,	0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvPalRAM,		0x0c00, 0x0cff, MAP_ROM);
+	M6809MapMemory(DrvM6809RAM0,		0x1000, 0x1fff, MAP_RAM);
+	M6809MapMemory(DrvFgCRAM,		0x2000, 0x23ff, MAP_RAM);
+	M6809MapMemory(DrvFgVRAM,		0x2400, 0x27ff, MAP_RAM);
+	M6809MapMemory(DrvTxCRAM,		0x2800, 0x2bff, MAP_RAM);
+	M6809MapMemory(DrvTxVRAM,		0x2c00, 0x2fff, MAP_RAM);
+	M6809MapMemory(DrvSprRAM,		0x3000, 0x3fff, MAP_RAM);
+	M6809MapMemory(DrvBgCRAM,		0x4000, 0x43ff, MAP_RAM);
+	M6809MapMemory(DrvBgVRAM,		0x4400, 0x47ff, MAP_RAM);
+	M6809MapMemory(DrvM6809RAM1,		0x4800, 0x5fff, MAP_RAM);
+//	M6809MapMemory(DrvM6809ROM0 + 0x10000, 	0x6000, 0x7fff, MAP_ROM);
+	M6809MapMemory(DrvM6809ROM0 + 0x08000,	0x8000, 0xffff, MAP_ROM);
 	M6809SetReadHandler(DrvContraM6809ReadByte);
 	M6809SetWriteHandler(DrvContraM6809WriteByte);
 	M6809Close();
 
 	M6809Open(1);
-	M6809MapMemory(DrvM6809RAM2, 		0x6000, 0x67ff, M6809_RAM);
-	M6809MapMemory(DrvM6809ROM1 + 0x08000,	0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvM6809RAM2, 		0x6000, 0x67ff, MAP_RAM);
+	M6809MapMemory(DrvM6809ROM1 + 0x08000,	0x8000, 0xffff, MAP_ROM);
 	M6809SetReadHandler(DrvContraM6809SoundReadByte);
 	M6809SetWriteHandler(DrvContraM6809SoundWriteByte);
 	M6809Close();
@@ -813,7 +803,7 @@ static INT32 DrvDraw()
 	if (DrvRecalc) {
 		for (INT32 i = 0; i < 0x1000; i++) {
 			INT32 rgb = Palette[DrvColTable[i]];
-			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
+			DrvPalette[i] = BurnHighCol((rgb >> 16)&0xff, (rgb >> 8)&0xff, rgb&0xff, 0);
 		}
 		DrvRecalc = 0;
 	}
@@ -871,14 +861,14 @@ static INT32 DrvFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += M6809Run(nCyclesSegment);
 		if (i == (nInterleave - 1)) {
-			M6809SetIRQLine(0, M6809_IRQSTATUS_AUTO);
+			M6809SetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		}
 		M6809Close();
 
 		nCurrentCPU = 1;
 		M6809Open(nCurrentCPU);
 		if (trigger_sound_irq) {
-			M6809SetIRQLine(0, M6809_IRQSTATUS_AUTO);
+			M6809SetIRQLine(0, CPU_IRQSTATUS_AUTO);
 			trigger_sound_irq = 0;
 		}
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
@@ -894,7 +884,7 @@ static INT32 DrvFrame()
 
 		M6809Close();
 	}
-		
+	
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
@@ -905,7 +895,7 @@ static INT32 DrvFrame()
 			M6809Close();
 		}
 	}
-	
+
 	if (pBurnDraw) {
 		DrvDraw();
 	}
@@ -1029,54 +1019,7 @@ struct BurnDriver BurnDrvContra1 = {
 };
 
 
-// Contra (bootleg)
-
-static struct BurnRomInfo contrabRomDesc[] = {
-	{ "3.ic20",		0x10000, 0xd045e1da, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
-	{ "1.ic19",		0x10000, 0xb2f7bd9a, 1 | BRF_PRG  | BRF_ESS }, //  1
-
-	{ "3.ic63",		0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
-
-	{ "7.rom",		0x10000, 0x57f467d2, 3 | BRF_GRA },            //  3 Chip 0 Tiles
-	{ "10.rom",		0x10000, 0xe6db9685, 3 | BRF_GRA },            //  4
-	{ "9.rom",		0x10000, 0x875c61de, 3 | BRF_GRA },            //  5
-	{ "8.rom",		0x10000, 0x642765d6, 3 | BRF_GRA },            //  6
-	{ "15.rom",		0x10000, 0xdaa2324b, 3 | BRF_GRA },            //  7
-	{ "16.rom",		0x10000, 0xe27cc835, 3 | BRF_GRA },            //  8
-	{ "17.rom",		0x10000, 0xce4330b9, 3 | BRF_GRA },            //  9
-	{ "18.rom",		0x10000, 0x1571ce42, 3 | BRF_GRA },            // 10
-
-	{ "4.rom",		0x10000, 0x2cc7e52c, 4 | BRF_GRA },            // 11 Chip 1 Tiles
-	{ "5.rom",		0x10000, 0xe01a5b9c, 4 | BRF_GRA },            // 12
-	{ "6.rom",		0x10000, 0xaeea6744, 4 | BRF_GRA },            // 13
-	{ "14.rom",		0x10000, 0x765afdc7, 4 | BRF_GRA },            // 14
-	{ "11.rom",		0x10000, 0xbd9ba92c, 4 | BRF_GRA },            // 15
-	{ "12.rom",		0x10000, 0xd0be7ec2, 4 | BRF_GRA },            // 16
-	{ "13.rom",		0x10000, 0x2b513d12, 4 | BRF_GRA },            // 17
-
-	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            // 18 Color Proms
-	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 19
-	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            // 20
-	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 21
-
-	{ "conprom.53",	0x00100, 0x05a1da7e, 0 | BRF_OPT },            // 22
-};
-
-STD_ROM_PICK(contrab)
-STD_ROM_FN(contrab)
-
-struct BurnDriver BurnDrvContrab = {
-	"contrab", "contra", NULL, NULL, "1987",
-	"Contra (bootleg)\0", NULL, "Konami", "GX633",
-	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
-	NULL, contrabRomInfo, contrabRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
-	224, 280, 3, 4
-};
-
-
-// Contra (Japan)
+// Contra (Japan, set 1)
 
 static struct BurnRomInfo contrajRomDesc[] = {
 	{ "633n03.18a",	0x10000, 0xfedab568, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
@@ -1103,8 +1046,8 @@ STD_ROM_FN(contraj)
 
 struct BurnDriver BurnDrvContraj = {
 	"contraj", "contra", NULL, NULL, "1987",
-	"Contra (Japan)\0", NULL, "Konami", "GX633",
-	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan)\0Contra\0", NULL, NULL, NULL,
+	"Contra (Japan, set 1)\0", NULL, "Konami", "GX633",
+	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan, set 1)\0Contra\0", NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, contrajRomInfo, contrajRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
@@ -1112,46 +1055,37 @@ struct BurnDriver BurnDrvContraj = {
 };
 
 
-// Contra (Japan bootleg, set 2)
+// Contra (Japan, set 2)
 
-static struct BurnRomInfo contrabj1RomDesc[] = {
-	{ "2__(contrabtj2).2k",	0x10000, 0xbdb9196d, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
-	{ "1.2h",		0x10000, 0x5d5f7438, 1 | BRF_PRG  | BRF_ESS }, //  1
+static struct BurnRomInfo contraj1RomDesc[] = {
+	{ "633k03.18a",	0x10000, 0xbdb9196d, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
+	{ "633k02.17a",	0x10000, 0x5d5f7438, 1 | BRF_PRG  | BRF_ESS }, //  1
 
-	{ "a3.4p",		0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
+	{ "633e01.12a",	0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
 
-	{ "a7.14f",		0x10000, 0x57f467d2, 3 | BRF_GRA },            //  3 Chip 0 Tiles
-	{ "a10.14l",	0x10000, 0xe6db9685, 3 | BRF_GRA },            //  4
-	{ "a9.14k",		0x10000, 0x875c61de, 3 | BRF_GRA },            //  5
-	{ "a8.14h",		0x10000, 0x642765d6, 3 | BRF_GRA },            //  6
-	{ "a15.14r",	0x10000, 0xdaa2324b, 3 | BRF_GRA },            //  7
-	{ "a16.14t",	0x10000, 0xe27cc835, 3 | BRF_GRA },            //  8
-	{ "a17.14v",	0x10000, 0xce4330b9, 3 | BRF_GRA },            //  9
-	{ "a18.14w",	0x10000, 0x1571ce42, 3 | BRF_GRA },            // 10
+	{ "633e04.7d",	0x40000, 0x14ddc542, 3 | BRF_GRA },            //  3 Chip 0 Tiles
+	{ "633e05.7f",	0x40000, 0x42185044, 3 | BRF_GRA },            //  4
 
-	{ "a4.14a",		0x10000, 0x2cc7e52c, 4 | BRF_GRA },            // 11 Chip 1 Tiles
-	{ "a5.14c",		0x10000, 0xe01a5b9c, 4 | BRF_GRA },            // 12
-	{ "e6.14d",		0x10000, 0xaeea6744, 4 | BRF_GRA },            // 13
-	{ "a14.14q",	0x10000, 0x765afdc7, 4 | BRF_GRA },            // 14
-	{ "a11.14m",	0x10000, 0xbd9ba92c, 4 | BRF_GRA },            // 15
-	{ "a12.14n",	0x10000, 0xd0be7ec2, 4 | BRF_GRA },            // 16
-	{ "a13.14p",	0x10000, 0x2b513d12, 4 | BRF_GRA },            // 17
+	{ "633e06.16d",	0x40000, 0x9cf6faae, 4 | BRF_GRA },            //  5 Chip 1 Tiles
+	{ "633e07.16f",	0x40000, 0xf2d06638, 4 | BRF_GRA },            //  6
 
-	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            // 18 Color Proms
-	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 19
-	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            // 20
-	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 21
+	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            //  7 Color Proms
+	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            //  8
+	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            //  9
+	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 10
+	
+	{ "007766.20d.bin", 0x1, 0x00000000, 0 | BRF_NODUMP },
 };
 
-STD_ROM_PICK(contrabj1)
-STD_ROM_FN(contrabj1)
+STD_ROM_PICK(contraj1)
+STD_ROM_FN(contraj1)
 
-struct BurnDriver BurnDrvContrabj1 = {
-	"contrabj1", "contra", NULL, NULL, "1987",
-	"Contra (Japan bootleg, set 2)\0", NULL, "Konami", "GX633",
-	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan bootleg)\0Contra\0", NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
-	NULL, contrabj1RomInfo, contrabj1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+struct BurnDriver BurnDrvContraj1 = {
+	"contraj1", "contra", NULL, NULL, "1987",
+	"Contra (Japan, set 2)\0", NULL, "Konami", "GX633",
+	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan, set 2)\0Contra\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
+	NULL, contraj1RomInfo, contraj1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
 };
@@ -1224,6 +1158,143 @@ struct BurnDriver BurnDrvGryzor1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
 	NULL, gryzor1RomInfo, gryzor1RomName, NULL, NULL, DrvInputInfo, GryzorDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
+	224, 280, 3, 4
+};
+
+
+// Contra (bootleg)
+
+static struct BurnRomInfo contrabRomDesc[] = {
+	{ "3.ic20",		0x10000, 0xd045e1da, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
+	{ "1.ic19",		0x10000, 0xb2f7bd9a, 1 | BRF_PRG  | BRF_ESS }, //  1
+
+	{ "3.ic63",		0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
+
+	{ "7.rom",		0x10000, 0x57f467d2, 3 | BRF_GRA },            //  3 Chip 0 Tiles
+	{ "10.rom",		0x10000, 0xe6db9685, 3 | BRF_GRA },            //  4
+	{ "9.rom",		0x10000, 0x875c61de, 3 | BRF_GRA },            //  5
+	{ "8.rom",		0x10000, 0x642765d6, 3 | BRF_GRA },            //  6
+	{ "15.rom",		0x10000, 0xdaa2324b, 3 | BRF_GRA },            //  7
+	{ "16.rom",		0x10000, 0xe27cc835, 3 | BRF_GRA },            //  8
+	{ "17.rom",		0x10000, 0xce4330b9, 3 | BRF_GRA },            //  9
+	{ "18.rom",		0x10000, 0x1571ce42, 3 | BRF_GRA },            // 10
+
+	{ "4.rom",		0x10000, 0x2cc7e52c, 4 | BRF_GRA },            // 11 Chip 1 Tiles
+	{ "5.rom",		0x10000, 0xe01a5b9c, 4 | BRF_GRA },            // 12
+	{ "6.rom",		0x10000, 0xaeea6744, 4 | BRF_GRA },            // 13
+	{ "14.rom",		0x10000, 0x765afdc7, 4 | BRF_GRA },            // 14
+	{ "11.rom",		0x10000, 0xbd9ba92c, 4 | BRF_GRA },            // 15
+	{ "12.rom",		0x10000, 0xd0be7ec2, 4 | BRF_GRA },            // 16
+	{ "13.rom",		0x10000, 0x2b513d12, 4 | BRF_GRA },            // 17
+
+	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            // 18 Color Proms
+	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 19
+	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            // 20
+	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 21
+
+	{ "conprom.53",	0x00100, 0x05a1da7e, 0 | BRF_OPT },            // 22
+};
+
+STD_ROM_PICK(contrab)
+STD_ROM_FN(contrab)
+
+struct BurnDriver BurnDrvContrab = {
+	"contrab", "contra", NULL, NULL, "1987",
+	"Contra (bootleg)\0", NULL, "Konami", "GX633",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_SHOOT, 0,
+	NULL, contrabRomInfo, contrabRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
+	224, 280, 3, 4
+};
+
+
+// Contra (Japan bootleg, set 1)
+
+static struct BurnRomInfo contrabjRomDesc[] = {
+	{ "2.2k",		0x10000, 0xfedab568, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
+	{ "1.2h",		0x10000, 0x5d5f7438, 1 | BRF_PRG  | BRF_ESS }, //  1
+
+	{ "a3.4p",		0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
+
+	{ "a7.14f",		0x10000, 0x57f467d2, 3 | BRF_GRA },            //  3 Chip 0 Tiles
+	{ "a10.14l",	0x10000, 0xe6db9685, 3 | BRF_GRA },            //  4
+	{ "a9.14k",		0x10000, 0x875c61de, 3 | BRF_GRA },            //  5
+	{ "a8.14h",		0x10000, 0x642765d6, 3 | BRF_GRA },            //  6
+	{ "a15.14r",	0x10000, 0xdaa2324b, 3 | BRF_GRA },            //  7
+	{ "a16.14t",	0x10000, 0xe27cc835, 3 | BRF_GRA },            //  8
+	{ "a17.14v",	0x10000, 0xce4330b9, 3 | BRF_GRA },            //  9
+	{ "a18.14w",	0x10000, 0x1571ce42, 3 | BRF_GRA },            // 10
+
+	{ "a4.14a",		0x10000, 0x2cc7e52c, 4 | BRF_GRA },            // 11 Chip 1 Tiles
+	{ "a5.14c",		0x10000, 0xe01a5b9c, 4 | BRF_GRA },            // 12
+	{ "e6.14d",		0x10000, 0xaeea6744, 4 | BRF_GRA },            // 13
+	{ "a14.14q",	0x10000, 0x765afdc7, 4 | BRF_GRA },            // 14
+	{ "a11.14m",	0x10000, 0xbd9ba92c, 4 | BRF_GRA },            // 15
+	{ "a12.14n",	0x10000, 0xd0be7ec2, 4 | BRF_GRA },            // 16
+	{ "a13.14p",	0x10000, 0x2b513d12, 4 | BRF_GRA },            // 17
+
+	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            // 18 Color Proms
+	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 19
+	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            // 20
+	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 21
+};
+
+STD_ROM_PICK(contrabj)
+STD_ROM_FN(contrabj)
+
+struct BurnDriver BurnDrvContrabj = {
+	"contrabj", "contra", NULL, NULL, "1987",
+	"Contra (Japan bootleg, set 1)\0", NULL, "Konami", "GX633",
+	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan bootleg, set 1)\0Contra\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	NULL, contrabjRomInfo, contrabjRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
+	224, 280, 3, 4
+};
+
+
+// Contra (Japan bootleg, set 2)
+
+static struct BurnRomInfo contrabj1RomDesc[] = {
+	{ "2__(contrabtj2).2k",	0x10000, 0xbdb9196d, 1 | BRF_PRG  | BRF_ESS }, //  0 m6809 #0 Code
+	{ "1.2h",		0x10000, 0x5d5f7438, 1 | BRF_PRG  | BRF_ESS }, //  1
+
+	{ "a3.4p",		0x08000, 0xd1549255, 2 | BRF_PRG  | BRF_ESS }, //  2 m6809 #1 Code
+
+	{ "a7.14f",		0x10000, 0x57f467d2, 3 | BRF_GRA },            //  3 Chip 0 Tiles
+	{ "a10.14l",	0x10000, 0xe6db9685, 3 | BRF_GRA },            //  4
+	{ "a9.14k",		0x10000, 0x875c61de, 3 | BRF_GRA },            //  5
+	{ "a8.14h",		0x10000, 0x642765d6, 3 | BRF_GRA },            //  6
+	{ "a15.14r",	0x10000, 0xdaa2324b, 3 | BRF_GRA },            //  7
+	{ "a16.14t",	0x10000, 0xe27cc835, 3 | BRF_GRA },            //  8
+	{ "a17.14v",	0x10000, 0xce4330b9, 3 | BRF_GRA },            //  9
+	{ "a18.14w",	0x10000, 0x1571ce42, 3 | BRF_GRA },            // 10
+
+	{ "a4.14a",		0x10000, 0x2cc7e52c, 4 | BRF_GRA },            // 11 Chip 1 Tiles
+	{ "a5.14c",		0x10000, 0xe01a5b9c, 4 | BRF_GRA },            // 12
+	{ "e6.14d",		0x10000, 0xaeea6744, 4 | BRF_GRA },            // 13
+	{ "a14.14q",	0x10000, 0x765afdc7, 4 | BRF_GRA },            // 14
+	{ "a11.14m",	0x10000, 0xbd9ba92c, 4 | BRF_GRA },            // 15
+	{ "a12.14n",	0x10000, 0xd0be7ec2, 4 | BRF_GRA },            // 16
+	{ "a13.14p",	0x10000, 0x2b513d12, 4 | BRF_GRA },            // 17
+
+	{ "633e08.10g",	0x00100, 0x9f0949fa, 5 | BRF_GRA },            // 18 Color Proms
+	{ "633e09.12g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 19
+	{ "633f10.18g",	0x00100, 0x2b244d84, 5 | BRF_GRA },            // 20
+	{ "633f11.20g",	0x00100, 0x14ca5e19, 5 | BRF_GRA },            // 21
+};
+
+STD_ROM_PICK(contrabj1)
+STD_ROM_FN(contrabj1)
+
+struct BurnDriver BurnDrvContrabj1 = {
+	"contrabj1", "contra", NULL, NULL, "1987",
+	"Contra (Japan bootleg, set 2)\0", NULL, "Konami", "GX633",
+	L"\u9B42\u6597\u7F85 \u30B3\u30F3\u30C8\u30E9 (Japan bootleg, set 2)\0Contra\0", NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_PREFIX_KONAMI, GBF_MISC, 0,
+	NULL, contrabj1RomInfo, contrabj1RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x1000,
 	224, 280, 3, 4
 };

@@ -24,7 +24,6 @@ static UINT8 *Drv68KRAM;
 static UINT8 *DrvPalRAM;
 static UINT8 *DrvZ80RAM;
 
-static UINT32 *Palette;
 static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
@@ -141,7 +140,7 @@ void __fastcall xmen_main_write_byte(UINT32 address, UINT8 data)
 
 		case 0x10804e:
 		case 0x10804f: 
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 		return;
 
 		case 0x10a001:
@@ -182,8 +181,7 @@ void __fastcall xmen_main_write_word(UINT32 address, UINT16 data)
 	}
 
 	if ((address & 0xfffff8) == 0x108020) {
-		K053246Write((address & 0x006) | 0, data & 0xff);
-		K053246Write((address & 0x006) | 1, data >> 8);
+		K053246Write((address & 0x006), 0x10000|data);
 		return;
 	}
 }
@@ -283,7 +281,7 @@ UINT8 __fastcall xmen_sound_read(UINT16 address)
 			return BurnYM2151ReadStatus();
 
 		case 0xf002:
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return *soundlatch;
 	}
 
@@ -302,15 +300,15 @@ static void K052109Callback(INT32 layer, INT32 , INT32 *, INT32 *color, INT32 *,
 		*color = layer_colorbase[layer] + ((*color & 0x7c) >> 2);
 }
 
-static void K053247Callback(INT32 *code, INT32 *color, INT32 *priority_mask)
+static void XmenK053247Callback(INT32 *code, INT32 *color, INT32 *priority_mask)
 {
 	INT32 pri = (*color & 0x00e0) >> 4;
-	if (pri <= layerpri[2])					*priority_mask = 0;
-	else if (pri > layerpri[2] && pri <= layerpri[1])	*priority_mask = 1;
-	else if (pri > layerpri[1] && pri <= layerpri[0])	*priority_mask = 2;
-	else 							*priority_mask = 3;
+	if (pri <= layerpri[2])					*priority_mask = 0x00;
+	else if (pri > layerpri[2] && pri <= layerpri[1])	*priority_mask = 0xf0;
+	else if (pri > layerpri[1] && pri <= layerpri[0])	*priority_mask = 0xfc;
+	else 							*priority_mask = 0xfe;
 
-	*color = sprite_colorbase + (*color & 0x001f);
+	*color = (sprite_colorbase + (*color & 0x001f)) & 0x7f;
 	*code &= 0x7fff;
 }
 
@@ -360,7 +358,7 @@ static INT32 MemIndex()
 
 	DrvSndROM		= Next; Next += 0x200000;
 
-	Palette			= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
+	konami_palette32	= (UINT32*)Next;
 	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	AllRam			= Next;
@@ -382,22 +380,6 @@ static INT32 MemIndex()
 	return 0;
 }
 
-static INT32 DrvGfxDecode()
-{
-	INT32 Plane[4] = { 0x018, 0x010, 0x008, 0x000 };
-	INT32 XOffs[8] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007 };
-	INT32 YOffs[8] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0 };
-
-	konami_rom_deinterleave_2(DrvGfxROM0, 0x200000);
-	konami_rom_deinterleave_4(DrvGfxROM1, 0x400000);
-
-	GfxDecode(0x10000, 4, 8, 8, Plane, XOffs, YOffs, 0x100, DrvGfxROM0, DrvGfxROMExp0);
-
-	K053247GfxDecode(DrvGfxROM1, DrvGfxROMExp1, 0x400000);
-
-	return 0;
-}
-
 static const eeprom_interface xmen_eeprom_intf =
 {
 	7,		 // address bits
@@ -413,6 +395,8 @@ static const eeprom_interface xmen_eeprom_intf =
 
 static INT32 DrvInit()
 {
+	GenericTilesInit();
+
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
@@ -428,25 +412,26 @@ static INT32 DrvInit()
 
 		if (BurnLoadRom(DrvZ80ROM  + 0x000000,  4, 1)) return 1;
 
-		if (BurnLoadRom(DrvGfxROM0 + 0x000000,  5, 1)) return 1;
-		if (BurnLoadRom(DrvGfxROM0 + 0x100000,  6, 1)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM0 + 0x000000,  5, 4, 2)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM0 + 0x000002,  6, 4, 2)) return 1;
 
-		if (BurnLoadRom(DrvGfxROM1 + 0x000000,  7, 1)) return 1;
-		if (BurnLoadRom(DrvGfxROM1 + 0x100000,  8, 1)) return 1;
-		if (BurnLoadRom(DrvGfxROM1 + 0x200000,  9, 1)) return 1;
-		if (BurnLoadRom(DrvGfxROM1 + 0x300000, 10, 1)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM1 + 0x000000,  7, 8, 2)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM1 + 0x000002,  8, 8, 2)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM1 + 0x000004,  9, 8, 2)) return 1;
+		if (BurnLoadRomExt(DrvGfxROM1 + 0x000006, 10, 8, 2)) return 1;
 
 		if (BurnLoadRom(DrvSndROM  + 0x000000, 11, 1)) return 1;
 
-		DrvGfxDecode();
+		K052109GfxDecode(DrvGfxROM0, DrvGfxROMExp0, 0x200000);
+		K053247GfxDecode(DrvGfxROM1, DrvGfxROMExp1, 0x400000);
 	}
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(Drv68KRAM + 0x00000,	0x101000, 0x101fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x104000, 0x104fff, SM_RAM);
-	SekMapMemory(Drv68KRAM + 0x01000,	0x110000, 0x113fff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(Drv68KRAM + 0x00000,	0x101000, 0x101fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x104000, 0x104fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM + 0x01000,	0x110000, 0x113fff, MAP_RAM);
 	SekSetWriteByteHandler(0,		xmen_main_write_byte);
 	SekSetWriteWordHandler(0,		xmen_main_write_word);
 	SekSetReadByteHandler(0,		xmen_main_read_byte);
@@ -468,12 +453,12 @@ static INT32 DrvInit()
 
 	EEPROMInit(&xmen_eeprom_intf);
 
-	K052109Init(DrvGfxROM0, 0x1fffff);
+	K052109Init(DrvGfxROM0, DrvGfxROMExp0, 0x1fffff);
 	K052109SetCallback(K052109Callback);
 	K052109AdjustScroll(8, 0);
 
-	K053247Init(DrvGfxROM1, 0x3fffff, K053247Callback, 1);
-	K053247SetSpriteOffset(-510, 158);
+	K053247Init(DrvGfxROM1, DrvGfxROMExp1, 0x3fffff, XmenK053247Callback, 1);
+	K053247SetSpriteOffset(510, -158);
 
 	BurnYM2151Init(4000000);
 	BurnYM2151SetRoute(BURN_SND_YM2151_YM2151_ROUTE_1, 0.20, BURN_SND_ROUTE_LEFT);
@@ -482,8 +467,6 @@ static INT32 DrvInit()
 	K054539Init(0, 48000, DrvSndROM, 0x200000);
 	K054539SetRoute(0, BURN_SND_K054539_ROUTE_1, 1.00, BURN_SND_ROUTE_LEFT);
 	K054539SetRoute(0, BURN_SND_K054539_ROUTE_2, 1.00, BURN_SND_ROUTE_RIGHT);
-
-	GenericTilesInit();
 
 	DrvDoReset();
 
@@ -509,21 +492,6 @@ static INT32 DrvExit()
 	return 0;
 }
 
-static void sortlayers(INT32 *layer,INT32 *pri)
-{
-#define SWAP(a,b) \
-	if (pri[a] < pri[b]) \
-	{ \
-		INT32 t; \
-		t = pri[a]; pri[a] = pri[b]; pri[b] = t; \
-		t = layer[a]; layer[a] = layer[b]; layer[b] = t; \
-	}
-
-	SWAP(0,1)
-	SWAP(0,2)
-	SWAP(1,2)
-}
-
 static inline void DrvRecalcPalette()
 {
 	UINT8 r,g,b;
@@ -539,8 +507,7 @@ static inline void DrvRecalcPalette()
 		g = (g << 3) | (g >> 2);
 		b = (b << 3) | (b >> 2);
 
-		Palette[i] = (r << 16) | (g << 8) | b;
-		DrvPalette[i] = BurnHighCol(r, g, b, 0);
+		DrvPalette[i] = (r << 16) | (g << 8) | b;
 	}
 }
 
@@ -567,27 +534,17 @@ static INT32 DrvDraw()
 	layer[1] = 1;
 	layer[2] = 2;
 
-	sortlayers(layer,layerpri);
+	konami_sortlayers3(layer,layerpri);
 
-	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
-		pTransDraw[i] = 16 * bg_colorbase+1;
-	}
+	KonamiClearBitmaps(DrvPalette[16 * bg_colorbase+1]);
 
-	if (nSpriteEnable & 8) K053247SpritesRender(DrvGfxROMExp1, 3);
+	if (nBurnLayer & 1) K052109RenderLayer(layer[0], 0, 1);
+	if (nBurnLayer & 2) K052109RenderLayer(layer[1], 0, 2);
+	if (nBurnLayer & 4) K052109RenderLayer(layer[2], 0, 4);
 
-	if (nBurnLayer & 1) K052109RenderLayer(layer[0], 0, DrvGfxROMExp0);
+	if (nSpriteEnable & 1) K053247SpritesRender();
 
-	if (nBurnLayer & 2) K052109RenderLayer(layer[1], 0, DrvGfxROMExp0);
-
-if (nBurnLayer & 8) {
-	if (nSpriteEnable & 1) K053247SpritesRender(DrvGfxROMExp1, 0);
-	if (nSpriteEnable & 2) K053247SpritesRender(DrvGfxROMExp1, 1);
-	if (nSpriteEnable & 4) K053247SpritesRender(DrvGfxROMExp1, 2);
-}
-
-	if (nBurnLayer & 4) K052109RenderLayer(layer[2], 0, DrvGfxROMExp0);
-
-	KonamiBlendCopy(Palette, DrvPalette);
+	KonamiBlendCopy(DrvPalette);
 
 	return 0;
 }
@@ -606,7 +563,7 @@ static INT32 DrvFrame()
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
 		}
 
-	  // Clear Opposites
+	 	// Clear Opposites
 		if ((DrvInputs[1] & 0x0c) == 0) DrvInputs[1] |= 0x0c;
 		if ((DrvInputs[1] & 0x03) == 0) DrvInputs[1] |= 0x03;
 		if ((DrvInputs[0] & 0x0c) == 0) DrvInputs[0] |= 0x0c;
@@ -634,7 +591,7 @@ static INT32 DrvFrame()
 		nCyclesDone[0] += nCyclesSegment;
 
 		if (i == (nInterleave / 2) && interrupt_enable) {
-			SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);
+			SekSetIRQLine(3, CPU_IRQSTATUS_AUTO);
 		}
 
 		nNext = (i + 1) * nCyclesTotal[1] / nInterleave;
@@ -651,7 +608,7 @@ static INT32 DrvFrame()
 		}
 	}
 
-	if (interrupt_enable) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+	if (interrupt_enable) SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 	
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;

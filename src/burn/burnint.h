@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 
 #if defined(__LIBRETRO__) && defined(_MSC_VER)
 #include <tchar.h>
@@ -82,8 +83,28 @@ INT32 BurnByteswap(UINT8* pm,INT32 nLen);
 INT32 BurnClearScreen();
 
 // load.cpp
+
+/*
+	Flags for use with BurnLoadRomExt
+
+	GROUP(x)		load this many bytes, then skip by nGap from start position (flag is optional)
+	REVERSE			load the bytes in a group in reverse order (0,1,2,3 -> 3,2,1,0)
+	INVERT			Src ^= 0xff
+	BYTESWAP		change order of bytes from 0,1,2,3 to 1,0,3,2
+	NIBBLES			Dest[0] = (byte & & 0xf); Dest[1] = (byte >> 4) & 0xf;
+	XOR			Dest ^= Src
+*/
+
+#define LD_GROUP(x)	((x) & 0xff) // 256 - plenty
+#define LD_REVERSE	(1<<8)
+#define LD_INVERT	(1<<9)
+#define LD_BYTESWAP	(1<<10)
+#define LD_NIBBLES	(1<<11)
+#define LD_XOR		(1<<12)
+
+INT32 BurnLoadRomExt(UINT8 *Dest, INT32 i, INT32 nGap, INT32 nFlags);
 INT32 BurnLoadRom(UINT8* Dest, INT32 i, INT32 nGap);
-INT32 BurnXorRom(UINT8* Dest, INT32 i, INT32 nGap);
+INT32 BurnXorRom(UINT8 *Dest, INT32 i, INT32 nGap);
 INT32 BurnLoadBitField(UINT8* pDest, UINT8* pSrc, INT32 nField, INT32 nSrcLen);
 
 // ---------------------------------------------------------------------------

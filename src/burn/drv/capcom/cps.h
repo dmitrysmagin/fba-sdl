@@ -50,6 +50,7 @@ INT32 CpsLoadTilesSf2mdta(INT32 nStart);
 INT32 CpsLoadTilesSf2ceuab3(INT32 nStart);
 INT32 CpsLoadTilesSf2ceeabl(INT32 nStart);
 INT32 CpsLoadTilesSf2ceuab7(INT32 nStart);
+INT32 CpsLoadTilesSf2ebbl3(INT32 nStart);
 INT32 CpsLoadTilesFcrash(INT32 nStart);
 INT32 CpsLoadTilesCawingbl(INT32 nStart);
 INT32 CpsLoadTilesCaptcommb(INT32 nStart);
@@ -321,6 +322,7 @@ INT32 QscUpdate(INT32 nEnd);
 extern UINT32* CpstPal;
 extern UINT32 nCpstType; extern INT32 nCpstX,nCpstY;
 extern UINT32 nCpstTile; extern INT32 nCpstFlip;
+extern UINT32 nCpsBlend;
 extern short* CpstRowShift;
 extern UINT32 CpstPmsk; // Pixel mask
 

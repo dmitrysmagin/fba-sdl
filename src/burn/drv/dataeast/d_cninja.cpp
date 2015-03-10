@@ -58,6 +58,8 @@ static INT32 DrvOkiBank;
 
 static INT32 has_z80 = 0;
 
+static INT32 global_scanline = 0;
+
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy2 + 0,	"p1 coin"	},
 	{"P1 Start",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 start"	},
@@ -494,12 +496,14 @@ void __fastcall cninja_main_write_word(UINT32 address, UINT16 data)
 			irq_mask = data & 0xff;
 		return;
 
-		case 0x190002:
+		case 0x190002:	// to do - get actual timing right, is this what's wrong with edrandy?
 		case 0x1a4002:
 		{
 			scanline = data & 0xff;
 
-			if ((!BIT(scanline,1)) && (scanline > 0) && (scanline < 240)) {
+		//	bprintf (0, _T("ACTUAL: %d, WRITTEN: %d\n"), global_scanline, scanline);
+
+			if ((!BIT(scanline,1))) {
 				irq_timer = scanline;
 			} else {
 				irq_timer = -1;
@@ -520,7 +524,7 @@ void __fastcall cninja_main_write_word(UINT32 address, UINT16 data)
 				ZetNmi();
 			} else {
 				deco16_soundlatch = data & 0xff;
-				h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+				h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 		break;
 	}
@@ -552,13 +556,16 @@ void __fastcall cninja_main_write_byte(UINT32 address, UINT8 data)
 			irq_mask = data & 0xff;
 		return;
 
-	//	case 0x190002:
+		case 0x190002:
 		case 0x190003:
-	//	case 0x1a4002:
+		case 0x1a4002:
 		case 0x1a4003:
 		{
 			scanline = data & 0xff;
-			if ((~irq_mask & 0x02) && (scanline > 0) && (scanline < 240)) {
+
+			//bprintf (0, _T("ACTUAL: %d, WRITTEN: %d\n"), global_scanline, scanline);
+
+			if ((~irq_mask & 0x02)) {
 				irq_timer = scanline;
 			} else {
 				irq_timer = -1;
@@ -580,7 +587,7 @@ void __fastcall cninja_main_write_byte(UINT32 address, UINT8 data)
 				ZetNmi();
 			} else {
 				deco16_soundlatch = data;
-				h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+				h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 		break;
 	}
@@ -596,7 +603,7 @@ void __fastcall cninja_main_write_byte(UINT32 address, UINT8 data)
 		return;
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Write Byte %x, %x\n"), address, data);
+	//bprintf(PRINT_NORMAL, _T("Write Byte %x, %x\n"), address, data);
 }
 
 UINT16 __fastcall cninja_main_read_word(UINT32 address)
@@ -618,8 +625,8 @@ UINT16 __fastcall cninja_main_read_word(UINT32 address)
 
 		case 0x1a4004:
 		case 0x190004:
-			SekSetIRQLine(3, SEK_IRQSTATUS_NONE);
-			SekSetIRQLine(4, SEK_IRQSTATUS_NONE);
+			SekSetIRQLine(3, CPU_IRQSTATUS_NONE);
+			SekSetIRQLine(4, CPU_IRQSTATUS_NONE);
 			return 0;
 	}
 
@@ -631,7 +638,7 @@ UINT16 __fastcall cninja_main_read_word(UINT32 address)
 		return deco16_60_prot_r(address);
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Read Word %x, %x\n"), address);
+	//bprintf(PRINT_NORMAL, _T("Read Word %x, %x\n"), address);
 
 	return 0;
 }
@@ -666,8 +673,8 @@ UINT8 __fastcall cninja_main_read_byte(UINT32 address)
 		case 0x1a4005:
 	//	case 0x190004:
 		case 0x190005:
-			SekSetIRQLine(3, SEK_IRQSTATUS_NONE);
-			SekSetIRQLine(4, SEK_IRQSTATUS_NONE);
+			SekSetIRQLine(3, CPU_IRQSTATUS_NONE);
+			SekSetIRQLine(4, CPU_IRQSTATUS_NONE);
 			return 0;
 	}
 
@@ -679,7 +686,7 @@ UINT8 __fastcall cninja_main_read_byte(UINT32 address)
 		return deco16_104_cninja_prot_r(address) >> ((~address & 1) << 3);
 	}
 	
-	bprintf(PRINT_NORMAL, _T("Read Byte %x, %x\n"), address);
+	//bprintf(PRINT_NORMAL, _T("Read Byte %x, %x\n"), address);
 
 	return 0;
 }
@@ -697,7 +704,7 @@ void __fastcall mutantf_main_write_word(UINT32 address, UINT16 data)
 
 		case 0x1a0064:
 			deco16_soundlatch = data & 0xff;
-			h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+			h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 		break;
 
 		case 0x1c0000:
@@ -736,7 +743,7 @@ void __fastcall mutantf_main_write_byte(UINT32 address, UINT8 data)
 
 		case 0x1a0065:
 			deco16_soundlatch = data;
-			h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+			h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 		break;
 	}
 
@@ -794,7 +801,7 @@ void __fastcall robocop2_main_write_word(UINT32 address, UINT16 data)
 
 		case 0x18c064:
 			deco16_soundlatch = data & 0xff;
-			h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+			h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 		return;;
 
 		case 0x1f0000:
@@ -831,7 +838,7 @@ void __fastcall robocop2_main_write_byte(UINT32 address, UINT8 data)
 
 		case 0x18c065:
 			deco16_soundlatch = data;
-			h6280SetIRQLine(0, H6280_IRQSTATUS_ACK);
+			h6280SetIRQLine(0, CPU_IRQSTATUS_ACK);
 		break;
 
 		case 0x1f0000:
@@ -861,8 +868,8 @@ UINT16 __fastcall robocop2_main_read_word(UINT32 address)
 			return scanline;
 
 		case 0x1b0004:
-			SekSetIRQLine(3, SEK_IRQSTATUS_NONE);
-			SekSetIRQLine(4, SEK_IRQSTATUS_NONE);
+			SekSetIRQLine(3, CPU_IRQSTATUS_NONE);
+			SekSetIRQLine(4, CPU_IRQSTATUS_NONE);
 			return 0;
 
 		case 0x1f8000:
@@ -902,8 +909,8 @@ UINT8 __fastcall robocop2_main_read_byte(UINT32 address)
 
 		case 0x1b0004:
 		case 0x1b0005:
-			SekSetIRQLine(3, SEK_IRQSTATUS_NONE);
-			SekSetIRQLine(4, SEK_IRQSTATUS_NONE);
+			SekSetIRQLine(3, CPU_IRQSTATUS_NONE);
+			SekSetIRQLine(4, CPU_IRQSTATUS_NONE);
 			return 0;
 
 		case 0x1f8000:
@@ -944,7 +951,7 @@ UINT8 __fastcall stoneage_sound_read(UINT16 address)
 			return MSM6295ReadStatus(0);
 
 		case 0xa000:
-			ZetSetIRQLine(0x20, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0x20, CPU_IRQSTATUS_NONE);
 			return *soundlatch;
 	}
 
@@ -953,7 +960,7 @@ UINT8 __fastcall stoneage_sound_read(UINT16 address)
 
 static void DrvYM2151IrqHandler(INT32 state)
 {
-	ZetSetIRQLine(0, state ? ZET_IRQSTATUS_ACK : ZET_IRQSTATUS_NONE);
+	ZetSetIRQLine(0, state ? CPU_IRQSTATUS_ACK : CPU_IRQSTATUS_NONE);
 }
 
 static void DrvYM2151WritePort(UINT32, UINT32 data)
@@ -1168,18 +1175,18 @@ static INT32 CninjaInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, SM_ROM);
-	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, SM_RAM);
-	SekMapMemory(Drv68KRAM,			0x184000, 0x187fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x1a4000, 0x1a47ff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, MAP_ROM);
+	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,			0x184000, 0x187fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x1a4000, 0x1a47ff, MAP_RAM);
 	SekSetWriteWordHandler(0,		cninja_main_write_word);
 	SekSetWriteByteHandler(0,		cninja_main_write_byte);
 	SekSetReadWordHandler(0,		cninja_main_read_word);
@@ -1268,18 +1275,18 @@ static INT32 EdrandyInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x188000, 0x189fff, SM_RAM);
-	SekMapMemory(Drv68KRAM,			0x194000, 0x197fff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x1bc000, 0x1bc7ff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x188000, 0x189fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,			0x194000, 0x197fff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x1bc000, 0x1bc7ff, MAP_RAM);
 	SekSetWriteWordHandler(0,		cninja_main_write_word);
 	SekSetWriteByteHandler(0,		cninja_main_write_byte);
 	SekSetReadWordHandler(0,		cninja_main_read_word);
@@ -1378,19 +1385,19 @@ static INT32 MutantfInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(Drv68KRAM,			0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x120000, 0x1207ff, SM_RAM);
-	SekMapMemory(DrvSprRAM1,		0x140000, 0x1407ff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x160000, 0x161fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[0],		0x304000, 0x305fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x306000, 0x307fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x308000, 0x3087ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x30a000, 0x30a7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x314000, 0x315fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x316000, 0x317fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x318000, 0x3187ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x31a000, 0x31a7ff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x07ffff, MAP_ROM);
+	SekMapMemory(Drv68KRAM,			0x100000, 0x103fff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x120000, 0x1207ff, MAP_RAM);
+	SekMapMemory(DrvSprRAM1,		0x140000, 0x1407ff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x160000, 0x161fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[0],		0x304000, 0x305fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x306000, 0x307fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x308000, 0x3087ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x30a000, 0x30a7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x314000, 0x315fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x316000, 0x317fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x318000, 0x3187ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x31a000, 0x31a7ff, MAP_RAM);
 	SekSetWriteWordHandler(0,		mutantf_main_write_word);
 	SekSetWriteByteHandler(0,		mutantf_main_write_byte);
 	SekSetReadWordHandler(0,		mutantf_main_read_word);
@@ -1464,18 +1471,18 @@ static INT32 CninjablInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, SM_ROM);
-	SekMapMemory(DrvSprRAM,			0x138000, 0x1387ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, SM_RAM);
-	SekMapMemory(Drv68KRAM,			0x180000, 0x187fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, MAP_ROM);
+	SekMapMemory(DrvSprRAM,			0x138000, 0x1387ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,			0x180000, 0x187fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, MAP_RAM);
 	SekSetWriteWordHandler(0,		cninja_main_write_word);
 	SekSetWriteByteHandler(0,		cninja_main_write_byte);
 	SekSetReadWordHandler(0,		cninja_main_read_word);
@@ -1578,18 +1585,18 @@ static INT32 StoneageInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, SM_ROM);
-	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, SM_RAM);
-	SekMapMemory(Drv68KRAM,			0x184000, 0x187fff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x1a4000, 0x1a47ff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0bffff, MAP_ROM);
+	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,			0x184000, 0x187fff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x19c000, 0x19dfff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x1a4000, 0x1a47ff, MAP_RAM);
 	SekSetWriteWordHandler(0,		cninja_main_write_word);
 	SekSetWriteByteHandler(0,		cninja_main_write_byte);
 	SekSetReadWordHandler(0,		cninja_main_read_word);
@@ -1705,18 +1712,18 @@ static INT32 Robocop2Init()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, SM_RAM);
-	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, SM_RAM);
-	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, SM_RAM);
-	SekMapMemory(DrvSprRAM,			0x180000, 0x1807ff, SM_RAM);
-	SekMapMemory(DrvPalRAM,			0x1a8000, 0x1a9fff, SM_RAM);
-	SekMapMemory(Drv68KRAM,			0x1b8000, 0x1bbfff, SM_RAM);
+	SekMapMemory(Drv68KROM,			0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(deco16_pf_ram[0],		0x144000, 0x144fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[1],		0x146000, 0x146fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[0],	0x14c000, 0x14c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[1],	0x14e000, 0x14e7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[2],		0x154000, 0x154fff, MAP_RAM);
+	SekMapMemory(deco16_pf_ram[3],		0x156000, 0x156fff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[2],	0x15c000, 0x15c7ff, MAP_RAM);
+	SekMapMemory(deco16_pf_rowscroll[3],	0x15e000, 0x15e7ff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,			0x180000, 0x1807ff, MAP_RAM);
+	SekMapMemory(DrvPalRAM,			0x1a8000, 0x1a9fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,			0x1b8000, 0x1bbfff, MAP_RAM);
 	SekSetWriteWordHandler(0,		robocop2_main_write_word);
 	SekSetWriteByteHandler(0,		robocop2_main_write_byte);
 	SekSetReadWordHandler(0,		robocop2_main_read_word);
@@ -1759,7 +1766,7 @@ static INT32 DrvExit()
 	return 0;
 }
 
-static void cninja_draw_sprites()
+static void cninja_draw_sprites(int xoffset)
 {
 	UINT16 *buffered_spriteram = (UINT16*)DrvSprBuf;
 
@@ -1820,7 +1827,7 @@ static void cninja_draw_sprites()
 
 		while (multi >= 0)
 		{
-			deco16_draw_prio_sprite(pTransDraw, DrvGfxROM3, sprite - multi * inc, (color << 4) + 0x300, x, y + mult * multi, flipx, flipy, pri);
+			deco16_draw_prio_sprite(pTransDraw, DrvGfxROM3, sprite - multi * inc, (color << 4) + 0x300, x+xoffset, y + mult * multi, flipx, flipy, pri);
 
 			multi--;
 		}
@@ -2028,7 +2035,7 @@ static INT32 CninjaDraw()
 	if (nSpriteEnable &  4) deco16_draw_layer(1, pTransDraw, DECO16_LAYER_PRIORITY(0x02) | DECO16_LAYER_TRANSMASK1);
 	if (nSpriteEnable &  8) deco16_draw_layer(1, pTransDraw, DECO16_LAYER_PRIORITY(0x04) | DECO16_LAYER_TRANSMASK0);
  
-	cninja_draw_sprites();
+	cninja_draw_sprites(0);
 
 	if (nSpriteEnable & 16) deco16_draw_layer(0, pTransDraw, 0);
 
@@ -2067,27 +2074,37 @@ static INT32 CninjablDraw()
 	return 0;
 }
 
+static INT32 EdrandyStartDraw()
+{
+	deco16_clear_prio_map();
+
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		pTransDraw[i] = 0;
+	}
+
+	return 0;
+}
+
+static INT32 EdrandyDrawScanline(INT32 line)
+{
+	deco16_pf12_update();
+	deco16_pf34_update();
+
+	if (nSpriteEnable &  1) deco16_draw_layer_by_line(line, line+1, 3, pTransDraw, DECO16_LAYER_PRIORITY(0x01) | DECO16_LAYER_OPAQUE);
+	if (nSpriteEnable &  2) deco16_draw_layer_by_line(line, line+1, 2, pTransDraw, DECO16_LAYER_PRIORITY(0x02));
+	if (nSpriteEnable &  4) deco16_draw_layer_by_line(line, line+1, 1, pTransDraw, DECO16_LAYER_PRIORITY(0x04));
+
+	return 0;
+}
+
 static INT32 EdrandyDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
 		DrvRecalc = 0;
 //	}
-
-	deco16_pf12_update();
-	deco16_pf34_update();
-
-	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
-		pTransDraw[i] = 0;
-	}
-
-	deco16_clear_prio_map();
-
-	if (nSpriteEnable &  1) deco16_draw_layer(3, pTransDraw, DECO16_LAYER_PRIORITY(0x01) | DECO16_LAYER_OPAQUE);
-	if (nSpriteEnable &  2) deco16_draw_layer(2, pTransDraw, DECO16_LAYER_PRIORITY(0x02));
-	if (nSpriteEnable &  4) deco16_draw_layer(1, pTransDraw, DECO16_LAYER_PRIORITY(0x04));
  
-	if (nBurnLayer & 1) cninja_draw_sprites();
+	if (nBurnLayer & 1) cninja_draw_sprites(0);
 
 	if (nSpriteEnable &  8) deco16_draw_layer(0, pTransDraw, 0);
 
@@ -2096,21 +2113,21 @@ static INT32 EdrandyDraw()
 	return 0;
 }
 
-static INT32 Robocop2Draw()
+static INT32 Robocop2StartDraw()
 {
-//	if (DrvRecalc) {
-		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
-		DrvRecalc = 0;
-//	}
-
-	deco16_pf12_update();
-	deco16_pf34_update();
+	deco16_clear_prio_map();
 
 	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
-	deco16_clear_prio_map();
+	return 0;
+}
+
+static INT32 Robocop2DrawScanline(INT32 line)
+{
+	deco16_pf12_update();
+	deco16_pf34_update();
 
 	INT32 layer_8bpp = 0;
 
@@ -2127,18 +2144,28 @@ static INT32 Robocop2Draw()
 		deco16_set_color_mask(3, 0xf);
 		deco16_set_graphics(2, DrvGfxROM2, 0x300000, 16);
 
-		if (nSpriteEnable &  1) deco16_draw_layer(3, pTransDraw, DECO16_LAYER_OPAQUE | DECO16_LAYER_PRIORITY(0x01));
+		if (nSpriteEnable &  1) deco16_draw_layer_by_line(line, line+1, 3, pTransDraw, DECO16_LAYER_OPAQUE | DECO16_LAYER_PRIORITY(0x01));
 	}
 
 	if (deco16_priority & 8) {
-		if (nSpriteEnable &  2) deco16_draw_layer(1, pTransDraw, DECO16_LAYER_PRIORITY(0x02));
-		if (nSpriteEnable &  4) deco16_draw_layer(2, pTransDraw, DECO16_LAYER_PRIORITY(0x04) | layer_8bpp);
+		if (nSpriteEnable &  2) deco16_draw_layer_by_line(line, line+1, 1, pTransDraw, DECO16_LAYER_PRIORITY(0x02));
+		if (nSpriteEnable &  4) deco16_draw_layer_by_line(line, line+1, 2, pTransDraw, DECO16_LAYER_PRIORITY(0x04) | layer_8bpp);
 	} else {
-		if (nSpriteEnable &  2) deco16_draw_layer(2, pTransDraw, DECO16_LAYER_PRIORITY(0x02) | layer_8bpp);
-		if (nSpriteEnable &  4) deco16_draw_layer(1, pTransDraw, DECO16_LAYER_PRIORITY(0x04));
+		if (nSpriteEnable &  2) deco16_draw_layer_by_line(line, line+1, 2, pTransDraw, DECO16_LAYER_PRIORITY(0x02) | layer_8bpp);
+		if (nSpriteEnable &  4) deco16_draw_layer_by_line(line, line+1, 1, pTransDraw, DECO16_LAYER_PRIORITY(0x04));
 	}
 
-	cninja_draw_sprites();
+	return 0;
+}
+
+static INT32 Robocop2Draw()
+{
+//	if (DrvRecalc) {
+		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
+		DrvRecalc = 0;
+//	}
+
+	cninja_draw_sprites(64);
 
 	if (nSpriteEnable &  8) deco16_draw_layer(0, pTransDraw, 0);
 
@@ -2222,7 +2249,7 @@ static INT32 CninjaFrame()
 		nCyclesDone[1] += h6280Run(nCyclesTotal[1] / nInterleave);
 
 		if (irq_timer == i) {
-			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, SEK_IRQSTATUS_ACK);
+			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, CPU_IRQSTATUS_ACK);
 			irq_timer = -1;
 		}
 		if (i == 206) deco16_vblank = 0x08;
@@ -2233,7 +2260,178 @@ static INT32 CninjaFrame()
 		nSoundBufferPos += nSegmentLength;
 	}
 
-	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+
+	if (pBurnSoundOut) {
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = SoundBuffer + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			deco16SoundUpdate(pSoundBuf, nSegmentLength);
+		}
+		
+		for (INT32 i = 0; i < nBurnSoundLen; i++) {
+			pBurnSoundOut[(i << 1) + 0] = BURN_SND_CLIP(pBurnSoundOut[(i << 1) + 0] + SoundBuffer[(i << 1) + 0]);
+			pBurnSoundOut[(i << 1) + 1] = BURN_SND_CLIP(pBurnSoundOut[(i << 1) + 1] + SoundBuffer[(i << 1) + 1]);
+		}
+	}
+
+	h6280Close();
+	SekClose();
+
+	if (pBurnDraw) {
+		BurnDrvRedraw();
+	}
+
+	return 0;
+}
+
+static INT32 EdrandyFrame()
+{
+	if (DrvReset) {
+		DrvDoReset();
+	}
+
+	{
+		deco16_prot_inputs = DrvInputs;
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
+			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
+			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
+		}
+		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
+	}
+
+	INT32 nInterleave = 256; // scanlines
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 12000000 / 58, 8055000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
+
+	h6280NewFrame();
+	
+	SekOpen(0);
+	h6280Open(0);
+
+	deco16_vblank = 0x08;
+	EdrandyStartDraw();
+
+	for (INT32 i = 0; i < nInterleave; i++)
+	{
+	global_scanline = i;
+		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
+		nCyclesDone[1] += h6280Run(nCyclesTotal[1] / nInterleave);
+
+		if (irq_timer == i) {
+			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, CPU_IRQSTATUS_ACK);
+			irq_timer = -1;
+		}
+
+		if (i < 8) deco16_vblank = 0;
+
+		//if (i >= 8 && i < 248) {
+		if (i > 16) {
+			deco16_vblank = 8;
+			EdrandyDrawScanline(i-16);
+		}
+
+		if (i == 255) {
+			SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
+		//	deco16_vblank = 0x00;
+		}
+
+		INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+		INT16* pSoundBuf = SoundBuffer + (nSoundBufferPos << 1);
+		deco16SoundUpdate(pSoundBuf, nSegmentLength);
+		nSoundBufferPos += nSegmentLength;
+	}
+
+	BurnTimerEndFrame(nCyclesTotal[1]);
+
+	if (pBurnSoundOut) {
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = SoundBuffer + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			deco16SoundUpdate(pSoundBuf, nSegmentLength);
+		}
+		
+		for (INT32 i = 0; i < nBurnSoundLen; i++) {
+			pBurnSoundOut[(i << 1) + 0] = BURN_SND_CLIP(pBurnSoundOut[(i << 1) + 0] + SoundBuffer[(i << 1) + 0]);
+			pBurnSoundOut[(i << 1) + 1] = BURN_SND_CLIP(pBurnSoundOut[(i << 1) + 1] + SoundBuffer[(i << 1) + 1]);
+		}
+	}
+
+	h6280Close();
+	SekClose();
+
+	if (pBurnDraw) {
+		BurnDrvRedraw();
+	}
+
+	return 0;
+}
+
+static INT32 Robocop2Frame()
+{
+	if (DrvReset) {
+		DrvDoReset();
+	}
+
+	{
+		deco16_prot_inputs = DrvInputs;
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
+			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
+			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
+		}
+		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
+	}
+
+	INT32 nInterleave = 256;	// scanlines
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[2] = { 14000000 / 58, 8055000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
+
+	h6280NewFrame();
+	
+	SekOpen(0);
+	h6280Open(0);
+
+	deco16_vblank = 0x08;
+
+	Robocop2StartDraw();
+
+	for (INT32 i = 0; i < nInterleave; i++)
+	{
+		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
+		nCyclesDone[1] += h6280Run(nCyclesTotal[1] / nInterleave);
+
+		if (irq_timer == i) {
+			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, CPU_IRQSTATUS_ACK);
+			irq_timer = -1;
+		}
+
+		if (i >= 8 && i < 248) {
+			deco16_vblank = 0;
+			Robocop2DrawScanline(i-8);
+		}
+
+		if (i == 248) {
+			deco16_vblank = 0x08;
+		}
+		
+		INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+		INT16* pSoundBuf = SoundBuffer + (nSoundBufferPos << 1);
+		deco16SoundUpdate(pSoundBuf, nSegmentLength);
+		nSoundBufferPos += nSegmentLength;
+	}
+
+	SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 	BurnTimerEndFrame(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
@@ -2305,7 +2503,7 @@ static INT32 MutantfFrame()
 		}
 	}
 
-	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(6, CPU_IRQSTATUS_AUTO);
 	
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -2358,7 +2556,7 @@ static INT32 StoneageFrame()
 		nCyclesDone[1] += ZetRun(nCyclesTotal[1] / nInterleave);
 
 		if (irq_timer == i) {
-			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, SEK_IRQSTATUS_ACK);
+			SekSetIRQLine((irq_mask & 0x10) ? 3 : 4, CPU_IRQSTATUS_ACK);
 			irq_timer = -1;
 		}
 		if (i == 248) deco16_vblank = 0x08;
@@ -2373,7 +2571,7 @@ static INT32 StoneageFrame()
 		}
 	}
 
-	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -2964,7 +3162,7 @@ struct BurnDriver BurnDrvEdrandy = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, edrandyRomInfo, edrandyRomName, NULL, NULL, DrvInputInfo, EdrandyDIPInfo,
-	EdrandyInit, DrvExit, CninjaFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
+	EdrandyInit, DrvExit, EdrandyFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
 	256, 240, 4, 3
 };
 
@@ -3018,7 +3216,7 @@ struct BurnDriver BurnDrvEdrandy2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, edrandy2RomInfo, edrandy2RomName, NULL, NULL, DrvInputInfo, EdrandcDIPInfo,
-	EdrandyInit, DrvExit, CninjaFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
+	EdrandyInit, DrvExit, EdrandyFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
 	256, 240, 4, 3
 };
 
@@ -3072,7 +3270,7 @@ struct BurnDriver BurnDrvEdrandy1 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, edrandy1RomInfo, edrandy1RomName, NULL, NULL, DrvInputInfo, EdrandcDIPInfo,
-	EdrandyInit, DrvExit, CninjaFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
+	EdrandyInit, DrvExit, EdrandyFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
 	256, 240, 4, 3
 };
 
@@ -3126,7 +3324,7 @@ struct BurnDriver BurnDrvEdrandyj = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, edrandyjRomInfo, edrandyjRomName, NULL, NULL, DrvInputInfo, EdrandcDIPInfo,
-	EdrandyInit, DrvExit, CninjaFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
+	EdrandyInit, DrvExit, EdrandyFrame, EdrandyDraw, DrvScan, &DrvRecalc, 0x800,
 	256, 240, 4, 3
 };
 
@@ -3178,7 +3376,7 @@ struct BurnDriver BurnDrvRobocop2 = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, robocop2RomInfo, robocop2RomName, NULL, NULL, Robocop2InputInfo, Robocop2DIPInfo,
-	Robocop2Init, DrvExit, CninjaFrame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
+	Robocop2Init, DrvExit, Robocop2Frame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
 	320, 240, 4, 3
 };
 
@@ -3230,7 +3428,7 @@ struct BurnDriver BurnDrvRobocop2u = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, robocop2uRomInfo, robocop2uRomName, NULL, NULL, Robocop2InputInfo, Robocop2DIPInfo,
-	Robocop2Init, DrvExit, CninjaFrame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
+	Robocop2Init, DrvExit, Robocop2Frame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
 	320, 240, 4, 3
 };
 
@@ -3282,6 +3480,6 @@ struct BurnDriver BurnDrvRobocop2j = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PREFIX_DATAEAST, GBF_SCRFIGHT, 0,
 	NULL, robocop2jRomInfo, robocop2jRomName, NULL, NULL, Robocop2InputInfo, Robocop2DIPInfo,
-	Robocop2Init, DrvExit, CninjaFrame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
+	Robocop2Init, DrvExit, Robocop2Frame, Robocop2Draw, DrvScan, &DrvRecalc, 0x800,
 	320, 240, 4, 3
 };

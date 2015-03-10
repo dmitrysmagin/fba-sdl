@@ -550,7 +550,7 @@ UINT8 __fastcall outzoneZ80In(UINT16 nAddress)
 
 	switch (nAddress) {
 		case 0x00:
-			return BurnYM3812Read(0);
+			return BurnYM3812Read(0, 0);
 		case 0x08:					// DIP A
 			return DrvInput[2];
 		case 0x0C:					// DIP B
@@ -577,10 +577,10 @@ void __fastcall outzoneZ80Out(UINT16 nAddress, UINT8 nValue)
 
 	switch (nAddress) {
 		case 0x00:
-			BurnYM3812Write(0, nValue);
+			BurnYM3812Write(0, 0, nValue);
 			break;
 		case 0x01:
-			BurnYM3812Write(1, nValue);
+			BurnYM3812Write(0, 1, nValue);
 			break;
 
 		case 0x04:				// Coin counter
@@ -808,17 +808,17 @@ static INT32 DrvInit()
 	    SekOpen(0);
 
 		// Map 68000 memory:
-		SekMapMemory(Rom01,			0x000000, 0x03FFFF, SM_ROM);	// 68K ROM
-		SekMapMemory(Ram01,			0x240000, 0x243FFF, SM_RAM);	// 68K RAM
-		SekMapMemory(RamPal,		0x304000, 0x3047FF, SM_RAM);	// BCU-2 palette RAM
-		SekMapMemory(RamPal2,		0x306000, 0x3067FF, SM_RAM);	// FCU-2 palette RAM
+		SekMapMemory(Rom01,			0x000000, 0x03FFFF, MAP_ROM);	// 68K ROM
+		SekMapMemory(Ram01,			0x240000, 0x243FFF, MAP_RAM);	// 68K RAM
+		SekMapMemory(RamPal,		0x304000, 0x3047FF, MAP_RAM);	// BCU-2 palette RAM
+		SekMapMemory(RamPal2,		0x306000, 0x3067FF, MAP_RAM);	// FCU-2 palette RAM
 
 		SekSetReadWordHandler(0, outzoneReadWord);
 		SekSetReadByteHandler(0, outzoneReadByte);
 		SekSetWriteWordHandler(0, outzoneWriteWord);
 		SekSetWriteByteHandler(0, outzoneWriteByte);
 
-		SekMapHandler(1,			0x140000, 0x140FFF, SM_RAM);	// Z80 RAM
+		SekMapHandler(1,			0x140000, 0x140FFF, MAP_RAM);	// Z80 RAM
 
 		SekSetReadByteHandler(1, toaplan1ReadByteZ80RAM);
 		SekSetReadWordHandler(1, toaplan1ReadWordZ80RAM);
@@ -837,9 +837,9 @@ static INT32 DrvInit()
 	ToaPalSrc2 = RamPal2;
 	ToaPalInit();
 
-	BurnYM3812Init(28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
+	BurnYM3812Init(1, 28000000 / 8, &toaplan1FMIRQHandler, &toaplan1SynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(28000000 / 8);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	bDrawScreen = true;
 
@@ -940,7 +940,7 @@ static INT32 DrvFrame()
 
 			bVBlank = true;
 			if (bEnableInterrupts) {
-				SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+				SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 			}
 		}
 

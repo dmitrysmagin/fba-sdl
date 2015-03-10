@@ -80,7 +80,7 @@ static void bankswitch(INT32 d)
 
 	int bank = 0x08000 + (((d & 0x0c) >> 1) | (d & 1)) * 0x4000;
 
-	M6809MapMemory(DrvMainROM + bank, 0x0000, 0x3fff, M6809_ROM);
+	M6809MapMemory(DrvMainROM + bank, 0x0000, 0x3fff, MAP_ROM);
 }
 
 static void main_write(UINT16 a, UINT8 d)
@@ -117,7 +117,7 @@ static void main_write(UINT16 a, UINT8 d)
 			*soundlatch = d;
 			M6809Close();
 			M6809Open(1);
-			M6809SetIRQLine(M6809_IRQ_LINE, M6809_IRQSTATUS_AUTO);
+			M6809SetIRQLine(M6809_IRQ_LINE, CPU_IRQSTATUS_AUTO);
 			M6809Close();
 			M6809Open(0);
 		}
@@ -227,12 +227,12 @@ static double DrvGetTime()
 
 static void DrvFMIRQCallback(INT32 , INT32 state)
 {
-	M6809SetIRQLine(M6809_FIRQ_LINE, state ? M6809_IRQSTATUS_ACK : M6809_IRQSTATUS_NONE);
+	M6809SetIRQLine(M6809_FIRQ_LINE, state ? CPU_IRQSTATUS_ACK : CPU_IRQSTATUS_NONE);
 }
 
 static void tms34061_interrupt(INT32 state)
 {
-	M6809SetIRQLine(M6809_FIRQ_LINE, state ? M6809_IRQSTATUS_ACK : M6809_IRQSTATUS_NONE);
+	M6809SetIRQLine(M6809_FIRQ_LINE, state ? CPU_IRQSTATUS_ACK : CPU_IRQSTATUS_NONE);
 }
 
 static void draw_layer()
@@ -363,15 +363,15 @@ static INT32 DrvInit(INT32 game)
 
 	M6809Init(2);
 	M6809Open(0);
-	M6809MapMemory(DrvNVRAM,		0x5000, 0x57ff, M6809_RAM);
-	M6809MapMemory(DrvMainROM,		0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvNVRAM,		0x5000, 0x57ff, MAP_RAM);
+	M6809MapMemory(DrvMainROM,		0x8000, 0xffff, MAP_ROM);
 	M6809SetWriteHandler(main_write);
 	M6809SetReadHandler(main_read);
 	M6809Close();
 
 	M6809Open(1);
-	M6809MapMemory(DrvSoundRAM,		0x0000, 0x07ff, M6809_RAM);
-	M6809MapMemory(DrvSoundROM,		0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvSoundRAM,		0x0000, 0x07ff, MAP_RAM);
+	M6809MapMemory(DrvSoundROM,		0x8000, 0xffff, MAP_ROM);
 	M6809SetWriteHandler(sound_write);
 	M6809SetReadHandler(sound_read);
 	M6809Close();
@@ -488,7 +488,7 @@ static INT32 DrvFrame()
 
 	M6809Open(0);
 	if (DrvDips[1] & 0x01) {
-		M6809SetIRQLine(0x20, M6809_IRQSTATUS_AUTO); // NMI
+		M6809SetIRQLine(0x20, CPU_IRQSTATUS_AUTO); // NMI
 	}
 	M6809Close();
 
@@ -577,7 +577,7 @@ static INT32 CapbowlInit()
 
 struct BurnDriver BurnDrvCapbowl = {
 	"capbowl", NULL, NULL, NULL, "1988",
-	"Capcom Bowling (set 1)\0", NULL, "Incredible Technologies / Capcom", "Miscellaneous",
+	"Capcom Bowling (set 1)\0", "needs analog inputs hooked up", "Incredible Technologies / Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, capbowlRomInfo, capbowlRomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,
@@ -602,7 +602,7 @@ STD_ROM_FN(capbowl2)
 
 struct BurnDriver BurnDrvCapbowl2 = {
 	"capbowl2", "capbowl", NULL, NULL, "1988",
-	"Capcom Bowling (set 2)\0", NULL, "Incredible Technologies / Capcom", "Miscellaneous",
+	"Capcom Bowling (set 2)\0", "needs analog inputs hooked up", "Incredible Technologies / Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, capbowl2RomInfo, capbowl2RomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,
@@ -627,7 +627,7 @@ STD_ROM_FN(capbowl3)
 
 struct BurnDriver BurnDrvCapbowl3 = {
 	"capbowl3", "capbowl", NULL, NULL, "1988",
-	"Capcom Bowling (set 3)\0", NULL, "Incredible Technologies / Capcom", "Miscellaneous",
+	"Capcom Bowling (set 3)\0", "needs analog inputs hooked up", "Incredible Technologies / Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, capbowl3RomInfo, capbowl3RomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,
@@ -652,7 +652,7 @@ STD_ROM_FN(capbowl4)
 
 struct BurnDriver BurnDrvCapbowl4 = {
 	"capbowl4", "capbowl", NULL, NULL, "1988",
-	"Capcom Bowling (set 4)\0", NULL, "Incredible Technologies / Capcom", "Miscellaneous",
+	"Capcom Bowling (set 4)\0", "needs analog inputs hooked up", "Incredible Technologies / Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, capbowl4RomInfo, capbowl4RomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,
@@ -677,7 +677,7 @@ STD_ROM_FN(clbowl)
 
 struct BurnDriver BurnDrvClbowl = {
 	"clbowl", "capbowl", NULL, NULL, "1989",
-	"Coors Light Bowling\0", NULL, "Incredible Technologies / Capcom", "Miscellaneous",
+	"Coors Light Bowling\0", "needs analog inputs hooked up", "Incredible Technologies / Capcom", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, clbowlRomInfo, clbowlRomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,
@@ -706,7 +706,7 @@ static INT32 BowlramaInit()
 
 struct BurnDriver BurnDrvBowlrama = {
 	"bowlrama", NULL, NULL, NULL, "1991",
-	"Bowl-O-Rama\0", NULL, "P&P Marketing", "Miscellaneous",
+	"Bowl-O-Rama\0", "needs analog inputs hooked up", "P&P Marketing", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_POST90S, GBF_SPORTSMISC, 0,
 	NULL, bowlramaRomInfo, bowlramaRomName, NULL, NULL, CapbowlInputInfo, CapbowlDIPInfo,

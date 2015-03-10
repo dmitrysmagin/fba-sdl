@@ -551,9 +551,9 @@ static INT32 DrvDraw()
 			}
 
 			if (flipscreen)
-				PutPix(pBurnDraw + ((x << 8) | (y ^ 0xff)) * nBurnBpp, BurnHighCol(pen>>16, pen>>8, pen, 0));
+				PutPix(pBurnDraw + ((x << 8) | (y ^ 0xff)) * nBurnBpp, BurnHighCol((pen>>16)&0xff, (pen>>8)&0xff, (pen)&0xff, 0));
 			else
-				PutPix(pBurnDraw + (((x ^ 0xff) << 8) | y) * nBurnBpp, BurnHighCol(pen>>16, pen>>8, pen, 0));
+				PutPix(pBurnDraw + (((x ^ 0xff) << 8) | y) * nBurnBpp, BurnHighCol((pen>>16)&0xff, (pen>>8)&0xff, (pen)&0xff, 0));
 
 			x += 1;
 			d1 >>= 1;
@@ -597,7 +597,7 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i+1 == nInterleave) ZetRaiseIrq(1);
+		if (i+1 == nInterleave) ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		ZetClose();
 
 		// Run Z80 #1
@@ -610,7 +610,7 @@ static INT32 DrvFrame()
 		if (draw_type == 3) { // space echo
 			for (INT32 j = 0; j < 48; j++) {
 				if (i == DACIRQFireSlice[j]) {
-					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 				}
 			}
 		}

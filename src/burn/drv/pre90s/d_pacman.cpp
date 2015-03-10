@@ -1792,7 +1792,7 @@ void __fastcall pacman_write(UINT16 a, UINT8 d)
 		case ALIBABA:
 		{
 			if (a == 0x50c2) {
-				ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 				interrupt_mask = d;
 				return;
 			}
@@ -1958,7 +1958,7 @@ void __fastcall pacman_out_port(UINT16 a, UINT8 d)
 	{
 		interrupt_mode = d;
 		ZetSetVector(d);
-		ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -2702,7 +2702,7 @@ static INT32 DrvFrame()
 		if (game_select == BIGBUCKS) {
 			INT32 nInterleaveIRQFire = nBurnSoundLen / 20;
 			for (INT32 j = 0; j < 20; j++) {
-				if (i == (nInterleaveIRQFire * j) - 1) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+				if (i == (nInterleaveIRQFire * j) - 1) ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 			}
 		} else {
 			if (game_select == DREMSHPR || game_select == VANVAN) {
@@ -2710,7 +2710,7 @@ static INT32 DrvFrame()
 			} else {
 				if (i == (nInterleave - 1) && interrupt_mask) {
 					ZetSetVector(interrupt_mode);
-					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 				}
 			}
 		}
@@ -3851,8 +3851,8 @@ static struct BurnRomInfo msheartbRomDesc[] = {
 	{ "u6",     	  0x1000, 0xa90e7000, 1 | BRF_ESS | BRF_PRG },	//  5
 	{ "u7",           0x1000, 0xc82cd714, 1 | BRF_ESS | BRF_PRG },	//  6
 
-	{ "5e(__msheartb)", 0x1000, 0x5431d4c4, 2 | BRF_GRA },			//  7 Graphics
-	{ "5f(__msheartb)", 0x1000, 0xceb50654, 2 | BRF_GRA },			//  8
+	{ "5e", 		  0x1000, 0x5431d4c4, 2 | BRF_GRA },			//  7 Graphics
+	{ "5f", 		  0x1000, 0xceb50654, 2 | BRF_GRA },			//  8
 
 	{ "82s123.7f",    0x0020, 0x2fc650bd, 3 | BRF_GRA },			//  9 Color Prom
 	{ "82s126.4a",    0x0100, 0x3eb3a8e4, 3 | BRF_GRA },			// 10 
@@ -4058,7 +4058,7 @@ static INT32 mspacmanbgInit()
 }
 
 struct BurnDriver BurnDrvmspacmanbg = {
-	"mspacmanbg", "mspacman", NULL, NULL, "1981",
+	"mspacmanbg", "mspacman", NULL, NULL, "198?",
 	"Ms. Pac-Man ('Made in Greece' bootleg)\0", NULL, "bootleg", "Pac-man",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
@@ -4068,7 +4068,7 @@ struct BurnDriver BurnDrvmspacmanbg = {
 };
 
 
-// Miss Pukman ('Made in Greece' bootleg)
+// Miss Pukman ('Made in Greece' Datamat bootleg)
 
 static struct BurnRomInfo mspacmanbgdRomDesc[] = {
 	{ "27256.01",     0x8000, 0x5bcc195e, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
@@ -4086,8 +4086,8 @@ STD_ROM_PICK(mspacmanbgd)
 STD_ROM_FN(mspacmanbgd)
 
 struct BurnDriver BurnDrvmspacmanbgd = {
-	"mspacmanbgd", "mspacman", NULL, NULL, "1981",
-	"Miss Pukman ('Made in Greece' bootleg)\0", NULL, "bootleg (Datamat)", "Pac-man",
+	"mspacmanbgd", "mspacman", NULL, NULL, "1992",
+	"Miss Pukman ('Made in Greece' Datamat bootleg)\0", NULL, "bootleg (Datamat)", "Pac-man",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
 	NULL, mspacmanbgdRomInfo, mspacmanbgdRomName, NULL, NULL, DrvInputInfo, mspacmanDIPInfo,
@@ -4096,7 +4096,35 @@ struct BurnDriver BurnDrvmspacmanbgd = {
 };
 
 
-// Come-Cocos (Ms. Pac-Man) ('Made in Greece' bootleg)
+// Come-Cocos (Ms. Pac-Man) ('Made in Greece' Triunvi bootleg)
+
+static struct BurnRomInfo mspacmanbltRomDesc[] = {
+	{ "triunvi.1.bin",     0x8000, 0xd9da2917, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
+
+	{ "triunvi.2.bin",     0x2000, 0xe6446f49, 2 | BRF_GRA },			//  1 Graphics
+
+	{ "82s123.h7",    0x0020, 0x3545e7e9, 3 | BRF_GRA },			//  2 Color Proms
+	{ "82s129-3.d1",  0x0100, 0x3eb3a8e4, 3 | BRF_GRA },			//  3
+
+	{ "82s129-1.a9",  0x0100, 0xa9cc86bf, 4 | BRF_SND },			//  4 Sound Prom
+	{ "82s129-2.c9",  0x0100, 0x77245b66, 0 | BRF_SND | BRF_OPT },	//  5 Timing Prom (not used)
+};
+
+STD_ROM_PICK(mspacmanblt)
+STD_ROM_FN(mspacmanblt)
+
+struct BurnDriver BurnDrvmspacmanblt = {
+	"mspacmanblt", "mspacman", NULL, NULL, "1991",
+	"Miss Pukman ('Made in Greece' Triunvi bootleg)\0", NULL, "bootleg (Triunvi)", "Pac-man",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
+	NULL, mspacmanbltRomInfo, mspacmanbltRomName, NULL, NULL, DrvInputInfo, mspacmanDIPInfo,
+	mspacmanbgInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
+	224, 288, 3, 4
+};
+
+
+// Come-Cocos (Ms. Pac-Man) ('Made in Greece' Tecnausa bootleg)
 
 static struct BurnRomInfo mspacmanbccRomDesc[] = {
 	{ "comecocos.bin",		0x8000, 0x220eccae, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
@@ -4115,7 +4143,7 @@ STD_ROM_FN(mspacmanbcc)
 
 struct BurnDriver BurnDrvmspacmanbcc = {
 	"mspacmanbcc", "mspacman", NULL, NULL, "1981",
-	"Come-Cocos (Ms. Pac-Man) ('Made in Greece' bootleg)\0", NULL, "bootleg (Tecnausa)", "Pac-man",
+	"Come-Cocos (Ms. Pac-Man) ('Made in Greece' Tecnausa bootleg)\0", NULL, "bootleg (Tecnausa)", "Pac-man",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
 	NULL, mspacmanbccRomInfo, mspacmanbccRomName, NULL, NULL, DrvInputInfo, mspacmanDIPInfo,
@@ -5536,6 +5564,42 @@ struct BurnDriver BurnDrvponpoko = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_PACMAN, GBF_PLATFORM, 0,
 	NULL, ponpokoRomInfo, ponpokoRomName, NULL, NULL, ponpokoInputInfo, ponpokoDIPInfo,
+	ponpokoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
+	288, 224, 4, 3
+};
+
+
+// Candory (Bootleg)
+
+static struct BurnRomInfo CandoryRomDesc[] = {
+	{ "ppokoj1.bin",    0x1000, 0xffa3c004, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
+	{ "ppokoj2.bin",    0x1000, 0x4a496866, 1 | BRF_ESS | BRF_PRG },	//  1
+	{ "ppokoj3.bin",    0x1000, 0x17da6ca3, 1 | BRF_ESS | BRF_PRG },	//  2
+	{ "ppokoj4.bin",    0x1000, 0x9d39a565, 1 | BRF_ESS | BRF_PRG },	//  3
+	{ "ppoko5.bin",     0x1000, 0x54ca3d7d, 1 | BRF_ESS | BRF_PRG },	//  4
+	{ "ppoko6.bin",     0x1000, 0x3055c7e0, 1 | BRF_ESS | BRF_PRG },	//  5
+	{ "ppoko7.bin",     0x1000, 0x3cbe47ca, 1 | BRF_ESS | BRF_PRG },	//  6
+	{ "ppokoj8.bin",    0x1000, 0x04b63fc6, 1 | BRF_ESS | BRF_PRG },	//  7
+
+	{ "candory.v2",   0x1000, 0x7d16bdff, 2 | BRF_GRA },			//  8 Graphics
+	{ "candory.v1",   0x1000, 0xe08ac188, 2 | BRF_GRA },			//  9
+
+	{ "82s123.7f",    0x0020, 0x2fc650bd, 3 | BRF_GRA },			// 10 Color Proms
+	{ "82s126.4a",    0x0100, 0x3eb3a8e4, 3 | BRF_GRA },			// 11
+
+	{ "82s126.1m",    0x0100, 0xa9cc86bf, 4 | BRF_SND },			// 12 Sound Prom
+	{ "82s126.3m",    0x0100, 0x77245b66, 0 | BRF_SND | BRF_OPT },	// 13 Timing Prom (not used)
+};
+
+STD_ROM_PICK(Candory)
+STD_ROM_FN(Candory)
+
+struct BurnDriver BurnDrvCandory = {
+	"candory", "ponpoko", NULL, NULL, "1982",
+	"Candory (Bootleg)\0", NULL, "Bootleg", "Pac-man",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_PLATFORM, 0,
+	NULL, CandoryRomInfo, CandoryRomName, NULL, NULL, ponpokoInputInfo, ponpokoDIPInfo,
 	ponpokoInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	288, 224, 4, 3
 };

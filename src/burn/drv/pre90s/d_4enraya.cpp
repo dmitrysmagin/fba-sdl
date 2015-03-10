@@ -17,7 +17,7 @@ static UINT8 *DrvGfxROM;
 static UINT8 *DrvZ80RAM;
 static UINT8 *DrvNVRAM;
 static UINT8 *DrvVidRAM;
-static UINT32 *Palette;
+
 static UINT32 *DrvPalette;
 
 static INT16 *pAY8910Buffer[3];
@@ -228,7 +228,6 @@ static INT32 MemIndex()
 
 	DrvGfxROM		= Next; Next += 0x010000;
 
-	Palette			= (UINT32*)Next; Next += 0x0008 * sizeof(UINT32);
 	DrvPalette		= (UINT32*)Next; Next += 0x0008 * sizeof(UINT32);
 
 	DrvNVRAM		= Next; Next += 0x001000;
@@ -408,7 +407,7 @@ static INT32 DrvFrame()
 
 		nCyclesDone += ZetRun(nSegment);
 
-		ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 	}
 
 	ZetClose();
@@ -491,14 +490,14 @@ struct BurnDriver BurnDrvEnraya4 = {
 // 4 En Raya (set 2)
 
 static struct BurnRomInfo enrayaa4RomDesc[] = {
-	{ "(__4enrayaa)5.bin",   0x8000, 0x76e8656c, BRF_ESS | BRF_PRG }, //  0 Z80 Code
-	{ "4.bin",   			 0x4000, 0xf9ec1be7, BRF_ESS | BRF_PRG }, //  1
+	{ "5.bin",   0x8000, 0x76e8656c, BRF_ESS | BRF_PRG }, //  0 Z80 Code
+	{ "4.bin",   0x4000, 0xf9ec1be7, BRF_ESS | BRF_PRG }, //  1
 
-	{ "1.bin",               0x2000, 0x0e5072fd, BRF_GRA },	      //  2 Graphics
-	{ "2.bin",   			 0x2000, 0x2b0a3793, BRF_GRA },	      //  3
-	{ "3.bin",   			 0x2000, 0xf6940836, BRF_GRA },	      //  4
+	{ "1.bin",   0x2000, 0x0e5072fd, BRF_GRA },	      //  2 Graphics
+	{ "2.bin",   0x2000, 0x2b0a3793, BRF_GRA },	      //  3
+	{ "3.bin",   0x2000, 0xf6940836, BRF_GRA },	      //  4
 
-	{ "1.bpr",   			 0x0020, 0xdcbd2352, BRF_GRA },	      //  5 Address control prom - not used
+	{ "1.bpr",   0x0020, 0xdcbd2352, BRF_GRA },	      //  5 Address control prom - not used
 };
 
 STD_ROM_PICK(enrayaa4)

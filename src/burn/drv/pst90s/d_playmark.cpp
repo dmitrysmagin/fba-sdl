@@ -406,8 +406,8 @@ STD_ROM_PICK(Excelsr)
 STD_ROM_FN(Excelsr)
 
 static struct BurnRomInfo ExcelsraRomDesc[] = {
-	{ "22(__excelsra).u301",      0x80000, 0x55dca2da, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
-	{ "19(__excelsra).u302",      0x80000, 0xd13990a8, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
+	{ "22.u301",          0x80000, 0x55dca2da, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "19.u302",          0x80000, 0xd13990a8, BRF_ESS | BRF_PRG }, //  1	68000 Program Code
 	{ "21.u303",          0x80000, 0xfdf9bd64, BRF_ESS | BRF_PRG }, //  2	68000 Program Code
 	{ "18.u304",          0x80000, 0xfe517e0e, BRF_ESS | BRF_PRG }, //  3	68000 Program Code
 	{ "20.u305",          0x80000, 0x8692afe9, BRF_ESS | BRF_PRG }, //  4	68000 Program Code
@@ -450,12 +450,12 @@ static struct BurnRomInfo HotmindRomDesc[] = {
 	{ "20.io13",          0x40000, 0x0bf3a3e5, BRF_SND },			//  11	Samples
 	
 	{ "hotmind_pic16c57-hs_io15.hex", 0x02d4c, 0xf3300d13, BRF_OPT },
-	{ "palce16v8h-25-pc4_u58.jed", 0x00b89, 0xba88c1da, BRF_OPT },
-	{ "palce16v8h-25-pc4_u182.jed", 0x00b89, 0xba88c1da, BRF_OPT },
-	{ "palce16v8h-25-pc4_jamma.jed", 0x00b89, 0xba88c1da, BRF_OPT },
-	{ "tibpal22v10acnt_u113.jed", 0x01e84, 0x94106c63, BRF_OPT },
-	{ "tibpal22v10acnt_u183.jed", 0x01e84, 0x95a446b6, BRF_OPT },
-	{ "tibpal22v10acnt_u211.jed", 0x01e84, 0x94106c63, BRF_OPT },
+	{ "palce16v8h-25-pc4_u58.jed",    0x00b89, 0xba88c1da, BRF_OPT },
+	{ "palce16v8h-25-pc4_u182.jed",   0x00b89, 0xba88c1da, BRF_OPT },
+	{ "palce16v8h-25-pc4_jamma.jed",  0x00b89, 0xba88c1da, BRF_OPT },
+	{ "tibpal22v10acnt_u113.jed",     0x01e84, 0x94106c63, BRF_OPT },
+	{ "tibpal22v10acnt_u183.jed",     0x01e84, 0x95a446b6, BRF_OPT },
+	{ "tibpal22v10acnt_u211.jed",     0x01e84, 0x94106c63, BRF_OPT },
 };
 
 STD_ROM_PICK(Hotmind)
@@ -1047,22 +1047,22 @@ static INT32 DrvInit()
 	
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68kRom       , 0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvSpriteRam    , 0x440000, 0x4403ff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram    , 0x500000, 0x500fff, SM_RAM);
-	SekMapMemory(DrvVideo1Ram    , 0x502000, 0x503fff, SM_RAM);
-	SekMapMemory(DrvBgVideoRam   , 0x600000, 0x67ffff, SM_RAM);
-	SekMapMemory(DrvPaletteRam   , 0x780000, 0x7807ff, SM_READ);
-	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68kRom       , 0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvSpriteRam    , 0x440000, 0x4403ff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram    , 0x500000, 0x500fff, MAP_RAM);
+	SekMapMemory(DrvVideo1Ram    , 0x502000, 0x503fff, MAP_RAM);
+	SekMapMemory(DrvBgVideoRam   , 0x600000, 0x67ffff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam   , 0x780000, 0x7807ff, MAP_READ);
+	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, MAP_RAM);
 	SekSetReadByteHandler(0, DrvReadByte);
 	SekSetReadWordHandler(0, DrvReadWord);
 	SekSetWriteByteHandler(0, DrvWriteByte);
 	SekSetWriteWordHandler(0, DrvWriteWord);
 	SekClose();
 	
-	pic16c5xInit(0x16C57, DrvPicRom);
-	pPic16c5xReadPort = PlaymarkSoundReadPort;
-	pPic16c5xWritePort = PlaymarkSoundWritePort;
+	pic16c5xInit(0, 0x16C57, DrvPicRom);
+	pic16c5xSetReadPortHandler(PlaymarkSoundReadPort);
+	pic16c5xSetWritePortHandler(PlaymarkSoundWritePort);
 	
 	MSM6295Init(0, 1000000 / 132, 0);
 	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
@@ -1138,22 +1138,22 @@ static INT32 ExcelsrInit()
 	
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68kRom       , 0x000000, 0x2fffff, SM_ROM);
-	SekMapMemory(DrvSpriteRam    , 0x440000, 0x440fff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram    , 0x500000, 0x500fff, SM_RAM);
-	SekMapMemory(DrvVideo1Ram    , 0x501000, 0x501fff, SM_RAM);
-	SekMapMemory(DrvBgVideoRam   , 0x600000, 0x67ffff, SM_RAM);
-	SekMapMemory(DrvPaletteRam   , 0x780000, 0x7807ff, SM_READ);
-	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68kRom       , 0x000000, 0x2fffff, MAP_ROM);
+	SekMapMemory(DrvSpriteRam    , 0x440000, 0x440fff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram    , 0x500000, 0x500fff, MAP_RAM);
+	SekMapMemory(DrvVideo1Ram    , 0x501000, 0x501fff, MAP_RAM);
+	SekMapMemory(DrvBgVideoRam   , 0x600000, 0x67ffff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam   , 0x780000, 0x7807ff, MAP_READ);
+	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, MAP_RAM);
 	SekSetReadByteHandler(0, ExcelsrReadByte);
 	SekSetReadWordHandler(0, ExcelsrReadWord);
 	SekSetWriteByteHandler(0, ExcelsrWriteByte);
 	SekSetWriteWordHandler(0, ExcelsrWriteWord);
 	SekClose();
 	
-	pic16c5xInit(0x16C57, DrvPicRom);
-	pPic16c5xReadPort = PlaymarkSoundReadPort;
-	pPic16c5xWritePort = PlaymarkSoundWritePort;
+	pic16c5xInit(0, 0x16C57, DrvPicRom);
+	pic16c5xSetReadPortHandler(PlaymarkSoundReadPort);
+	pic16c5xSetWritePortHandler(PlaymarkSoundWritePort);
 	
 	MSM6295Init(0, 1000000 / 132, 0);
 	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
@@ -1240,22 +1240,22 @@ static INT32 HotmindInit()
 	
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68kRom       , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(DrvBgVideoRam   , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram    , 0x104000, 0x107fff, SM_RAM);
-	SekMapMemory(DrvVideo1Ram    , 0x108000, 0x10ffff, SM_RAM);
-	SekMapMemory(DrvSpriteRam    , 0x200000, 0x200fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam   , 0x280000, 0x2807ff, SM_READ);
-	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68kRom       , 0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(DrvBgVideoRam   , 0x100000, 0x103fff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram    , 0x104000, 0x107fff, MAP_RAM);
+	SekMapMemory(DrvVideo1Ram    , 0x108000, 0x10ffff, MAP_RAM);
+	SekMapMemory(DrvSpriteRam    , 0x200000, 0x200fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam   , 0x280000, 0x2807ff, MAP_READ);
+	SekMapMemory(Drv68kRam       , 0xff0000, 0xffffff, MAP_RAM);
 	SekSetReadByteHandler(0, HotmindReadByte);
 	SekSetReadWordHandler(0, HotmindReadWord);
 	SekSetWriteByteHandler(0, HotmindWriteByte);
 	SekSetWriteWordHandler(0, HotmindWriteWord);
 	SekClose();
 	
-	pic16c5xInit(0x16C57, DrvPicRom);
-	pPic16c5xReadPort = PlaymarkSoundReadPort;
-	pPic16c5xWritePort = PlaymarkSoundWritePort;
+	pic16c5xInit(0, 0x16C57, DrvPicRom);
+	pic16c5xSetReadPortHandler(PlaymarkSoundReadPort);
+	pic16c5xSetWritePortHandler(PlaymarkSoundWritePort);
 	
 	MSM6295Init(0, 1000000 / 132, 0);
 	MSM6295SetRoute(0, 1.00, BURN_SND_ROUTE_BOTH);
@@ -1642,7 +1642,7 @@ static INT32 DrvFrame()
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
 		if (i == 90) {
 			DrvVBlank = 1;
-			SekSetIRQLine(nIRQLine, SEK_IRQSTATUS_AUTO);
+			SekSetIRQLine(nIRQLine, CPU_IRQSTATUS_AUTO);
 		}
 		
 		nCurrentCPU = 1;

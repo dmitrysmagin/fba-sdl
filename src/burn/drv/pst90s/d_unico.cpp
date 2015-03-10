@@ -557,7 +557,7 @@ UINT8 __fastcall Burglarx68KReadByte(UINT32 a)
 		}
 		
 		case 0x80018c: {
-			return BurnYM3812Read(0);
+			return BurnYM3812Read(0, 0);
 		}
 		
 		default: {
@@ -577,12 +577,12 @@ void __fastcall Burglarx68KWriteByte(UINT32 a, UINT8 d)
 		}
 		
 		case 0x80018a: {
-			BurnYM3812Write(1, d);
+			BurnYM3812Write(0, 1, d);
 			return;
 		}
 		
 		case 0x80018c: {
-			BurnYM3812Write(0, d);
+			BurnYM3812Write(0, 0, d);
 			return;
 		}
 		
@@ -725,7 +725,7 @@ UINT8 __fastcall Zeropnt68KReadByte(UINT32 a)
 		}
 		
 		case 0x80018c: {
-			return BurnYM3812Read(0);
+			return BurnYM3812Read(0, 0);
 		}
 		
 		default: {
@@ -745,12 +745,12 @@ void __fastcall Zeropnt68KWriteByte(UINT32 a, UINT8 d)
 		}
 		
 		case 0x80018a: {
-			BurnYM3812Write(1, d);
+			BurnYM3812Write(0, 1, d);
 			return;
 		}
 		
 		case 0x80018c: {
-			BurnYM3812Write(0, d);
+			BurnYM3812Write(0, 0, d);
 			return;
 		}
 		
@@ -1103,23 +1103,23 @@ static INT32 BurglarxInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, SM_RAM);
-	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, SM_RAM);
-	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, SM_RAM);
-	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, SM_RAM);
-	SekMapMemory(Drv68KRam           , 0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, MAP_RAM);
+	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, MAP_RAM);
+	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, MAP_RAM);
+	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, MAP_RAM);
+	SekMapMemory(Drv68KRam           , 0xff0000, 0xffffff, MAP_RAM);
 	SekSetReadWordHandler(0, Burglarx68KReadWord);
 	SekSetWriteWordHandler(0, Burglarx68KWriteWord);
 	SekSetReadByteHandler(0, Burglarx68KReadByte);
 	SekSetWriteByteHandler(0, Burglarx68KWriteByte);
 	SekClose();
 	
-	BurnYM3812Init(3579545, NULL, &BurglarxSynchroniseStream, 0);
+	BurnYM3812Init(1, 3579545, NULL, &BurglarxSynchroniseStream, 0);
 	BurnTimerAttachSekYM3812(16000000);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 0.40, BURN_SND_ROUTE_BOTH);
 	
 	// Setup the OKIM6295 emulation
 	MSM6295Init(0, 1056000 / 132, 1);
@@ -1186,23 +1186,23 @@ static INT32 ZeropntInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, SM_RAM);
-	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, SM_RAM);
-	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, SM_RAM);
-	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, SM_RAM);
-	SekMapMemory(Drv68KRam           , 0xef0000, 0xefffff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, MAP_RAM);
+	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, MAP_RAM);
+	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, MAP_RAM);
+	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, MAP_RAM);
+	SekMapMemory(Drv68KRam           , 0xef0000, 0xefffff, MAP_RAM);
 	SekSetReadWordHandler(0, Zeropnt68KReadWord);
 	SekSetWriteWordHandler(0, Zeropnt68KWriteWord);
 	SekSetReadByteHandler(0, Zeropnt68KReadByte);
 	SekSetWriteByteHandler(0, Zeropnt68KWriteByte);
 	SekClose();
 	
-	BurnYM3812Init(3579545, NULL, &BurglarxSynchroniseStream, 0);
+	BurnYM3812Init(1, 3579545, NULL, &BurglarxSynchroniseStream, 0);
 	BurnTimerAttachSekYM3812(16000000);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 0.40, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 0.40, BURN_SND_ROUTE_BOTH);
 	
 	// Setup the OKIM6295 emulation
 	MSM6295Init(0, 1056000 / 132, 1);
@@ -1291,14 +1291,14 @@ static INT32 Zeropnt2Init()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68EC020);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x1fffff, SM_ROM);
-	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, SM_RAM);
-	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, SM_RAM);
-	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, SM_RAM);
-	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, SM_RAM);
-	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, SM_RAM);
-	SekMapMemory(Drv68KRam           , 0xfe0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x1fffff, MAP_ROM);
+	SekMapMemory(DrvVideo1Ram        , 0x904000, 0x907fff, MAP_RAM);
+	SekMapMemory(DrvVideo2Ram        , 0x908000, 0x90bfff, MAP_RAM);
+	SekMapMemory(DrvVideo0Ram        , 0x90c000, 0x90ffff, MAP_RAM);
+	SekMapMemory(Drv68KRam + 0x10000 , 0x920000, 0x923fff, MAP_RAM);
+	SekMapMemory(DrvSpriteRam        , 0x930000, 0x9307ff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x940000, 0x947fff, MAP_RAM);
+	SekMapMemory(Drv68KRam           , 0xfe0000, 0xffffff, MAP_RAM);
 	SekSetReadWordHandler(0, Zeropnt268KReadWord);
 	SekSetWriteWordHandler(0, Zeropnt268KWriteWord);
 	SekSetReadByteHandler(0, Zeropnt268KReadByte);
@@ -1761,7 +1761,7 @@ static INT32 DrvFrame()
 	
 	SekOpen(0);
 	BurnTimerEndFrameYM3812(nCyclesTotal[0]);
-	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(2, CPU_IRQSTATUS_AUTO);
 	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 	MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);	
 	SekClose();
@@ -1794,7 +1794,7 @@ static INT32 Zeropnt2Frame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == 9) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+		if (i == 9) SekSetIRQLine(2, CPU_IRQSTATUS_AUTO);
 		SekClose();
 
 		if (pBurnSoundOut) {

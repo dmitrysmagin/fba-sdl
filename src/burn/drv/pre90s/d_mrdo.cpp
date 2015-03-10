@@ -114,7 +114,8 @@ void __fastcall mrdo_write(UINT16 address, UINT8 data)
 
 		case 0x9801: 
 			SN76496Write(0, data);
-		
+		break;
+
 		case 0x9802:		
 			SN76496Write(1, data);
 		break;
@@ -178,55 +179,73 @@ static INT32 DrvDoReset()
 
 static void mrdo_palette_init()
 {
-	INT32 weight[16];
+	const UINT8 *color_prom = Prom;
+	int i;
 
-	for (INT32 i = 0x0f; i >= 0; i--)
+	const int R1 = 150;
+	const int R2 = 120;
+	const int R3 = 100;
+	const int R4 = 75;
+	const int pull = 220;
+	float pot[16];
+	int weight[16];
+	const float potadjust = 0.7f;
+
+	for (i = 0x0f; i >= 0; i--)
 	{
-		float par = 0, pot = 0;
+		float par = 0;
 
-		if (i & 1) par += 1.0/150;
-		if (i & 2) par += 1.0/120;
-		if (i & 4) par += 1.0/100;
-		if (i & 8) par += 1.0/75;
+		if (i & 1) par += 1.0f/(float)R1;
+		if (i & 2) par += 1.0f/(float)R2;
+		if (i & 4) par += 1.0f/(float)R3;
+		if (i & 8) par += 1.0f/(float)R4;
 		if (par)
 		{
-			par = 1 / par;
-			pot = 200 / (200 + par) - 0.2f;
+			par = 1/par;
+			pot[i] = pull/(pull+par) - potadjust;
 		}
-		else pot = 0;
+		else pot[i] = 0;
 
-		weight[i] = (INT32)(0xff * pot / 0.684615);
+		weight[i] = (INT32)(0xff * pot[i] / pot[0x0f]);
+		if (weight[i] < 0) weight[i] = 0;
 	}
 
-	for (INT32 i = 0; i < 0x100; i++)
+	for (i = 0; i < 0x100; i++)
 	{
-		INT32 a1,a2;
-		INT32 bits0, bits2;
-		INT32 r, g, b;
+		int a1,a2;
+		int bits0, bits2;
+		int r, g, b;
 
-		a1 = ((i >> 3) & 0x1c) + (i & 0x03) + 32;
+		a1 = ((i >> 3) & 0x1c) + (i & 0x03) + 0x20;
 		a2 = ((i >> 0) & 0x1c) + (i & 0x03);
 
-		bits0 = (Prom[a1] >> 0) & 0x03;
-		bits2 = (Prom[a2] >> 0) & 0x03;
+		bits0 = (color_prom[a1] >> 0) & 0x03;
+		bits2 = (color_prom[a2] >> 0) & 0x03;
 		r = weight[bits0 + (bits2 << 2)];
 
-		bits0 = (Prom[a1] >> 2) & 0x03;
-		bits2 = (Prom[a2] >> 2) & 0x03;
+		bits0 = (color_prom[a1] >> 2) & 0x03;
+		bits2 = (color_prom[a2] >> 2) & 0x03;
 		g = weight[bits0 + (bits2 << 2)];
 
-		bits0 = (Prom[a1] >> 4) & 0x03;
-		bits2 = (Prom[a2] >> 4) & 0x03;
+		bits0 = (color_prom[a1] >> 4) & 0x03;
+		bits2 = (color_prom[a2] >> 4) & 0x03;
 		b = weight[bits0 + (bits2 << 2)];
 
-		Palette[i] = (r << 16) | (g << 8) | b;
+		Palette[i] = (r<<16)|(g<<8)|b;
 	}
 
-	for (INT32 i = 0; i < 0x40; i++)
-	{
-		UINT8 ctbl = Prom[0x40 + (i & 0x1f)] >> ((i & 0x20) >> 3);
+	color_prom += 0x40;
 
-		Palette[0x100 + i] = Palette[ctbl & 0x0f];
+	for (i = 0x100; i < 0x140; i++)
+	{
+		UINT8 ctabentry = color_prom[(i - 0x100) & 0x1f];
+
+		if ((i - 0x100) & 0x20)
+			ctabentry >>= 4; 
+		else
+			ctabentry &= 0x0f;
+
+		Palette[i] = Palette[ctabentry + ((ctabentry & 0x0c) << 3)];
 	}
 }
 
@@ -300,7 +319,7 @@ static INT32 DrvInit()
 	ZetMapArea(0xe000, 0xefff, 2, Rom + 0xe000);
 	ZetClose();
 
-	BurnSetRefreshRate(5000000.0/312/262);
+//	BurnSetRefreshRate(5000000.0/312/262);
 
 	SN76489Init(0, 4000000, 0);
 	SN76489Init(1, 4000000, 1);
@@ -361,7 +380,7 @@ static void draw_sprites()
 
 							INT32 pxl = Palette[color | *src];
 
-							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 						}
 					} else {
 						for (INT32 x = sx; x < sx + 16; x++, src++)
@@ -371,7 +390,7 @@ static void draw_sprites()
 
 							INT32 pxl = Palette[color | *src];
 
-							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 						}
 					}
 				}
@@ -387,7 +406,7 @@ static void draw_sprites()
 
 							INT32 pxl = Palette[color | *src];
 
-							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 						}
 					} else {
 						for (INT32 x = sx; x < sx + 16; x++, src++)
@@ -397,7 +416,7 @@ static void draw_sprites()
 
 							INT32 pxl = Palette[color | *src];
 
-							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+							PutPix(pBurnDraw + ((y * 240) + x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 						}
 					}
 				}
@@ -437,7 +456,7 @@ static void draw_8x8_tiles(UINT8 *vram, UINT8 *gfx_base, INT32 scrollx, INT32 sc
 				INT32 pos = y * 240 + x;
 				if (flipscreen) pos = (192 - y) * 240 + (240 - x);
 
-				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 			}
 		}
 	}
@@ -445,7 +464,7 @@ static void draw_8x8_tiles(UINT8 *vram, UINT8 *gfx_base, INT32 scrollx, INT32 sc
 
 static INT32 DrvDraw()
 {
-	memset (pBurnDraw, 0, 240 * 191 * nBurnBpp);
+	BurnClearScreen();
 
 	draw_8x8_tiles(Rom + 0x8000, Gfx1, scroll_x, scroll_y);
 	draw_8x8_tiles(Rom + 0x8800, Gfx0, 0, 0);
@@ -462,7 +481,7 @@ static INT32 DrvFrame()
 
 	ZetOpen(0);
 	ZetRun(4000000 / 60);
-	ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+	ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 	ZetClose();
 
 	if (pBurnDraw) {

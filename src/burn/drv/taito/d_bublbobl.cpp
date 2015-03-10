@@ -54,6 +54,8 @@ static BublboblCallbackFunc BublboblCallbackFunction;
 
 static UINT8 DrvMCUInUse;
 
+static INT32 bublbobl2 = 0;
+
 static INT32 mcu_address, mcu_latch;
 static UINT8 ddr1, ddr2, ddr3, ddr4;
 static UINT8 port1_in, port2_in, port3_in, port4_in;
@@ -114,15 +116,21 @@ STDINPUTINFO(Boblbobl)
 static inline void BublboblMakeInputs()
 {
 	DrvInput[0] = 0xf3;
-	if (DrvInputPort0[0]) DrvInput[0] -= 0x01;
-	if (DrvInputPort0[1]) DrvInput[0] -= 0x02;
-	if (DrvInputPort0[2]) DrvInput[0] |= 0x04;
-	if (DrvInputPort0[3]) DrvInput[0] |= 0x08;
-	if (DrvInputPort0[4]) DrvInput[0] -= 0x10;
-	if (DrvInputPort0[5]) DrvInput[0] -= 0x20;
-	if (DrvInputPort0[6]) DrvInput[0] -= 0x40;
-	if (DrvInputPort0[7]) DrvInput[0] -= 0x80;
-	
+	if (DrvInputPort0[0]) DrvInput[0] ^= 0x01;
+	if (DrvInputPort0[1]) DrvInput[0] ^= 0x02;
+	if (DrvInputPort0[2]) DrvInput[0] ^= 0x04;
+	if (DrvInputPort0[3]) DrvInput[0] ^= 0x08;
+	if (DrvInputPort0[4]) DrvInput[0] ^= 0x10;
+	if (DrvInputPort0[5]) DrvInput[0] ^= 0x20;
+	if (DrvInputPort0[6]) DrvInput[0] ^= 0x40;
+	if (DrvInputPort0[7]) DrvInput[0] ^= 0x80;
+
+	if (bublbobl2) {
+		DrvInput[0] ^= 0x8c;
+		// Swap coins
+		DrvInput[0] = (DrvInput[0] & 0xf3) | ((DrvInput[0] & 0x04) << 1) | ((DrvInput[0] & 0x08) >> 1);
+	}
+
 	DrvInput[1] = 0xff;
 	DrvInput[2] = 0xff;
 	for (INT32 i = 0; i < 8; i++) {
@@ -635,7 +643,7 @@ static struct BurnRomInfo BoblboblRomDesc[] = {
 STD_ROM_PICK(Boblbobl)
 STD_ROM_FN(Boblbobl)
 
-static struct BurnRomInfo Boblbobl2RomDesc[] = {
+static struct BurnRomInfo SboblboblRomDesc[] = {
 	{ "cpu2-3.bin",    0x08000, 0x2d9107b6, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "bb5",           0x08000, 0x13118eb1, BRF_ESS | BRF_PRG }, //	 1
 	{ "cpu2-4.bin",    0x08000, 0x3f9fed10, BRF_ESS | BRF_PRG }, //	 2
@@ -643,23 +651,23 @@ static struct BurnRomInfo Boblbobl2RomDesc[] = {
 	{ "a78-08.37",     0x08000, 0xae11a07b, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program 
 	
 	{ "a78-07.46",     0x08000, 0x4f9a26e8, BRF_ESS | BRF_PRG }, //  4	Z80 #3 Program 
-	
-	{ "gfx7.bin",      0x10000, 0x702f61c0, BRF_GRA },	     //  5	Tiles
-	{ "gfx8.bin",      0x10000, 0x677840e8, BRF_GRA },	     //  6
+
+	{ "gfx11.bin",     0x10000, 0x76f2b367, BRF_GRA },	     //  5	Tiles
+	{ "gfx10.bin",     0x10000, 0xd370f499, BRF_GRA },	     //  6
 	{ "a78-13.16",     0x08000, 0xd0af35c5, BRF_GRA },	     //  7
 	{ "a78-14.17",     0x08000, 0x7b5369a8, BRF_GRA },	     //  8
-	{ "gfx10.bin",     0x10000, 0xd370f499, BRF_GRA },	     //  9
-	{ "gfx11.bin",     0x10000, 0x76f2b367, BRF_GRA },	     //  10
+	{ "gfx8.bin",      0x10000, 0x677840e8, BRF_GRA },	     //  9
+	{ "gfx7.bin",      0x10000, 0x702f61c0, BRF_GRA },	     //  10
 	{ "a78-19.34",     0x08000, 0x66e9438c, BRF_GRA },	     //  11
 	{ "a78-20.35",     0x08000, 0x9ef863ad, BRF_GRA },	     //  12
 
 	{ "a71-25.41",     0x00100, 0x2d0f8545, BRF_GRA },	     //  13	PROMs
 };
 
-STD_ROM_PICK(Boblbobl2)
-STD_ROM_FN(Boblbobl2)
+STD_ROM_PICK(Sboblbobl)
+STD_ROM_FN(Sboblbobl)
 
-static struct BurnRomInfo SboblboaRomDesc[] = {
+static struct BurnRomInfo SboblboblaRomDesc[] = {
 	{ "1c.bin",        0x08000, 0xf304152a, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "1a.bin",        0x08000, 0x0865209c, BRF_ESS | BRF_PRG }, //	 1
 	{ "1b.bin",        0x08000, 0x1f29b5c0, BRF_ESS | BRF_PRG }, //	 2
@@ -684,10 +692,10 @@ static struct BurnRomInfo SboblboaRomDesc[] = {
 	{ "a71-25.41",     0x00100, 0x2d0f8545, BRF_GRA },	     //  17	PROMs
 };
 
-STD_ROM_PICK(Sboblboa)
-STD_ROM_FN(Sboblboa)
+STD_ROM_PICK(Sboblbobla)
+STD_ROM_FN(Sboblbobla)
 
-static struct BurnRomInfo SboblbobRomDesc[] = {
+static struct BurnRomInfo SboblboblbRomDesc[] = {
 	{ "bbb-3.rom",     0x08000, 0xf304152a, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
 	{ "bb5",           0x08000, 0x13118eb1, BRF_ESS | BRF_PRG }, //	 1
 	{ "bbb-4.rom",     0x08000, 0x94c75591, BRF_ESS | BRF_PRG }, //	 2
@@ -712,8 +720,8 @@ static struct BurnRomInfo SboblbobRomDesc[] = {
 	{ "a71-25.41",     0x00100, 0x2d0f8545, BRF_GRA },	     //  17	PROMs
 };
 
-STD_ROM_PICK(Sboblbob)
-STD_ROM_FN(Sboblbob)
+STD_ROM_PICK(Sboblboblb)
+STD_ROM_FN(Sboblboblb)
 
 static struct BurnRomInfo Bub68705RomDesc[] = {
 	{ "2.bin",         0x08000, 0x32c8305b, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -744,6 +752,37 @@ static struct BurnRomInfo Bub68705RomDesc[] = {
 
 STD_ROM_PICK(Bub68705)
 STD_ROM_FN(Bub68705)
+
+static struct BurnRomInfo Bub68705aRomDesc[] = {
+	{ "2.bin",         0x08000, 0x32c8305b, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
+	{ "3-1.bin",       0x08000, 0x980c2615, BRF_ESS | BRF_PRG }, //	 1
+	{ "3.bin",         0x08000, 0xe6c698f2, BRF_ESS | BRF_PRG }, //	 2
+	
+	{ "4.bin",         0x08000, 0xae11a07b, BRF_ESS | BRF_PRG }, //  3	Z80 #2 Program 
+	
+	{ "1.bin",         0x08000, 0x4f9a26e8, BRF_ESS | BRF_PRG }, //  4	Z80 #3 Program 
+	
+	{ "a78-09.12",     0x08000, 0x20358c22, BRF_GRA },	     //  5	Tiles
+	{ "a78-10.13",     0x08000, 0x930168a9, BRF_GRA },	     //  6
+	{ "a78-11.14",     0x08000, 0x9773e512, BRF_GRA },	     //  7
+	{ "a78-12.15",     0x08000, 0xd045549b, BRF_GRA },	     //  8
+	{ "a78-13.16",     0x08000, 0xd0af35c5, BRF_GRA },	     //  9
+	{ "a78-14.17",     0x08000, 0x7b5369a8, BRF_GRA },	     //  10
+	{ "a78-15.30",     0x08000, 0x6b61a413, BRF_GRA },	     //  11
+	{ "a78-16.31",     0x08000, 0xb5492d97, BRF_GRA },	     //  12
+	{ "a78-17.32",     0x08000, 0xd69762d5, BRF_GRA },	     //  13
+	{ "a78-18.33",     0x08000, 0x9f243b68, BRF_GRA },	     //  14
+	{ "a78-19.34",     0x08000, 0x66e9438c, BRF_GRA },	     //  15
+	{ "a78-20.35",     0x08000, 0x9ef863ad, BRF_GRA },	     //  16
+	
+	{ "a71-25.41",     0x00100, 0x2d0f8545, BRF_GRA },	     //  17	PROMs
+	
+	{ "cpu68705.bin",  0x00800, 0x32bffbf4, BRF_ESS | BRF_PRG }, //  18	68705 Program Code
+};
+
+STD_ROM_PICK(Bub68705a)
+STD_ROM_FN(Bub68705a)
+
 
 static struct BurnRomInfo DlandRomDesc[] = {
 	{ "dl_3.u69",	   0x08000, 0x01eb3e4f, BRF_ESS | BRF_PRG }, //  0	Z80 #1 Program Code
@@ -1496,7 +1535,7 @@ void BublboblMcuWriteByte(UINT16 Address, UINT8 Data)
 			if ((port1_out & 0x40) && (~Data & 0x40)) {
 				ZetOpen(0);
 				ZetSetVector(DrvZ80Ram1[0]);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 				ZetClose();
 			}
 			
@@ -1598,7 +1637,7 @@ void bublbobl_68705_portB_out(UINT8 *bytevalue)
 		DrvZ80Ram1[0x7c] = (ZetTotalCycles() ^ ZetGetPC(-1)) % 6;
 
 		ZetSetVector(DrvZ80Ram1[0]);
-		ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		ZetClose();
 	}
 }
@@ -1743,9 +1782,9 @@ UINT8 __fastcall TokioSoundRead3(UINT16 a)
 inline static void DrvYM2203IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -1828,7 +1867,7 @@ static INT32 MachineInit()
 	
 	if (DrvMCUInUse == 1) {
 		M6801Init(1);
-		M6801MapMemory(DrvMcuRom, 0xf000, 0xffff, M6801_ROM);
+		M6801MapMemory(DrvMcuRom, 0xf000, 0xffff, MAP_ROM);
 		M6801SetReadHandler(BublboblMcuReadByte);
 		M6801SetWriteHandler(BublboblMcuWriteByte);
 	} else if (DrvMCUInUse == 2) {
@@ -1955,9 +1994,11 @@ static INT32 BoblboblCallback()
 	return 0;
 }
 
-static INT32 Boblbobl2Callback()
+static INT32 SboblboblCallback()
 {
 	INT32 nRet = 0;
+
+	bublbobl2 = 1;
 	
 	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
@@ -2007,9 +2048,9 @@ static INT32 BoblboblInit()
 	return MachineInit();
 }
 
-static INT32 Boblbobl2Init()
+static INT32 SboblboblInit()
 {
-	BublboblCallbackFunction = Boblbobl2Callback;
+	BublboblCallbackFunction = SboblboblCallback;
 	
 	return MachineInit();
 }
@@ -2270,6 +2311,8 @@ static INT32 DrvExit()
 	DrvSoundLatch = 0;	
 	DrvMCUInUse = 0;
 
+	bublbobl2 = 0;
+
 	mcu_latch = 0;
 	mcu_address = 0;
 
@@ -2431,8 +2474,8 @@ static INT32 DrvFrame()
 		nCurrentCPU = 0;
 		ZetOpen(nCurrentCPU);
 		BurnTimerUpdateYM3526(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
-		if (i == 98 && !DrvMCUInUse) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		if (i == 99 && !DrvMCUInUse) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i == 98 && !DrvMCUInUse) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		if (i == 99 && !DrvMCUInUse) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
 
 		// Run Z80 #2
@@ -2443,8 +2486,8 @@ static INT32 DrvFrame()
 			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 			nCyclesSegment = ZetRun(nCyclesSegment);
 			nCyclesDone[nCurrentCPU] += nCyclesSegment;
-			if (i == 98) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-			if (i == 99) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			if (i == 98) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+			if (i == 99) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			ZetClose();
 		}
 	
@@ -2473,8 +2516,8 @@ static INT32 DrvFrame()
 					if (i == 99) m68705SetIrqLine(0, 0 /*CLEAR_LINE*/);
 				} else {
 					nCyclesSegment = M6801Run(nCyclesSegment);
-					if (i == 98) M6801SetIRQLine(0, M6801_IRQSTATUS_ACK);
-					if (i == 99) M6801SetIRQLine(0, M6801_IRQSTATUS_NONE);
+					if (i == 98) M6801SetIRQLine(0, CPU_IRQSTATUS_ACK);
+					if (i == 99) M6801SetIRQLine(0, CPU_IRQSTATUS_NONE);
 				} 
 
 				nCyclesDone[nCurrentCPU] += nCyclesSegment;
@@ -2531,8 +2574,8 @@ static INT32 TokioFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 90) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		if (i == 91) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i == 90) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		if (i == 91) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
 
 		// Run Z80 #2
@@ -2542,8 +2585,8 @@ static INT32 TokioFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 90) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		if (i == 91) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i == 90) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		if (i == 91) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
 	
 		// Run Z80 #3
@@ -2641,7 +2684,7 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 
 struct BurnDriver BurnDrvBublbobl = {
 	"bublbobl", NULL, NULL, NULL, "1986",
-	"Bubble Bobble\0", NULL, "Taito Corporation", "Taito Misc",
+	"Bubble Bobble (Japan, Ver 0.1)\0", NULL, "Taito Corporation", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, BublboblRomInfo, BublboblRomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
@@ -2651,7 +2694,7 @@ struct BurnDriver BurnDrvBublbobl = {
 
 struct BurnDriver BurnDrvBublbob1 = {
 	"bublbobl1", "bublbobl", NULL, NULL, "1986",
-	"Bubble Bobble (older)\0", NULL, "Taito Corporation", "Taito Misc",
+	"Bubble Bobble (Japan, Ver 0.0)\0", NULL, "Taito Corporation", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, Bublbob1RomInfo, Bublbob1RomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
@@ -2661,7 +2704,7 @@ struct BurnDriver BurnDrvBublbob1 = {
 
 struct BurnDriver BurnDrvBublbobr = {
 	"bublboblr", "bublbobl", NULL, NULL, "1986",
-	"Bubble Bobble (US with mode select)\0", NULL, "Taito America Corporation (Romstar license)", "Taito Misc",
+	"Bubble Bobble (US, Ver 5.1)\0", NULL, "Taito America Corporation (Romstar license)", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, BublbobrRomInfo, BublbobrRomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
@@ -2671,7 +2714,7 @@ struct BurnDriver BurnDrvBublbobr = {
 
 struct BurnDriver BurnDrvBubbobr1 = {
 	"bublboblr1", "bublbobl", NULL, NULL, "1986",
-	"Bubble Bobble (US)\0", NULL, "Taito America Corporation (Romstar license)", "Taito Misc",
+	"Bubble Bobble (US, Ver 1.0)\0", NULL, "Taito America Corporation (Romstar license)", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, Bubbobr1RomInfo, Bubbobr1RomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
@@ -2681,7 +2724,7 @@ struct BurnDriver BurnDrvBubbobr1 = {
 
 struct BurnDriver BurnDrvBoblbobl = {
 	"boblbobl", "bublbobl", NULL, NULL, "1986",
-	"Bobble Bobble (set 1)\0", NULL, "bootleg", "Taito Misc",
+	"Bobble Bobble (bootleg of Bubble Bobble)\0", NULL, "bootleg", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, BoblboblRomInfo, BoblboblRomName, NULL, NULL, BoblboblInputInfo, BoblboblDIPInfo,
@@ -2689,42 +2732,52 @@ struct BurnDriver BurnDrvBoblbobl = {
 	NULL, 0x100, 256, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvBoblbobl2 = {
-	"boblbobl2", "bublbobl", NULL, NULL, "1986",
-	"Bobble Bobble (set 2)\0", NULL, "bootleg", "Taito Misc",
+struct BurnDriver BurnDrvSboblbobl = {
+	"sboblbobl", "bublbobl", NULL, NULL, "1986",
+	"Super Bobble Bobble (bootleg, set 1)\0", NULL, "bootleg (Datsu)", "Taito Misc",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, Boblbobl2RomInfo, Boblbobl2RomName, NULL, NULL, BoblboblInputInfo, BoblboblDIPInfo,
-	Boblbobl2Init, BublboblExit, DrvFrame, NULL, DrvScan,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
+	NULL, SboblboblRomInfo, SboblboblRomName, NULL, NULL, BoblboblInputInfo, BoblboblDIPInfo,
+	SboblboblInit, BublboblExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x100, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvSboblboa = {
-	"sboblboa", "bublbobl", NULL, NULL, "1986",
-	"Super Bobble Bobble (set 1)\0", NULL, "bootleg", "Taito Misc",
+struct BurnDriver BurnDrvSboblbobla = {
+	"sboblbobla", "bublbobl", NULL, NULL, "1986",
+	"Super Bobble Bobble (bootleg, set 2)\0", NULL, "bootleg", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, SboblboaRomInfo, SboblboaRomName, NULL, NULL, BoblboblInputInfo, BoblboblDIPInfo,
+	NULL, SboblboblaRomInfo, SboblboblaRomName, NULL, NULL, BoblboblInputInfo, BoblboblDIPInfo,
 	BoblboblInit, BublboblExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x100, 256, 224, 4, 3
 };
 
-struct BurnDriver BurnDrvSboblbob = {
-	"sboblbob", "bublbobl", NULL, NULL, "1986",
-	"Super Bobble Bobble (set 2)\0", NULL, "bootleg", "Taito Misc",
+struct BurnDriver BurnDrvSboblboblb = {
+	"sboblboblb", "bublbobl", NULL, NULL, "1986",
+	"Super Bobble Bobble (bootleg, set 3)\0", NULL, "bootleg", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
-	NULL, SboblbobRomInfo, SboblbobRomName, NULL, NULL, BoblboblInputInfo, SboblbobDIPInfo,
+	NULL, SboblboblbRomInfo, SboblboblbRomName, NULL, NULL, BoblboblInputInfo, SboblbobDIPInfo,
 	BoblboblInit, BublboblExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x100, 256, 224, 4, 3
 };
 
 struct BurnDriver BurnDrvBub68705 = {
 	"bub68705", "bublbobl", NULL, NULL, "1986",
-	"Bubble Bobble (boolteg with 68705)\0", NULL, "bootleg", "Taito Misc",
+	"Bubble Bobble (boolteg with 68705, set 1)\0", NULL, "bootleg", "Taito Misc",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
 	NULL, Bub68705RomInfo, Bub68705RomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
+	Bub68705Init, BublboblExit, DrvFrame, NULL, DrvScan,
+	NULL, 0x100, 256, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvBub68705a = {
+	"bub68705a", "bublbobl", NULL, NULL, "1986",
+	"Bubble Bobble (boolteg with 68705, set 2)\0", NULL, "bootleg", "Taito Misc",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TAITO_MISC, GBF_PLATFORM, 0,
+	NULL, Bub68705aRomInfo, Bub68705aRomName, NULL, NULL, BublboblInputInfo, BublboblDIPInfo,
 	Bub68705Init, BublboblExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x100, 256, 224, 4, 3
 };

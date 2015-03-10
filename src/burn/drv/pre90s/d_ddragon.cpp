@@ -999,7 +999,7 @@ static INT32 DrvDoReset()
 UINT8 DrvDdragonHD6309ReadByte(UINT16 Address)
 {
 	if (Address >= 0x2000 && Address <= 0x2fff) {
-		if (Address == 0x2049 && HD6309GetPC() == 0x6261 && DrvSpriteRam[0x0049] == 0x1f) return 0x01;
+		if (Address == 0x2049 && HD6309GetPC(0) == 0x6261 && DrvSpriteRam[0x0049] == 0x1f) return 0x01;
 		return DrvSpriteRam[Address - 0x2000];
 	}
 	
@@ -1057,7 +1057,7 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 		case 0x3808: {
 			UINT8 DrvOldRomBank = DrvRomBank;
 			DrvRomBank = (Data & 0xe0) >> 5;
-			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, M6809_ROM);
+			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, MAP_ROM);
 			
 			DrvScrollXHi = (Data & 0x01) << 8;
 			DrvScrollYHi = (Data & 0x02) << 7;
@@ -1067,19 +1067,19 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 			} else {
 				if (DrvSubCPUBusy == 0) {
 					if (DrvSubCPUType == DD_CPU_TYPE_HD63701) {
-						HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, HD63701_IRQSTATUS_ACK);
+						HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 					}
 				
 					if (DrvSubCPUType == DD_CPU_TYPE_HD6309) {
 						HD6309Close();
 						HD6309Open(1);
-						HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, HD6309_IRQSTATUS_ACK);
+						HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 						HD6309Close();
 						HD6309Open(0);
 					}
 				
 					if (DrvSubCPUType == DD_CPU_TYPE_M6803) {
-						M6803SetIRQLine(M6803_INPUT_LINE_NMI, M6803_IRQSTATUS_ACK);
+						M6803SetIRQLine(M6803_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 					}
 				
 					if (DrvSubCPUType == DD_CPU_TYPE_Z80) {
@@ -1092,10 +1092,10 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 			
 			if (DrvGameType == DD_GAME_DARKTOWR) {
 				if (DrvRomBank == 4 && DrvOldRomBank != 4) {
-					HD6309MemCallback(0x4000, 0x7fff, HD6309_RAM);
+					HD6309MemCallback(0x4000, 0x7fff, MAP_RAM);
 				} else {
 					if (DrvRomBank != 4 && DrvOldRomBank == 4) {
-						HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, M6809_ROM);
+						HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, MAP_ROM);
 					}
 				}
 			}			
@@ -1114,17 +1114,17 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 		}
 		
 		case 0x380b: {
-			HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, HD6309_IRQSTATUS_NONE);
+			HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, CPU_IRQSTATUS_NONE);
 			return;
 		}
 		
 		case 0x380c: {
-			HD6309SetIRQLine(HD6309_FIRQ_LINE, HD6309_IRQSTATUS_NONE);
+			HD6309SetIRQLine(HD6309_FIRQ_LINE, CPU_IRQSTATUS_NONE);
 			return;
 		}
 
 		case 0x380d: {
-			HD6309SetIRQLine(HD6309_IRQ_LINE, HD6309_IRQSTATUS_NONE);
+			HD6309SetIRQLine(HD6309_IRQ_LINE, CPU_IRQSTATUS_NONE);
 			return;
 		}
 		
@@ -1132,7 +1132,7 @@ void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 			DrvSoundLatch = Data;
 			if (DrvSoundCPUType == DD_CPU_TYPE_M6809) {
 				M6809Open(0);
-				M6809SetIRQLine(M6809_IRQ_LINE, M6809_IRQSTATUS_ACK);
+				M6809SetIRQLine(M6809_IRQ_LINE, CPU_IRQSTATUS_ACK);
 				M6809Close();
 			}
 			
@@ -1160,7 +1160,7 @@ UINT8 DrvDdragonHD63701ReadByte(UINT16 Address)
 	}
 	
 	if (Address >= 0x8000 && Address <= 0x8fff) {
-		if (Address == 0x8049 && HD63701GetPC() == 0x6261 && DrvSpriteRam[0x0049] == 0x1f) return 0x01;
+		if (Address == 0x8049 && HD63701GetPC(0) == 0x6261 && DrvSpriteRam[0x0049] == 0x1f) return 0x01;
 		return DrvSpriteRam[Address - 0x8000];
 	}
 	
@@ -1175,10 +1175,10 @@ void DrvDdragonHD63701WriteByte(UINT16 Address, UINT8 Data)
 		if (Address == 0x17) {
 			if (Data & 3) {
 				HD6309Open(0);
-				HD6309SetIRQLine(HD6309_IRQ_LINE, HD6309_IRQSTATUS_ACK);
+				HD6309SetIRQLine(HD6309_IRQ_LINE, CPU_IRQSTATUS_ACK);
 				HD6309Close();
 				
-				HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, HD63701_IRQSTATUS_NONE);
+				HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, CPU_IRQSTATUS_NONE);
 			}
 		}
 		return;
@@ -1221,11 +1221,11 @@ void DrvDdragonbSubHD6309WriteByte(UINT16 Address, UINT8 Data)
 				HD6309Close();
 				
 				HD6309Open(0);
-				HD6309SetIRQLine(HD6309_IRQ_LINE, HD6309_IRQSTATUS_ACK);
+				HD6309SetIRQLine(HD6309_IRQ_LINE, CPU_IRQSTATUS_ACK);
 				HD6309Close();
 				
 				HD6309Open(1);
-				HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, HD6309_IRQSTATUS_NONE);
+				HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, CPU_IRQSTATUS_NONE);
 			}
 		}
 		return;
@@ -1283,10 +1283,10 @@ void DrvDdragonbaM6803WriteByte(UINT16 Address, UINT8 Data)
 
 void DrvDdragonbaM6803WritePort(UINT16, UINT8)
 {
-	M6803SetIRQLine(M6803_INPUT_LINE_NMI, M6803_IRQSTATUS_NONE);
+	M6803SetIRQLine(M6803_INPUT_LINE_NMI, CPU_IRQSTATUS_NONE);
 	
 	HD6309Open(0);
-	HD6309SetIRQLine(HD6309_IRQ_LINE, HD6309_IRQSTATUS_ACK);
+	HD6309SetIRQLine(HD6309_IRQ_LINE, CPU_IRQSTATUS_ACK);
 	HD6309Close();
 }
 
@@ -1306,7 +1306,7 @@ void __fastcall Ddragon2SubZ80Write(UINT16 Address, UINT8 Data)
 		
 		case 0xe000: {
 			HD6309Open(0);
-			HD6309SetIRQLine(HD6309_IRQ_LINE, HD6309_IRQSTATUS_ACK);
+			HD6309SetIRQLine(HD6309_IRQ_LINE, CPU_IRQSTATUS_ACK);
 			HD6309Close();
 			return;
 		}
@@ -1321,7 +1321,7 @@ UINT8 DrvDdragonM6809ReadByte(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1000: {
-			M6809SetIRQLine(M6809_IRQ_LINE, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(M6809_IRQ_LINE, CPU_IRQSTATUS_NONE);
 			return DrvSoundLatch;
 		}
 		
@@ -1482,23 +1482,23 @@ static INT32 Dd2SpritePlaneOffsets[4]     = { 0x300000, 0x300004, 0, 4 };
 static void DrvYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		M6809SetIRQLine(M6809_FIRQ_LINE, M6809_IRQSTATUS_ACK);
+		M6809SetIRQLine(M6809_FIRQ_LINE, CPU_IRQSTATUS_ACK);
 #if 1
 		// This fixes music tempo but breaks MSM5205 sound if we use the M6809 for the MSM5205 timing,
 		// because the interleave run count is 190 cycles
 		nCyclesDone[2] += M6809Run(1000);
 #endif
 	} else {
-		M6809SetIRQLine(M6809_FIRQ_LINE, M6809_IRQSTATUS_NONE);
+		M6809SetIRQLine(M6809_FIRQ_LINE, CPU_IRQSTATUS_NONE);
 	}
 }
 
 static void Ddragon2YM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -1894,36 +1894,32 @@ static INT32 DarktowrLoadRoms()
 static INT32 DrvMachineInit()
 {
 	BurnSetRefreshRate(57.444853);
-	
-	// Setup the HD6309 emulation
-	if (DrvSubCPUType == DD_CPU_TYPE_HD6309) {
-		HD6309Init(2);
-	} else {
-		HD6309Init(1);
-	}
+
+	HD6309Init(0);
 	HD6309Open(0);
-	HD6309MapMemory(DrvHD6309Ram         , 0x0000, 0x0fff, M6809_RAM);
-	HD6309MapMemory(DrvPaletteRam1       , 0x1000, 0x11ff, M6809_RAM);
-	HD6309MapMemory(DrvPaletteRam2       , 0x1200, 0x13ff, M6809_RAM);
-	HD6309MapMemory(DrvFgVideoRam        , 0x1800, 0x1fff, M6809_RAM);
-	HD6309MapMemory(DrvSpriteRam         , 0x2000, 0x2fff, M6809_WRITE);
-	HD6309MapMemory(DrvBgVideoRam        , 0x3000, 0x37ff, M6809_RAM);
-	HD6309MapMemory(DrvHD6309Rom + 0x8000, 0x4000, 0x7fff, M6809_ROM);
-	HD6309MapMemory(DrvHD6309Rom         , 0x8000, 0xffff, M6809_ROM);
+	HD6309MapMemory(DrvHD6309Ram         , 0x0000, 0x0fff, MAP_RAM);
+	HD6309MapMemory(DrvPaletteRam1       , 0x1000, 0x11ff, MAP_RAM);
+	HD6309MapMemory(DrvPaletteRam2       , 0x1200, 0x13ff, MAP_RAM);
+	HD6309MapMemory(DrvFgVideoRam        , 0x1800, 0x1fff, MAP_RAM);
+	HD6309MapMemory(DrvSpriteRam         , 0x2000, 0x2fff, MAP_WRITE);
+	HD6309MapMemory(DrvBgVideoRam        , 0x3000, 0x37ff, MAP_RAM);
+	HD6309MapMemory(DrvHD6309Rom + 0x8000, 0x4000, 0x7fff, MAP_ROM);
+	HD6309MapMemory(DrvHD6309Rom         , 0x8000, 0xffff, MAP_ROM);
 	HD6309SetReadHandler(DrvDdragonHD6309ReadByte);
 	HD6309SetWriteHandler(DrvDdragonHD6309WriteByte);
 	HD6309Close();
 	
 	if (DrvSubCPUType == DD_CPU_TYPE_HD63701) {
 		HD63701Init(1);
-		HD63701MapMemory(DrvSubCPURom        , 0xc000, 0xffff, HD63701_ROM);
+		HD63701MapMemory(DrvSubCPURom        , 0xc000, 0xffff, MAP_ROM);
 		HD63701SetReadHandler(DrvDdragonHD63701ReadByte);
 		HD63701SetWriteHandler(DrvDdragonHD63701WriteByte);
 	}
 	
 	if (DrvSubCPUType == DD_CPU_TYPE_HD6309) {
+		HD6309Init(1);
 		HD6309Open(1);
-		HD6309MapMemory(DrvSubCPURom        , 0xc000, 0xffff, HD6309_ROM);
+		HD6309MapMemory(DrvSubCPURom        , 0xc000, 0xffff, MAP_ROM);
 		HD6309SetReadHandler(DrvDdragonbSubHD6309ReadByte);
 		HD6309SetWriteHandler(DrvDdragonbSubHD6309WriteByte);
 		HD6309Close();
@@ -1931,7 +1927,7 @@ static INT32 DrvMachineInit()
 	
 	if (DrvSubCPUType == DD_CPU_TYPE_M6803) {
 		M6803Init(1);
-		M6803MapMemory(DrvSubCPURom        , 0xc000, 0xffff, M6803_ROM);
+		M6803MapMemory(DrvSubCPURom        , 0xc000, 0xffff, MAP_ROM);
 		M6803SetReadHandler(DrvDdragonbaM6803ReadByte);
 		M6803SetWriteHandler(DrvDdragonbaM6803WriteByte);
 		M6803SetWritePortHandler(DrvDdragonbaM6803WritePort);
@@ -1940,8 +1936,8 @@ static INT32 DrvMachineInit()
 	if (DrvSoundCPUType == DD_CPU_TYPE_M6809) {
 		M6809Init(1);
 		M6809Open(0);
-		M6809MapMemory(DrvSoundCPURam      , 0x0000, 0x0fff, M6809_RAM);
-		M6809MapMemory(DrvSoundCPURom      , 0x8000, 0xffff, M6809_ROM);
+		M6809MapMemory(DrvSoundCPURam      , 0x0000, 0x0fff, MAP_RAM);
+		M6809MapMemory(DrvSoundCPURom      , 0x8000, 0xffff, MAP_ROM);
 		M6809SetReadHandler(DrvDdragonM6809ReadByte);
 		M6809SetWriteHandler(DrvDdragonM6809WriteByte);
 		M6809Close();
@@ -1958,8 +1954,8 @@ static INT32 DrvMachineInit()
 	
 	if (DrvGameType == DD_GAME_DARKTOWR) {
 		m6805Init(1, 0x800);
-		m6805MapMemory(DrvMCURom + 0x80, 0x080, 0x7ff, M6805_ROM);
-		m6805MapMemory(DrvMCURom, 0x008, 0x07f, M6805_RAM);
+		m6805MapMemory(DrvMCURom + 0x80, 0x080, 0x7ff, MAP_ROM);
+		m6805MapMemory(DrvMCURom, 0x008, 0x07f, MAP_RAM);
 		m6805SetReadHandler(DrvMCUReadByte);
 		m6805SetWriteHandler(DrvMCUWriteByte);
 	}
@@ -1979,16 +1975,16 @@ static INT32 DrvMachineInit()
 static INT32 Drv2MachineInit()
 {
 	// Setup the HD6309 emulation
-	HD6309Init(1);
+	HD6309Init(0);
 	HD6309Open(0);
-	HD6309MapMemory(DrvHD6309Ram         , 0x0000, 0x17ff, M6809_RAM);
-	HD6309MapMemory(DrvFgVideoRam        , 0x1800, 0x1fff, M6809_RAM);
-	HD6309MapMemory(DrvSpriteRam         , 0x2000, 0x2fff, M6809_WRITE);
-	HD6309MapMemory(DrvBgVideoRam        , 0x3000, 0x37ff, M6809_RAM);
-	HD6309MapMemory(DrvPaletteRam1       , 0x3c00, 0x3dff, M6809_RAM);
-	HD6309MapMemory(DrvPaletteRam2       , 0x3e00, 0x3fff, M6809_RAM);
-	HD6309MapMemory(DrvHD6309Rom + 0x8000, 0x4000, 0x7fff, M6809_ROM);
-	HD6309MapMemory(DrvHD6309Rom         , 0x8000, 0xffff, M6809_ROM);
+	HD6309MapMemory(DrvHD6309Ram         , 0x0000, 0x17ff, MAP_RAM);
+	HD6309MapMemory(DrvFgVideoRam        , 0x1800, 0x1fff, MAP_RAM);
+	HD6309MapMemory(DrvSpriteRam         , 0x2000, 0x2fff, MAP_WRITE);
+	HD6309MapMemory(DrvBgVideoRam        , 0x3000, 0x37ff, MAP_RAM);
+	HD6309MapMemory(DrvPaletteRam1       , 0x3c00, 0x3dff, MAP_RAM);
+	HD6309MapMemory(DrvPaletteRam2       , 0x3e00, 0x3fff, MAP_RAM);
+	HD6309MapMemory(DrvHD6309Rom + 0x8000, 0x4000, 0x7fff, MAP_ROM);
+	HD6309MapMemory(DrvHD6309Rom         , 0x8000, 0xffff, MAP_ROM);
 	HD6309SetReadHandler(DrvDdragonHD6309ReadByte);
 	HD6309SetWriteHandler(DrvDdragonHD6309WriteByte);
 	HD6309Close();
@@ -2499,14 +2495,14 @@ static INT32 DrvFrame()
 		if (i == VBlankSlice) {
 			DrvVBlank = 1;
 			HD6309Open(0);
-			HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, HD6309_IRQSTATUS_ACK);
+			HD6309SetIRQLine(HD6309_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 			HD6309Close();
 		}
 		
 		for (INT32 j = 0; j < 16; j++) {
 			if (i == FIRQFireSlice[j]) {
 				HD6309Open(0);
-				HD6309SetIRQLine(HD6309_FIRQ_LINE, HD6309_IRQSTATUS_ACK);
+				HD6309SetIRQLine(HD6309_FIRQ_LINE, CPU_IRQSTATUS_ACK);
 				HD6309Close();
 			}
 		}
@@ -2588,7 +2584,7 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		if (DrvSubCPUType == DD_CPU_TYPE_M6803) M6803Scan(nAction);
 		if (DrvSubCPUType == DD_CPU_TYPE_Z80 || DrvSoundCPUType == DD_CPU_TYPE_Z80) ZetScan(nAction);
 		if (DrvSoundCPUType == DD_CPU_TYPE_M6809) M6809Scan(nAction);
-		if (DrvGameType == DD_GAME_DARKTOWR) m68705Scan(nAction, pnMin);
+		if (DrvGameType == DD_GAME_DARKTOWR) m6805Scan(nAction); // m68705
 		
 		BurnYM2151Scan(nAction);
 		if (DrvSoundCPUType == DD_CPU_TYPE_Z80) MSM6295Scan(0, nAction);
@@ -2611,16 +2607,16 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 
 		if (nAction & ACB_WRITE) {
 			HD6309Open(0);
-			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, M6809_ROM);
+			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, MAP_ROM);
 			HD6309Close();
 			
 			if (DrvSubCPUBusy == 0) {
 				if (DrvSubCPUType == DD_CPU_TYPE_HD63701) {
-					HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, HD63701_IRQSTATUS_ACK);
+					HD63701SetIRQLine(HD63701_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 				}
 				
 				if (DrvSubCPUType == DD_CPU_TYPE_M6803) {
-					M6803SetIRQLine(M6803_INPUT_LINE_NMI, M6803_IRQSTATUS_ACK);
+					M6803SetIRQLine(M6803_INPUT_LINE_NMI, CPU_IRQSTATUS_ACK);
 				}
 			}
 		}

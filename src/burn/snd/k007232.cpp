@@ -322,25 +322,7 @@ INT32 K007232Scan(INT32 nAction, INT32 *pnMin)
 		return 1;
 	}
 
-	for (INT32 i = 0; i < 2; i++)
-	{
-		kdacApcm *ptr = &Chip[0];
-
-		for (INT32 j = 0; j < KDAC_A_PCM_MAX; j++)
-		{
-			SCAN_VAR(ptr->vol[j]);
-			SCAN_VAR(ptr->addr[j]);
-			SCAN_VAR(ptr->start[j]);
-			SCAN_VAR(ptr->step[j]);
-			SCAN_VAR(ptr->bank[j]);
-			SCAN_VAR(ptr->play[j]);
-		}
-		for (INT32 j = 0; j < 10; j++)
-		{
-			SCAN_VAR(ptr->wreg[i]);
-		}
-		SCAN_VAR(ptr->UpdateStep);
-	}
+	SCAN_VAR(Chips);
 
 	return 0;
 }
@@ -357,6 +339,18 @@ void K007232SetVolume(INT32 chip, INT32 channel,INT32 volumeA,INT32 volumeB)
 		Chip->vol[channel][0] = volumeA;
 	if (volumeB)
 		Chip->vol[channel][1] = volumeB;
+}
+
+void K007232SetVolumeF(INT32 chip, INT32 channel,INT32 volumeA,INT32 volumeB)
+{
+#if defined FBA_DEBUG
+	if (!DebugSnd_K007232Initted) bprintf(PRINT_ERROR, _T("K007232SetVolumeF called without init\n"));
+	if (chip >nNumChips) bprintf(PRINT_ERROR, _T("K007232SetVolumeF called with invalid chip %x\n"), chip);
+#endif
+
+	Chip = &Chips[chip];
+	Chip->vol[channel][0] = volumeA;
+	Chip->vol[channel][1] = volumeB;
 }
 
 void k007232_set_bank(INT32 chip, INT32 chABank, INT32 chBBank )

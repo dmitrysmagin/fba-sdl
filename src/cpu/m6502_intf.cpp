@@ -237,6 +237,15 @@ INT32 M6502GetActive()
 	return nActiveCPU;
 }
 
+void M6502Idle(INT32 nCycles)
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_M6502Initted) bprintf(PRINT_ERROR, _T("M6502Idle called without init\n"));
+#endif
+
+	nM6502CyclesTotal += nCycles;
+}
+
 void M6502SetIRQLine(INT32 vector, INT32 status)
 {
 #if defined FBA_DEBUG
@@ -244,15 +253,15 @@ void M6502SetIRQLine(INT32 vector, INT32 status)
 	if (nActiveCPU == -1) bprintf(PRINT_ERROR, _T("M6502SetIRQLineLine called with no CPU open\n"));
 #endif
 
-	if (status == M6502_IRQSTATUS_NONE) {
+	if (status == CPU_IRQSTATUS_NONE) {
 		pCurrentCPU->set_irq_line(vector, 0);
 	}
 	
-	if (status == M6502_IRQSTATUS_ACK) {
+	if (status == CPU_IRQSTATUS_ACK) {
 		pCurrentCPU->set_irq_line(vector, 1);
 	}
 	
-	if (status == M6502_IRQSTATUS_AUTO) {
+	if (status == CPU_IRQSTATUS_AUTO) {
 		pCurrentCPU->set_irq_line(vector, 1);
 		pCurrentCPU->execute(0);
 		pCurrentCPU->set_irq_line(vector, 0);
@@ -293,13 +302,13 @@ INT32 M6502MapMemory(UINT8* pMemory, UINT16 nStart, UINT16 nEnd, INT32 nType)
 	UINT8 **pMemMap = pCurrentCPU->pMemMap;
 
 	for (UINT16 i = cStart; i <= (nEnd >> 8); i++) {
-		if (nType & M6502_READ)	{
+		if (nType & MAP_READ)	{
 			pMemMap[0     + i] = pMemory + ((i - cStart) << 8);
 		}
-		if (nType & M6502_WRITE) {
+		if (nType & MAP_WRITE) {
 			pMemMap[0x100 + i] = pMemory + ((i - cStart) << 8);
 		}
-		if (nType & M6502_FETCH) {
+		if (nType & MAP_FETCH) {
 			pMemMap[0x200 + i] = pMemory + ((i - cStart) << 8);
 		}
 	}
@@ -534,7 +543,7 @@ void M6502WriteRom(UINT32 Address, UINT8 Data)
 	}
 }
 
-UINT32 M6502GetPC()
+UINT32 M6502GetPC(INT32)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_M6502Initted) bprintf(PRINT_ERROR, _T("M6502GetPC called without init\n"));

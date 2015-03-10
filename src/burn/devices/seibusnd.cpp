@@ -34,6 +34,7 @@ static UINT8 sub2main[2];
 static INT32 main2sub_pending;
 static INT32 sub2main_pending;
 static INT32 SeibuSoundBank;
+static INT32 irq1,irq2;
 
 UINT8 *SeibuZ80DecROM;
 UINT8 *SeibuZ80ROM;
@@ -55,8 +56,6 @@ enum
 
 static void update_irq_lines(INT32 param)
 {
-	static INT32 irq1,irq2;
-
 	switch(param)
 	{
 		case VECTOR_INIT:
@@ -81,12 +80,10 @@ static void update_irq_lines(INT32 param)
 	}
 
 	if ((irq1 & irq2) == 0xff) {
-		ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 	} else	{
-		if (irq2 == 0xdf) {
-			ZetSetVector(irq1 & irq2);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		}
+		ZetSetVector(irq1 & irq2);
+		ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 	}
 }
 
@@ -140,14 +137,14 @@ void seibu_main_word_write(INT32 offset, UINT8 data)
 	}
 }
 
-void seibu_sound_mustb_write_word(INT32 /*offset*/, UINT8 data)
+void seibu_sound_mustb_write_word(INT32 /*offset*/, UINT16 data)
 {
 #if defined FBA_DEBUG
 	if (!DebugDev_SeibuSndInitted) bprintf(PRINT_ERROR, _T("seibu_sound_mustb_write_word called without init\n"));
 #endif
 
 	main2sub[0] = data & 0xff;
-	main2sub[1] = 0; // originally data >> 8 which is effectively 0
+	main2sub[1] = data >> 8;
 	
 	update_irq_lines(RST18_ASSERT);
 }
@@ -186,6 +183,7 @@ void __fastcall seibu_sound_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0x4007:
+		case 0x401a: // raiden2
 			seibu_z80_bank(data);
 		return;
 
@@ -193,7 +191,7 @@ void __fastcall seibu_sound_write(UINT16 address, UINT8 data)
 			switch (seibu_snd_type & 3)
 			{
 				case 0:
-					BurnYM3812Write(0, data);
+					BurnYM3812Write(0, 0, data);
 				return;
 
 				case 1:
@@ -210,7 +208,7 @@ void __fastcall seibu_sound_write(UINT16 address, UINT8 data)
 			switch (seibu_snd_type & 3)
 			{
 				case 0:
-					BurnYM3812Write(1, data);
+					BurnYM3812Write(0, 1, data);
 				return;
 
 				case 1:
@@ -260,7 +258,7 @@ UINT8 __fastcall seibu_sound_read(UINT16 address)
 			switch (seibu_snd_type & 3)
 			{
 				case 0:
-					return BurnYM3812Read(0);
+					return BurnYM3812Read(0, 0);
 
 				case 1:
 					return BurnYM2151ReadStatus();
@@ -271,7 +269,8 @@ UINT8 __fastcall seibu_sound_read(UINT16 address)
 			return 0;
 
 		case 0x4009: {
-			if (seibu_snd_type < 2) return 0;
+			if ((seibu_snd_type&3)==1) return BurnYM2151ReadStatus();		
+			if ((seibu_snd_type&3) < 2) return 0;
 			return BurnYM2203Read(0, 1);
 		}
 
@@ -289,7 +288,7 @@ UINT8 __fastcall seibu_sound_read(UINT16 address)
 			return MSM6295ReadStatus(0);
 
 		case 0x6002:
-			if (seibu_snd_type & 4) return MSM6295ReadStatus(0);
+			if (seibu_snd_type & 4) return MSM6295ReadStatus(1);
 	}
 
 	return 0;
@@ -429,7 +428,7 @@ void seibu_sound_init(INT32 type, INT32 len, INT32 freq0 /*cpu*/, INT32 freq1 /*
 	switch (seibu_snd_type & 3)
 	{
 		case 0:
-			BurnYM3812Init(freq1, &DrvFMIRQHandler, &DrvSynchroniseStream, 0);
+			BurnYM3812Init(1, freq1, &DrvFMIRQHandler, &DrvSynchroniseStream, 0);
 			BurnTimerAttachZetYM3812(freq0);
 		break;
 
@@ -478,11 +477,11 @@ void seibu_sound_exit()
 			BurnYM2203Exit();
 		break;
 	}
-	
-	MSM6295Exit(0);
-	if (seibu_snd_type & 4) MSM6295Exit(1);
 
 	ZetExit();
+
+	MSM6295Exit(0);
+	if (seibu_snd_type & 4) MSM6295Exit(1);
 
 	MSM6295ROM = NULL;
 
@@ -516,9 +515,11 @@ void seibu_sound_update(INT16 *pbuf, INT32 nLen)
 		break;
 	}
 
+	MSM6295Render(0, pbuf, nLen);
+
 	if (seibu_snd_type & 4) 
 		MSM6295Render(1, pbuf, nLen);
-	MSM6295Render(0, pbuf, nLen);
+
 }
 
 void seibu_sound_scan(INT32 *pnMin, INT32 nAction)
@@ -531,6 +532,7 @@ void seibu_sound_scan(INT32 *pnMin, INT32 nAction)
 	{		
 		ZetScan(nAction);
 
+		ZetOpen(0);
 		switch (seibu_snd_type & 3)
 		{
 			case 0:
@@ -538,13 +540,14 @@ void seibu_sound_scan(INT32 *pnMin, INT32 nAction)
 			break;
 	
 			case 1:
-				BurnYM2203Scan(nAction, pnMin);
+				BurnYM2151Scan(nAction);
 			break;
 	
 			case 2:
-				BurnYM2151Scan(nAction);
+				BurnYM2203Scan(nAction, pnMin);
 			break;
 		}
+		ZetClose();
 		
 		MSM6295Scan(0, nAction);
 		if (seibu_snd_type & 4) {
@@ -558,6 +561,8 @@ void seibu_sound_scan(INT32 *pnMin, INT32 nAction)
 		SCAN_VAR(main2sub_pending);
 		SCAN_VAR(sub2main_pending);
 		SCAN_VAR(SeibuSoundBank);
+		SCAN_VAR(irq1);
+		SCAN_VAR(irq2);
 	}
 
 	if (nAction & ACB_WRITE)

@@ -123,7 +123,7 @@ void __fastcall mrflea_out_port(UINT16 a, UINT8 data)
 
 			ZetClose();
 			ZetOpen(1);
-			ZetRaiseIrq(0);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 			ZetClose();
 			ZetOpen(0);
 		}
@@ -420,7 +420,7 @@ static INT32 DrvDraw()
 			{
 				INT32 pxl = Palette[*src];
 
-				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 			}
 		}
 	}
@@ -442,7 +442,7 @@ static INT32 DrvDraw()
 
 				INT32 pxl = Palette[0x10|*src];
 
-				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
+				PutPix(pBurnDraw + ((y << 8) | x) * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 			}
 		}
 	}
@@ -477,7 +477,7 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i == (nInterleave - 1)) ZetRaiseIrq(0);
+		if (i == (nInterleave - 1)) ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		ZetClose();
 
 		// Run Z80 #1
@@ -487,7 +487,7 @@ static INT32 DrvFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if ((mrflea_status&0x08) || i == (nInterleave - 1)) ZetRaiseIrq(0);
+		if ((mrflea_status&0x08) || i == (nInterleave - 1)) ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		ZetClose();
 
 		// Render Sound Segment

@@ -1,12 +1,29 @@
+// Fb Alpha Donkey Kong driver module
+// Based on MAME driver by various
+
+// still need:
+
+// sbdk
+// 8ballact
+// 8ballact2
+// shootgal
+// splforc
+// splfrcii
+// strtheat
+
+
+
 #include "tiles_generic.h"
 #include "z80_intf.h"
 #include "s2650_intf.h"
+#include "m6502_intf.h"
 #include "samples.h"
 #include "eeprom.h"
 #include "bitswap.h"
 #include "8257dma.h"
 #include "i8039.h"
 #include "dac.h"
+#include "nes_apu.h"
 
 static UINT8 *AllMem;
 static UINT8 *MemEnd;
@@ -26,6 +43,8 @@ static UINT8 *Drv2650RAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvVidRAM;
 static INT32 *DrvRevMap;
+static UINT8 *DrvSndRAM0;
+static UINT8 *DrvSndRAM1;
 
 static UINT32 *DrvPalette;
 static UINT8  DrvRecalc;
@@ -47,6 +66,7 @@ static UINT8  DrvInputs[3];
 static UINT8  DrvReset;
 
 static INT32 vblank;
+static INT32 sound_cpu_in_reset;
 static void (*DrvPaletteUpdate)();
 
 static INT32 s2650_protection = 0;
@@ -730,19 +750,31 @@ void __fastcall dkong3_main_write(UINT16 address, UINT8 data)
 	switch (address)
 	{
 		case 0x7c00:
-			// latch1
+			soundlatch[0] = data;
 		return;
 
 		case 0x7c80:
-			// latch2
+			soundlatch[1] = data;
 		return;
 
 		case 0x7d00:
-			// latch3
+			soundlatch[2] = data;
 		return;
 
 		case 0x7d80:
-			// dkong_2a03_reset_w
+			if (data & 1) {
+				sound_cpu_in_reset = 0;
+			} else {
+				sound_cpu_in_reset = 1;
+
+				M6502Open(0);
+				M6502Reset();
+				M6502Close();
+
+				M6502Open(1);
+				M6502Reset();
+				M6502Close();
+			}
 		return;
 
 		case 0x7e80:
@@ -881,7 +913,7 @@ static void s2650_main_write(UINT16 address, UINT8 data)
 //	bprintf (0, _T("mw %4.4x, %2.2x\n"), address, data);
 
 	if (address >= 0x2000) { // mirrors
-		s2650_write(address & 0x1fff, data);
+		s2650Write(address & 0x1fff, data);
 		return;
 	}
 
@@ -948,7 +980,7 @@ static UINT8 s2650_main_read(UINT16 address)
 //	bprintf (0, _T("mr %4.4x\n"), address);
 
 	if (address >= 0x2000) { // mirrors
-		return s2650_read(address & 0x1fff);
+		return s2650Read(address & 0x1fff);
 	}
 
 	if ((address & 0xff80) == 0x1f00) {
@@ -1116,6 +1148,49 @@ static void __fastcall i8039_sound_write_port(UINT32 port, UINT8 data)
 	}
 }
 
+static void dkong3_sound0_write(UINT16 a, UINT8 d)
+{
+//bprintf (0, _T("s0: %4.4x, %2.2x, %d\n"), a, d, M6502GetActive());
+	if ((a & 0xffe0) == 0x4000) {
+		nesapuWrite(0, a & 0x1f, d);
+		return;
+	}
+}
+
+static UINT8 dkong3_sound0_read(UINT16 a)
+{
+	if ((a & 0xffe0) == 0x4000) {
+		if ((a & 0xfffe) == 0x4016) {
+			return soundlatch[a & 1];
+		}
+
+		return nesapuRead(0, a & 0x1f);
+	}
+
+	return 0;
+}
+
+static void dkong3_sound1_write(UINT16 a, UINT8 /*d*/)
+{
+//bprintf (0, _T("s1: %4.4x, %2.2x, %d\n"), a, d, M6502GetActive());
+	if ((a & 0xffe0) == 0x4000) {
+	//	nesapuWrite(1, a & 0x1f, d);
+		return;
+	}
+}
+
+static UINT8 dkong3_sound1_read(UINT16 a)
+{
+	if ((a & 0xffe0) == 0x4000) {
+		if (a == 0x4016) return soundlatch[2];
+
+		return nesapuRead(1, a & 0x1f);
+	}
+
+	return 0;
+}
+
+
 static UINT8 dma_latch = 0;
 
 static void p8257ControlWrite(UINT16,UINT8 data)
@@ -1175,7 +1250,10 @@ static INT32 MemIndex()
 	DrvSprRAM		= Next; Next += 0x000b00;
 	DrvVidRAM		= Next; Next += 0x000400;
 
-	soundlatch		= Next; Next += 0x000001;
+	DrvSndRAM0		= Next; Next += 0x000200;
+	DrvSndRAM1		= Next; Next += 0x000200;
+
+	soundlatch		= Next; Next += 0x000003;
 	gfx_bank		= Next; Next += 0x000001;
 	sprite_bank		= Next; Next += 0x000001;
 	palette_bank		= Next; Next += 0x000001;
@@ -1369,6 +1447,136 @@ static INT32 DrvExit()
 	return 0;
 }
 
+static INT32 Dkong3DoReset()
+{
+	memset (AllRam, 0, RamEnd - AllRam);
+
+	ZetOpen(0);
+	ZetReset();
+	ZetClose();
+
+	M6502Open(0);
+	M6502Reset();
+	M6502Close();
+
+	M6502Open(1);
+	M6502Reset();
+	M6502Close();
+
+//	nesapuReset(); // necessary?
+
+	sound_cpu_in_reset = 0;
+
+	return 0;
+}
+
+static UINT32 dkong3_nesapu_sync(INT32 samples_rate)
+{
+	return (samples_rate * M6502TotalCycles()) / 29830 /* 1789773 / 60 */;
+}
+
+static INT32 Dkong3Init()
+{
+	AllMem = NULL;
+	MemIndex();
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
+	memset(AllMem, 0, nLen);
+	MemIndex();
+
+	{
+		if (BurnLoadRom(DrvZ80ROM  + 0x0000,  0, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x2000,  1, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x4000,  2, 1)) return 1;
+		if (BurnLoadRom(DrvZ80ROM  + 0x8000,  3, 1)) return 1;
+
+		if (BurnLoadRom(DrvSndROM0 + 0x0000,  4, 1)) return 1;
+
+		if (BurnLoadRom(DrvSndROM1 + 0x0000,  5, 1)) return 1;
+
+		if (BurnLoadRom(DrvGfxROM1 + 0x0000,  6, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM1 + 0x1000,  7, 1)) return 1;
+
+		memcpy (DrvGfxROM0 + 0x0000, DrvGfxROM1 + 0x0800, 0x0800);
+		memcpy (DrvGfxROM0 + 0x0800, DrvGfxROM1 + 0x0000, 0x0800);
+		memcpy (DrvGfxROM0 + 0x1000, DrvGfxROM1 + 0x1800, 0x0800);
+		memcpy (DrvGfxROM0 + 0x1800, DrvGfxROM1 + 0x1000, 0x0800);
+
+		if (BurnLoadRom(DrvGfxROM1 + 0x0000,  8, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM1 + 0x1000,  9, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM1 + 0x2000, 10, 1)) return 1;
+		if (BurnLoadRom(DrvGfxROM1 + 0x3000, 11, 1)) return 1;
+
+		if (BurnLoadRom(DrvColPROM + 0x0000, 12, 1)) return 1;
+		if (BurnLoadRom(DrvColPROM + 0x0100, 13, 1)) return 1;
+		if (BurnLoadRom(DrvColPROM + 0x0200, 14, 1)) return 1;
+
+		DrvPaletteUpdate = dkong3PaletteInit;
+		DrvPaletteUpdate();
+		DrvGfxDecode();
+	}
+
+	ZetInit(0);
+	ZetOpen(0);
+	ZetMapArea(0x0000, 0x5fff, 0, DrvZ80ROM);
+	ZetMapArea(0x0000, 0x5fff, 2, DrvZ80ROM);
+	ZetMapArea(0x6000, 0x68ff, 0, DrvZ80RAM);
+	ZetMapArea(0x6000, 0x68ff, 1, DrvZ80RAM);
+	ZetMapArea(0x6000, 0x68ff, 2, DrvZ80RAM);
+	ZetMapArea(0x6900, 0x73ff, 0, DrvSprRAM); // 900-a7f
+	ZetMapArea(0x6900, 0x73ff, 1, DrvSprRAM);
+	ZetMapArea(0x6900, 0x73ff, 2, DrvSprRAM);
+	ZetMapArea(0x7400, 0x77ff, 0, DrvVidRAM);
+	ZetMapArea(0x7400, 0x77ff, 1, DrvVidRAM);
+	ZetMapArea(0x7400, 0x77ff, 2, DrvVidRAM);
+	ZetMapArea(0x8000, 0xffff, 0, DrvZ80ROM + 0x8000);
+	ZetMapArea(0x8000, 0xffff, 2, DrvZ80ROM + 0x8000);
+	ZetSetWriteHandler(dkong3_main_write);
+	ZetSetReadHandler(dkong3_main_read);
+	ZetClose();
+
+	M6502Init(0, TYPE_N2A03);
+	M6502Open(0);
+	M6502MapMemory(DrvSndRAM0, 0x0000, 0x01ff, MAP_RAM);
+	M6502MapMemory(DrvSndROM0, 0xe000, 0xffff, MAP_ROM);
+	M6502SetWriteHandler(dkong3_sound0_write);
+	M6502SetReadHandler(dkong3_sound0_read);
+	M6502Close();
+
+	M6502Init(1, TYPE_N2A03);
+	M6502Open(1);
+	M6502MapMemory(DrvSndRAM1, 0x0000, 0x01ff, MAP_RAM);
+	M6502MapMemory(DrvSndROM1, 0xe000, 0xffff, MAP_ROM);
+	M6502SetWriteHandler(dkong3_sound1_write);
+	M6502SetReadHandler(dkong3_sound1_read);
+	M6502Close();
+
+	nesapuInit(0, 1789773, dkong3_nesapu_sync, 1);
+	nesapuSetAllRoutes(0, 0.50, BURN_SND_ROUTE_BOTH);
+
+	nesapuInit(1, 1789773, dkong3_nesapu_sync, 1);
+	nesapuSetAllRoutes(1, 0.50, BURN_SND_ROUTE_BOTH);
+
+	GenericTilesInit();
+
+	Dkong3DoReset();
+
+	return 0;
+}
+
+static INT32 Dkong3Exit()
+{
+	GenericTilesExit();
+
+	ZetExit();
+	M6502Exit();
+	nesapuExit();
+
+	BurnFree(AllMem);
+
+	return 0;
+}
+
 static INT32 s2650DkongDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
@@ -1393,14 +1601,14 @@ static UINT8 hb_dma_read_byte(UINT16 offset)
 {
 	offset = ((DrvRevMap[(offset >> 10) & 0x1ff] << 7) & 0x7c00) | (offset & 0x3ff);
 
-	return s2650_read(offset);
+	return s2650Read(offset);
 }
 
 static void hb_dma_write_byte(UINT16 offset, UINT8 data)
 {
 	offset = ((DrvRevMap[(offset >> 10) & 0x1ff] << 7) & 0x7c00) | (offset & 0x3ff);
 
-	s2650_write(offset, data);
+	s2650Write(offset, data);
 }
 
 static INT32 s2650_irq_callback(INT32)
@@ -1437,14 +1645,14 @@ static INT32 s2650DkongInit(INT32 (*pRomLoadCallback)())
 
 	s2650Init(1);
 	s2650Open(0);
-	s2650MapMemory(Drv2650ROM + 0x0000, 0x0000, 0x0fff, S2650_ROM);
-	s2650MapMemory(Drv2650RAM + 0x0000, 0x1000, 0x13ff, S2650_RAM); // sprite ram (after dma)
-	s2650MapMemory(DrvSprRAM  + 0x0000, 0x1600, 0x17ff, S2650_RAM);
-	s2650MapMemory(DrvVidRAM  + 0x0000, 0x1800, 0x1bff, S2650_RAM);
-	s2650MapMemory(DrvSprRAM  + 0x0400, 0x1c00, 0x1eff, S2650_RAM);
-	s2650MapMemory(Drv2650ROM + 0x2000, 0x2000, 0x2fff, S2650_ROM);
-	s2650MapMemory(Drv2650ROM + 0x4000, 0x4000, 0x4fff, S2650_ROM);
-	s2650MapMemory(Drv2650ROM + 0x6000, 0x6000, 0x6fff, S2650_ROM);
+	s2650MapMemory(Drv2650ROM + 0x0000, 0x0000, 0x0fff, MAP_ROM);
+	s2650MapMemory(Drv2650RAM + 0x0000, 0x1000, 0x13ff, MAP_RAM); // sprite ram (after dma)
+	s2650MapMemory(DrvSprRAM  + 0x0000, 0x1600, 0x17ff, MAP_RAM);
+	s2650MapMemory(DrvVidRAM  + 0x0000, 0x1800, 0x1bff, MAP_RAM);
+	s2650MapMemory(DrvSprRAM  + 0x0400, 0x1c00, 0x1eff, MAP_RAM);
+	s2650MapMemory(Drv2650ROM + 0x2000, 0x2000, 0x2fff, MAP_ROM);
+	s2650MapMemory(Drv2650ROM + 0x4000, 0x4000, 0x4fff, MAP_ROM);
+	s2650MapMemory(Drv2650ROM + 0x6000, 0x6000, 0x6fff, MAP_ROM);
 	s2650SetIrqCallback(s2650_irq_callback);
 	s2650SetWriteHandler(s2650_main_write);
 	s2650SetReadHandler(s2650_main_read);
@@ -1680,6 +1888,66 @@ static INT32 DrvFrame()
 	return 0;
 }
 
+static INT32 Dkong3Frame()
+{
+	if (DrvReset) {
+		Dkong3DoReset();
+	}
+
+	M6502NewFrame();
+
+	{
+		memset (DrvInputs, 0, 3);
+
+		for (INT32 i = 0; i < 8; i++) {
+			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
+			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
+			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
+		}
+	}
+
+	INT32 nInterleave = 100; // ?
+
+	for (INT32 i = 0; i < nInterleave; i++) {
+		ZetOpen(0);
+		ZetRun(4000000 / 60 / nInterleave);
+		if (i == (nInterleave - 10) && *nmi_mask) ZetNmi();
+		ZetClose();
+
+		M6502Open(0);
+		if (sound_cpu_in_reset)
+		{
+			M6502Idle(1789773 / 60 / nInterleave);
+		} else {
+			M6502Run(1789773 / 60 / nInterleave);
+			if (i == (nInterleave - 10)) M6502SetIRQLine(M6502_INPUT_LINE_NMI, CPU_IRQSTATUS_AUTO);
+		}
+		M6502Close();
+
+		M6502Open(1);
+		if (sound_cpu_in_reset)
+		{
+			M6502Idle(1789773 / 60 / nInterleave);
+		} else {
+			M6502Run(1789773 / 60 / nInterleave);
+			if (i == (nInterleave - 10)) M6502SetIRQLine(M6502_INPUT_LINE_NMI, CPU_IRQSTATUS_AUTO);
+		}
+		M6502Close();
+	}
+
+	if (pBurnSoundOut) {
+		memset (pBurnSoundOut,0,nBurnSoundLen*4);
+		nesapuUpdate(0, pBurnSoundOut, nBurnSoundLen);
+		nesapuUpdate(1, pBurnSoundOut, nBurnSoundLen);
+	}
+
+	if (pBurnDraw) {
+		BurnDrvRedraw();
+	}
+
+	return 0;
+}
+
 static INT32 s2650DkongFrame()
 {
 	if (DrvReset) {
@@ -1711,9 +1979,9 @@ static INT32 s2650DkongFrame()
 		if (i == 30) {
 			vblank = 0x80;
 	
-			s2650_set_irq_line(0, 1);
+			s2650SetIRQLine(0, CPU_IRQSTATUS_ACK);
 			s2650Run(10);
-			s2650_set_irq_line(0, 0);
+			s2650SetIRQLine(0, CPU_IRQSTATUS_NONE);
 		}
 	}
 
@@ -1821,7 +2089,7 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 	if (nAction & ACB_DRIVER_DATA) {
 
             if (s2650_protection) {
-                s2650Scan(nAction, pnMin);
+                s2650Scan(nAction);
             } else {
                 ZetScan(nAction);
             }
@@ -2230,7 +2498,7 @@ STD_ROM_FN(dkongf)
 
 struct BurnDriver BurnDrvDkongf = {
 	"dkongf", "dkong", NULL, "dkong", "2004",
-	"Donkey Kong Foundry (hack)\0", NULL, "hack", "Miscellaneous",
+	"Donkey Kong Foundry (hack)\0", NULL, "hack (Jeff Kulczycki)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongfRomInfo, dkongfRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongfDIPInfo,
@@ -2239,7 +2507,46 @@ struct BurnDriver BurnDrvDkongf = {
 };
 
 
-// Donkey Kong II - Jumpman Returns (V1.2) (hack)
+// Donkey Kong - Pauline Edition (hack, rev 5)
+// "Pauline Edition" hack, by Clay Cowgill based on Mike Mika's NES version
+
+static struct BurnRomInfo dkongpeRomDesc[] = {
+	{ "c_5et_g.bin",	0x1000, 0xba70b88b, 1 }, //  0 maincpu
+	{ "c_5ct_g.bin",	0x1000, 0x45af403e, 1 }, //  1
+	{ "c_5bt_g.bin",	0x1000, 0x3a9783b7, 1 }, //  2
+	{ "c_5at_g.bin",	0x1000, 0x32bc20ff, 1 }, //  3
+
+	{ "s_3i_b.bin",		0x0800, 0x45a4ed06, 2 }, //  4 soundcpu
+	{ "s_3j_b.bin",		0x0800, 0x4743fe92, 2 }, //  5
+
+	{ "v_5h_b.bin",		0x0800, 0x007aa348, 3 }, //  6 gfx1
+	{ "v_3pt.bin",		0x0800, 0xa967aff0, 3 }, //  7
+
+	{ "l_4m_b.bin",		0x0800, 0x766ae006, 4 }, //  8 gfx2
+	{ "l_4n_b.bin",		0x0800, 0x39e7ca4b, 4 }, //  9
+	{ "l_4r_b.bin",		0x0800, 0x012f2f25, 4 }, // 10
+	{ "l_4s_b.bin",		0x0800, 0x84eb5bfb, 4 }, // 11
+
+	{ "c-2k.bpr",		0x0100, 0xe273ede5, 5 }, // 12 proms
+	{ "c-2j.bpr",		0x0100, 0xd6412358, 5 }, // 13
+	{ "v-5e.bpr",		0x0100, 0xb869b8f5, 5 }, // 14
+};
+
+STD_ROM_PICK(dkongpe)
+STD_ROM_FN(dkongpe)
+
+struct BurnDriver BurnDrvDkongpe = {
+	"dkongpe", "dkong", NULL, "dkong", "2004",
+	"Donkey Kong - Pauline Edition (hack, rev 5)\0", NULL, "hack (Clay Cowgill)", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
+	NULL, dkongpeRomInfo, dkongpeRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, DkongfDIPInfo,
+	dkongInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
+	224, 256, 3, 4
+};
+
+
+// Donkey Kong II - Jumpman Returns (hack, V1.2)
 
 static struct BurnRomInfo dkongxRomDesc[] = {
 	{ "c_5et_g.bin",	0x01000, 0xba70b88b, 1 }, //  0 maincpu
@@ -2311,7 +2618,7 @@ static INT32 dkongxInit()
 
 struct BurnDriver BurnDrvDkongx = {
 	"dkongx", "dkong", NULL, "dkong", "2006",
-	"Donkey Kong II - Jumpman Returns (V1.2) (hack)\0", NULL, "hack", "Miscellaneous",
+	"Donkey Kong II - Jumpman Returns (hack, V1.2)\0", NULL, "hack (Braze Technologies)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongxRomInfo, dkongxRomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, NULL,
@@ -2320,7 +2627,7 @@ struct BurnDriver BurnDrvDkongx = {
 };
 
 
-// Donkey Kong II - Jumpman Returns (V1.1) (hack)
+// Donkey Kong II - Jumpman Returns (hack, V1.1)
 
 static struct BurnRomInfo dkongx11RomDesc[] = {
 	{ "c_5et_g.bin",	0x01000, 0xba70b88b, 1 }, //  0 maincpu
@@ -2351,7 +2658,7 @@ STD_ROM_FN(dkongx11)
 
 struct BurnDriver BurnDrvDkongx11 = {
 	"dkongx11", "dkong", NULL, "dkong", "2006",
-	"Donkey Kong II - Jumpman Returns (V1.1) (hack)\0", NULL, "hack", "Miscellaneous",
+	"Donkey Kong II - Jumpman Returns (hack, V1.1)\0", NULL, "hack (Braze Technologies)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkongx11RomInfo, dkongx11RomName, DkongSampleInfo, DkongSampleName, DkongInputInfo, NULL,
@@ -2452,9 +2759,28 @@ static INT32 dkongjrRomLoad()
 	return 0;
 }
 
+static void dkongjrsamplevol(INT32 sam, double vol)
+{
+	BurnSampleSetRoute(sam, BURN_SND_SAMPLE_ROUTE_1, vol, BURN_SND_ROUTE_BOTH);
+	BurnSampleSetRoute(sam, BURN_SND_SAMPLE_ROUTE_2, vol, BURN_SND_ROUTE_BOTH);
+}
+
 static INT32 dkongjrInit()
 {
-	return DrvInit(dkongjrRomLoad, dkongPaletteInit, 0);
+	INT32 rc = DrvInit(dkongjrRomLoad, dkongPaletteInit, 0);
+	if (!rc) {
+		dkongjrsamplevol(1, 0.35); // land
+		dkongjrsamplevol(2, 0.35); // roar
+		dkongjrsamplevol(3, 0.25); // climb
+		dkongjrsamplevol(4, 0.25);
+		dkongjrsamplevol(5, 0.25);
+		dkongjrsamplevol(6, 0.25); // death
+		dkongjrsamplevol(7, 0.35); // fall
+		dkongjrsamplevol(8, 0.20); // walk
+		dkongjrsamplevol(9, 0.20);
+		dkongjrsamplevol(10, 0.20);
+	}
+	return rc;
 }
 
 struct BurnDriver BurnDrvDkongjr = {
@@ -2840,58 +3166,13 @@ static struct BurnRomInfo dkong3RomDesc[] = {
 STD_ROM_PICK(dkong3)
 STD_ROM_FN(dkong3)
 
-static INT32 dkong3RomLoad()
-{
-	if (BurnLoadRom(DrvZ80ROM  + 0x0000,  0, 1)) return 1;
-	if (BurnLoadRom(DrvZ80ROM  + 0x2000,  1, 1)) return 1;
-	if (BurnLoadRom(DrvZ80ROM  + 0x4000,  2, 1)) return 1;
-	if (BurnLoadRom(DrvZ80ROM  + 0x8000,  3, 1)) return 1;
-
-	if (BurnLoadRom(DrvSndROM0 + 0x0000,  4, 1)) return 1;
-	if (BurnLoadRom(DrvSndROM1 + 0x0000,  5, 1)) return 1;
-
-	if (BurnLoadRom(DrvGfxROM1 + 0x0000,  6, 1)) return 1;
-	if (BurnLoadRom(DrvGfxROM1 + 0x1000,  7, 1)) return 1;
-
-	memcpy (DrvGfxROM0 + 0x0000, DrvGfxROM1 + 0x0800, 0x0800);
-	memcpy (DrvGfxROM0 + 0x0800, DrvGfxROM1 + 0x0000, 0x0800);
-	memcpy (DrvGfxROM0 + 0x1000, DrvGfxROM1 + 0x1800, 0x0800);
-	memcpy (DrvGfxROM0 + 0x1800, DrvGfxROM1 + 0x1000, 0x0800);
-
-	if (BurnLoadRom(DrvGfxROM1 + 0x0000,  8, 1)) return 1;
-	if (BurnLoadRom(DrvGfxROM1 + 0x1000,  9, 1)) return 1;
-	if (BurnLoadRom(DrvGfxROM1 + 0x2000, 10, 1)) return 1;
-	if (BurnLoadRom(DrvGfxROM1 + 0x3000, 11, 1)) return 1;
-
-	if (BurnLoadRom(DrvColPROM + 0x0000, 12, 1)) return 1;
-	if (BurnLoadRom(DrvColPROM + 0x0100, 13, 1)) return 1;
-	if (BurnLoadRom(DrvColPROM + 0x0200, 14, 1)) return 1;
-
-	return 0;
-}
-
-static INT32 dkong3Init()
-{
-	INT32 ret = DrvInit(dkong3RomLoad, dkong3PaletteInit, 2|1);
-
-	if (ret == 0)
-	{
-		ZetOpen(0);
-		ZetSetWriteHandler(dkong3_main_write);
-		ZetSetReadHandler(dkong3_main_read);
-		ZetClose();
-	}
-
-	return ret;
-}
-
 struct BurnDriver BurnDrvDkong3 = {
 	"dkong3", NULL, NULL, NULL, "1983",
 	"Donkey Kong 3 (US)\0", "No sound", "Nintendo of America", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkong3RomInfo, dkong3RomName, NULL, NULL, Dkong3InputInfo, Dkong3DIPInfo,
-	dkong3Init, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
+	Dkong3Init, Dkong3Exit, Dkong3Frame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -2932,7 +3213,7 @@ struct BurnDriver BurnDrvDkong3j = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, dkong3jRomInfo, dkong3jRomName, NULL, NULL, Dkong3InputInfo, Dkong3DIPInfo,
-	dkong3Init, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
+	Dkong3Init, Dkong3Exit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
 
@@ -3534,29 +3815,4 @@ struct BurnDriver BurnDrvDrktnjr = {
 	drktnjrInit, DrvExit, DrvFrame, dkongDraw, DrvScan, &DrvRecalc, 0x100,
 	224, 256, 3, 4
 };
-
-
-
-
-
-
-
-#if 0
-
-
-
-/* 2650 based */
-GAME( 1984, sbdk,     superbik, s2650,    sbdk,           0,  ROT90, "Century Electronics", "Super Bike (DK conversion)", GAME_SUPPORTS_SAVE )
-GAME( 1984, 8ballact, 0,        s2650,    8ballact,       0,  ROT90, "Seatongrove Ltd (Magic Eletronics USA license)", "Eight Ball Action (DK conversion)", GAME_SUPPORTS_SAVE )
-GAME( 1984, 8ballact2,8ballact, s2650,    8ballact,       0,  ROT90, "Seatongrove Ltd (Magic Eletronics USA license)", "Eight Ball Action (DKJr conversion)", GAME_SUPPORTS_SAVE )
-GAME( 1984, shootgal, 0,        s2650,    shootgal,       0,  ROT180,"Seatongrove Ltd (Zaccaria license)", "Shooting Gallery", GAME_IMPERFECT_SOUND | GAME_SUPPORTS_SAVE )
-GAME( 1985, spclforc, 0,        spclforc, spclforc,       0,  ROT90, "Senko Industries (Magic Eletronics Inc. license)", "Special Forces", GAME_NO_SOUND | GAME_SUPPORTS_SAVE )
-GAME( 1985, spcfrcii, 0,        spclforc, spclforc,       0,  ROT90, "Senko Industries (Magic Eletronics Inc. license)", "Special Forces II", GAME_NO_SOUND | GAME_SUPPORTS_SAVE )
-
-/* EPOS */
-GAME( 1985, strtheat, 0,        strtheat, strtheat, strtheat, ROT90, "Epos Corporation", "Street Heat", GAME_SUPPORTS_SAVE ) // distributed by Cardinal Amusements Products (a division of Epos Corporation
-
-#endif
-
-
 

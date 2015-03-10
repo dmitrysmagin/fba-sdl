@@ -5125,7 +5125,7 @@ struct BurnDriver BurnDrvpce_sidearms = {
 	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_PCENGINE, GBF_MISC, 0,
 	PceGetZipName, pce_sidearmsRomInfo, pce_sidearmsRomName, NULL, NULL, pceInputInfo, pceDIPInfo,
 	PCEInit, PCEExit, PCEFrame, PCEDraw, PCEScan,
-	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
+	&PCEPaletteRecalc, 0x400, 512, 242, 4, 3
 };
 
 
@@ -7260,9 +7260,9 @@ STD_ROM_FN(tg_ghostman)
 
 struct BurnDriver BurnDrvtg_ghostman = {
 	"tg_ghostman", NULL, NULL, NULL, "1992",
-	"Ghost Manor\0", NULL, "TTI", "TurboGrafx 16",
+	"Ghost Manor\0", "game randomly locks up", "TTI", "TurboGrafx 16",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_TG16, GBF_MISC, 0,
+	0, 5, HARDWARE_PCENGINE_TG16, GBF_MISC, 0,
 	TgGetZipName, tg_ghostmanRomInfo, tg_ghostmanRomName, NULL, NULL, pceInputInfo, pceDIPInfo,
 	TG16Init, PCEExit, PCEFrame, PCEDraw, PCEScan,
 	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
@@ -7905,7 +7905,7 @@ struct BurnDriver BurnDrvtg_sidearms = {
 	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_TG16, GBF_MISC, 0,
 	TgGetZipName, tg_sidearmsRomInfo, tg_sidearmsRomName, NULL, NULL, pceInputInfo, pceDIPInfo,
 	TG16Init, PCEExit, PCEFrame, PCEDraw, PCEScan,
-	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
+	&PCEPaletteRecalc, 0x400, 512, 242, 4, 3
 };
 
 
@@ -8568,6 +8568,24 @@ struct BurnDriver BurnDrvsgx_daimakai = {
 	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
 };
 
+// Dai Makaimura (Alt)
+
+static struct BurnRomInfo sgx_daimakai1RomDesc[] = {
+	{ "daimakai mura (japan)[a].pce", 0x100200, 0x8e961f63, BRF_PRG | BRF_ESS },
+};
+
+STD_ROM_PICK(sgx_daimakai1)
+STD_ROM_FN(sgx_daimakai1)
+
+struct BurnDriver BurnDrvsgx_daimakai1 = {
+	"sgx_daimakai1", NULL, NULL, NULL, "1990",
+	"Dai Makaimura (Alt)\0", NULL, "NEC Avenue", "SuperGrafx",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_SGX, GBF_MISC, 0,
+	SgxGetZipName, sgx_daimakai1RomInfo, sgx_daimakai1RomName, NULL, NULL, pceInputInfo, pceDIPInfo,
+	SGXInit, PCEExit, PCEFrame, PCEDraw, PCEScan,
+	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
+};
 
 // Madou Ou Granzort
 
@@ -8589,3 +8607,40 @@ struct BurnDriver BurnDrvsgx_granzort = {
 };
 
 
+// Aetherbyte Reflectron
+
+static struct BurnRomInfo pce_reflectronRomDesc[] = {
+	{ "reflectron.pce", 0x040000, 0x6a3727e2, BRF_PRG | BRF_ESS },
+};
+
+STD_ROM_PICK(pce_reflectron)
+STD_ROM_FN(pce_reflectron)
+
+struct BurnDriver BurnDrvpce_reflectron = {
+	"pce_reflectron", NULL, NULL, NULL, "2013",
+	"Reflectron\0", NULL, "Aetherbyte", "PC Engine",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_PCENGINE, GBF_MISC, 0,
+	PceGetZipName, pce_reflectronRomInfo, pce_reflectronRomName, NULL, NULL, pceInputInfo, pceDIPInfo,
+	PCEInit, PCEExit, PCEFrame, PCEDraw, PCEScan,
+	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
+};
+
+// Aetherbyte Santatlantean
+
+static struct BurnRomInfo pce_santatlanteanRomDesc[] = {
+	{ "Santatlantean.pce", 0x080200, 0xe6b38af1, BRF_PRG | BRF_ESS },
+};
+
+STD_ROM_PICK(pce_santatlantean)
+STD_ROM_FN(pce_santatlantean)
+
+struct BurnDriver BurnDrvpce_santatlantean = {
+	"pce_santatlantean", NULL, NULL, NULL, "2014",
+	"Santatlantean\0", NULL, "Aetherbyte", "PC Engine",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING, 5, HARDWARE_PCENGINE_PCENGINE, GBF_MISC, 0,
+	PceGetZipName, pce_santatlanteanRomInfo, pce_santatlanteanRomName, NULL, NULL, pceInputInfo, pceDIPInfo,
+	PCEInit, PCEExit, PCEFrame, PCEDraw, PCEScan,
+	&PCEPaletteRecalc, 0x400, 512, 240, 4, 3
+};

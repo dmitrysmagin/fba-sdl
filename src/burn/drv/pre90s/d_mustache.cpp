@@ -256,7 +256,7 @@ static void decode_gfx()
 {
 	INT32 i;
 	INT32 G1 = 0xc000/3;
-	int G2 = 0x20000/2;
+	INT32 G2 = 0x20000/2;
 	UINT8 *gfx1 = DrvGfxROM0;
 	UINT8 *gfx2 = DrvGfxROM1;
 	UINT8 *buf = (UINT8*)BurnMalloc(0x20000);
@@ -327,9 +327,9 @@ static INT32 DrvGfxDecode()
 
 static void DrvPaletteInit()
 {
-	for (int i = 0;i < 256;i++)
+	for (INT32 i = 0;i < 256;i++)
 	{
-		int bit0,bit1,bit2,bit3,r,g,b;
+		INT32 bit0,bit1,bit2,bit3,r,g,b;
 
 		/* red component */
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
@@ -395,12 +395,12 @@ static INT32 DrvInit()
 
 	ZetInit(0);
 	ZetOpen(0);
-	ZetMapMemory(DrvZ80ROM,		0x0000, 0xbfff, ZET_ROM);
-	ZetMapMemory(DrvZ80ROMDec,	0x0000, 0x7fff, ZET_FETCHOP);
-	ZetMapMemory(DrvVidRAM,		0xc000, 0xcfff, ZET_RAM);
-	ZetMapMemory(t5182SharedRAM,	0xd400, 0xd4ff, ZET_RAM);
-	ZetMapMemory(DrvSprRAM,		0xe800, 0xefff, ZET_RAM);
-	ZetMapMemory(DrvZ80RAM,		0xf000, 0xffff, ZET_RAM);
+	ZetMapMemory(DrvZ80ROM,		0x0000, 0xbfff, MAP_ROM);
+	ZetMapMemory(DrvZ80ROMDec,	0x0000, 0x7fff, MAP_FETCHOP);
+	ZetMapMemory(DrvVidRAM,		0xc000, 0xcfff, MAP_RAM);
+	ZetMapMemory(t5182SharedRAM,	0xd400, 0xd4ff, MAP_RAM);
+	ZetMapMemory(DrvSprRAM,		0xe800, 0xefff, MAP_RAM);
+	ZetMapMemory(DrvZ80RAM,		0xf000, 0xffff, MAP_RAM);
 	ZetSetWriteHandler(mustache_main_write);
 	ZetSetReadHandler(mustache_main_read);
 	ZetClose();
@@ -426,7 +426,7 @@ static INT32 DrvExit()
 	return 0;
 }
 
-static void draw_layer(int rows_start, int rows_end)
+static void draw_layer(INT32 rows_start, INT32 rows_end)
 {
 	INT32 scrollx[4] = { 0x100 - scroll, 0x100 - scroll, 0x100 - scroll, 0x100 };
 
@@ -548,12 +548,12 @@ static INT32 DrvFrame()
 
 		if (i == 0) {
 			ZetSetVector(0x08);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		}
 
-		if (i == 15) {
+		if (i == 12) {
 			ZetSetVector(0x10);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 		}
 
 		ZetClose();

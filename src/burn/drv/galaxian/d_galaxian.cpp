@@ -13602,7 +13602,7 @@ static struct BurnRomInfo MshuttleRomDesc[] = {
 	{ "mscprom1.bin",  0x00020, 0xea0d1af0, BRF_GRA | GAL_ROM_PROM },
 	
 	{ "my07",          0x01000, 0x522a2920, BRF_SND | BRF_OPT },	// Samples
-	{ "my06(__eng)",   0x01000, 0x466415f2, BRF_SND | BRF_OPT },
+	{ "my06",   	   0x01000, 0x466415f2, BRF_SND | BRF_OPT },
 };
 
 STD_ROM_PICK(Mshuttle)
@@ -13612,11 +13612,11 @@ static struct BurnRomInfo Mshuttle2RomDesc[] = {
 	{ "my05",          0x01000, 0x83574af1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "my04",          0x01000, 0x1cfae2c8, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	{ "my03",          0x01000, 0xc8b8a368, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "my02(__mshuttle2)", 0x01000, 0x9804061c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "my01(__mshuttle2)", 0x01000, 0xca746a61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "my02", 		   0x01000, 0x9804061c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "my01", 		   0x01000, 0xca746a61, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
 	{ "my09",          0x01000, 0x3601b380, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "my11(__mshuttle2)", 0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "my11", 		   0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "my08",          0x01000, 0x992b06cd, BRF_GRA | GAL_ROM_TILES_SHARED },
 	{ "my10",          0x00800, 0xd860e6ce, BRF_GRA | GAL_ROM_TILES_SHARED },
 	
@@ -14396,7 +14396,7 @@ void __fastcall FroggermcZ80Write(UINT16 a, UINT8 d)
 			if (!(d & 1)) {
 				ZetClose();
 				ZetOpen(1);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 				ZetClose();
 				ZetOpen(0);
 			}
@@ -15286,23 +15286,23 @@ STD_ROM_PICK(Scramble)
 STD_ROM_FN(Scramble)
 
 static struct BurnRomInfo ScramblesRomDesc[] = {
-	{ "2d(__scrambles)", 0x00800, 0xb89207a1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2e(__scrambles)", 0x00800, 0xe9b4b9eb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2f(__scrambles)", 0x00800, 0xa1f14f4c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2h(__scrambles)", 0x00800, 0x591bc0d9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2j(__scrambles)", 0x00800, 0x22f11b6b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2l(__scrambles)", 0x00800, 0x705ffe49, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2m(__scrambles)", 0x00800, 0xea26c35c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2p(__scrambles)", 0x00800, 0x94d8f5e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2d", 			0x00800, 0xb89207a1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2e", 			0x00800, 0xe9b4b9eb, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2f", 			0x00800, 0xa1f14f4c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2h", 			0x00800, 0x591bc0d9, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2j", 			0x00800, 0x22f11b6b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2l", 			0x00800, 0x705ffe49, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2m", 			0x00800, 0xea26c35c, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2p", 			0x00800, 0x94d8f5e3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
-	{ "ot1.5c",          0x00800, 0xbcd297f0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot2.5d",          0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot3.5e",          0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot1.5c",         0x00800, 0xbcd297f0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot2.5d",         0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "ot3.5e",         0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "5f",              0x00800, 0x5f30311a, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "5h",              0x00800, 0x516e029e, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5f",             0x00800, 0x5f30311a, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5h",             0x00800, 0x516e029e, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
-	{ "c01s.6e",         0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
+	{ "c01s.6e",        0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 };
 
 STD_ROM_PICK(Scrambles)
@@ -15378,17 +15378,17 @@ STD_ROM_PICK(Scrampt)
 STD_ROM_FN(Scrampt)
 
 static struct BurnRomInfo ScramrfRomDesc[] = {
-	{ "(__scramrf)2c.cpu",  0x01000, 0x85fa7de3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "(__scramrf)2f.cpu",  0x01000, 0x5b500c90, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "(__scramrf)2j.cpu",  0x01000, 0x179e1c1f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "(__scramrf)2m.cpu",  0x01000, 0x4a4bb870, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2c.cpu",  	   0x01000, 0x85fa7de3, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2f.cpu",  	   0x01000, 0x5b500c90, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2j.cpu",  	   0x01000, 0x179e1c1f, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "2m.cpu",  	   0x01000, 0x4a4bb870, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 		
-	{ "(__scramrf)5c.cpu",  0x00800, 0xbe037cf6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "(__scramrf)5d.cpu",  0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "(__scramrf)5e.cpu",  0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "5c.cpu",  	   0x00800, 0xbe037cf6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "5d.cpu",  	   0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "5e.cpu",  	   0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "(__scramrf)5f.cpu", 0x00800, 0x4708845b, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "(__scramrf)5h.cpu", 0x00800, 0x11fd2887, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5f.cpu", 	   0x00800, 0x4708845b, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "5h.cpu", 	   0x00800, 0x11fd2887, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
 	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 };
@@ -15504,21 +15504,21 @@ STD_ROM_PICK(Atlantis)
 STD_ROM_FN(Atlantis)
 
 static struct BurnRomInfo Atlantis2RomDesc[] = {
-	{ "rom1",          0x00800, 0xad348089, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom2",          0x00800, 0xcaa705d1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom3",          0x00800, 0xe420641d, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom4",          0x00800, 0x04792d90, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "2j",            0x00800, 0x45f7cf34, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom6",          0x00800, 0xb297bd4b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom7",          0x00800, 0xa50bf8d5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
-	{ "rom8",          0x00800, 0xd2c5c984, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_1.2c",      0x00800, 0xad348089, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_2.2e",      0x00800, 0xcaa705d1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_3.2f",      0x00800, 0xac5e9ec1, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_4.2h",      0x00800, 0x04792d90, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_5.2j",      0x00800, 0x45f7cf34, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_6.2l",      0x00800, 0xb297bd4b, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_7.2m",      0x00800, 0xa50bf8d5, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
+	{ "boa_8.2p",      0x00800, 0xd2c5c984, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG1 },
 	
-	{ "ot1.5c",        0x00800, 0xbcd297f0, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot2.5d",        0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
-	{ "ot3.5e",        0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "boa_11.5c",     0x00800, 0xbe037cf6, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "boa_12.5d",     0x00800, 0xde7912da, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
+	{ "boa_13.5e",     0x00800, 0xba2fa933, BRF_ESS | BRF_PRG | GAL_ROM_Z80_PROG2 },
 
-	{ "rom9",          0x00800, 0x55cd5acd, BRF_GRA | GAL_ROM_TILES_SHARED },
-	{ "rom10",         0x00800, 0x72e773b8, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "boa_9.5f",      0x00800, 0x55cd5acd, BRF_GRA | GAL_ROM_TILES_SHARED },
+	{ "boa_10.5h",     0x00800, 0x72e773b8, BRF_GRA | GAL_ROM_TILES_SHARED },
 		
 	{ "c01s.6e",       0x00020, 0x4e3caeab, BRF_GRA | GAL_ROM_PROM },
 };
@@ -15885,7 +15885,7 @@ void __fastcall ExplorerZ80Write(UINT16 a, UINT8 d)
 		case 0x9000: {
 			ZetClose();
 			ZetOpen(1);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			ZetClose();
 			ZetOpen(0);
 			return;
@@ -16318,7 +16318,7 @@ void __fastcall HotshockZ80Write(UINT16 a, UINT8 d)
 		case 0x9000: {
 			ZetClose();
 			ZetOpen(1);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			ZetClose();
 			ZetOpen(0);
 			return;
@@ -18225,7 +18225,7 @@ void __fastcall Ad2083Z80Write(UINT16 a, UINT8 d)
 		case 0x9000: {
 			ZetClose();
 			ZetOpen(1);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			ZetClose();
 			ZetOpen(0);
 			return;
@@ -22016,13 +22016,13 @@ UINT8 DrivfrcgS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case 0x00: {
-			switch (s2650GetPc()) {
+			switch (s2650GetPC(0)) {
 				case 0x02e:
 				case 0x297: {
 					return 0x01;
 				}
 			}
-			bprintf(PRINT_NORMAL, _T("%x\n"), s2650GetPc());			
+			bprintf(PRINT_NORMAL, _T("%x\n"), s2650GetPC(0));			
 			return 0x00;
 		}
 		
@@ -22187,7 +22187,7 @@ UINT8 HexpoolaS2650PortRead(UINT16 Port)
 		}
 		
 		case S2650_DATA_PORT: {
-			switch (s2650GetPc()) {
+			switch (s2650GetPC(0)) {
 				case 0x22: return 0x00;
 				case 0x31: return 0x01;
 			}
@@ -22423,7 +22423,7 @@ UINT8 HncholmsS2650PortRead(UINT16 Port)
 {
 	switch (Port) {
 		case 0x0000: {
-			switch (s2650GetPc()) {
+			switch (s2650GetPC(0)) {
 				case 0x02b: return 1;
 				case 0xa27: return 1;
 			}
@@ -22456,22 +22456,22 @@ static void S2650PostLoad()
 {
 	s2650Init(1);
 	s2650Open(0);
-	s2650MapMemory(GalS2650Rom1 + 0x0000, 0x0000, 0x0fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x1480, 0x14ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x1800, 0x1bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x1c00, 0x1fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x1000, 0x2000, 0x2fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x3480, 0x34ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x3800, 0x3bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x3c00, 0x3fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x2000, 0x4000, 0x4fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x5480, 0x54ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x5800, 0x5bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x5c00, 0x5fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x3000, 0x6000, 0x6fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x7480, 0x74ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x7800, 0x7bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x7c00, 0x7fff, S2650_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x0000, 0x0000, 0x0fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x1480, 0x14ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x1800, 0x1bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x1c00, 0x1fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x1000, 0x2000, 0x2fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x3480, 0x34ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x3800, 0x3bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x3c00, 0x3fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x2000, 0x4000, 0x4fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x5480, 0x54ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x5800, 0x5bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x5c00, 0x5fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x3000, 0x6000, 0x6fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x7480, 0x74ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x7800, 0x7bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x7c00, 0x7fff, MAP_RAM);
 	s2650SetReadHandler(HunchbkgS2650Read);
 	s2650SetWriteHandler(HunchbkgS2650Write);
 	s2650SetInHandler(HunchbkgS2650PortRead);
@@ -22569,22 +22569,22 @@ static void RacknrolPostLoad()
 {
 	s2650Init(1);
 	s2650Open(0);
-	s2650MapMemory(GalS2650Rom1 + 0x0000, 0x0000, 0x0fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x1400, 0x14ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x1800, 0x1bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x1c00, 0x1fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x1000, 0x2000, 0x2fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x3400, 0x34ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x3800, 0x3bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x3c00, 0x3fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x2000, 0x4000, 0x4fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x5400, 0x54ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x5800, 0x5bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x5c00, 0x5fff, S2650_RAM);
-	s2650MapMemory(GalS2650Rom1 + 0x3000, 0x6000, 0x6fff, S2650_ROM);
-	s2650MapMemory(GalSpriteRam, 0x7400, 0x74ff, S2650_READ);
-	s2650MapMemory(GalVideoRam, 0x7800, 0x7bff, S2650_RAM);
-	s2650MapMemory(GalZ80Ram1, 0x7c00, 0x7fff, S2650_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x0000, 0x0000, 0x0fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x1400, 0x14ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x1800, 0x1bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x1c00, 0x1fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x1000, 0x2000, 0x2fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x3400, 0x34ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x3800, 0x3bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x3c00, 0x3fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x2000, 0x4000, 0x4fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x5400, 0x54ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x5800, 0x5bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x5c00, 0x5fff, MAP_RAM);
+	s2650MapMemory(GalS2650Rom1 + 0x3000, 0x6000, 0x6fff, MAP_ROM);
+	s2650MapMemory(GalSpriteRam, 0x7400, 0x74ff, MAP_READ);
+	s2650MapMemory(GalVideoRam, 0x7800, 0x7bff, MAP_RAM);
+	s2650MapMemory(GalZ80Ram1, 0x7c00, 0x7fff, MAP_RAM);
 	s2650SetReadHandler(RacknrolS2650Read);
 	s2650SetWriteHandler(RacknrolS2650Write);
 	s2650SetInHandler(RacknrolS2650PortRead);

@@ -4,6 +4,7 @@
 #include "x1010.h"
 
 UINT8 *X1010SNDROM;
+INT32 X1010_Arbalester_Mode = 0;
 
 struct x1_010_info * x1_010_chip = NULL;
 
@@ -77,6 +78,9 @@ void x1010_sound_update()
 				freq     = reg->frequency & 0x1f;
 				// Meta Fox does not write the frequency register. Ever
 				if( freq == 0 ) freq = 4;
+				// Special handling for Arbalester -dink
+				if( X1010_Arbalester_Mode && ch==0x0f && reg->start != 0xc0 && reg->start != 0xc8 )
+					freq = 8;
 
 				//smp_step = (unsigned int)((float)x1_010->base_clock / 8192.0
 				//			* freq * (1 << FREQ_BASE_BITS) / (float)x1_010->rate );
@@ -84,7 +88,7 @@ void x1010_sound_update()
 
 //				if( smp_offs == 0 ) {
 //					bprintf(PRINT_ERROR, _T("Play sample %06X - %06X, channel %X volume %d freq %X step %X offset %X\n"),
-//							start, end, ch, volL, freq, smp_step, smp_offs);
+//							reg->start, reg->end, ch, volL, freq, smp_step, smp_offs);
 //				}
 
 				for( i = 0; i < nBurnSoundLen; i++ ) {
@@ -147,7 +151,7 @@ void x1010_sound_update()
 	 				// Envelope one shot mode
 					if( (reg->status&4) != 0 || delta >= 0x80 ) {
 						reg->status &= 0xfe;					// Key off
-                                                bprintf(0, _T("--super debug!-- smp ended delta[%X]\n"), delta);
+                                                //bprintf(0, _T("--super debug!-- smp ended delta[%X]\n"), delta);
                                                 break;
 					}
 
@@ -205,6 +209,7 @@ void x1010_sound_init(UINT32 base_clock, INT32 address)
 	x1_010_chip->gain[BURN_SND_X1010_ROUTE_2] = 1.00;
 	x1_010_chip->output_dir[BURN_SND_X1010_ROUTE_1] = BURN_SND_ROUTE_BOTH;
 	x1_010_chip->output_dir[BURN_SND_X1010_ROUTE_2] = BURN_SND_ROUTE_BOTH;
+	X1010_Arbalester_Mode = 0;
 }
 
 void x1010_set_route(INT32 nIndex, double nVolume, INT32 nRouteDir)

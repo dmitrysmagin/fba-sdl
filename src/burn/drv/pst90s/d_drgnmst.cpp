@@ -578,23 +578,23 @@ static INT32 DrvInit()
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvPalRAM,		0x900000, 0x903fff, SM_ROM);
-	SekMapMemory(DrvMidRAM,		0x904000, 0x907fff, SM_RAM);
-	SekMapMemory(DrvBgRAM,		0x908000, 0x90bfff, SM_RAM);
-	SekMapMemory(DrvFgRAM,		0x90c000, 0x90ffff, SM_RAM);
-	SekMapMemory(DrvRowScroll,	0x920000, 0x923fff, SM_RAM);
-	SekMapMemory(DrvSprRAM,		0x930000, 0x9307ff, SM_RAM);
-	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvPalRAM,		0x900000, 0x903fff, MAP_ROM);
+	SekMapMemory(DrvMidRAM,		0x904000, 0x907fff, MAP_RAM);
+	SekMapMemory(DrvBgRAM,		0x908000, 0x90bfff, MAP_RAM);
+	SekMapMemory(DrvFgRAM,		0x90c000, 0x90ffff, MAP_RAM);
+	SekMapMemory(DrvRowScroll,	0x920000, 0x923fff, MAP_RAM);
+	SekMapMemory(DrvSprRAM,		0x930000, 0x9307ff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, MAP_RAM);
 	SekSetWriteByteHandler(0,	drgnmst_write_byte);
 	SekSetWriteWordHandler(0,	drgnmst_write_word);
 	SekSetReadByteHandler(0,	drgnmst_read_byte);
 	SekSetReadWordHandler(0,	drgnmst_read_word);
 	SekClose();
 
-	pic16c5xInit(0x16C55, DrvPicROM);
-	pPic16c5xReadPort = drgnmst_sound_readport;
-	pPic16c5xWritePort = drgnmst_sound_writeport;
+	pic16c5xInit(0, 0x16C55, DrvPicROM);
+	pic16c5xSetReadPortHandler(drgnmst_sound_readport);
+	pic16c5xSetWritePortHandler(drgnmst_sound_writeport);
 
 	MSM6295Init(0, 1000000 / 132, 0);
 	MSM6295Init(1, 1000000 / 132, 0);
@@ -931,7 +931,7 @@ static INT32 DrvFrame()
 		}
 	}
 
-	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(2, CPU_IRQSTATUS_AUTO);
 	SekClose();
 
 	if (pBurnSoundOut) {
@@ -971,7 +971,7 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 
 	if (nAction & ACB_DRIVER_DATA) {
 		SekScan(nAction);
-		pic16c5xScan(nAction, 0);
+		pic16c5xScan(nAction);
 
 		MSM6295Scan(0, nAction);
 		MSM6295Scan(1, nAction);

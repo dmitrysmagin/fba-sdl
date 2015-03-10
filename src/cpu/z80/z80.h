@@ -90,6 +90,8 @@ int ActiveZ80GetPC();
 int ActiveZ80GetBC();
 int ActiveZ80GetDE();
 int ActiveZ80GetHL();
+int ActiveZ80GetI();
+int ActiveZ80GetPrevPC();
 
 #endif
 

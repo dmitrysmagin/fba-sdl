@@ -454,9 +454,9 @@ static INT32 DrvGfxDecode()
 static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
-		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
+		ZetSetIRQLine(0xff, CPU_IRQSTATUS_ACK);
 	} else {
-		ZetSetIRQLine(0,    ZET_IRQSTATUS_NONE);
+		ZetSetIRQLine(0,    CPU_IRQSTATUS_NONE);
 	}
 }
 
@@ -535,6 +535,8 @@ static INT32 DrvInit()
 	BurnTimerAttachZet(3579545);
 	BurnYM2203SetAllRoutes(0, 0.15, BURN_SND_ROUTE_BOTH);
 	BurnYM2203SetAllRoutes(1, 0.15, BURN_SND_ROUTE_BOTH);
+	BurnYM2203SetPSGVolume(0, 0.05);
+	BurnYM2203SetPSGVolume(1, 0.05);
 
 	DrvDoReset(1);
 
@@ -579,7 +581,7 @@ static void draw_bg(INT32 type, INT32 layer)
 			sx = (offs & 0x3f);
 			sy = (offs >> 6);
 
-			ofst = (sx & 0x0f) + ((sy & 0x0f) << 4) + ((sx & 0x30) << 4) + ((sy & 0x70) << 7);
+			ofst = (sx & 0x0f) + ((sy & 0x0f) << 4) + ((sx & 0x30) << 4) + ((sy & 0x70) << 6);
 		}
 
 		sx = (sx * 16) - scrollx;
@@ -770,8 +772,8 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
-		if (i == 98) ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
-		if (i == 99) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (i == 98) ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
+		if (i == 99) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		ZetClose();
 
 		// Run Z80 #2

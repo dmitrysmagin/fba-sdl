@@ -21,6 +21,8 @@ void FcrashSoundCommand(UINT16 d)
 {
 	INT32 nCyclesToDo = ((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles) - ZetTotalCycles();
 	INT32 nEnd = FcrashSoundPos + (INT64)FcrashMSM5205Interleave * nCyclesToDo / nCpsZ80Cycles;
+	
+	if (nEnd == FcrashSoundPos) nEnd += 1;
 		
 	for (INT32 i = FcrashSoundPos; i < nEnd; i++) {
 		BurnTimerUpdate((i + 1) * FcrashCyclesPerSegment);
@@ -29,7 +31,7 @@ void FcrashSoundCommand(UINT16 d)
 	}
 		
 	FcrashSoundLatch = d & 0xff;
-	ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+	ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 }
 
 UINT8 __fastcall FcrashZ80Read(UINT16 a)
@@ -44,7 +46,7 @@ UINT8 __fastcall FcrashZ80Read(UINT16 a)
 		}
 		
 		case 0xe400: {
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return FcrashSoundLatch;
 		}
 		

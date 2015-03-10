@@ -156,7 +156,7 @@ static void sf2_bankswitch(UINT8 offset)
 {
 	pce_sf2_bank = offset;
 
-	h6280MapMemory(PCECartROM + (offset * 0x80000) + 0x080000, 0x080000, 0x0fffff, H6280_ROM);
+	h6280MapMemory(PCECartROM + (offset * 0x80000) + 0x080000, 0x080000, 0x0fffff, MAP_ROM);
 }
 
 static void pce_write(UINT32 address, UINT8 data)
@@ -480,11 +480,11 @@ static INT32 CommonInit(int type)
 	{
 		h6280Init(0);
 		h6280Open(0);
-		h6280MapMemory(PCECartROM + 0x000000, 0x000000, 0x0fffff, H6280_ROM);
-		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f0000, 0x1f1fff, H6280_RAM); // mirrored
-		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f2000, 0x1f3fff, H6280_RAM);
-		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f4000, 0x1f5fff, H6280_RAM);
-		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f6000, 0x1f7fff, H6280_RAM);
+		h6280MapMemory(PCECartROM + 0x000000, 0x000000, 0x0fffff, MAP_ROM);
+		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f0000, 0x1f1fff, MAP_RAM); // mirrored
+		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f2000, 0x1f3fff, MAP_RAM);
+		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f4000, 0x1f5fff, MAP_RAM);
+		h6280MapMemory(PCEUserRAM + 0x000000, 0x1f6000, 0x1f7fff, MAP_RAM);
 		h6280SetWritePortHandler(pce_write_port);
 		h6280SetWriteHandler(pce_write);
 		h6280SetReadHandler(pce_read);
@@ -502,8 +502,8 @@ static INT32 CommonInit(int type)
 	{
 		h6280Init(0);
 		h6280Open(0);
-		h6280MapMemory(PCECartROM, 0x000000, 0x0fffff, H6280_ROM);
-		h6280MapMemory(PCEUserRAM, 0x1f0000, 0x1f7fff, H6280_RAM);
+		h6280MapMemory(PCECartROM, 0x000000, 0x0fffff, MAP_ROM);
+		h6280MapMemory(PCEUserRAM, 0x1f0000, 0x1f7fff, MAP_RAM);
 		h6280SetWritePortHandler(sgx_write_port);
 		h6280SetWriteHandler(sgx_write);
 		h6280SetReadHandler(sgx_read);
@@ -553,7 +553,7 @@ INT32 populousInit()
 
 	if (nRet == 0) {
 		h6280Open(0);
-		h6280MapMemory(PCECartRAM, 0x080000, 0x087fff, H6280_RAM);
+		h6280MapMemory(PCECartRAM, 0x080000, 0x087fff, MAP_RAM);
 		h6280Close();
 	}
 
@@ -625,15 +625,20 @@ INT32 PCEFrame()
 	PCECompileInputs();
 
 	INT32 nCyclesTotal = (INT32)((INT64)7159090 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	
+	INT32 nCyclesDone = 0;
+	INT32 nCyclesSegment = 0;
+
 	h6280Open(0);
-	
+
 	for (INT32 i = 0; i < 262; i++)
 	{
-		h6280Run(nCyclesTotal / 262);
+		INT32 nNext;
+		nNext = (i + 1) * nCyclesTotal / 262;
+		nCyclesSegment = nNext - nCyclesDone;
+		nCyclesDone += h6280Run(nCyclesSegment);
 		interrupt();
 	}
-	
+
 	if (pBurnSoundOut) {
 		c6280_update(pBurnSoundOut, nBurnSoundLen);
 	}

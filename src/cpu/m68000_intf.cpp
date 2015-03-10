@@ -686,6 +686,15 @@ extern "C" void M68KcmpildCallback(unsigned int val, int reg)
 		pSekExt->CmpCallback(val, reg);
 	}
 }
+
+extern "C" INT32 M68KTASCallback()
+{
+	if (pSekExt->TASCallback) {
+		return pSekExt->TASCallback();
+	}
+
+	return 1; // enable by default
+}
 #endif
 
 // ----------------------------------------------------------------------------
@@ -1485,6 +1494,13 @@ int SekSetIrqCallback(pSekIrqCallback pCallback)
 int SekSetCmpCallback(pSekCmpCallback pCallback)
 {
 	pSekExt->CmpCallback = pCallback;
+	return 0;
+}
+
+int SekSetTASCallback(pSekTASCallback pCallback)
+{
+	pSekExt->TASCallback = pCallback;
+
 	return 0;
 }
 

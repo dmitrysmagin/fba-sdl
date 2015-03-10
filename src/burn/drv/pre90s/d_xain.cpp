@@ -164,7 +164,7 @@ static inline void palette_update(INT32 offset)
 static void bankswitchA(INT32 data)
 {
 	nBankAData = data;
-	M6809MapMemory(DrvMainROM + ((data & 0x08) ? 0x14000 : 0x10000), 0x4000, 0x7fff, M6809_ROM);
+	M6809MapMemory(DrvMainROM + ((data & 0x08) ? 0x14000 : 0x10000), 0x4000, 0x7fff, MAP_ROM);
 }
 
 static void xain_main_write(UINT16 address, UINT8 data)
@@ -204,30 +204,30 @@ static void xain_main_write(UINT16 address, UINT8 data)
 			M6809Open(2);
 			BurnTimerUpdate(cycles);
 			soundlatch = data;
-		//	M6809SetIRQLine(0, M6809_IRQSTATUS_AUTO);
-			M6809SetIRQLine(0, M6809_IRQSTATUS_ACK); // hold line until soundlatch is read to ensure commands are read
+		//	M6809SetIRQLine(0, CPU_IRQSTATUS_AUTO);
+			M6809SetIRQLine(0, CPU_IRQSTATUS_ACK); // hold line until soundlatch is read to ensure commands are read
 			M6809Close();
 			M6809Open(0);
 		}
 		return;
 
 		case 0x3a09:
-			M6809SetIRQLine(0x20, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(0x20, CPU_IRQSTATUS_NONE);
 		return;
 
 		case 0x3a0a:
-			M6809SetIRQLine(0x01, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(0x01, CPU_IRQSTATUS_NONE);
 		return;
 
 		case 0x3a0b:
-			M6809SetIRQLine(0x00, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(0x00, CPU_IRQSTATUS_NONE);
 		return;
 
 		case 0x3a0c:
 		{
 			M6809Close();
 			M6809Open(1);
-			M6809SetIRQLine(0x00, M6809_IRQSTATUS_ACK); 
+			M6809SetIRQLine(0x00, CPU_IRQSTATUS_ACK); 
 			M6809Close();
 			M6809Open(0);
 		}
@@ -318,7 +318,7 @@ static UINT8 xain_main_read(UINT16 address)
 static void bankswitchB(INT32 data)
 {
 	nBankBData = data;
-	M6809MapMemory(DrvSubROM + ((data & 0x01) ? 0x14000 : 0x10000), 0x4000, 0x7fff, M6809_ROM);
+	M6809MapMemory(DrvSubROM + ((data & 0x01) ? 0x14000 : 0x10000), 0x4000, 0x7fff, MAP_ROM);
 }
 
 static void xain_sub_write(UINT16 address, UINT8 data)
@@ -329,14 +329,14 @@ static void xain_sub_write(UINT16 address, UINT8 data)
 		{
 			M6809Close();
 			M6809Open(0);
-			M6809SetIRQLine(0x00, M6809_IRQSTATUS_ACK); // maincpu irq
+			M6809SetIRQLine(0x00, CPU_IRQSTATUS_ACK); // maincpu irq
 			M6809Close();
 			M6809Open(1);
 		}
 		return;
 
 		case 0x2800:
-			M6809SetIRQLine(0x00, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(0x00, CPU_IRQSTATUS_NONE);
 		return;
 
 		case 0x3000:
@@ -371,7 +371,7 @@ static UINT8 xain_sound_read(UINT16 address)
 	switch (address)
 	{
 		case 0x1000:
-			M6809SetIRQLine(0, M6809_IRQSTATUS_NONE);
+			M6809SetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return soundlatch;
 	}
 
@@ -455,7 +455,7 @@ static UINT8 xain_68705_read_ports(UINT16 address)
 
 inline static void DrvYM2203IRQHandler(INT32, INT32 nStatus)
 {
-	M6809SetIRQLine(0x01, ((nStatus) ? M6809_IRQSTATUS_ACK : M6809_IRQSTATUS_NONE));
+	M6809SetIRQLine(0x01, ((nStatus) ? CPU_IRQSTATUS_ACK : CPU_IRQSTATUS_NONE));
 }
 
 inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
@@ -638,35 +638,35 @@ static INT32 DrvInit()
 
 	M6809Init(3);
 	M6809Open(0);
-	M6809MapMemory(DrvShareRAM,		0x0000, 0x1fff, M6809_RAM);
-	M6809MapMemory(DrvCharRAM,		0x2000, 0x27ff, M6809_RAM);
-	M6809MapMemory(DrvBgRAM1,		0x2800, 0x2fff, M6809_RAM);
-	M6809MapMemory(DrvBgRAM0,		0x3000, 0x37ff, M6809_RAM);
-	M6809MapMemory(DrvSprRAM,		0x3800, 0x39ff, M6809_RAM);
-	M6809MapMemory(DrvPalRAM,		0x3c00, 0x3fff, M6809_ROM);
-	M6809MapMemory(DrvMainROM + 0x08000,	0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvShareRAM,		0x0000, 0x1fff, MAP_RAM);
+	M6809MapMemory(DrvCharRAM,		0x2000, 0x27ff, MAP_RAM);
+	M6809MapMemory(DrvBgRAM1,		0x2800, 0x2fff, MAP_RAM);
+	M6809MapMemory(DrvBgRAM0,		0x3000, 0x37ff, MAP_RAM);
+	M6809MapMemory(DrvSprRAM,		0x3800, 0x39ff, MAP_RAM);
+	M6809MapMemory(DrvPalRAM,		0x3c00, 0x3fff, MAP_ROM);
+	M6809MapMemory(DrvMainROM + 0x08000,	0x8000, 0xffff, MAP_ROM);
 	M6809SetWriteHandler(xain_main_write);
 	M6809SetReadHandler(xain_main_read);
 	M6809Close();
 
 	M6809Open(1);
-	M6809MapMemory(DrvShareRAM,		0x0000, 0x1fff, M6809_RAM);
-	M6809MapMemory(DrvSubROM + 0x08000,	0x8000, 0xffff, M6809_ROM); 
+	M6809MapMemory(DrvShareRAM,		0x0000, 0x1fff, MAP_RAM);
+	M6809MapMemory(DrvSubROM + 0x08000,	0x8000, 0xffff, MAP_ROM); 
 	M6809SetWriteHandler(xain_sub_write);
 	M6809SetReadHandler(xain_sub_read);
 	M6809Close();
 
 	M6809Open(2);
-	M6809MapMemory(DrvSoundRAM,		0x0000, 0x07ff, M6809_RAM);
-	M6809MapMemory(DrvSoundROM + 0x4000,	0x4000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvSoundRAM,		0x0000, 0x07ff, MAP_RAM);
+	M6809MapMemory(DrvSoundROM + 0x4000,	0x4000, 0xffff, MAP_ROM);
 	M6809SetWriteHandler(xain_sound_write);
 	M6809SetReadHandler(xain_sound_read);
 	M6809Close();
 
 	m6805Init(1, 0x800);
 	m6805Open(0);
-	m6805MapMemory(DrvMcuRAM,		0x0010, 0x007f, M6805_RAM);
-	m6805MapMemory(DrvMcuROM + 0x80,	0x0080, 0x07ff, M6805_ROM);
+	m6805MapMemory(DrvMcuRAM,		0x0010, 0x007f, MAP_RAM);
+	m6805MapMemory(DrvMcuROM + 0x80,	0x0080, 0x07ff, MAP_ROM);
 	m6805SetWriteHandler(xain_68705_write_ports);
 	m6805SetReadHandler(xain_68705_read_ports);
 	m6805Close();
@@ -715,18 +715,18 @@ static inline INT32 scanline_to_vcount(INT32 scanline) // ripped directly from M
 
 static void xain_scanline(INT32 scanline) // ripped directly from MAME
 {
-	int screen_height = 240;
-	int vcount_old = scanline_to_vcount((scanline == 0) ? screen_height - 1 : scanline - 1);
-	int vcount = scanline_to_vcount(scanline);
+	INT32 screen_height = 240;
+	INT32 vcount_old = scanline_to_vcount((scanline == 0) ? screen_height - 1 : scanline - 1);
+	INT32 vcount = scanline_to_vcount(scanline);
 
 	if (!(vcount_old & 8) && (vcount & 8))
 	{
-		M6809SetIRQLine(0x01, M6809_IRQSTATUS_ACK);
+		M6809SetIRQLine(0x01, CPU_IRQSTATUS_ACK);
 	}
 
 	if (vcount == 0xf8)
 	{
-		M6809SetIRQLine(0x20, M6809_IRQSTATUS_ACK);
+		M6809SetIRQLine(0x20, CPU_IRQSTATUS_ACK);
 	}
 
 	vblank = (vcount >= (248 - 1)) ? 1 : 0; // -1 is a hack
@@ -794,16 +794,16 @@ static void draw_sprites()
 {
 	for (INT32 offs = 0; offs < 0x180; offs += 4)
 	{
-		int attr = DrvSprRAM[offs+1];
-		int code = DrvSprRAM[offs+2] | ((attr & 7) << 8);
-		int color = (attr & 0x38) >> 3;
+		INT32 attr = DrvSprRAM[offs+1];
+		INT32 code = DrvSprRAM[offs+2] | ((attr & 7) << 8);
+		INT32 color = (attr & 0x38) >> 3;
 
-		int sx = 238 - DrvSprRAM[offs+3];
+		INT32 sx = 238 - DrvSprRAM[offs+3];
 		if (sx <= -7) sx += 256;
-		int sy = 240 - DrvSprRAM[offs];
+		INT32 sy = 240 - DrvSprRAM[offs];
 		if (sy <= -7) sy += 256;
-		int flipx = attr & 0x40;
-		int flipy = 0;
+		INT32 flipx = attr & 0x40;
+		INT32 flipy = 0;
 
 		if (attr & 0x80)
 		{
@@ -1006,7 +1006,7 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 		BurnAcb(&ba);
 
 		M6809Scan(nAction);
-		m6805Scan(nAction, 0);
+		m6805Scan(nAction);
 
 		BurnYM2203Scan(nAction, pnMin);
 
@@ -1168,7 +1168,7 @@ struct BurnDriver BurnDrvXsleenaj = {
 
 // Solar-Warrior (US)
 
-static struct BurnRomInfo solarwarRomDesc[] = {
+static struct BurnRomInfo solrwarrRomDesc[] = {
 	{ "p9-02.ic66",		0x8000, 0x8ff372a8, 1 | BRF_PRG | BRF_ESS }, //  0 Master M6809 code
 	{ "pa-03.ic65",		0x8000, 0x154f946f, 1 | BRF_PRG | BRF_ESS }, //  1
 
@@ -1209,15 +1209,15 @@ static struct BurnRomInfo solarwarRomDesc[] = {
 	{ "pz-0.113",		0x0800, 0xa432a907, 9 | BRF_PRG | BRF_ESS }, // 29 M68705 Code
 };
 
-STD_ROM_PICK(solarwar)
-STD_ROM_FN(solarwar)
+STD_ROM_PICK(solrwarr)
+STD_ROM_FN(solrwarr)
 
-struct BurnDriver BurnDrvSolarwar = {
-	"solarwar", "xsleena", NULL, NULL, "1986",
+struct BurnDriver BurnDrvSolrwarr = {
+	"solrwarr", "xsleena", NULL, NULL, "1986",
 	"Solar-Warrior (US)\0", NULL, "Technos Japan (Taito / Memetron license)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_TECHNOS, GBF_HORSHOOT, 0,
-	NULL, solarwarRomInfo, solarwarRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	NULL, solrwarrRomInfo, solrwarrRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 240, 4, 3
 };
@@ -1226,7 +1226,7 @@ struct BurnDriver BurnDrvSolarwar = {
 // Xain'd Sleena (bootleg)
 
 static struct BurnRomInfo xsleenabRomDesc[] = {
-	{ "1.rom",		0x8000, 0x79f515a7, 1 | BRF_PRG | BRF_ESS }, //  0 Master M6809 Code
+	{ "1.rom",			0x8000, 0x79f515a7, 1 | BRF_PRG | BRF_ESS }, //  0 Master M6809 Code
 	{ "pa-0.ic65",		0x8000, 0xd22bf859, 1 | BRF_PRG | BRF_ESS }, //  1
 
 	{ "p1-0.ic29",		0x8000, 0xa1a860e2, 2 | BRF_PRG | BRF_ESS }, //  2 Slave M6809 code
@@ -1273,6 +1273,62 @@ struct BurnDriverD BurnDrvXsleenab = {
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TECHNOS, GBF_HORSHOOT, 0,
 	NULL, xsleenabRomInfo, xsleenabRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
+	256, 240, 4, 3
+};
+
+
+// Xain'd Sleena (bootleg, bugfix version)
+// f205v id 1016
+
+static struct BurnRomInfo xsleenab2RomDesc[] = {
+	{ "xs87b-10.7d",	0x8000, 0x3d5f9fb4, 1 | BRF_PRG | BRF_ESS }, //  0 Master M6809 Code
+	{ "xs87b-11.7c",	0x8000, 0x81c80d54, 1 | BRF_PRG | BRF_ESS }, //  1
+
+	{ "p1-0.ic29",		0x8000, 0xa1a860e2, 2 | BRF_PRG | BRF_ESS }, //  2 Slave M6809 code
+	{ "p0-0.ic15",		0x8000, 0x948b9757, 2 | BRF_PRG | BRF_ESS }, //  3
+
+	{ "p2-0.ic49",		0x8000, 0xa5318cb8, 3 | BRF_PRG | BRF_ESS }, //  4 Sound M6809 Code
+
+	{ "pb-01.ic24",		0x8000, 0x83c00dd8, 4 | BRF_GRA },           //  5 Character
+
+	{ "pk-0.ic136",		0x8000, 0x11eb4247, 5 | BRF_GRA },           //  6 Background Layer 1 tiles
+	{ "pl-0.ic135",		0x8000, 0x422b536e, 5 | BRF_GRA },           //  7
+	{ "pm-0.ic134",		0x8000, 0x828c1b0c, 5 | BRF_GRA },           //  8
+	{ "pn-0.ic133",		0x8000, 0xd37939e0, 5 | BRF_GRA },           //  9
+	{ "pc-0.ic114",		0x8000, 0x8f0aa1a7, 5 | BRF_GRA },           // 10
+	{ "pd-0.ic113",		0x8000, 0x45681910, 5 | BRF_GRA },           // 11
+	{ "pe-0.ic112",		0x8000, 0xa8eeabc8, 5 | BRF_GRA },           // 12
+	{ "pf-0.ic111",		0x8000, 0xe59a2f27, 5 | BRF_GRA },           // 13
+
+	{ "p5-0.ic44",		0x8000, 0x5c6c453c, 6 | BRF_GRA },           // 14 Background Layer 0 tiles
+	{ "p4-0.ic45",		0x8000, 0x59d87a9a, 6 | BRF_GRA },           // 15
+	{ "p3-0.ic46",		0x8000, 0x84884a2e, 6 | BRF_GRA },           // 16
+	{ "p6-0.ic43",		0x8000, 0x8d637639, 6 | BRF_GRA },           // 17
+	{ "p7-0.ic42",		0x8000, 0x71eec4e6, 6 | BRF_GRA },           // 18
+	{ "p8-0.ic41",		0x8000, 0x7fc9704f, 6 | BRF_GRA },           // 19
+
+	{ "po-0.ic131",		0x8000, 0x252976ae, 7 | BRF_GRA },           // 20 Sprite tiles
+	{ "pp-0.ic130",		0x8000, 0xe6f1e8d5, 7 | BRF_GRA },           // 21
+	{ "pq-0.ic129",		0x8000, 0x785381ed, 7 | BRF_GRA },           // 22
+	{ "pr-0.ic128",		0x8000, 0x59754e3d, 7 | BRF_GRA },           // 23
+	{ "pg-0.ic109",		0x8000, 0x4d977f33, 7 | BRF_GRA },           // 24
+	{ "ph-0.ic108",		0x8000, 0x3f3b62a0, 7 | BRF_GRA },           // 25
+	{ "pi-0.ic107",		0x8000, 0x76641ee3, 7 | BRF_GRA },           // 26
+	{ "pj-0.ic106",		0x8000, 0x37671f36, 7 | BRF_GRA },           // 27
+
+	{ "pt-0.ic59",		0x0100, 0xfed32888, 8 | BRF_GRA | BRF_OPT }, // 28 Priority Prom
+};
+
+STD_ROM_PICK(xsleenab2)
+STD_ROM_FN(xsleenab2)
+
+struct BurnDriverD BurnDrvXsleenab2 = {
+	"xsleenab2", "xsleena", NULL, NULL, "1987",
+	"Xain'd Sleena (bootleg, bugfix version)\0", NULL, "bootleg", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_TECHNOS, GBF_HORSHOOT, 0,
+	NULL, xsleenab2RomInfo, xsleenab2RomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x200,
 	256, 240, 4, 3
 };

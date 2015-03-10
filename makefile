@@ -19,7 +19,7 @@ export
 UNICODE = 1
 
 # Build A68K ASM 68000 core
-#BUILD_A68K = 1
+BUILD_A68K = 1
 
 # Include x86 Assembly routines
 BUILD_X86_ASM = 1
@@ -27,8 +27,8 @@ BUILD_X86_ASM = 1
 # Build for x64 targets (MinGW64 and MSVC only, this will undefine BUILD_A68K and BUILD_X86_ASM)
 #BUILD_X64_EXE = 1
 
-# Build for Windows XP target (for use with Visual Studio 2012)
-#BUILD_VS2012_XP_TARGET = 1
+# Build for Windows XP target (for use with Visual Studio 2012-13)
+#BUILD_VS_XP_TARGET = 1
 
 # Include 7-zip support
 INCLUDE_7Z_SUPPORT = 1
@@ -49,7 +49,7 @@ TOAPLAN_SOUND_SAMPLES_HACK = 1
 FORCE_UPDATE = 1
 
 # Use the __fastcall calling convention when interfacing with A68K/Musashi/Doze
-#FASTCALL = 1
+FASTCALL = 1
 
 # Compress executable with upx (the DEBUG option ignores this)
 # COMPRESS = 1
@@ -76,6 +76,9 @@ mingw452: FORCE
 	
 mingw471: FORCE
 	@$(MAKE) -s -f makefile.mingw GCC471=1
+
+mamemingw: FORCE
+	@$(MAKE) -s -f makefile.mamemingw 
 
 sdl: FORCE
 	@$(MAKE) -s -f makefile.sdl

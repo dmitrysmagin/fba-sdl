@@ -36,7 +36,6 @@ static UINT8 *DrvNvRam            = NULL;
 static UINT8 *DrvTiles            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32 *Palette;
 static UINT32 *DrvPalette          = NULL;
 static INT16  *DrvTitleSample      = NULL;
 
@@ -1178,6 +1177,35 @@ static struct BurnRomInfo TmhtaRomDesc[] = {
 STD_ROM_PICK(Tmhta)
 STD_ROM_FN(Tmhta)
 
+static struct BurnRomInfo TmhtbRomDesc[] = {
+	{ "unk3.i17",        	0x020000, 0x537eb047, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
+	{ "unk4.k17",        	0x020000, 0x5afae564, BRF_ESS | BRF_PRG }, //  1
+	{ "unk2.j15",        	0x010000, 0xee34de05, BRF_ESS | BRF_PRG }, //  2
+	{ "unk5.k15",        	0x010000, 0x5ef58d4e, BRF_ESS | BRF_PRG }, //  3
+	
+	{ "963e20.g13",         0x008000, 0x1692a6d6, BRF_ESS | BRF_PRG }, //  4	Z80 Program 
+	
+	{ "963a28.h27",         0x080000, 0xdb4769a8, BRF_GRA },	   //  5	Tiles
+	{ "963a29.k27",         0x080000, 0x8069cd2e, BRF_GRA },	   //  6
+	
+	{ "963a17.h4",          0x080000, 0xb5239a44, BRF_GRA },	   //  7	Sprites
+	{ "963a18.h6",          0x080000, 0xdd51adef, BRF_GRA },	   //  8
+	{ "963a15.k4",          0x080000, 0x1f324eed, BRF_GRA },	   //  9
+	{ "963a16.k6",          0x080000, 0xd4bd9984, BRF_GRA },	   //  10
+	
+	{ "963a30.g7",          0x000100, 0xabd82680, BRF_GRA },	   //  11	PROMs
+	{ "963a31.g19",         0x000100, 0xf8004a1c, BRF_GRA },	   //  12
+	
+	{ "963a26.c13",         0x020000, 0xe2ac3063, BRF_SND },	   //  13	K007232 Samples
+	
+	{ "963a27.d18",         0x020000, 0x2dfd674b, BRF_SND },	   //  14	UP7759C Samples
+	
+	{ "963a25.d5",          0x080000, 0xfca078c7, BRF_SND },	   //  15	Title Music Sample
+};
+
+STD_ROM_PICK(Tmhtb)
+STD_ROM_FN(Tmhtb)
+
 static struct BurnRomInfo TmntjRomDesc[] = {
 	{ "963_223.j17",        0x020000, 0x0d34a5ff, BRF_ESS | BRF_PRG }, //  0	68000 Program Code
 	{ "963_224.k17",        0x020000, 0x2fd453f2, BRF_ESS | BRF_PRG }, //  1
@@ -2035,7 +2063,7 @@ static INT32 TmntMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	konami_palette32	= (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTitleSample         = (INT16*)Next; Next += 0x40000 * sizeof(INT16);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
@@ -2064,7 +2092,7 @@ static INT32 MiaMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x002000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
@@ -2089,7 +2117,7 @@ static INT32 CuebrickMemIndex()
 	
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x002000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x001000 * 16 * 16;
@@ -2121,7 +2149,7 @@ static INT32 BlswhstlMemIndex()
 	
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 
 	MemEnd                 = Next;
@@ -2148,7 +2176,7 @@ static INT32 SsridersMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x004000 * 16 * 16;
@@ -2177,7 +2205,7 @@ static INT32 Tmnt2MemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x008000 * 16 * 16;
@@ -2205,7 +2233,7 @@ static INT32 Thndrx2MemIndex()
 	DrvTileRom             = Next; Next += 0x100000;
 	DrvSpriteRom           = Next; Next += 0x100000;
 	
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
@@ -2234,7 +2262,7 @@ static INT32 LgtnfghtMemIndex()
 	DrvTileRom             = Next; Next += 0x100000;
 	DrvSpriteRom           = Next; Next += 0x100000;
 
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x008000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x002000 * 16 * 16;
@@ -2262,7 +2290,7 @@ static INT32 PunkshotMemIndex()
 
 	RamEnd                 = Next;
 
-	Palette                = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
+	konami_palette32       = (UINT32*)Next;
 	DrvPalette             = (UINT32*)Next; Next += 0x00810 * sizeof(UINT32);
 	DrvTiles               = Next; Next += 0x004000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x004000 * 16 * 16;
@@ -2482,7 +2510,7 @@ void __fastcall Tmnt68KWriteByte(UINT32 a, UINT8 d)
 			static INT32 Last;
 			if (Last == 0x08 && (d & 0x08) == 0) {
 				ZetOpen(0);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 				ZetClose();
 			}
 			Last = d & 0x08;
@@ -2591,7 +2619,7 @@ void __fastcall Mia68KWriteByte(UINT32 a, UINT8 d)
 			static INT32 Last;
 			if (Last == 0x08 && (d & 0x08) == 0) {
 				ZetOpen(0);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 				ZetClose();
 			}
 			Last = d & 0x08;
@@ -2941,7 +2969,7 @@ void __fastcall Blswhstl68KWriteByte(UINT32 a, UINT8 d)
 		case 0x780605: {
 			ZetOpen(0);
 			ZetSetVector(0xff);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			ZetClose();
 			return;
 		}
@@ -3327,8 +3355,7 @@ void __fastcall Ssriders68KWriteByte(UINT32 a, UINT8 d)
 		INT32 Offset = (a - 0x5a0000) >> 1;
 		Offset &= ~1;
 		
-		K053244Write(0, Offset + 1, d & 0xff);
-		K053244Write(0, Offset + 0, 0); // originally d >> 8, but that is effectively 0
+		K053244Write(0, Offset + (a&1), d);
 		return;
 	}
 	
@@ -3370,7 +3397,7 @@ void __fastcall Ssriders68KWriteByte(UINT32 a, UINT8 d)
 		case 0x5c0605: {
 			ZetOpen(0);
 			ZetSetVector(0xff);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			ZetClose();
 			return;
 		}	
@@ -3564,7 +3591,7 @@ void __fastcall Thndrx268KWriteByte(UINT32 a, UINT8 d)
 			static INT32 last;
 			if (last == 0 && (d & 0x20) != 0) {
 				ZetSetVector(0xff);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 			last = d & 0x20;
 
@@ -3696,8 +3723,7 @@ void __fastcall Lgtnfght68KWriteByte(UINT32 a, UINT8 d)
 		INT32 Offset = (a - 0xc0000) >> 1;
 		Offset &= ~1;
 		
-		K053244Write(0, Offset + 1, d & 0xff);
-		K053244Write(0, Offset + 0, 0); // originally d >> 8, but that is effectively 0
+		K053244Write(0, Offset + (a&1), d);
 		return;
 	}
 
@@ -3708,7 +3734,7 @@ void __fastcall Lgtnfght68KWriteByte(UINT32 a, UINT8 d)
 			static INT32 last;
 			if (last == 0 && (d & 0x4) != 0) {
 				ZetSetVector(0xff);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 			last = d & 0x4;
 
@@ -3816,7 +3842,7 @@ void __fastcall Punkshot68KWriteByte(UINT32 a, UINT8 d)
 
 			if (last == 0x04 && (d & 0x04) == 0x00) {
 				ZetSetVector(0xff);
-				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				ZetSetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 
 			last = d & 0x04; 
@@ -3845,7 +3871,7 @@ UINT8 __fastcall TmntZ80Read(UINT16 a)
 		}
 		
 		case 0xa000: {
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return DrvSoundLatch;
 		}
 		
@@ -3920,7 +3946,7 @@ UINT8 __fastcall MiaZ80Read(UINT16 a)
 	
 	switch (a) {
 		case 0xa000: {
-			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 			return DrvSoundLatch;
 		}
 		
@@ -3963,7 +3989,7 @@ void __fastcall MiaZ80Write(UINT16 a, UINT8 d)
 UINT8 __fastcall BlswhstlZ80Read(UINT16 a)
 {
 	if (a >= 0xfa00 && a <= 0xfa2f) {
-		if (a == 0xfa00) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (a == 0xfa00) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		return K053260Read(0, a - 0xfa00);
 	}
 	
@@ -4039,7 +4065,7 @@ void __fastcall Thndrx2Z80Write(UINT16 a, UINT8 d)
 UINT8 __fastcall Thndrx2Z80Read(UINT16 a)
 {
 	if (a >= 0xfc00 && a <= 0xfc2f) {
-		if (a == 0xfc00) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (a == 0xfc00) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		return K053260Read(0, a - 0xfc00);
 	}
 
@@ -4075,7 +4101,7 @@ void __fastcall LgtnfghtZ80Write(UINT16 a, UINT8 d)
 UINT8 __fastcall LgtnfghtZ80Read(UINT16 a)
 {
 	if (a >= 0xc000 && a <= 0xc02f) {
-		if (a == 0xc000) ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		if (a == 0xc000) ZetSetIRQLine(0, CPU_IRQSTATUS_NONE);
 		return K053260Read(0, a - 0xc000);
 	}
 
@@ -4279,7 +4305,8 @@ static void K052109CuebrickCallback(INT32 Layer, INT32, INT32 *Code, INT32 *Colo
 {
 	if (K052109RMRDLine == 0 && Layer == 0) {
 		*Code |= ((*Colour & 0x01) << 8);
-		*Colour = LayerColourBase[Layer] + ((*Colour & 0x80) >> 5) + ((*Colour & 0x10) >> 1);
+		*Colour = LayerColourBase[Layer] + ((*Colour & 0x0e) >> 1);
+
 	} else {
 		*Code |= ((*Colour & 0x0f) << 8);
 		*Colour = LayerColourBase[Layer] + ((*Colour & 0xe0) >> 5);
@@ -4312,10 +4339,10 @@ static void K051960CuebrickCallback(INT32* Code, INT32 *Colour, INT32*, INT32*)
 static void K051960Thndrx2Callback(INT32* code, INT32 *color, INT32* priority, INT32*)
 {
 	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
-	if (pri <= LayerPri[2])					*priority = 0;
-	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
-	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
-	else 							*priority = 3;
+	if (pri <= LayerPri[2])					*priority = 0x00;
+	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 0xf0;
+	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 0xfc;
+	else 							*priority = 0xfe;
 
 	*code &= 0x1fff;
 	*color = SpriteColourBase + (*color & 0x0f);
@@ -4324,10 +4351,10 @@ static void K051960Thndrx2Callback(INT32* code, INT32 *color, INT32* priority, I
 static void K051960PunkshotCallback(INT32 *code, INT32 *color, INT32 *priority, INT32 *)
 {
 	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
-	if (pri <= LayerPri[2])					*priority = 0;
-	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
-	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
-	else 							*priority = 3;
+	if (pri <= LayerPri[2])					*priority = 0x00;
+	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 0xf0;
+	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 0xfc;
+	else 							*priority = 0xfe;
 
 	*code |= (*color & 0x10) << 9;
 	*code &= 0x3fff;
@@ -4337,10 +4364,10 @@ static void K051960PunkshotCallback(INT32 *code, INT32 *color, INT32 *priority, 
 static void K053245BlswhstlCallback(INT32 *Code, INT32 *Colour, INT32 *Priority)
 {
 	INT32 Pri = 0x20 | ((*Colour & 0x60) >> 2);
-	if (Pri <= LayerPri[2])                           	*Priority = 0;
-	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 1;
-	else if (Pri > LayerPri[1] && Pri <= LayerPri[0]) 	*Priority = 2;
-	else 	                                          	*Priority = 3;
+	if (Pri <= LayerPri[2])                           	*Priority = 0x00;
+	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 0xf0;
+	else if (Pri > LayerPri[1] && Pri <= LayerPri[0]) 	*Priority = 0xfc;
+	else 	                                          	*Priority = 0xfe;
 
 	*Code &= 0x1fff;
 	*Colour = SpriteColourBase + (*Colour & 0x1f);
@@ -4349,10 +4376,10 @@ static void K053245BlswhstlCallback(INT32 *Code, INT32 *Colour, INT32 *Priority)
 static void K053245SsridersCallback(INT32 *, INT32 *Colour, INT32 *Priority)
 {
 	INT32 Pri = 0x20 | ((*Colour & 0x60) >> 2);
-	if (Pri <= LayerPri[2])                           	*Priority = 0;
-	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 1;
-	else if (Pri > LayerPri[1] && Pri <= LayerPri[0])	*Priority = 2;
-	else 	                                          	*Priority = 3;
+	if (Pri <= LayerPri[2])                           	*Priority = 0x00;
+	else if (Pri > LayerPri[2] && Pri <= LayerPri[1]) 	*Priority = 0xf0;
+	else if (Pri > LayerPri[1] && Pri <= LayerPri[0]) 	*Priority = 0xfc;
+	else 	                                          	*Priority = 0xfe;
 
 	*Colour = SpriteColourBase + (*Colour & 0x1f);
 }
@@ -4360,10 +4387,10 @@ static void K053245SsridersCallback(INT32 *, INT32 *Colour, INT32 *Priority)
 static void K053245LgtnfghtCallback(INT32 *code, INT32 *color, INT32 *priority)
 {
 	INT32 pri = 0x20 | ((*color & 0x60) >> 2);
-	if (pri <= LayerPri[2])					*priority = 0;
-	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 1;
-	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 2;
-	else 							*priority = 3;
+	if (pri <= LayerPri[2])					*priority = 0x00;
+	else if (pri > LayerPri[2] && pri <= LayerPri[1])	*priority = 0xf0;
+	else if (pri > LayerPri[1] && pri <= LayerPri[0])	*priority = 0xfc;
+	else 							*priority = 0xfe;
 
 	*color = SpriteColourBase + (*color & 0x1f);
 	*code &= 0x3fff;
@@ -4382,6 +4409,8 @@ static void CuebrickYM2151IrqHandler(INT32 Irq)
 
 static INT32 TmntInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4392,9 +4421,9 @@ static INT32 TmntInit()
 	memset(Mem, 0, nLen);
 	TmntMemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
-	K051960Init(DrvSpriteRom, 0x1fffff);
+	K051960Init(DrvSpriteRom, DrvSprites, 0x1fffff);
 	K051960SetCallback(K051960TmntCallback);
 
 	// Load 68000 Program Roms
@@ -4442,9 +4471,9 @@ static INT32 TmntInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x05ffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x060000, 0x063fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x05ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x060000, 0x063fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, MAP_RAM);
 	SekSetReadWordHandler(0, Tmnt68KReadWord);
 	SekSetWriteWordHandler(0, Tmnt68KWriteWord);
 	SekSetReadByteHandler(0, Tmnt68KReadByte);
@@ -4476,8 +4505,6 @@ static INT32 TmntInit()
 	
 	TmntTitleSampleSetRoute(1.00, BURN_SND_ROUTE_BOTH);
 	
-	GenericTilesInit();
-	
 	LayerColourBase[0] = 0;
 	LayerColourBase[1] = 32;
 	LayerColourBase[2] = 40;
@@ -4491,6 +4518,8 @@ static INT32 TmntInit()
 
 static INT32 MiaInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4501,9 +4530,9 @@ static INT32 MiaInit()
 	memset(Mem, 0, nLen);
 	MiaMemIndex();
 	
-	K052109Init(DrvTileRom, 0x03ffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x03ffff);
 	K052109SetCallback(K052109MiaCallback);
-	K051960Init(DrvSpriteRom, 0x0fffff);
+	K051960Init(DrvSpriteRom, DrvSprites, 0x0fffff);
 	K051960SetCallback(K051960MiaCallback);
 
 	// Load 68000 Program Roms
@@ -4541,10 +4570,10 @@ static INT32 MiaInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRam + 0x0000  , 0x040000, 0x043fff, SM_RAM);
-	SekMapMemory(Drv68KRam + 0x4000  , 0x060000, 0x063fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam + 0x0000  , 0x040000, 0x043fff, MAP_RAM);
+	SekMapMemory(Drv68KRam + 0x4000  , 0x060000, 0x063fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, MAP_RAM);
 	SekSetReadWordHandler(0, Mia68KReadWord);
 	SekSetWriteWordHandler(0, Mia68KWriteWord);
 	SekSetReadByteHandler(0, Mia68KReadByte);
@@ -4571,8 +4600,6 @@ static INT32 MiaInit()
 	K007232SetPortWriteHandler(0, DrvK007232VolCallback);
 	K007232PCMSetAllRoutes(0, 0.20, BURN_SND_ROUTE_BOTH);
 	
-	GenericTilesInit();
-	
 	LayerColourBase[0] = 0;
 	LayerColourBase[1] = 32;
 	LayerColourBase[2] = 40;
@@ -4586,6 +4613,8 @@ static INT32 MiaInit()
 
 static INT32 CuebrickInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4596,10 +4625,10 @@ static INT32 CuebrickInit()
 	memset(Mem, 0, nLen);
 	CuebrickMemIndex();
 	
-	K052109Init(DrvTileRom, 0x03ffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x03ffff);
 	K052109SetCallback(K052109CuebrickCallback);
 
-	K051960Init(DrvSpriteRom, 0x03ffff);
+	K051960Init(DrvSpriteRom, DrvSprites, 0x03ffff);
 	K051960SetCallback(K051960CuebrickCallback);
 
 	// Load 68000 Program Roms
@@ -4625,9 +4654,9 @@ static INT32 CuebrickInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x01ffff, SM_ROM);
-	SekMapMemory(Drv68KRam + 0x0000  , 0x040000, 0x043fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x01ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam + 0x0000  , 0x040000, 0x043fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, MAP_RAM);
 	SekSetReadWordHandler(0, Cuebrick68KReadWord);
 	SekSetWriteWordHandler(0, Cuebrick68KWriteWord);
 	SekSetReadByteHandler(0, Cuebrick68KReadByte);
@@ -4638,9 +4667,7 @@ static INT32 CuebrickInit()
 	BurnYM2151Init(3579545);
 	BurnYM2151SetIrqHandler(&CuebrickYM2151IrqHandler);
 	BurnYM2151SetAllRoutes(1.00, BURN_SND_ROUTE_BOTH);
-	
-	GenericTilesInit();
-	
+
 	LayerColourBase[0] = 0;
 	LayerColourBase[1] = 32;
 	LayerColourBase[2] = 40;
@@ -4654,6 +4681,8 @@ static INT32 CuebrickInit()
 
 static INT32 BlswhstlInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4664,11 +4693,11 @@ static INT32 BlswhstlInit()
 	memset(Mem, 0, nLen);
 	BlswhstlMemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109BlswhstlCallback);
 	K052109AdjustScroll(8, 0);
 
-	K053245Init(0, DrvSpriteRom, 0xfffff, K053245BlswhstlCallback);
+	K053245Init(0, DrvSpriteRom, DrvSprites, 0xfffff, K053245BlswhstlCallback);
 	K053245SetSpriteOffset(0, -112, 16);
 
 	// Load 68000 Program Roms
@@ -4700,9 +4729,9 @@ static INT32 BlswhstlInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x07ffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x204000, 0x207fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x400000, 0x400fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x07ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x204000, 0x207fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x400000, 0x400fff, MAP_RAM);
 	SekSetReadWordHandler(0, Blswhstl68KReadWord);
 	SekSetWriteWordHandler(0, Blswhstl68KWriteWord);
 	SekSetReadByteHandler(0, Blswhstl68KReadByte);
@@ -4732,8 +4761,6 @@ static INT32 BlswhstlInit()
 
 	EEPROMInit(&BlswhstlEEPROMInterface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	BlswhstlDoReset();
 
@@ -4742,6 +4769,8 @@ static INT32 BlswhstlInit()
 
 static INT32 SsridersInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4752,12 +4781,12 @@ static INT32 SsridersInit()
 	memset(Mem, 0, nLen);
 	SsridersMemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(8, 0);
 
-	K053245Init(0, DrvSpriteRom, 0x1fffff, K053245LgtnfghtCallback);
-	K053245SetSpriteOffset(0, -368, 528);
+	K053245Init(0, DrvSpriteRom, DrvSprites, 0x1fffff, K053245LgtnfghtCallback);
+	K053245SetSpriteOffset(0, -112, 16);
 	K05324xSetZRejection(0);
 
 	// Load 68000 Program Roms
@@ -4787,9 +4816,9 @@ static INT32 SsridersInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x0bffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x0bffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, MAP_RAM);
 	SekSetReadWordHandler(0, Ssriders68KReadWord);
 	SekSetWriteWordHandler(0, Ssriders68KWriteWord);
 	SekSetReadByteHandler(0, Ssriders68KReadByte);
@@ -4819,8 +4848,6 @@ static INT32 SsridersInit()
 
 	EEPROMInit(&BlswhstlEEPROMInterface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	SsridersDoReset();
 
@@ -4829,6 +4856,8 @@ static INT32 SsridersInit()
 
 static INT32 Thndrx2Init()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4839,11 +4868,11 @@ static INT32 Thndrx2Init()
 	memset(Mem, 0, nLen);
 	Thndrx2MemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(8, 0);
 
-	K051960Init(DrvSpriteRom, 0x0fffff);
+	K051960Init(DrvSpriteRom, DrvSprites, 0x0fffff);
 	K051960SetCallback(K051960Thndrx2Callback);
 	K051960SetSpriteOffset(8, 0);
 
@@ -4872,9 +4901,9 @@ static INT32 Thndrx2Init()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x100000, 0x103fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x200000, 0x200fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x100000, 0x103fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x200000, 0x200fff, MAP_RAM);
 	SekSetWriteWordHandler(0, Thndrx268KWriteWord);
 	SekSetReadByteHandler(0, Thndrx268KReadByte);
 	SekSetWriteByteHandler(0, Thndrx268KWriteByte);
@@ -4903,8 +4932,6 @@ static INT32 Thndrx2Init()
 
 	EEPROMInit(&thndrx2_eeprom_interface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	SsridersDoReset();
 
@@ -4913,6 +4940,8 @@ static INT32 Thndrx2Init()
 
 static INT32 LgtnfghtInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -4923,12 +4952,12 @@ static INT32 LgtnfghtInit()
 	memset(Mem, 0, nLen);
 	LgtnfghtMemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(8, 0);
 
-	K053245Init(0, DrvSpriteRom, 0x0fffff, K053245LgtnfghtCallback);
-	K053245SetSpriteOffset(0, -368, 528);
+	K053245Init(0, DrvSpriteRom, DrvSprites, 0x0fffff, K053245LgtnfghtCallback);
+	K053245SetSpriteOffset(0, -112, 16);
 	K05324xSetZRejection(0);
 
 	// Load 68000 Program Roms
@@ -4956,9 +4985,9 @@ static INT32 LgtnfghtInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, SM_RAM);
-	SekMapMemory(Drv68KRam           , 0x090000, 0x093fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(DrvPaletteRam       , 0x080000, 0x080fff, MAP_RAM);
+	SekMapMemory(Drv68KRam           , 0x090000, 0x093fff, MAP_RAM);
 	SekSetReadWordHandler(0, Lgtnfght68KReadWord);
 	SekSetWriteWordHandler(0, Lgtnfght68KWriteWord);
 	SekSetReadByteHandler(0, Lgtnfght68KReadByte);
@@ -4988,8 +5017,6 @@ static INT32 LgtnfghtInit()
 
 	EEPROMInit(&thndrx2_eeprom_interface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	SsridersDoReset();
 
@@ -4998,6 +5025,8 @@ static INT32 LgtnfghtInit()
 
 static INT32 Tmnt2Init()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -5008,12 +5037,12 @@ static INT32 Tmnt2Init()
 	memset(Mem, 0, nLen);
 	Tmnt2MemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(8, 0);
 
-	K053245Init(0, DrvSpriteRom, 0x3fffff, K053245SsridersCallback);
-	K053245SetSpriteOffset(0, -368, 272);
+	K053245Init(0, DrvSpriteRom, DrvSprites, 0x3fffff, K053245SsridersCallback);
+	K053245SetSpriteOffset(0, -112, 16);
 	K05324xSetZRejection(0);
 
 	// Load 68000 Program Roms
@@ -5045,15 +5074,15 @@ static INT32 Tmnt2Init()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, MAP_RAM);
 	SekSetReadWordHandler(0, Ssriders68KReadWord);
 	SekSetWriteWordHandler(0, Ssriders68KWriteWord);
 	SekSetReadByteHandler(0, Ssriders68KReadByte);
 	SekSetWriteByteHandler(0, Ssriders68KWriteByte);
 
-	SekMapHandler(1,		  0x1c0800, 0x1c081f, SM_WRITE);
+	SekMapHandler(1,		  0x1c0800, 0x1c081f, MAP_WRITE);
 	SekSetWriteWordHandler(1, 	Tmnt268KProtWord);
 	SekSetWriteByteHandler(1, 	Tmnt268KProtByte);
 	SekClose();
@@ -5081,8 +5110,6 @@ static INT32 Tmnt2Init()
 
 	EEPROMInit(&BlswhstlEEPROMInterface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	SsridersDoReset();
 
@@ -5091,6 +5118,8 @@ static INT32 Tmnt2Init()
 
 static INT32 QgakumonInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -5101,12 +5130,12 @@ static INT32 QgakumonInit()
 	memset(Mem, 0, nLen);
 	Tmnt2MemIndex();
 	
-	K052109Init(DrvTileRom, 0x0fffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x0fffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(0, 0);
 
-	K053245Init(0, DrvSpriteRom, 0x3fffff, K053245SsridersCallback);
-	K053245SetSpriteOffset(0, -360, 272);
+	K053245Init(0, DrvSpriteRom, DrvSprites, 0x3fffff, K053245SsridersCallback);
+	K053245SetSpriteOffset(0, -112, 16);
 	K05324xSetZRejection(0);
 
 	// Load 68000 Program Roms
@@ -5136,15 +5165,15 @@ static INT32 QgakumonInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(Drv68KRam           , 0x104000, 0x107fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x140000, 0x140fff, MAP_RAM);
 	SekSetReadWordHandler(0, Ssriders68KReadWord);
 	SekSetWriteWordHandler(0, Ssriders68KWriteWord);
 	SekSetReadByteHandler(0, Ssriders68KReadByte);
 	SekSetWriteByteHandler(0, Ssriders68KWriteByte);
 
-	SekMapHandler(1,		  0x1c0800, 0x1c081f, SM_WRITE);
+	SekMapHandler(1,		  0x1c0800, 0x1c081f, MAP_WRITE);
 	SekSetWriteWordHandler(1, 	Tmnt268KProtWord);
 	SekSetWriteByteHandler(1, 	Tmnt268KProtByte);
 	SekClose();
@@ -5172,8 +5201,6 @@ static INT32 QgakumonInit()
 
 	EEPROMInit(&BlswhstlEEPROMInterface);
 	
-	GenericTilesInit();
-	
 	// Reset the driver
 	SsridersDoReset();
 
@@ -5182,6 +5209,8 @@ static INT32 QgakumonInit()
 
 static INT32 PunkshotInit()
 {
+	GenericTilesInit();
+
 	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
@@ -5192,11 +5221,11 @@ static INT32 PunkshotInit()
 	memset(Mem, 0, nLen);
 	PunkshotMemIndex();
 	
-	K052109Init(DrvTileRom, 0x07ffff);
+	K052109Init(DrvTileRom, DrvTiles, 0x07ffff);
 	K052109SetCallback(K052109TmntCallback);
 	K052109AdjustScroll(8, 0); 
 
-	K051960Init(DrvSpriteRom, 0x1fffff);
+	K051960Init(DrvSpriteRom, DrvSprites, 0x1fffff);
 	K051960SetCallback(K051960PunkshotCallback);
 	K051960SetSpriteOffset(8, 0);
 
@@ -5225,9 +5254,9 @@ static INT32 PunkshotInit()
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, SM_ROM);
-	SekMapMemory(Drv68KRam  	 , 0x080000, 0x083fff, SM_RAM);
-	SekMapMemory(DrvPaletteRam       , 0x090000, 0x090fff, SM_RAM);
+	SekMapMemory(Drv68KRom           , 0x000000, 0x03ffff, MAP_ROM);
+	SekMapMemory(Drv68KRam  	 , 0x080000, 0x083fff, MAP_RAM);
+	SekMapMemory(DrvPaletteRam       , 0x090000, 0x090fff, MAP_RAM);
 	SekSetReadWordHandler(0, 	Punkshot68KReadWord);
 	SekSetWriteWordHandler(0, 	Punkshot68KWriteWord);
 	SekSetReadByteHandler(0, 	Punkshot68KReadByte);
@@ -5251,8 +5280,6 @@ static INT32 PunkshotInit()
 	
 	K053260Init(0, 3579545, DrvSoundRom, 0x80000);
 	K053260PCMSetAllRoutes(0, 0.70, BURN_SND_ROUTE_BOTH);
-
-	GenericTilesInit();
 
 	srand ( time(NULL) );
 
@@ -5344,8 +5371,7 @@ static void DrvCalcPalette()
 		INT32 Offset = i & ~1;
 		UINT32 Data = (BURN_ENDIAN_SWAP_INT16(PaletteRam[Offset]) << 8) | BURN_ENDIAN_SWAP_INT16(PaletteRam[Offset + 1]);
 
-		Palette[Offset >> 1] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
-		DrvPalette[Offset >> 1] = BurnHighCol(pal5bit(Data >> 0), pal5bit(Data >> 5), pal5bit(Data >> 10), 0);
+		DrvPalette[Offset >> 1] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
 	}
 }
 
@@ -5356,23 +5382,8 @@ static void BlswhstlCalcPalette()
 	for (INT32 i = 0; i < 0x800; i++) {
 		UINT32 Data = BURN_ENDIAN_SWAP_INT16(PaletteRam[i]);
 
-		Palette[i] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
-		DrvPalette[i] = BurnHighCol(pal5bit(Data >> 0), pal5bit(Data >> 5), pal5bit(Data >> 10), 0);
+		DrvPalette[i] = (pal5bit(Data >> 0) << 16) | (pal5bit(Data >> 5) << 8) | pal5bit(Data >> 10);
 	}
-}
-
-static void TmntDraw()
-{
-	DrvCalcPalette();
-	K052109UpdateScroll();
-	
-	K052109RenderLayer(2, 1, DrvTiles);
-	if ((PriorityFlag & 1) == 1) K051960SpritesRender(DrvSprites, -1);
-	K052109RenderLayer(1, 0, DrvTiles);
-	if ((PriorityFlag & 1) == 0) K051960SpritesRender(DrvSprites, -1);
-	K052109RenderLayer(0, 0, DrvTiles);
-	
-	BurnTransferCopy(DrvPalette);
 }
 
 static void sortlayers(INT32 *layer,INT32 *pri)
@@ -5405,7 +5416,7 @@ static inline void BlswhstlCalcPaletteWithContrast(INT32 i, INT32 brt)
 	g = (g * brt) / 100;
 	b = (b * brt) / 100;
 
-	DrvPalette[i] = BurnHighCol(r, g, b, 0);
+	DrvPalette[i] = (r<<16) | (g<<8) | b;
 }
 
 static void PaletteDim(INT32 dimslayer)
@@ -5435,6 +5446,20 @@ static void PaletteDim(INT32 dimslayer)
 	}
 }
 
+static void TmntDraw()
+{
+	DrvCalcPalette();
+	K052109UpdateScroll();
+	
+	K052109RenderLayer(2, K052109_OPAQUE, 0);
+	if ((PriorityFlag & 1) == 1) K051960SpritesRender(0, 0);
+	K052109RenderLayer(1, 0, 0);
+	if ((PriorityFlag & 1) == 0) K051960SpritesRender(0, 0);
+	K052109RenderLayer(0, 0, 0);
+
+	KonamiBlendCopy(DrvPalette);
+}
+
 static void BlswhstlDraw()
 {
 	INT32 Layer[3];
@@ -5453,24 +5478,20 @@ static void BlswhstlDraw()
 	Layer[0] = 0;
 	Layer[1] = 1;
 	Layer[2] = 2;
-	
-	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
-		pTransDraw[i] = 16 * BGColourBase;
-	}
+
+	KonamiClearBitmaps(DrvPalette[16 * BGColourBase]);
 
 	sortlayers(Layer, LayerPri);
 
 	PaletteDim(Layer[2]);
 
-	K053245SpritesRender(0, DrvSprites, 3);
-	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], 0, DrvTiles);
-	K053245SpritesRender(0, DrvSprites, 2);
-	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, DrvTiles);
-	K053245SpritesRender(0, DrvSprites, 1);
-	K053245SpritesRender(0, DrvSprites, 0);
-	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, DrvTiles);	
+	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], 0, 1);
+	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, 2);
+	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, 4);
 
-	KonamiBlendCopy(Palette, DrvPalette);
+	if (nSpriteEnable & 1) K053245SpritesRender(0);
+
+	KonamiBlendCopy(DrvPalette);
 }
 
 static INT32 Thndrx2Draw()
@@ -5493,21 +5514,17 @@ static INT32 Thndrx2Draw()
 	Layer[1] = 1;
 	Layer[2] = 2;
 	
-	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
-		pTransDraw[i] = 16 * BGColourBase;
-	}
+	KonamiClearBitmaps(DrvPalette[16 * BGColourBase]);
 
 	sortlayers(Layer, LayerPri);
 
-	if (nSpriteEnable & 8) K051960SpritesRender(DrvSprites, 3);
-	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], 0, DrvTiles);
-	if (nSpriteEnable & 4) K051960SpritesRender(DrvSprites, 2);	
-	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, DrvTiles);
-	if (nSpriteEnable & 2) K051960SpritesRender(DrvSprites, 1);
-	if (nSpriteEnable & 1) K051960SpritesRender(DrvSprites, 0);
-	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, DrvTiles);
+	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], 0, 1);
+	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, 2);
+	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, 4);
 
-	BurnTransferCopy(DrvPalette);
+	if (nSpriteEnable & 1) K051960SpritesRender(-1, -1);
+
+	KonamiBlendCopy(DrvPalette);
 
 	return 0;
 }
@@ -5534,15 +5551,13 @@ static INT32 PunkshotDraw()
 
 	sortlayers(Layer, LayerPri);
 
-//	if (nSpriteEnable & 8) K051960SpritesRender(DrvSprites, 3); // not sure...
-	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], 1, DrvTiles);
-	if (nSpriteEnable & 4) K051960SpritesRender(DrvSprites, 2);	
-	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, DrvTiles);
-	if (nSpriteEnable & 2) K051960SpritesRender(DrvSprites, 1);
-	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, DrvTiles);
-	if (nSpriteEnable & 1) K051960SpritesRender(DrvSprites, 0);
+	if (nBurnLayer & 1) K052109RenderLayer(Layer[0], K052109_OPAQUE, 1);
+	if (nBurnLayer & 2) K052109RenderLayer(Layer[1], 0, 2);
+	if (nBurnLayer & 4) K052109RenderLayer(Layer[2], 0, 4);
 
-	BurnTransferCopy(DrvPalette);
+	if (nSpriteEnable & 1) K051960SpritesRender(-1, -1);
+
+	KonamiBlendCopy(DrvPalette);
 
 	return 0;
 }
@@ -5599,7 +5614,7 @@ static INT32 TmntFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 		SekClose();
 		
 		// Run Z80
@@ -5665,7 +5680,7 @@ static INT32 MiaFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 		SekClose();
 		
 		// Run Z80
@@ -5725,8 +5740,8 @@ static INT32 CuebrickFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
-		if (CuebrickSndIrqFire) SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+		if (i == (nInterleave - 1) && bIrqEnable) SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
+		if (CuebrickSndIrqFire) SekSetIRQLine(6, CPU_IRQSTATUS_AUTO);
 				
 		if (pBurnSoundOut) {
 			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
@@ -5778,7 +5793,7 @@ static INT32 BlswhstlFrame()
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
-		if (i == (nInterleave - 1) && K052109_irq_enabled) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == (nInterleave - 1) && K052109_irq_enabled) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 		SekClose();
 		
 		// Run Z80
@@ -5819,7 +5834,7 @@ static INT32 BlswhstlFrame()
 
 static INT32 SsridersFrame()
 {
-	INT32 nInterleave = 262;
+	INT32 nInterleave = 256;
 	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) SsridersDoReset();
@@ -5827,12 +5842,12 @@ static INT32 SsridersFrame()
 	SsridersMakeInputs();
 
 	nCyclesTotal[0] = 16000000 / 60;
-	nCyclesTotal[1] = 4000000 / 60;
+	nCyclesTotal[1] = 8000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
-	
+
 	for (INT32 i = 0; i < nInterleave; i++) {
 		INT32 nCurrentCPU, nNext;
 
@@ -5843,10 +5858,9 @@ static INT32 SsridersFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
 		if (i == 19) DrvVBlank = 0;
-		if (i == 243) DrvVBlank = 1;
-		if (i == 243 && K052109_irq_enabled) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == 240) DrvVBlank = 1;
 		SekClose();
-		
+
 		// Run Z80
 		nCurrentCPU = 1;
 		ZetOpen(0);
@@ -5855,7 +5869,7 @@ static INT32 SsridersFrame()
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		ZetClose();
-		
+
 		if (pBurnSoundOut) {
 			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
@@ -5864,7 +5878,11 @@ static INT32 SsridersFrame()
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
-	
+
+	SekOpen(0);
+	if (K052109_irq_enabled) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
+	SekClose();
+
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -5875,7 +5893,7 @@ static INT32 SsridersFrame()
 			K053260Update(0, pSoundBuf, nSegmentLength);
 		}
 	}
-	
+
 	if (pBurnDraw) BlswhstlDraw();
 
 	return 0;
@@ -5925,7 +5943,7 @@ static INT32 Thndrx2Frame()
 		}
 	}
 	
-	if (K052109_irq_enabled) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	if (K052109_irq_enabled) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
@@ -5990,7 +6008,7 @@ static INT32 LgtnfghtFrame()
 		}
 	}
 	
-	if (K052109_irq_enabled) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+	if (K052109_irq_enabled) SekSetIRQLine(5, CPU_IRQSTATUS_AUTO);
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
@@ -6038,7 +6056,7 @@ static INT32 Tmnt2Frame()
 		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
 		if (i == 19) DrvVBlank = 0;
 		if (i == 243) DrvVBlank = 1;
-		if (i == 243 && K052109_irq_enabled) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		if (i == 243 && K052109_irq_enabled) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 		SekClose();
 		
 		// Run Z80
@@ -6119,7 +6137,7 @@ static INT32 PunkshotFrame()
 		}
 	}
 	
-	if (K052109_irq_enabled) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+	if (K052109_irq_enabled) SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
@@ -6305,6 +6323,16 @@ struct BurnDriver BurnDrvTmhta = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
 	NULL, TmhtaRomInfo, TmhtaRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
+	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
+	NULL, 0x400, 304, 224, 4, 3
+};
+
+struct BurnDriver BurnDrvTmhtb = {
+	"tmhtb", "tmnt", NULL, NULL, "1989",
+	"Teenage Mutant Hero Turtles (UK 4 Players, set 3)\0", NULL, "Konami", "GX963",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 4, HARDWARE_KONAMI_68K_Z80, GBF_SCRFIGHT, 0,
+	NULL, TmhtbRomInfo, TmhtbRomName, NULL, NULL, TmntInputInfo, TmntDIPInfo,
 	TmntInit, TmntExit, TmntFrame, NULL, TmntScan,
 	NULL, 0x400, 304, 224, 4, 3
 };

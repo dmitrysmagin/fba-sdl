@@ -296,11 +296,11 @@ void __fastcall pipibibs_sound_write(UINT16 address, UINT8 data)
 	switch (address)
 	{
 		case 0xe000:
-			BurnYM3812Write(0, data);
+			BurnYM3812Write(0, 0, data);
 		return;
 
 		case 0xe001:
-			BurnYM3812Write(1, data);
+			BurnYM3812Write(0, 1, data);
 		return;
 	}
 }
@@ -311,7 +311,7 @@ UINT8 __fastcall pipibibs_sound_read(UINT16 address)
 	{
 		case 0xe000:
 		case 0xe001:
-			return BurnYM3812Read(0);
+			return BurnYM3812Read(0, 0);
 	}
 
 	return 0;
@@ -367,15 +367,15 @@ static INT32 DrvInit()
 	{
 		SekInit(0, 0x68000);										// Allocate 68000
 		SekOpen(0);
-		SekMapMemory(Rom01,		0x000000, 0x03FFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory(Ram01,		0x080000, 0x082FFF, SM_RAM);
-		SekMapMemory(RamPal,		0x0c0000, 0x0c0FFF, SM_RAM);	// Palette RAM
+		SekMapMemory(Rom01,		0x000000, 0x03FFFF, MAP_ROM);	// CPU 0 ROM
+		SekMapMemory(Ram01,		0x080000, 0x082FFF, MAP_RAM);
+		SekMapMemory(RamPal,		0x0c0000, 0x0c0FFF, MAP_RAM);	// Palette RAM
 		SekSetReadWordHandler(0, 	pipibibsReadWord);
 		SekSetReadByteHandler(0, 	pipibibsReadByte);
 		SekSetWriteWordHandler(0, 	pipibibsWriteWord);
 		SekSetWriteByteHandler(0, 	pipibibsWriteByte);
 
-		SekMapHandler(1,		0x190000, 0x190FFF, SM_RAM);
+		SekMapHandler(1,		0x190000, 0x190FFF, MAP_RAM);
 		SekSetReadByteHandler(1, 	toaplan1ReadByteZ80RAM);
 		SekSetReadWordHandler(1, 	toaplan1ReadWordZ80RAM);
 		SekSetWriteByteHandler(1, 	toaplan1WriteByteZ80RAM);
@@ -395,9 +395,9 @@ static INT32 DrvInit()
 	}
 
 	nToa1Cycles68KSync = 0;
-	BurnYM3812Init(3375000, &toaplan1FMIRQHandler, pipibibsSynchroniseStream, 0);
+	BurnYM3812Init(1, 3375000, &toaplan1FMIRQHandler, pipibibsSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(3375000);
-	BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+	BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 
 	nSpriteYOffset =  0x0001;
 
@@ -504,7 +504,7 @@ static INT32 DrvFrame()
 			ToaBufferGP9001Sprites();
 
 			bVBlank = true;
-			SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+			SekSetIRQLine(4, CPU_IRQSTATUS_AUTO);
 		}
 
 		nCyclesSegment = nNext - SekTotalCycles();

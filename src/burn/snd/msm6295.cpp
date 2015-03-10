@@ -1,5 +1,4 @@
 #include <math.h>
-#include <stdint.h>
 #include "burnint.h"
 #include "msm6295.h"
 #include "burn_sound.h"
@@ -229,7 +228,7 @@ static void MSM6295Render_Cubic(INT32 nChip, INT32* pLeftBuf, INT32 *pRightBuf, 
 						if (pChannelInfo->nPosition & 1) {
 							nDelta = pChannelInfo->nDelta & 0x0F;
 						} else {
-							pChannelInfo->nDelta = MSM6295SampleData[nChip][pChannelInfo->nPosition >> 17][(pChannelInfo->nPosition >> 1) & 0xFFFF];
+							pChannelInfo->nDelta = MSM6295SampleData[nChip][pChannelInfo->nPosition >> 17 & 3][(pChannelInfo->nPosition >> 1) & 0xFFFF];
 							nDelta = pChannelInfo->nDelta >> 4;
 						}
 
@@ -382,10 +381,9 @@ void MSM6295Command(INT32 nChip, UINT8 nCommand)
 					nSampleCount <<= 8;
 					nSampleCount |= MSM6295SampleInfo[nChip][nBank][MSM6295[nChip].nSampleInfo + 5];
 					nSampleCount <<= 1;
-
+					nSampleCount -= nSampleStart;
+					
 					if (nSampleCount < 0x80000) {
-						nSampleCount -= nSampleStart;
-
 						// Start playing channel
 						MSM6295[nChip].ChannelInfo[nChannel].nVolume = MSM6295VolumeTable[nVolume];
 						MSM6295[nChip].ChannelInfo[nChannel].nPosition = nSampleStart;
@@ -444,6 +442,16 @@ void MSM6295Exit(INT32 nChip)
 	}
 	
 	if (nChip == nLastMSM6295Chip) DebugSnd_MSM6295Initted = 0;
+}
+
+void MSM6295SetSamplerate(INT32 nChip, INT32 nSamplerate)
+{
+	MSM6295[nChip].nSampleRate = nSamplerate;
+	if (nBurnSoundRate > 0) {
+		MSM6295[nChip].nSampleSize = (nSamplerate << 12) / nBurnSoundRate;
+	} else {
+		MSM6295[nChip].nSampleSize = (nSamplerate << 12) / 11025;
+	}
 }
 
 INT32 MSM6295Init(INT32 nChip, INT32 nSamplerate, bool bAddSignal)

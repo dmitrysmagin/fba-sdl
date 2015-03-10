@@ -23,7 +23,6 @@ static UINT8 *DrvVidRAM;
 static UINT8 *DrvTxtRAM;
 static UINT8 *DrvSprRAM;
 
-static UINT32 *Palette;
 static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
@@ -280,7 +279,7 @@ static void m6809Bankswitch(INT32 bank)
 	if (m6809_bank[0] != bank) {
 		m6809_bank[0] = bank;
 	
-		M6809MapMemory(DrvM6809ROM + 0x10000 + bank * 0x2000, 0x0000, 0x1fff, M6809_ROM);
+		M6809MapMemory(DrvM6809ROM + 0x10000 + bank * 0x2000, 0x0000, 0x1fff, MAP_ROM);
 	}
 }
 
@@ -305,7 +304,7 @@ void skykid_main_write(UINT16 address, UINT8 data)
 		INT32 b = (~address & 0x0800) / 0x0800;
 
 		interrupt_enable[0] = b;
-		if (b == 0) M6809SetIRQLine(0, M6809_IRQSTATUS_NONE);
+		if (b == 0) M6809SetIRQLine(0, CPU_IRQSTATUS_NONE);
 		return;
 	}
 
@@ -385,7 +384,7 @@ void skykid_mcu_write(UINT16 address, UINT8 data)
 
 		interrupt_enable[1] = b;
 
-		if (b == 0) HD63701SetIRQLine(0, HD63701_IRQSTATUS_NONE);
+		if (b == 0) HD63701SetIRQLine(0, CPU_IRQSTATUS_NONE);
 		return;
 	}
 }
@@ -453,11 +452,11 @@ static void DrvPaletteInit()
 		INT32 g = DrvColPROM[i + 0x100] & 0x0f;
 		INT32 b = DrvColPROM[i + 0x200] & 0x0f;
 
-		Palette[i] = (r << 20) | (r << 16) | (g << 12) | (g << 8) | (b << 4) | (b << 0);
+		DrvPalette[i] = BurnHighCol((r*16)+r, (g*16)+g, (b*16)+b, 0);
 	}
 
 	for (INT32 i = 0; i < 0x400; i++) {
-		Palette[i + 0x100] = Palette[DrvColPROM[0x300 + i]];
+		DrvPalette[i + 0x100] = DrvPalette[DrvColPROM[0x300 + i]];
 	}
 }
 
@@ -536,7 +535,6 @@ static INT32 MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000700;
 
-	Palette			= (UINT32*)Next; Next += 0x0500 * sizeof(UINT32);
 	DrvPalette		= (UINT32*)Next; Next += 0x0500 * sizeof(UINT32);
 
 	AllRam			= Next;
@@ -604,20 +602,20 @@ static INT32 DrvInit()
 
 	M6809Init(1);
 	M6809Open(0);
-	M6809MapMemory(DrvM6809ROM + 0x10000,		0x0000, 0x1fff, M6809_ROM);
-	M6809MapMemory(DrvVidRAM,			0x2000, 0x2fff, M6809_RAM);
-	M6809MapMemory(DrvTxtRAM,			0x4000, 0x47ff, M6809_RAM);
-	M6809MapMemory(DrvSprRAM,			0x4800, 0x5fff, M6809_RAM);
-	M6809MapMemory(DrvM6809ROM + 0x08000,		0x8000, 0xffff, M6809_ROM);
+	M6809MapMemory(DrvM6809ROM + 0x10000,		0x0000, 0x1fff, MAP_ROM);
+	M6809MapMemory(DrvVidRAM,			0x2000, 0x2fff, MAP_RAM);
+	M6809MapMemory(DrvTxtRAM,			0x4000, 0x47ff, MAP_RAM);
+	M6809MapMemory(DrvSprRAM,			0x4800, 0x5fff, MAP_RAM);
+	M6809MapMemory(DrvM6809ROM + 0x08000,		0x8000, 0xffff, MAP_ROM);
 	M6809SetWriteHandler(skykid_main_write);
 	M6809SetReadHandler(skykid_main_read);
 	M6809Close();
 
 	HD63701Init(1);
 //	HD63701Open(0);
-	HD63701MapMemory(DrvHD63701ROM + 0x8000,	0x8000, 0xbfff, HD63701_ROM);
-	HD63701MapMemory(DrvHD63701RAM,			0xc000, 0xc7ff, HD63701_RAM);
-	HD63701MapMemory(DrvHD63701ROM + 0xf000,	0xf000, 0xffff, HD63701_ROM);
+	HD63701MapMemory(DrvHD63701ROM + 0x8000,	0x8000, 0xbfff, MAP_ROM);
+	HD63701MapMemory(DrvHD63701RAM,			0xc000, 0xc7ff, MAP_RAM);
+	HD63701MapMemory(DrvHD63701ROM + 0xf000,	0xf000, 0xffff, MAP_ROM);
 	HD63701SetReadHandler(skykid_mcu_read);
 	HD63701SetWriteHandler(skykid_mcu_write);
 	HD63701SetReadPortHandler(skykid_mcu_read_port);
@@ -759,10 +757,7 @@ static void draw_sprites()
 static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (INT32 i = 0; i < 0x500; i++) {
-			INT32 p = Palette[i];
-			DrvPalette[i] = BurnHighCol(p >> 16, p >> 8, p, 0);
-		}
+		DrvPaletteInit();
 		DrvRecalc = 0;
 	}
 
@@ -823,7 +818,7 @@ static INT32 DrvFrame()
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += M6809Run(nNext - nCyclesDone[0]);
 		if (i == (nInterleave - 1) && interrupt_enable[0]) {
-			M6809SetIRQLine(0, M6809_IRQSTATUS_ACK);
+			M6809SetIRQLine(0, CPU_IRQSTATUS_ACK);
 		}
 		M6809Close();
 
@@ -832,7 +827,7 @@ static INT32 DrvFrame()
 			sync_HD63701(1);
 
 			if (i == (nInterleave - 1) && interrupt_enable[1]) {
-				HD63701SetIRQLine(0, M6800_IRQSTATUS_ACK);
+				HD63701SetIRQLine(0, CPU_IRQSTATUS_ACK);
 			}
 		} else {
 			sync_HD63701(0);
@@ -865,8 +860,6 @@ static INT32 DrvFrame()
 
 static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
-	return 1; // Broken :(
-
 	struct BurnArea ba;
 
 	if (pnMin) {

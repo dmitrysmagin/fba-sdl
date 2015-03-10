@@ -597,7 +597,7 @@ void __fastcall main_write_byte(UINT32 address, UINT8 data)
 		case 0x70000f:
 			if (has_sound_cpu) {
 				*soundlatch = data;
-				M6809SetIRQLine(1, M6809_IRQSTATUS_AUTO);
+				M6809SetIRQLine(1, CPU_IRQSTATUS_AUTO);
 			} else {
 				MSM6295Command(0, data);
 			}
@@ -698,7 +698,7 @@ static void sound_write(UINT16 address, UINT8 data)
 
 		case 0x0a00:
 		case 0x0a01:
-			BurnYM3812Write(address & 1, data);
+			BurnYM3812Write(0, address & 1, data);
 		return;
 	}
 }
@@ -713,7 +713,7 @@ static UINT8 sound_read(UINT16 address)
 
 		case 0x0a00:
 		case 0x0a01:
-			return BurnYM3812Read(address & 1);
+			return BurnYM3812Read(0, address & 1);
 
 		case 0x0b00:
 			return *soundlatch;
@@ -826,17 +826,17 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)(), INT32 encrypted_ram, INT32 sou
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
-	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, SM_ROM);
-	SekMapMemory(DrvVidRAM,		0x100000, 0x103fff, encrypted_ram ? SM_ROM : SM_RAM);
-	SekMapMemory(DrvPalRAM,		0x200000, 0x2007ff, SM_ROM);
-	SekMapMemory(DrvSprRAM,		0x440000, 0x440fff, SM_RAM);
-	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, SM_RAM);
+	SekMapMemory(Drv68KROM,		0x000000, 0x0fffff, MAP_ROM);
+	SekMapMemory(DrvVidRAM,		0x100000, 0x103fff, encrypted_ram ? MAP_ROM : MAP_RAM);
+	SekMapMemory(DrvPalRAM,		0x200000, 0x2007ff, MAP_ROM);
+	SekMapMemory(DrvSprRAM,		0x440000, 0x440fff, MAP_RAM);
+	SekMapMemory(Drv68KRAM,		0xff0000, 0xffffff, MAP_RAM);
 	SekSetWriteWordHandler(0,	main_write_word);
 	SekSetWriteByteHandler(0,	main_write_byte);
 	SekSetReadWordHandler(0,	main_read_word);
 	SekSetReadByteHandler(0,	main_read_byte);
 
-	SekMapHandler(1,		0x200000, 0x2007FF, SM_WRITE);
+	SekMapHandler(1,		0x200000, 0x2007FF, MAP_WRITE);
 	SekSetWriteWordHandler(1,	palette_write_word);
 	SekSetWriteByteHandler(1,	palette_write_byte);
 	SekClose();
@@ -847,15 +847,15 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)(), INT32 encrypted_ram, INT32 sou
 	{
 		M6809Init(1);
 		M6809Open(0);
-		M6809MapMemory(Drv6809RAM,		0x0000, 0x07ff, M6809_RAM);
-		M6809MapMemory(Drv6809ROM + 0x0c00,	0x0c00, 0xffff, M6809_ROM);
+		M6809MapMemory(Drv6809RAM,		0x0000, 0x07ff, MAP_RAM);
+		M6809MapMemory(Drv6809ROM + 0x0c00,	0x0c00, 0xffff, MAP_ROM);
 		M6809SetReadHandler(sound_read);
 		M6809SetWriteHandler(sound_write);
 		M6809Close();
 
-		BurnYM3812Init(3580000, NULL, &DrvSynchroniseStream, 0);
+		BurnYM3812Init(1, 3580000, NULL, &DrvSynchroniseStream, 0);
 		BurnTimerAttachM6809YM3812(2216750);
-		BurnYM3812SetRoute(BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
+		BurnYM3812SetRoute(0, BURN_SND_YM3812_ROUTE, 1.00, BURN_SND_ROUTE_BOTH);
 	}
 
 	MSM6295Init(0, 1056000 / 132, has_sound_cpu ? 1 : 0);
@@ -1212,7 +1212,7 @@ static INT32 DrvFrame()
 
 	SekOpen(0);
 	SekRun(12000000 / 60);
-	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(6, CPU_IRQSTATUS_AUTO);
 	SekClose();
 
 	if (pBurnSoundOut) {
@@ -1249,7 +1249,7 @@ static INT32 BigkarnkFrame()
 	M6809Open(0);
 
 	SekRun(10000000 / 60);
-	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+	SekSetIRQLine(6, CPU_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
 		BurnTimerEndFrameYM3812(2216750 / 60);

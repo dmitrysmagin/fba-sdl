@@ -2369,7 +2369,7 @@ static INT32 KyugoFrame()
 			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 			nCyclesSegment = ZetRun(nCyclesSegment);
 			nCyclesDone[nCurrentCPU] += nCyclesSegment;
-			if (i == 2 || i == 4 || i == 6 || i == 8) ZetRaiseIrq(0);
+			if (i == 2 || i == 4 || i == 6 || i == 8) ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 			ZetClose();
 		}
 		
@@ -2448,7 +2448,7 @@ struct BurnDriver BurnDrvAirwolf = {
 
 struct BurnDriver BurnDrvAirwolfa = {
 	"airwolfa", "airwolf", NULL, NULL, "1987",
-	"Airwolf (US)\0", NULL, "Kyugo (UA Theatre license)", "Kyugo",
+	"Airwolf (US)\0", NULL, "Kyugo (United Amusements license)", "Kyugo",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_HORSHOOT, 0,
 	NULL, AirwolfaRomInfo, AirwolfaRomName, NULL, NULL, KyugoInputInfo, AirwolfDIPInfo,

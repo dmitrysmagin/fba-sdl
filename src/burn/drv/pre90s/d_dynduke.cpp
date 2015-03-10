@@ -714,13 +714,13 @@ static INT32 DrvFrame()
 
 		VezOpen(0);
 		nCyclesDone[0] += VezRun(nSegment);
-		if (i == (nInterleave-1)) VezSetIRQLineAndVector(0, 0xc8/4, VEZ_IRQSTATUS_ACK);
+		if (i == (nInterleave-1)) VezSetIRQLineAndVector(0, 0xc8/4, CPU_IRQSTATUS_ACK);
 
 		VezClose();
 
 		VezOpen(1);
 		nCyclesDone[1] += VezRun(nSegment);
-		if (i == (nInterleave-1)) VezSetIRQLineAndVector(0, 0xc8/4, VEZ_IRQSTATUS_ACK);
+		if (i == (nInterleave-1)) VezSetIRQLineAndVector(0, 0xc8/4, CPU_IRQSTATUS_ACK);
 		VezClose();
 
 		nSegment = nCyclesTotal[2] / nInterleave;
@@ -866,7 +866,7 @@ struct BurnDriver BurnDrvDyndukea = {
 static struct BurnRomInfo dyndukejRomDesc[] = {
 	{ "1.cd8",		0x10000, 0xa5e2a95a, 1 | BRF_PRG | BRF_ESS }, //  0 V30 #0 Code
 	{ "2.cd7",		0x10000, 0x7e51af22, 1 | BRF_PRG | BRF_ESS }, //  1
-	{ "(__dyndukej)3.e8", 0x20000, 0x98b9d243, 1 | BRF_PRG | BRF_ESS }, //  2
+	{ "3.e8", 		0x20000, 0x98b9d243, 1 | BRF_PRG | BRF_ESS }, //  2
 	{ "4.e7",		0x20000, 0x4f575177, 1 | BRF_PRG | BRF_ESS }, //  3
 
 	{ "5.p8",		0x10000, 0x883d319c, 2 | BRF_PRG | BRF_ESS }, //  4 V30 #1 Code

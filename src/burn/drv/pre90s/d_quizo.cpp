@@ -117,7 +117,8 @@ static INT32 DrvDraw()
 	dirty = 0;
 
 	for (x = 0; x < 320 * 200; x++) {
-		PutPix(pBurnDraw + x * nBurnBpp, BurnHighCol(src[x]>>16, src[x]>>8, src[x], 0));
+		UINT32 pxl = src[x];
+		PutPix(pBurnDraw + x * nBurnBpp, BurnHighCol((pxl >> 16)&0xff, (pxl >> 8)&0xff, pxl&0xff, 0));
 	}
 
 	return 0;
@@ -269,7 +270,7 @@ static INT32 DrvFrame()
 
 	ZetOpen(0);
 	ZetRun(4000000 / 60);
-	ZetRaiseIrq(1);
+	ZetSetIRQLine(0, CPU_IRQSTATUS_AUTO);
 	ZetClose();
 
 	if (pBurnSoundOut) {

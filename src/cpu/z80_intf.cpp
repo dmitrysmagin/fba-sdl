@@ -311,11 +311,11 @@ void ZetWriteRom(UINT16 address, UINT8 data)
 	if (nOpenedCPU < 0) return;
 
 	if (ZetCPUContext[nOpenedCPU]->pZetMemMap[0x200 | (address >> 8)] != NULL) {
-		ZetCPUContext[nOpenedCPU]->pZetMemMap[0x200 | (address >> 8)][address] = data;
+		ZetCPUContext[nOpenedCPU]->pZetMemMap[0x200 | (address >> 8)][address & 0xff] = data;
 	}
 	
 	if (ZetCPUContext[nOpenedCPU]->pZetMemMap[0x300 | (address >> 8)] != NULL) {
-		ZetCPUContext[nOpenedCPU]->pZetMemMap[0x300 | (address >> 8)][address] = data;
+		ZetCPUContext[nOpenedCPU]->pZetMemMap[0x300 | (address >> 8)][address & 0xff] = data;
 	}
 	
 	ZetWriteProg(address, data);
@@ -554,7 +554,7 @@ void ZetReset()
 	Z80Reset();
 }
 
-INT32 ZetGetPC(INT32 n)
+UINT32 ZetGetPC(INT32 n)
 {
 #if defined FBA_DEBUG
 	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetGetPC called without init\n"));
@@ -565,6 +565,20 @@ INT32 ZetGetPC(INT32 n)
 		return ActiveZ80GetPC();
 	} else {
 		return ZetCPUContext[n]->reg.pc.w.l;
+	}
+}
+
+INT32 ZetGetPrevPC(INT32 n)
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetGetPrvPC called without init\n"));
+	if (nOpenedCPU == -1 && n < 0) bprintf(PRINT_ERROR, _T("ZetGetPrevPC called when no CPU open\n"));
+#endif
+
+	if (n < 0) {
+		return ActiveZ80GetPrevPC();
+	} else {
+		return ZetCPUContext[n]->reg.prvpc.d;
 	}
 }
 
@@ -610,6 +624,20 @@ INT32 ZetHL(INT32 n)
 	}
 }
 
+INT32 ZetI(INT32 n)
+{
+#if defined FBA_DEBUG
+	if (!DebugCPU_ZetInitted) bprintf(PRINT_ERROR, _T("ZetI called without init\n"));
+	if (nOpenedCPU == -1 && n < 0) bprintf(PRINT_ERROR, _T("ZetI called when no CPU open\n"));
+#endif
+
+	if (n < 0) {
+		return ActiveZ80GetI();
+	} else {
+		return ZetCPUContext[n]->reg.i;
+	}
+}
+
 INT32 ZetScan(INT32 nAction)
 {
 #if defined FBA_DEBUG
@@ -644,15 +672,21 @@ void ZetSetIRQLine(const INT32 line, const INT32 status)
 #endif
 
 	switch ( status ) {
-		case ZET_IRQSTATUS_NONE:
-			Z80SetIrqLine(0, 0);
+		case CPU_IRQSTATUS_NONE:
+			Z80SetIrqLine(line, 0);
 			break;
-		case ZET_IRQSTATUS_ACK: 	
+		case CPU_IRQSTATUS_ACK: 	
 			Z80SetIrqLine(line, 1);
 			break;
-		case ZET_IRQSTATUS_AUTO:
+		case CPU_IRQSTATUS_AUTO:
 			Z80SetIrqLine(line, 1);
 			Z80Execute(0);
+			Z80SetIrqLine(0, 0);
+			Z80Execute(0);
+			break;
+		case CPU_IRQSTATUS_HOLD:
+			Z80SetIrqLine(line, 1);
+			Z80Execute(100);
 			Z80SetIrqLine(0, 0);
 			Z80Execute(0);
 			break;
