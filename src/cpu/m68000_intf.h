@@ -162,10 +162,6 @@ void SekClose();
 void SekOpen(const int i);
 int SekGetActive();
 
-#define SEK_IRQSTATUS_NONE (0x0000)
-#define SEK_IRQSTATUS_AUTO (0x2000)
-#define SEK_IRQSTATUS_ACK  (0x1000)
-
 void SekSetIRQLine(const int line, const int status);
 void SekReset();
 

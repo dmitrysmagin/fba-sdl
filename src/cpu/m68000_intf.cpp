@@ -528,7 +528,7 @@ unsigned int C68KRebasePC(unsigned int pc) {
 
 int C68KInterruptCallBack(int irqline)
 {
-	if (nSekIRQPending[nSekActive] & SEK_IRQSTATUS_AUTO) {
+	if (nSekIRQPending[nSekActive] & CPU_IRQSTATUS_AUTO) {
 		SekC68KContext[nSekActive]->IRQState = 0;	//CLEAR_LINE
 		SekC68KContext[nSekActive]->IRQLine = 0;
 	}
@@ -597,7 +597,7 @@ void SekWriteLongROM(unsigned int a, unsigned int d) { WriteLongROM(a, d); }
 #ifdef EMU_A68K
 static int A68KIRQAcknowledge(int nIRQ)
 {
-	if (nSekIRQPending[nSekActive] & SEK_IRQSTATUS_AUTO) {
+	if (nSekIRQPending[nSekActive] & CPU_IRQSTATUS_AUTO) {
 		M68000_regs.irq &= 0x78;
 		nSekIRQPending[nSekActive] = 0;
 	}
@@ -654,7 +654,7 @@ static int SekSetup(struct A68KContext* psr)
 #ifdef EMU_M68K
 extern "C" int M68KIRQAcknowledge(int nIRQ)
 {
-	if (nSekIRQPending[nSekActive] & SEK_IRQSTATUS_AUTO) {
+	if (nSekIRQPending[nSekActive] & CPU_IRQSTATUS_AUTO) {
 		m68k_set_irq(0);
 		nSekIRQPending[nSekActive] = 0;
 	}
