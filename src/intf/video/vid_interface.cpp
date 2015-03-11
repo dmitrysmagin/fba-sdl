@@ -13,10 +13,12 @@
 	extern struct VidOut VidOutDX9;
 	extern struct VidOut VidOutDX9Alt;
 #elif defined (BUILD_SDL)
-	extern struct VidOut VidOutSDLFX;
 	extern struct VidOut VidOutSDLOpenGL;
+	extern struct VidOut VidOutSDLFX;
 #elif defined (_XBOX)
 	extern struct VidOut VidOutD3D;
+#elif defined (BUILD_QT)
+    extern struct VidOut VidOutOGL;
 #endif
 
 static struct VidOut *pVidOut[] = {
@@ -31,6 +33,8 @@ static struct VidOut *pVidOut[] = {
 	&VidOutSDLOpenGL,
 #elif defined (_XBOX)
 	&VidOutD3D,
+#elif defined (BUILD_QT)
+    &VidOutOGL,
 #endif
 };
 
