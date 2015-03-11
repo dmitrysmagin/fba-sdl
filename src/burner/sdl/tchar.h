@@ -1,16 +1,15 @@
-
+#include <stdint.h>
 #ifdef _UNICODE
 //TODO: bah
 #include <wchar.h>
-#define	__TEXT(q)	L##q
+#define __TEXT(q)	L##q
 
-typedef	wchar_t	TCHAR;
+typedef wchar_t TCHAR;
 typedef wchar_t _TCHAR;
 
 #else
 
-
-#define	__TEXT(q)	q
+#define __TEXT(q) q
 
 #ifndef RC_INVOKED
 typedef char	TCHAR;
@@ -38,23 +37,23 @@ typedef char	_TCHAR;
 #define _tcsicmp    strcasecmp
 #define _tcsnicmp   strncasecmp
 #define _tcstol     strtol
+#define _tcsstr     strstr
 
 #define _fgetts     fgets
 #define _fputts     fputs
 
-#define	_istspace	isspace
+#define	_istspace   isspace
 
 #define _tfopen     fopen
 
-#define _stricmp strcmp
-#define _strnicmp strncmp
+#define _stricmp    strcmp
+#define _strnicmp   strncmp
 
 // FBA function, change this!
-#define dprintf printf
-
+#define dprintf     printf
 
 #endif
 
-#define _TEXT(x)	__TEXT(x)
-#define	_T(x)		__TEXT(x)
+#define _TEXT(x)    __TEXT(x)
+#define	_T(x)       __TEXT(x)
 

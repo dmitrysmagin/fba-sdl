@@ -1,9 +1,6 @@
 // Driver Init module
 #include "burner.h"
 
-// extern in ../bzip.cpp
-extern int nBzipError; 
-
 int bDrvOkay = 0;						// 1 if the Driver has been initted okay, and it's okay to use the BurnDrv functions
 
 char szAppRomPaths[DIRS_MAX][MAX_PATH] = {{"/usr/local/share/roms/"},{"roms/"}, };
@@ -16,41 +13,13 @@ static int DoLibInit()					// Do Init of Burn library driver
 
 	BzipOpen(false);
 
-	// If there is an error with the romset, report it
-	if (nBzipError) {
-	/*	char *szTitle;
-		int nIcon, nButton;
-
-		// Make the correct title and icon
-		if (nBzipError & 1) {
-			nIcon = MB_ICONERROR;
-			szTitle = APP_TITLE " Error";
-		} else {
-			nIcon = MB_ICONWARNING;
-			szTitle = APP_TITLE " Warning";
-		}
-
-		if (nBzipError & 0x08) {
-			nButton = MB_OK;		// no data at all - pretty basic!
-		} else {
-			BzipText.Add("\nWould you like more detailed information?\n(For experts only!)\n");
-			nButton = MB_DEFBUTTON2 | MB_YESNO;
-		}
-
-		// We can't use AppError, so use MessageBox directly
-		if (MessageBox(hScrnWnd, BzipText.szText, szTitle, nButton | nIcon | MB_SETFOREGROUND) == IDYES) {
-			// Give the more detailed information string
-			MessageBox(hScrnWnd, BzipDetail.szText, szTitle, MB_OK | nIcon | MB_SETFOREGROUND);
-		}
-*/	}
-
 	//ProgressCreate();
 
 	nRet = BurnDrvInit();
 
 	BzipClose();
 
-//	ProgressDestroy();
+	//ProgressDestroy();
 
 	if (nRet) {
 		return 1;
@@ -95,7 +64,6 @@ int DrvInit(int nDrvNum, bool bRestore)
 		nBurnSoundRate = nAudSampleRate[0];
 		nBurnSoundLen = nAudSegLen;
 	}
-
 	nBurnDrvSelect[0] = nDrvNum;		// Set the driver number
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
@@ -136,14 +104,11 @@ int DrvInitCallback()
 int DrvExit()
 {
 	if (bDrvOkay) {
-//		StopReplay();
 		VidExit();
 
 		if (nBurnDrvSelect[0] < nBurnDrvCount) {
-			//MemCardEject();				// Eject memory card if present
-
 			if (bSaveRAM) {
-				//StatedAuto(1);			// Save NV (or full) RAM
+
 				bSaveRAM = false;
 			}
 
@@ -157,8 +122,6 @@ int DrvExit()
 	BurnExtLoadRom = NULL;
 
 	bDrvOkay = 0;					// Stop using the BurnDrv functions
-
-	//bRunPause = 0;					// Don't pause when exitted
 
 	if (bAudOkay) {
 //		// Write silence into the sound buffer on exit, and for drivers which don't use pBurnSoundOut

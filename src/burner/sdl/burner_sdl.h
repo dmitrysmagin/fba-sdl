@@ -17,7 +17,7 @@ typedef unsigned char BYTE;
 #endif
 
 #ifndef __cdecl
-#define	__cdecl
+#define __cdecl
 #endif
 
 //main.cpp
@@ -29,9 +29,8 @@ TCHAR* ANSIToTCHAR(const char* pszInString, TCHAR* pszOutString, int nOutSize);
 char* TCHARToANSI(const TCHAR* pszInString, char* pszOutString, int nOutSize);
 bool AppProcessKeyboardInput();
 
-
 //config.cpp
-int ConfigAppLoad();	
+int ConfigAppLoad();
 int ConfigAppSave();
 
 // drv.cpp
@@ -58,7 +57,7 @@ int InputMake(bool bCopy);
 //TODO:
 #define szAppBurnVer 1
 
-// stringset.cpp
+//stringset.cpp
 class StringSet {
 public:
 	TCHAR* szText;
@@ -91,17 +90,3 @@ extern TCHAR szAppDatListsPath[MAX_PATH];
 extern TCHAR szAppIpsPath[MAX_PATH];
 extern TCHAR szAppIconsPath[MAX_PATH];
 extern TCHAR szAppArchivesPath[MAX_PATH];
-//int SupportDirCreate();
-
-
-// jukebox.cpp
-extern bool bJukeboxInUse;
-extern bool bJukeboxDisplayed;
-//int JukeboxDialogCreate();
-
-// Misc
-#define _TtoA(a)	TCHARToANSI(a, NULL, 0)
-#define _AtoT(a)	ANSIToTCHAR(a, NULL, 0)
-int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote);
-
-#define _tcsstr strstr
