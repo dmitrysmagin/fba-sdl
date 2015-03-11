@@ -67,7 +67,7 @@ static int BlitFXInit()
 	nVidImageWidth = nGamesWidth;
 	nVidImageHeight = nGamesHeight;
 
-	nVidImageDepth = bDrvOkay ? 15 : 32;
+	nVidImageDepth = bDrvOkay ? 16 : 32;
 	nVidImageBPP = (nVidImageDepth + 7) >> 3;
 	nBurnBpp = nVidImageBPP;
 	SetBurnHighCol(nVidImageDepth);
@@ -119,7 +119,7 @@ void init_gl()
 
  	if ((BurnDrvGetFlags() & BDF_16BIT_ONLY)||(nVidImageBPP!=3))
 	{
-		texture_type= GL_UNSIGNED_SHORT_5_6_5_REV;
+		texture_type= GL_UNSIGNED_SHORT_5_6_5;
 	}
 	else
 	{
