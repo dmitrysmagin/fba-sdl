@@ -54,28 +54,28 @@
 
  // The format of the data in a68k.asm (at the _M68000_regs location)
  struct A68KContext {
-	unsigned int d[8], a[8];
-	unsigned int isp, srh, ccr, xc, pc, irq, sr;
-	int (*IrqCallback) (int nIrq);
-	unsigned int ppc;
-	int (*ResetCallback)();
-	int (*RTECallback)();
-	int (*CmpCallback)(unsigned int val, int reg);
-	unsigned int sfc, dfc, usp, vbr;
-	unsigned int nAsmBank, nCpuVersion;
+	UINT32 d[8], a[8];
+	UINT32 isp, srh, ccr, xc, pc, irq, sr;
+	INT32 (*IrqCallback) (INT32 nIrq);
+	UINT32 ppc;
+	INT32 (*ResetCallback)();
+	INT32 (*RTECallback)();
+	INT32 (*CmpCallback)(UINT32 val, INT32 reg);
+	UINT32 sfc, dfc, usp, vbr;
+	UINT32 nAsmBank, nCpuVersion;
  };
  extern "C" struct A68KContext M68000_regs;
  extern     struct A68KContext* SekRegs[SEK_MAX];
 
- extern "C" unsigned char* OP_ROM;
- extern "C" unsigned char* OP_RAM;
- extern "C" int m68k_ICount;
+ extern "C" UINT8* OP_ROM;
+ extern "C" UINT8* OP_RAM;
+ extern "C" INT32 m68k_ICount;
 #endif
 
 #ifdef EMU_M68K
- extern "C" int m68k_ICount;
- extern "C" int nSekM68KContextSize[SEK_MAX];
- extern "C" char* SekM68KContext[SEK_MAX];
+ extern "C" INT32 m68k_ICount;
+ extern "C" INT32 nSekM68KContextSize[SEK_MAX];
+ extern "C" INT8* SekM68KContext[SEK_MAX];
 #endif
 
 #ifdef EMU_C68K
@@ -84,26 +84,26 @@
  #define c68k_ICount	(SekC68KCurrentContext->ICount)
 #endif
 
-typedef unsigned char (__fastcall *pSekReadByteHandler)(unsigned int a);
-typedef void (__fastcall *pSekWriteByteHandler)(unsigned int a, unsigned char d);
-typedef unsigned short (__fastcall *pSekReadWordHandler)(unsigned int a);
-typedef void (__fastcall *pSekWriteWordHandler)(unsigned int a, unsigned short d);
-typedef unsigned int (__fastcall *pSekReadLongHandler)(unsigned int a);
-typedef void (__fastcall *pSekWriteLongHandler)(unsigned int a, unsigned int d);
+typedef UINT8 (__fastcall *pSekReadByteHandler)(UINT32 a);
+typedef void (__fastcall *pSekWriteByteHandler)(UINT32 a, UINT8 d);
+typedef UINT16 (__fastcall *pSekReadWordHandler)(UINT32 a);
+typedef void (__fastcall *pSekWriteWordHandler)(UINT32 a, UINT16 d);
+typedef UINT32 (__fastcall *pSekReadLongHandler)(UINT32 a);
+typedef void (__fastcall *pSekWriteLongHandler)(UINT32 a, UINT32 d);
 
-typedef int (__fastcall *pSekResetCallback)();
-typedef int (__fastcall *pSekRTECallback)();
-typedef int (__fastcall *pSekIrqCallback)(int irq);
-typedef int (__fastcall *pSekCmpCallback)(unsigned int val, int reg);
-typedef int (__fastcall *pSekTASCallback)();
+typedef INT32 (__fastcall *pSekResetCallback)();
+typedef INT32 (__fastcall *pSekRTECallback)();
+typedef INT32 (__fastcall *pSekIrqCallback)(INT32 irq);
+typedef INT32 (__fastcall *pSekCmpCallback)(UINT32 val, INT32 reg);
+typedef INT32 (__fastcall *pSekTASCallback)();
 
-extern int nSekCycles[SEK_MAX], nSekCPUType[SEK_MAX];
+extern INT32 nSekCycles[SEK_MAX], nSekCPUType[SEK_MAX];
 
 // Mapped memory pointers to Rom and Ram areas (Read then Write)
 // These memory areas must be allocated multiples of the page size
 // with a 4 byte over-run area lookup for each page (*3 for read, write and fetch)
 struct SekExt {
-	unsigned char* MemMap[SEK_PAGE_COUNT * 3];
+	UINT8* MemMap[SEK_PAGE_COUNT * 3];
 
 	// If MemMap[i] < SEK_MAXHANDLER, use the handler functions
 	pSekReadByteHandler ReadByte[SEK_MAXHANDLER];
@@ -120,93 +120,86 @@ struct SekExt {
 	pSekTASCallback TASCallback;
 };
 
-#define SEK_DEF_READ_WORD(i, a) { unsigned short d; d = (unsigned short)(pSekExt->ReadByte[i](a) << 8); d |= (unsigned short)(pSekExt->ReadByte[i]((a) + 1)); return d; }
-#define SEK_DEF_WRITE_WORD(i, a, d) { pSekExt->WriteByte[i]((a),(unsigned char)((d) >> 8)); pSekExt->WriteByte[i]((a) + 1, (unsigned char)((d) & 0xff)); }
-#define SEK_DEF_READ_LONG(i, a) { unsigned int d; d = pSekExt->ReadWord[i](a) << 16; d |= pSekExt->ReadWord[i]((a) + 2); return d; }
-#define SEK_DEF_WRITE_LONG(i, a, d) { pSekExt->WriteWord[i]((a),(unsigned short)((d) >> 16)); pSekExt->WriteWord[i]((a) + 2,(unsigned short)((d) & 0xffff)); }
+#define SEK_DEF_READ_WORD(i, a) { UINT16 d; d = (UINT16)(pSekExt->ReadByte[i](a) << 8); d |= (UINT16)(pSekExt->ReadByte[i]((a) + 1)); return d; }
+#define SEK_DEF_WRITE_WORD(i, a, d) { pSekExt->WriteByte[i]((a),(UINT8)((d) >> 8)); pSekExt->WriteByte[i]((a) + 1, (UINT8)((d) & 0xff)); }
+#define SEK_DEF_READ_LONG(i, a) { UINT32 d; d = pSekExt->ReadWord[i](a) << 16; d |= pSekExt->ReadWord[i]((a) + 2); return d; }
+#define SEK_DEF_WRITE_LONG(i, a, d) { pSekExt->WriteWord[i]((a),(UINT16)((d) >> 16)); pSekExt->WriteWord[i]((a) + 2,(UINT16)((d) & 0xffff)); }
 
 #define SEK_CORE_A68K (2)
 #define SEK_CORE_M68K (1)
 #define SEK_CORE_C68K (0)
 
-extern int nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
-extern int DebugStep; // 0 - off, 1 - on
+extern INT32 nSekCpuCore; // 0 - c68k, 1 - m68k, 2 - a68k
+extern INT32 DebugStep; // 0 - off, 1 - on
 
 extern struct SekExt *SekExt[SEK_MAX], *pSekExt;
-extern int nSekActive;										// The cpu which is currently being emulated
-extern int nSekCyclesTotal, nSekCyclesScanline, nSekCyclesSegment, nSekCyclesDone, nSekCyclesToDo;
+extern INT32 nSekActive;										// The cpu which is currently being emulated
+extern INT32 nSekCyclesTotal, nSekCyclesScanline, nSekCyclesSegment, nSekCyclesDone, nSekCyclesToDo;
 
-unsigned int SekReadByte(unsigned int a);
-unsigned int SekReadWord(unsigned int a);
-unsigned int SekReadLong(unsigned int a);
+UINT32 SekReadByte(UINT32 a);
+UINT32 SekReadWord(UINT32 a);
+UINT32 SekReadLong(UINT32 a);
 
-unsigned int SekFetchByte(unsigned int a);
-unsigned int SekFetchWord(unsigned int a);
-unsigned int SekFetchLong(unsigned int a);
+UINT32 SekFetchByte(UINT32 a);
+UINT32 SekFetchWord(UINT32 a);
+UINT32 SekFetchLong(UINT32 a);
 
-void SekWriteByte(unsigned int a, unsigned char d);
-void SekWriteWord(unsigned int a, unsigned short d);
-void SekWriteLong(unsigned int a, unsigned int d);
+void SekWriteByte(UINT32 a, UINT8 d);
+void SekWriteWord(UINT32 a, UINT16 d);
+void SekWriteLong(UINT32 a, UINT32 d);
 
-void SekWriteByteROM(unsigned int a, unsigned char d);
-void SekWriteWordROM(unsigned int a, unsigned short d);
-void SekWriteLongROM(unsigned int a, unsigned int d);
+void SekWriteByteROM(UINT32 a, UINT8 d);
+void SekWriteWordROM(UINT32 a, UINT16 d);
+void SekWriteLongROM(UINT32 a, UINT32 d);
 
-int SekInit(int nCount, int nCPUType);
-int SekExit();
+INT32 SekInit(INT32 nCount, INT32 nCPUType);
+INT32 SekExit();
 
 void SekNewFrame();
-void SekSetCyclesScanline(int nCycles);
+void SekSetCyclesScanline(INT32 nCycles);
 
 void SekClose();
-void SekOpen(const int i);
-int SekGetActive();
+void SekOpen(const INT32 i);
+INT32 SekGetActive();
 
-void SekSetIRQLine(const int line, const int status);
+void SekSetIRQLine(const INT32 line, const INT32 status);
 void SekReset();
 
 void SekRunEnd();
-void SekRunAdjust(const int nCycles);
+void SekRunAdjust(const INT32 nCycles);
 
-int SekRun(const int nCycles);
+INT32 SekRun(const INT32 nCycles);
 
-int SekIdle(int nCycles);
+INT32 SekIdle(INT32 nCycles);
 
-int SekSegmentCycles();
+INT32 SekSegmentCycles();
 
-int SekTotalCycles();
+INT32 SekTotalCycles();
 
-int SekCurrentScanline();
-
-// SekMemory types:
-#define SM_READ  (1)
-#define SM_WRITE (2)
-#define SM_FETCH (4)
-#define SM_ROM (SM_READ | SM_FETCH)
-#define SM_RAM (SM_READ | SM_WRITE | SM_FETCH)
+INT32 SekCurrentScanline();
 
 // Map areas of memory
-int SekMapMemory(unsigned char* pMemory, unsigned int nStart, unsigned int nEnd, int nType);
-int SekMapHandler(unsigned int nHandler, unsigned int nStart, unsigned int nEnd, int nType);
+INT32 SekMapMemory(UINT8* pMemory, UINT32 nStart, UINT32 nEnd, INT32 nType);
+INT32 SekMapHandler(UINT32 nHandler, UINT32 nStart, UINT32 nEnd, INT32 nType);
 
 // Set handlers
-int SekSetReadByteHandler(int i, pSekReadByteHandler pHandler);
-int SekSetWriteByteHandler(int i, pSekWriteByteHandler pHandler);
-int SekSetReadWordHandler(int i, pSekReadWordHandler pHandler);
-int SekSetWriteWordHandler(int i, pSekWriteWordHandler pHandler);
-int SekSetReadLongHandler(int i, pSekReadLongHandler pHandler);
-int SekSetWriteLongHandler(int i, pSekWriteLongHandler pHandler);
+INT32 SekSetReadByteHandler(INT32 i, pSekReadByteHandler pHandler);
+INT32 SekSetWriteByteHandler(INT32 i, pSekWriteByteHandler pHandler);
+INT32 SekSetReadWordHandler(INT32 i, pSekReadWordHandler pHandler);
+INT32 SekSetWriteWordHandler(INT32 i, pSekWriteWordHandler pHandler);
+INT32 SekSetReadLongHandler(INT32 i, pSekReadLongHandler pHandler);
+INT32 SekSetWriteLongHandler(INT32 i, pSekWriteLongHandler pHandler);
 
 // Set callbacks
-int SekSetResetCallback(pSekResetCallback pCallback);
-int SekSetRTECallback(pSekRTECallback pCallback);
-int SekSetIrqCallback(pSekIrqCallback pCallback);
-int SekSetCmpCallback(pSekCmpCallback pCallback);
-int SekSetTASCallback(pSekTASCallback pCallback);
+INT32 SekSetResetCallback(pSekResetCallback pCallback);
+INT32 SekSetRTECallback(pSekRTECallback pCallback);
+INT32 SekSetIrqCallback(pSekIrqCallback pCallback);
+INT32 SekSetCmpCallback(pSekCmpCallback pCallback);
+INT32 SekSetTASCallback(pSekTASCallback pCallback);
 
 // Get a CPU's PC
-int SekGetPC(int n);
+INT32 SekGetPC(INT32 n);
 
-int SekScan(int nAction);
+INT32 SekScan(INT32 nAction);
 
 #endif //_SEK_H_
