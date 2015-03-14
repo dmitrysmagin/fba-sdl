@@ -94,6 +94,7 @@ alldir	= burn \
 		burn/drv/midway \
 		burn/drv/pce \
 		burn/drv/neogeo \
+		burn/drv/pce \
 		burn/drv/pgm \
 		burn/drv/pre90s \
 		burn/drv/psikyo \
@@ -218,17 +219,17 @@ drvobj	+= \
 		\
 		d_parent.o \
 		\
-		#d_megadrive.o \
-		#\
-		#d_pce.o \
-		#\
-		#d_sms.o \
-		#\
-		#d_snes.o \
-		#\
-		#d_coleco.o \
-		#\
-		#d_sg1000.o
+		d_megadrive.o \
+		\
+		d_pce.o \
+		\
+		d_sms.o \
+		\
+		d_snes.o \
+		\
+		d_coleco.o \
+		\
+		d_sg1000.o
 
 depobj := bzip.o config.o drv.o inpdipsw.o main.o run.o stated.o stringset.o \
 		ips_manager.o support_paths.o scrn.o \
@@ -299,13 +300,13 @@ depobj := bzip.o config.o drv.o inpdipsw.o main.o run.o stated.o stringset.o \
 		\
 		toa_bcu2.o toa_extratext.o toa_gp9001.o toa_palette.o toaplan1.o toaplan.o \
 		\
-		#megadrive.o \
-		#\
-		#pce.o \
-		#\
-		#sms.o smspio.o smssystem.o smsvdp.o smsfmintf.o smsrender.o smssound.o smstms.o \
-		#\
-		#snes_65816.o snes_io.o snes_main.o snes_ppu.o snes_spc700.o
+		megadrive.o \
+		\
+		pce.o \
+		\
+		sms.o smspio.o smssystem.o smsvdp.o smsfmintf.o smsrender.o smssound.o smstms.o \
+		\
+		snes_65816.o snes_io.o snes_main.o snes_ppu.o snes_spc700.o
 
 autobj += $(depobj)
 
