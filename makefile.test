@@ -149,7 +149,12 @@ alldir	= burn \
 
 incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)dep/generated -I/local/include -I/include/SDL
 
-lib	=  -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lmingw32 -lSDL -lz -lopengl32 -lglu32
+ifeq ($(OS),Windows_NT)
+lib	= -static -lstdc++ -lpng -lmingw32 -Wl,-Bdynamic -lSDL -lz -lopengl32 -lglu32
+else
+lib	= -lstdc++ -lSDL -lGL -lGLU -lz
+endif
+
 
 drvobj	+= \
 		d_dodonpachi.o d_donpachi.o d_esprade.o d_feversos.o d_gaia.o d_guwange.o d_hotdogst.o d_korokoro.o d_mazinger.o \
@@ -364,6 +369,9 @@ CFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBU
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBUILD_M68K -DINCLUDE_LIB_PNGH
 DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
 
+CFLAGS += -U__cdecl -U__fastcall -D__cdecl="" -D__fastcall=""
+CXXFLAGS += -U__cdecl -U__fastcall -D__cdecl="" -D__fastcall=""
+
 ifdef SPECIALBUILD
 	DEF	:= $(DEF) -DSPECIALBUILD=$(SPECIALBUILD)
 endif
@@ -533,16 +541,16 @@ $(objdir)cpu/m68k/m68kcpu.o: $(srcdir)cpu/m68k/m68kcpu.c $(objdir)dep/generated/
 	@echo Compiling Musashi MC680x0 core \(m68kcpu.c\)...
 	@$(CC) $(CFLAGS) -c $(srcdir)cpu/m68k/m68kcpu.c -o $(objdir)cpu/m68k/m68kcpu.o
 
-$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake.exe $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
+$(objdir)cpu/m68k/m68kops.o: $(objdir)cpu/m68k/m68kmake $(objdir)dep/generated/m68kops.h $(objdir)dep/generated/m68kops.c $(srcdir)cpu/m68k/m68k.h $(srcdir)cpu/m68k/m68kconf.h
 	@echo Compiling Musashi MC680x0 core \(m68kops.c\)...
 	@$(CC) $(CFLAGS) -c $(objdir)dep/generated/m68kops.c -o $(objdir)cpu/m68k/m68kops.o
 
-$(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake.exe $(srcdir)cpu/m68k/m68k_in.c
+$(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m68k_in.c
 	$(objdir)/cpu/m68k/m68kmake $(objdir)dep/generated/ $(srcdir)cpu/m68k/m68k_in.c
 
-$(objdir)cpu/m68k/m68kmake.exe: $(srcdir)cpu/m68k/m68kmake.c
+$(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(CC) $(CFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake.exe
+	@$(CC) $(CFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 
 #
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
