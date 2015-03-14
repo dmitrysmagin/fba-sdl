@@ -16,36 +16,12 @@ ROMDIR		= /usr/local/share/roms/
 BINDIR		= /usr/local/bin/
 FILES		= fbasdl.ini gamelist.txt fb.png
 
-# Inluclude Unicode support
-#UNICODE = 1
-
 # Check for changes in header files
 DEPEND = 1
-
-# Include features for debugging drivers
-# DEBUG	= 1
-
-# Force recompilation of files that need it (i.e. use __TIME__, __DATE__, SPECIALBUILD).
-FORCE_UPDATE = 1
-
-# Use the __fastcall calling convention when interfacing with A68K/Musashi
-#FASTCALL = 1
-
-# Compress executable with upx (the DEBUG option ignores this)
-# COMPRESS = 1
-
-# Perl is available
-PERL = 1
-
-
 
 #
 #	Declare variables
 #
-
-# Make a special build, pass the quoted text as comment (use FORCE_UPDATE declaration below to force recompilation of resources)
-# SPECIALBUILD = "This text will appear in the property sheet of the .exe file"
-
 
 ifndef	CPUTYPE
 	CPUTYPE	= i686
@@ -54,7 +30,7 @@ endif
 ifdef BUILD_X86_ASM
 	MMX	= 1
 else
-	MMX = 0
+	MMX	= 0
 endif
 
 ifdef	DEBUG
@@ -363,9 +339,6 @@ CXX	= g++
 LD	= $(CXX)
 AS	= nasm
 
-#       D3DUtils & D3DMath need these
-#       DEF     = -Dsinf=\(float\)sin -Dcosf=\(float\)cos -Dasinf=\(float\)asin -Dacosf=\(float\)acos -Dsqrtf=\(float\)sqrt
-
 CFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBUILD_M68K -DINCLUDE_LIB_PNGH
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBUILD_M68K -DINCLUDE_LIB_PNGH
 DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
@@ -441,15 +414,15 @@ vpath %.d 	$(foreach dir,$(alldir),$(objdir)$(dir)/ )
 
 .PHONY:	all init cleandep touch clean
 
-ifeq ($(MAKELEVEL),0)
+ifeq ($(MAKELEVEL),1)
 ifdef DEPEND
 
 all:	init $(autdep) $(autobj)
-	@$(MAKE) -f makefile.test
+	@$(MAKE) -f makefile.sdl
 else
 
 all:	init $(autobj)
-	@$(MAKE) -f makefile.test
+	@$(MAKE) -f makefile.sdl
 endif
 else
 
@@ -463,7 +436,7 @@ endif
 #
 #
 
-ifeq ($(MAKELEVEL),1)
+ifeq ($(MAKELEVEL),2)
 
 $(NAME):	$(allobj)
 	@echo
@@ -493,7 +466,7 @@ ifdef	PERL
 		$(filter %.cpp,$(foreach file,$(drvobj:.o=.cpp),$(foreach dir,$(alldir), \
 		$(firstword $(wildcard $(srcdir)$(dir)/$(file))))))
 else
-ifeq ($(MAKELEVEL),1)
+ifeq ($(MAKELEVEL),2)
 	@echo
 	@echo Warning: Perl is not available on this system.
 	@echo $@ cannot be updated or created!
@@ -513,7 +486,7 @@ ifdef	PERL
 	@perl $(srcdir)dep/scripts/license2rtf.pl $< -o $(srcdir)dep/generated/$(@F:.rc=.rtf)
 	@perl $(srcdir)dep/scripts/license2rc.pl $(srcdir)dep/generated/$(@F:.rc=.rtf) -o $@
 else
-ifeq ($(MAKELEVEL),1)
+ifeq ($(MAKELEVEL),2)
 	@echo
 	@echo Warning: Perl is not available on this system.
 	@echo $@ cannot be updated or created!
@@ -526,7 +499,7 @@ $(app_windres.rc): app.rc $(license.rc) $(srcdir)dep/scripts/fixrc.pl $(srcdir)b
 ifdef	PERL
 	@perl $(srcdir)dep/scripts/fixrc.pl $< -o $@
 else
-ifeq ($(MAKELEVEL),1)
+ifeq ($(MAKELEVEL),2)
 	@echo
 	@echo Warning: Perl is not available on this system.
 	@echo $@ cannot be updated or created!
@@ -622,7 +595,7 @@ $(pgm_sprite.h):	pgm_sprite_create.cpp
 		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
 	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
 
-ifeq ($(MAKELEVEL),1)
+ifeq ($(MAKELEVEL),2)
 ifdef DEPEND
 
 include	$(alldep)
@@ -642,7 +615,7 @@ endif
 #	Generic rules for C/C++ files
 #
 
-ifeq ($(MAKELEVEL),0)
+ifeq ($(MAKELEVEL),1)
 
 ifdef FORCE_UPDATE
 resource.o: FORCE
