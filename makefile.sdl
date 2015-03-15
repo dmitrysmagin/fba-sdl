@@ -334,11 +334,14 @@ alldep	= $(foreach file,$(autobj:.o=.c), \
 #
 #
 
+HOSTCC	= gcc
+HOSTCXX	= g++
 CC	= gcc
 CXX	= g++
 LD	= $(CXX)
 AS	= nasm
 
+HOSTCFLAGS = $(incdir)
 CFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBUILD_M68K -DINCLUDE_LIB_PNGH
 CXXFLAGS = -O2 -fomit-frame-pointer -Wno-write-strings -DLSB_FIRST -DFASTCALL -DBUILD_M68K -DINCLUDE_LIB_PNGH
 DEF := -DCPUTYPE=$(CPUTYPE) -DUSE_SPEEDHACKS -DBUILD_SDL
@@ -524,7 +527,7 @@ $(objdir)dep/generated/m68kops.h: $(objdir)cpu/m68k/m68kmake $(srcdir)cpu/m68k/m
 
 $(objdir)cpu/m68k/m68kmake: $(srcdir)cpu/m68k/m68kmake.c
 	@echo Compiling Musashi MC680x0 core \(m68kmake.c\)...
-	@$(CC) $(CFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
+	@$(HOSTCC) $(HOSTCFLAGS) $(srcdir)cpu/m68k/m68kmake.c -o $(objdir)cpu/m68k/m68kmake
 
 #
 #	Extra rules for generated header file cvt.h, needed by ctv.cpp
@@ -534,9 +537,8 @@ ctv.d ctv.o:	$(ctv.h)
 
 $(ctv.h):	ctv_make.cpp
 	@echo Generating $(srcdir)dep/generated/$(@F)...
-	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)dep/generated/ctv_make
+	@$(objdir)dep/generated/ctv_make >$@
 
 #
 #	Extra rules for generated header file toa_gp9001_func.h, needed by toa_gp9001.cpp
@@ -591,9 +593,8 @@ pgm_draw.d pgm_draw.o:	$(pgm_sprite.h)
 
 $(pgm_sprite.h):	pgm_sprite_create.cpp
 	@echo Generating $(srcdir)dep/generated/$(@F)...
-	@$(CC) -mconsole $(CXXFLAGS) $(LDFLAGS) $< \
-		-o $(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe)
-	@$(subst $(srcdir),$(objdir),$(<D))/$(<F:.cpp=.exe) >$@
+	@$(HOSTCXX) $(LDFLAGS) $< -o $(objdir)dep/generated/pgm_sprite_create
+	@$(objdir)dep/generated/pgm_sprite_create >$@
 
 ifeq ($(MAKELEVEL),2)
 ifdef DEPEND
