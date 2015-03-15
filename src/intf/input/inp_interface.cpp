@@ -1,7 +1,6 @@
 // Burner Input module
 #include "burner.h"
-
-INT32 nAutoFireRate = 12;
+#include <vector>
 
 UINT32 nInputSelect = 0;
 bool bInputOkay = false;
@@ -14,6 +13,8 @@ static bool bCinpOkay;
 	extern struct InputInOut InputInOutSDL;
 #elif defined (_XBOX)
 	extern struct InputInOut InputInOutXInput2;
+#elif defined (BUILD_QT)
+    extern struct InputInOut InputInOutQt;
 #endif
 
 static struct InputInOut *pInputInOut[]=
@@ -24,10 +25,20 @@ static struct InputInOut *pInputInOut[]=
 	&InputInOutSDL,
 #elif defined (_XBOX)
 	&InputInOutXInput2,
+#elif defined (BUILD_QT)
+    &InputInOutQt,
 #endif
 };
 
 #define INPUT_LEN (sizeof(pInputInOut) / sizeof(pInputInOut[0]))
+
+std::vector<const InputInOut *> InputGetInterfaces()
+{
+    std::vector<const InputInOut *> list;
+    for (unsigned int i = 0; i < INPUT_LEN; i++)
+        list.push_back(pInputInOut[i]);
+    return list;
+}
 
 static InterfaceInfo InpInfo = { NULL, NULL, NULL };
 
@@ -154,6 +165,18 @@ INT32 InputSetCooperativeLevel(const bool bExclusive, const bool bForeground)
 	}
 
 	return pInputInOut[nInputSelect]->SetCooperativeLevel(bExclusive, bForeground);
+}
+
+static INT32 nAutoFireCounter = 0;
+static bool bLastAF[1000];
+INT32 nAutoFireRate = 12;
+
+static inline int AutofirePick() {
+    int c = nAutoFireCounter % nAutoFireRate;
+    if (nAutoFireCounter <= 2)
+        return 1;
+    else
+	return (c>nAutoFireRate-4);
 }
 
 // This will process all PC-side inputs and optionally update the emulated game side.
@@ -314,13 +337,36 @@ INT32 InputMake(bool bCopy)
 		}
 	}
 
+        nAutoFireCounter++;
+
 	for (i = 0; i < nMacroCount; i++, pgi++) {
-		if (pgi->Macro.nMode) {						// Macro is defined
+		if (pgi->Macro.nMode == 1 && pgi->Macro.nSysMacro == 0) { // Macro is defined
 			if (bCopy && CinpState(pgi->Macro.Switch.nCode)) {
 				for (INT32 j = 0; j < 4; j++) {
 					if (pgi->Macro.pVal[j]) {
 						*(pgi->Macro.pVal[j]) = pgi->Macro.nVal[j];
 					}
+				}
+			}
+		}
+		if (pgi->Macro.nSysMacro) { // System-Macro is defined -dink
+			if (CinpState(pgi->Macro.Switch.nCode)) {
+				if (pgi->Macro.pVal[0]) {
+					*(pgi->Macro.pVal[0]) = pgi->Macro.nVal[0];
+					if (pgi->Macro.nSysMacro==15) { //Auto-Fire mode!
+						if (AutofirePick() || bLastAF[i]==0)
+							*(pgi->Macro.pVal[0]) = pgi->Macro.nVal[0];
+						else
+							*(pgi->Macro.pVal[0]) = 0;
+						bLastAF[i] = 1;
+					}
+				}
+			} else { // Disable System-Macro when key up
+				if (pgi->Macro.pVal[0] && pgi->Macro.nSysMacro == 1) {
+					*(pgi->Macro.pVal[0]) = 0;
+				} else {
+					if (pgi->Macro.nSysMacro == 15)
+						bLastAF[i] = 0;
 				}
 			}
 		}
