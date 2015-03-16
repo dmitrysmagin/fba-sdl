@@ -42,6 +42,7 @@ int ConfigAppLoad()
 
 		VAR(nIniVersion);
 		VAR(nVidSelect); // video mode select
+		VAR(bVidFullStretch);
 
 		VAR(nAutoFireRate);
 
@@ -98,6 +99,9 @@ int ConfigAppSave()
 	
 	fprintf(h,"\n// video mode 0 = standard SDL 1= (very expiermental) opengl\n");
 	VAR(nVidSelect); // video mode select
+
+	fprintf(h,"\n// If non-zero, allow stretching of the image to any size\n");
+	VAR(bVidFullStretch);
 
 	fprintf(h,"\n// Auto-Fire Rate, non-linear - use the GUI to change this setting!\n");
 	VAR(nAutoFireRate);
