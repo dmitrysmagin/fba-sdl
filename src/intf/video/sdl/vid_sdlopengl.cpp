@@ -29,6 +29,7 @@ static int nSize;
 static int nUseBlitter;
 
 static int nRotateGame = 0;
+static bool bFlipped = false;
 
 static int PrimClear()
 {
@@ -64,6 +65,8 @@ static int GetTextureSize(int Size)
 
 static int BlitFXInit()
 {
+	int nMemLen = 0;
+
 	nVidImageWidth = nGamesWidth;
 	nVidImageHeight = nGamesHeight;
 
@@ -72,15 +75,13 @@ static int BlitFXInit()
 	nBurnBpp = nVidImageBPP;
 	SetBurnHighCol(nVidImageDepth);
 
-	int nMemLen = 0;
-
 	if (!nRotateGame) {
 		nVidImagePitch = nVidImageWidth * nVidImageBPP;
 	} else {
 		nVidImagePitch = nVidImageHeight * nVidImageBPP;
 	}
 
-	nMemLen = (nVidImageHeight) * nVidImagePitch;
+	nMemLen = nVidImageHeight * nVidImagePitch;
 	nBurnPitch = nVidImagePitch;
 
 	texture = (unsigned char *)malloc(nTextureWidth * nTextureHeight * nVidImageBPP);
@@ -145,8 +146,8 @@ void init_gl()
 		glRotatef(0.0, 0.0, 0.0, 1.0);
 	 	glOrtho(0, nGamesWidth, nGamesHeight, 0, -1, 1);
 	} else {
-		glRotatef(90.0, 0.0, 0.0, 1.0);
-	 	glOrtho(0, nGamesHeight, nGamesWidth, 0, -1, 5);
+		glRotatef((bFlipped ? 270.0 : 90.0), 0.0, 0.0, 1.0);
+		glOrtho(0, nGamesHeight, nGamesWidth, 0, -1, 1);
 	}
 
 	glMatrixMode(GL_MODELVIEW);
@@ -222,19 +223,14 @@ static int Init()
 		BurnDrvGetVisibleSize(&nGamesWidth, &nGamesHeight);
 
 		if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
-			if (nVidRotationAdjust & 1) {
-				int n = nGamesWidth;
-				nGamesWidth = nGamesHeight;
-				nGamesHeight = n;
-				nRotateGame |= (nVidRotationAdjust & 2);
-			} else {
-				nRotateGame |= 1;
-			}
+			printf("Vertical\n");
+			nRotateGame = 1;
 		}
 
 		if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) {
-			nRotateGame ^= 2;
-		}
+			printf("Flipped\n");
+			bFlipped = true;
+		} 
 	}
 
 	if (!nRotateGame) {
@@ -291,31 +287,24 @@ static int Frame(bool bRedraw) // bRedraw = 0
 	return 0;
 }
 
-typedef unsigned char byte;
-
-void SurfToTex()
+static void SurfToTex()
 {
-	unsigned char *Surf = (unsigned char *)gamescreen;
-	int nPitch = nVidImagePitch;
-
-	//printf("nvidImagePitch %d\n",nVidImagePitch);
-
-	unsigned char *VidSurf = (unsigned char *)texture;
 	int nVidPitch = nTextureWidth * nVidImageBPP;
 
-	unsigned char *pd, *ps;
+	unsigned char *ps = (unsigned char *)gamescreen;
+	unsigned char *pd = (unsigned char *)texture;
 
-	int nHeight = nGamesHeight;
-	pd = VidSurf; ps = Surf;
-	for (int y = 0; y < nHeight; y++, pd += nVidPitch, ps += nPitch) {
-		memcpy(pd, ps, nPitch);
+	for (int y = nGamesHeight; y--;) {
+		memcpy(pd, ps, nVidImagePitch);
+		pd += nVidPitch;
+		ps += nVidImagePitch;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0,3, nTextureWidth, nTextureHeight, 0,
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, nTextureWidth, nTextureHeight, 0,
 		     GL_RGB, texture_type, texture);
 }
 
-void TexToQuad()
+static void TexToQuad()
 {
 	glBegin(GL_QUADS);
 	glTexCoord2f(0, 0);
