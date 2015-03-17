@@ -135,7 +135,6 @@ int DrvExit()
 
 int ProgressUpdateBurner(double dProgress, const TCHAR* pszText, bool bAbs)
 {
-	printf(".");
 	return 0;
 }
 
