@@ -151,7 +151,7 @@ static int SDLSoundInit()
 	SDL_AudioSpec audiospec_req;
 	int nSDLBufferSize;
 
-	dprintf(_T("SDLSoundInit (%dHz)"), nAudSampleRate[0]);
+	dprintf(_T("SDLSoundInit (%dHz)\n"), nAudSampleRate[0]);
 
 	if (nAudSampleRate[0] <= 0) {
 		return 1;
