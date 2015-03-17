@@ -136,7 +136,7 @@ void init_gl()
 	glEnable(GL_TEXTURE_2D);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, nVidImageBPP, nTextureWidth, nTextureHeight,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nTextureWidth, nTextureHeight,
 		     0, GL_RGB, texture_type, texture);
 
 	glMatrixMode(GL_PROJECTION);
@@ -300,7 +300,7 @@ static void SurfToTex()
 		ps += nVidImagePitch;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, nTextureWidth, nTextureHeight, 0,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, nTextureWidth, nTextureHeight, 0,
 		     GL_RGB, texture_type, texture);
 }
 
