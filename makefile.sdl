@@ -353,12 +353,10 @@ ifdef SPECIALBUILD
 	DEF	:= $(DEF) -DSPECIALBUILD=$(SPECIALBUILD)
 endif
 
-ifdef FASTCALL
-	DEF	:= $(DEF) -DFASTCALL
-endif
-
 ifdef	DEBUG
 	DEF	:= $(DEF) -D_DEBUG
+	CFLAGS += -g
+	CXXFLAGS += -g
 endif
 
 ifdef BUILD_X86_ASM
@@ -371,12 +369,6 @@ endif
 
 DEF    := $(DEF) -DFILENAME=$(NAME)
 
-ifdef PROFILE
-	CFLAGS	+= -pg
-else
-	LDFLAGS	=
-endif
-
 ifdef BUILD_X86_ASM
 	CFLAGS	 += -mmmx
 	CXXFLAGS += -mmmx
@@ -384,7 +376,9 @@ endif
 
 CFLAGS += $(DEF) $(incdir)
 CXXFLAGS += $(DEF) $(incdir)
+ifndef DEBUG
 LDFLAGS += -s
+endif
 ASFLAGS = -O1
 
 ifeq ($(OS),Windows_NT)
