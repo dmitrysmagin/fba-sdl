@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	DrvExit();
 	ConfigAppSave();
 	BurnLibExit();
-	SDL_Quit();
+	//SDL_Quit();
 
 	return 0;
 }

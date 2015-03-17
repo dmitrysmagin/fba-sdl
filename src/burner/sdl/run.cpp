@@ -214,8 +214,7 @@ static int RunInit()
 static int RunExit()
 {
 	nNormalLast = 0;
-	// Stop sound if it was playing
-	AudSoundStop();
+
 	return 0;
 }
 
