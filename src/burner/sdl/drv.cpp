@@ -56,17 +56,11 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 int DrvInit(int nDrvNum, bool bRestore)
 {
 	DrvExit();						// Make sure exitted
-
-	AudSoundInit();						// Init Sound (not critical if it fails)
-
-	nBurnSoundRate = 0;					// Assume no sound
-	pBurnSoundOut = NULL;
-	if (bAudOkay) {
-		nBurnSoundRate = nAudSampleRate[0];
-		nBurnSoundLen = nAudSegLen;
-	}
+	MediaExit();
 
 	nBurnDrvSelect[0] = nDrvNum;		// Set the driver number
+
+	MediaInit();
 
 	// Define nMaxPlayers early; GameInpInit() needs it (normally defined in DoLibInit()).
 	nMaxPlayers = BurnDrvGetMaxPlayers();
@@ -105,12 +99,6 @@ int DrvInitCallback()
 
 int DrvExit()
 {
-	if (bAudOkay) {
-		// Stop sound if it was playing
-		AudSoundStop();
-		AudSoundExit();
-	}
-
 	if (bDrvOkay) {
 		if (nBurnDrvSelect[0] < nBurnDrvCount) {
 			if (bSaveRAM) {
@@ -129,8 +117,6 @@ int DrvExit()
 
 	bDrvOkay = 0;					// Stop using the BurnDrv functions
 	nBurnDrvSelect[0] = ~0U;			// no driver selected
-
-	VidExit();
 
 	return 0;
 }

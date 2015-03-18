@@ -226,19 +226,7 @@ int RunMessageLoop()
 	do {
 		bRestartVideo = 0;
 
-		//MediaInit();
-
-		if (!bVidOkay) {
-
-			// Reinit the video plugin
-			VidInit();
-			if (!bVidOkay && nVidFullscreen) {
-
-				nVidFullscreen = 0;
-				VidInit();
-			}
-
-	}
+		MediaInit();
 
 		RunInit();
 
