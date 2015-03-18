@@ -73,6 +73,7 @@ static int BlitFXInit()
 	nVidImageDepth = bDrvOkay ? 16 : 32;
 	nVidImageBPP = (nVidImageDepth + 7) >> 3;
 	nBurnBpp = nVidImageBPP;
+
 	SetBurnHighCol(nVidImageDepth);
 
 	if (!nRotateGame) {
@@ -89,7 +90,7 @@ static int BlitFXInit()
 	gamescreen = (unsigned char *)malloc(nMemLen);
 	if (gamescreen) {
 		memset(gamescreen, 0, nMemLen);
-		pVidImage = gamescreen + nVidImagePitch;
+		pVidImage = gamescreen;
 		return 0;
 	} else {
 		pVidImage = NULL;
