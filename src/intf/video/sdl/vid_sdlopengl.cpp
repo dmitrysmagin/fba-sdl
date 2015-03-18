@@ -46,7 +46,7 @@ static int BlitFXExit()
 {
 	SDL_FreeSurface(screen);
 
-	free(texture);
+	//free(texture);
 	free(gamescreen);
 	nRotateGame = 0;
 
