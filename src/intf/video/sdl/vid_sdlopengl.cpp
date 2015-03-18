@@ -46,7 +46,7 @@ static int BlitFXExit()
 {
 	SDL_FreeSurface(screen);
 
-	//free(texture);
+	free(texture);
 	free(gamescreen);
 	nRotateGame = 0;
 
@@ -84,6 +84,11 @@ static int BlitFXInit()
 
 	nMemLen = nVidImageHeight * nVidImagePitch;
 	nBurnPitch = nVidImagePitch;
+
+	printf("nVidImageWidth=%d nVidImageHeight=%d nVidImagePitch=%d\n",
+		nVidImageWidth, nVidImageHeight, nVidImagePitch);
+	printf("nTextureWidth=%d nTextureHeight=%d TexturePitch=%d\n",
+		nTextureWidth, nTextureHeight, nTextureWidth * nVidImageBPP);
 
 	texture = (unsigned char *)malloc(nTextureWidth * nTextureHeight * nVidImageBPP);
 
