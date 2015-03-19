@@ -1586,7 +1586,7 @@ INT32 SekSetWriteLongHandler(INT32 i, pSekWriteLongHandler pHandler)
 // ----------------------------------------------------------------------------
 // Query register values
 
-INT32 SekGetPC(INT32 n)
+UINT32 SekGetPC(INT32 n)
 {
 #ifdef EMU_A68K
 	if(nSekCpuCore == SEK_CORE_A68K) {
