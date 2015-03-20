@@ -277,6 +277,10 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 #endif
 
 	if (RomFind[i].nState == 0) {							// Rom not found in zip at all
+		TCHAR szTemp[128] = _T("");
+		_stprintf(szTemp, "%s (not found)\n",szText);
+		fprintf(stderr, szTemp);
+		AppError(szTemp, 1);
 		return 1;
 	}
 
@@ -295,10 +299,12 @@ static int __cdecl BzipBurnLoadRom(unsigned char* Dest, int* pnWrote, int i)
 		// Error loading from the zip file
 		TCHAR szTemp[128] = _T("");
 		_stprintf(szTemp, _T("%s reading %.30hs from %.30s"), nRet == 2 ? _T("CRC error") : _T("Error"), pszRomName, GetFilenameW(szBzipName[nCurrentZip]));
+		fprintf(stderr, szTemp);
 		AppError(szTemp, 1);
 		return 1;
 	}
 
+	fprintf(stderr, "%s (OK)\n", szText);
 	return 0;
 }
 
