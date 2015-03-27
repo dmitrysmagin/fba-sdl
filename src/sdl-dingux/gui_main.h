@@ -153,16 +153,6 @@
 #define OPTIONS_START_X	8
 #define OPTIONS_LINE_COUNT		11
 
-typedef struct selector
-{
-	int y;
-	int x;
-	int rom;
-	int ofs;
-} SELECTOR;
-
-extern SELECTOR sel;
-
 void GuiRun();
 
 #endif // _GUI_MAIN_H_
