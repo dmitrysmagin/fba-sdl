@@ -325,8 +325,8 @@ CFLAGS   = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffa
 CXXFLAGS = -O2 -G0 -march=mips32 -pipe -fno-builtin -fno-common -mno-shared -ffast-math \
 		-fomit-frame-pointer -fexpensive-optimizations -Wno-write-strings -DLSB_FIRST
 
-CFLAGS += -D__cdecl="" -D__fastcall=""
-CXXFLAGS += -D__cdecl="" -D__fastcall=""
+CFLAGS += -D__cdecl="" -D__fastcall="" -Wno-narrowing
+CXXFLAGS += -D__cdecl="" -D__fastcall="" -Wno-narrowing
 
 ifdef USE_LIBAO
 	CFLAGS += -DUSE_LIBAO
