@@ -146,6 +146,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"vsync", 0, &options.vsync, 1},
 		{"scaling", required_argument, 0, 'a'},
 		{"rotate", required_argument, 0, 'o'},
+		{"hwscaling", required_argument, 0, 'h'},
 		{"sense", required_argument, 0, 'd'},
 		{"showfps", 0, &options.showfps, 1},
 		{"no-showfps", 0, &options.showfps, 0},
@@ -205,6 +206,13 @@ void parse_cmd(int argc, char *argv[], char *path)
 				sscanf(optarg,"%d",&z2);
 				if ((z2>2) || (z2<0)) z2=0;
 				options.rotate = z2;
+				break;
+			case 'h':
+				if(!optarg) continue;
+				z2=0;
+				sscanf(optarg,"%d",&z2);
+				if ((z2>2) || (z2<0)) z2=0;
+				options.hwscaling = z2;
 				break;
 			case 'd':
 				if(!optarg) continue;

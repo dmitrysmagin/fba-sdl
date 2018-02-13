@@ -17,6 +17,8 @@
  *
  */
 
+#define DEVICE_GCW0
+
 #ifndef _SDL_VIDEO_H_
 #define _SDL_VIDEO_H_
 
@@ -32,5 +34,7 @@ void VideoExit();
 
 void VideoFlip(void);
 void VideoClear();
+
+int VideoInitForce320x240();
 
 #endif // _SDL_VIDEO_H_
