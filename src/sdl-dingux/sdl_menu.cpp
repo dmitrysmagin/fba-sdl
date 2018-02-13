@@ -387,7 +387,7 @@ void gui_Run()
 	ConfigGameSave();
 	VideoClear();
 #ifdef DEVICE_GCW0
-	if (hwscale > 0 && screen->w != 320 && screen->h != 240) {
+	if (hwscale > 0) {
 		VideoInit(); // when menu is closed to return to the game, video mode is set to the appropiate resolution for the game
 		VideoClear();
 	}
