@@ -1851,9 +1851,9 @@ int VideoInit()
 		}
 
 		if (bRotated) {
-			screen = SDL_SetVideoMode(VideoBufferHeight, VideoBufferWidth, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+			screen = SDL_SetVideoMode(VideoBufferHeight, VideoBufferWidth, 16, SDL_HWSURFACE | SDL_TRIPLEBUF);
 		} else {
-			screen = SDL_SetVideoMode(VideoBufferWidth, VideoBufferHeight, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+			screen = SDL_SetVideoMode(VideoBufferWidth, VideoBufferHeight, 16, SDL_HWSURFACE | SDL_TRIPLEBUF);
 		}
 		
 	} else {
