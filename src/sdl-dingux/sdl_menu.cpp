@@ -375,7 +375,7 @@ void gui_Run()
 #endif
 	gettimeofday(&s, NULL);
 #ifdef DEVICE_GCW0
-	if (hwscale > 0 && screen->w != 320 && screen->h != 240) {
+	if (hwscale > 0 && (screen->w != 320 || screen->h != 240)) {
 		VideoInitForce320x240(); // sets video mode to 320x240 so the menu screen looks right when a game uses a resolution different than 320x240
 	}
 #endif	
