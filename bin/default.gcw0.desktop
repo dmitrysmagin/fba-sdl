@@ -5,5 +5,8 @@ Exec=fbasdl.dge
 Terminal=false
 Type=Application
 StartupNotify=true
-Icon=skin/fba_icon
+Icon=fbasdl
+X-OD-Manual=readme.txt
+X-OD-NeedsDownscaling=true
 Categories=emulators;
+

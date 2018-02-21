@@ -75,7 +75,7 @@ SELECTOR sel;
 
 unsigned char joy_speed[4]={0,1,3,7};
 
-static char *abreviation_cf[10][7]={
+static char *abreviation_cf[11][7]={
 	{"Disable","Enable","","","","",""},
 	{"Original","Fullscreen","","","","",""},
 	{"Off","Auto","Manual","","","",""},
@@ -85,7 +85,8 @@ static char *abreviation_cf[10][7]={
 	{"Off","LIBAO","SDL","SDL old","","",""},
 	{"11025", "16000", "22050", "32000", "44100", "", ""},
 	{"No","Yes","","","","",""},
-	{"No","Yes","","","","",""}
+	{"No","Yes","","","","",""},
+	{"Off","Aspect","Fullscr","","","",""}
 };
 
 void load_lastsel();
@@ -805,6 +806,10 @@ void put_option_line(int first, unsigned char num, unsigned char y)
 		sprintf((char*)g_string, "Rotate vertical game: %s", abreviation_cf[9][options.rotate]);
 		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
 		break;
+	case OPTION_GUI_DEF_RUN_HWSCALING:
+		sprintf((char*)g_string, "Hardware scaling: %s", abreviation_cf[10][options.hwscaling]);
+		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
+		break;
 	case OPTION_GUI_DEF_RUN_VSYNC:
 		sprintf((char*)g_string, "Vertical sync: %s", abreviation_cf[5][options.vsync]);
 		put_string( g_string , OPTIONS_START_X , y , BLANC , gui_screen );
@@ -1015,6 +1020,10 @@ void ss_prg_options(int first, int last)
 						case OPTION_GUI_DEF_RUN_ROTATE:
 							options.rotate ^= 1;
 							break;
+						case OPTION_GUI_DEF_RUN_HWSCALING:
+							options.hwscaling--;
+							if(options.hwscaling < 0) options.hwscaling = 2;
+							break;
 						case OPTION_GUI_DEF_RUN_VSYNC:
 							options.vsync ^= 1;
 							break;
@@ -1113,6 +1122,10 @@ void ss_prg_options(int first, int last)
 							break;
 						case OPTION_GUI_DEF_RUN_ROTATE:
 							options.rotate ^= 1;
+							break;
+						case OPTION_GUI_DEF_RUN_HWSCALING:
+							options.hwscaling++;
+							if(options.hwscaling > 2) options.hwscaling = 0;
 							break;
 						case OPTION_GUI_DEF_RUN_VSYNC:
 							options.vsync ^= 1;
@@ -1215,6 +1228,9 @@ static int run_options_static[] = {
 	OPTION_FBA_SOUND,
 	OPTION_FBA_SAMPLERATE,
 	OPTION_FBA_ROTATE,
+#ifdef OPTIONS_FOR_GCW0
+	OPTION_FBA_HWSCALING,
+#endif
 	OPTION_FBA_VSYNC,
 	OPTION_FBA_SHOWFPS,
 	OPTION_FBA_68K,
@@ -1249,6 +1265,10 @@ void put_run_option_line(unsigned char num, unsigned char y)
 	case OPTION_FBA_ROTATE:
 		put_string("Rotate vertical game", OPTIONS_START_X, y, BLANC, gui_screen);
 		put_string(abreviation_cf[9][options.rotate], CONF_START_X, y, VERT, gui_screen);
+		break;
+	case OPTION_FBA_HWSCALING:
+		put_string("Hardware scaling", OPTIONS_START_X, y, BLANC, gui_screen);
+		put_string(abreviation_cf[10][options.hwscaling], CONF_START_X, y, VERT, gui_screen);
 		break;
 	case OPTION_FBA_VSYNC:
 		put_string("Vertical sync", OPTIONS_START_X, y, BLANC, gui_screen);
@@ -1367,6 +1387,10 @@ void ss_prog_run(void)
 						case OPTION_FBA_ROTATE:
 							options.rotate ^= 1;
 							break;
+						case OPTION_FBA_HWSCALING:
+							options.hwscaling--;
+							if(options.hwscaling < 0) options.hwscaling = 2;
+							break;
 						case OPTION_FBA_VSYNC:
 							options.vsync ^= 1;
 							break;
@@ -1403,6 +1427,10 @@ void ss_prog_run(void)
 							break;
 						case OPTION_FBA_ROTATE:
 							options.rotate ^= 1;
+							break;
+						case OPTION_FBA_HWSCALING:
+							options.hwscaling++;
+							if(options.hwscaling > 2) options.hwscaling = 0;
 							break;
 						case OPTION_FBA_VSYNC:
 							options.vsync ^= 1;

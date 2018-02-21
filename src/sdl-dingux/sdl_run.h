@@ -17,6 +17,8 @@
  *
  */
 
+#define DEVICE_GCW0
+
 #ifndef _SDL_RUN_H_
 #define _SDL_RUN_H_
 

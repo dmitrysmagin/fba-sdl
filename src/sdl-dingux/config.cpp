@@ -162,6 +162,7 @@ void ConfigGameDefault()
 	options.vsync = 0;
 	options.rescale = 0;		// no scaling by default
 	options.rotate = 0;
+	options.hwscaling = 0;		// no HW scaling by default
 	options.showfps = 0;
 	options.frameskip = -1;		// auto frameskip by default
 	options.create_lists = 0;
@@ -215,6 +216,7 @@ int ConfigGameLoad(FILE * f)
 			if(strcmp(arg1, "FBA_VSYNC") == 0) options.vsync = argd;
 			if(strcmp(arg1, "FBA_RESCALE") == 0) options.rescale = argd;
 			if(strcmp(arg1, "FBA_ROTATE") == 0) options.rotate = argd;
+			if(strcmp(arg1, "FBA_HWSCALING") == 0) options.hwscaling = argd;
 			if(strcmp(arg1, "FBA_SHOWFPS") == 0) options.showfps = argd;
 			if(strcmp(arg1, "FBA_FRAMESKIP") == 0) options.frameskip = argd;
 			if(strcmp(arg1, "FBA_M68KCORE") == 0) options.m68kcore = argd;
@@ -301,6 +303,7 @@ int ConfigGameSave(FILE * fp)
 	fprintf(fp, "FBA_VSYNC %d\n", options.vsync);
 	fprintf(fp, "FBA_RESCALE %d\n", options.rescale);
 	fprintf(fp, "FBA_ROTATE %d\n", options.rotate);
+	fprintf(fp, "FBA_HWSCALING %d\n", options.hwscaling);
 	fprintf(fp, "FBA_SHOWFPS %d\n", options.showfps);
 	fprintf(fp, "FBA_FRAMESKIP %d\n", options.frameskip);
 	fprintf(fp, "FBA_M68KCORE %d\n", options.m68kcore);

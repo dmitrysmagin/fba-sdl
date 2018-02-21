@@ -75,10 +75,21 @@ void RunEmulator(int drvnum)
 	if(options.sense < 100) {
 		nAnalogSpeed = 0x100 / 100 * options.sense;
 	}
+#ifdef DEVICE_GCW0
+	int hwscale = options.hwscaling;
+#endif
 
 	gui_Init();
 
-	VideoInit();
+#ifdef DEVICE_GCW0
+	if (hwscale > 0) {
+		VideoInitForce320x240(); // sets video mode to 320x240 so the loading screen looks right when a game uses a resolution different than 320x240
+	} else {
+#endif
+		VideoInit();
+#ifdef DEVICE_GCW0
+	}
+#endif
 
 	printf("Attempt to initialise '%s'\n", BurnDrvGetTextA(DRV_FULLNAME));
 
@@ -93,6 +104,12 @@ void RunEmulator(int drvnum)
 			"- Memory error\n\n");
 		goto finish;
 	}
+
+#ifdef DEVICE_GCW0
+	if (hwscale > 0) {
+		VideoInit(); // after loading screen ends, video mode is set to the appropiate resolution for the game
+	}
+#endif
 
 	RunReset();
 

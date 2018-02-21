@@ -17,6 +17,8 @@
  *
  */
 
+#define DEVICE_GCW0
+
 #ifndef _SDL_MENU_H_
 #define _SDL_MENU_H_
 

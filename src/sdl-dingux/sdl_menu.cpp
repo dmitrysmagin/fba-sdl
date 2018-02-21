@@ -366,12 +366,19 @@ void gui_Run()
 {
 	struct timeval s, e;
 	extern struct timeval start;
+#ifdef DEVICE_GCW0
+	int hwscale = options.hwscaling;
+#endif
 
 #ifdef FBA_DEBUG
 	debug = 1;
 #endif
 	gettimeofday(&s, NULL);
-
+#ifdef DEVICE_GCW0
+	if (hwscale > 0 && (screen->w != 320 || screen->h != 240)) {
+		VideoInitForce320x240(); // sets video mode to 320x240 so the menu screen looks right when a game uses a resolution different than 320x240
+	}
+#endif	
 	VideoClear();
 	SDL_EnableKeyRepeat(/*SDL_DEFAULT_REPEAT_DELAY*/ 150, /*SDL_DEFAULT_REPEAT_INTERVAL*/30);
 	gui_MainMenu.itemCur = 0;
@@ -379,7 +386,12 @@ void gui_Run()
 	SDL_EnableKeyRepeat(0, 0);
 	ConfigGameSave();
 	VideoClear();
-
+#ifdef DEVICE_GCW0
+	if (hwscale > 0) {
+		VideoInit(); // when menu is closed to return to the game, video mode is set to the appropiate resolution for the game
+		VideoClear();
+	}
+#endif	
 	gettimeofday(&e, NULL);
 	start.tv_sec += e.tv_sec - s.tv_sec;
 	start.tv_usec += e.tv_usec - s.tv_usec;
