@@ -58,7 +58,9 @@ static int DrvLoadRom(unsigned char* Dest, int* pnWrote, int i)
 
 int DrvInit(int nDrvNum, bool bRestore)
 {
-	DrvExit();			// Make sure exitted
+	if (bDrvOkay) {
+		DrvExit();			// Make sure exitted
+	}
 	SndInit(); //AudSoundInit();	// Init Sound (not critical if it fails)
 
 	/*nBurnSoundRate = 0;		// Assume no sound
